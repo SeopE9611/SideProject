@@ -750,7 +750,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <MapPin className="h-4 w-4 text-orange-600" />
  우편번호
  </Label>
- <Button variant="outline" size="sm" onClick={handleFindPostcode} className="bg-primary 0 to-purple-500 text-foreground border-0 hover: hover:">
+ <Button variant="secondary" size="sm" onClick={handleFindPostcode}>
  우편번호 찾기
  </Button>
  </div>
@@ -1021,7 +1021,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  saveInfo={saveInfo}
  serviceMethod={serviceMethod}
  />
- <Button variant="outline" className="w-full border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
+ <Button variant="outline" className="w-full border-2" asChild>
  <Link href="/services/packages" onClick={onLeavePageClick}>
  패키지 선택으로 돌아가기
  </Link>

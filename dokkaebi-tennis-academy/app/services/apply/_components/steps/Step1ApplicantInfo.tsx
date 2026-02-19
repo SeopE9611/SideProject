@@ -190,7 +190,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
               placeholder=""
             />
             {!orderId && !isMember && (
-              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap hover:bg-accent hover:border-blue-300 transition-colors duration-200 bg-transparent">
+              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap transition-colors duration-200">
                 <MapPin className="h-4 w-4 mr-2" />
                 우편번호 검색
               </Button>

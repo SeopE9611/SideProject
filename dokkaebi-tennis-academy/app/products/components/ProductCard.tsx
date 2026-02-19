@@ -173,17 +173,17 @@ const ProductCard = React.memo(
 
               <div className="grid grid-cols-2 bp-sm:flex gap-2">
                 <Link href={`/products/${product._id}`} className="bp-sm:flex-1">
-                  <Button className="w-full h-9 sm:h-10 text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                  <Button variant="default" size="sm" className="w-full h-9 sm:h-10 text-xs sm:text-sm">
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     상세보기
                   </Button>
                 </Link>
 
-                <Button type="button" size="sm" variant="outline" onClick={handleStringSingleBuy} className="h-9 sm:h-10 text-xs sm:text-sm bg-transparent">
+                <Button type="button" size="sm" variant="outline" onClick={handleStringSingleBuy} className="h-9 sm:h-10 text-xs sm:text-sm">
                   단품 구매
                 </Button>
 
-                <Button type="button" size="sm" variant="outline" onClick={handleStringServiceApply} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 bg-transparent">
+                <Button type="button" size="sm" variant="secondary" onClick={handleStringServiceApply} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1">
                   작업 의뢰
                 </Button>
 
@@ -233,7 +233,7 @@ const ProductCard = React.memo(
             {product.isNew && <Badge className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
-                <Button size="sm" className="h-8 sm:h-9 text-xs sm:text-sm bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-lg" onClick={(e) => e.stopPropagation()}>
                   <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
                   보기
                 </Button>
@@ -241,7 +241,7 @@ const ProductCard = React.memo(
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`h-8 sm:h-9 bg-white/90 dark:bg-slate-700/90 hover:bg-white shadow-lg ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
+                  className={`h-8 sm:h-9 shadow-lg ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -290,11 +290,11 @@ const ProductCard = React.memo(
           </CardContent>
 
           <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2  bp-xxs:flex-col">
-            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs bg-transparent" onClick={handleStringSingleBuy}>
+            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringSingleBuy}>
               단품 구매
             </Button>
 
-            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs bg-transparent" onClick={handleStringServiceApply}>
+            <Button type="button" variant="secondary" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringServiceApply}>
               작업의뢰
             </Button>
           </CardFooter>

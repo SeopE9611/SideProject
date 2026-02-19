@@ -654,12 +654,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                     <div className="flex items-center justify-center">
                       <div className="flex flex-wrap items-center justify-center gap-2">
-                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(1)} disabled={page <= 1} type="button">
+                        <Button variant="outline" size="icon" onClick={() => movePage(1)} disabled={page <= 1} type="button">
                           <span className="sr-only">첫 페이지</span>
                           «
                         </Button>
                         {/* 이전 페이지 */}
-                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page - 1)} disabled={page <= 1} type="button">
+                        <Button variant="outline" size="icon" onClick={() => movePage(page - 1)} disabled={page <= 1} type="button">
                           <span className="sr-only">이전 페이지</span>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <polyline points="15 18 9 12 15 6" />
@@ -670,9 +670,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {visiblePages.map((pageNumber) => (
                           <Button
                             key={pageNumber}
-                            variant="outline"
+                            variant={pageNumber === page ? 'default' : 'outline'}
                             size="sm"
-                            className={pageNumber === page ? 'h-10 w-10 bg-blue-600 text-white border-blue-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
+                            className="h-10 w-10"
                             onClick={() => movePage(pageNumber)}
                             type="button"
                           >
@@ -681,13 +681,13 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         ))}
 
                         {/* 다음 페이지 */}
-                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page + 1)} disabled={page >= totalPages} type="button">
+                        <Button variant="outline" size="icon" onClick={() => movePage(page + 1)} disabled={page >= totalPages} type="button">
                           <span className="sr-only">다음 페이지</span>
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                             <polyline points="9 18 15 12 9 6" />
                           </svg>
                         </Button>
-                        <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(totalPages)} disabled={page >= totalPages} type="button">
+                        <Button variant="outline" size="icon" onClick={() => movePage(totalPages)} disabled={page >= totalPages} type="button">
                           <span className="sr-only">마지막 페이지</span>
                           »
                         </Button>
@@ -702,7 +702,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             placeholder="페이지"
                             className="h-10 w-20 rounded-md border border-gray-300 bg-white px-2 text-xs dark:border-gray-700 dark:bg-gray-900"
                           />
-                          <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-white dark:bg-gray-700">
+                          <Button type="submit" variant="outline" size="sm" className="h-10 px-2">
                             이동
                           </Button>
                         </form>

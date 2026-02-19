@@ -23,12 +23,12 @@ type Props = {
 export default function ApplyStepFooter({ currentStep, onPrev, onNext, isStepValid, isSubmitting, isOrderSlotBlocked, handleSubmit }: Props) {
   return (
     <div className="flex justify-between mt-12 pt-8 border-t dark:border-slate-700">
-      <Button type="button" variant="outline" onClick={onPrev} disabled={currentStep === 1} className="px-8 py-3 hover:bg-background dark:hover:bg-slate-700 transition-colors duration-200">
+      <Button type="button" variant="outline" onClick={onPrev} disabled={currentStep === 1} className="px-8 py-3 transition-colors duration-200">
         이전
       </Button>
 
       {currentStep < 4 ? (
-        <Button type="button" onClick={onNext} disabled={!isStepValid(currentStep)} className="px-8 py-3 bg-primary 0  hover: hover:to-purple-700 text-foreground transition-all duration-200 disabled:opacity-50">
+        <Button type="button" onClick={onNext} disabled={!isStepValid(currentStep)} variant="default" className="px-8 py-3 transition-all duration-200 disabled:opacity-50">
           다음
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -37,7 +37,8 @@ export default function ApplyStepFooter({ currentStep, onPrev, onNext, isStepVal
           type="button"
           disabled={isSubmitting || isOrderSlotBlocked}
           onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
-          className="px-8 py-3 bg-primary 0  hover: hover:to-teal-700 text-foreground transition-all duration-200 disabled:opacity-50"
+          variant="default"
+          className="px-8 py-3 transition-all duration-200 disabled:opacity-50"
         >
           {isSubmitting ? (
             <>
