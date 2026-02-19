@@ -139,7 +139,7 @@ const ProductCard = React.memo(
             <div className="relative w-full bp-md:w-48 aspect-[4/3] bp-md:aspect-square flex-shrink-0 overflow-hidden">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill sizes="(max-width: 768px) 100vw, 192px" className="object-cover" />
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
-              {product.isNew && <Badge className="absolute right-2 top-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
+              {product.isNew && <Badge variant="info" className="absolute right-2 top-2 shadow-sm">NEW</Badge>}
             </div>
             <div className="flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-4">
@@ -230,7 +230,7 @@ const ProductCard = React.memo(
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            {product.isNew && <Badge className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">NEW</Badge>}
+            {product.isNew && <Badge variant="info" className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs shadow-sm">NEW</Badge>}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
                 <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-lg" onClick={(e) => e.stopPropagation()}>
@@ -294,7 +294,7 @@ const ProductCard = React.memo(
               단품 구매
             </Button>
 
-            <Button type="button" variant="secondary" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringServiceApply}>
+            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringServiceApply}>
               작업의뢰
             </Button>
           </CardFooter>
