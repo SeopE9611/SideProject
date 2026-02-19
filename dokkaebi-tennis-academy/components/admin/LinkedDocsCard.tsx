@@ -9,7 +9,19 @@ import { Button } from '@/components/ui/button';
 import { shortenId } from '@/lib/shorten';
 import { showSuccessToast } from '@/lib/toast';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
-import { opsKindBadgeClass, opsKindLabel, type OpsKind } from '@/lib/admin-ops-taxonomy';
+import { opsKindBadgeTone, opsKindLabel, type OpsBadgeTone, type OpsKind } from '@/lib/admin-ops-taxonomy';
+
+const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
+  success: 'bg-success/10 text-success',
+  warning: 'bg-warning/10 text-warning',
+  destructive: 'bg-destructive/10 text-destructive',
+  muted: 'bg-muted text-muted-foreground',
+  info: 'bg-info/10 text-info',
+};
+
+function opsBadgeToneClass(tone: OpsBadgeTone) {
+  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
+}
 
 /**
  * “연결 문서” 공용 카드 (관리자 상세 화면용)
@@ -95,14 +107,15 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
           <div className="space-y-2">
             {list.map((d) => {
               const kindLabel = opsKindLabel(d.kind);
-              const badgeClass = opsKindBadgeClass(d.kind);
+              const badgeClass = opsBadgeToneClass(opsKindBadgeTone(d.kind));
               const short = shortenId(String(d.id));
 
               return (
                 <div key={`${d.kind}:${d.id}`} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm text-muted-foreground">주문번호 : ({String(d.id)})</p>
+                      <Badge className={`${badgeBase} ${badgeSizeSm} ${badgeClass}`}>{kindLabel}</Badge>
+                      <p className="text-sm text-muted-foreground">주문번호 : ({short})</p>
                     </div>
                   </div>
 

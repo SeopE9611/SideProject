@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { shortenId } from '@/lib/shorten';
 import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
-import { opsKindBadgeClass, opsKindLabel, opsStatusBadgeClass } from '@/lib/admin-ops-taxonomy';
+import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 import { prevMonthYyyymmKST, flowBadgeClass, settlementBadgeClass, type Kind, type Flow } from './filters/operationsFilters';
 import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
@@ -166,6 +166,19 @@ const tdClasses = 'px-4 py-4 align-top';
 const th = thClasses;
 const td = tdClasses;
 
+
+const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
+  success: 'bg-success/10 text-success',
+  warning: 'bg-warning/10 text-warning',
+  destructive: 'bg-destructive/10 text-destructive',
+  muted: 'bg-muted text-muted-foreground',
+  info: 'bg-info/10 text-info',
+};
+
+function opsBadgeToneClass(tone: OpsBadgeTone) {
+  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
+}
+
 export default function OperationsClient() {
   const router = useRouter();
   const pathname = usePathname();
@@ -287,7 +300,7 @@ export default function OperationsClient() {
         {shown.map((d) => (
           <div key={`${d.kind}:${d.id}`} className="flex items-center gap-1">
             <Link href={d.href} className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted/60" aria-label="연결 문서로 이동">
-              <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(d.kind))}>{opsKindLabel(d.kind)}</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(d.kind)))}>{opsKindLabel(d.kind)}</Badge>
               <span className="font-mono">{shortenId(d.id)}</span>
             </Link>
 
@@ -485,9 +498,9 @@ export default function OperationsClient() {
           {/* 범례(운영자 인지 부하 감소) */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
             <span className="font-medium text-foreground">범례</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('order'))}>주문</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('stringing_application'))}>신청서</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass('rental'))}>대여</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>주문</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
             <span className="text-gray-300 dark:text-gray-600">|</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600 dark:text-slate-400')}>단독</Badge>
@@ -682,7 +695,7 @@ export default function OperationsClient() {
                               {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
                               <div className="flex flex-wrap gap-1">
                                 {g.kinds.map((k) => (
-                                  <Badge key={k} className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(k))}>
+                                  <Badge key={k} className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(k)))}>
                                     {opsKindLabel(k)}
                                   </Badge>
                                 ))}
@@ -742,7 +755,7 @@ export default function OperationsClient() {
 
                                     if (isGroup) {
                                       items.push({ label: '기준', className: 'bg-indigo-500/10 text-indigo-700', title: '그룹의 기준 문서' });
-                                      items.push({ label: opsKindLabel(g.anchor.kind), className: opsKindBadgeClass(g.anchor.kind), title: '기준 문서 종류' });
+                                      items.push({ label: opsKindLabel(g.anchor.kind), className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)), title: '기준 문서 종류' });
                                       warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-amber-500/10 text-amber-700', title: b.title }));
                                     }
 
@@ -774,7 +787,7 @@ export default function OperationsClient() {
 
                           <TableCell className={tdClasses}>
                             <div className="space-y-1">
-                              <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(g.anchor.kind, g.anchor.statusLabel))}>{g.anchor.statusLabel}</Badge>
+                              <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
 
                               {isGroup && childStatusSummary.length > 0 && (
                                 <div className="space-y-1">
@@ -855,7 +868,7 @@ export default function OperationsClient() {
                             <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-slate-50/30 dark:bg-slate-900/20 hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
                               <TableCell className={tdClasses}>
                                 <div className="flex flex-col gap-1">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, opsKindBadgeClass(it.kind))}>{opsKindLabel(it.kind)}</Badge>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(it.kind)))}>{opsKindLabel(it.kind)}</Badge>
                                   <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(it.flow))} title={`Flow ${it.flow}`}>
                                     {it.flowLabel}
                                   </Badge>
@@ -895,7 +908,7 @@ export default function OperationsClient() {
                               <TableCell className={cn(tdClasses, 'text-sm text-muted-foreground whitespace-nowrap')}>{formatKST(it.createdAt)}</TableCell>
 
                               <TableCell className={tdClasses}>
-                                <Badge className={cn(badgeBase, badgeSizeSm, opsStatusBadgeClass(it.kind, it.statusLabel))}>{it.statusLabel}</Badge>
+                                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(it.kind, it.statusLabel)))}>{it.statusLabel}</Badge>
                               </TableCell>
 
                               <TableCell className={tdClasses}>
