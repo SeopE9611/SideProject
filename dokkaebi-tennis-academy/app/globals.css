@@ -49,6 +49,16 @@ html body[data-scroll-locked] {
   /* Secondary emphasis */
   --accent: 130 57% 33%;
   --accent-foreground: 120 100% 99%;
+  --accent-hover: 130 57% 29%;
+  --accent-active: 130 57% 25%;
+
+  /* System feedback (toast/badge/banner) */
+  --success: 145 63% 42%;
+  --success-foreground: 120 100% 99%;
+  --warning: 38 92% 46%;
+  --warning-foreground: 32 100% 15%;
+  --danger: 0 78% 52%;
+  --danger-foreground: 210 40% 98%;
 
   --secondary: 120 12% 94%;
   --secondary-foreground: 120 4% 11%;
@@ -103,6 +113,16 @@ html body[data-scroll-locked] {
   /* Secondary emphasis */
   --accent: 130 57% 33%;
   --accent-foreground: 120 100% 99%;
+  --accent-hover: 130 57% 40%;
+  --accent-active: 130 57% 45%;
+
+  /* System feedback (toast/badge/banner) */
+  --success: 145 64% 46%;
+  --success-foreground: 120 100% 99%;
+  --warning: 40 94% 54%;
+  --warning-foreground: 30 90% 8%;
+  --danger: 0 82% 63%;
+  --danger-foreground: 210 40% 98%;
 
   --secondary: 120 3% 18%;
   --secondary-foreground: 120 100% 99%;

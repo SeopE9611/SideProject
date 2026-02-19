@@ -1,14 +1,15 @@
-import React, { ReactNode } from 'react'; // React.createElement 를 쓰기 위해 필요
+import React, { ReactNode } from 'react';
 import { toast } from 'sonner';
-import { CheckCircle, XCircle, Info } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 // 성공
 export const showSuccessToast = (message: string) =>
   toast.success(message, {
     icon: React.createElement(CheckCircle, {
-      className: 'text-emerald-500',
+      className: 'text-success',
       size: 20,
     }),
+    className: 'border-success/35 bg-success/10 text-success dark:border-success/45 dark:bg-success/20 dark:text-success',
     duration: 3000,
   });
 
@@ -16,23 +17,20 @@ export const showSuccessToast = (message: string) =>
 export const showErrorToast = (message: string | ReactNode) =>
   toast.error(message, {
     icon: React.createElement(XCircle, {
-      className: 'text-red-500',
+      className: 'text-danger',
       size: 20,
     }),
+    className: 'border-danger/35 bg-danger/10 text-danger dark:border-danger/45 dark:bg-danger/20 dark:text-danger',
     duration: 4000,
-    style: {
-      background: '#fef2f2',
-      color: '#b91c1c',
-      border: '1px solid #fca5a5',
-    },
   });
 
 // 정보
 export const showInfoToast = (message: string) =>
   toast(message, {
-    icon: React.createElement(Info, {
-      className: 'text-blue-500',
+    icon: React.createElement(AlertTriangle, {
+      className: 'text-warning',
       size: 20,
     }),
+    className: 'border-warning/35 bg-warning/10 text-warning-foreground dark:border-warning/45 dark:bg-warning/20 dark:text-warning-foreground',
     duration: 2500,
   });
