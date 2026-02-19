@@ -37,26 +37,26 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20 flex items-center justify-center p-4">
-      <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-400/20 rounded-full blur-2xl animate-pulse"></div>
+      <div className="absolute top-10 left-10 w-20 h-20 bg-primary rounded-full blur-2xl animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-32 h-32 bg-green-400/10 rounded-full blur-3xl animate-pulse"></div>
 
       <div className="relative w-full max-w-md">
         <div className="mb-6">
-          <Link href="/login" className="inline-flex items-center text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline font-medium">
+          <Link href="/login" className="inline-flex items-center text-sm text-primary dark:text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium">
             <ArrowLeft className="mr-2 h-4 w-4" />
             로그인으로 돌아가기
           </Link>
         </div>
 
-        <Card className="border-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm shadow-2xl overflow-hidden">
+        <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
           <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white relative">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
                 <Shield className="h-8 w-8 text-white" />
               </div>
               <CardTitle className="text-2xl font-bold text-white">비밀번호 찾기</CardTitle>
-              <CardDescription className="text-emerald-100 mt-2">가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.</CardDescription>
+              <CardDescription className="text-primary mt-2">가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.</CardDescription>
             </div>
           </div>
 
@@ -65,11 +65,11 @@ export default function ForgotPasswordPage() {
               {!isSubmitted ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
+                    <Label htmlFor="email" className="text-foreground dark:text-muted-foreground font-medium">
                       이메일
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
                       <Input
                         id="email"
                         type="email"
@@ -78,18 +78,18 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isSubmitting}
-                        className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400 bg-white/50 dark:bg-slate-700/50"
+                        className="pl-10 h-12 border-border dark:border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border bg-card/50 dark:bg-muted"
                       />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-6 text-center border border-emerald-200/50 dark:border-emerald-800/50">
+                <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-6 text-center border border-border dark:border-border">
                   <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-8 w-8 text-white" />
                   </div>
-                  <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>
+                  <p className="text-sm font-semibold text-primary dark:text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>
                 </div>
               )}
             </CardContent>
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+                  className="w-full h-12 border-border dark:border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent"
                   onClick={() => {
                     setEmail('');
                     setIsSubmitted(false);

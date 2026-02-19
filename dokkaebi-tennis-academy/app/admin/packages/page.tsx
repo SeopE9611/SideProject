@@ -227,9 +227,9 @@ export default function PackageOrdersClient() {
   if (error) {
     return (
       <div className="container py-6">
-          <Card className="border-red-200 bg-red-50/60">
+          <Card className="border-destructive bg-destructive">
             <CardHeader>
-              <CardTitle className="text-red-700">목록을 불러오지 못했습니다.</CardTitle>
+              <CardTitle className="text-destructive">목록을 불러오지 못했습니다.</CardTitle>
               <CardDescription>{commonErrorMessage}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -436,14 +436,14 @@ export default function PackageOrdersClient() {
   function statusBadgeClass(tone: 'destructive' | 'muted' | 'warning' | 'success') {
     switch (tone) {
       case 'destructive':
-        return 'bg-red-100 text-red-800 border border-red-200';
+        return 'bg-destructive text-destructive border border-destructive';
       case 'muted':
         return 'bg-background text-foreground border border-border';
       case 'warning':
-        return 'bg-amber-100 text-amber-800 border border-amber-200';
+        return 'bg-muted text-primary border border-border';
       case 'success':
       default:
-        return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+        return 'bg-primary text-primary border border-border';
     }
   }
 
@@ -486,8 +486,8 @@ export default function PackageOrdersClient() {
                     <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
                     <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
                   </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
-                    <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  <div className="bg-primary dark:bg-primary rounded-xl p-3">
+                    <Package className="h-6 w-6 text-primary dark:text-primary" />
                   </div>
                 </div>
               </CardContent>
@@ -863,7 +863,7 @@ export default function PackageOrdersClient() {
                               <TableCell className={cn(tdClasses, col.progress, 'whitespace-nowrap')}>
                                 <div className="flex flex-col items-center gap-1">
                                   <div className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
-                                    <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
+                                    <div className="bg-primary h-1.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
                                   </div>
                                   <span className="text-xs font-medium">{progressPercentage}%</span>
                                 </div>
@@ -891,7 +891,7 @@ export default function PackageOrdersClient() {
                                       <span className="text-sm">{date}</span>
                                       <span className="text-xs text-muted-foreground">{time}</span>
                                       {listState.label !== '취소' && daysUntilExpiry <= 30 && daysUntilExpiry > 0 && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
-                                      {listState.label === '만료' && <span className="text-xs text-red-600 font-medium">만료됨</span>}
+                                      {listState.label === '만료' && <span className="text-xs text-destructive font-medium">만료됨</span>}
                                     </div>
                                   </TableCell>
                                 );

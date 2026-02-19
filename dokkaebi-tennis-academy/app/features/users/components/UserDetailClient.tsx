@@ -18,7 +18,7 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
   const { data, error, isLoading, mutate } = useSWR(`${baseUrl}/api/admin/users/${id}`, fetcher);
 
   if (isLoading) return <div className="p-6">불러오는 중...</div>;
-  if (error || !data) return <div className="p-6 text-red-600">불러오기 실패</div>;
+  if (error || !data) return <div className="p-6 text-destructive">불러오기 실패</div>;
 
   const u = data as {
     id: string;

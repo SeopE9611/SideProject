@@ -11,7 +11,7 @@ export default function ApplyHero() {
           <Wrench className="h-10 w-10" />
         </div>
         <h1 className="text-2xl bp-sm:text-4xl md:text-5xl font-bold mb-4">스트링 장착 서비스 신청</h1>
-        <p className="text-base bp-sm:text-lg text-blue-100 max-w-2xl mx-auto">전문가가 직접 라켓에 스트링을 장착해드립니다</p>
+        <p className="text-base bp-sm:text-lg text-primary max-w-2xl mx-auto">전문가가 직접 라켓에 스트링을 장착해드립니다</p>
       </div>
     </div>
   );

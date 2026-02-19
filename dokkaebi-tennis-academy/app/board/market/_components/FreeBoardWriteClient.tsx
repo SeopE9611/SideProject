@@ -416,7 +416,7 @@ export default function FreeBoardWriteClient() {
         {/* 글쓰기 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/40">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -443,14 +443,14 @@ export default function FreeBoardWriteClient() {
                       }}
                       className={cn(
                         'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        category === opt.value ? 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}
                     </button>
                   ))}
                 </div>
-                {fieldErrors.category ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.category}</p> : null}
+                {fieldErrors.category ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.category}</p> : null}
               </div>
               {isMarketBrandCategory(category) && (
                 <div className="space-y-2" ref={brandRef}>
@@ -462,7 +462,7 @@ export default function FreeBoardWriteClient() {
                       if (fieldErrors.brand) setFieldErrors((prev) => ({ ...prev, brand: undefined }));
                     }}
                     disabled={isSubmitting}
-                    className={cn('h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm', fieldErrors.brand ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20' : '')}
+                    className={cn('h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm', fieldErrors.brand ? 'border-destructive focus:border-destructive focus:ring-red-500/20' : '')}
                   >
                     <option value="">브랜드를 선택해 주세요</option>
                     {getMarketBrandOptions(category).map((o) => (
@@ -471,7 +471,7 @@ export default function FreeBoardWriteClient() {
                       </option>
                     ))}
                   </select>
-                  {fieldErrors.brand ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.brand}</p> : null}
+                  {fieldErrors.brand ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.brand}</p> : null}
                   <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
                 </div>
               )}
@@ -489,12 +489,12 @@ export default function FreeBoardWriteClient() {
                   }}
                   disabled={isSubmitting}
                   maxLength={TITLE_MAX}
-                  className={fieldErrors.title ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/20' : ''}
+                  className={fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : ''}
                 />
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
-                {fieldErrors.title ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.title}</p> : null}
+                {fieldErrors.title ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.title}</p> : null}
               </div>
 
               {/* 내용 입력 */}
@@ -503,7 +503,7 @@ export default function FreeBoardWriteClient() {
                 <Textarea
                   id="content"
                   ref={contentRef}
-                  className={cn('min-h-[200px] resize-y', fieldErrors.content ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/20' : '')}
+                  className={cn('min-h-[200px] resize-y', fieldErrors.content ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : '')}
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);
@@ -515,14 +515,14 @@ export default function FreeBoardWriteClient() {
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
-                {fieldErrors.content ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.content}</p> : null}
+                {fieldErrors.content ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.content}</p> : null}
                 <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
-                {fieldErrors.attachments ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.attachments}</p> : null}
+                {fieldErrors.attachments ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.attachments}</p> : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="image">이미지 업로드</TabsTrigger>
@@ -539,7 +539,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-card dark:bg-card"
+                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card dark:bg-card"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -588,7 +588,7 @@ export default function FreeBoardWriteClient() {
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
+                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
@@ -600,7 +600,7 @@ export default function FreeBoardWriteClient() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-red-500"
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-destructive"
                               >
                                 <X className="h-3 w-3" />
                               </button>

@@ -32,8 +32,8 @@ const uiToPayment: Record<CurrentStatusUI, PaymentStatus> = {
 };
 
 const BADGE_CLASS: Record<CurrentStatusUI, string> = {
-  활성: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 rounded px-2 py-0.5 text-xs',
-  비활성: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded px-2 py-0.5 text-xs',
+  활성: 'bg-primary text-primary dark:bg-primary dark:text-primary rounded px-2 py-0.5 text-xs',
+  비활성: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground rounded px-2 py-0.5 text-xs',
   취소: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-200 rounded px-2 py-0.5 text-xs',
 };
 

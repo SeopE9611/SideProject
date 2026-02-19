@@ -526,7 +526,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
           <div className="mb-6 bp-md:mb-8 space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-base bp-sm:text-lg font-semibold dark:text-white tabular-nums" aria-live="polite">
-                총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-blue-600 dark:text-blue-400 font-bold">{total}</span>}개
+                총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary dark:text-primary font-bold">{total}</span>}개
                 {isCountLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {loadedCount}개)</span>}
               </div>
               <Button
@@ -536,7 +536,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 px-3 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 shrink-0"
+                className="bp-lg:hidden h-9 px-3 border-border dark:border-border hover:bg-primary dark:hover:bg-primary shrink-0"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -547,12 +547,12 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
             <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
               {/* 뷰 모드 토글 */}
-              <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
+              <div className="flex items-center border border-border dark:border-border rounded-lg p-1 bg-card dark:bg-card">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-primary hover:bg-primary dark:bg-primary dark:hover:bg-primary' : 'hover:bg-primary dark:hover:bg-primary')}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
@@ -560,7 +560,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-primary hover:bg-primary dark:bg-primary dark:hover:bg-primary' : 'hover:bg-primary dark:hover:bg-primary')}
                 >
                   <List className="w-4 h-4" />
                 </Button>
@@ -568,10 +568,10 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
               {/* 정렬 */}
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
+                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card dark:bg-card text-sm">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
-                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                <SelectContent className="dark:bg-card dark:border-border">
                   <SelectItem value="latest">최신순</SelectItem>
                   <SelectItem value="popular">인기순</SelectItem>
                   <SelectItem value="price-low">가격 낮은순</SelectItem>
@@ -590,19 +590,19 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             </div>
           ) : error ? (
             <div className="text-center py-16">
-              <p className="text-red-500 dark:text-red-400 mb-2">불러오는 중 오류가 발생했습니다.</p>
-              <Button onClick={() => loadMore()} className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+              <p className="text-destructive dark:text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
+              <Button onClick={() => loadMore()} className="bg-primary hover:bg-primary dark:bg-primary dark:hover:bg-primary">
                 다시 시도
               </Button>
             </div>
           ) : loadedCount === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
-                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-blue-600 dark:text-blue-400" />
+                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary dark:text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-              <Button onClick={handleResetAll} variant="outline" className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-transparent">
+              <Button onClick={handleResetAll} variant="outline" className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
                 필터 초기화
               </Button>
             </div>
@@ -622,7 +622,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
                 <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
-                  <div className="h-4 w-4 rounded-full border-2 border-blue-600 dark:border-blue-400 border-t-transparent animate-spin" />
+                  <div className="h-4 w-4 rounded-full border-2 border-border dark:border-border border-t-transparent animate-spin" />
                   <span className="dark:text-white">더 불러오는 중...</span>
                 </div>
               )}

@@ -49,7 +49,7 @@ export default function PaymentEditForm({ initialData, resourcePath, entityId, o
       <div>
         <Label htmlFor="depositor">입금자명</Label>
         <Input id="depositor" {...register('depositor', { required: '필수 입력입니다.' })} />
-        {errors.depositor && <p className="text-red-500 text-xs">{errors.depositor.message}</p>}
+        {errors.depositor && <p className="text-destructive text-xs">{errors.depositor.message}</p>}
       </div>
 
       <div className="flex justify-end space-x-2">

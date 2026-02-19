@@ -20,14 +20,14 @@ export default function SettingsPage() {
         <div className="mx-auto max-w-6xl space-y-6">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600/10 to-indigo-600/10 px-4 py-1.5 mb-4">
-              <Shield className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium text-blue-700">관리자 설정</span>
+              <Shield className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">관리자 설정</span>
             </div>
             <h1 className="text-4xl font-bold">시스템 설정</h1>
           </div>
 
           <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
-            {vm.isBootstrapping && <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">설정값을 불러오는 중입니다...</div>}
+            {vm.isBootstrapping && <div className="rounded-lg border border-border bg-primary px-4 py-3 text-sm font-medium text-primary">설정값을 불러오는 중입니다...</div>}
             <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto">
               <TabsTrigger value="site"><Globe className="h-4 w-4 mr-2" />사이트</TabsTrigger>
               <TabsTrigger value="user"><User className="h-4 w-4 mr-2" />사용자</TabsTrigger>

@@ -177,7 +177,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  // 에러가 있는 필드는 테두리를 붉게 표시 (UI 피드백)
  const inputClass = (base: string, field: CheckoutField, errs: CheckoutFieldErrors) => {
  if (!hasInteracted) return base;
- return errs[field] ? `${base} border-red-500 focus:border-red-500` : base;
+ return errs[field] ? `${base} border-destructive focus:border-destructive` : base;
  };
 
  useEffect(() => {
@@ -711,7 +711,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <RadioGroupItem value="출장서비스" id="출장서비스" disabled />
  <Label htmlFor="출장서비스" className="flex-1 font-medium">
  출장 서비스 (지정 장소로 방문)
- <span className="ml-1 text-red-700">— 현재 이용하실 수 없습니다</span>
+ <span className="ml-1 text-destructive">— 현재 이용하실 수 없습니다</span>
  </Label>
  <MapPin className="h-5 w-5 text-primary" />
  </div>

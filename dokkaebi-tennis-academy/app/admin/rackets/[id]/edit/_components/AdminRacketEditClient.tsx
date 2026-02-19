@@ -82,9 +82,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-red-200 dark:border-red-900 p-8 text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <p className="text-red-600 dark:text-red-400">데이터를 불러오지 못했습니다.</p>
+          <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-destructive dark:border-destructive p-8 text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <p className="text-destructive dark:text-destructive">데이터를 불러오지 못했습니다.</p>
             <Link href="/admin/rackets" className="mt-4 inline-block">
               <Button variant="outline">목록으로 돌아가기</Button>
             </Link>
@@ -111,7 +111,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 <h1 className="text-3xl font-bold text-white">라켓 수정</h1>
                 <StockChip id={data.id} total={data.quantity ?? 1} />
               </div>
-              <p className="text-emerald-100">
+              <p className="text-primary">
                 {racketBrandLabel(data.brand)} {data.model}
               </p>
             </div>
@@ -129,7 +129,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
+                  <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive">
                     삭제
                   </AlertDialogAction>
                 </AlertDialogFooter>

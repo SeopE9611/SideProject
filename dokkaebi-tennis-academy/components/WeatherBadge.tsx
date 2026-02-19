@@ -8,7 +8,7 @@ export function WeatherBadge() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg px-4 py-2 text-sm text-slate-500">
+      <div className="rounded-lg px-4 py-2 text-sm text-muted-foreground">
         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
         오늘 테니스 치기 좋은지 확인 중이에요
       </div>
@@ -16,7 +16,7 @@ export function WeatherBadge() {
   }
 
   if (isError || !weather || !weather.ok) {
-    return <div className="rounded-lg px-4 py-2 text-sm text-slate-500">날씨 정보를 가져오지 못했어요. (개발진행중)</div>;
+    return <div className="rounded-lg px-4 py-2 text-sm text-muted-foreground">날씨 정보를 가져오지 못했어요. (개발진행중)</div>;
   }
 
   const { temp, tempMin, tempMax, description } = weather;
@@ -40,11 +40,11 @@ export function WeatherBadge() {
     >
       <div className="font-medium">
         {mainTemp}{' '}
-        <span className="text-slate-500 text-[11px] sm:text-xs">
+        <span className="text-muted-foreground text-[11px] sm:text-xs">
           (최저 {min} / 최고 {max})
         </span>
       </div>
-      <div className="text-slate-600 dark:text-slate-300 text-[11px] sm:text-xs">
+      <div className="text-muted-foreground dark:text-muted-foreground text-[11px] sm:text-xs">
         {description && `지금은 "${description}" 상태예요. `}
         {mood}
       </div>

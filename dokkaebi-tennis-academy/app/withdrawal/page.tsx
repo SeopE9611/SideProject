@@ -44,7 +44,7 @@ export default function AccountDeletedPage() {
 
         <CardContent className="text-center pb-6">
           <p className="text-muted-foreground">탈퇴 후 7일간 개인정보를 보관 후 폐기됩니다.</p>
-          {/* <p className="text-gray-500 mt-2 text-sm">탈퇴를 철회하시려면 아래 버튼을 클릭해주세요.</p> */}
+          {/* <p className="text-muted-foreground mt-2 text-sm">탈퇴를 철회하시려면 아래 버튼을 클릭해주세요.</p> */}
         </CardContent>
 
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center pb-10">

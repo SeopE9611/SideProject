@@ -106,13 +106,13 @@ function StatusBadge({ status }: { status?: string }) {
   const s = status ?? 'unknown';
   const cls =
     s === 'failed'
-      ? 'bg-red-100 text-red-800 border-red-200'
+      ? 'bg-destructive text-destructive border-destructive'
       : s === 'sent'
       ? 'bg-green-100 text-green-800 border-green-200'
       : s === 'queued'
       ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
       : s === 'processing'
-      ? 'bg-blue-100 text-blue-800 border-blue-200'
+      ? 'bg-primary text-primary border-border'
       : 'bg-muted text-muted-foreground border-border/40';
 
   return <Badge className={`border ${cls}`}>{s}</Badge>;
@@ -237,7 +237,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
             </div>
           )}
 
-          {error && <div className="text-sm text-red-600">상세 로드 실패: {error instanceof Error ? error.message : String(error)}</div>}
+          {error && <div className="text-sm text-destructive">상세 로드 실패: {error instanceof Error ? error.message : String(error)}</div>}
 
           {vm && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -313,12 +313,12 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
       {/* 실패 원인 */}
       {vm?.error && (
-        <Card className="border-red-200">
+        <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-base text-red-700">실패 원인</CardTitle>
+            <CardTitle className="text-base text-destructive">실패 원인</CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <pre className="whitespace-pre-wrap break-words rounded-md bg-red-50 p-3 border border-red-100">{vm.error}</pre>
+            <pre className="whitespace-pre-wrap break-words rounded-md bg-destructive p-3 border border-destructive">{vm.error}</pre>
           </CardContent>
         </Card>
       )}

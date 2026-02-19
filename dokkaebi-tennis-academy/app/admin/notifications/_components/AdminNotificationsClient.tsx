@@ -231,8 +231,8 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 대기 상태인 알림 수">대기 중</p>
                 <p className="mt-2 text-3xl font-bold">{stats.queued}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
-                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Clock className="h-6 w-6 text-primary dark:text-primary" />
               </div>
             </div>
           </CardContent>
@@ -245,8 +245,8 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 실패 상태인 알림 수">실패</p>
                 <p className="mt-2 text-3xl font-bold">{stats.failed}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-                <XCircle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive">
+                <XCircle className="h-6 w-6 text-destructive dark:text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -259,8 +259,8 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수">발송 완료</p>
                 <p className="mt-2 text-3xl font-bold">{stats.sent}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
-                <CheckCircle2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+                <CheckCircle2 className="h-6 w-6 text-primary dark:text-primary" />
               </div>
             </div>
           </CardContent>
@@ -330,7 +330,7 @@ export default function AdminNotificationsClient() {
           </div>
 
           {error ? (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-900/30 dark:bg-red-950/10 dark:text-red-400">
+            <div className="flex items-center gap-2 rounded-lg border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
               <AlertCircle className="h-4 w-4" />
               {getErrorMessage(error, '조회 실패')}
             </div>
@@ -354,9 +354,9 @@ export default function AdminNotificationsClient() {
                         <div
                           className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                            it.status === 'sent' && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-                            it.status === 'queued' && 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-                            it.status === 'failed' && 'bg-red-500/10 text-red-600 dark:text-red-400'
+                            it.status === 'sent' && 'bg-primary text-primary dark:text-primary',
+                            it.status === 'queued' && 'bg-muted text-primary dark:text-primary',
+                            it.status === 'failed' && 'bg-destructive text-destructive dark:text-destructive'
                           )}
                         >
                           {getStatusIcon(it.status)}
@@ -368,7 +368,7 @@ export default function AdminNotificationsClient() {
                             <h4 className="font-semibold">{it.eventType}</h4>
                             <Badge
                               variant={it.status === 'failed' ? 'destructive' : it.status === 'queued' ? 'secondary' : 'outline'}
-                              className={cn('text-xs', it.status === 'sent' && 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/30 dark:bg-emerald-950/20 dark:text-emerald-400')}
+                              className={cn('text-xs', it.status === 'sent' && 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary')}
                             >
                               {it.status}
                             </Badge>
@@ -410,7 +410,7 @@ export default function AdminNotificationsClient() {
                           </div>
 
                           {it.error && (
-                            <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-600 dark:border-red-900/30 dark:bg-red-950/10 dark:text-red-400">
+                            <div className="rounded-md border border-destructive bg-destructive p-2 text-xs text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
                               <span className="font-medium">오류:</span> {it.error}
                             </div>
                           )}

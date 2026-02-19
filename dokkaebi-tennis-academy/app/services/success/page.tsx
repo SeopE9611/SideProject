@@ -235,9 +235,9 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  {isSelfShip && (
  <div className="mt-10 max-w-2xl mx-auto px-4">
- <div className="bg-primary from-blue-400/20 to-indigo-400/20 backdrop-blur-sm border border-blue-300/30 rounded-xl p-6 text-center">
+ <div className="bg-primary from-blue-400/20 to-indigo-400/20 backdrop-blur-sm border border-border rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
- <div className="p-2 bg-blue-400/20 rounded-full">
+ <div className="p-2 bg-primary rounded-full">
  <Package className="h-6 w-6 text-accent" />
  </div>
  <h3 className="text-xl font-bold text-accent">운송장 등록 안내</h3>
@@ -330,7 +330,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  ) : (
  <p className="mt-2 text-sm text-muted-foreground ">교체 서비스 비용 기준</p>
  )}
- {application.packageApplied && <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">패키지 적용으로 입금 불필요</p>}
+ {application.packageApplied && <p className="mt-2 text-sm text-primary dark:text-primary">패키지 적용으로 입금 불필요</p>}
  </div>
 
  <div className="bg-background from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
@@ -360,7 +360,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-1">대여 라켓</p>
  <p className="font-semibold text-foreground ">{rental.brand ? `${racketBrandLabel(rental.brand)} ${rental.model ?? ''}` : '라켓 정보 없음'}</p>
  <div className="mt-2 flex items-center gap-2">
- <Badge className="bg-accent text-accent dark:bg-blue-900/30 dark:text-accent">대여 {Number(rental.days ?? 0)}일</Badge>
+ <Badge className="bg-accent text-accent dark:bg-primary dark:text-accent">대여 {Number(rental.days ?? 0)}일</Badge>
  </div>
  </div>
 
@@ -383,7 +383,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <span>{rentalStringingFee.toLocaleString()}원</span>
  </div>
 
- <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-blue-800 mt-4">
+ <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-border mt-4">
  <div className="flex justify-between items-center font-bold">
  <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{Number(displayTotal).toLocaleString()}원</span>
@@ -424,7 +424,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <span>{Number(serviceSubtotal).toLocaleString()}원</span>
  </div>
 
- <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-blue-800 mt-4">
+ <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-border mt-4">
  <div className="flex justify-between items-center font-bold">
  <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{Number(displayTotal).toLocaleString()}원</span>
@@ -452,20 +452,20 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="flex-1">
  <div className="flex items-center gap-2">
- <span className="font-semibold text-emerald-900 dark:text-emerald-200">교체 패키지가 자동 적용되었습니다.</span>
- <Badge className="bg-primary/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">입금 불필요</Badge>
+ <span className="font-semibold text-primary dark:text-primary">교체 패키지가 자동 적용되었습니다.</span>
+ <Badge className="bg-primary/10 text-primary dark:text-primary border border-border">입금 불필요</Badge>
  </div>
 
  <p className="mt-1 text-sm text-foreground">
- 교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span> 으로 처리 됩니다.
+ 교체비는 <span className="font-semibold text-primary dark:text-primary">0원</span> 으로 처리 됩니다.
  </p>
 
  {/* 잔여/만료 pill */}
  <div className="mt-3 flex flex-wrap gap-2">
- <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+ <Badge variant="outline" className="border-border text-primary dark:text-primary">
  잔여 {appliedPass?.remainingCount ?? '-'}회
  </Badge>
- <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-300">
+ <Badge variant="outline" className="border-border text-primary dark:text-primary">
  만료일 {appliedPass?.expiresAt ? new Date(appliedPass.expiresAt).toLocaleDateString('ko-KR') : '-'}
  </Badge>
  </div>
@@ -486,10 +486,10 @@ export default async function StringServiceSuccessPage(props: Props) {
  <span className="tabular-nums">{remainPct}%</span>
  </div>
  <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
- <div className="h-full bg-emerald-500" style={{ width: `${remainPct}%` }} />
+ <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
  </div>
  <div className="mt-1 text-xs text-muted-foreground">
- 잔여 <span className="font-medium text-emerald-700">{remaining}</span>회
+ 잔여 <span className="font-medium text-primary">{remaining}</span>회
  </div>
  </div>
  );

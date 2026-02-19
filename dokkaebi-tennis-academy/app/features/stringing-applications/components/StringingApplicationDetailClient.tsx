@@ -514,7 +514,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, swrFetcher);
 
-  if (error) return <div className="text-red-500 p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
+  if (error) return <div className="text-destructive p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
   if (isLoading || !data) return <StringingApplicationDetailSkeleton />;
 
   // 관리자이거나(isAdmin), 또는 상태가 userEditableStatuses에 포함될 때를 판단
@@ -778,7 +778,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground ">
               <Truck className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">수령/배송(주문)</span>
-              <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? 'bg-red-100 text-red-700'}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
+              <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? 'bg-destructive text-destructive'}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
             </div>
           )}
 
@@ -790,12 +790,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </div>
           {/* 취소 요청 상태 안내 (관리자용) */}
           {isAdmin && cancelInfo && (
-            <div className="mt-4 rounded-lg border border-dashed border-border bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-primary">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+                  <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
                   <p className="mt-1">{cancelInfo.label}</p>
-                  {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+                  {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
                 </div>
               </div>
             </div>
@@ -847,7 +847,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                 {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
                 {!isAdmin && !isCancelled && isCancelRequested && (
-                  <Button variant="outline" size="sm" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancel} className="border-border text-amber-800 hover:bg-amber-50 hover:text-amber-900">
+                  <Button variant="outline" size="sm" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancel} className="border-border text-primary hover:bg-muted hover:text-primary">
                     {isWithdrawingCancel ? '취소 요청 철회 중...' : '취소 요청 철회'}
                   </Button>
                 )}
@@ -866,7 +866,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 )}
 
                 {/* 주문에 취소 요청이 걸려 있으면 신청 단독 승인/거절 막기 */}
-                {isAdmin && hasOrderCancelRequested && !isCancelled && <p className="text-xs text-red-500 mt-2">이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소 승인/거절은 주문 상세 화면에서 처리해 주세요.</p>}
+                {isAdmin && hasOrderCancelRequested && !isCancelled && <p className="text-xs text-destructive mt-2">이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소 승인/거절은 주문 상세 화면에서 처리해 주세요.</p>}
               </div>
             </div>
           </CardContent>
@@ -1052,7 +1052,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             </span>
                             <span className="text-[11px] font-medium text-accent ">
                               {c.count ?? 1}회 사용
-                              {c.reverted && <span className="ml-1 text-[10px] text-red-500">(복원됨)</span>}
+                              {c.reverted && <span className="ml-1 text-[10px] text-destructive">(복원됨)</span>}
                             </span>
                           </li>
                         ))}
@@ -1117,7 +1117,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                     <div className="space-y-3">
                       {data.lines.map((line, index) => (
-                        <div key={line.id ?? index} className="rounded-xl px-4 py-3 ring-1 ring-slate-200/70 bg-card/70 dark:ring-slate-700 dark:bg-background/40">
+                        <div key={line.id ?? index} className="rounded-xl px-4 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40">
                           {/* 라켓 이름 + 순번 */}
                           <div className="flex items-center justify-between mb-2">
                             <p className="font-medium text-foreground ">
@@ -1154,7 +1154,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       <span className="font-medium">장착 상품 정보</span>
                     </div>
 
-                    <div className="overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-card/80 dark:ring-slate-700 dark:bg-background/60">
+                    <div className="overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60">
                       {/* 헤더 행 */}
                       <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted dark:bg-card/70">
                         <span>상품명</span>

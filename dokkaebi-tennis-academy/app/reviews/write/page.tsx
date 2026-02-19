@@ -637,9 +637,9 @@ export default function ReviewWritePage() {
             {/* 헤더 정보 카드 */}
             <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary to-accent text-white p-6 shadow-xl overflow-hidden">
               {/* 코트 라인 장식 */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-white/30"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30"></div>
-              <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/20 transform -translate-x-0.5"></div>
+              <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
+              <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-card/20 transform -translate-x-0.5"></div>
 
               <div className="relative">
                 <div className="flex items-center gap-2 mb-4">
@@ -652,8 +652,8 @@ export default function ReviewWritePage() {
 
                 {/* 상태 뱃지 */}
                 {badge && (
-                  <div className="mt-4 inline-flex items-center rounded-full bg-white/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-white/20">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/60 mr-2"></div>
+                  <div className="mt-4 inline-flex items-center rounded-full bg-card/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-white/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-card/60 mr-2"></div>
                     {badge}
                   </div>
                 )}
@@ -662,9 +662,9 @@ export default function ReviewWritePage() {
 
             {/* 현재 상품 정보 */}
             {mode === 'product' && currentMeta && (
-              <div className="rounded-xl bg-white dark:bg-muted p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="rounded-xl bg-card dark:bg-muted p-5 shadow-lg ring-1 ring-ring dark:ring-ring">
                 <div className="flex items-center gap-4">
-                  <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-blue-200 dark:ring-blue-800 shrink-0">
+                  <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-ring dark:ring-ring shrink-0">
                     {currentMeta.image ? (
                       <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" />
                     ) : (
@@ -685,7 +685,7 @@ export default function ReviewWritePage() {
 
             {/* 다른 상품들 (세로 리스트) */}
             {mode === 'product' && orderItems && orderItems.length > 1 && (
-              <div className="rounded-xl bg-white dark:bg-muted p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="rounded-xl bg-card dark:bg-muted p-5 shadow-lg ring-1 ring-ring dark:ring-ring">
                 <h3 className="font-semibold text-foreground dark:text-foreground mb-4 flex items-center gap-2">
                   <div className="w-1 h-4 bg-muted rounded-full"></div>이 주문의 다른 상품
                 </h3>
@@ -703,7 +703,7 @@ export default function ReviewWritePage() {
                     return (
                       <div key={it.productId} className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}>
                         <div className="relative h-10 w-10 overflow-hidden rounded-lg shrink-0">
-                          {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="40px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-white/50 text-foreground text-xs">IMG</div>}
+                          {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="40px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-card/50 text-foreground text-xs">IMG</div>}
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -729,7 +729,7 @@ export default function ReviewWritePage() {
             {/* 중앙선 장식 */}
             <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent opacity-60"></div>
 
-            <div className="rounded-2xl bg-white dark:bg-muted shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden">
+            <div className="rounded-2xl bg-card dark:bg-muted shadow-xl ring-1 ring-ring dark:ring-ring overflow-hidden">
               {/* 폼 헤더 */}
               <div className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent px-6 py-4 border-b border-border dark:border-border">
                 <div className="flex items-center justify-between">
@@ -741,7 +741,7 @@ export default function ReviewWritePage() {
                 {/* 입력 블럭 잠금 오버레이 */}
                 <div className="relative">
                   {state !== 'ok' && (
-                    <div className="absolute inset-0 z-10 rounded-xl bg-white/80 dark:bg-muted backdrop-blur-sm flex items-center justify-center">
+                    <div className="absolute inset-0 z-10 rounded-xl bg-card/80 dark:bg-muted backdrop-blur-sm flex items-center justify-center">
                       <div className="text-center">
                         <div className="w-8 h-8 border-2 border-border border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                         <div className="text-sm text-foreground dark:text-foreground">{state === 'loading' ? '검증 중...' : '작성할 수 없는 상태입니다.'}</div>
@@ -755,8 +755,8 @@ export default function ReviewWritePage() {
                       <Label className="text-sm font-semibold text-foreground dark:text-foreground mb-3 block">대상 신청서</Label>
 
                       <select
-                        className="w-full h-12 rounded-xl border border-border dark:border-border bg-white dark:bg-muted px-4
-                 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus:border-border transition-all duration-200
+                        className="w-full h-12 rounded-xl border border-border dark:border-border bg-card dark:bg-muted px-4
+                 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200
                  text-left whitespace-normal leading-relaxed"
                         value={selectedAppId ?? ''}
                         onChange={(e) => {
@@ -807,7 +807,7 @@ export default function ReviewWritePage() {
 
                           {/* 요청사항 블록 */}
                           {selectedApp.requirements && (
-                            <div className="mt-3 rounded-lg border border-border dark:border-border bg-white/60 dark:bg-muted p-3">
+                            <div className="mt-3 rounded-lg border border-border dark:border-border bg-card/60 dark:bg-muted p-3">
                               <div className="text-xs text-foreground dark:text-foreground mb-1">요청사항</div>
                               <p className="text-sm text-foreground dark:text-foreground whitespace-pre-line break-words">{selectedApp.requirements}</p>
                             </div>
@@ -832,7 +832,7 @@ export default function ReviewWritePage() {
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)"
-                      className="min-h-[180px] resize-y border-border dark:border-border focus:ring-2 focus:ring-blue-500 focus:border-border rounded-xl"
+                      className="min-h-[180px] resize-y border-border dark:border-border focus:ring-2 focus:ring-ring focus:border-border rounded-xl"
                       disabled={state !== 'ok'}
                     />
                     <div className="text-xs text-foreground dark:text-foreground text-right">{content.length} / 1000자</div>
@@ -851,8 +851,8 @@ export default function ReviewWritePage() {
 
                 {/* 안내문 */}
                 {state !== 'ok' && mode !== 'invalid' && (
-                  <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-4">
-                    <div className="text-sm text-amber-800 dark:text-amber-200">
+                  <div className="rounded-lg bg-muted dark:bg-muted border border-border dark:border-border p-4">
+                    <div className="text-sm text-primary dark:text-primary">
                       {state === 'notPurchased' && (
                         <div>
                           구매/이용 이력이 확인되어야 작성할 수 있어요.

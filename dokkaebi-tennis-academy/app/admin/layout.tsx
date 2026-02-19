@@ -95,7 +95,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </div>
             <div>
               <h1 className="text-4xl font-black mb-2">관리자 페이지</h1>
-              <p className="text-blue-100">관리자 전용 페이지 입니다. 상품 및 주문관리를 진행해보세요.</p>
+              <p className="text-primary">관리자 전용 페이지 입니다. 상품 및 주문관리를 진행해보세요.</p>
             </div>
           </div>
         </div>

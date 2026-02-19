@@ -38,13 +38,13 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
         <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-8">
             <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-              <Truck className="h-8 w-8 text-blue-600 mx-auto" />
+              <Truck className="h-8 w-8 text-primary mx-auto" />
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">배송 정보 관리</h1>
             <p className="text-muted-foreground dark:text-muted-foreground">주문 데이터를 불러올 수 없습니다.</p>
           </div>
 
-          <div className="rounded-2xl border border-red-200 bg-card p-6 shadow-lg dark:border-red-900/50 dark:bg-card">
+          <div className="rounded-2xl border border-destructive bg-card p-6 shadow-lg dark:border-destructive dark:bg-card">
             <p className="text-sm text-foreground">
               입력한 ID가 <strong>주문 ID</strong>가 아닐 수 있습니다. (예: <strong>교체서비스 신청서 ID</strong>를 주문 URL에 넣은 경우)
             </p>
@@ -96,7 +96,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
         {/* 헤더 */}
         <div className="text-center mb-8">
           <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            <Truck className="h-8 w-8 text-blue-600 mx-auto" />
+            <Truck className="h-8 w-8 text-primary mx-auto" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground dark:text-muted-foreground">{pageDesc}</p>

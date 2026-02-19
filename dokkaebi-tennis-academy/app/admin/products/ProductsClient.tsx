@@ -46,7 +46,7 @@ const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.E
   },
   low_stock: {
     label: '재고 부족',
-    color: 'bg-amber-100 text-amber-800 ring-1 ring-amber-200 ' + 'dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-800',
+    color: 'bg-muted text-primary ring-1 ring-amber-200 ' + 'dark:bg-muted dark:text-primary dark:ring-amber-800',
     Icon: TriangleAlert,
   },
   out_of_stock: {
@@ -218,7 +218,7 @@ export default function ProductsClient() {
   return (
     <div className={['min-h-screen', 'bg-gradient-to-b from-primary via-white to-accent', 'dark:bg-gradient-to-b dark:from-primary dark:via-primary dark:to-accent'].join(' ')}>
       <div className="container py-8 px-6">
-        {commonErrorMessage && <div className="text-center text-red-500">{commonErrorMessage}</div>}
+        {commonErrorMessage && <div className="text-center text-destructive">{commonErrorMessage}</div>}
         <div className="mb-2">
           <div className="flex items-center space-x-3 mb-4">
             <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
@@ -290,7 +290,7 @@ export default function ProductsClient() {
                   // 경계/그림자: 지나치지 않게만
                   'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
                   // 포커스 접근성
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
                   // 전환
                   'transition-colors',
@@ -485,7 +485,7 @@ export default function ProductsClient() {
                                     <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600" onClick={() => setPendingDeleteProductId(s._id)}>
+                                  <DropdownMenuItem className="text-destructive" onClick={() => setPendingDeleteProductId(s._id)}>
                                     삭제
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>

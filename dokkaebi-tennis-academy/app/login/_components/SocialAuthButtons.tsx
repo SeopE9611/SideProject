@@ -43,7 +43,7 @@ export default function SocialAuthButtons({ onKakaoClick, onNaverClick, onGoogle
         type="button"
         onClick={onGoogleClick}
         disabled={!onGoogleClick}
-        className="w-full h-12 bg-white hover:bg-gray-50 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold text-[15px] flex items-center justify-center gap-3 border border-slate-300 dark:border-slate-600 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-12 bg-card hover:bg-muted dark:bg-muted dark:hover:bg-muted text-foreground dark:text-muted-foreground font-semibold text-[15px] flex items-center justify-center gap-3 border border-border dark:border-border transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path

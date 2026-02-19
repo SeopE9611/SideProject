@@ -325,7 +325,7 @@ export default function StringPackagesPage() {
 
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-primary  via-blue-100  bg-clip-text text-transparent">스트링 교체 패키지</h1>
 
-            <p className="text-base sm:text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl mb-8 text-primary leading-relaxed">
               정기적인 스트링 교체로 최상의 경기력을 유지하세요
               <br />
               <span className="text-indigo-300 font-semibold">패키지 구매 시 최대 20만원 절약</span>
@@ -337,7 +337,7 @@ export default function StringPackagesPage() {
                 <span className="text-sm font-medium">최대 17% 할인</span>
               </div>
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Calendar className="w-5 h-5 text-blue-400" />
+                <Calendar className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">최대 12개월 유효</span>
               </div>
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
@@ -369,7 +369,7 @@ export default function StringPackagesPage() {
       <section id="packages" ref={packagesSectionRef} className="py-20 bg-background   dark:from-gray-800 dark:to-gray-900 scroll-mt-24">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <Badge className="mb-4 bg-accent text-primary dark:bg-primary dark:text-primary">
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
@@ -386,7 +386,7 @@ export default function StringPackagesPage() {
               <Card
                 key={pkg.id}
                 className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-indigo-200 dark:ring-indigo-800' : ''} ${
-                  selectedPackage === pkg.id ? 'ring-4 ring-blue-400' : ''
+                  selectedPackage === pkg.id ? 'ring-4 ring-ring' : ''
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}
               >
@@ -473,7 +473,7 @@ export default function StringPackagesPage() {
               추가 혜택
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">패키지만의 특별한 혜택</h2>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">단순한 할인을 넘어서는 프리미엄 서비스를 경험하세요.</p>
+            <p className="text-xl text-primary max-w-3xl mx-auto leading-relaxed">단순한 할인을 넘어서는 프리미엄 서비스를 경험하세요.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -483,7 +483,7 @@ export default function StringPackagesPage() {
                   {benefit.icon}
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>
-                <p className="text-blue-100 text-center leading-relaxed">{benefit.description}</p>
+                <p className="text-primary text-center leading-relaxed">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -494,7 +494,7 @@ export default function StringPackagesPage() {
       <section className="py-20 bg-background   dark:from-gray-900 dark:to-gray-800">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <Badge className="mb-4 bg-accent text-primary dark:bg-primary dark:text-primary">
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>

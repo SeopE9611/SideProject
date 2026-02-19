@@ -37,10 +37,10 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
 
           {photos.length > 1 && (
             <>
-              <button type="button" onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="이전 사진">
+              <button type="button" onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/20 hover:bg-card/30" aria-label="이전 사진">
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <button type="button" onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 hover:bg-white/30" aria-label="다음 사진">
+              <button type="button" onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/20 hover:bg-card/30" aria-label="다음 사진">
                 <ChevronRight className="h-5 w-5" />
               </button>
             </>

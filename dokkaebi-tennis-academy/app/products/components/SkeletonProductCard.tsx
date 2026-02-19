@@ -3,14 +3,14 @@ import { cn } from '@/lib/utils';
 
 export function SkeletonProductCard() {
   return (
-    <div className="h-full overflow-hidden rounded-lg bg-white/90 dark:bg-slate-800/70 shadow relative">
-      <div className="h-56 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+    <div className="h-full overflow-hidden rounded-lg bg-card/90 dark:bg-card shadow relative">
+      <div className="h-56 w-full bg-muted dark:bg-muted rounded animate-pulse" />
       <div className="p-4 space-y-2">
-        <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-        <div className="h-3 w-1/2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        <div className="h-4 w-3/4 bg-muted dark:bg-muted rounded animate-pulse" />
+        <div className="h-3 w-1/2 bg-muted dark:bg-muted rounded animate-pulse" />
         <div className="flex gap-2">
-          <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-          <div className="h-6 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-6 w-20 bg-muted dark:bg-muted rounded animate-pulse" />
+          <div className="h-6 w-24 bg-muted dark:bg-muted rounded animate-pulse" />
         </div>
       </div>
 
@@ -26,7 +26,7 @@ export function SkeletonProductCard() {
 }
 
 function SkeletonLine({ width = '100%', height = '1rem', className = '' }: { width?: string; height?: string; className?: string }) {
-  return <div className={cn('bg-gray-200 dark:bg-gray-700 rounded animate-pulse', className)} style={{ width, height }} aria-hidden="true" />;
+  return <div className={cn('bg-muted dark:bg-muted rounded animate-pulse', className)} style={{ width, height }} aria-hidden="true" />;
 }
 
 export function SkeletonFilterDetailed({ performanceCount = 5 }: { performanceCount?: number }) {
@@ -45,7 +45,7 @@ export function SkeletonFilterDetailed({ performanceCount = 5 }: { performanceCo
         <SkeletonLine width="25%" height="0.75rem" className="mb-2" />
         <div className="relative flex items-center">
           <div className="absolute left-3">
-            <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            <div className="h-4 w-4 bg-muted dark:bg-muted rounded animate-pulse" />
           </div>
           <div className="w-full pl-10">
             <SkeletonLine width="100%" height="2rem" />

@@ -489,10 +489,10 @@ export default function NoticeWritePage() {
             </div>
           </div>
           {editId && detailError && (
-            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
+            <div className="rounded-md border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
           )}
           {editId && conflictError && (
-            <div className="flex flex-col gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
+            <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
               <p>{conflictError}</p>
               <div>
                 <Button
@@ -515,14 +515,14 @@ export default function NoticeWritePage() {
           <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b">
               <CardTitle className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-blue-600" />
+                <Bell className="h-5 w-5 text-primary" />
                 <span>{editId ? '공지사항 수정' : '새 공지사항 작성'}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
               <div className="space-y-3">
                 <Label htmlFor="category" className="text-base font-semibold">
-                  카테고리 <span className="text-red-500">*</span>
+                  카테고리 <span className="text-destructive">*</span>
                 </Label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger id="category" className="h-12 bg-card dark:bg-card">
@@ -531,7 +531,7 @@ export default function NoticeWritePage() {
                   <SelectContent>
                     <SelectItem value="general">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Badge variant="outline" className="bg-primary text-primary border-border">
                           일반
                         </Badge>
                         <span>일반적인 공지사항</span>
@@ -563,7 +563,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="urgent">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                        <Badge variant="outline" className="bg-destructive text-destructive border-destructive">
                           긴급
                         </Badge>
                         <span>긴급 공지사항</span>
@@ -575,14 +575,14 @@ export default function NoticeWritePage() {
 
               <div className="space-y-3">
                 <Label htmlFor="title" className="text-base font-semibold">
-                  제목 <span className="text-red-500">*</span>
+                  제목 <span className="text-destructive">*</span>
                 </Label>
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="공지사항 제목을 입력해주세요" className="h-12 bg-card dark:bg-card text-base" />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="content" className="text-base font-semibold">
-                  내용 <span className="text-red-500">*</span>
+                  내용 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="공지사항 내용을 작성해주세요" className="min-h-[300px] bg-card dark:bg-card text-base resize-none" />
               </div>
@@ -607,7 +607,7 @@ export default function NoticeWritePage() {
                             </div>
                           </div>
                           <div className="shrink-0 flex items-center gap-2">
-                            <a href={att.url} target="_blank" rel="noreferrer" className="text-xs underline text-blue-600">
+                            <a href={att.url} target="_blank" rel="noreferrer" className="text-xs underline text-primary">
                               열기
                             </a>
                             {/* 스토리지까지 지우지 않을 때 ↓ */}
@@ -635,7 +635,7 @@ export default function NoticeWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer"
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -679,7 +679,7 @@ export default function NoticeWritePage() {
                           const url = blobUrls[index]; // 이미지 썸네일/문서 다운로드에 사용
 
                           return (
-                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card dark:bg-card shadow-sm ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition">
+                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card dark:bg-card shadow-sm ring-1 ring-ring hover:ring-2 hover:ring-ring transition">
                               {/* 콘텐츠 */}
                               {isImage ? (
                                 url ? (
@@ -738,11 +738,11 @@ export default function NoticeWritePage() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-start space-x-3 p-4 bg-primary dark:bg-primary rounded-lg border border-border dark:border-border">
                 <Checkbox id="pinned" checked={isPinned} onCheckedChange={(checked) => setIsPinned(checked as boolean)} className="mt-1" />
                 <div className="space-y-1">
                   <label htmlFor="pinned" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center">
-                    <Pin className="h-4 w-4 mr-1 text-blue-600" />
+                    <Pin className="h-4 w-4 mr-1 text-primary" />
                     상단 고정
                   </label>
                   <p className="text-xs text-muted-foreground dark:text-muted-foreground">중요한 공지사항을 게시판 상단에 고정하여 표시합니다.</p>
@@ -757,7 +757,7 @@ export default function NoticeWritePage() {
                 </Link>
               </Button>
               <div className="flex space-x-3">
-                <Button variant="outline" size="lg" className="px-6 border-blue-200 text-blue-700 hover:bg-blue-50 bg-transparent">
+                <Button variant="outline" size="lg" className="px-6 border-border text-primary hover:bg-primary bg-transparent">
                   임시저장
                 </Button>
                 <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 disabled:opacity-60">
@@ -804,7 +804,7 @@ export default function NoticeWritePage() {
                 {viewerImages.length > 1 && (
                   <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
                     {viewerImages.map((thumb, i) => (
-                      <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
+                      <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                         <NextImage src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
                       </button>
                     ))}

@@ -650,7 +650,7 @@ export default function LoginPageClient() {
  data-cy="login-form"
  >
  {/* {loginFormError && (
- <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+ <div className="flex items-start gap-2 rounded-lg border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="whitespace-pre-line">{loginFormError}</div>
  </div>
@@ -676,7 +676,7 @@ export default function LoginPageClient() {
  />
  </div>
  {loginFieldErrors.email && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
  </div>
@@ -713,7 +713,7 @@ export default function LoginPageClient() {
  </Button>
  </div>
  {loginFieldErrors.password && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
  </div>
@@ -800,7 +800,7 @@ export default function LoginPageClient() {
 
  <form onSubmit={handleRegister} className="space-y-6">
  {/* {registerFormError && (
- <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
+ <div className="flex items-start gap-2 rounded-lg border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="whitespace-pre-line">{registerFormError}</div>
  </div>
@@ -826,7 +826,7 @@ export default function LoginPageClient() {
  setRegisterFieldErrors((prev) => ({ ...prev, emailId: undefined }));
  }}
  placeholder="아이디 입력"
- className={`h-12 pl-10 pr-4 ${registerFieldErrors.emailId ? 'border-red-500 focus:border-red-500' : ''}`}
+ className={`h-12 pl-10 pr-4 ${registerFieldErrors.emailId ? 'border-destructive focus:border-destructive' : ''}`}
  autoComplete="email"
  disabled={isSocialOauthRegister}
  />
@@ -846,7 +846,7 @@ export default function LoginPageClient() {
  setRegisterFieldErrors((prev) => ({ ...prev, emailDomain: undefined }));
  }}
  placeholder="도메인 직접 입력"
- className={`h-12 ${registerFieldErrors.emailDomain ? 'border-red-500 focus:border-red-500' : ''}`}
+ className={`h-12 ${registerFieldErrors.emailDomain ? 'border-destructive focus:border-destructive' : ''}`}
  disabled={isSocialOauthRegister}
  />
  {!isSocialOauthRegister && (
@@ -881,7 +881,7 @@ export default function LoginPageClient() {
  }}
  disabled={isSocialOauthRegister}
  >
- <SelectTrigger id="register-email-domain" className={`h-12 ${registerFieldErrors.emailDomain ? 'border-red-500 focus:border-red-500' : ''}`}>
+ <SelectTrigger id="register-email-domain" className={`h-12 ${registerFieldErrors.emailDomain ? 'border-destructive focus:border-destructive' : ''}`}>
  <SelectValue placeholder="도메인 선택" />
  </SelectTrigger>
  <SelectContent>
@@ -913,13 +913,13 @@ export default function LoginPageClient() {
  {(registerFieldErrors.emailId || registerFieldErrors.emailDomain) && (
  <div className="space-y-1">
  {registerFieldErrors.emailId && (
- <p className="flex items-center gap-1 text-sm text-red-600">
+ <p className="flex items-center gap-1 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  {registerFieldErrors.emailId}
  </p>
  )}
  {registerFieldErrors.emailDomain && (
- <p className="flex items-center gap-1 text-sm text-red-600">
+ <p className="flex items-center gap-1 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  {registerFieldErrors.emailDomain}
  </p>
@@ -935,7 +935,7 @@ export default function LoginPageClient() {
  )}
 
  {!isSocialOauthRegister && isEmailAvailable !== null && (
- <div className={`flex items-center gap-2 text-sm ${isEmailAvailable ? 'text-foreground' : 'text-red-600'}`}>
+ <div className={`flex items-center gap-2 text-sm ${isEmailAvailable ? 'text-foreground' : 'text-destructive'}`}>
  {isEmailAvailable ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
  {isEmailAvailable ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.'}
  </div>
@@ -966,7 +966,7 @@ export default function LoginPageClient() {
  </Button>
  </div>
  {registerFieldErrors.password && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
  </div>
@@ -995,7 +995,7 @@ export default function LoginPageClient() {
  </Button>
  </div>
  {password && confirmPassword && password !== confirmPassword && (
- <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  비밀번호가 일치하지 않습니다.
  </div>
@@ -1021,7 +1021,7 @@ export default function LoginPageClient() {
  />
  </div>
  {registerFieldErrors.name && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
  </div>
@@ -1048,7 +1048,7 @@ export default function LoginPageClient() {
  />
  </div>
  {registerFieldErrors.phone && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
  </div>
@@ -1073,7 +1073,7 @@ export default function LoginPageClient() {
  </div>
  <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-muted dark:bg-muted cursor-not-allowed max-w-xs h-12 border-border dark:border-border" />
  {registerFieldErrors.postalCode && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
  </div>
@@ -1085,7 +1085,7 @@ export default function LoginPageClient() {
  <Label className="text-foreground dark:text-foreground font-medium">기본 배송지 주소</Label>
  <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-muted dark:bg-muted cursor-not-allowed h-12 border-border dark:border-border" />
  {registerFieldErrors.address && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
  </div>
@@ -1109,7 +1109,7 @@ export default function LoginPageClient() {
  </div>
  </div>
  {registerFieldErrors.addressDetail && (
- <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
  </div>

@@ -40,8 +40,8 @@ function getActionMeta(action: HistoryItem['action']) {
       return {
         label: '결제 확인',
         Icon: CreditCard,
-        wrapperClasses: 'border-emerald-300/70 bg-emerald-100/40 dark:border-emerald-600/60 dark:bg-emerald-900/30',
-        iconClasses: 'text-emerald-700 dark:text-emerald-300',
+        wrapperClasses: 'border-border bg-primary dark:border-border dark:bg-primary',
+        iconClasses: 'text-primary dark:text-primary',
       };
     case 'out':
       return {
@@ -61,15 +61,15 @@ function getActionMeta(action: HistoryItem['action']) {
       return {
         label: '취소 요청',
         Icon: Clock,
-        wrapperClasses: 'border-amber-300/70 bg-amber-100/40 dark:border-amber-600/60 dark:bg-amber-900/30',
-        iconClasses: 'text-amber-700 dark:text-amber-300',
+        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        iconClasses: 'text-primary dark:text-primary',
       };
     case 'cancel-approved':
       return {
         label: '취소 승인',
         Icon: XCircle,
-        wrapperClasses: 'border-red-300/70 bg-red-100/40 dark:border-red-600/60 dark:bg-red-900/30',
-        iconClasses: 'text-red-700 dark:text-red-300',
+        wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
+        iconClasses: 'text-destructive dark:text-destructive',
       };
     case 'cancel-rejected':
       return {
@@ -149,7 +149,7 @@ export default function AdminRentalHistory({ id }: Props) {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <Card className="mt-8 border-0 shadow-xl ring-1 ring-slate-200/70 dark:ring-slate-800/70 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+    <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-indigo-600" />

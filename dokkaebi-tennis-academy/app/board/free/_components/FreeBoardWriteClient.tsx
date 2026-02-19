@@ -392,7 +392,7 @@ export default function FreeBoardWriteClient() {
         {/* 글쓰기 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/40">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -417,14 +417,14 @@ export default function FreeBoardWriteClient() {
                       }}
                       className={cn(
                         'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        category === opt.value ? 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}
                     </button>
                   ))}
                 </div>
-                {fieldErrors.category ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.category}</p> : null}
+                {fieldErrors.category ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.category}</p> : null}
               </div>
               {/* 제목 입력 */}
               <div className="space-y-2">
@@ -440,7 +440,7 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={TITLE_MAX}
                 />
-                {fieldErrors.title ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.title}</p> : null}
+                {fieldErrors.title ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.title}</p> : null}
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
@@ -461,7 +461,7 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={CONTENT_MAX}
                 />
-                {fieldErrors.content ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.content}</p> : null}
+                {fieldErrors.content ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.content}</p> : null}
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
@@ -472,7 +472,7 @@ export default function FreeBoardWriteClient() {
               {/* 첨부 영역: 이미지 / 파일 탭 */}
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
-                {fieldErrors.attachments ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.attachments}</p> : null}
+                {fieldErrors.attachments ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.attachments}</p> : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="image">이미지 업로드</TabsTrigger>
@@ -489,7 +489,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-card dark:bg-card"
+                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card dark:bg-card"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -538,7 +538,7 @@ export default function FreeBoardWriteClient() {
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
+                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
@@ -550,7 +550,7 @@ export default function FreeBoardWriteClient() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-red-500"
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-destructive"
                               >
                                 <X className="h-3 w-3" />
                               </button>

@@ -37,21 +37,21 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
         <div
           className={
             packageInsufficient
-              ? 'mt-6 rounded-2xl border border-border bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/40 p-5'
-              : 'mt-6 rounded-2xl border border-border bg-primary from-emerald-50  dark:border-emerald-800/60 dark:from-emerald-950/40 dark:to-teal-950/40 p-5'
+              ? 'mt-6 rounded-2xl border border-border bg-destructive dark:border-destructive dark:bg-destructive p-5'
+              : 'mt-6 rounded-2xl border border-border bg-primary from-emerald-50  dark:border-border dark:from-emerald-950/40 dark:to-teal-950/40 p-5'
           }
         >
           <div className="flex items-start gap-4">
-            <div className={packageInsufficient ? 'h-10 w-10 shrink-0 rounded-full bg-red-500 text-foreground grid place-content-center shadow-sm' : 'h-10 w-10 shrink-0 rounded-full bg-primary text-foreground grid place-content-center shadow-sm'}>
+            <div className={packageInsufficient ? 'h-10 w-10 shrink-0 rounded-full bg-destructive text-foreground grid place-content-center shadow-sm' : 'h-10 w-10 shrink-0 rounded-full bg-primary text-foreground grid place-content-center shadow-sm'}>
               <Ticket className="h-5 w-5" />
             </div>
 
             <div className="flex-1">
               {/* 헤더: 제목 + 상태 배지 */}
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className={packageInsufficient ? 'text-sm font-semibold text-accent-foreground dark:text-red-100' : 'text-sm font-semibold text-emerald-900 dark:text-muted-foreground'}>패키지 자동 적용</h3>
+                <h3 className={packageInsufficient ? 'text-sm font-semibold text-accent-foreground dark:text-destructive' : 'text-sm font-semibold text-primary dark:text-muted-foreground'}>패키지 자동 적용</h3>
                 <Badge
-                  className={packageInsufficient ? 'bg-accent text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-border/80' : 'bg-accent text-emerald-700 dark:bg-emerald-900/40 dark:text-muted-foreground border border-border/80'}
+                  className={packageInsufficient ? 'bg-accent text-destructive dark:bg-destructive dark:text-destructive border border-border/80' : 'bg-accent text-primary dark:bg-primary dark:text-muted-foreground border border-border/80'}
                 >
                   {packageInsufficient ? '적용 불가' : usingPackage ? '사용 중' : '사용 가능'}
                 </Badge>
@@ -59,7 +59,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
               {/* 본문 설명 */}
               {packageInsufficient ? (
-                <p className="mt-2 text-sm text-accent-foreground dark:text-red-100 leading-relaxed">
+                <p className="mt-2 text-sm text-accent-foreground dark:text-destructive leading-relaxed">
                   현재 패키지 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
                   로, 이번 교체에 필요한 횟수(<span className="font-semibold">{requiredPassCount}회</span>)보다 적어 자동 적용되지 않습니다.
                   <br />
@@ -67,7 +67,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                 </p>
               ) : usingPackage ? (
                 <p className="mt-2 text-sm text-foreground leading-relaxed">
-                  이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-emerald-700 dark:text-emerald-300">교체비는 0원</span>
+                  이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-primary dark:text-primary">교체비는 0원</span>
                   으로 처리되며, 패키지에서 <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                 </p>
               ) : (
@@ -76,14 +76,14 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
               {/* 숫자 요약 뱃지들 */}
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-200">
+                <Badge variant="outline" className="border-border text-primary dark:text-primary">
                   필요 {requiredPassCount}회
                 </Badge>
-                <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-200">
+                <Badge variant="outline" className="border-border text-primary dark:text-primary">
                   잔여 {packagePreview.remaining}회
                 </Badge>
                 {packagePreview.expiresAt && (
-                  <Badge variant="outline" className="border-emerald-300/60 text-emerald-700 dark:text-emerald-200">
+                  <Badge variant="outline" className="border-border text-primary dark:text-primary">
                     만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}
                   </Badge>
                 )}
@@ -106,8 +106,8 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                       </span>
                       <span className="tabular-nums">{remainPct}%</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-accent dark:bg-emerald-950/40">
-                      <div className="h-full bg-emerald-500 dark:bg-emerald-400" style={{ width: `${remainPct}%` }} />
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-accent dark:bg-primary">
+                      <div className="h-full bg-primary dark:bg-primary" style={{ width: `${remainPct}%` }} />
                     </div>
                   </div>
                 );
@@ -123,7 +123,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                     if (packageInsufficient) return; // 부족하면 변경 불가
                     setFormData({ ...formData, packageOptOut: v === true });
                   }}
-                  className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:border-emerald-600"
+                  className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:border-border"
                 />
                 <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-muted-foreground dark:text-muted-foreground' : 'cursor-pointer text-xs text-foreground'}>
                   이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
@@ -151,7 +151,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
         <div className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="shippingBank" className="text-sm font-medium">
-              은행 선택 <span className="text-red-500">*</span>
+              은행 선택 <span className="text-destructive">*</span>
             </Label>
             <select
               id="shippingBank"
@@ -172,8 +172,8 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
           </div>
 
           {formData.shippingBank && (bankLabelMap as any)[formData.shippingBank] ? (
-            <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-border dark:border-blue-800 rounded-lg p-6">
-              <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
+            <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-border dark:border-border rounded-lg p-6">
+              <h3 className="font-semibold text-primary dark:text-primary mb-4 flex items-center">
                 <CreditCard className="h-5 w-5 mr-2" />
                 계좌 정보
               </h3>
@@ -196,7 +196,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
           <div className="space-y-2">
             <Label htmlFor="shippingDepositor" className="text-sm font-medium">
-              입금자명 <span className="text-red-500">*</span>
+              입금자명 <span className="text-destructive">*</span>
             </Label>
             <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" className="focus:ring-2 focus:ring-purple-500 transition-all duration-200" />
           </div>

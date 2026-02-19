@@ -120,7 +120,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
         <div className="space-y-1">
           <Label htmlFor="name" className="text-sm font-medium">
-            신청인 이름 <span className="text-red-500">*</span>
+            신청인 이름 <span className="text-destructive">*</span>
           </Label>
           <Input
             id="name"
@@ -129,7 +129,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             onChange={handleInputChange}
             onBlur={() => markTouched('name')}
             readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
             placeholder="이름을 입력해주세요"
           />
           {errorText('name') ? <p className={errCls}>{errorText('name')}</p> : null}
@@ -137,7 +137,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
         <div className="space-y-1">
           <Label htmlFor="email" className="text-sm font-medium">
-            이메일 <span className="text-red-500">*</span>
+            이메일 <span className="text-destructive">*</span>
           </Label>
           <Input
             id="email"
@@ -147,7 +147,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             onChange={handleInputChange}
             onBlur={() => markTouched('email')}
             readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
             placeholder="이메일을 입력해주세요"
           />
           {errorText('email') ? <p className={errCls}>{errorText('email')}</p> : null}
@@ -155,7 +155,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
         <div className="md:col-span-2 space-y-1">
           <Label htmlFor="phone" className="text-sm font-medium">
-            연락처 <span className="text-red-500">*</span>
+            연락처 <span className="text-destructive">*</span>
           </Label>
           <Input
             id="phone"
@@ -167,7 +167,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             }}
             onBlur={() => markTouched('phone')}
             readOnly={!!(orderId || isMember)}
-            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            className={`transition-all duration-200 ${orderId || isMember ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
             placeholder="01012345678"
           />
           {errorText('phone') ? <p className={errCls}>{errorText('phone')}</p> : null}
@@ -177,7 +177,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       <div className="space-y-3">
         <div className="space-y-1">
           <Label htmlFor="shippingPostcode" className="text-sm font-medium">
-            우편번호 <span className="text-red-500">*</span>
+            우편번호 <span className="text-destructive">*</span>
           </Label>
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
             <Input
@@ -186,7 +186,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
               value={formData.shippingPostcode}
               onBlur={() => markTouched('shippingPostcode')}
               readOnly={postcodeAddressReadOnly}
-              className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+              className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
               placeholder=""
             />
             {!orderId && !isMember && (
@@ -201,7 +201,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
         <div className="space-y-1">
           <Label htmlFor="shippingAddress" className="text-sm font-medium">
-            주소 <span className="text-red-500">*</span>
+            주소 <span className="text-destructive">*</span>
           </Label>
           <Input
             id="shippingAddress"
@@ -209,7 +209,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             value={formData.shippingAddress}
             onBlur={() => markTouched('shippingAddress')}
             readOnly={postcodeAddressReadOnly}
-            className={`transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            className={`transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
             placeholder=""
           />
           {errorText('shippingAddress') ? <p className={errCls}>{errorText('shippingAddress')}</p> : null}
@@ -225,7 +225,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             value={formData.shippingAddressDetail}
             onChange={handleInputChange}
             readOnly={lockAddressFields}
-            className={`transition-all duration-200 ${lockAddressFields ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500'}`}
+            className={`transition-all duration-200 ${lockAddressFields ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
             placeholder="상세 주소를 입력해주세요"
           />
         </div>
@@ -233,7 +233,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
       <div className="space-y-3">
         <Label className="text-sm font-medium">
-          수거 방식 <span className="text-red-500">*</span>
+          수거 방식 <span className="text-destructive">*</span>
         </Label>
 
         {/* {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
@@ -245,7 +245,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 px-4 py-3 shadow-sm
                 hover:bg-background dark:hover:bg-card
                 transition text-sm
-                peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+                peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
               "
           >
             <div className="font-semibold mb-1 text-foreground">자가 발송 안내</div>
@@ -267,7 +267,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 // 그리고 안내 페이지로 이동
                 router.push(`/services/applications/${applicationId}/shipping`);
               }}
-              className="inline-flex items-center rounded-md bg-amber-500 px-3 py-2 text-foreground hover:bg-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
+              className="inline-flex items-center rounded-md bg-muted px-3 py-2 text-foreground hover:bg-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
             >
               운송장/자가발송 안내 보기
             </button>
@@ -298,7 +298,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <Label
               htmlFor="cm-self"
               className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
@@ -315,7 +315,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <Label
               htmlFor="cm-visit"
               className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <Label
               htmlFor="cm-pickup"
               className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
             >
               <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       </div>
       {/* 로딩 오버레이 */}
       {isUserLoading && (
-        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
+        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-ring dark:ring-ring grid place-content-center">
           <div className="flex items-center gap-3 text-foreground">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border dark:border-border border-t-transparent" />
             <span className="text-sm">회원 정보 불러오는 중…</span>

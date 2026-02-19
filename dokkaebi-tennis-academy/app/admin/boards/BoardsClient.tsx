@@ -218,8 +218,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10">
-                <FileText className="h-6 w-6 text-blue-500" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+                <FileText className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">전체 게시글</p>
@@ -232,8 +232,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10">
-                <Eye className="h-6 w-6 text-emerald-500" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+                <Eye className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">공개 게시글</p>
@@ -246,8 +246,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
-                <AlertTriangle className="h-6 w-6 text-red-500" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">대기 중 신고</p>
@@ -260,8 +260,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
-                <EyeOff className="h-6 w-6 text-amber-500" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <EyeOff className="h-6 w-6 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">숨김 게시글</p>
@@ -339,7 +339,7 @@ export default function BoardsClient() {
                 </div>
               )}
 
-              {postsErr && <div className="p-4 rounded-lg border border-red-500/50 bg-red-500/10 text-red-600 dark:text-red-400 text-sm">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
+              {postsErr && <div className="p-4 rounded-lg border border-destructive bg-destructive text-destructive dark:text-destructive text-sm">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
 
               {!postsLoading && !postsErr && (
                 <>
@@ -369,9 +369,9 @@ export default function BoardsClient() {
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">#{p.postNo ?? '-'}</span>
                                 {p.status === 'public' ? (
-                                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">공개</Badge>
+                                  <Badge className="bg-primary text-primary dark:text-primary border-border">공개</Badge>
                                 ) : (
-                                  <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">숨김</Badge>
+                                  <Badge className="bg-muted text-primary dark:text-primary border-border">숨김</Badge>
                                 )}
                               </div>
 
@@ -406,11 +406,11 @@ export default function BoardsClient() {
 
                               <div className="flex items-center gap-4 text-sm">
                                 <div className="flex items-center gap-1.5">
-                                  <BarChart3 className="h-4 w-4 text-blue-500" />
+                                  <BarChart3 className="h-4 w-4 text-primary" />
                                   <span className="font-medium">{p.views}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <ThumbsUp className="h-4 w-4 text-emerald-500" />
+                                  <ThumbsUp className="h-4 w-4 text-primary" />
                                   <span className="font-medium">{p.likes}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
@@ -517,7 +517,7 @@ export default function BoardsClient() {
                 </div>
               )}
 
-              {reportsErr && <div className="p-4 rounded-lg border border-red-500/50 bg-red-500/10 text-red-600 dark:text-red-400 text-sm">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
+              {reportsErr && <div className="p-4 rounded-lg border border-destructive bg-destructive text-destructive dark:text-destructive text-sm">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
 
               {!reportsLoading && !reportsErr && (
                 <>
@@ -539,7 +539,7 @@ export default function BoardsClient() {
                         <Card
                           key={r.id}
                           className={`group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200 ${
-                            isPending ? 'border-red-500/30 dark:border-red-900/30 bg-red-500/5 dark:bg-red-950/10' : ''
+                            isPending ? 'border-destructive dark:border-destructive bg-destructive dark:bg-destructive' : ''
                           }`}
                         >
                           <CardContent className="p-5">
@@ -550,13 +550,13 @@ export default function BoardsClient() {
                                     {r.targetType === 'post' ? (
                                       <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30">게시글</Badge>
                                     ) : (
-                                      <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">댓글</Badge>
+                                      <Badge className="bg-muted text-primary dark:text-primary border-border">댓글</Badge>
                                     )}
                                     <Badge variant="outline" className="font-medium">
                                       {resolveBoardLabel(r.boardType)}
                                     </Badge>
-                                    {r.status === 'pending' && <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30">대기</Badge>}
-                                    {r.status === 'resolved' && <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">완료</Badge>}
+                                    {r.status === 'pending' && <Badge className="bg-destructive text-destructive dark:text-destructive border-destructive">대기</Badge>}
+                                    {r.status === 'resolved' && <Badge className="bg-primary text-primary dark:text-primary border-border">완료</Badge>}
                                     {r.status === 'rejected' && <Badge className="bg-card text-muted-foreground dark:text-muted-foreground border-border">반려</Badge>}
                                   </div>
 
@@ -610,7 +610,7 @@ export default function BoardsClient() {
                                   반려
                                 </Button>
 
-                                <Button size="sm" disabled={!isPending} onClick={() => processReport(r, 'resolve_hide_target')} className="gap-2 bg-red-600 hover:bg-red-700 text-white">
+                                <Button size="sm" disabled={!isPending} onClick={() => processReport(r, 'resolve_hide_target')} className="gap-2 bg-destructive hover:bg-destructive text-white">
                                   <ShieldAlert className="h-4 w-4" />
                                   대상 숨김 + 완료
                                 </Button>

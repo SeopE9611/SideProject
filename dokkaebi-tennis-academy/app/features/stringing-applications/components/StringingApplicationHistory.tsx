@@ -24,8 +24,8 @@ function getIconProps(status: string) {
     case '검토 중':
       return {
         Icon: Search,
-        wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
-        iconClasses: 'text-blue-700 dark:text-blue-300',
+        wrapperClasses: 'border-border bg-primary ' + 'dark:border-border dark:bg-primary',
+        iconClasses: 'text-primary dark:text-primary',
       };
     case '작업 중':
       return {
@@ -43,8 +43,8 @@ function getIconProps(status: string) {
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-red-300 bg-red-100 ' + 'dark:border-red-500/40 dark:bg-red-500/10',
-        iconClasses: 'text-red-700 dark:text-red-300',
+        wrapperClasses: 'border-destructive bg-destructive ' + 'dark:border-destructive dark:bg-destructive',
+        iconClasses: 'text-destructive dark:text-destructive',
       };
 
     // 커스텀 이력 항목
@@ -64,8 +64,8 @@ function getIconProps(status: string) {
     case '스트링 정보 수정':
       return {
         Icon: Edit2,
-        wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
-        iconClasses: 'text-blue-700 dark:text-blue-300',
+        wrapperClasses: 'border-border bg-primary ' + 'dark:border-border dark:bg-primary',
+        iconClasses: 'text-primary dark:text-primary',
       };
     case '결제 금액 자동 업데이트':
       return {
@@ -88,24 +88,24 @@ function getIconProps(status: string) {
     case '매장 발송 운송장 수정':
       return {
         Icon: Package,
-        wrapperClasses: 'border-blue-300 bg-blue-100 ' + 'dark:border-blue-500/40 dark:bg-blue-500/10',
-        iconClasses: 'text-blue-700 dark:text-blue-300',
+        wrapperClasses: 'border-border bg-primary ' + 'dark:border-border dark:bg-primary',
+        iconClasses: 'text-primary dark:text-primary',
       };
     // 매장 발송 정보(방식/예정일/운송장 통합 로그)
     case '매장 발송 정보 등록':
     case '매장 발송 정보 수정':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-slate-300 bg-slate-100 ' + 'dark:border-slate-500/40 dark:bg-slate-700/20',
-        iconClasses: 'text-slate-700 dark:text-slate-200',
+        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-muted-foreground',
       };
 
     // default
     default:
       return {
         Icon: Clock,
-        wrapperClasses: 'border-gray-300 bg-gray-100 ' + 'dark:border-slate-600/50 dark:bg-slate-700/30',
-        iconClasses: 'text-gray-700 dark:text-slate-300',
+        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-muted-foreground',
       };
   }
 }
@@ -146,8 +146,8 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
   const historyItems = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <Card className="md:col-span-3 rounded-xl border border-border/60 bg-card text-card-foreground shadow-md dark:bg-slate-900/60">
-      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-slate-900/30 rounded-t-xl">
+    <Card className="md:col-span-3 rounded-xl border border-border/60 bg-card text-card-foreground shadow-md dark:bg-card">
+      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-indigo-600" />
           <CardTitle className="text-2xl font-semibold">처리 이력</CardTitle>
@@ -173,7 +173,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
           historyItems.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
             return (
-              <div key={idx} className={`flex space-x-4 py-3 ${idx === 0 ? 'rounded-lg bg-slate-50/80 dark:bg-slate-900/40 px-3 -mx-3' : ''}`}>
+              <div key={idx} className={`flex space-x-4 py-3 ${idx === 0 ? 'rounded-lg bg-muted dark:bg-card px-3 -mx-3' : ''}`}>
                 <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
@@ -196,9 +196,9 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
                     const detail = detailWithParen ? detailWithParen.replace(/\)$/, '') : '';
 
                     return (
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+                      <p className="mt-1 text-sm text-foreground dark:text-muted-foreground">
                         {main?.trim()}
-                        {detail && <span className="ml-1 font-medium text-blue-600 dark:text-blue-300">({detail})</span>}
+                        {detail && <span className="ml-1 font-medium text-primary dark:text-primary">({detail})</span>}
                       </p>
                     );
                   })()}

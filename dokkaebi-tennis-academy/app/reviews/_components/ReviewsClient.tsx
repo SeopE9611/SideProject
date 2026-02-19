@@ -115,24 +115,24 @@ export default function ReviewsClient() {
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">고객 리뷰</h1>
           </div>
-          <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
+          <p className="text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
         </div>
 
         {/* Control panel with tennis court styling */}
-        <Card className="border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-lg rounded-3xl overflow-hidden">
+        <Card className="border-0 bg-card/80 dark:bg-card backdrop-blur-sm shadow-lg rounded-3xl overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center gap-4">
               {/* Tabs with tennis court styling */}
               <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                <TabsList className="bg-slate-100 dark:bg-slate-700 rounded-full p-1">
-                  <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <TabsList className="bg-muted dark:bg-muted rounded-full p-1">
+                  <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
                     전체
                   </TabsTrigger>
-                  <TabsTrigger value="product" className="rounded-full data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  <TabsTrigger value="product" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
                     상품
                   </TabsTrigger>
-                  <TabsTrigger value="service" className="rounded-full data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                  <TabsTrigger value="service" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
                     서비스
                   </TabsTrigger>
                 </TabsList>
@@ -140,7 +140,7 @@ export default function ReviewsClient() {
 
               {/* Sort dropdown */}
               <Select value={sort} onValueChange={(v) => setSort(v as any)}>
-                <SelectTrigger className="w-[150px] rounded-full border-slate-200 dark:border-slate-600">
+                <SelectTrigger className="w-[150px] rounded-full border-border dark:border-border">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,7 +152,7 @@ export default function ReviewsClient() {
 
               {/* Rating filter */}
               <Select value={rating} onValueChange={(v) => setRating(v as RatingFilter)}>
-                <SelectTrigger className="w-[130px] rounded-full border-slate-200 dark:border-slate-600">
+                <SelectTrigger className="w-[130px] rounded-full border-border dark:border-border">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,18 +166,18 @@ export default function ReviewsClient() {
               </Select>
 
               {/* Photo filter checkbox */}
-              <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                <Checkbox checked={hasPhoto} onCheckedChange={(v) => setHasPhoto(Boolean(v))} className="rounded border-slate-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500" />
+              <label className="inline-flex items-center gap-2 text-sm font-medium text-foreground dark:text-muted-foreground">
+                <Checkbox checked={hasPhoto} onCheckedChange={(v) => setHasPhoto(Boolean(v))} className="rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-border" />
                 사진만 보기
               </label>
 
               {/* Filter summary and reset */}
               <div className="ml-auto flex items-center gap-3">
-                <Badge variant="secondary" className="gap-2 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-1">
+                <Badge variant="secondary" className="gap-2 rounded-full bg-primary text-primary dark:bg-primary dark:text-primary px-3 py-1">
                   <Target className="h-3.5 w-3.5" />
                   {summary}
                 </Badge>
-                <Button variant="outline" size="sm" onClick={resetFilters} className="rounded-full border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-700 bg-transparent" title="필터 초기화">
+                <Button variant="outline" size="sm" onClick={resetFilters} className="rounded-full border-border hover:bg-muted dark:border-border dark:hover:bg-muted bg-transparent" title="필터 초기화">
                   <X className="h-4 w-4 mr-1" />
                   초기화
                 </Button>
@@ -208,11 +208,11 @@ export default function ReviewsClient() {
             ) : (
               <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                  <MessageSquareText className="h-8 w-8 text-slate-400" />
+                  <MessageSquareText className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">리뷰가 없습니다</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">조건에 맞는 리뷰를 찾을 수 없습니다.</p>
+                  <h3 className="text-lg font-semibold text-foreground dark:text-muted-foreground">리뷰가 없습니다</h3>
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">조건에 맞는 리뷰를 찾을 수 없습니다.</p>
                 </div>
               </div>
             )}
@@ -224,7 +224,7 @@ export default function ReviewsClient() {
                   onClick={() => setSize(size + 1)}
                   disabled={isValidating}
                   variant="outline"
-                  className="rounded-full px-8 py-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700"
+                  className="rounded-full px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border dark:border-border hover:bg-primary dark:hover:bg-muted"
                 >
                   {isValidating ? (
                     <>
@@ -235,7 +235,7 @@ export default function ReviewsClient() {
                   )}
                 </Button>
               ) : (
-                <div className="text-sm text-slate-500 dark:text-slate-400 py-6 text-center">마지막 페이지입니다</div>
+                <div className="text-sm text-muted-foreground dark:text-muted-foreground py-6 text-center">마지막 페이지입니다</div>
               )}
             </div>
           </>

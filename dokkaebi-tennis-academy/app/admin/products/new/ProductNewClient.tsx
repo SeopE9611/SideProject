@@ -438,7 +438,7 @@ export default function NewStringPage() {
               <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div className="flex items-center space-x-4">
                   <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
-                    <Package className="h-8 w-8 text-blue-600" />
+                    <Package className="h-8 w-8 text-primary" />
                   </div>
                   <div>
                     <h2 className="text-3xl font-bold tracking-tight">스트링 등록</h2>
@@ -463,27 +463,27 @@ export default function NewStringPage() {
             <Separator className="bg-border" />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
-                <TabsTrigger value="basic" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border dark:border-border">
+                <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                   기본 정보
                 </TabsTrigger>
-                <TabsTrigger value="features" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <TabsTrigger value="features" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                   성능 및 특성
                 </TabsTrigger>
-                <TabsTrigger value="inventory" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <TabsTrigger value="inventory" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                   재고 관리
                 </TabsTrigger>
-                <TabsTrigger value="images" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                   이미지
                 </TabsTrigger>
               </TabsList>
 
               {/* 기본 정보 탭 */}
               <TabsContent value="basic" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-blue-100 dark:border-blue-800/30">
-                    <CardTitle className="text-blue-800 dark:text-blue-200">기본 정보</CardTitle>
-                    <CardDescription className="text-blue-600 dark:text-blue-400">스트링의 기본 정보를 입력하세요.</CardDescription>
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                    <CardTitle className="text-primary dark:text-primary">기본 정보</CardTitle>
+                    <CardDescription className="text-primary dark:text-primary">스트링의 기본 정보를 입력하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -615,14 +615,14 @@ export default function NewStringPage() {
                   <Card
                     variant="ghost"
                     className="mt-6 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20
-                border border-blue-100 dark:border-blue-800/30"
+                border border-border dark:border-border"
                   >
                     <CardHeader
                       className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30
-                           border-b border-blue-100 dark:border-blue-800/30"
+                           border-b border-border dark:border-border"
                     >
-                      <CardTitle className="text-blue-800 dark:text-blue-200">하이브리드 구성</CardTitle>
-                      <CardDescription className="text-blue-600 dark:text-blue-400">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
+                      <CardTitle className="text-primary dark:text-primary">하이브리드 구성</CardTitle>
+                      <CardDescription className="text-primary dark:text-primary">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* MAIN */}
@@ -753,10 +753,10 @@ export default function NewStringPage() {
                 )}
 
                 {/* 가격 정보 카드 */}
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-blue-100 dark:border-blue-800/30">
-                    <CardTitle className="text-blue-800 dark:text-blue-200">가격 정보</CardTitle>
-                    <CardDescription className="text-blue-600 dark:text-blue-400">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                    <CardTitle className="text-primary dark:text-primary">가격 정보</CardTitle>
+                    <CardDescription className="text-primary dark:text-primary">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -827,10 +827,10 @@ export default function NewStringPage() {
 
               {/* 성능 및 특성 탭 */}
               <TabsContent value="features" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-blue-100 dark:border-blue-800/30">
-                    <CardTitle className="text-blue-800 dark:text-blue-200">성능 및 특성</CardTitle>
-                    <CardDescription className="text-blue-600 dark:text-blue-400">스트링의 성능과 특성을 설정하세요.</CardDescription>
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                    <CardTitle className="text-primary dark:text-primary">성능 및 특성</CardTitle>
+                    <CardDescription className="text-primary dark:text-primary">스트링의 성능과 특성을 설정하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
@@ -907,7 +907,7 @@ export default function NewStringPage() {
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-blue-800 dark:text-blue-200">추천 플레이어 타입</h3>
+                      <h3 className="text-lg font-medium text-primary dark:text-primary">추천 플레이어 타입</h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Switch id="player-beginner" checked={tags.beginner} onCheckedChange={(checked) => setTags({ ...tags, beginner: checked })} />
@@ -925,7 +925,7 @@ export default function NewStringPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-blue-800 dark:text-blue-200">추천 플레이 스타일</h3>
+                      <h3 className="text-lg font-medium text-primary dark:text-primary">추천 플레이 스타일</h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Switch id="style-baseline" checked={tags.baseline} onCheckedChange={(checked) => setTags({ ...tags, baseline: checked })} />
@@ -956,10 +956,10 @@ export default function NewStringPage() {
 
               {/* 재고 관리 탭 */}
               <TabsContent value="inventory" className="space-y-4">
-                <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-blue-100 dark:border-blue-800/30">
-                    <CardTitle className="text-blue-800 dark:text-blue-200">재고 관리</CardTitle>
-                    <CardDescription className="text-blue-600 dark:text-blue-400">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
+                <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                    <CardTitle className="text-primary dark:text-primary">재고 관리</CardTitle>
+                    <CardDescription className="text-primary dark:text-primary">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -1031,10 +1031,10 @@ export default function NewStringPage() {
                       <p className="text-sm text-muted-foreground">재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.</p>
                     </div>
 
-                    <Separator className="bg-blue-100 dark:bg-blue-800/30" />
+                    <Separator className="bg-primary dark:bg-primary" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-blue-800 dark:text-blue-200">판매 옵션</h3>
+                      <h3 className="text-lg font-medium text-primary dark:text-primary">판매 옵션</h3>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
@@ -1084,10 +1084,10 @@ export default function NewStringPage() {
 
               {/* 이미지 탭 */}
               <TabsContent value="images" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-blue-100 dark:border-blue-800/30">
-                    <CardTitle className="text-blue-800 dark:text-blue-200">스트링 이미지</CardTitle>
-                    <CardDescription className="text-blue-600 dark:text-blue-400">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                    <CardTitle className="text-primary dark:text-primary">스트링 이미지</CardTitle>
+                    <CardDescription className="text-primary dark:text-primary">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <ImageUploader

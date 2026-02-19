@@ -54,12 +54,12 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
         <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
         <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
-        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300/20 rounded-full blur-lg animate-pulse" />
+        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-primary rounded-full blur-lg animate-pulse" />
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-white">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">중고 라켓</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
+            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-primary dark:text-primary max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">
                 <Link href={finderHref} aria-label="라켓 파인더로 이동">
@@ -68,7 +68,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                 </Link>
               </Button>
             </div>
-            <p className="mt-2 text-sm text-blue-100/90">헤드·무게·밸런스·RA·SW 범위로 빠르게 좁혀보세요.</p>
+            <p className="mt-2 text-sm text-primary">헤드·무게·밸런스·RA·SW 범위로 빠르게 좁혀보세요.</p>
           </div>
         </SiteContainer>
       </div>

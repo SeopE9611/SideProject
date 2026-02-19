@@ -220,7 +220,7 @@ export default function OrderLookupPage() {
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
                     <User className="w-4 h-4 text-primary" />
-                    이름 <span className="text-red-500">*</span>
+                    이름 <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -230,13 +230,13 @@ export default function OrderLookupPage() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? 'border-red-300 focus:border-red-500' : 'border-border focus:border-emerald-500 hover:border-emerald-300'}`}
+                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? 'border-destructive focus:border-destructive' : 'border-border focus:border-border hover:border-border'}`}
                     />
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                   {errors.name && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <span className="w-1 h-1 bg-destructive rounded-full"></span>
                       {errors.name}
                     </p>
                   )}
@@ -246,7 +246,7 @@ export default function OrderLookupPage() {
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
                     <Mail className="w-4 h-4 text-primary" />
-                    이메일 <span className="text-red-500">*</span>
+                    이메일 <span className="text-destructive">*</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -257,13 +257,13 @@ export default function OrderLookupPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-border focus:border-emerald-500 hover:border-emerald-300'}`}
+                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? 'border-destructive focus:border-destructive' : 'border-border focus:border-border hover:border-border'}`}
                     />
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                   {errors.email && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <span className="w-1 h-1 bg-destructive rounded-full"></span>
                       {errors.email}
                     </p>
                   )}
@@ -283,13 +283,13 @@ export default function OrderLookupPage() {
                       placeholder="01012345678 (- 제외)"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="pl-10 h-12 border-2 border-border focus:border-emerald-500 hover:border-emerald-300 transition-all duration-200"
+                      className="pl-10 h-12 border-2 border-border focus:border-border hover:border-border transition-all duration-200"
                     />
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                   {errors.phone && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <span className="w-1 h-1 bg-destructive rounded-full"></span>
                       {errors.phone}
                     </p>
                   )}
@@ -307,7 +307,7 @@ export default function OrderLookupPage() {
                     </div>
                     <div className="text-sm">
                       <p className="font-medium text-accent-foreground mb-1">조회 가능한 주문</p>
-                      <p className="text-emerald-700">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
+                      <p className="text-primary">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
                     </div>
                   </div>
                 </div>
@@ -335,7 +335,7 @@ export default function OrderLookupPage() {
 
                 <p className="text-xs text-center text-muted-foreground">
                   회원이신가요?{' '}
-                  <Link href="/login" className="text-primary hover:text-emerald-700 font-medium">
+                  <Link href="/login" className="text-primary hover:text-primary font-medium">
                     로그인하기
                   </Link>
                 </p>
@@ -345,7 +345,7 @@ export default function OrderLookupPage() {
 
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-gray-100">
+            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-4">
                 <Shield className="w-6 h-6 text-primary" />
               </div>
@@ -353,7 +353,7 @@ export default function OrderLookupPage() {
               <p className="text-sm text-muted-foreground">개인정보 보호를 위한 안전한 주문 조회 시스템</p>
             </div>
 
-            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-gray-100">
+            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-100 rounded-full mb-4">
                 <Clock className="w-6 h-6 text-teal-600" />
               </div>
@@ -361,7 +361,7 @@ export default function OrderLookupPage() {
               <p className="text-sm text-muted-foreground">최신 주문 상태를 실시간으로 확인 가능</p>
             </div>
 
-            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-gray-100">
+            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-cyan-100 rounded-full mb-4">
                 <Package className="w-6 h-6 text-cyan-600" />
               </div>

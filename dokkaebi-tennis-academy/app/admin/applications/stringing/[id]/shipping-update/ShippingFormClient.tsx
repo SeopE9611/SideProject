@@ -56,8 +56,8 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
     );
   } else if (error || !data) {
     content = (
-      <Card className="border-red-200">
-        <CardContent className="py-10 flex items-center justify-center gap-3 text-red-600">
+      <Card className="border-destructive">
+        <CardContent className="py-10 flex items-center justify-center gap-3 text-destructive">
           <AlertTriangle className="h-5 w-5" />
           <span>신청 정보를 불러올 수 없습니다.</span>
         </CardContent>
@@ -81,7 +81,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
       <div className="container mx-auto max-w-2xl">
         <div className="text-center mb-8">
           <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            <Truck className="h-8 w-8 text-blue-600 mx-auto" />
+            <Truck className="h-8 w-8 text-primary mx-auto" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground dark:text-muted-foreground">{pageDesc}</p>

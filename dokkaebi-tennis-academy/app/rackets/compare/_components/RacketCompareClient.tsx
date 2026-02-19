@@ -209,9 +209,9 @@ export default function RacketCompareClient() {
         ) : !canCompare ? (
           /* 비교 불가 상태 개선 */
           <div className="rounded-xl bg-card dark:bg-card/80 ring-1 ring-amber-500/20 dark:ring-amber-400/20 overflow-hidden">
-            <div className="bg-amber-500/5 dark:bg-amber-400/5 px-4 py-3 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">비교할 라켓이 부족합니다</span>
+            <div className="bg-muted dark:bg-muted px-4 py-3 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-primary dark:text-primary" />
+              <span className="text-sm font-medium text-primary dark:text-primary">비교할 라켓이 부족합니다</span>
             </div>
             <div className="p-4 space-y-4">
               <p className="text-sm text-muted-foreground">비교는 최소 2개부터 가능합니다. (현재 {list.length}개)</p>
@@ -373,9 +373,9 @@ export default function RacketCompareClient() {
                           const t = mm && n !== null ? ratio01(n, mm.min, mm.max) : null;
                           const isBaseCol = idx === 0;
 
-                          const deltaClass = isBaseCol || delta === null ? 'text-muted-foreground' : delta > 0 ? 'text-emerald-600 dark:text-emerald-400' : delta < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground';
+                          const deltaClass = isBaseCol || delta === null ? 'text-muted-foreground' : delta > 0 ? 'text-primary dark:text-primary' : delta < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground';
 
-                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-emerald-500/15 dark:bg-emerald-400/20' : delta < 0 ? 'bg-rose-500/15 dark:bg-rose-400/20' : 'bg-muted/30';
+                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-primary dark:bg-primary' : delta < 0 ? 'bg-rose-500/15 dark:bg-rose-400/20' : 'bg-muted/30';
 
                           return (
                             <td key={r.id + row.key} className="p-4 relative overflow-hidden">

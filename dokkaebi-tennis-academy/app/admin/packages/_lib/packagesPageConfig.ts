@@ -17,10 +17,10 @@ export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
 };
 
 export const packageStatusColors: Record<PassStatus | '대기', string> = {
-  비활성: 'bg-amber-100 text-amber-800 border-amber-200',
+  비활성: 'bg-muted text-primary border-border',
   활성: 'bg-green-100 text-green-800 border-green-200',
   만료: 'bg-background text-foreground border-border',
-  취소: 'bg-red-100 text-red-800 border-red-200',
+  취소: 'bg-destructive text-destructive border-destructive',
   대기: 'bg-background text-foreground border-border',
 };
 
@@ -40,14 +40,14 @@ export type PackagesResponse = AdminPackageListResponseDto;
 export const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 
 export const paymentStatusColors: Record<PaymentStatus, string> = {
-  결제완료: 'bg-blue-100 text-blue-800 border-blue-200',
+  결제완료: 'bg-primary text-primary border-border',
   결제대기: 'bg-orange-100 text-orange-800 border-orange-200',
-  결제취소: 'bg-red-100 text-red-800 border-red-200',
+  결제취소: 'bg-destructive text-destructive border-destructive',
 };
 
 export const packageTypeColors: Record<PackageType, string> = {
   '10회권': 'bg-purple-100 text-purple-800 border-purple-200',
-  '30회권': 'bg-blue-100 text-blue-800 border-blue-200',
+  '30회권': 'bg-primary text-primary border-border',
   '50회권': 'bg-green-100 text-green-800 border-green-200',
   '100회권': 'bg-orange-100 text-orange-800 border-orange-200',
 };

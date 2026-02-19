@@ -92,7 +92,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
             <div className="flex flex-col items-center gap-6 text-center">
               <div className="relative">
                 <div className="w-16 h-16 bg-background from-blue-100  dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 text-primary dark:text-blue-400 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-primary dark:text-primary animate-spin" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -108,15 +108,15 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   if (error || !data) {
     return (
       <div className="max-w-3xl mx-auto mt-12 px-4">
-        <Card className="border-border dark:border-red-800 shadow-lg">
+        <Card className="border-border dark:border-destructive shadow-lg">
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
-              <div className="w-16 h-16 bg-accent dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-primary dark:text-red-400" />
+              <div className="w-16 h-16 bg-accent dark:bg-destructive rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-primary dark:text-destructive" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">신청 정보를 불러올 수 없습니다</h3>
-                <p className="text-sm text-primary dark:text-red-400">잠시 후 다시 시도해 주세요.</p>
+                <h3 className="text-lg font-semibold text-destructive dark:text-destructive">신청 정보를 불러올 수 없습니다</h3>
+                <p className="text-sm text-primary dark:text-destructive">잠시 후 다시 시도해 주세요.</p>
               </div>
               <Button variant="outline" onClick={() => router.back()} className="mt-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -142,11 +142,11 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   if (!isSelfShip) {
     return (
       <div className="max-w-3xl mx-auto mt-12 px-4">
-        <Card className="border-amber-200 dark:border-amber-800 shadow-lg">
+        <Card className="border-border dark:border-border shadow-lg">
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
-              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+              <div className="w-16 h-16 bg-muted dark:bg-muted rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-primary dark:text-primary" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold text-foreground dark:text-foreground">자가발송 신청이 아닙니다</h3>
@@ -175,11 +175,11 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   if (isClosed) {
     return (
       <div className="max-w-3xl mx-auto mt-12 px-4">
-        <Card className="border-amber-200 dark:border-amber-800 shadow-lg">
+        <Card className="border-border dark:border-border shadow-lg">
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
-              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+              <div className="w-16 h-16 bg-muted dark:bg-muted rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-primary dark:text-primary" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold text-foreground dark:text-foreground">이미 종료된 신청서입니다</h3>
@@ -324,15 +324,15 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Info Card */}
-          <Card className="border-border dark:border-blue-800 bg-background  to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 shadow-md">
+          <Card className="border-border dark:border-border bg-background  to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 shadow-md">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-primary dark:bg-accent0 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Clock className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">아직 발송 전이신가요?</h3>
-                  <p className="text-sm text-primary dark:text-blue-300 leading-relaxed">
+                  <h3 className="font-semibold text-primary dark:text-primary">아직 발송 전이신가요?</h3>
+                  <p className="text-sm text-primary dark:text-primary leading-relaxed">
                     발송 후 이 페이지에서 운송장(택배사/송장번호)을 등록하셔도 됩니다.
                     <br />
                     발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
@@ -358,9 +358,9 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="courier" className="text-base font-semibold text-foreground dark:text-foreground flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-primary dark:text-blue-400" />
+                    <Truck className="w-4 h-4 text-primary dark:text-primary" />
                     택배사
-                    <span className="text-red-500">*</span>
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Select
                     value={form.courier}
@@ -376,7 +376,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   >
                     <SelectTrigger
                       id="courier"
-                      className={`h-12 text-base border-border dark:border-border focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20${fieldErrors.courier ? ' border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
+                      className={`h-12 text-base border-border dark:border-border focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring ? ' border-destructive focus:border-destructive focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
                     >
                       <SelectValue placeholder="택배사를 선택하세요" />
                     </SelectTrigger>
@@ -388,7 +388,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="min-h-[18px] text-sm text-primary dark:text-red-400">{fieldErrors.courier ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-primary dark:text-destructive">{fieldErrors.courier ?? ''}</p>
                 </div>
 
                 {/* Tracking Number Field */}
@@ -396,16 +396,16 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   <Label htmlFor="trackingNo" className="text-base font-semibold text-foreground dark:text-foreground flex items-center gap-2">
                     <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                     송장번호
-                    <span className="text-red-500">*</span>
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="trackingNo"
                     value={form.trackingNo}
                     onChange={onChange('trackingNo')}
                     placeholder="숫자 또는 영문 조합으로 입력해 주세요"
-                    className={`h-12 text-base border-border dark:border-border focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20${fieldErrors.trackingNo ? ' border-red-400 focus:border-red-500 focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
+                    className={`h-12 text-base border-border dark:border-border focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20${fieldErrors.trackingNo ? ' border-destructive focus:border-destructive focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
                   />
-                  <p className="min-h-[18px] text-sm text-primary dark:text-red-400">{fieldErrors.trackingNo ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-primary dark:text-destructive">{fieldErrors.trackingNo ?? ''}</p>
                 </div>
 
                 {/* Shipped Date Field */}
@@ -437,7 +437,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                     onChange={onChange('note')}
                     placeholder="포장 상태, 수거 관련 참고사항 등을 입력해 주세요"
                     rows={4}
-                    className="text-base border-border dark:border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-slate-500/20 dark:focus:ring-slate-400/20 resize-none"
+                    className="text-base border-border dark:border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
                   />
                 </div>
               </div>

@@ -164,7 +164,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
           <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b p-5 sm:p-6 md:p-8">
             <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 <span className="text-lg sm:text-xl md:text-2xl">공지사항 목록</span>
               </div>
 
@@ -242,7 +242,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
 
                             {notice.category && <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)}`}>{notice.category}</Badge>}
 
-                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
+                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground dark:text-white hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
 
                             {(notice.hasImage || notice.hasFile) && (
                               <div className="flex items-center gap-1 sm:gap-1.5">
@@ -299,7 +299,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                     key={pageNumber}
                     variant="outline"
                     size="sm"
-                    className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-blue-600 text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-card dark:bg-card text-sm sm:text-base'}
+                    className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-border text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-card dark:bg-card text-sm sm:text-base'}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >

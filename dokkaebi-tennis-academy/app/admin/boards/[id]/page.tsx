@@ -68,11 +68,11 @@ function getBoardTypeColor(type: string) {
     case 'notice':
       return 'bg-primary/20 text-primary hover:bg-primary/30';
     case 'qna':
-      return 'bg-blue-500/20 text-blue-500 hover:bg-blue-500/30';
+      return 'bg-primary text-primary hover:bg-primary';
     case 'community':
       return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
     case 'faq':
-      return 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30';
+      return 'bg-muted text-primary hover:bg-muted';
     default:
       return 'bg-card text-muted-foreground hover:bg-card';
   }
@@ -127,7 +127,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
         <div className="container py-8 px-6">
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
+          <p className="rounded-lg border border-destructive bg-destructive px-4 py-3 text-destructive">게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
         </div>
       </div>
     );
@@ -153,18 +153,18 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20">
       <div className="container py-8 px-6">
         <div className="mb-6">
-          <Link href="/admin/boards" className="inline-flex items-center text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline">
+          <Link href="/admin/boards" className="inline-flex items-center text-primary hover:text-primary dark:text-primary dark:hover:text-primary hover:underline">
             <ArrowLeft className="mr-2 h-4 w-4" />
             게시판 목록으로 돌아가기
           </Link>
         </div>
 
         <div className="flex flex-col space-y-8">
-          <div className="bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
+          <div className="bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-border dark:border-border shadow-lg">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
-                  <Settings className="h-8 w-8 text-blue-600" />
+                  <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight text-foreground">게시물 상세 보기</h1>
@@ -176,7 +176,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getBoardTypeColor(String(post.type ?? ''))}>{getBoardTypeName(String(post.type ?? ''))}</Badge>
@@ -191,37 +191,37 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30">
-                <CardTitle className="text-blue-800 dark:text-blue-200">게시물 정보</CardTitle>
+            <Card className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-border dark:border-border">
+                <CardTitle className="text-primary dark:text-primary">게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
                 <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
-                  <User className="mr-3 h-4 w-4 text-blue-600" />
+                  <User className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">{post.authorDisplayName || post.authorNickname || '작성자 미상'}</p>
                     <p className="text-sm text-muted-foreground">{post.authorNickname || post.authorId || '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
-                  <Calendar className="mr-3 h-4 w-4 text-blue-600" />
+                  <Calendar className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">작성일</p>
                     <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
-                  <Eye className="mr-3 h-4 w-4 text-blue-600" />
+                  <Eye className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">조회수</p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.views ?? 0)}</p>
+                    <p className="text-sm text-primary dark:text-primary font-semibold">{Number(post.views ?? 0)}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
-                  <MessageSquare className="mr-3 h-4 w-4 text-blue-600" />
+                  <MessageSquare className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">댓글</p>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.commentsCount ?? 0)}개</p>
+                    <p className="text-sm text-primary dark:text-primary font-semibold">{Number(post.commentsCount ?? 0)}개</p>
                   </div>
                 </div>
               </CardContent>

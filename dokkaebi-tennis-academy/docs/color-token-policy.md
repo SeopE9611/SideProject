@@ -134,3 +134,9 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 - 일반 UI에서 `#hex`, `rgb()`, `hsl()` 직접 하드코딩
 - `style={{ color: ... }}`, `style={{ background: ... }}`, `style={{ borderColor: ... }}` 형태의 인라인 색상 지정
 - 브랜드 예외 사유 주석 없이 제휴사 색상(카카오/네이버/구글 등) 사용
+
+## 추가 재스캔 결과 (app/components)
+- 실행 명령
+  - `rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app components lib`
+  - `rg -n "text-blue-|text-emerald-|text-amber-|text-red-|text-slate-|text-gray-|bg-white|bg-blue-|bg-emerald-|bg-amber-|bg-red-|bg-slate-|bg-gray-|border-blue-|border-emerald-|border-amber-|border-red-|border-slate-|border-gray-" app components`
+- raw 팔레트 잔존 파일 목록: 없음 (0건)

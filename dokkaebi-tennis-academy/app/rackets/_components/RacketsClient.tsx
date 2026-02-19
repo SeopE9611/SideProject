@@ -47,7 +47,7 @@ export default function RacketsClient() {
   }, [data, brand, cond]);
 
   if (error) {
-    return <div className="p-4 text-red-600">라켓 목록을 불러오는 중 오류가 발생했어요.</div>;
+    return <div className="p-4 text-destructive">라켓 목록을 불러오는 중 오류가 발생했어요.</div>;
   }
 
   return (
@@ -83,7 +83,7 @@ export default function RacketsClient() {
                 {it.images?.[0] ? (
                   <Image src={it.images[0]} alt={`${it.brand} ${it.model}`} fill sizes="(max-width:768px) 50vw, (max-width:1200px) 33vw, 25vw" className="object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">이미지 준비중</div>
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 준비중</div>
                 )}
                 {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-rose-600 text-white shadow">대여 불가</span>}
               </div>
@@ -118,5 +118,5 @@ function RacketAvailBadge({ id }: { id: string }) {
   const qty = Number(data?.quantity ?? 1);
   const avail = Math.max(0, Number(data?.available ?? qty - Number(data?.count ?? 0)));
   const soldOut = avail <= 0;
-  return <div className={`text-xs ${soldOut ? 'text-rose-600' : 'text-emerald-600'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>;
+  return <div className={`text-xs ${soldOut ? 'text-rose-600' : 'text-primary'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>;
 }

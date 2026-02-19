@@ -125,7 +125,7 @@ const ProductCard = React.memo(
 
     if (viewMode === 'list') {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 relative">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card backdrop-blur-sm border border-border dark:border-border hover:border-border dark:hover:border-border relative">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect x="0" y="0" width="400" height="200" stroke="currentColor" strokeWidth="2" />
@@ -152,7 +152,7 @@ const ProductCard = React.memo(
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
+                  <div className="text-xl sm:text-2xl font-bold text-primary dark:text-primary">{product.price.toLocaleString()}원</div>
                   <div className="text-sm text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
                 </div>
               </div>
@@ -163,7 +163,7 @@ const ProductCard = React.memo(
                     {Object.entries(product.features)
                       .slice(0, 3)
                       .map(([k, v]) => (
-                        <span key={k} className="px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-slate-700 dark:text-slate-300">
+                        <span key={k} className="px-2 py-1 rounded-md bg-primary dark:bg-primary text-foreground dark:text-muted-foreground">
                           {keyMap[k as keyof typeof keyMap] || k}: {v}/5
                         </span>
                       ))}
@@ -190,7 +190,7 @@ const ProductCard = React.memo(
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`h-9 sm:h-10 ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
+                  className={`h-9 sm:h-10 ${inWish ? 'border-destructive text-destructive dark:border-destructive dark:text-destructive' : ''}`}
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -208,7 +208,7 @@ const ProductCard = React.memo(
                   }}
                   title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
                 >
-                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
+                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'fill-red-500 text-destructive' : ''}`} />
                 </Button>
               </div>
             </div>
@@ -219,7 +219,7 @@ const ProductCard = React.memo(
 
     return (
       <Link href={`/products/${product._id}`}>
-        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
+        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/90 dark:bg-card backdrop-blur-sm border border-border dark:border-border hover:border-border dark:hover:border-border group relative">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
@@ -241,7 +241,7 @@ const ProductCard = React.memo(
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`h-8 sm:h-9 shadow-lg ${inWish ? 'border-red-300 text-red-600 dark:border-red-400 dark:text-red-400' : ''}`}
+                  className={`h-8 sm:h-9 shadow-lg ${inWish ? 'border-destructive text-destructive dark:border-destructive dark:text-destructive' : ''}`}
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -254,7 +254,7 @@ const ProductCard = React.memo(
                   }}
                   title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
                 >
-                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'fill-red-500 text-red-500' : ''}`} />
+                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'fill-red-500 text-destructive' : ''}`} />
                 </Button>
               </div>
             </div>
@@ -262,7 +262,7 @@ const ProductCard = React.memo(
 
           <CardContent className="p-3 sm:p-4">
             <div className="text-xs text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
-            <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white min-h-[2.5rem] sm:min-h-[3rem]">{product.name}</CardTitle>
+            <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors dark:text-white min-h-[2.5rem] sm:min-h-[3rem]">{product.name}</CardTitle>
 
             <div className="flex items-center gap-1.5 mb-2">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
@@ -275,17 +275,17 @@ const ProductCard = React.memo(
                   .slice(0, 3)
                   .map(([key, value]) => (
                     <div key={key} className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10">
-                      <span className="text-slate-600 dark:text-slate-300 font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                      <span className="text-muted-foreground dark:text-muted-foreground font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < value ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < value ? 'bg-primary' : 'bg-muted dark:bg-muted'}`} />
                         ))}
                       </div>
                     </div>
                   ))}
             </div>
             <div className="flex justify-end">
-              <div className="font-bold text-base sm:text-lg text-blue-600 dark:text-blue-400">{product.price.toLocaleString()}원</div>
+              <div className="font-bold text-base sm:text-lg text-primary dark:text-primary">{product.price.toLocaleString()}원</div>
             </div>
           </CardContent>
 

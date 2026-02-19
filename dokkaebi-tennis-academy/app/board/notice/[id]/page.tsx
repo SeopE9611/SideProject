@@ -183,7 +183,7 @@ export default function NoticeDetailPage() {
                 )}
                 {error && (
                   <div className="text-center py-8">
-                    <div className="text-red-500 text-lg font-semibold">{errorTitle}</div>
+                    <div className="text-destructive text-lg font-semibold">{errorTitle}</div>
                   </div>
                 )}
                 {!isLoading && !error && notice && (
@@ -237,7 +237,7 @@ export default function NoticeDetailPage() {
                         <div className="flex items-center gap-2">
                           <Eye className="h-4 w-4" />
                           <span className="font-medium">조회수</span>
-                          <span className="font-semibold text-blue-600">{notice.viewCount ?? 0}</span>
+                          <span className="font-semibold text-primary">{notice.viewCount ?? 0}</span>
                         </div>
                       </div>
                     </div>
@@ -277,7 +277,7 @@ export default function NoticeDetailPage() {
                       <Separator className="my-8" />
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <ImageIcon className="h-5 w-5 text-blue-600" />
+                          <ImageIcon className="h-5 w-5 text-primary" />
                           <h2 className="text-xl font-semibold text-foreground dark:text-white">이미지</h2>
                           <Badge variant="secondary" className="ml-2">
                             {imageAtts.length}개
@@ -295,7 +295,7 @@ export default function NoticeDetailPage() {
                                   alt: (imageAtts[0] as any)?.name || 'image-1',
                                 })
                               }
-                              className="block w-full overflow-hidden rounded-xl border-2 border-border hover:border-blue-500 transition-all duration-300 shadow-lg hover:shadow-xl dark:border-border dark:hover:border-blue-400"
+                              className="block w-full overflow-hidden rounded-xl border-2 border-border hover:border-border transition-all duration-300 shadow-lg hover:shadow-xl dark:border-border dark:hover:border-border"
                               aria-label="이미지 확대 보기"
                             >
                               <div className="relative">
@@ -320,7 +320,7 @@ export default function NoticeDetailPage() {
                                   <button
                                     type="button"
                                     onClick={() => setLightbox({ open: true, src: url, alt: name })}
-                                    className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-blue-400"
+                                    className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-border transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-border"
                                     aria-label={`${name} 이미지 보기`}
                                   >
                                     <img src={url || '/placeholder.svg'} alt={name} className="w-full h-40 object-cover" />
@@ -342,7 +342,7 @@ export default function NoticeDetailPage() {
                       <Separator className="my-8" />
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-blue-600" />
+                          <FileText className="h-5 w-5 text-primary" />
                           <h2 className="text-xl font-semibold text-foreground dark:text-white">첨부파일</h2>
                           <Badge variant="secondary" className="ml-2">
                             {fileAtts.length}개
@@ -364,8 +364,8 @@ export default function NoticeDetailPage() {
                                 className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border dark:border-border transition-colors duration-200"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                  <div className="flex-shrink-0 w-10 h-10 bg-primary dark:bg-primary rounded-lg flex items-center justify-center">
+                                    <FileText className="h-5 w-5 text-primary dark:text-primary" />
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <div className="font-medium text-foreground dark:text-white truncate">{name}</div>

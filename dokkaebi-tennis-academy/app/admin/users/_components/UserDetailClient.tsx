@@ -492,14 +492,14 @@ export default function UserDetailClient({ id }: { id: string }) {
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Avatar className="size-12 shadow-sm ring-2 ring-white dark:ring-slate-900">
+                  <Avatar className="size-12 shadow-sm ring-2 ring-white dark:ring-ring">
                     <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
                   </Avatar>
                   <span
                     className={cn(
-                      'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-white dark:ring-slate-900',
-                      statusKey(user) === 'active' && 'bg-emerald-500',
-                      statusKey(user) === 'suspended' && 'bg-amber-500',
+                      'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-white dark:ring-ring',
+                      statusKey(user) === 'active' && 'bg-primary',
+                      statusKey(user) === 'suspended' && 'bg-muted',
                       statusKey(user) === 'deleted' && 'bg-rose-500',
                     )}
                   />
@@ -637,7 +637,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                       </div>
                       <div className="flex items-center gap-2">
                         <RadioGroupItem id="days0" value="0" />
-                        <Label htmlFor="days0" className="text-red-600">
+                        <Label htmlFor="days0" className="text-destructive">
                           전체 삭제
                         </Label>
                       </div>
@@ -848,7 +848,7 @@ function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os:
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-sm font-medium truncate">
           {s.browser} · {s.os}
-          {highlight && <Badge className="border-0 bg-emerald-100 text-emerald-700">현재</Badge>}
+          {highlight && <Badge className="border-0 bg-primary text-primary">현재</Badge>}
           <Badge className={cn('border-0 hidden sm:inline-block', s.isMobile ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700')}>{s.isMobile ? '모바일' : '데스크탑'}</Badge>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
@@ -885,7 +885,7 @@ function StatCard({
   tone?: 'emerald' | 'sky' | 'violet' | 'slate';
 }) {
   const toneMap: Record<string, string> = {
-    emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300',
+    emerald: 'bg-primary text-primary dark:bg-primary dark:text-primary',
     sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300',
     violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300',
     slate: 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground',

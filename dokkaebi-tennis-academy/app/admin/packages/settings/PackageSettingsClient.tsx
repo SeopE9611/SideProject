@@ -233,7 +233,7 @@ export default function PackageSettingsClient() {
                     <h2 className="text-2xl font-bold text-foreground">패키지 상품 관리</h2>
                     <p className="text-muted-foreground">패키지별 가격, 혜택, 유효기간을 설정할 수 있습니다.</p>
                   </div>
-                  <Button onClick={addNewPackage} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={addNewPackage} className="bg-primary hover:bg-primary">
                     <Plus className="mr-2 h-4 w-4" />새 패키지 추가
                   </Button>
                 </div>
@@ -246,7 +246,7 @@ export default function PackageSettingsClient() {
                         <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <Package className="h-5 w-5 text-blue-600" />
+                              <Package className="h-5 w-5 text-primary" />
                               <CardTitle className="text-lg">{pkg.name}</CardTitle>
                               {pkg.isPopular && <Badge className="bg-orange-100 text-orange-800">인기</Badge>}
                               {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
@@ -255,7 +255,7 @@ export default function PackageSettingsClient() {
                               <Button variant="ghost" size="sm" onClick={() => setEditingPackage(editingPackage === pkg.id ? null : pkg.id)}>
                                 <Edit3 className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => setPendingDeletePackageId(pkg.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                              <Button variant="ghost" size="sm" onClick={() => setPendingDeletePackageId(pkg.id)} className="text-destructive hover:text-destructive hover:bg-destructive">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
@@ -326,7 +326,7 @@ export default function PackageSettingsClient() {
                                         }}
                                         className="flex-1"
                                       />
-                                      <Button variant="ghost" size="sm" onClick={() => removeFeature(pkg.id, index)} className="text-red-600 hover:text-red-700">
+                                      <Button variant="ghost" size="sm" onClick={() => removeFeature(pkg.id, index)} className="text-destructive hover:text-destructive">
                                         <Trash2 className="h-3 w-3" />
                                       </Button>
                                     </div>
@@ -353,7 +353,7 @@ export default function PackageSettingsClient() {
                                   {pkg.originalPrice && <p className="text-sm text-muted-foreground line-through">{formatCurrency(pkg.originalPrice)}</p>}
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-lg font-semibold text-blue-600">{pkg.sessions}회</p>
+                                  <p className="text-lg font-semibold text-primary">{pkg.sessions}회</p>
                                   <p className="text-sm text-muted-foreground">{pkg.validityDays}일 유효</p>
                                 </div>
                               </div>
@@ -365,7 +365,7 @@ export default function PackageSettingsClient() {
                                 <ul className="text-sm text-muted-foreground space-y-1">
                                   {pkg.features.map((feature, index) => (
                                     <li key={index} className="flex items-center">
-                                      <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
+                                      <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
                                       {feature}
                                     </li>
                                   ))}
@@ -379,7 +379,7 @@ export default function PackageSettingsClient() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button onClick={handleSavePackages} disabled={isSaving} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleSavePackages} disabled={isSaving} className="bg-primary hover:bg-primary">
                     <Save className="mr-2 h-4 w-4" />
                     {isSaving ? '저장 중...' : '패키지 설정 저장'}
                   </Button>

@@ -91,11 +91,11 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
       case 'general':
         return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
       case 'info':
-        return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+        return 'bg-primary text-primary dark:bg-primary dark:text-primary';
       case 'qna':
         return 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300';
       case 'tip':
-        return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+        return 'bg-muted text-primary dark:bg-muted dark:text-primary';
       case 'etc':
         return gray;
       default:
@@ -106,11 +106,11 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
   if (kind === 'market') {
     switch (c) {
       case 'racket':
-        return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+        return 'bg-primary text-primary dark:bg-primary dark:text-primary';
       case 'string':
-        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+        return 'bg-primary text-primary dark:bg-primary dark:text-primary';
       case 'equipment':
-        return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+        return 'bg-muted text-primary dark:bg-muted dark:text-primary';
       default:
         return gray;
     }
@@ -119,11 +119,11 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
   // gear
   switch (c) {
     case 'racket':
-      return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
+      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
     case 'string':
-      return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300';
+      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
     case 'shoes':
-      return 'bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+      return 'bg-muted text-primary dark:bg-muted dark:text-primary';
     case 'bag':
       return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
     case 'apparel':
@@ -258,7 +258,7 @@ function FiveLineSkeleton() {
 }
 
 function ErrorBox({ message = '데이터를 불러오는 중 오류가 발생했습니다.' }) {
-  return <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">{message}</div>;
+  return <div className="rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive">{message}</div>;
 }
 
 type NoticeItem = {
@@ -328,7 +328,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
       <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Bell className="h-5 w-5 text-blue-600" />
+            <Bell className="h-5 w-5 text-primary" />
             <span>공지사항</span>
           </div>
           <div className="flex space-x-2">
@@ -378,7 +378,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 제목 (1줄 말줄임) */}
-                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground dark:text-white hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
                           {notice.title}
                         </Link>
                       </div>
@@ -685,7 +685,7 @@ export default function BoardPage() {
           <CommunityLatestCard
             kind="market"
             title="중고거래"
-            icon={<ShoppingBag className="h-5 w-5 text-emerald-600" />}
+            icon={<ShoppingBag className="h-5 w-5 text-primary" />}
             headerClassName="bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/50"
             listHref="/board/market"
             writeHref="/board/market/write"
@@ -698,7 +698,7 @@ export default function BoardPage() {
           <CommunityLatestCard
             kind="gear"
             title="장비 사용기"
-            icon={<Dumbbell className="h-5 w-5 text-amber-600" />}
+            icon={<Dumbbell className="h-5 w-5 text-primary" />}
             headerClassName="bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/50"
             listHref="/board/gear"
             writeHref="/board/gear/write"

@@ -114,9 +114,9 @@ export default function ReviewDetailClient({ reviewId }: Props) {
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">레슨 리뷰</Badge>;
+        return <Badge className="bg-primary text-primary hover:bg-primary">레슨 리뷰</Badge>;
       case 'stringing':
-        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">스트링 서비스 리뷰</Badge>;
+        return <Badge className="bg-primary text-primary hover:bg-primary">스트링 서비스 리뷰</Badge>;
       case 'product':
         return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">상품 리뷰</Badge>;
       default:
@@ -181,8 +181,8 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
-                <div className="bg-blue-100 rounded-lg p-2">
-                  <User className="h-5 w-5 text-blue-600" />
+                <div className="bg-primary rounded-lg p-2">
+                  <User className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">작성자 정보</h3>
               </div>
@@ -203,8 +203,8 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
             <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
-                <div className="bg-emerald-100 rounded-lg p-2">
-                  <Calendar className="h-5 w-5 text-emerald-600" />
+                <div className="bg-primary rounded-lg p-2">
+                  <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">리뷰 정보</h3>
               </div>
@@ -234,14 +234,14 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           {/* 내용 */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">리뷰 내용</h3>
-            <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border-l-4 border-emerald-500">
+            <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border-l-4 border-border">
               <p className="text-foreground leading-relaxed whitespace-pre-line text-lg">"{review.content}"</p>
             </div>
           </div>
         </CardContent>
 
         <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-border">
-          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-red-600 hover:bg-red-700 text-white">
+          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-destructive hover:bg-destructive text-white">
             {isDeleting ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>

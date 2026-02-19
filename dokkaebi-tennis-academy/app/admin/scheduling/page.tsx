@@ -21,13 +21,13 @@ import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
 
 const BRAND = {
-  bg: 'bg-emerald-600',
-  bgHover: 'hover:bg-emerald-700',
+  bg: 'bg-primary',
+  bgHover: 'hover:bg-primary',
   text: 'text-white',
-  softBg: 'bg-emerald-50',
-  softText: 'text-emerald-700',
+  softBg: 'bg-primary',
+  softText: 'text-primary',
   ring: 'ring-emerald-100',
-  border: 'border-emerald-200',
+  border: 'border-border',
 };
 
 type ExceptionItem = {
@@ -246,40 +246,40 @@ export default function StringingSettingsPage() {
             </div>
           </div>
 
-          <div className="mb-8 overflow-hidden rounded-2xl border border-amber-200 dark:border-amber-400/30 bg-card shadow-sm">
+          <div className="mb-8 overflow-hidden rounded-2xl border border-border dark:border-border bg-card shadow-sm">
             <div className="flex items-start gap-4 p-6">
-              <div className="rounded-xl bg-amber-100 dark:bg-amber-900/40 p-2.5 shadow-sm">
-                <Info className="h-5 w-5 text-amber-700 dark:text-amber-300" />
+              <div className="rounded-xl bg-muted dark:bg-muted p-2.5 shadow-sm">
+                <Info className="h-5 w-5 text-primary dark:text-primary" />
               </div>
               <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
                 <p className="font-semibold text-foreground mb-2">운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.</p>
                 <ul className="space-y-1.5">
                   <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
                       <strong className="font-medium text-foreground">동시 수용량:</strong> 같은 시간대 동시 접수 가능한 신청 수
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
                       <strong className="font-medium text-foreground">영업 시간/간격:</strong> 슬롯의 시작·종료 시각과 간격
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
                       <strong className="font-medium text-foreground">영업 요일:</strong> 기본 영업 요일
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
                       <strong className="font-medium text-foreground">휴무일:</strong> 특정 날짜를 휴무로 지정
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
                       <strong className="font-medium text-foreground">예외일:</strong> 특정 날짜만 영업/시간·간격·수용량을 오버라이드
                     </span>
@@ -293,8 +293,8 @@ export default function StringingSettingsPage() {
             <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                  <div className="rounded-xl bg-blue-100 p-2">
-                    <Clock className="h-5 w-5 text-blue-600" />
+                  <div className="rounded-xl bg-primary p-2">
+                    <Clock className="h-5 w-5 text-primary" />
                   </div>
                   기본 슬롯 설정
                 </CardTitle>
@@ -314,13 +314,13 @@ export default function StringingSettingsPage() {
                     <Label htmlFor="start" className="text-sm font-medium text-foreground">
                       영업 시작
                     </Label>
-                    <Input id="start" type="time" value={start} onChange={(e) => setStart(e.target.value)} className="border-border focus:border-emerald-500 focus:ring-emerald-500" />
+                    <Input id="start" type="time" value={start} onChange={(e) => setStart(e.target.value)} className="border-border focus:border-border focus:ring-emerald-500" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="end" className="text-sm font-medium text-foreground">
                       영업 종료
                     </Label>
-                    <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="border-border focus:border-emerald-500 focus:ring-emerald-500" />
+                    <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="border-border focus:border-border focus:ring-emerald-500" />
                   </div>
                 </div>
 
@@ -339,7 +339,7 @@ export default function StringingSettingsPage() {
                         const v = Number(e.target.value || 30);
                         if (Number.isFinite(v)) setInterval(Math.max(5, Math.min(240, v)));
                       }}
-                      className="w-32 border-border focus:border-emerald-500 focus:ring-emerald-500"
+                      className="w-32 border-border focus:border-border focus:ring-emerald-500"
                     />
                     <Badge variant="outline" className="border-dashed border-border text-muted-foreground">
                       예: 30분 → 10:00, 10:30…
@@ -363,7 +363,7 @@ export default function StringingSettingsPage() {
                         const v = Number(e.target.value || 30);
                         if (Number.isFinite(v)) setBookingWindowDays(Math.max(1, Math.min(180, v)));
                       }}
-                      className="w-32 border-border focus:border-emerald-500 focus:ring-emerald-500"
+                      className="w-32 border-border focus:border-border focus:ring-emerald-500"
                     />
                     <Badge variant="outline" className="border-dashed border-border text-muted-foreground">
                       예: 30 → 오늘부터 30일 이내만 신청 가능 (최대 180)
@@ -413,7 +413,7 @@ export default function StringingSettingsPage() {
                 <div>
                   <Label className="mb-3 block text-sm font-medium text-foreground">휴무일</Label>
                   <div className="flex items-center gap-2">
-                    <Input type="date" value={holidayInput} onChange={(e) => setHolidayInput(e.target.value)} className="max-w-[200px] border-border focus:border-emerald-500 focus:ring-emerald-500" />
+                    <Input type="date" value={holidayInput} onChange={(e) => setHolidayInput(e.target.value)} className="max-w-[200px] border-border focus:border-border focus:ring-emerald-500" />
                     <Button
                       type="button"
                       className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700"
@@ -432,7 +432,7 @@ export default function StringingSettingsPage() {
                       {sortedHolidays.map((h) => (
                         <li key={h} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent transition-colors">
                           <span className="font-medium text-foreground">{h}</span>
-                          <Button type="button" variant="ghost" size="sm" className="hover:bg-red-50 text-red-600 hover:text-red-700" onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}>
+                          <Button type="button" variant="ghost" size="sm" className="hover:bg-destructive text-destructive hover:text-destructive" onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </li>
@@ -461,7 +461,7 @@ export default function StringingSettingsPage() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
                   <div className="lg:col-span-2 space-y-2">
                     <Label className="text-xs font-medium text-foreground">날짜</Label>
-                    <Input type="date" value={exInput.date || ''} onChange={(e) => setExInput({ ...exInput, date: e.target.value })} className="border-border bg-card focus:border-emerald-500 focus:ring-emerald-500" />
+                    <Input type="date" value={exInput.date || ''} onChange={(e) => setExInput({ ...exInput, date: e.target.value })} className="border-border bg-card focus:border-border focus:ring-emerald-500" />
                   </div>
 
                   <div className="flex items-center gap-2 pt-7">
@@ -473,11 +473,11 @@ export default function StringingSettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">시작</Label>
-                    <Input type="time" value={exInput.start || ''} onChange={(e) => setExInput({ ...exInput, start: e.target.value })} className="border-border bg-card focus:border-emerald-500 focus:ring-emerald-500" />
+                    <Input type="time" value={exInput.start || ''} onChange={(e) => setExInput({ ...exInput, start: e.target.value })} className="border-border bg-card focus:border-border focus:ring-emerald-500" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">종료</Label>
-                    <Input type="time" value={exInput.end || ''} onChange={(e) => setExInput({ ...exInput, end: e.target.value })} className="border-border bg-card focus:border-emerald-500 focus:ring-emerald-500" />
+                    <Input type="time" value={exInput.end || ''} onChange={(e) => setExInput({ ...exInput, end: e.target.value })} className="border-border bg-card focus:border-border focus:ring-emerald-500" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">간격(분)</Label>
@@ -487,7 +487,7 @@ export default function StringingSettingsPage() {
                       max={240}
                       value={exInput.interval ?? ''}
                       onChange={(e) => setExInput({ ...exInput, interval: Number(e.target.value) || undefined })}
-                      className="border-border bg-card focus:border-emerald-500 focus:ring-emerald-500"
+                      className="border-border bg-card focus:border-border focus:ring-emerald-500"
                     />
                   </div>
                   <div className="space-y-2">
@@ -498,7 +498,7 @@ export default function StringingSettingsPage() {
                       max={10}
                       value={exInput.capacity ?? ''}
                       onChange={(e) => setExInput({ ...exInput, capacity: Number(e.target.value) || undefined })}
-                      className="border-border bg-card focus:border-emerald-500 focus:ring-emerald-500"
+                      className="border-border bg-card focus:border-border focus:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -543,7 +543,7 @@ export default function StringingSettingsPage() {
                       <div className="flex-1">
                         <div className="font-semibold text-foreground mb-1">{ex.date}</div>
                         {ex.closed ? (
-                          <Badge className="bg-red-100 text-red-700 hover:bg-red-100">휴무</Badge>
+                          <Badge className="bg-destructive text-destructive hover:bg-destructive">휴무</Badge>
                         ) : (
                           <div className="text-sm text-muted-foreground space-y-0.5">
                             <div>{ex.start && ex.end ? `${ex.start} ~ ${ex.end}` : '시간 미지정(기본값 사용)'}</div>
@@ -565,10 +565,10 @@ export default function StringingSettingsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="icon" variant="ghost" className="hover:bg-blue-50 text-blue-600" onClick={() => setExInput(ex)}>
+                        <Button size="icon" variant="ghost" className="hover:bg-primary text-primary" onClick={() => setExInput(ex)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="hover:bg-red-50 text-red-600" onClick={() => setExceptions((prev) => prev.filter((x) => x.date !== ex.date))}>
+                        <Button size="icon" variant="ghost" className="hover:bg-destructive text-destructive" onClick={() => setExceptions((prev) => prev.filter((x) => x.date !== ex.date))}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

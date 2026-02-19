@@ -60,7 +60,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
   return (
     <div className="flex items-center gap-2">
       {/* 관리자 전용 수정 플로우는 /admin/boards/[id]/edit 라우트로 고정한다. */}
-      <Button variant="outline" asChild className="bg-card backdrop-blur-sm border-blue-200 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/20">
+      <Button variant="outline" asChild className="bg-card backdrop-blur-sm border-border hover:bg-primary dark:border-border dark:hover:bg-primary">
         <Link href={`/admin/boards/${postId}/edit`}>
           <Pencil className="mr-2 h-4 w-4" />
           수정
@@ -68,7 +68,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
       </Button>
 
       {currentStatus !== 'public' && currentStatus !== 'published' ? (
-        <Button disabled={pendingAction !== null} onClick={() => runStatusChange('public')} className="bg-emerald-600 hover:bg-primary text-primary-foreground">
+        <Button disabled={pendingAction !== null} onClick={() => runStatusChange('public')} className="bg-primary hover:bg-primary text-primary-foreground">
           <Eye className="mr-2 h-4 w-4" />
           {pendingAction === 'publish' ? '공개 처리 중...' : '공개'}
         </Button>
@@ -79,7 +79,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
         </Button>
       )}
 
-      <Button disabled={pendingAction !== null} variant="destructive" className="bg-red-500 hover:bg-red-600" onClick={runDelete}>
+      <Button disabled={pendingAction !== null} variant="destructive" className="bg-destructive hover:bg-destructive" onClick={runDelete}>
         <Trash2 className="mr-2 h-4 w-4" />
         {pendingAction === 'delete' ? '삭제 중...' : '삭제'}
       </Button>

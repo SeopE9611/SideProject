@@ -241,7 +241,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
  <div className="rounded-xl border border-border bg-background p-6">
  <div className="flex items-center gap-2 mb-4">
- <CreditCard className="h-5 w-5 text-warning" />
+ <CreditCard className="h-5 w-5 text-primary" />
  <h3 className="font-bold text-foreground">입금 계좌 정보</h3>
  </div>
  {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
@@ -254,7 +254,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <p className="text-muted-foreground">선택된 은행 없음</p>
  )}
  <div className="mt-4 rounded-lg border border-border bg-card p-3">
- <p className="text-sm font-semibold text-warning">⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+ <p className="text-sm font-semibold text-primary">⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
  </div>
  </div>
  </div>
@@ -335,7 +335,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  {Number(pointsUsed) > 0 && (
  <div className="flex justify-between items-center">
  <span className="text-muted-foreground">포인트 사용</span>
- <span className="font-semibold text-warning">-{formatPrice(pointsUsed)}원</span>
+ <span className="font-semibold text-primary">-{formatPrice(pointsUsed)}원</span>
  </div>
  )}
 
@@ -403,7 +403,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  </div>
  </div>
  <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
- <Phone className="mt-0.5 h-5 w-5 text-warning" />
+ <Phone className="mt-0.5 h-5 w-5 text-primary" />
  <div>
  <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
  <p className="text-sm text-muted-foreground">배송 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>

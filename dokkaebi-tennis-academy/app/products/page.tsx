@@ -36,25 +36,25 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           </svg>
         </div>
 
-        <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-white/10 rounded-full blur-xl animate-float" />
-        <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-white/5 rounded-full blur-2xl animate-float-delayed" />
-        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-blue-300/20 rounded-full blur-lg animate-pulse" />
+        <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
+        <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
+        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-primary rounded-full blur-lg animate-pulse" />
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-white">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-blue-100 dark:text-blue-200 max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
+            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-primary dark:text-primary max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
           </div>
         </SiteContainer>
       </div>
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12">
         {from === 'apply' && (
-          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-slate-200/70 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/40 backdrop-blur p-4 bp-sm:p-5">
+          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border dark:border-border bg-card/90 dark:bg-card backdrop-blur p-4 bp-sm:p-5">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <p className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-slate-100">장착 서비스 즉시 예약 흐름으로 이동했어요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">스트링 결제 완료 후 신청서가 자동으로 연결됩니다.</p>
+                <p className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-muted-foreground">장착 서비스 즉시 예약 흐름으로 이동했어요</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">스트링 결제 완료 후 신청서가 자동으로 연결됩니다.</p>
               </div>
               <div className="flex w-full bp-sm:w-auto gap-2">
                 <Button asChild className="flex-1 bp-sm:flex-none">

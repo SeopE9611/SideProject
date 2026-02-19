@@ -79,7 +79,7 @@
 
 //   // 로딩처리
 //   if (loading) return <div className="py-12 text-center text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
-//   if (!application) return <div className="py-12 text-center text-red-500">신청 내역을 찾을 수 없습니다.</div>;
+//   if (!application) return <div className="py-12 text-center text-destructive">신청 내역을 찾을 수 없습니다.</div>;
 
 //   return (
 //     <div className="space-y-6">

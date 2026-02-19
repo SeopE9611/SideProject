@@ -63,7 +63,7 @@ export default function RentalsSuccessClient({ data }: Props) {
   // (최종 결제/계산서/계좌 안내는 신청서 제출 후 success 페이지에서 노출)
   if (withService) {
     return (
-      <div className="min-h-[70vh] bg-slate-50/50 dark:bg-slate-950/20">
+      <div className="min-h-[70vh] bg-muted dark:bg-card">
         <SiteContainer variant="wide" className="py-12">
           <div className="mx-auto max-w-2xl">
             <RentalApplyHandoffClient rentalId={rentalId} />
@@ -93,7 +93,7 @@ export default function RentalsSuccessClient({ data }: Props) {
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
         <SiteContainer variant="wide" className="relative py-16">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full mb-6">
               <CheckCircle className="h-12 w-12 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">대여 신청 접수 완료</h1>
@@ -107,14 +107,14 @@ export default function RentalsSuccessClient({ data }: Props) {
           {/* 스트링 교체 서비스 신청서로 이어가기 */}
 
           {/* 대여 정보 카드 */}
-          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
-                <Package className="h-6 w-6 text-blue-600" />
+                <Package className="h-6 w-6 text-primary" />
                 대여 정보
               </CardTitle>
               <CardDescription className="mt-2 text-lg">
-                대여 번호: <span className="font-mono font-semibold text-blue-600">{data.id}</span>
+                대여 번호: <span className="font-mono font-semibold text-primary">{data.id}</span>
               </CardDescription>
             </div>
             <CardContent className="p-6">
@@ -123,13 +123,13 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <Package className="h-5 w-5 text-purple-600" /> 대여 라켓
                 </h3>
-                <div className="p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-slate-200/50 dark:border-slate-600/50">
+                <div className="p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-border dark:border-border">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-semibold text-slate-800 dark:text-slate-200">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
+                      <p className="font-semibold text-foreground dark:text-muted-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">상태 {data.racket?.condition}</span>
-                        <span className="text-sm text-slate-600 dark:text-slate-400">대여 기간: {data.period}일</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary dark:bg-primary text-primary dark:text-primary">상태 {data.racket?.condition}</span>
+                        <span className="text-sm text-muted-foreground dark:text-muted-foreground">대여 기간: {data.period}일</span>
                       </div>
                     </div>
                   </div>
@@ -141,39 +141,39 @@ export default function RentalsSuccessClient({ data }: Props) {
               {/* 결제 금액 */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-400">대여 수수료</span>
+                  <span className="text-muted-foreground dark:text-muted-foreground">대여 수수료</span>
                   <span className="font-semibold text-lg">{data.fee.toLocaleString()}원</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600 dark:text-slate-400">보증금</span>
+                  <span className="text-muted-foreground dark:text-muted-foreground">보증금</span>
                   <span className="font-semibold text-lg">{data.deposit.toLocaleString()}원</span>
                 </div>
                 {data.stringPrice > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 dark:text-slate-400">스트링 상품</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">스트링 상품</span>
                     <span className="font-semibold text-lg">{data.stringPrice.toLocaleString()}원</span>
                   </div>
                 )}
                 {data.stringingFee > 0 && (
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600 dark:text-slate-400">교체 서비스</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">교체 서비스</span>
                     <span className="font-semibold text-lg">{data.stringingFee.toLocaleString()}원</span>
                   </div>
                 )}
                 <Separator />
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-border">
                   <div className="flex justify-between items-center text-2xl font-bold">
-                    <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
-                    <span className="text-blue-600">{total.toLocaleString()}원</span>
+                    <span className="text-foreground dark:text-muted-foreground">총 결제 금액</span>
+                    <span className="text-primary">{total.toLocaleString()}원</span>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-2">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>
                 </div>
 
                 {/* 무통장 안내 카드 */}
-                <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+                <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
                   <div className="bg-gradient-to-r from-amber-500/10 to-rose-500/10 p-6">
                     <CardTitle className="flex items-center gap-3 text-2xl">
-                      <CreditCard className="h-6 w-6 text-amber-600" />
+                      <CreditCard className="h-6 w-6 text-primary" />
                       무통장 입금 안내
                     </CardTitle>
                   </div>
@@ -227,7 +227,7 @@ export default function RentalsSuccessClient({ data }: Props) {
           </Card>
 
           {/* 안내사항 */}
-          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-xl">
+          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
             <CardHeader className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-indigo-600" />
@@ -238,10 +238,10 @@ export default function RentalsSuccessClient({ data }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
-                    <Truck className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <Truck className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-1">배송 안내</h4>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">결제 완료 후 배송이 시작됩니다.</p>
+                      <h4 className="font-semibold text-primary dark:text-primary mb-1">배송 안내</h4>
+                      <p className="text-sm text-primary dark:text-primary">결제 완료 후 배송이 시작됩니다.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
@@ -272,10 +272,10 @@ export default function RentalsSuccessClient({ data }: Props) {
             </CardContent>
           </Card>
 
-          <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-amber-500/10 to-rose-500/10 p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
-                <Undo2 className="h-6 w-6 text-amber-600" />
+                <Undo2 className="h-6 w-6 text-primary" />
                 보증금 환급 계좌
               </CardTitle>
             </div>

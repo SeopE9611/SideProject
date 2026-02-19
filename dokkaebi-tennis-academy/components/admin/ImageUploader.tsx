@@ -100,7 +100,7 @@ export default function ImageUploader({ value, onChange, max = 10, variant = 're
         {value.map((src, i) => (
           <div key={src + i} className="relative group rounded-md overflow-hidden border">
             <Image src={src} alt="" width={160} height={160} className="object-cover w-40 h-40" />
-            {enablePrimary && i === 0 && <span className="absolute left-1 top-1 text-[11px] bg-emerald-600 text-white px-1.5 py-0.5 rounded">대표</span>}
+            {enablePrimary && i === 0 && <span className="absolute left-1 top-1 text-[11px] bg-primary text-white px-1.5 py-0.5 rounded">대표</span>}
             {enablePrimary && i > 0 && (
               <button type="button" onClick={() => makePrimary(i)} className="absolute left-1 top-1 text-[11px] bg-card/90 border px-1.5 py-0.5 rounded shadow">
                 대표로

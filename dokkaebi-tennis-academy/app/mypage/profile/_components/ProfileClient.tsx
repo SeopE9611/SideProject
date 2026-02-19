@@ -371,7 +371,7 @@ export default function ProfileClient({ user }: Props) {
  <AvatarFallback className="text-2xl bg-accent text-accent-foreground">{profileData.name.charAt(0)}</AvatarFallback>
  </Avatar>
  <div>
- <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+ <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-border dark:border-border hover:bg-primary dark:hover:bg-primary">
  <Camera className="mr-2 h-4 w-4" />
  이미지 변경
  </Button>
@@ -389,7 +389,7 @@ export default function ProfileClient({ user }: Props) {
  id="name"
  value={profileData.name ?? ''}
  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  placeholder="이름을 입력해주세요"
  />
  {/* 소셜 가입/연동 제공자 표시 (표시용) */}
@@ -403,7 +403,7 @@ export default function ProfileClient({ user }: Props) {
  </Badge>
  )}
  {socialProviders.includes('naver') && (
- <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+ <Badge variant="outline" className="border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary">
  네이버
  </Badge>
  )}
@@ -423,7 +423,7 @@ export default function ProfileClient({ user }: Props) {
  type="email"
  value={profileData.email ?? ''}
  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  placeholder="example@naver.com"
  />
  </div>
@@ -436,7 +436,7 @@ export default function ProfileClient({ user }: Props) {
  id="phone"
  value={profileData.phone ?? ''}
  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  placeholder="01012345678"
  />
  </div>
@@ -456,8 +456,8 @@ export default function ProfileClient({ user }: Props) {
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
- <div className="bg-success/10 text-success rounded-2xl p-3 shadow-lg">
- <Shield className="h-6 w-6 text-success" />
+ <div className="bg-primary/10 text-primary rounded-2xl p-3 shadow-lg">
+ <Shield className="h-6 w-6 text-primary" />
  </div>
  <div>
  <CardTitle className="text-xl">비밀번호 변경</CardTitle>
@@ -475,7 +475,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.currentPassword}
  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
  </div>
  <div className="space-y-2">
@@ -487,7 +487,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.newPassword}
  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
  <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
  </div>
@@ -500,7 +500,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.confirmPassword}
  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
  </div>
 
@@ -518,8 +518,8 @@ export default function ProfileClient({ user }: Props) {
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
- <div className="bg-warning/10 text-warning rounded-2xl p-3 shadow-lg">
- <MapPin className="h-6 w-6 text-warning" />
+ <div className="bg-muted/10 text-primary rounded-2xl p-3 shadow-lg">
+ <MapPin className="h-6 w-6 text-primary" />
  </div>
  <div>
  <CardTitle className="text-xl">배송지 관리</CardTitle>
@@ -535,7 +535,7 @@ export default function ProfileClient({ user }: Props) {
  </Label>
  <div className="flex gap-2">
  <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground cursor-default" placeholder="12345" />
- <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-blue-200 dark:border-blue-700 text-accent dark:text-accent hover:bg-blue-50 dark:hover:bg-blue-900/20" variant="outline">
+ <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border dark:border-border text-accent dark:text-accent hover:bg-primary dark:hover:bg-primary" variant="outline">
  검색
  </Button>
  </div>
@@ -560,7 +560,7 @@ export default function ProfileClient({ user }: Props) {
  address: { ...profileData.address, address2: e.target.value },
  })
  }
- className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  placeholder="동, 호수 등 상세주소"
  />
  </div>
@@ -660,14 +660,14 @@ export default function ProfileClient({ user }: Props) {
  </CardContent>
  </Card>
 
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border-red-200 dark:border-red-800">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border-destructive dark:border-destructive">
  <CardHeader className="bg-destructive/10 border-b border-destructive/30">
  <div className="flex items-center gap-3">
  <div className="bg-destructive/10 text-destructive rounded-2xl p-3 shadow-lg">
  <AlertTriangle className="h-6 w-6 text-destructive" />
  </div>
  <div>
- <CardTitle className="text-xl text-red-700 dark:text-red-400">회원 탈퇴</CardTitle>
+ <CardTitle className="text-xl text-destructive dark:text-destructive">회원 탈퇴</CardTitle>
  <CardDescription>계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.</CardDescription>
  </div>
  </div>
@@ -702,9 +702,9 @@ export default function ProfileClient({ user }: Props) {
  />
  ) : (
  <div className="text-center">
- <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6">
- <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
- <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-2">정말로 탈퇴하시겠습니까?</h3>
+ <div className="bg-destructive dark:bg-destructive border border-destructive dark:border-destructive rounded-xl p-6 mb-6">
+ <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+ <h3 className="text-lg font-semibold text-destructive dark:text-destructive mb-2">정말로 탈퇴하시겠습니까?</h3>
  <p className="text-sm text-destructive">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
  </div>
  <Button

@@ -180,7 +180,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
 
       {/* 네트워크 경고(옵션): 오프라인이면 즉시 표시 */}
       {!navigator.onLine && (
-        <div className="flex items-center gap-1 text-xs text-amber-600">
+        <div className="flex items-center gap-1 text-xs text-primary">
           <AlertCircle className="w-3 h-3" />
           오프라인 상태예요. 연결 후 다시 시도해 주세요.
         </div>

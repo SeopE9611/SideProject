@@ -69,9 +69,9 @@ const getStatusColor = (status: string) => {
     case '배송완료':
       return 'bg-accent text-accent-foreground border-border';
     case '배송중':
-      return 'bg-accent text-blue-800 border-border';
+      return 'bg-accent text-primary border-border';
     case '배송준비중':
-      return 'bg-amber-100 text-amber-800 border-amber-200';
+      return 'bg-muted text-primary border-border';
     case '주문취소':
       return 'bg-accent text-accent-foreground border-border';
     default:
@@ -186,7 +186,7 @@ export default function OrderDetailPage() {
                 <Package className="w-8 h-8" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보 오류</h1>
-              <p className="text-xl text-red-100">주문 정보를 불러오는 중 문제가 발생했습니다</p>
+              <p className="text-xl text-destructive">주문 정보를 불러오는 중 문제가 발생했습니다</p>
             </div>
           </div>
         </div>
@@ -252,17 +252,17 @@ export default function OrderDetailPage() {
 
           {/* String Service Alert */}
           {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
-            <Card className="mb-8 border-2 border-amber-200 bg-primary  ">
+            <Card className="mb-8 border-2 border-border bg-primary  ">
               <CardContent className="p-6">
                 {!order.isStringServiceApplied ? (
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-amber-800 mb-2">스트링 장착 서비스 신청 가능</h3>
-                      <p className="text-amber-700 mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아래 버튼을 클릭하여 신청해주세요.</p>
-                      <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-foreground font-semibold rounded-lg transition-colors">
+                      <h3 className="font-semibold text-primary mb-2">스트링 장착 서비스 신청 가능</h3>
+                      <p className="text-primary mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아래 버튼을 클릭하여 신청해주세요.</p>
+                      <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors">
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         스트링 장착 서비스 신청하기
                       </Link>
@@ -270,12 +270,12 @@ export default function OrderDetailPage() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center">
                       <CheckCircle className="w-6 h-6 text-foreground" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-accent-foreground mb-1">스트링 장착 서비스 신청 완료</h3>
-                      <p className="text-emerald-700">이 주문의 스트링 장착 서비스 신청이 완료되었습니다.</p>
+                      <p className="text-primary">이 주문의 스트링 장착 서비스 신청이 완료되었습니다.</p>
                     </div>
                   </div>
                 )}
@@ -314,7 +314,7 @@ export default function OrderDetailPage() {
                         <div className="bg-primary from-emerald-50  border border-border rounded-lg p-4">
                           <div className="space-y-2">
                             <p className="font-semibold text-accent-foreground">{order.paymentInfo.method}</p>
-                            <p className="font-semibold text-emerald-700">{bankLabelMap[order.paymentInfo.bank].label}</p>
+                            <p className="font-semibold text-primary">{bankLabelMap[order.paymentInfo.bank].label}</p>
                             <p className="font-mono text-primary">{bankLabelMap[order.paymentInfo.bank].account}</p>
                             <p className="text-sm text-primary">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</p>
                           </div>
@@ -365,7 +365,7 @@ export default function OrderDetailPage() {
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <p className="text-sm text-primary mb-1">운송장 번호</p>
-                            <p className="font-mono font-semibold text-blue-800">{order.trackingNumber}</p>
+                            <p className="font-mono font-semibold text-primary">{order.trackingNumber}</p>
                           </div>
                           <Button variant="link" className="text-primary hover:text-primary p-0">
                             배송 조회
@@ -390,7 +390,7 @@ export default function OrderDetailPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {order.items.map((item, index) => (
-                      <div key={item.id || index} className="flex flex-col md:flex-row gap-4 p-4 border-2 border-gray-100 rounded-lg hover:border-border transition-colors">
+                      <div key={item.id || index} className="flex flex-col md:flex-row gap-4 p-4 border-2 border-border rounded-lg hover:border-border transition-colors">
                         <div className="flex-shrink-0 w-full md:w-24 h-24 bg-muted rounded-lg overflow-hidden">
                           <Image src={item.image || '/placeholder.svg'} alt={item.name} width={96} height={96} className="w-full h-full object-cover" />
                         </div>
@@ -443,7 +443,7 @@ export default function OrderDetailPage() {
 
                     {/* Benefits */}
                     <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-border">
+                      <div className="flex items-center gap-3 p-3 bg-primary rounded-lg border border-border">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-sm font-medium text-accent-foreground">안전한 결제</p>
@@ -454,7 +454,7 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 p-3 bg-accent rounded-lg border border-border">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-blue-800">배송 보장</p>
+                          <p className="text-sm font-medium text-primary">배송 보장</p>
                           <p className="text-xs text-primary">30,000원 이상 무료배송</p>
                         </div>
                       </div>
@@ -463,7 +463,7 @@ export default function OrderDetailPage() {
                 </CardContent>
 
                 <CardFooter className="pt-6">
-                  <Button variant="outline" onClick={handleGoBack} className="w-full border-border text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 bg-transparent">
+                  <Button variant="outline" onClick={handleGoBack} className="w-full border-border text-primary hover:bg-primary hover:border-border bg-transparent">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     주문 목록으로 돌아가기
                   </Button>

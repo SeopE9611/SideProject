@@ -153,9 +153,9 @@ export default function ReviewsClient() {
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200';
+        return 'bg-primary text-primary hover:bg-primary';
       case 'stringing':
-        return 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200';
+        return 'bg-primary text-primary hover:bg-primary';
       case 'product':
         return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
       default:
@@ -193,8 +193,8 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">전체 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{totalReviews}</p>
               </div>
-              <div className="bg-blue-50 rounded-xl p-3">
-                <MessageSquare className="h-6 w-6 text-blue-600" />
+              <div className="bg-primary rounded-xl p-3">
+                <MessageSquare className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -221,8 +221,8 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">5점 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{fiveStarReviews}</p>
               </div>
-              <div className="bg-emerald-50 rounded-xl p-3">
-                <Award className="h-6 w-6 text-emerald-600" />
+              <div className="bg-primary rounded-xl p-3">
+                <Award className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -259,7 +259,7 @@ export default function ReviewsClient() {
             <div className="flex items-center space-x-2">
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input type="search" placeholder="리뷰 검색..." className="pl-10 border-border focus:border-emerald-500 focus:ring-emerald-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Input type="search" placeholder="리뷰 검색..." className="pl-10 border-border focus:border-border focus:ring-emerald-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
             </div>
           </div>
@@ -267,8 +267,8 @@ export default function ReviewsClient() {
 
         <CardContent>
           {selectedReviews.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3">
-              <span className="text-sm font-medium text-red-800">선택된 {selectedReviews.length}개 리뷰</span>
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-destructive p-3">
+              <span className="text-sm font-medium text-destructive">선택된 {selectedReviews.length}개 리뷰</span>
               <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="ml-auto h-8">
                 <Trash2 className="mr-2 h-4 w-4" />
                 선택 삭제
@@ -344,7 +344,7 @@ export default function ReviewsClient() {
                                 <span>상세 보기</span>
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600 focus:text-red-600 cursor-pointer" onClick={() => handleDelete(review.id)}>
+                            <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={() => handleDelete(review.id)}>
                               <Trash2 className="mr-2 h-4 w-4" />
                               <span>삭제</span>
                             </DropdownMenuItem>
