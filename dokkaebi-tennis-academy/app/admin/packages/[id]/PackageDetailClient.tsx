@@ -307,7 +307,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
         <div className="container py-6">
           {/* 헤더 카드 */}
-          <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-white/80 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+          <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center gap-4">
                 <div className="rounded-xl p-3 bg-slate-100 dark:bg-slate-800">
@@ -370,7 +370,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* 고객 정보 */}
-            <Card className="border-slate-200 bg-white/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
+            <Card className="border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
               <CardHeader className="border-b border-slate-200 dark:border-slate-800">
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5 text-sky-600 dark:text-sky-400" />
@@ -396,7 +396,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
 
             {/* 패키지 상태 */}
-            <Card className="border-slate-200 bg-white/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
+            <Card className="border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
               <CardHeader className="border-b border-slate-200 dark:border-slate-800">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
 
             {/* 사용 내역 */}
-            <Card className="md:col-span-2 border-slate-200 bg-white/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
+            <Card className="md:col-span-2 border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
               <CardHeader className="border-b border-slate-200 dark:border-slate-800">
                 <CardTitle className="flex items-center gap-2">
                   <History className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -503,7 +503,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
 
             {/* 운영 내역 */}
-            <Card className="md:col-span-2 border-slate-200 bg-white/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
+            <Card className="md:col-span-2 border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
               <CardHeader className="border-b border-slate-200 dark:border-slate-800">
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
