@@ -308,10 +308,10 @@ export default function TennisProfileForm() {
 
   return (
     <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
-      <CardHeader className="bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-950/30 dark:to-indigo-950/30 border-b">
+      <CardHeader className="bg-muted border-b">
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-3 shadow-lg">
-            <MdSportsTennis className="h-5 w-5 text-white" />
+          <div className="bg-accent text-accent-foreground rounded-2xl p-3 shadow-lg">
+            <MdSportsTennis className="h-5 w-5 text-accent-foreground" />
           </div>
           <div>
             <CardTitle className="text-xl">테니스 프로필</CardTitle>
