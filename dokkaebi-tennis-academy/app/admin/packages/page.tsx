@@ -754,7 +754,7 @@ export default function PackageOrdersClient() {
                       <TableRow>
                         <TableCell colSpan={11} className="py-12">
                           <div className="flex flex-col items-center gap-3 text-center">
-                            <div className="text-base font-medium text-foreground dark:text-muted-foreground">{hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}</div>
+                            <div className="text-base font-medium text-foreground">{hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}</div>
                             <div className="text-sm text-muted-foreground">{hasAnyFilter ? '검색어나 필터를 조정해 보세요.' : '첫 패키지를 생성해 보세요.'}</div>
 
                             <div className="mt-2 flex items-center gap-2">

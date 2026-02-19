@@ -257,7 +257,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <Clock className="h-5 w-5 text-accent" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">주문일자</p>
- <p className="font-semibold text-foreground dark:text-muted-foreground">
+ <p className="font-semibold text-foreground">
  {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR', {
  year: 'numeric',
  month: 'long',
@@ -271,7 +271,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <CreditCard className="h-5 w-5 text-primary" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 방법</p>
- <p className="font-semibold text-foreground dark:text-muted-foreground">무통장입금</p>
+ <p className="font-semibold text-foreground">무통장입금</p>
  </div>
  </div>
  </div>
@@ -283,7 +283,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </div>
  {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
  <div className="bg-card dark:bg-card p-4 rounded-lg border-2 border-orange-200 dark:border-orange-800 space-y-2">
- <div className="font-semibold text-foreground dark:text-muted-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
+ <div className="font-semibold text-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
  <div className="font-mono text-lg font-bold text-accent">{bankLabelMap[paymentInfo.bank].account}</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
  </div>
@@ -300,7 +300,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  {/* 신청자 정보 */}
  <div className="mb-6">
- <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground dark:text-muted-foreground">
+ <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground">
  <MapPin className="h-5 w-5 text-primary" />
  신청자 정보
  </h3>
@@ -308,25 +308,25 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">신청자:</span>
- <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.name || '정보 없음'}</span>
+ <span className="ml-2 font-semibold text-foreground">{serviceInfo?.name || '정보 없음'}</span>
  </div>
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">연락처:</span>
- <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.phone || '정보 없음'}</span>
+ <span className="ml-2 font-semibold text-foreground">{serviceInfo?.phone || '정보 없음'}</span>
  </div>
  </div>
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">이메일:</span>
- <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.email || '정보 없음'}</span>
+ <span className="ml-2 font-semibold text-foreground">{serviceInfo?.email || '정보 없음'}</span>
  </div>
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">서비스 방식:</span>
- <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.serviceMethod || '정보 없음'}</span>
+ <span className="ml-2 font-semibold text-foreground">{serviceInfo?.serviceMethod || '정보 없음'}</span>
  </div>
  {serviceInfo?.serviceMethod === '출장서비스' && serviceInfo?.address && (
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">서비스 주소:</span>
- <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">
+ <span className="ml-2 font-semibold text-foreground">
  {serviceInfo.address} {serviceInfo.addressDetail}
  </span>
  </div>
@@ -334,7 +334,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  {serviceInfo?.serviceRequest && (
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">서비스 요청사항:</span>
- <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo.serviceRequest}</span>
+ <span className="ml-2 font-semibold text-foreground">{serviceInfo.serviceRequest}</span>
  </div>
  )}
  </div>
@@ -345,7 +345,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  {/* 결제 금액 */}
  <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-blue-800">
  <div className="flex justify-between items-center text-2xl font-bold">
- <span className="text-foreground dark:text-muted-foreground">총 결제 금액</span>
+ <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{formatPrice(packageOrder.totalPrice)}원</span>
  </div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-2">패키지 이용료 (입금 확인 후 활성화)</p>

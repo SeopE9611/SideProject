@@ -879,7 +879,7 @@ export default function OperationsClient() {
                               <TableCell className={tdClasses}>
                                 <div className="space-y-1 pl-6">
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground dark:text-muted-foreground')}>연결</Badge>
+                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>연결</Badge>
                                     <div className="font-medium text-sm">{shortenId(it.id)}</div>
                                     {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
                                       <Badge

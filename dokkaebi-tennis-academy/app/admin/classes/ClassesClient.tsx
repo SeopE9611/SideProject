@@ -103,7 +103,7 @@ export default function ClassesPage() {
             <Calendar className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground md:text-5xl">클래스 관리</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">클래스 관리</h1>
             <p className="mt-2 text-lg text-muted-foreground dark:text-muted-foreground">테니스 클래스를 효율적으로 관리하고 운영하세요</p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function ClassesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 클래스</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{classes.length}</p>
+                <p className="text-3xl font-bold text-foreground">{classes.length}</p>
               </div>
               <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
                 <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -129,7 +129,7 @@ export default function ClassesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">모집 중</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{classes.filter((c) => c.status === 'recruiting').length}</p>
+                <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'recruiting').length}</p>
               </div>
               <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3">
                 <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -143,7 +143,7 @@ export default function ClassesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">마감</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{classes.filter((c) => c.status === 'closed').length}</p>
+                <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'closed').length}</p>
               </div>
               <div className="bg-red-50 dark:bg-red-900/30 rounded-xl p-3">
                 <Clock className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -157,7 +157,7 @@ export default function ClassesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">총 등록자</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{classes.reduce((sum, c) => sum + c.enrolled, 0)}</p>
+                <p className="text-3xl font-bold text-foreground">{classes.reduce((sum, c) => sum + c.enrolled, 0)}</p>
               </div>
               <div className="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3">
                 <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -170,7 +170,7 @@ export default function ClassesPage() {
       <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold text-foreground dark:text-muted-foreground">클래스 목록</CardTitle>
+            <CardTitle className="text-xl font-semibold text-foreground">클래스 목록</CardTitle>
             <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg">
               <Link href="/admin/classes/new">
                 <Plus className="mr-2 h-4 w-4" />
@@ -231,13 +231,13 @@ export default function ClassesPage() {
                   <TableHead className="w-[50px]">
                     <Checkbox ref={allCheckboxRef} checked={selectedClasses.length === classes.length} onCheckedChange={handleSelectAll} aria-label="전체 선택" />
                   </TableHead>
-                  <TableHead className="font-semibold text-foreground dark:text-muted-foreground">클래스명</TableHead>
-                  <TableHead className="font-semibold text-foreground dark:text-muted-foreground">강사명</TableHead>
-                  <TableHead className="font-semibold text-foreground dark:text-muted-foreground">요일 및 시간</TableHead>
-                  <TableHead className="font-semibold text-foreground dark:text-muted-foreground">장소</TableHead>
-                  <TableHead className="font-semibold text-foreground dark:text-muted-foreground">정원</TableHead>
-                  <TableHead className="font-semibold text-foreground dark:text-muted-foreground">상태</TableHead>
-                  <TableHead className="w-[100px] font-semibold text-foreground dark:text-muted-foreground">액션</TableHead>
+                  <TableHead className="font-semibold text-foreground">클래스명</TableHead>
+                  <TableHead className="font-semibold text-foreground">강사명</TableHead>
+                  <TableHead className="font-semibold text-foreground">요일 및 시간</TableHead>
+                  <TableHead className="font-semibold text-foreground">장소</TableHead>
+                  <TableHead className="font-semibold text-foreground">정원</TableHead>
+                  <TableHead className="font-semibold text-foreground">상태</TableHead>
+                  <TableHead className="w-[100px] font-semibold text-foreground">액션</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -249,20 +249,20 @@ export default function ClassesPage() {
                       </TableCell>
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
-                          <span className="text-foreground dark:text-muted-foreground">{cls.name}</span>
+                          <span className="text-foreground">{cls.name}</span>
                           <Badge variant="outline" className="w-fit text-xs mt-1">
                             {cls.level}
                           </Badge>
                         </div>
                       </TableCell>
-                      <TableCell className="text-foreground dark:text-muted-foreground">{cls.instructor}</TableCell>
-                      <TableCell className="text-foreground dark:text-muted-foreground">
+                      <TableCell className="text-foreground">{cls.instructor}</TableCell>
+                      <TableCell className="text-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                           {cls.schedule}
                         </div>
                       </TableCell>
-                      <TableCell className="text-foreground dark:text-muted-foreground">
+                      <TableCell className="text-foreground">
                         <div className="flex items-center gap-1">
                           <MapPin className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                           {cls.location}
@@ -270,7 +270,7 @@ export default function ClassesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="text-foreground dark:text-muted-foreground font-medium">
+                          <span className="text-foreground font-medium">
                             {cls.enrolled}/{cls.capacity}
                           </span>
                           <div className="h-2 w-16 overflow-hidden rounded-full bg-muted dark:bg-card">

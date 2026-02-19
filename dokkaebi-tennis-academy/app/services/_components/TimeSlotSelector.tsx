@@ -72,7 +72,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
             const selectedStyles =
               selected === time
                 ? ' bg-primary text-primary-foreground border-primary/70 shadow-sm'
-                : ' bg-card dark:bg-card text-foreground dark:text-muted-foreground border-border dark:border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border';
+                : ' bg-card dark:bg-card text-foreground border-border dark:border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border';
 
             return (
               <button key={time} type="button" className={baseBtn + selectedStyles} onClick={() => onSelect(time)} aria-pressed={selected === time}>

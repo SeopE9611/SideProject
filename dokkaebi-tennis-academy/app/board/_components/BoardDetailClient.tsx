@@ -920,7 +920,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <>
  <button
  type="button"
- className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted"
+ className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-muted"
  onClick={() => startEditComment(comment.id)}
  >
  수정
@@ -995,7 +995,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="mt-3">
  <button
  type="button"
- className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted"
+ className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-muted"
  onClick={() => handleStartReply(comment.id, comment.nickname ?? '회원')}
  >
  <MessageSquare className="h-3.5 w-3.5" />

@@ -248,8 +248,8 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
               "
           >
-            <div className="font-semibold mb-1 text-foreground dark:text-muted-foreground">자가 발송 안내</div>
-            <p className="mb-3 text-foreground dark:text-muted-foreground">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
+            <div className="font-semibold mb-1 text-foreground">자가 발송 안내</div>
+            <p className="mb-3 text-foreground">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
             <button
               type="button"
               onClick={async () => {
@@ -377,7 +377,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       {/* 로딩 오버레이 */}
       {isUserLoading && (
         <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
-          <div className="flex items-center gap-3 text-foreground dark:text-muted-foreground">
+          <div className="flex items-center gap-3 text-foreground">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border dark:border-border border-t-transparent" />
             <span className="text-sm">회원 정보 불러오는 중…</span>
           </div>

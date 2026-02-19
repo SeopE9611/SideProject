@@ -440,7 +440,7 @@ export default function StringPackagesPage() {
                     </h4>
                     <div className="space-y-1">
                       {pkg.benefits.map((benefit, idx) => (
-                        <div key={idx} className="text-sm font-medium text-foreground dark:text-muted-foreground">
+                        <div key={idx} className="text-sm font-medium text-foreground">
                           • {benefit}
                         </div>
                       ))}

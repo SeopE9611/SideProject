@@ -492,7 +492,7 @@ export default function AdminReviewListClient() {
                         <TooltipTrigger asChild>
                           <p className={['text-sm leading-5', expanded[r._id] ? 'whitespace-pre-wrap' : 'line-clamp-2', 'break-words', '[overflow-wrap:anywhere]'].join(' ')}>{r.content}</p>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-md bg-card dark:bg-card text-foreground dark:text-muted-foreground border dark:border-border shadow-md rounded-md p-3">
+                        <TooltipContent className="max-w-md bg-card dark:bg-card text-foreground border dark:border-border shadow-md rounded-md p-3">
                           <p className="whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]">{r.content}</p>
                         </TooltipContent>
                       </Tooltip>
@@ -517,11 +517,11 @@ export default function AdminReviewListClient() {
                   <div className={`min-w-0 ${dim}`}>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
-                      <span className="text-[13px] text-foreground dark:text-muted-foreground">{r.rating}/5</span>
+                      <span className="text-[13px] text-foreground">{r.rating}/5</span>
                       <span
                         className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none
   bg-card dark:bg-card
-  text-foreground dark:text-muted-foreground
+  text-foreground
   border-border dark:border-border"
                       >
                         <ThumbsUp className="h-3 w-3" />
@@ -724,7 +724,7 @@ export default function AdminReviewListClient() {
                 </div>
               </div>
 
-              <div className="rounded-md dark:bg-card p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-foreground dark:text-muted-foreground">{detail.content || ''}</div>
+              <div className="rounded-md dark:bg-card p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-foreground">{detail.content || ''}</div>
             </div>
           )}
           <DialogFooter className="justify-between">

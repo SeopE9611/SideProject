@@ -263,13 +263,13 @@ export default function QnaDetailPage() {
             <CardContent className="p-8 space-y-6">
               {!isLoading && error && (
                 <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                  <div className="whitespace-pre-line break-words leading-relaxed text-foreground dark:text-muted-foreground">{errorBody}</div>
+                  <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{errorBody}</div>
                 </div>
               )}
               {!isLoading && !error && qna && (
                 <>
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground dark:text-muted-foreground">{String(qna.content || '')}</div>
+                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{String(qna.content || '')}</div>
                   </div>
 
                   {Array.isArray(qna.attachments) && qna.attachments.length > 0 && (
@@ -459,7 +459,7 @@ export default function QnaDetailPage() {
               <CardContent className="p-6">
                 {!isEditing ? (
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground dark:text-muted-foreground">{String(qna.answer.content || '')}</div>
+                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{String(qna.answer.content || '')}</div>
                   </div>
                 ) : (
                   <div className="space-y-4">

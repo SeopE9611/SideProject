@@ -225,7 +225,7 @@ export default function ProductsClient() {
               <Package className="h-8 w-8 text-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground">상품 관리</h1>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">상품 관리</h1>
               <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">테니스 스트링 상품을 효율적으로 관리하세요</p>
             </div>
           </div>
@@ -263,7 +263,7 @@ export default function ProductsClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-muted dark:bg-muted animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-muted dark:bg-muted animate-pulse align-middle" /> : c.value}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-border dark:border-border`}>{c.icon}</div>
                 </div>
@@ -399,7 +399,7 @@ export default function ProductsClient() {
                       <TableRow className="border-0">
                         <TableCell colSpan={8} className="text-center" style={{ height: ROW_PX * PAGE_SIZE }}>
                           <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="text-sm font-medium text-foreground dark:text-muted-foreground">조건에 맞는 스트링이 없습니다.</div>
+                            <div className="text-sm font-medium text-foreground">조건에 맞는 스트링이 없습니다.</div>
                             <div className="text-xs text-muted-foreground">필터를 초기화하거나 검색어를 수정해 보세요.</div>
                             <div className="mt-3 flex items-center gap-2">
                               <Button
@@ -437,7 +437,7 @@ export default function ProductsClient() {
                             <TableCell className="text-left align-middle py-3">
                               <Link href={`/products/${s._id}`} className="hover:text-foreground dark:hover:text-foreground">
                                 <div className="space-y-1">
-                                  <div className="truncate font-medium text-foreground dark:text-muted-foreground">{s.name}</div>
+                                  <div className="truncate font-medium text-foreground">{s.name}</div>
                                   <div className="font-mono text-[11px] text-muted-foreground">{s.sku}</div>
                                 </div>
                               </Link>
@@ -453,10 +453,10 @@ export default function ProductsClient() {
                               </Badge>
                             </TableCell>
 
-                            <TableCell className="text-center align-middle text-foreground dark:text-muted-foreground">{s.gauge}</TableCell>
-                            <TableCell className="text-center align-middle text-foreground dark:text-muted-foreground">{materialLabel(s.material)}</TableCell>
+                            <TableCell className="text-center align-middle text-foreground">{s.gauge}</TableCell>
+                            <TableCell className="text-center align-middle text-foreground">{materialLabel(s.material)}</TableCell>
 
-                            <TableCell className="text-right align-middle font-medium text-foreground dark:text-muted-foreground">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
+                            <TableCell className="text-right align-middle font-medium text-foreground">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
 
                             <TableCell className="text-right align-middle">
                               {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-foreground dark:text-foreground">{s.inventory.stock}</span> : <span className="font-medium text-foreground dark:text-foreground">품절</span>}

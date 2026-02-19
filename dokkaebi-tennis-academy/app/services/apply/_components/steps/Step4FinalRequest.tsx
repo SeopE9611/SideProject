@@ -62,7 +62,7 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
           >
             {packageInsufficient ? '패키지 적용 불가' : usingPackage ? '패키지 적용' : '일반 결제'}
           </Badge>
-          <p className="text-sm text-foreground dark:text-muted-foreground">
+          <p className="text-sm text-foreground">
             {packageInsufficient ? '이번 신청은 패키지 잔여 부족으로 일반 결제로 진행됩니다.' : usingPackage ? '이번 신청은 패키지로 처리되어 교체비가 0원으로 계산됩니다.' : '이번 신청은 일반 결제(무통장 입금)로 진행됩니다.'}
           </p>
         </div>

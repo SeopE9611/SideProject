@@ -90,7 +90,7 @@ export default function AdminReviewMaintenancePanel() {
           리뷰 유지보수
         </CardTitle>
         <CardContent>
-          <span className="font-bold text-foreground dark:text-muted-foreground">개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!! </span>
+          <span className="font-bold text-foreground">개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!! </span>
         </CardContent>
       </CardHeader>
 
@@ -147,7 +147,7 @@ export default function AdminReviewMaintenancePanel() {
         </div>
 
         {/* 기능 설명 */}
-        <div className="rounded-md bg-background dark:bg-card p-3 text-[13px] text-foreground dark:text-muted-foreground space-y-2">
+        <div className="rounded-md bg-background dark:bg-card p-3 text-[13px] text-foreground space-y-2">
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
