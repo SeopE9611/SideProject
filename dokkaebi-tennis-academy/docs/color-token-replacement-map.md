@@ -1,5 +1,8 @@
 # 공통 색상 치환표
 
+> 본 문서는 `docs/color-token-policy.md`를 기준으로 한 치환 예시 문서입니다.  
+> 규칙/예외 해석이 충돌하면 `docs/color-token-policy.md`를 우선 적용합니다.
+
 다크/라이트 모두에서 톤 차이를 최소화하면서, `primary/accent/muted` + 시맨틱 토큰(`foreground`, `card`, `border`) 기준으로 정리한 공통 치환표입니다.
 
 ## 텍스트
@@ -29,4 +32,22 @@
 - `dark:to-slate-800` → `dark:to-muted`
 
 ## 브랜드 예외
-- `blue/indigo/purple/emerald/rose/...` 계열(브랜드·상태 표현)은 유지.
+- 허용 범위: 카카오/네이버/구글 등 **제휴사 브랜드 식별이 필요한 UI**
+- 금지 범위: 일반 피처 UI의 다색 팔레트(장식/강조 목적)는 예외로 인정하지 않음
+- 예외 사용 시 반드시 컴포넌트 상단 또는 분기 직전에 브랜드 예외 사유 주석을 남길 것
+
+## 상태색 사용 위치
+- 허용: 배지, 토스트, 폼 검증(성공/경고/오류), 위험 버튼
+- 금지: 일반 본문 강조, 카드 장식, 섹션 배경 포인트
+
+## 코드리뷰 체크리스트 (허용 클래스 / 금지 클래스)
+
+### 허용 클래스
+- `text-foreground`, `text-muted-foreground`, `text-primary`, `text-destructive`, `text-success`, `text-warning`
+- `bg-background`, `bg-card`, `bg-muted`, `bg-primary`, `bg-accent`, `bg-destructive`
+- `border-border`, `ring-ring`, `focus-visible:ring-ring`
+
+### 금지 클래스
+- 일반 UI에서 `text-red-*`, `text-blue-*`, `bg-green-*`, `border-yellow-*` 등 raw 팔레트 직접 사용
+- 일반 UI에서 `#hex`, `rgb()`, `hsl()` 하드코딩
+- `style={{ color: ... }}`, `style={{ background: ... }}`, `style={{ borderColor: ... }}` 형태의 인라인 색상 지정

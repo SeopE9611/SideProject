@@ -1,4 +1,7 @@
-# Color Token 적용 규칙 및 예외 목록
+# Color Token 적용 규칙 및 예외 목록 (Single Source of Truth)
+
+> 이 문서는 색상 토큰 적용의 **단일 기준 문서(SSOT)** 입니다.  
+> `docs/color-token-replacement-map.md`는 본 문서의 규칙을 실무 치환 예시로 풀어쓴 보조 문서이며, 해석이 충돌하면 항상 본 문서를 우선합니다.
 
 ## 검색 기준
 - `#[0-9A-Fa-f]{3,6}`
@@ -20,7 +23,11 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 - `app/services/page.tsx`: 미사용 hex color 데이터 필드 제거.
 
 ### 2) 브랜드 예외(유지)
-아래는 제휴사 브랜드 식별성 유지가 필요한 영역으로, 의도적으로 hex를 유지합니다.
+아래는 **제휴사(카카오/네이버/구글 등) 브랜드 식별성 유지가 필요한 UI**로, 의도적으로 hex를 유지합니다.
+
+브랜드 예외의 범위:
+- 허용: 카카오/네이버/구글 등 **외부 제휴사 브랜드 식별이 필요한 버튼/아이콘/연동 배지**
+- 금지: 일반 피처 UI(대시보드, 리스트, 카드, 차트, 통계 패널, 일반 CTA 등)에서의 다색 팔레트 운용
 
 - `app/login/_components/SocialAuthButtons.tsx`
   - 카카오/네이버 버튼 배경 및 아이콘, 구글 아이콘 멀티 컬러
@@ -72,6 +79,16 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 - `--destructive`: `#DC2626`
 - `--ring`: `#248232`
 
+상태색 허용 위치(필수 준수):
+- 배지: 상태 전달용 `Badge` (`success/warning/destructive`)
+- 토스트: 결과 피드백(`성공/경고/실패`) 알림
+- 폼 검증: 에러/경고/성공 메시지 및 강조 테두리
+- 위험 버튼: 삭제/비활성화/취소 확정 등 파괴적 액션
+
+상태색 금지 위치:
+- 장식 목적의 임의 컬러 포인트
+- 일반 본문/카드 배경/섹션 타이틀의 브랜드 대체 색
+
 ## shadcn/tailwind 매핑 가이드
 
 - 배경/표면: `bg-background`, `bg-card`, `bg-popover`
@@ -100,5 +117,20 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 
 ## 규칙
 - 일반 UI 컴포넌트는 hex/inlined color를 직접 사용하지 않고 디자인 토큰 클래스(`bg-*`, `text-*`, `border-*`)를 사용한다.
-- 제휴사 브랜드 아이덴티티가 요구되는 경우에만 예외를 허용한다.
+- 제휴사 브랜드 아이덴티티(카카오/네이버/구글 등)가 요구되는 경우에만 예외를 허용한다.
+- 일반 피처 UI의 다색 팔레트 사용은 브랜드 예외에 포함되지 않는다.
 - 예외 컴포넌트에는 파일 상단(또는 해당 분기 직전) 주석으로 **브랜드 예외 사유**를 명시한다.
+
+## 코드리뷰 체크리스트 (허용 클래스 / 금지 클래스)
+
+### 허용 클래스
+- 텍스트: `text-foreground`, `text-muted-foreground`, `text-primary`, `text-destructive`, `text-success`, `text-warning`
+- 배경: `bg-background`, `bg-card`, `bg-muted`, `bg-primary`, `bg-accent`, `bg-destructive`
+- 테두리/링: `border-border`, `ring-ring`, `focus-visible:ring-ring`
+- 상태 UI: 배지/토스트/폼 검증/위험 버튼 내 `success|warning|destructive` 계열 토큰
+
+### 금지 클래스
+- 일반 UI에서 `text-red-*`, `text-blue-*`, `bg-green-*`, `border-yellow-*` 등 raw 팔레트 직접 사용
+- 일반 UI에서 `#hex`, `rgb()`, `hsl()` 직접 하드코딩
+- `style={{ color: ... }}`, `style={{ background: ... }}`, `style={{ borderColor: ... }}` 형태의 인라인 색상 지정
+- 브랜드 예외 사유 주석 없이 제휴사 색상(카카오/네이버/구글 등) 사용
