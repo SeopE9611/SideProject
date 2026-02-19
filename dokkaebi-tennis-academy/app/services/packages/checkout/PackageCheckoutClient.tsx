@@ -864,7 +864,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  setAgreeRefund(newValue);
  }}
  />
- <label htmlFor="agree-all" className="font-semibold text-lg text-foreground dark:text-muted-foreground">
+ <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
  전체 동의
  </label>
  </div>
@@ -898,7 +898,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
  }}
  />
- <label htmlFor={item.id} className="text-sm font-medium text-foreground dark:text-muted-foreground">
+ <label htmlFor={item.id} className="text-sm font-medium text-foreground">
  {item.label}
  </label>
  </div>

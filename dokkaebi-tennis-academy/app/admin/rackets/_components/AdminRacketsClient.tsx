@@ -99,7 +99,7 @@ export default function AdminRacketsClient() {
               <MdSportsTennis className="h-8 w-8 text-emerald-600" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground">중고 라켓 관리</h1>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">중고 라켓 관리</h1>
               <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">중고 라켓 재고를 효율적으로 관리하세요</p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function AdminRacketsClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-emerald-200/50 dark:bg-emerald-800/50 animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-emerald-200/50 dark:bg-emerald-800/50 animate-pulse align-middle" /> : c.value}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-emerald-100 dark:border-emerald-800/30`}>{c.icon}</div>
                 </div>
@@ -252,7 +252,7 @@ export default function AdminRacketsClient() {
                 <div className="overflow-auto rounded-lg border border-emerald-100 dark:border-emerald-800/30">
                   <div className="p-12 text-center">
                     <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <div className="text-sm font-medium text-foreground dark:text-muted-foreground">조건에 맞는 라켓이 없습니다.</div>
+                    <div className="text-sm font-medium text-foreground">조건에 맞는 라켓이 없습니다.</div>
                     <div className="text-xs text-muted-foreground mt-2">필터를 초기화하거나 검색어를 수정해 보세요.</div>
                   </div>
                 </div>

@@ -385,7 +385,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-blue-800 mt-4">
  <div className="flex justify-between items-center font-bold">
- <span className="text-foreground dark:text-muted-foreground">총 결제 금액</span>
+ <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{Number(displayTotal).toLocaleString()}원</span>
  </div>
  <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>
@@ -426,7 +426,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-blue-800 mt-4">
  <div className="flex justify-between items-center font-bold">
- <span className="text-foreground dark:text-muted-foreground">총 결제 금액</span>
+ <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{Number(displayTotal).toLocaleString()}원</span>
  </div>
  <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">* 라켓/스트링/교체비 합산 기준</p>
@@ -456,7 +456,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <Badge className="bg-primary/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">입금 불필요</Badge>
  </div>
 
- <p className="mt-1 text-sm text-foreground dark:text-muted-foreground">
+ <p className="mt-1 text-sm text-foreground">
  교체비는 <span className="font-semibold text-emerald-700 dark:text-emerald-300">0원</span> 으로 처리 됩니다.
  </p>
 
@@ -647,7 +647,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  {line.stringName && <p className="font-semibold text-foreground ">스트링: {line.stringName}</p>}
  </div>
 
- <div className="text-sm text-foreground dark:text-muted-foreground text-right">
+ <div className="text-sm text-foreground text-right">
  {(line.tensionMain || line.tensionCross) && (
  <p>
  텐션&nbsp;

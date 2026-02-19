@@ -83,7 +83,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
           <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
             <Truck className="h-8 w-8 text-blue-600 mx-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground dark:text-muted-foreground mb-2">{pageTitle}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground dark:text-muted-foreground">{pageDesc}</p>
         </div>
         {content}

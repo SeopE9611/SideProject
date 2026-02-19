@@ -269,7 +269,7 @@ export default function NoticeDetailPage() {
               {!isLoading && !error && notice && (
                 <>
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground dark:text-muted-foreground">{String(notice.content || '')}</div>
+                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{String(notice.content || '')}</div>
                   </div>
 
                   {imageAtts.length > 0 && (

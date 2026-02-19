@@ -19,7 +19,7 @@ export default function ProductsLoading() {
             <Package className="h-8 w-8 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground">상품 관리</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">상품 관리</h1>
             <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">테니스 스트링 상품을 효율적으로 관리하세요</p>
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function ProductsLoading() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 상품</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">
+                <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
@@ -47,7 +47,7 @@ export default function ProductsLoading() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">판매 중</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">
+                <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
@@ -62,7 +62,7 @@ export default function ProductsLoading() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">재고 부족</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">
+                <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
@@ -77,7 +77,7 @@ export default function ProductsLoading() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">품절</p>
-                <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">
+                <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
@@ -94,7 +94,7 @@ export default function ProductsLoading() {
         <CardHeader className="pb-4 shrink-0">
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
-              <CardTitle className="text-xl font-semibold text-foreground dark:text-muted-foreground">스트링 목록</CardTitle>
+              <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
               <CardDescription className="text-muted-foreground dark:text-muted-foreground">목록을 불러오는 중…</CardDescription>
             </div>
             <Button disabled className="opacity-70">

@@ -1999,14 +1999,14 @@ export default function StringServiceApplyPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/rackets?from=apply')}
-                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background dark:bg-card text-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
+                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background dark:bg-card text-foreground hover:bg-muted dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
                 >
                   라켓 구매
                 </button>
                 <button
                   type="button"
                   onClick={() => router.push('/rackets?from=apply&rentOnly=1')}
-                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background dark:bg-card text-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
+                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background dark:bg-card text-foreground hover:bg-muted dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
                 >
                   라켓 대여
                 </button>
@@ -2051,7 +2051,7 @@ export default function StringServiceApplyPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
               <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
-                결제(주문) 이후 신청으로 진행하면 <span className="font-medium text-foreground dark:text-muted-foreground">금액·결제정보가 자동 반영</span>되어 실수 가능성이 줄어들어요.
+                결제(주문) 이후 신청으로 진행하면 <span className="font-medium text-foreground">금액·결제정보가 자동 반영</span>되어 실수 가능성이 줄어들어요.
               </p>
             </div>
           </div>
@@ -2089,14 +2089,14 @@ export default function StringServiceApplyPage() {
                   <button
                     type="button"
                     onClick={() => router.push('/mypage?tab=orders')}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border dark:border-border text-foreground dark:text-muted-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
+                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border dark:border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
                   >
                     주문 내역
                   </button>
                   <button
                     type="button"
                     onClick={() => router.push('/mypage?tab=rentals')}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border dark:border-border text-foreground dark:text-muted-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
+                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border dark:border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-100"
                   >
                     대여 내역
                   </button>

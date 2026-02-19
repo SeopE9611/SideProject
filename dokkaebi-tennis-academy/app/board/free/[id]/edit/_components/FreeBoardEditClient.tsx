@@ -406,7 +406,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         {/* 본문 카드 (수정 폼) */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground dark:text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
               <MessageSquare className="h-4 w-4 text-teal-500" />
               <span>글 내용 수정</span>
             </CardTitle>

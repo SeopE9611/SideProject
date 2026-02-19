@@ -623,7 +623,7 @@ export default function Step2MountingInfo(props: Props) {
                 </div>
                 <div className="flex-1 text-[12px] leading-relaxed">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <span className="text-base font-semibold tracking-tight text-foreground dark:text-muted-foreground">패키지 사용 가능 여부</span>
+                    <span className="text-base font-semibold tracking-tight text-foreground">패키지 사용 가능 여부</span>
 
                     {packagePreview?.has ? (
                       canApplyPackage ? (
@@ -698,7 +698,7 @@ export default function Step2MountingInfo(props: Props) {
 
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">공통 메인 텐션(kg)</Label>
+                    <Label className="text-xs font-medium text-foreground">공통 메인 텐션(kg)</Label>
                     <Input
                       value={bulkTensionMain}
                       onChange={(e) => setBulkTensionMain(e.target.value)}
@@ -708,7 +708,7 @@ export default function Step2MountingInfo(props: Props) {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">공통 크로스 텐션(kg)</Label>
+                    <Label className="text-xs font-medium text-foreground">공통 크로스 텐션(kg)</Label>
                     <Input
                       value={bulkTensionCross}
                       onChange={(e) => setBulkTensionCross(e.target.value)}
@@ -718,7 +718,7 @@ export default function Step2MountingInfo(props: Props) {
                   </div>
 
                   <div className="space-y-1.5 md:col-span-3">
-                    <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">공통 메모 (선택)</Label>
+                    <Label className="text-xs font-medium text-foreground">공통 메모 (선택)</Label>
                     <Textarea
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
@@ -738,7 +738,7 @@ export default function Step2MountingInfo(props: Props) {
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background from-primary to-primary shadow-sm">
                         <span className="text-sm font-bold text-primary-foreground">{index + 1}</span>
                       </div>
-                      <span className="text-sm font-medium text-foreground dark:text-muted-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
+                      <span className="text-sm font-medium text-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                     </div>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted dark:bg-primary">
                       <div className="h-1.5 w-1.5 rounded-full bg-muted0 dark:bg-primary" />
@@ -750,7 +750,7 @@ export default function Step2MountingInfo(props: Props) {
                   <div className="p-4 space-y-4">
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">라켓 이름/별칭</Label>
+                        <Label className="text-xs font-medium text-foreground">라켓 이름/별칭</Label>
                         <Input
                           value={line.racketType ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'racketType', e.target.value)}
@@ -759,7 +759,7 @@ export default function Step2MountingInfo(props: Props) {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">메인 텐션(kg)</Label>
+                        <Label className="text-xs font-medium text-foreground">메인 텐션(kg)</Label>
                         <Input
                           value={line.tensionMain ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)}
@@ -768,7 +768,7 @@ export default function Step2MountingInfo(props: Props) {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">크로스 텐션(kg)</Label>
+                        <Label className="text-xs font-medium text-foreground">크로스 텐션(kg)</Label>
                         <Input
                           value={line.tensionCross ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)}
@@ -780,7 +780,7 @@ export default function Step2MountingInfo(props: Props) {
 
                     {/* 라켓별 메모 */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-foreground dark:text-muted-foreground">라켓별 메모 (선택)</Label>
+                      <Label className="text-xs font-medium text-foreground">라켓별 메모 (선택)</Label>
                       <Textarea
                         value={line.note ?? ''}
                         onChange={(e) => handleLineFieldChange(index, 'note', e.target.value)}

@@ -735,7 +735,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  </div>
  {/* 안내 */}
  <div className="bg-muted dark:bg-muted rounded-lg p-4">
- <p className="text-sm text-foreground dark:text-muted-foreground">반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.</p>
+ <p className="text-sm text-foreground">반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.</p>
  </div>
  </CardContent>
  </Card>
@@ -797,7 +797,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
  }}
  />
- <label htmlFor={item.id} className="text-sm font-medium text-foreground dark:text-muted-foreground">
+ <label htmlFor={item.id} className="text-sm font-medium text-foreground">
  {item.label}
  </label>
  </div>
@@ -880,7 +880,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  }
  }}
  />
- <label htmlFor="use-all-points" className="text-sm text-foreground dark:text-muted-foreground cursor-pointer">
+ <label htmlFor="use-all-points" className="text-sm text-foreground cursor-pointer">
  전액 사용 (보증금 제외)
  </label>
  </div>

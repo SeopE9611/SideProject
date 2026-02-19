@@ -66,12 +66,12 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                   이번 신청은 일반 교체비 결제로 진행됩니다.
                 </p>
               ) : usingPackage ? (
-                <p className="mt-2 text-sm text-foreground dark:text-muted-foreground leading-relaxed">
+                <p className="mt-2 text-sm text-foreground leading-relaxed">
                   이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-emerald-700 dark:text-emerald-300">교체비는 0원</span>
                   으로 처리되며, 패키지에서 <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                 </p>
               ) : (
-                <p className="mt-2 text-sm text-foreground dark:text-muted-foreground leading-relaxed">패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도 패키지를 사용할 수 있습니다.</p>
+                <p className="mt-2 text-sm text-foreground leading-relaxed">패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도 패키지를 사용할 수 있습니다.</p>
               )}
 
               {/* 숫자 요약 뱃지들 */}
@@ -125,7 +125,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                   }}
                   className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:border-emerald-600"
                 />
-                <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-muted-foreground dark:text-muted-foreground' : 'cursor-pointer text-xs text-foreground dark:text-muted-foreground'}>
+                <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-muted-foreground dark:text-muted-foreground' : 'cursor-pointer text-xs text-foreground'}>
                   이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
                 </Label>
               </div>

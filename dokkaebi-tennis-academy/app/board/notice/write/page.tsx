@@ -671,7 +671,7 @@ export default function NoticeWritePage() {
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground dark:text-muted-foreground">첨부된 파일 ({selectedFiles.length}/5)</p>
+                      <p className="text-sm font-medium text-foreground">첨부된 파일 ({selectedFiles.length}/5)</p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {selectedFiles.map((file, index) => {

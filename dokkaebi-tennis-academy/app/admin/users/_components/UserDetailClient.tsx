@@ -593,7 +593,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   {/* 최근 로그인 장치 */}
                   <div className="mt-2 rounded-xl border bg-card dark:bg-card border-border dark:border-border p-2">
                     <div className="mb-2 flex items-center justify-between">
-                      <div className="text-sm font-medium text-foreground dark:text-muted-foreground">최근 로그인 장치</div>
+                      <div className="text-sm font-medium text-foreground">최근 로그인 장치</div>
                       <Button variant="outline" size="sm" onClick={() => setCleanupOpen(true)} className="whitespace-nowrap">
                         세션 로그 정리
                       </Button>
@@ -740,7 +740,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                           readOnly
                           aria-readonly
                           value={form.postalCode ?? user.postalCode ?? ''}
-                          className="bg-muted/40 text-foreground dark:text-muted-foreground"
+                          className="bg-muted/40 text-foreground"
                           onClick={handleOpenPostcode} // 클릭만으로도 검색 열기 원하면 유지
                         />
                         <Button variant="outline" className="shrink-0 whitespace-nowrap" onClick={handleOpenPostcode} disabled={!daumReady}>
@@ -751,7 +751,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
                     {/* 주소 */}
                     <FormRow label="주소" htmlFor="addr" colSpan>
-                      <Input id="addr" readOnly aria-readonly value={form.address ?? user.address ?? ''} className="bg-muted/40 text-foreground dark:text-muted-foreground" onClick={handleOpenPostcode} />
+                      <Input id="addr" readOnly aria-readonly value={form.address ?? user.address ?? ''} className="bg-muted/40 text-foreground" onClick={handleOpenPostcode} />
                     </FormRow>
 
                     {/* 상세주소 */}

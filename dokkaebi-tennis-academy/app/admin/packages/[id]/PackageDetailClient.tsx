@@ -311,7 +311,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center gap-4">
                 <div className="rounded-xl p-3 bg-background dark:bg-card">
-                  <PackageIcon className="h-7 w-7 text-foreground dark:text-muted-foreground" />
+                  <PackageIcon className="h-7 w-7 text-foreground" />
                 </div>
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold tracking-tight">패키지 상세 관리</h1>

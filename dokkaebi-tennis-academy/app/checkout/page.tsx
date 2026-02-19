@@ -1104,7 +1104,7 @@ export default function CheckoutPage() {
                               else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                             }}
                           />
-                          <label htmlFor={item.id} className="text-sm font-medium text-foreground dark:text-muted-foreground">
+                          <label htmlFor={item.id} className="text-sm font-medium text-foreground">
                             {item.label}
                           </label>
                         </div>
