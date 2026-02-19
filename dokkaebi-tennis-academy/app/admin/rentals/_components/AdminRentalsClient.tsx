@@ -83,7 +83,7 @@ export default function AdminRentalsClient() {
     if (r.withStringService) {
       return { label: '교체서비스 포함', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' };
     }
-    return { label: '단독', className: 'bg-background text-foreground dark:bg-card dark:text-muted-foreground' };
+    return { label: '단독', className: 'bg-background text-foreground' };
   }
   function getLinkBadge(r: RentalRow) {
     if (r.stringingApplicationId) {
@@ -397,7 +397,7 @@ export default function AdminRentalsClient() {
   }
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
-  const thClasses = 'px-4 py-2 text-center align-middle border-b border-border dark:border-border font-semibold text-foreground dark:text-muted-foreground';
+  const thClasses = 'px-4 py-2 text-center align-middle border-b border-border dark:border-border font-semibold text-foreground';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
   function PaymentBadge({ item }: { item: RentalRow }) {
@@ -601,7 +601,7 @@ export default function AdminRentalsClient() {
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground dark:bg-card dark:text-muted-foreground')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200')}>교체서비스 포함</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서 연결</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
@@ -612,24 +612,24 @@ export default function AdminRentalsClient() {
         </CardHeader>
         <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
           <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
-            <TableHeader className="sticky top-0 bg-background dark:bg-card shadow-sm">
+            <TableHeader className="sticky top-0 bg-background shadow-sm">
               <TableRow>
                 <TableHead className={cn(thClasses, 'w-[140px]')}>대여 ID</TableHead>
                 <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'customer' && 'text-primary')}>
                   고객
-                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>라켓</TableHead>
                 <TableHead onClick={() => handleSort('date')} className={cn(thClasses, 'w-36 cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}>
                   대여일
-                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
+                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>기간</TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>상태</TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>결제/배송</TableHead>
                 <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
                   금액
-                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
+                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>…</TableHead>
               </TableRow>
