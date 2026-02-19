@@ -22,7 +22,7 @@ export const splitDateTime = (iso?: string) => {
 };
 
 export const th =
-  'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-background dark:bg-card shadow-sm border-b border-border dark:border-border text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground text-center';
+  'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-background dark:bg-card shadow-sm border-b border-border dark:border-border text-[12px] font-semibold text-foreground text-center';
 export const td = 'px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums';
 
 export const roleColors: Record<'admin' | 'user', string> = {

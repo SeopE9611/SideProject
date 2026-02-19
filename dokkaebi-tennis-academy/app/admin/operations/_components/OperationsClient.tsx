@@ -161,7 +161,7 @@ function isWarnGroup(g: { anchor: OpItem; items: OpItem[] }) {
   return payMismatch || hasMixed;
 }
 
-const thClasses = 'px-4 py-3 text-left align-middle font-semibold text-muted-foreground text-xs whitespace-nowrap';
+const thClasses = 'px-4 py-3 text-left align-middle font-semibold text-foreground text-xs whitespace-nowrap';
 const tdClasses = 'px-4 py-4 align-top';
 const th = thClasses;
 const td = tdClasses;
@@ -562,13 +562,13 @@ export default function OperationsClient() {
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-b border-border dark:border-border">
                     <TableHead className={thClasses}>유형</TableHead>
-                    <TableHead className={thClasses}>ID</TableHead>
+                    <TableHead className={cn(thClasses, 'text-muted-foreground')}>ID</TableHead>
                     <TableHead className={thClasses}>고객</TableHead>
-                    <TableHead className={thClasses}>날짜</TableHead>
+                    <TableHead className={cn(thClasses, 'text-muted-foreground')}>날짜</TableHead>
                     <TableHead className={thClasses}>상태</TableHead>
                     <TableHead className={thClasses}>결제</TableHead>
                     <TableHead className={thClasses}>금액</TableHead>
-                    <TableHead className={thClasses}>연결</TableHead>
+                    <TableHead className={cn(thClasses, 'text-muted-foreground')}>연결</TableHead>
                     <TableHead className={cn(thClasses, 'text-right')}>작업</TableHead>
                   </TableRow>
                 </TableHeader>
