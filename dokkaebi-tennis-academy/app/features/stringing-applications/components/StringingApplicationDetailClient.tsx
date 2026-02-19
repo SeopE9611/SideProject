@@ -636,10 +636,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     <div className="container py-10 space-y-8">
       <div className="mx-auto max-w-4xl">
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 rounded-2xl p-8 border border-green-100 /30 shadow-lg mb-8">
+        <div className="bg-gradient-to-r from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent rounded-2xl p-8 border border-border /30 shadow-lg mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-green-600" /> : <Target className="h-8 w-8 text-green-600" />}</div>
+              <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground ">{isAdmin ? '스트링 신청 관리' : '스트링 신청 상세'}</h1>
                 <p className="mt-1 text-muted-foreground ">신청 ID: {data.id}</p>
@@ -651,7 +651,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <Button
                     variant="outline"
                     size="sm"
-                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-green-50
+                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted
  dark:bg-card/60 dark:hover:bg-secondary/60"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -669,7 +669,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-card/70 backdrop-blur-sm border-border hover:bg-green-50
+                      className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted
  dark:bg-card/60 dark:hover:bg-secondary/60"
                     >
                       <Truck className="w-4 h-4 mr-2" />
@@ -684,7 +684,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     asChild
                     variant="outline"
                     size="sm"
-                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-green-50
+                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted
  dark:bg-card/60 dark:hover:bg-secondary/60"
                   >
                     <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
@@ -706,7 +706,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             ? 'opacity-50 cursor-not-allowed'
                             : isEditMode
                               ? ''
-                              : 'bg-card/70 backdrop-blur-sm border-border hover:bg-green-50 \
+                              : 'bg-card/70 backdrop-blur-sm border-border hover:bg-muted \
  dark:bg-card/60 dark:hover:bg-secondary/60'
                         }
                         onClick={() => {
@@ -803,8 +803,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         </div>
 
         {/* 상태 카드 */}
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden mb-8">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden mb-8">
+          <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
             <div className="flex items-center justify-between">
               <CardTitle>신청 상태</CardTitle>
               <ApplicationStatusBadge status={data.status} />
@@ -876,8 +876,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <User className="h-5 w-5 text-accent" />
@@ -947,7 +947,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
             {!editingCustomer && isEditMode && (
               <CardFooter className="pt-2 flex justify-center bg-muted/50 ">
-                <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-blue-50 border-border">
+                <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-muted border-border">
                   고객 정보 수정
                 </Button>
               </CardFooter>
@@ -955,8 +955,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 결제 정보 */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-accent" /> 결제 정보
               </CardTitle>
@@ -991,16 +991,16 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 패키지 사용 정보 요약 */}
                   {data.packageInfo && (
                     <div
-                      className={data.packageInfo.applied ? 'p-3 rounded-lg border border-emerald-200 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/40' : 'p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40'}
+                      className={data.packageInfo.applied ? 'p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted' : 'p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40'}
                     >
                       <div className="flex items-start gap-2">
                         <div className="mt-0.5">
-                          <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                          <Ticket className="h-4 w-4 text-foreground dark:text-foreground" />
                         </div>
                         <div className="flex-1 text-xs leading-relaxed">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-foreground dark:text-slate-50">패키지 사용 정보</span>
-                            <Badge variant="outline" className={data.packageInfo.applied ? 'border-emerald-300 text-emerald-700 dark:text-emerald-200' : 'border-border text-muted-foreground '}>
+                            <span className="font-semibold text-foreground dark:text-foreground">패키지 사용 정보</span>
+                            <Badge variant="outline" className={data.packageInfo.applied ? 'border-border text-foreground dark:text-foreground' : 'border-border text-muted-foreground '}>
                               {data.packageInfo.applied ? '이번 신청에 패키지 적용' : '이번 신청에는 패키지 미사용'}
                             </Badge>
                           </div>
@@ -1033,10 +1033,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                   {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
                   {data.packageConsumptions && data.packageConsumptions.length > 0 && (
-                    <div className="mt-3 rounded-lg border border-dashed border-purple-100 bg-purple-50/60 px-3 py-2 text-xs text-foreground /60 dark:bg-purple-950/30 ">
+                    <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground /60 dark:bg-muted ">
                       <div className="mb-1 flex items-center justify-between">
                         <div className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5 text-purple-500" />
+                          <Clock className="h-3.5 w-3.5 text-foreground" />
                           <span className="font-semibold">패키지 차감 이력</span>
                         </div>
                         <span className="text-[11px] text-muted-foreground ">총 {totalPackageConsumed}회</span>
@@ -1060,10 +1060,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-lg border border-purple-100 /30">
+                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border /30">
                     <div>
                       <p className="text-sm text-muted-foreground ">결제 금액</p>
-                      <p className="text-xl font-bold text-accent dark:text-purple-400">{data.totalPrice.toLocaleString()}원</p>
+                      <p className="text-xl font-bold text-accent dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
                     </div>
                   </div>
                 </div>
@@ -1072,7 +1072,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
             {!editingPayment && isEditMode && (
               <CardFooter className="flex justify-center bg-muted/50 ">
-                <Button size="sm" variant="outline" onClick={() => setEditingPayment(true)} className="hover:bg-purple-50 border-border">
+                <Button size="sm" variant="outline" onClick={() => setEditingPayment(true)} className="hover:bg-muted border-border">
                   결제 정보 수정
                 </Button>
               </CardFooter>
@@ -1080,17 +1080,17 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 스트링 정보 */}
-          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border-b border-border flex flex-col items-center py-4">
-              <ShoppingCart className="w-6 h-6 text-green-600" />
+          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border flex flex-col items-center py-4">
+              <ShoppingCart className="w-6 h-6 text-foreground" />
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
 
             <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ">
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground dark:text-slate-50">스트링 {stringTypeCount}종</span>
-                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground dark:text-slate-50">라켓 {racketCount}자루</span>
+                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground dark:text-foreground">스트링 {stringTypeCount}종</span>
+                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground dark:text-foreground">라켓 {racketCount}자루</span>
                 </div>
 
                 <div className="text-xs sm:text-sm font-semibold text-accent ">총 장착비 {totalPrice.toLocaleString()}원</div>
@@ -1164,7 +1164,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                       {/* 데이터 행 */}
                       {data.items.map((item, index) => (
-                        <div key={`${item.id}-${index}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-slate-100 /70">
+                        <div key={`${item.id}-${index}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-border /70">
                           <div className="pr-2">
                             <p className="font-medium text-foreground truncate">{item.name}</p>
                           </div>
@@ -1190,7 +1190,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             {/* 수정 버튼 */}
             {isEditMode && (
               <CardFooter className="flex justify-center pt-2 bg-muted/50 ">
-                <Button size="sm" variant="outline" onClick={() => setIsStringModalOpen(true)} className="hover:bg-green-50 border-border">
+                <Button size="sm" variant="outline" onClick={() => setIsStringModalOpen(true)} className="hover:bg-muted border-border">
                   스트링 정보 수정
                 </Button>
               </CardFooter>
@@ -1225,8 +1225,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 요청사항 카드 */}
-          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
               <CardTitle className="flex items-center justify-between">
                 <span>요청사항</span>
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -1266,8 +1266,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         <div className="mt-8 space-y-6">
           {isAdmin && (
             <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 border-b border-border flex flex-col items-center py-4">
-                <Truck className="h-5 w-5 text-indigo-500" />
+              <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border flex flex-col items-center py-4">
+                <Truck className="h-5 w-5 text-foreground" />
                 <CardTitle className="mt-2 text-lg font-semibold">운송장 정보</CardTitle>
               </CardHeader>
 
@@ -1325,8 +1325,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
           {/* 신청 타임라인: 마이페이지 전용 */}
           {!isAdmin && (
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-slate-50/80 via-slate-50/60 to-indigo-50/80 dark:from-slate-900 dark:via-slate-900/60 dark:to-slate-800/80 overflow-hidden mb-8">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-b">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent overflow-hidden mb-8">
+              <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b">
                 <CardTitle className="flex items-center space-x-2">
                   <Clock className="h-5 w-5 text-accent " />
                   <span>신청 타임라인</span>
@@ -1337,7 +1337,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <div className="space-y-4">
                   {/* 신청 접수 */}
                   <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
                       <Clock className="h-5 w-5 text-accent " />
                     </div>
                     <div className="flex-1">
@@ -1349,8 +1349,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 자가 발송(사용자 → 매장) */}
                   {selfShip?.trackingNo && (
                     <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-900">
-                        <Truck className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                        <Truck className="h-5 w-5 text-foreground dark:text-foreground" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground ">자가 발송 완료</p>
@@ -1369,8 +1369,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 매장 발송(매장 → 사용자) */}
                   {invoice?.trackingNumber && (
                     <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
-                        <Truck className="h-5 w-5 text-accent dark:text-indigo-400" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                        <Truck className="h-5 w-5 text-accent dark:text-foreground" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground ">매장 발송</p>
@@ -1387,8 +1387,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                   {/* 전체 상태 요약 */}
                   <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                      <CheckCircle2 className="h-5 w-5 text-foreground dark:text-foreground" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground ">현재 상태</p>
