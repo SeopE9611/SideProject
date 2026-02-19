@@ -29,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useOrderStore } from '@/app/store/orderStore';
 import { useStringingStore } from '@/app/store/stringingStore';
 import { AdminBadgeRow } from '@/components/admin/AdminBadgeRow';
+import { adminRichTooltipClass } from '@/lib/tooltip-style';
 
 /** 데이터를 받아오는 fetcher 함수 */
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -623,11 +624,7 @@ export default function OrdersClient() {
                                   side="top"
                                   align="center"
                                   sideOffset={6}
-                                  style={{
-                                    backgroundColor: 'rgb(var(--popover))',
-                                    color: 'rgb(var(--popover-foreground))',
-                                  }}
-                                  className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
+                                  className={adminRichTooltipClass}
                                 >
                                   <div>
                                     <div className="flex items-center gap-2">
