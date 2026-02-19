@@ -36,6 +36,57 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 - `lib/shadcn-plugin.js`: 디자인 토큰 원본 정의(hex)로서 정상 범위.
 - `app/features/notifications/core/render.ts`: 이메일 HTML 렌더러용 컬러 정의/inline style로 웹 UI 토큰 규칙 적용 대상 외.
 
+## 최소 토큰 세트(3색 유지)
+
+고정 팔레트:
+- Base Light: `#FCFFFC`
+- Base Dark: `#1A1C1A`
+- Brand Green: `#248232`
+- Accent Green: `#2BA84A`
+
+### Light
+- `--background`: `#FCFFFC` (페이지 배경)
+- `--card`: `#FFFFFF` (카드/패널)
+- `--foreground`: `#1A1C1A` (본문/제목)
+- `--muted-foreground`: `#4A544A` (보조 텍스트)
+- `--primary`: `#248232` (주요 버튼/브랜드 인터랙션)
+- `--primary-foreground`: `#FCFFFC`
+- `--accent`: `#2BA84A` (포인트/강조)
+- `--accent-foreground`: `#1A1C1A`
+- `--border`: `#D7E3D7`
+
+### Dark
+- `--background`: `#1A1C1A`
+- `--card`: `#222622` (배경 대비 +1단 밝은 표면)
+- `--foreground`: `#FCFFFC`
+- `--muted-foreground`: `#B9C3B9`
+- `--primary`: `#2BA84A` (다크에서 클릭성 강화)
+- `--primary-foreground`: `#1A1C1A`
+- `--accent`: `#2BA84A`
+- `--accent-foreground`: `#1A1C1A`
+- `--border`: `#3A433A`
+
+### 상태색(실무 최소)
+- `--success`: `#2BA84A`
+- `--warning`: `#D97706`
+- `--destructive`: `#DC2626`
+- `--ring`: `#248232`
+
+## shadcn/tailwind 매핑 가이드
+
+- 배경/표면: `bg-background`, `bg-card`, `bg-popover`
+- 텍스트: `text-foreground`, `text-muted-foreground`
+- 주요 CTA: `bg-primary text-primary-foreground`
+- 보조 강조: `bg-accent text-accent-foreground`
+- 경계/입력: `border-border`, `bg-background`, `ring-ring`
+- 위험 액션: `bg-destructive text-destructive-foreground`
+
+권장 원칙:
+1. `primary`는 배경색이 아니라 **인터랙션(CTA)** 용도로 유지.
+2. 본문은 `text-foreground`, 브랜드 그린은 제목/강조/링크 중심으로 제한.
+3. hover/active는 토큰 기반(`primary/90` 또는 별도 `--primary-hover`)으로 정의.
+4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용.
+
 ## 규칙
 - 일반 UI 컴포넌트는 hex/inlined color를 직접 사용하지 않고 디자인 토큰 클래스(`bg-*`, `text-*`, `border-*`)를 사용한다.
 - 제휴사 브랜드 아이덴티티가 요구되는 경우에만 예외를 허용한다.
