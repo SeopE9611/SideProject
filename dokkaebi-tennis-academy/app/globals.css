@@ -70,6 +70,7 @@ html body[data-scroll-locked] {
   --border: 120 8% 86%;
   --input: 120 8% 86%;
   --ring: 133 59% 41%;
+  --overlay: 120 8% 8%;
 
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
@@ -134,6 +135,7 @@ html body[data-scroll-locked] {
   --border: 120 3% 24%;
   --input: 120 3% 24%;
   --ring: 133 59% 41%;
+  --overlay: 120 10% 4%;
 
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;

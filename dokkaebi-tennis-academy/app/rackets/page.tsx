@@ -37,7 +37,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-muted dark:to-muted">
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 py-10 bp-sm:py-12 bp-md:py-24">
-        <div className="absolute inset-0 bg-black/10 dark:bg-black/30" />
+        <div className="absolute inset-0 bg-overlay/20" />
         <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
           <svg className="w-full h-full" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
