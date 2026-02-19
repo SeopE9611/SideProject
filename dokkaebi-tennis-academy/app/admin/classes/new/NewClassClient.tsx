@@ -130,7 +130,7 @@ export default function NewClassClient() {
               {/* 클래스명 */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium">
-                  클래스명 <span className="text-red-500">*</span>
+                  클래스명 <span className="text-destructive">*</span>
                 </Label>
                 <Input id="name" placeholder="예: 성인반, 주니어반" value={formData.name} onChange={(e) => handleChange('name', e.target.value)} required />
               </div>
@@ -138,7 +138,7 @@ export default function NewClassClient() {
               {/* 강사 선택 */}
               <div className="space-y-2">
                 <Label htmlFor="instructor" className="text-sm font-medium">
-                  강사 <span className="text-red-500">*</span>
+                  강사 <span className="text-destructive">*</span>
                 </Label>
                 <Select value={formData.instructor} onValueChange={(value) => handleChange('instructor', value)} required>
                   <SelectTrigger id="instructor">
@@ -160,7 +160,7 @@ export default function NewClassClient() {
               {/* 요일 및 시간 */}
               <div className="space-y-2">
                 <Label htmlFor="schedule" className="text-sm font-medium">
-                  요일 및 시간 <span className="text-red-500">*</span>
+                  요일 및 시간 <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -171,7 +171,7 @@ export default function NewClassClient() {
               {/* 정원 */}
               <div className="space-y-2">
                 <Label htmlFor="capacity" className="text-sm font-medium">
-                  정원 <span className="text-red-500">*</span>
+                  정원 <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex items-center space-x-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
@@ -208,7 +208,7 @@ export default function NewClassClient() {
               {/* 장소 */}
               <div className="space-y-2">
                 <Label htmlFor="location" className="text-sm font-medium">
-                  장소 <span className="text-red-500">*</span>
+                  장소 <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />

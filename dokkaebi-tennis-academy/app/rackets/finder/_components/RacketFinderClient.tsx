@@ -500,15 +500,15 @@ export default function RacketFinderClient() {
                 className={cn(
                   'flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all',
                   'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
-                  draft.strict && 'bg-amber-500/10 dark:bg-amber-500/20 ring-1 ring-amber-500/30',
+                  draft.strict && 'bg-muted dark:bg-muted ring-1 ring-amber-500/30',
                 )}
               >
                 <Checkbox checked={draft.strict} onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))} />
                 <div className="flex-1">
-                  <div className={cn('text-sm font-medium', draft.strict && 'text-amber-600 dark:text-amber-400')}>정확도 모드</div>
+                  <div className={cn('text-sm font-medium', draft.strict && 'text-primary dark:text-primary')}>정확도 모드</div>
                   <div className="text-xs text-muted-foreground">스펙 누락 상품 제외</div>
                 </div>
-                {draft.strict && <Sparkles className="h-4 w-4 text-amber-500" />}
+                {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
               </label>
 
               <div className="space-y-4">

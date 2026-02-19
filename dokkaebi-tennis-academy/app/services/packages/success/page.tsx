@@ -205,12 +205,12 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  : 'from-emerald-50  dark:from-emerald-900/20 dark:to-teal-900/20'
  } rounded-xl border-2 ${
  packageInfo.id.includes('10')
- ? 'border-border dark:border-blue-800'
+ ? 'border-border dark:border-border'
  : packageInfo.id.includes('30')
  ? 'border-indigo-200 dark:border-indigo-800'
  : packageInfo.id.includes('50')
  ? 'border-purple-200 dark:border-purple-800'
- : 'border-border dark:border-emerald-800'
+ : 'border-border dark:border-border'
  }`}
  >
  <div className="flex items-center gap-4 mb-6">
@@ -290,8 +290,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  ) : (
  <p className="text-muted-foreground">선택된 은행 없음</p>
  )}
- <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-border dark:border-red-800">
- <p className="text-red-700 dark:text-red-400 font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+ <div className="mt-4 p-3 bg-destructive dark:bg-destructive rounded-lg border border-border dark:border-destructive">
+ <p className="text-destructive dark:text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
  </div>
  </div>
  </div>
@@ -343,7 +343,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <Separator className="my-6" />
 
  {/* 결제 금액 */}
- <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-blue-800">
+ <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-border">
  <div className="flex justify-between items-center text-2xl font-bold">
  <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{formatPrice(packageOrder.totalPrice)}원</span>

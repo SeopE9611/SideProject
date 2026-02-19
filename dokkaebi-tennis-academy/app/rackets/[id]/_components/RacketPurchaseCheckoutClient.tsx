@@ -261,11 +261,11 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
           주문/결제/개인정보 제공에 동의합니다.
         </label>
 
-        <button className="w-full rounded bg-black px-4 py-2 text-sm text-white disabled:bg-slate-300" disabled={!canSubmit || submitting} onClick={onSubmit}>
+        <button className="w-full rounded bg-black px-4 py-2 text-sm text-white disabled:bg-muted" disabled={!canSubmit || submitting} onClick={onSubmit}>
           {submitting ? '처리 중...' : '스트링 선택으로 이동'}
         </button>
 
-        {racket.status !== 'available' && <div className="text-sm text-red-600">현재 판매 가능한 라켓이 아닙니다. (status: {racket.status})</div>}
+        {racket.status !== 'available' && <div className="text-sm text-destructive">현재 판매 가능한 라켓이 아닙니다. (status: {racket.status})</div>}
       </div>
     </div>
   );

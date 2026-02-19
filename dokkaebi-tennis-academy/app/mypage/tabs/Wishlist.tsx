@@ -50,7 +50,7 @@ export default function Wishlist() {
                   <Image src={it.image || '/placeholder.svg'} alt={it.name} fill sizes="(max-width:768px) 50vw, (max-width:1024px) 33vw, 25vw" className="object-cover rounded-xl border shadow-sm" />
                 </div>
                 <div className="mt-3">
-                  <div className="font-medium line-clamp-2 hover:underline hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{it.name}</div>
+                  <div className="font-medium line-clamp-2 hover:underline hover:text-primary dark:hover:text-primary transition-colors">{it.name}</div>
                   <div className="text-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
                 </div>
               </Link>
@@ -76,7 +76,7 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 bg-transparent"
+                  className="border-destructive hover:bg-destructive dark:border-destructive dark:hover:bg-destructive bg-transparent"
                   onClick={() => {
                     remove(it.id);
                     // 현재 페이지에서 바로 사라지도록, 노출 개수 보정
@@ -94,7 +94,7 @@ export default function Wishlist() {
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent">
+          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
             더 보기
           </Button>
         ) : (

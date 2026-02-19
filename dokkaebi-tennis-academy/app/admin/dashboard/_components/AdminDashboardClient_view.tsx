@@ -297,11 +297,11 @@ export default function AdminDashboardClient() {
           <p className="text-sm text-muted-foreground">긴급 대응이 필요한 항목</p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-red-200 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/10">
+          <Card className="border-destructive bg-destructive dark:border-destructive dark:bg-destructive">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <div className="rounded-full bg-red-100 p-1.5 dark:bg-red-900/30">
-                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                <div className="rounded-full bg-destructive p-1.5 dark:bg-destructive">
+                  <AlertTriangle className="h-4 w-4 text-destructive dark:text-destructive" />
                 </div>
                 긴급 처리
               </CardTitle>
@@ -419,11 +419,11 @@ export default function AdminDashboardClient() {
             <StackedBarChart data={last14RevenueBySource} />
             <div className="mt-6 flex flex-wrap items-center gap-6 rounded-lg bg-muted/30 px-4 py-3">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-sm bg-blue-500/70" />
+                <div className="h-3 w-3 rounded-sm bg-primary" />
                 <span className="text-xs font-medium">주문</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-sm bg-emerald-500/70" />
+                <div className="h-3 w-3 rounded-sm bg-primary" />
                 <span className="text-xs font-medium">교체 서비스</span>
               </div>
               <div className="flex items-center gap-2">
@@ -741,8 +741,8 @@ export default function AdminDashboardClient() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">리뷰 현황</CardTitle>
-                <div className="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/30">
-                  <Star className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <div className="rounded-lg bg-muted p-2 dark:bg-muted">
+                  <Star className="h-4 w-4 text-primary dark:text-primary" />
                 </div>
               </div>
             </CardHeader>
@@ -771,8 +771,8 @@ export default function AdminDashboardClient() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">포인트 7일</CardTitle>
-                <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                  <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <div className="rounded-lg bg-primary p-2 dark:bg-primary">
+                  <Activity className="h-4 w-4 text-primary dark:text-primary" />
                 </div>
               </div>
             </CardHeader>
@@ -795,8 +795,8 @@ export default function AdminDashboardClient() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">커뮤니티</CardTitle>
-                <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
-                  <ClipboardList className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <div className="rounded-lg bg-primary p-2 dark:bg-primary">
+                  <ClipboardList className="h-4 w-4 text-primary dark:text-primary" />
                 </div>
               </div>
             </CardHeader>

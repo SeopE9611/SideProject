@@ -97,7 +97,7 @@ export function UserSidebar() {
             variant="ghost"
             className={cn(
               'w-full justify-start gap-3 h-12 px-4 transition-all duration-300 group relative overflow-hidden rounded-xl',
-              isActive ? `bg-gradient-to-r ${bgGradient} border border-transparent shadow-md ring-1 ring-slate-900/6 dark:ring-white/10` : 'hover:bg-muted dark:hover:bg-card'
+              isActive ? `bg-gradient-to-r ${bgGradient} border border-transparent shadow-md ring-1 ring-ring dark:ring-white/10` : 'hover:bg-muted dark:hover:bg-card'
             )}
             asChild
           >

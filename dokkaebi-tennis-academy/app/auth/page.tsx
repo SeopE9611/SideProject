@@ -40,7 +40,7 @@ export default function AuthGatePage() {
     <div className="fixed inset-0 z-[9999]">
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
       <div className="relative h-full flex items-center justify-center p-4">
-        <div className="w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 shadow-2xl p-6 space-y-4">
+        <div className="w-full max-w-md rounded-2xl bg-card dark:bg-zinc-900 shadow-2xl p-6 space-y-4">
           <h1 className="text-xl font-semibold">🔒 아직 개발 단계입니다</h1>
           <p className="text-sm text-zinc-500">접근하려면 개발자 전용 비밀번호를 입력하세요.</p>
 
@@ -51,12 +51,12 @@ export default function AuthGatePage() {
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               placeholder="개발자 전용 비밀번호"
-              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 ring-indigo-500"
+              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-card dark:bg-zinc-800 px-3 py-2 outline-none focus:ring-2 ring-indigo-500"
               autoFocus
             />
           </div>
 
-          {msg && <p className="text-sm text-red-500">{msg}</p>}
+          {msg && <p className="text-sm text-destructive">{msg}</p>}
 
           <button type="button" disabled={loading || !pw} onClick={handleClick} className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 font-medium disabled:opacity-60">
             {loading ? '확인 중…' : '입장하기'}

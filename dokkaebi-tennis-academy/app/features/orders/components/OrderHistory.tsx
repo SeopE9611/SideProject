@@ -18,8 +18,8 @@ function getIconProps(status: string) {
     case '대기중':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-gray-300/70 bg-gray-100/40 dark:border-gray-600/60 dark:bg-gray-900/40',
-        iconClasses: 'text-gray-700 dark:text-gray-200',
+        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-card',
+        iconClasses: 'text-foreground dark:text-muted-foreground',
       };
     case '결제완료':
       return {
@@ -30,8 +30,8 @@ function getIconProps(status: string) {
     case '배송중':
       return {
         Icon: Truck,
-        wrapperClasses: 'border-blue-300/70 bg-blue-100/40 dark:border-blue-600/60 dark:bg-blue-900/30',
-        iconClasses: 'text-blue-700 dark:text-blue-300',
+        wrapperClasses: 'border-border bg-primary dark:border-border dark:bg-primary',
+        iconClasses: 'text-primary dark:text-primary',
       };
     case '배송완료':
       return {
@@ -42,14 +42,14 @@ function getIconProps(status: string) {
     case '환불':
       return {
         Icon: RotateCcw,
-        wrapperClasses: 'border-red-300/70 bg-red-100/40 dark:border-red-600/60 dark:bg-red-900/30',
-        iconClasses: 'text-red-700 dark:text-red-300',
+        wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
+        iconClasses: 'text-destructive dark:text-destructive',
       };
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-red-300/70 bg-red-100/40 dark:border-red-600/60 dark:bg-red-900/30',
-        iconClasses: 'text-red-700 dark:text-red-300',
+        wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
+        iconClasses: 'text-destructive dark:text-destructive',
       };
     case '배송정보변경':
       return {
@@ -141,8 +141,8 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   };
 
   return (
-    <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-slate-900/60">
-      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-slate-900/30 rounded-t-xl">
+    <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
+      <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <CardTitle>처리 이력</CardTitle>
         <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>

@@ -469,7 +469,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {post.commentsCount ? <span className="text-xs text-accent">[{post.commentsCount}]</span> : null}
 
                           {/* 이미지 첨부 아이콘 */}
-                          {post.images && post.images.length > 0 && <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-emerald-500" aria-label="이미지 첨부 있음" />}
+                          {post.images && post.images.length > 0 && <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-primary" aria-label="이미지 첨부 있음" />}
 
                           {/* 파일 첨부 아이콘 */}
                           {post.attachments && post.attachments.length > 0 && <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-sky-500" aria-label="파일 첨부 있음" />}
@@ -580,7 +580,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {/* 이미지 첨부 아이콘 */}
                         {post.images && post.images.length > 0 && (
                           <span className="flex items-center justify-center rounded-full">
-                            <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-emerald-500" aria-label="이미지 첨부 있음" />
+                            <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-primary" aria-label="이미지 첨부 있음" />
                           </span>
                         )}
 

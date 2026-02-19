@@ -109,13 +109,13 @@ const getApplicationStatusIcon = (status: Application['status']) => {
     case '검토 중':
       return <Clock className="h-4 w-4 text-yellow-500" />;
     case '접수완료':
-      return <CheckCircle className="h-4 w-4 text-blue-500" />;
+      return <CheckCircle className="h-4 w-4 text-primary" />;
     case '작업 중':
       return <Clock className="h-4 w-4 text-sky-500" />;
     case '교체완료':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+      return <CheckCircle className="h-4 w-4 text-primary" />;
     default:
-      return <Ban className="h-4 w-4 text-red-500" />;
+      return <Ban className="h-4 w-4 text-destructive" />;
   }
 };
 
@@ -273,7 +273,7 @@ export default function ApplicationsClient() {
 
   // 에러
   if (error) {
-    return <p className="text-center py-4 text-red-500">에러: {error.message}</p>;
+    return <p className="text-center py-4 text-destructive">에러: {error.message}</p>;
   }
 
   // 첫 로딩
@@ -408,8 +408,8 @@ export default function ApplicationsClient() {
                       return (
                         <Badge
                           variant="outline"
-                          className="ml-1 border-amber-200/60 bg-amber-50/80 text-[11px] font-medium text-amber-800
-        dark:border-amber-400/50 dark:bg-amber-950/40 dark:text-amber-200"
+                          className="ml-1 border-border bg-muted text-[11px] font-medium text-primary
+        dark:border-border dark:bg-muted dark:text-primary"
                         >
                           취소 요청됨
                         </Badge>
@@ -524,7 +524,7 @@ export default function ApplicationsClient() {
                                     size="sm"
                                     disabled={!canConfirm}
                                     onClick={() => handleConfirmService(app.id)}
-                                    className="border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 dark:border-border dark:hover:bg-emerald-950 transition-colors"
+                                    className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:bg-primary transition-colors"
                                   >
                                     <CheckCircle className="mr-1 h-4 w-4" />
                                     {label}

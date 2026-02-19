@@ -98,7 +98,7 @@ export default function RacketFilterPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="라켓 모델 검색..."
-                className="pl-10 pr-10 rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400 transition-colors w-full"
+                className="pl-10 pr-10 rounded-lg border-2 border-border focus:border-border dark:focus:border-border transition-colors w-full"
               />
               {searchQuery && (
                 <button
@@ -127,7 +127,7 @@ export default function RacketFilterPanel({
               브랜드
             </Label>
             <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-              <SelectTrigger className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400">
+              <SelectTrigger className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
@@ -145,7 +145,7 @@ export default function RacketFilterPanel({
           <div className="space-y-1.5 mb-6">
             <Label>상태 등급</Label>
             <Select value={selectedCondition ?? 'all'} onValueChange={(v) => setSelectedCondition(v === 'all' ? null : v)}>
-              <SelectTrigger className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400">
+              <SelectTrigger className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent className="dark:bg-card dark:border-border">
@@ -169,7 +169,7 @@ export default function RacketFilterPanel({
                   onChangePriceMin(raw === '' ? null : Number(raw));
                 }}
                 placeholder="최소"
-                className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400"
+                className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border"
               />
               <span className="text-muted-foreground">~</span>
               <Input
@@ -180,7 +180,7 @@ export default function RacketFilterPanel({
                   onChangePriceMax(raw === '' ? null : Number(raw));
                 }}
                 placeholder="최대"
-                className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400"
+                className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border"
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-2">

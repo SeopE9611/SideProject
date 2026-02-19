@@ -63,7 +63,7 @@
 //                 <CardContent className="space-y-1 text-sm">
 //                   <div className="text-muted-foreground flex items-center gap-1">
 //                     {/* 취소요청 상태일 때만 경고 아이콘 표시 */}
-//                     {hasCancelRequest && <AlertTriangle className="h-3 w-3 text-amber-500" aria-hidden="true" />}
+//                     {hasCancelRequest && <AlertTriangle className="h-3 w-3 text-primary" aria-hidden="true" />}
 //                     <span>{app._id}</span>
 //                   </div>
 

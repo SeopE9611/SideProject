@@ -16,7 +16,7 @@ export default function ProductsLoading() {
       <div className="mb-2">
         <div className="flex items-center space-x-3 mb-4">
           <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
-            <Package className="h-8 w-8 text-blue-600" />
+            <Package className="h-8 w-8 text-primary" />
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">상품 관리</h1>
@@ -36,8 +36,8 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
-                <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="bg-primary dark:bg-primary rounded-xl p-3">
+                <Package className="h-6 w-6 text-primary dark:text-primary" />
               </div>
             </div>
           </CardContent>
@@ -51,8 +51,8 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3">
-                <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="bg-primary dark:bg-primary rounded-xl p-3">
+                <CheckCircle className="h-6 w-6 text-primary dark:text-primary" />
               </div>
             </div>
           </CardContent>

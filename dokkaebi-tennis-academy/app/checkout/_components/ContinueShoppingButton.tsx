@@ -25,9 +25,9 @@ export default function ContinueShoppingButton({ deliveryMethod, withStringServi
     <Button
       onClick={handleClick}
       variant="outline"
-      className="w-full h-12 border-2 border-emerald-300 dark:border-emerald-600 hover:bg-primary hover:from-emerald-50 hover:to-green-50 dark:hover:from-emerald-900/20 dark:hover:to-green-900/20 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all duration-300 group bg-transparent"
+      className="w-full h-12 border-2 border-border dark:border-border hover:bg-primary hover:from-emerald-50 hover:to-green-50 dark:hover:from-emerald-900/20 dark:hover:to-green-900/20 hover:border-border dark:hover:border-border transition-all duration-300 group bg-transparent"
     >
-      <ShoppingBag className="h-4 w-4 mr-2 group-hover:text-primary dark:group-hover:text-emerald-400 transition-colors" />
+      <ShoppingBag className="h-4 w-4 mr-2 group-hover:text-primary dark:group-hover:text-primary transition-colors" />
       쇼핑 계속하기
       <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
     </Button>

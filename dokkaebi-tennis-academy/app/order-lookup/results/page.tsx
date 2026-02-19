@@ -57,9 +57,9 @@ const getStatusColor = (status: string) => {
     case '배송완료':
       return 'bg-accent text-accent-foreground border-border';
     case '배송중':
-      return 'bg-accent text-blue-800 border-border';
+      return 'bg-accent text-primary border-border';
     case '배송준비중':
-      return 'bg-amber-100 text-amber-800 border-amber-200';
+      return 'bg-muted text-primary border-border';
     case '주문취소':
       return 'bg-accent text-accent-foreground border-border';
     default:
@@ -255,7 +255,7 @@ export default function OrderLookupResultsPage() {
                 <Package className="w-8 h-8" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">조회 오류</h1>
-              <p className="text-xl text-red-100">주문 정보를 불러오는 중 문제가 발생했습니다</p>
+              <p className="text-xl text-destructive">주문 정보를 불러오는 중 문제가 발생했습니다</p>
             </div>
           </div>
         </div>
@@ -272,12 +272,12 @@ export default function OrderLookupResultsPage() {
                   <p className="text-primary mb-8 max-w-md">{error}</p>
                   {fieldErrors && (
                     <div className="w-full max-w-md mb-8 text-left">
-                      <div className="rounded-lg border border-border bg-red-50 p-4">
+                      <div className="rounded-lg border border-border bg-destructive p-4">
                         <p className="text-sm font-semibold text-accent-foreground mb-2">입력값 오류 상세</p>
                         <ul className="list-disc pl-5 space-y-1">
                           {Object.entries(fieldErrors).map(([field, msgs]) =>
                             (msgs ?? []).map((msg, i) => (
-                              <li key={`${field}-${i}`} className="text-sm text-red-700">
+                              <li key={`${field}-${i}`} className="text-sm text-destructive">
                                 <span className="font-medium">{field}:</span> {msg}
                               </li>
                             )),
@@ -342,7 +342,7 @@ export default function OrderLookupResultsPage() {
               {orders && orders.length > 0 ? (
                 <div className="space-y-6">
                   {orders.map((order, index) => (
-                    <Card key={order.id} className="overflow-hidden border-2 border-gray-100 hover:border-border transition-all duration-200 hover:shadow-lg">
+                    <Card key={order.id} className="overflow-hidden border-2 border-border hover:border-border transition-all duration-200 hover:shadow-lg">
                       <div className="p-6">
                         {/* Order Header */}
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
@@ -393,14 +393,14 @@ export default function OrderLookupResultsPage() {
                             <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                             <div className="min-w-0">
                               <p className="text-xs text-primary mb-1">결제금액</p>
-                              <p className="font-bold text-emerald-700">{formatCurrency(order.totalAmount)}</p>
+                              <p className="font-bold text-primary">{formatCurrency(order.totalAmount)}</p>
                             </div>
                           </div>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                          <Button variant="outline" className="flex items-center gap-2 border-border text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 bg-transparent" onClick={() => handleViewDetails(order.id)}>
+                          <Button variant="outline" className="flex items-center gap-2 border-border text-primary hover:bg-primary hover:border-border bg-transparent" onClick={() => handleViewDetails(order.id)}>
                             <Package className="w-4 h-4" />
                             상세보기
                             <ChevronRight className="ml-1 h-4 w-4" />
@@ -420,7 +420,7 @@ export default function OrderLookupResultsPage() {
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 cursor-default">
+                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary px-4 py-2 text-sm font-semibold text-primary cursor-default">
                                         <CheckCircle2 className="w-4 h-4 mr-2" />
                                         스트링 신청 완료
                                       </div>

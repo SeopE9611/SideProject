@@ -24,8 +24,8 @@ function getIconProps(status: string) {
     case '배송중':
       return {
         Icon: Truck,
-        wrapperClasses: 'border-blue-300 bg-blue-100',
-        iconClasses: 'text-blue-600',
+        wrapperClasses: 'border-border bg-primary',
+        iconClasses: 'text-primary',
       };
     case '배송완료':
       return {
@@ -36,14 +36,14 @@ function getIconProps(status: string) {
     case '환불':
       return {
         Icon: RotateCcw,
-        wrapperClasses: 'border-red-300 bg-red-100',
-        iconClasses: 'text-red-600',
+        wrapperClasses: 'border-destructive bg-destructive',
+        iconClasses: 'text-destructive',
       };
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-red-300 bg-red-100',
-        iconClasses: 'text-red-600',
+        wrapperClasses: 'border-destructive bg-destructive',
+        iconClasses: 'text-destructive',
       };
     case '배송정보변경':
       return {

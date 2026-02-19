@@ -25,8 +25,8 @@ function variantCopy(variant: LoginGateVariant) {
       ),
       perks: [
         { icon: <Ticket className="h-4 w-4 text-indigo-600" />, text: '패키지 잔여 횟수 관리' },
-        { icon: <Shield className="h-4 w-4 text-emerald-600" />, text: '안전한 주문 조회' },
-        { icon: <Star className="h-4 w-4 text-amber-600" />, text: '멤버 전용 혜택' },
+        { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 주문 조회' },
+        { icon: <Star className="h-4 w-4 text-primary" />, text: '멤버 전용 혜택' },
       ] satisfies Perk[],
       secondary: { href: '/services/packages', label: '패키지 둘러보기' },
     };
@@ -39,7 +39,7 @@ function variantCopy(variant: LoginGateVariant) {
       perks: [
         { icon: <ShoppingCart className="h-4 w-4 text-indigo-600" />, text: '주문/구매 내역 관리' },
         { icon: <Truck className="h-4 w-4 text-sky-600" />, text: '배송/수령 상태 확인' },
-        { icon: <Shield className="h-4 w-4 text-emerald-600" />, text: '안전한 결제/보안' },
+        { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 결제/보안' },
       ] satisfies Perk[],
       secondary: { href: '/', label: '홈으로' },
     };
@@ -58,7 +58,7 @@ function variantCopy(variant: LoginGateVariant) {
       perks: [
         { icon: <ShoppingCart className="h-4 w-4 text-indigo-600" />, text: '주문/구매 내역 확인' },
         { icon: <Truck className="h-4 w-4 text-sky-600" />, text: '배송/수령 상태 확인' },
-        { icon: <Shield className="h-4 w-4 text-emerald-600" />, text: '보안 인증 기반 조회' },
+        { icon: <Shield className="h-4 w-4 text-primary" />, text: '보안 인증 기반 조회' },
       ] satisfies Perk[],
       secondary: { href: '/', label: '홈으로' },
     };
@@ -68,8 +68,8 @@ function variantCopy(variant: LoginGateVariant) {
     minHeight: 'min-h-[60vh]',
     description: <>해당 기능을 이용하려면 로그인 해주세요.</>,
     perks: [
-      { icon: <Shield className="h-4 w-4 text-emerald-600" />, text: '안전한 계정 보호' },
-      { icon: <Star className="h-4 w-4 text-amber-600" />, text: '멤버 전용 혜택' },
+      { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 계정 보호' },
+      { icon: <Star className="h-4 w-4 text-primary" />, text: '멤버 전용 혜택' },
       { icon: <Ticket className="h-4 w-4 text-indigo-600" />, text: '회원 전용 서비스' },
     ] satisfies Perk[],
     secondary: { href: '/', label: '홈으로' },

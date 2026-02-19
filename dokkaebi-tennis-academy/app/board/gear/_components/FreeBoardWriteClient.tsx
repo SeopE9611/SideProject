@@ -341,7 +341,7 @@ export default function FreeBoardWriteClient() {
         {/* 글쓰기 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/40">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -363,7 +363,7 @@ export default function FreeBoardWriteClient() {
                       onClick={() => setCategory(opt.value as CategoryValue)}
                       className={cn(
                         'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        category === opt.value ? 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}
@@ -410,7 +410,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-card dark:bg-card"
+                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card dark:bg-card"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -459,7 +459,7 @@ export default function FreeBoardWriteClient() {
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
+                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
@@ -471,7 +471,7 @@ export default function FreeBoardWriteClient() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-red-500"
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-destructive"
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -485,7 +485,7 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 에러 메시지 */}
-              {/* {errorMsg && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-800 dark:bg-red-950/60">{errorMsg}</div>} */}
+              {/* {errorMsg && <div className="rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive dark:border-destructive dark:bg-destructive">{errorMsg}</div>} */}
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">

@@ -17,7 +17,7 @@ function safeVerifyAccessToken(token?: string) {
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
-    return <div className="p-6 text-red-500 font-bold">상품을 찾을 수 없습니다</div>;
+    return <div className="p-6 text-destructive font-bold">상품을 찾을 수 없습니다</div>;
   }
   const client = await clientPromise;
   const db = client.db();
@@ -27,7 +27,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   if (payload?.sub) currentUserId = new ObjectId(String(payload.sub));
 
   const product = await db.collection('products').findOne({ _id: new ObjectId(id) });
-  if (!product) return <div className="p-6 text-red-500 font-bold">상품을 찾을 수 없습니다</div>;
+  if (!product) return <div className="p-6 text-destructive font-bold">상품을 찾을 수 없습니다</div>;
 
   // 최신 리뷰 10개 (숨김 포함) — 서버에서 보안 마스킹
   const reviews = await db

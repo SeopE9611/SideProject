@@ -124,10 +124,10 @@ export default function AdminReviewMaintenancePanel() {
             </div>
           ) : lockStatus.locked ? (
             <>
-              <div className="inline-flex items-center gap-2 text-amber-700">
+              <div className="inline-flex items-center gap-2 text-primary">
                 <Lock className="h-4 w-4" />
                 다른 유지보수 작업이 실행 중입니다.
-                {lockStatus.lockedUntil && <span className="text-amber-800/80">해제 예정: {new Date(lockStatus.lockedUntil).toLocaleString('ko-KR')}</span>}
+                {lockStatus.lockedUntil && <span className="text-primary">해제 예정: {new Date(lockStatus.lockedUntil).toLocaleString('ko-KR')}</span>}
               </div>
               <Button size="sm" variant="outline" onClick={forceUnlock} className="h-7 px-2 text-xs">
                 <Unlock className="h-3.5 w-3.5 mr-1" />

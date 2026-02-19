@@ -159,15 +159,15 @@ export default function MypageClient({ user }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-5xl font-black mb-1 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent truncate">안녕하세요, {user.name}님!</h1>
-                  <p className="text-sm bp-sm:text-base bp-lg:text-xl text-blue-100">도깨비 테니스의 회원이 되어주셔서 감사합니다</p>
+                  <p className="text-sm bp-sm:text-base bp-lg:text-xl text-primary">도깨비 테니스의 회원이 되어주셔서 감사합니다</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-6">
                 <div className="bg-card/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg">
-                  <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-blue-200" />
+                  <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{ordersCount}</div>
-                  <div className="text-xs bp-sm:text-sm text-blue-200">총 주문</div>
+                  <div className="text-xs bp-sm:text-sm text-primary">총 주문</div>
                 </div>
                 <div className="bg-card/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-indigo-200" />
@@ -175,9 +175,9 @@ export default function MypageClient({ user }: Props) {
                   <div className="text-xs bp-sm:text-sm text-indigo-200">서비스 신청</div>
                 </div>
                 <div className="bg-card/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg col-span-2 bp-lg:col-span-1">
-                  <UserCheck className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-blue-300" />
+                  <UserCheck className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{user.role === 'admin' ? '관리자' : '일반 회원'}</div>
-                  <div className="text-xs bp-sm:text-sm text-blue-300">회원 등급</div>
+                  <div className="text-xs bp-sm:text-sm text-primary">회원 등급</div>
                 </div>
               </div>
             </div>
@@ -192,7 +192,7 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
-                        <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        <User className="h-6 w-6 text-primary dark:text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg truncate">{user.name}</CardTitle>
@@ -206,7 +206,7 @@ export default function MypageClient({ user }: Props) {
                                 </Badge>
                               )}
                               {user.oauthProviders.includes('naver') && (
-                                <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300 text-xs py-0 px-2 h-5">
+                                <Badge variant="outline" className="border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary text-xs py-0 px-2 h-5">
                                   네이버
                                 </Badge>
                               )}
@@ -330,7 +330,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
-                          <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-blue-600 dark:text-blue-400" />
+                          <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary dark:text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">주문 내역</CardTitle>
@@ -350,7 +350,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-green-100 to-teal-100 dark:from-emerald-900 dark:to-emerald-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
-                          <CalendarCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-emerald-600 dark:text-emerald-400" />
+                          <CalendarCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary dark:text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">신청 내역</CardTitle>
@@ -492,7 +492,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900 dark:to-yellow-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
-                          <ReceiptCent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-amber-600 dark:text-amber-400" />
+                          <ReceiptCent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary dark:text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">적립 포인트</CardTitle>

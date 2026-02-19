@@ -279,29 +279,29 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/30">
-          <TabsTrigger value="basic" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border dark:border-border">
+          <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             기본 정보
           </TabsTrigger>
-          <TabsTrigger value="specs" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+          <TabsTrigger value="specs" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             상세 스펙
           </TabsTrigger>
-          <TabsTrigger value="rental" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+          <TabsTrigger value="rental" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             대여 설정
           </TabsTrigger>
-          <TabsTrigger value="images" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+          <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             이미지
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
-                <Package className="h-5 w-5 text-emerald-600" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">기본 정보</CardTitle>
+                <Package className="h-5 w-5 text-primary" />
+                <CardTitle className="text-primary dark:text-primary">기본 정보</CardTitle>
               </div>
-              <CardDescription className="text-emerald-600 dark:text-emerald-400">라켓의 기본 정보를 입력하세요</CardDescription>
+              <CardDescription className="text-primary dark:text-primary">라켓의 기본 정보를 입력하세요</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -388,13 +388,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="specs" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-emerald-600" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">상세 스펙</CardTitle>
+                <Settings className="h-5 w-5 text-primary" />
+                <CardTitle className="text-primary dark:text-primary">상세 스펙</CardTitle>
               </div>
-              <CardDescription className="text-emerald-600 dark:text-emerald-400">라켓의 상세 스펙을 입력하세요</CardDescription>
+              <CardDescription className="text-primary dark:text-primary">라켓의 상세 스펙을 입력하세요</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -502,13 +502,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="rental" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-emerald-600" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">대여 설정</CardTitle>
+                <DollarSign className="h-5 w-5 text-primary" />
+                <CardTitle className="text-primary dark:text-primary">대여 설정</CardTitle>
               </div>
-              <CardDescription className="text-emerald-600 dark:text-emerald-400">대여 가능 여부 및 요금을 설정하세요</CardDescription>
+              <CardDescription className="text-primary dark:text-primary">대여 가능 여부 및 요금을 설정하세요</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center justify-between">
@@ -520,7 +520,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
               </div>
 
               {!form.rental.enabled && (
-                <div className="gap-4 pt-4 border-t border-emerald-100 dark:border-emerald-800/30">
+                <div className="gap-4 pt-4 border-t border-border dark:border-border">
                   <div className="space-y-2">
                     <Label htmlFor="disabledReason">대여 불가 사유</Label>
                     <Textarea
@@ -535,7 +535,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
               )}
 
               {form.rental.enabled && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-emerald-100 dark:border-emerald-800/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border dark:border-border">
                   <div className="space-y-2">
                     <Label htmlFor="deposit">보증금 (원)</Label>
                     <Input id="deposit" type="number" placeholder="예: 100000" value={form.rental.deposit} onChange={(e) => setForm({ ...form, rental: { ...form.rental, deposit: Number(e.target.value || 0) } })} />
@@ -592,13 +592,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-emerald-100 dark:border-emerald-800/30">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
-                <ImageIcon className="h-5 w-5 text-emerald-600" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-200">이미지</CardTitle>
+                <ImageIcon className="h-5 w-5 text-primary" />
+                <CardTitle className="text-primary dark:text-primary">이미지</CardTitle>
               </div>
-              <CardDescription className="text-emerald-600 dark:text-emerald-400">라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
+              <CardDescription className="text-primary dark:text-primary">라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <ImageUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} variant="racket" enablePrimary />

@@ -119,10 +119,10 @@ export default function MyPointsTab() {
               )}
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-medium text-blue-100">보유 포인트</p>
+              <p className="text-xs font-medium text-primary">보유 포인트</p>
               <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-tight">{fmt(data.balance)}P</p>
               {typeof data.debt === 'number' && data.debt > 0 && (
-                <p className="text-xs text-blue-100 flex items-center gap-1">
+                <p className="text-xs text-primary flex items-center gap-1">
                   <span>사용 가능:</span>
                   <span className="font-bold">{fmt(Math.max(0, data.balance - data.debt))}P</span>
                 </p>
@@ -137,13 +137,13 @@ export default function MyPointsTab() {
           <CardContent className="relative p-4 bp-sm:p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50 rounded-lg p-2 shadow-md">
-                <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-emerald-600 dark:text-emerald-400" />
+                <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary dark:text-primary" />
               </div>
-              <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400 opacity-50" />
+              <TrendingUp className="h-4 w-4 text-primary dark:text-primary opacity-50" />
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">적립 포인트 (이번 페이지)</p>
-              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black text-emerald-600 dark:text-emerald-400">+{fmt(stats.earned)}</p>
+              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black text-primary dark:text-primary">+{fmt(stats.earned)}</p>
               <p className="text-xs text-muted-foreground">전체 기준</p>
             </div>
           </CardContent>
@@ -213,12 +213,12 @@ export default function MyPointsTab() {
                           it.amount >= 0 ? 'bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50' : 'bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/50 dark:to-pink-900/50'
                         }`}
                       >
-                        {it.amount >= 0 ? <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-emerald-600 dark:text-emerald-400" /> : <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-rose-600 dark:text-rose-400" />}
+                        {it.amount >= 0 ? <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary dark:text-primary" /> : <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-rose-600 dark:text-rose-400" />}
                       </div>
 
                       <div className="flex-1 min-w-0 space-y-1.5 bp-sm:space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-base bp-sm:text-lg font-bold tabular-nums ${it.amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                          <span className={`text-base bp-sm:text-lg font-bold tabular-nums ${it.amount >= 0 ? 'text-primary dark:text-primary' : 'text-rose-600 dark:text-rose-400'}`}>
                             {it.amount >= 0 ? '+' : ''}
                             {fmt(it.amount)}P
                           </span>
@@ -242,7 +242,7 @@ export default function MyPointsTab() {
 
                           if (ref.kind === 'order') {
                             return (
-                              <Link className="inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline underline-offset-4 font-medium group/link" href={`/mypage/orders/${ref.orderId}`}>
+                              <Link className="inline-flex items-center gap-1.5 text-xs text-primary dark:text-primary hover:underline underline-offset-4 font-medium group/link" href={`/mypage/orders/${ref.orderId}`}>
                                 <span>
                                   주문번호: <span className="font-mono">{shortId(ref.orderId)}</span>
                                 </span>

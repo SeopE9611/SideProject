@@ -225,7 +225,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className: 'bg-blue-50 text-accent dark:bg-blue-950/50 ',
+        className: 'bg-primary text-accent dark:bg-primary ',
       });
     }
   }
@@ -236,7 +236,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (typeof days === 'number') {
       pills.push({
         text: `${days}일 대여`,
-        className: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400',
+        className: 'bg-primary text-primary dark:bg-primary dark:text-primary',
       });
     }
   }
@@ -250,7 +250,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (needs) {
       pills.push({
         text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 ',
+        className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-muted text-primary dark:bg-muted ',
       });
     }
   }
@@ -265,7 +265,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       if (needs) {
         pills.push({
           text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-          className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 ',
+          className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-muted text-primary dark:bg-muted ',
         });
       }
     }
@@ -500,9 +500,9 @@ export default function ActivityFeed() {
   if (error) {
     return (
       <div className="rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 p-8 bp-sm:p-12 text-center fade-in">
-        <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-red-500 mx-auto mb-4" />
-        <p className="text-base bp-sm:text-lg font-medium text-red-600 ">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
-        <p className="text-sm text-red-500 dark:text-red-500 mt-2">잠시 후 다시 시도해주세요.</p>
+        <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-destructive mx-auto mb-4" />
+        <p className="text-base bp-sm:text-lg font-medium text-destructive ">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
+        <p className="text-sm text-destructive dark:text-destructive mt-2">잠시 후 다시 시도해주세요.</p>
       </div>
     );
   }
@@ -542,7 +542,7 @@ export default function ActivityFeed() {
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-blue-200 dark:bg-blue-800 p-2">
+            <div className="rounded-lg bg-primary dark:bg-primary p-2">
               <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent " />
             </div>
             <span className="text-xs bp-sm:text-sm font-medium text-accent ">진행중</span>
@@ -562,12 +562,12 @@ export default function ActivityFeed() {
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-amber-50 to-orange-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-amber-200 dark:bg-amber-800 p-2">
-              <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-amber-600 " />
+            <div className="rounded-lg bg-muted dark:bg-muted p-2">
+              <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary " />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-amber-600 ">액션 필요</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-primary ">액션 필요</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-amber-900 ">{counts.action}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-primary ">{counts.action}</div>
         </div>
       </div>
 
@@ -638,12 +638,12 @@ export default function ActivityFeed() {
             <div className="min-w-0 rounded-2xl bg-gradient-to-br from-destructive/10 to-muted dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-lg bg-amber-200 dark:bg-amber-800 p-2">
-                    <AlertCircle className="h-5 w-5 text-amber-600 " />
+                  <div className="rounded-lg bg-muted dark:bg-muted p-2">
+                    <AlertCircle className="h-5 w-5 text-primary " />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base bp-sm:text-lg font-bold text-amber-900 truncate">해야 할 일</h3>
-                    <p className="text-xs text-amber-600 truncate">{actionTop.length}건의 액션 필요</p>
+                    <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">해야 할 일</h3>
+                    <p className="text-xs text-primary truncate">{actionTop.length}건의 액션 필요</p>
                   </div>
                 </div>
                 <Button
@@ -764,7 +764,7 @@ export default function ActivityFeed() {
             <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-lg bg-blue-200 dark:bg-blue-800 p-2">
+                  <div className="rounded-lg bg-primary dark:bg-primary p-2">
                     <TrendingUp className="h-5 w-5 text-accent " />
                   </div>
                   <div className="min-w-0">
@@ -910,7 +910,7 @@ export default function ActivityFeed() {
                                     <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
 
                                     {hasAction && (
-                                      <Badge variant="outline" className="text-xs rounded-md bg-amber-50 text-amber-600 border-border  ">
+                                      <Badge variant="outline" className="text-xs rounded-md bg-muted text-primary border-border  ">
                                         액션 필요
                                       </Badge>
                                     )}

@@ -13,13 +13,13 @@ export default function ReviewsPage() {
     <div className="container py-8">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div>
-          <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
             <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
             <span className="mx-1">›</span>
             <span>리뷰 게시판</span>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">리뷰 게시판</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground dark:text-white">리뷰 게시판</h1>
         </div>
 
         <Button asChild variant="outline" size="sm" className="shrink-0">

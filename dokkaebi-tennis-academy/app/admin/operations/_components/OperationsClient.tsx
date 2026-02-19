@@ -168,8 +168,8 @@ const td = tdClasses;
 
 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
+  success: 'bg-primary/10 text-primary',
+  warning: 'bg-muted/10 text-primary',
   destructive: 'bg-destructive/10 text-destructive',
   muted: 'bg-muted text-muted-foreground',
   info: 'bg-info/10 text-info',
@@ -317,7 +317,7 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-6">
-        {commonErrorMessage && <div className="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{commonErrorMessage}</div>}
+        {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>
@@ -411,7 +411,7 @@ export default function OperationsClient() {
               variant="outline"
               size="sm"
               title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
-              className={cn('w-full bg-transparent', onlyWarn && 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-700')}
+              className={cn('w-full bg-transparent', onlyWarn && 'border-border bg-muted text-primary hover:bg-muted dark:bg-muted dark:text-primary dark:border-border')}
               onClick={() => {
                 setOnlyWarn((v) => !v);
                 setPage(1);
@@ -502,7 +502,7 @@ export default function OperationsClient() {
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
             <span className="text-muted-foreground dark:text-muted-foreground">|</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400')}>통합(연결됨)</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary text-primary dark:text-primary')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground dark:text-muted-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700 dark:text-rose-400')}>연결오류</Badge>
 
@@ -703,7 +703,7 @@ export default function OperationsClient() {
 
                               {/* 통합/단독 + (그룹 건수) */}
                               <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-emerald-500/10 text-emerald-600' : g.anchor.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-card text-muted-foreground')}>
+                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-primary text-primary' : g.anchor.isIntegrated ? 'bg-primary text-primary' : 'bg-card text-muted-foreground')}>
                                   {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
                                 </Badge>
                                 {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>{g.items.length}건</Badge>}
@@ -756,7 +756,7 @@ export default function OperationsClient() {
                                     if (isGroup) {
                                       items.push({ label: '기준', className: 'bg-indigo-500/10 text-indigo-700', title: '그룹의 기준 문서' });
                                       items.push({ label: opsKindLabel(g.anchor.kind), className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)), title: '기준 문서 종류' });
-                                      warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-amber-500/10 text-amber-700', title: b.title }));
+                                      warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-muted text-primary', title: b.title }));
                                     }
 
                                     return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;

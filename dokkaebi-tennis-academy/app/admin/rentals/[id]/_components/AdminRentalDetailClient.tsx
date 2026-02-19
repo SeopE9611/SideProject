@@ -24,10 +24,10 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-muted0/10 text-muted-foreground dark:bg-muted0/20',
-  paid: 'bg-blue-500/10 text-accent dark:bg-blue-500/20',
+  paid: 'bg-primary text-accent dark:bg-primary',
   out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
   returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
-  canceled: 'bg-red-500/10 text-red-500 dark:bg-red-500/20',
+  canceled: 'bg-destructive text-destructive dark:bg-destructive',
 };
 
 const rentalStatusLabels: Record<string, string> = {
@@ -352,12 +352,12 @@ export default function AdminRentalDetailClient() {
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
-              <div className="mt-4 rounded-lg border border-dashed border-border bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-primary">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="font-medium text-amber-900">취소 요청 상태: {cancelInfo.badge}</p>
+                    <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
                     <p className="mt-1">{cancelInfo.label}</p>
-                    {cancelInfo.reason && <p className="mt-1 text-xs text-amber-900/80">사유: {cancelInfo.reason}</p>}
+                    {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
                   </div>
 
                   {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
@@ -365,7 +365,7 @@ export default function AdminRentalDetailClient() {
                     <div className="mt-2 flex flex-col gap-2 sm:mt-0 sm:flex-row sm:items-center sm:justify-end">
                       <Button
                         size="sm"
-                        className="bg-emerald-600 hover:bg-primary text-primary-foreground"
+                        className="bg-primary hover:bg-primary text-primary-foreground"
                         disabled={isBusy}
                         onClick={async () => {
                           if (isBusy) return;
@@ -383,7 +383,7 @@ export default function AdminRentalDetailClient() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-border text-amber-900 hover:bg-amber-100"
+                        className="border-border text-primary hover:bg-muted"
                         disabled={isBusy}
                         onClick={async () => {
                           if (isBusy) return;
@@ -406,10 +406,10 @@ export default function AdminRentalDetailClient() {
 
           {/* 연결 문서(공용 카드) */}
           {linkedDocs.length > 0 && (
-            <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60" />
+            <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring" />
           )}
 
-          <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden mb-8">
+          <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden mb-8">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>대여 상태를 변경하거나 보증금 환불을 처리할 수 있습니다.</CardDescription>
@@ -446,7 +446,7 @@ export default function AdminRentalDetailClient() {
                 {/* 반납 처리(return) */}
                 <Button
                   size="sm"
-                  className="h-9 bg-emerald-600 hover:bg-emerald-700"
+                  className="h-9 bg-primary hover:bg-primary"
                   disabled={isBusy || !['paid', 'out'].includes(data.status)}
                   onClick={() => {
                     if (isBusy) return;
@@ -503,7 +503,7 @@ export default function AdminRentalDetailClient() {
               eventMeta={pendingDialogConfig.eventMeta}
             />
           )}
-          <Card className="mt-8 border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+          <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
               <CardTitle>고객 정보</CardTitle>
             </CardHeader>
@@ -523,7 +523,7 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+            <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <Package className="h-5 w-5 text-destructive" />
@@ -560,7 +560,7 @@ export default function AdminRentalDetailClient() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+            <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-accent" />
@@ -568,9 +568,9 @@ export default function AdminRentalDetailClient() {
                 </CardTitle>
                 <div className="ml-auto">
                   {derivePaymentStatus(data) === 'paid' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs">결제확정</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary text-primary text-xs">결제확정</span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-xs">입금대기</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-xs">입금대기</span>
                   )}
                 </div>
               </CardHeader>
@@ -654,7 +654,7 @@ export default function AdminRentalDetailClient() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+          <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
@@ -666,7 +666,7 @@ export default function AdminRentalDetailClient() {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">운송장 없음</span>,
                     'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-indigo-100 text-accent text-xs">출고 운송장</span>,
                     'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-xs">반납 운송장</span>,
-                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-xs">왕복 운송장</span>,
+                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary text-primary text-xs">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
                 }
               </div>
@@ -721,7 +721,7 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl ring-1 ring-slate-200/60 dark:ring-slate-700/60 bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
+          <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-gray-50/50 dark:from-slate-900 dark:to-slate-800/60 overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-accent" />

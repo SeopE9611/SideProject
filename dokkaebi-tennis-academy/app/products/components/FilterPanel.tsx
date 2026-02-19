@@ -91,14 +91,14 @@ export const FilterPanel = React.memo(function FilterPanel({
 
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl bg-white/70 dark:bg-slate-800/70 p-4 bp-sm:p-6 shadow-lg">
+      <div className="rounded-xl bg-card/70 dark:bg-card p-4 bp-sm:p-6 shadow-lg">
         <SkeletonFilterDetailed />
       </div>
     );
   }
 
   return (
-    <div className={cn('rounded-lg bp-sm:rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl')}>
+    <div className={cn('rounded-lg bp-sm:rounded-xl border border-border dark:border-border bg-card/80 dark:bg-card backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl')}>
       <AnimatePresence mode="wait">
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
           <div className="flex items-center justify-between mb-4 bp-sm:mb-6">
@@ -133,7 +133,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="상품명 검색..."
-                className="pl-9 bp-sm:pl-10 pr-9 bp-sm:pr-10 h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 transition-colors w-full"
+                className="pl-9 bp-sm:pl-10 pr-9 bp-sm:pr-10 h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-border dark:border-border focus:border-border dark:focus:border-border transition-colors w-full"
               />
               {searchQuery && (
                 <button
@@ -161,7 +161,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               브랜드
             </Label>
             <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-              <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
+              <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-border dark:border-border focus:border-border dark:focus:border-border">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -181,7 +181,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               <SelectTrigger className="h-9 bp-sm:h-10 text-sm">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
-              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+              <SelectContent className="dark:bg-card dark:border-border">
                 <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="polyester">폴리에스터</SelectItem>
                 <SelectItem value="hybrid">하이브리드</SelectItem>
@@ -198,7 +198,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               <div key={featureKey}>
                 <Label className="mb-1.5 bp-sm:mb-2 block text-xs bp-sm:text-sm font-medium">{label}</Label>
                 <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={state !== null ? String(state) : 'all'}>
-                  <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
+                  <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-border dark:border-border focus:border-border dark:focus:border-border">
                     <SelectValue placeholder="선택" />
                   </SelectTrigger>
                   <SelectContent>

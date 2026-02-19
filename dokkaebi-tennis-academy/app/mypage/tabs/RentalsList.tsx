@@ -24,13 +24,13 @@ const getKey = (index: number, prev: any) => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'returned':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+      return <CheckCircle className="h-4 w-4 text-primary" />;
     case 'out':
-      return <Clock className="h-4 w-4 text-blue-500" />;
+      return <Clock className="h-4 w-4 text-primary" />;
     case 'paid':
       return <Package className="h-4 w-4 text-indigo-500" />;
     case 'canceled':
-      return <XCircle className="h-4 w-4 text-red-500" />;
+      return <XCircle className="h-4 w-4 text-destructive" />;
     default:
       return <AlertCircle className="h-4 w-4 text-muted-foreground" />;
   }
@@ -39,13 +39,13 @@ const getStatusIcon = (status: string) => {
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
     case 'returned':
-      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
     case 'out':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
     case 'paid':
       return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
     case 'canceled':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      return 'bg-destructive text-destructive dark:bg-destructive dark:text-destructive';
     default:
       return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
   }
@@ -111,10 +111,10 @@ export default function RentalsList() {
     return (
       <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
-            <Briefcase className="h-8 w-8 text-red-600 dark:text-red-400" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive dark:bg-destructive">
+            <Briefcase className="h-8 w-8 text-destructive dark:text-destructive" />
           </div>
-          <p className="text-red-600 dark:text-red-400">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="text-destructive dark:text-destructive">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
         </CardContent>
       </Card>
     );
@@ -165,9 +165,9 @@ export default function RentalsList() {
 
                     {/* 교체 신청서가 연결된 대여임을 한눈에 표시 */}
                     {r.stringingApplicationId ? (
-                      <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">신청서 연결됨</span>
+                      <span className="shrink-0 rounded-full border border-border bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary dark:text-primary">신청서 연결됨</span>
                     ) : r.withStringService ? (
-                      <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">교체 서비스 포함</span>
+                      <span className="shrink-0 rounded-full border border-border bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary dark:text-primary">교체 서비스 포함</span>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -180,7 +180,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 {getStatusIcon(r.status)}
                 <Badge className={`px-3 py-1 text-xs font-medium ${getStatusBadgeColor(r.status)}`}>{getStatusLabel(r.status)}</Badge>
-                {r.cancelStatus === 'requested' && <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800">취소 요청됨</Badge>}
+                {r.cancelStatus === 'requested' && <Badge className="bg-muted text-primary dark:bg-muted dark:text-primary border border-border dark:border-border">취소 요청됨</Badge>}
               </div>
             </div>
 
@@ -214,7 +214,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-lg font-bold text-foreground">총 {((r.amount?.fee ?? 0) + (r.amount?.deposit ?? 0)).toLocaleString()}원</span>
-                {r.hasReturnShipping ? <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-200">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
+                {r.hasReturnShipping ? <Badge className="bg-primary text-primary border border-border dark:bg-primary dark:text-primary">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
               </div>
 
               {/* Desktop (sm 이상): 기존 동작 유지 */}
@@ -228,7 +228,7 @@ export default function RentalsList() {
 
                 {/* 대여 기반 교체 신청서가 있으면: 신청서 상세로 바로 이동 */}
                 {r.stringingApplicationId ? (
-                  <Button size="sm" variant="outline" asChild className="hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="hover:border-border dark:hover:bg-primary bg-transparent">
                     <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex items-center gap-1">
                       신청서 보기
                       <ArrowRight className="h-3 w-3" />
@@ -277,7 +277,7 @@ export default function RentalsList() {
 
                 {/* 신청서 보기: 있을 때만 노출 */}
                 {r.stringingApplicationId ? (
-                  <Button size="sm" variant="outline" asChild className="col-span-6 w-full hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="col-span-6 w-full hover:border-border dark:hover:bg-primary bg-transparent">
                     <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
                       신청서 보기
                       <ArrowRight className="h-3 w-3" />

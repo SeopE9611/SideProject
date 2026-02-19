@@ -61,9 +61,9 @@ export default function LocationsPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-accent dark:bg-blue-900/30 px-4 py-2 rounded-full mb-6">
-            <MapPin className="h-5 w-5 text-primary dark:text-blue-400" />
-            <span className="text-sm font-semibold text-primary dark:text-blue-300">오프라인 매장 찾기</span>
+          <div className="inline-flex items-center gap-2 bg-accent dark:bg-primary px-4 py-2 rounded-full mb-6">
+            <MapPin className="h-5 w-5 text-primary dark:text-primary" />
+            <span className="text-sm font-semibold text-primary dark:text-primary">오프라인 매장 찾기</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground dark:text-foreground mb-4">매장 위치 안내</h1>
           <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
@@ -73,7 +73,7 @@ export default function LocationsPage() {
         <div className="mb-16">
           <div className="max-w-2xl mx-auto">
             {locations.map((location, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 ring-2 ring-blue-500 dark:ring-blue-400">
+              <Card key={index} className="hover:shadow-lg transition-all duration-300 ring-2 ring-ring dark:ring-ring">
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between">
                     <div>
@@ -124,8 +124,8 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-accent dark:bg-blue-900/20 p-3 rounded-lg">
-                    <p className="text-sm font-medium text-primary dark:text-blue-300">{location.specialNote}</p>
+                  <div className="bg-accent dark:bg-primary p-3 rounded-lg">
+                    <p className="text-sm font-medium text-primary dark:text-primary">{location.specialNote}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-1">
@@ -160,14 +160,14 @@ export default function LocationsPage() {
           </div>
         </div> */}
 
-        {/* <Card className="bg-primary  to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-border dark:border-blue-800">
+        {/* <Card className="bg-primary  to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-border dark:border-border">
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-xl font-bold text-foreground dark:text-foreground mb-4">예약 및 상담</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-primary dark:text-blue-400" />
+                    <Phone className="h-5 w-5 text-primary dark:text-primary" />
                     <div>
                       <div className="font-semibold">전화 예약</div>
                       <div className="text-sm text-muted-foreground dark:text-muted-foreground">02-123-4567</div>
@@ -175,7 +175,7 @@ export default function LocationsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-primary dark:text-blue-400" />
+                    <Calendar className="h-5 w-5 text-primary dark:text-primary" />
                     <div>
                       <div className="font-semibold">온라인 신청</div>
                       <div className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 교체 신청서 작성</div>

@@ -246,7 +246,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  return (
  <main className="w-full">
  <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6 bp-sm:space-y-8">
- <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
+ <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 rounded-2xl p-8 border border-border dark:border-border shadow-lg">
  {/* 헤더: 제목과 액션 버튼 */}
  <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 bp-md:gap-6">
  {/* 제목 섹션 */}
@@ -262,11 +262,11 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 액션 버튼 섹션 */}
  <div className="flex flex-col bp-md:flex-row gap-2 shrink-0">
- <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-blue-200 hover:bg-blue-50">
+ <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary">
  <ArrowLeft className="mr-2 h-4 w-4" />
  주문 목록으로 돌아가기
  </Button>
- <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode((m) => !m)} disabled={!canUserEdit} className={cn(isEditMode ? '' : 'bg-card/70 backdrop-blur-sm border-blue-200 hover:bg-blue-50')}>
+ <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode((m) => !m)} disabled={!canUserEdit} className={cn(isEditMode ? '' : 'bg-card/70 backdrop-blur-sm border-border hover:bg-primary')}>
  <Pencil className="mr-1 h-4 w-4" />
  {isEditMode ? '편집 종료' : '편집 모드'}
  </Button>
@@ -304,7 +304,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  {/* 취소 요청 상태 안내 배너 */}
  {cancelLabel && (
- <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+ <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-sm text-primary">
  <span className="min-w-0 break-words">{cancelLabel}</span>
 
  {canWithdrawCancelRequest && (
@@ -313,7 +313,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  variant="outline"
  onClick={handleWithdrawCancelRequest}
  disabled={isWithdrawingCancelRequest}
- className="w-full bp-sm:w-auto bp-sm:ml-4 border-amber-300 bg-card/70 text-amber-800 hover:bg-amber-100 hover:text-amber-900"
+ className="w-full bp-sm:w-auto bp-sm:ml-4 border-border bg-card/70 text-primary hover:bg-muted hover:text-primary"
  >
  {isWithdrawingCancelRequest ? '취소 철회 중...' : '취소 철회하기'}
  </Button>
@@ -403,16 +403,16 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div id="reviews-cta" className="mt-4">
  {allReviewed ? (
- <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded-xl p-6 shadow-sm flex items-center justify-between">
+ <div className="bg-primary dark:bg-primary border border-border dark:border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
  <div className="flex items-center gap-3">
- <CheckCircle className="h-6 w-6 text-emerald-600" />
+ <CheckCircle className="h-6 w-6 text-primary" />
  <div>
- <p className="font-semibold text-emerald-900 dark:text-emerald-100">이 주문은 리뷰를 작성하였습니다.</p>
- <p className="text-sm text-emerald-700 dark:text-emerald-300">내가 작성한 리뷰를 확인할 수 있어요.</p>
+ <p className="font-semibold text-primary dark:text-primary">이 주문은 리뷰를 작성하였습니다.</p>
+ <p className="text-sm text-primary dark:text-primary">내가 작성한 리뷰를 확인할 수 있어요.</p>
  </div>
  </div>
  <Link className="w-full bp-sm:w-auto" href="/mypage?tab=reviews">
- <Button variant="outline" className="border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20">
+ <Button variant="outline" className="border-border hover:bg-primary dark:hover:bg-primary">
  리뷰 관리로 이동
  </Button>
  </Link>
@@ -424,7 +424,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div>
  <p className="font-semibold text-yellow-900 dark:text-yellow-100">이 주문은 리뷰를 작성하지 않았습니다.</p>
  <p className="text-sm text-yellow-700 dark:text-yellow-300">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
- <p className="text-sm text-red-700 dark:text-red-300">※상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다.</p>
+ <p className="text-sm text-destructive dark:text-destructive">※상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다.</p>
  </div>
  </div>
  <OrderReviewCTA
@@ -513,7 +513,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  )}
  {isEditMode && canUserEdit && !editingCustomer && (
  <CardFooter className="pt-3 flex justify-center bg-muted/50 ">
- <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-blue-50 border-blue-200">
+ <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-primary border-border">
  고객정보 수정
  </Button>
  </CardFooter>
@@ -601,7 +601,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-blue-100 dark:border-blue-800/30">
+ <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg border border-border dark:border-border">
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 금액</p>
  <p className="text-xl font-bold text-accent dark:text-accent">{formatCurrency(orderDetail.total)}</p>

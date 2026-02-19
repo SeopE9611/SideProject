@@ -301,11 +301,11 @@ export default function HorizontalProducts({
   const ErrorCard = () => (
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-red-50/70 dark:bg-red-950/20
+      bg-destructive dark:bg-destructive
       flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center mb-3">
-        <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-300" />
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive dark:bg-destructive flex items-center justify-center mb-3">
+        <AlertTriangle className="h-6 w-6 text-destructive dark:text-destructive" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-foreground">{errorTitle ?? '불러오지 못했어요'}</div>
       <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>

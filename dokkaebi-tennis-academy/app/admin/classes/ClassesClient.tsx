@@ -117,8 +117,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 클래스</p>
                 <p className="text-3xl font-bold text-foreground">{classes.length}</p>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3">
-                <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="bg-primary dark:bg-primary rounded-xl p-3">
+                <Calendar className="h-6 w-6 text-primary dark:text-primary" />
               </div>
             </div>
           </CardContent>
@@ -131,8 +131,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">모집 중</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'recruiting').length}</p>
               </div>
-              <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3">
-                <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="bg-primary dark:bg-primary rounded-xl p-3">
+                <Users className="h-6 w-6 text-primary dark:text-primary" />
               </div>
             </div>
           </CardContent>
@@ -145,8 +145,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">마감</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'closed').length}</p>
               </div>
-              <div className="bg-red-50 dark:bg-red-900/30 rounded-xl p-3">
-                <Clock className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="bg-destructive dark:bg-destructive rounded-xl p-3">
+                <Clock className="h-6 w-6 text-destructive dark:text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -188,7 +188,7 @@ export default function ClassesPage() {
             <div className="flex w-full max-w-sm items-center space-x-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground" />
-                <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-border dark:border-border focus:border-emerald-500 focus:ring-emerald-500" />
+                <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-border dark:border-border focus:border-border focus:ring-emerald-500" />
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -209,10 +209,10 @@ export default function ClassesPage() {
           </div>
 
           {selectedClasses.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 p-3">
-              <span className="text-sm font-medium text-emerald-800 dark:text-emerald-200">{selectedClasses.length}개의 클래스가 선택됨</span>
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-primary dark:bg-primary p-3">
+              <span className="text-sm font-medium text-primary dark:text-primary">{selectedClasses.length}개의 클래스가 선택됨</span>
               <div className="ml-auto flex gap-2">
-                <Button variant="outline" size="sm" className="h-8 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 bg-transparent">
+                <Button variant="outline" size="sm" className="h-8 border-border dark:border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent">
                   <Calendar className="mr-2 h-3.5 w-3.5" />
                   일정 변경
                 </Button>
@@ -275,7 +275,7 @@ export default function ClassesPage() {
                           </span>
                           <div className="h-2 w-16 overflow-hidden rounded-full bg-muted dark:bg-card">
                             <div
-                              className={`h-full transition-all ${cls.status === 'closed' ? 'bg-red-500' : 'bg-emerald-500'}`}
+                              className={`h-full transition-all ${cls.status === 'closed' ? 'bg-destructive' : 'bg-primary'}`}
                               style={{
                                 width: `${(Number(cls.enrolled) / Number(cls.capacity.replace('명', ''))) * 100}%`,
                               }}
@@ -288,8 +288,8 @@ export default function ClassesPage() {
                           variant={cls.status === 'recruiting' ? 'default' : 'secondary'}
                           className={
                             cls.status === 'recruiting'
-                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
-                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-900/50'
+                              ? 'bg-primary dark:bg-primary text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary'
+                              : 'bg-destructive dark:bg-destructive text-destructive dark:text-destructive hover:bg-destructive dark:hover:bg-destructive'
                           }
                         >
                           {cls.status === 'recruiting' ? '모집 중' : '마감'}
@@ -314,8 +314,8 @@ export default function ClassesPage() {
                               일정 변경
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-amber-600 cursor-pointer">{cls.status === 'recruiting' ? '마감으로 변경' : '모집 중으로 변경'}</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600 cursor-pointer">
+                            <DropdownMenuItem className="text-primary cursor-pointer">{cls.status === 'recruiting' ? '마감으로 변경' : '모집 중으로 변경'}</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive cursor-pointer">
                               <Trash2 className="mr-2 h-4 w-4" />
                               삭제
                             </DropdownMenuItem>

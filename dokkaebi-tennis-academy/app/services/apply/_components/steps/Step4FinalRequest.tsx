@@ -54,9 +54,9 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
           <Badge
             className={
               packageInsufficient
-                ? 'bg-accent text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-border/80'
+                ? 'bg-accent text-destructive dark:bg-destructive dark:text-destructive border border-border/80'
                 : usingPackage
-                  ? 'bg-accent text-emerald-700 dark:bg-emerald-900/40 dark:text-muted-foreground border border-border/80'
+                  ? 'bg-accent text-primary dark:bg-primary dark:text-muted-foreground border border-border/80'
                   : 'bg-background text-foreground dark:bg-card dark:text-muted-foreground border border-border'
             }
           >

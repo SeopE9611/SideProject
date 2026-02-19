@@ -169,13 +169,13 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
   };
 
   return (
-    <Card className="overflow-hidden rounded-3xl border-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group">
+    <Card className="overflow-hidden rounded-3xl border-0 bg-card/90 dark:bg-card backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group">
       {/* Tennis court line accent */}
       <div className="h-1 bg-primary/70" />
 
       <CardContent className="p-6 space-y-4 relative">
         {busy && (
-          <div className="absolute inset-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-3xl">
+          <div className="absolute inset-0 bg-card/80 dark:bg-card backdrop-blur-sm flex items-center justify-center z-10 rounded-3xl">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <span className="ml-2 text-sm text-primary">변경 중...</span>
           </div>
@@ -191,14 +191,14 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
               {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
               {item.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}
             </Badge>
-            {!!headerTitle && <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-700 px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
+            {!!headerTitle && <span className="text-sm font-semibold text-foreground dark:text-muted-foreground bg-muted dark:bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
           </div>
 
           <div className="flex items-center gap-2">
             {(item.ownedByMe || isAdmin) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-slate-100" aria-label="리뷰 관리">
+                  <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted" aria-label="리뷰 관리">
                     <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -287,32 +287,32 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
           <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
           </div>
-          <span className="font-medium text-slate-600 dark:text-slate-300">{displayName}</span>
+          <span className="font-medium text-muted-foreground dark:text-muted-foreground">{displayName}</span>
         </div>
 
         {/* Rating with tennis court styling */}
         <div className="flex items-center gap-2 p-3 bg-muted/60 rounded-2xl">
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300 dark:text-slate-600'}`} />
+              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground dark:text-muted-foreground'}`} />
             ))}
           </div>
-          <span className="ml-1 text-sm font-bold text-slate-700 dark:text-slate-200">{item.rating}/5</span>
+          <span className="ml-1 text-sm font-bold text-foreground dark:text-muted-foreground">{item.rating}/5</span>
         </div>
 
         {/* Content */}
         {isMasked ? (
           <MaskedBlock className="mt-1" />
         ) : (
-          <div className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-4">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-200">{item.content}</p>
+          <div className="bg-muted dark:bg-muted rounded-2xl p-4">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground dark:text-muted-foreground">{item.content}</p>
           </div>
         )}
 
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
-          <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+          <div className="flex items-center justify-between p-3 bg-muted dark:bg-muted rounded-2xl">
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
             </span>
@@ -326,7 +326,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                     setViewerIndex(idx);
                     setOpen(true);
                   }}
-                  className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 transition-transform"
+                  className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted dark:bg-muted focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 transition-transform"
                   aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
                 >
                   <Image src={src || '/placeholder.svg'} alt={`photo-${idx}`} fill className="object-cover" />

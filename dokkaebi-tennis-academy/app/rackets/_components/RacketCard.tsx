@@ -72,17 +72,17 @@ function RacketAvailBadge({ id }: { id: string }) {
 
   // “대여중 0”이면 19/19 같은 표기가 어색하므로 “재고 n개”로 표현
   if (rentedCount === 0) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 whitespace-nowrap">재고 {qty}개</div>;
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary text-primary dark:bg-primary dark:text-primary whitespace-nowrap">재고 {qty}개</div>;
   }
 
   // 대여중이 있으면 분수(가용/보유) + 대여중 배지로 정보량 확보
   return (
     <div className="flex items-center gap-1.5">
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 whitespace-nowrap">
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary text-primary dark:bg-primary dark:text-primary whitespace-nowrap">
         가용 {avail}/{qty}
       </div>
 
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 whitespace-nowrap">대여중 {rentedCount}</div>
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-primary dark:bg-muted dark:text-primary whitespace-nowrap">대여중 {rentedCount}</div>
     </div>
   );
 }
@@ -97,7 +97,7 @@ const RacketCard = React.memo(
 
     if (viewMode === 'list') {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-blue-300 dark:hover:border-blue-500 relative">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-border dark:hover:border-border relative">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect x="0" y="0" width="400" height="200" stroke="currentColor" strokeWidth="2" />
@@ -129,7 +129,7 @@ const RacketCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left bp-lg:text-right">
-                  <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+                  <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-primary dark:text-primary">{racket.price.toLocaleString()}원</div>
                   <div className="mt-3 grid grid-cols-1 bp-sm:grid-cols-2 gap-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
                     {canBuy ? (
                       <Button asChild size="sm" className="shadow-lg text-xs bp-sm:text-base w-full justify-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -193,7 +193,7 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-blue-300 dark:hover:border-blue-500 group relative">
+      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-border dark:hover:border-border group relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
@@ -220,7 +220,7 @@ const RacketCard = React.memo(
         </div>
         <CardContent className="p-3 bp-sm:p-6">
           <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors dark:text-white">{racket.model}</CardTitle>
+          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors dark:text-white">{racket.model}</CardTitle>
 
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <StatusBadge kind="condition" state={racket.condition} />
@@ -233,7 +233,7 @@ const RacketCard = React.memo(
 
         <CardFooter className="p-3 bp-sm:p-6 pt-0">
           <div className="w-full">
-            <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-blue-600 dark:text-blue-400">{racket.price.toLocaleString()}원</div>
+            <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-primary dark:text-primary">{racket.price.toLocaleString()}원</div>
 
             <div className="mt-3 flex gap-2">
               {canBuy ? (

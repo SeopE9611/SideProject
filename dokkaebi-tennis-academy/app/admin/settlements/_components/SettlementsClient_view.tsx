@@ -251,9 +251,9 @@ export default function SettlementsClient() {
       return <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />;
     }
     if (sortDirection === 'asc') {
-      return <ArrowUp className="w-3.5 h-3.5 text-success" />;
+      return <ArrowUp className="w-3.5 h-3.5 text-primary" />;
     }
-    return <ArrowDown className="w-3.5 h-3.5 text-success" />;
+    return <ArrowDown className="w-3.5 h-3.5 text-primary" />;
   };
 
   // 세션 캐시 → 초기 상태 프리필(재방문 최적화)
@@ -340,7 +340,7 @@ export default function SettlementsClient() {
                   <p className="text-3xl font-bold text-foreground ">{isLoading ? <span className="inline-block h-9 w-16 rounded bg-muted/70 animate-pulse" /> : totalSettlements}</p>
                 </div>
                 <div className="bg-muted rounded-xl p-3 border border-border">
-                  <Calendar className="h-6 w-6 text-success" />
+                  <Calendar className="h-6 w-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -388,7 +388,7 @@ export default function SettlementsClient() {
             <button
               onClick={() => setTab('snapshot')}
               className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${
-                tab === 'snapshot' ? 'text-success' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+                tab === 'snapshot' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
               스냅샷 관리
@@ -406,7 +406,7 @@ export default function SettlementsClient() {
               }}
               disabled={doing.live}
               className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${
-                tab === 'live' ? 'text-success' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+                tab === 'live' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
               실시간 조회
@@ -532,32 +532,32 @@ export default function SettlementsClient() {
                           type="checkbox"
                           checked={selectedSnapshots.size === (data ?? []).length && (data ?? []).length > 0}
                           onChange={toggleSelectAll}
-                          className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer"
+                          className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
                           aria-label="전체 선택"
                         />
                       </div>
                       <div className="text-center">월</div>
-                      <button onClick={() => toggleSort('paid')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
+                      <button onClick={() => toggleSort('paid')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors">
                         매출
                         {renderSortIcon('paid')}
                       </button>
-                      <button onClick={() => toggleSort('refund')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
+                      <button onClick={() => toggleSort('refund')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors">
                         환불
                         {renderSortIcon('refund')}
                       </button>
-                      <button onClick={() => toggleSort('net')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
+                      <button onClick={() => toggleSort('net')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors">
                         순익
                         {renderSortIcon('net')}
                       </button>
-                      <button onClick={() => toggleSort('orders')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
+                      <button onClick={() => toggleSort('orders')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors">
                         주문수
                         {renderSortIcon('orders')}
                       </button>
-                      <button onClick={() => toggleSort('applications')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
+                      <button onClick={() => toggleSort('applications')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors">
                         신청수
                         {renderSortIcon('applications')}
                       </button>
-                      <button onClick={() => toggleSort('packages')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
+                      <button onClick={() => toggleSort('packages')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors">
                         패키지수
                         {renderSortIcon('packages')}
                       </button>
@@ -587,7 +587,7 @@ export default function SettlementsClient() {
                   ) : !data || data.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 px-4">
                       <div className="bg-muted rounded-full p-4 mb-4">
-                        <Package className="w-12 h-12 text-success" />
+                        <Package className="w-12 h-12 text-primary" />
                       </div>
                       <p className="text-lg font-semibold text-foreground mb-2">데이터가 없습니다</p>
                       <p className="text-sm text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
@@ -607,14 +607,14 @@ export default function SettlementsClient() {
                                 type="checkbox"
                                 checked={selectedSnapshots.has(String(row.yyyymm))}
                                 onChange={() => toggleSelect(String(row.yyyymm))}
-                                className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer"
+                                className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
                                 aria-label={`${row.yyyymm} 선택`}
                               />
                             </div>
 
                             <div className="flex items-center justify-center gap-2">
                               <button
-                                className="font-semibold text-success hover:text-foreground hover:underline underline-offset-4 transition-all"
+                                className="font-semibold text-primary hover:text-foreground hover:underline underline-offset-4 transition-all"
                                 onClick={() => {
                                   const { from, to } = monthEdges(String(row.yyyymm));
                                   router.push(`/admin/orders?from=${from}&to=${to}`);
@@ -628,7 +628,7 @@ export default function SettlementsClient() {
 
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(row.totals?.paid || 0).toLocaleString()}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(row.totals?.refund || 0).toLocaleString()}</div>
-                            <div className="text-center tabular-nums text-sm font-bold text-success flex items-center justify-center">{(row.totals?.net || 0).toLocaleString()}</div>
+                            <div className="text-center tabular-nums text-sm font-bold text-primary flex items-center justify-center">{(row.totals?.net || 0).toLocaleString()}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{row.breakdown?.orders || 0}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{row.breakdown?.applications || 0}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{row.breakdown?.packages || 0}</div>
@@ -641,7 +641,7 @@ export default function SettlementsClient() {
                                 </span>
                               )}
                               {statusMap[String(row.yyyymm)] === 'ok' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-success/15 text-success font-medium border border-border ">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border ">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   최신
                                 </span>
@@ -858,7 +858,7 @@ export default function SettlementsClient() {
               <div className="md:hidden px-3 py-3 space-y-3">
                 {!isLoading && data && data.length > 0 && (
                   <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
-                    <input type="checkbox" checked={selectedSnapshots.size === data.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer" aria-label="전체 선택" />
+                    <input type="checkbox" checked={selectedSnapshots.size === data.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer" aria-label="전체 선택" />
                     <span className="text-sm font-medium text-foreground ">전체 선택</span>
                   </div>
                 )}
@@ -868,7 +868,7 @@ export default function SettlementsClient() {
                 ) : !data || data.length === 0 ? (
                   <div className="rounded-xl border border-border bg-card p-6 text-center">
                     <div className="bg-muted rounded-full p-4 mb-4 inline-flex">
-                      <Package className="w-8 h-8 text-success" />
+                      <Package className="w-8 h-8 text-primary" />
                     </div>
                     <p className="text-sm font-semibold text-foreground mb-1">데이터가 없습니다</p>
                     <p className="text-xs text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
@@ -882,11 +882,11 @@ export default function SettlementsClient() {
                             type="checkbox"
                             checked={selectedSnapshots.has(String(row.yyyymm))}
                             onChange={() => toggleSelect(String(row.yyyymm))}
-                            className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer"
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
                             aria-label={`${row.yyyymm} 선택`}
                           />
                           <button
-                            className="font-semibold text-success hover:underline underline-offset-4"
+                            className="font-semibold text-primary hover:underline underline-offset-4"
                             onClick={() => {
                               const { from, to } = monthEdges(String(row.yyyymm));
                               router.push(`/admin/orders?from=${from}&to=${to}`);
@@ -991,7 +991,7 @@ export default function SettlementsClient() {
                         <div className="text-right tabular-nums text-foreground ">{(row.totals?.refund || 0).toLocaleString()}</div>
 
                         <div className="text-muted-foreground ">순익</div>
-                        <div className="text-right tabular-nums font-semibold text-success">{(row.totals?.net || 0).toLocaleString()}</div>
+                        <div className="text-right tabular-nums font-semibold text-primary">{(row.totals?.net || 0).toLocaleString()}</div>
 
                         <div className="text-muted-foreground ">주문수</div>
                         <div className="text-right tabular-nums text-foreground ">{row.breakdown?.orders || 0}</div>
@@ -1011,7 +1011,7 @@ export default function SettlementsClient() {
                           </span>
                         )}
                         {statusMap[String(row.yyyymm)] === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-success/15 text-success font-medium border border-border ">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border ">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             최신
                           </span>
@@ -1241,7 +1241,7 @@ export default function SettlementsClient() {
                       </div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(live.totals?.paid || 0).toLocaleString()}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(live.totals?.refund || 0).toLocaleString()}</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-success flex items-center justify-center">{(live.totals?.net || 0).toLocaleString()}</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-primary flex items-center justify-center">{(live.totals?.net || 0).toLocaleString()}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.orders || 0}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.applications || 0}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.packages || 0}</div>
@@ -1260,7 +1260,7 @@ export default function SettlementsClient() {
 
                 <div className="md:hidden p-4">
                   <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                    <div className="text-sm font-semibold text-success mb-3 text-center">
+                    <div className="text-sm font-semibold text-primary mb-3 text-center">
                       {live.range.from} ~ {live.range.to}
                     </div>
 
@@ -1272,7 +1272,7 @@ export default function SettlementsClient() {
                       <div className="text-right tabular-nums text-foreground ">{(live.totals?.refund || 0).toLocaleString()}</div>
 
                       <div className="text-muted-foreground ">순익</div>
-                      <div className="text-right tabular-nums font-bold text-success">{(live.totals?.net || 0).toLocaleString()}</div>
+                      <div className="text-right tabular-nums font-bold text-primary">{(live.totals?.net || 0).toLocaleString()}</div>
 
                       <div className="text-muted-foreground ">주문수</div>
                       <div className="text-right tabular-nums text-foreground ">{live.breakdown?.orders || 0}</div>

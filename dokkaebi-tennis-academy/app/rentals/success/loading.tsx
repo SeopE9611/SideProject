@@ -5,15 +5,15 @@ export default function Loading() {
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
         <div className="relative container py-16">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 dark:bg-white/30 backdrop-blur-sm rounded-full mb-6 animate-pulse"></div>
-            <div className="h-12 w-96 mx-auto bg-white/20 rounded-lg animate-pulse"></div>
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full mb-6 animate-pulse"></div>
+            <div className="h-12 w-96 mx-auto bg-card/20 rounded-lg animate-pulse"></div>
           </div>
         </div>
       </div>
       <div className="container py-8">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="h-96 bg-white/80 dark:bg-slate-800/80 rounded-xl animate-pulse"></div>
-          <div className="h-64 bg-white/80 dark:bg-slate-800/80 rounded-xl animate-pulse"></div>
+          <div className="h-96 bg-card/80 dark:bg-card rounded-xl animate-pulse"></div>
+          <div className="h-64 bg-card/80 dark:bg-card rounded-xl animate-pulse"></div>
         </div>
       </div>
     </div>

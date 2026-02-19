@@ -17,10 +17,10 @@ type Props = {
 const PAYMENT_STATUS_OPTIONS = ['결제대기', '결제완료', '결제취소'] as const;
 
 const badgeClass: Record<string, string> = {
-  결제완료: 'bg-blue-100 text-blue-800 border border-blue-200 rounded-md px-2 py-1 text-xs font-medium',
+  결제완료: 'bg-primary text-primary border border-border rounded-md px-2 py-1 text-xs font-medium',
   결제대기: 'bg-orange-100 text-orange-800 border border-orange-200 rounded-md px-2 py-1 text-xs font-medium',
-  결제취소: 'bg-red-100 text-red-800 border border-red-200 rounded-md px-2 py-1 text-xs font-medium',
-  취소: 'bg-red-100 text-red-800 border border-red-200 rounded-md px-2 py-1 text-xs font-medium',
+  결제취소: 'bg-destructive text-destructive border border-destructive rounded-md px-2 py-1 text-xs font-medium',
+  취소: 'bg-destructive text-destructive border border-destructive rounded-md px-2 py-1 text-xs font-medium',
 };
 
 export default function PackagePaymentStatusSelect({ orderId, currentStatus, onUpdated, disabled }: Props) {

@@ -29,17 +29,17 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 
 // 배지 색상(라이트/다크 모두 대비 높임)
 const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
-  활성: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800',
+  활성: 'bg-primary text-primary border-border dark:bg-primary dark:text-primary dark:border-border',
   만료: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
-  일시정지: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800',
-  취소: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
+  일시정지: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
+  취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
   대기: 'bg-background text-foreground border-border dark:bg-card dark:text-muted-foreground dark:border-border',
 };
 
 const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
-  결제완료: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800',
-  결제대기: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800',
-  결제취소: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
+  결제완료: 'bg-primary text-primary border-border dark:bg-primary dark:text-primary dark:border-border',
+  결제대기: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
+  결제취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
 };
 
 const toDateSafe = (v: string | Date | null | undefined) => {
@@ -96,27 +96,27 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
         // 스타일 (점/헤더색)
         const dotCls = isPayment
           ? it.paymentStatus === '결제완료'
-            ? 'bg-blue-500'
+            ? 'bg-primary'
             : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
-              ? 'bg-red-500'
-              : 'bg-amber-500'
+              ? 'bg-destructive'
+              : 'bg-muted'
           : isExtend
-            ? 'bg-emerald-500'
+            ? 'bg-primary'
             : it.extendedSessions! < 0
-              ? 'bg-red-500'
-              : 'bg-blue-500';
+              ? 'bg-destructive'
+              : 'bg-primary';
 
         const headTextCls = isPayment
           ? it.paymentStatus === '결제완료'
-            ? 'text-blue-700 dark:text-blue-300'
+            ? 'text-primary dark:text-primary'
             : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
-              ? 'text-red-700 dark:text-red-300'
-              : 'text-amber-700 dark:text-amber-300'
+              ? 'text-destructive dark:text-destructive'
+              : 'text-primary dark:text-primary'
           : isExtend
-            ? 'text-emerald-700 dark:text-emerald-300'
+            ? 'text-primary dark:text-primary'
             : it.extendedSessions! < 0
-              ? 'text-red-700 dark:text-red-300'
-              : 'text-blue-700 dark:text-blue-300';
+              ? 'text-destructive dark:text-destructive'
+              : 'text-primary dark:text-primary';
 
         return (
           <li key={it.id} className="pl-8 py-4 border-l border-border relative">
@@ -225,7 +225,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   if (error || !data) {
     return (
       <div className="container py-6">
-        <div className="text-center text-red-600 dark:text-red-300">패키지 정보를 불러오는 중 오류가 발생했습니다.</div>
+        <div className="text-center text-destructive dark:text-destructive">패키지 정보를 불러오는 중 오류가 발생했습니다.</div>
       </div>
     );
   }
@@ -347,7 +347,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   <Target className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">남은 횟수</span>
                 </div>
-                <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{data.remainingSessions}회</p>
+                <p className="text-lg font-semibold text-primary dark:text-primary">{data.remainingSessions}회</p>
               </div>
 
               <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
@@ -400,7 +400,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <PackageIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                    <PackageIcon className="h-5 w-5 text-primary dark:text-primary" />
                     패키지 상태
                   </span>
                   {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -435,21 +435,21 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">만료까지</span>
                     <span
-                      className={cn('text-sm font-medium', expired ? 'text-muted-foreground' : daysLeft <= 7 ? 'text-rose-600 dark:text-rose-400' : daysLeft <= 30 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400')}
+                      className={cn('text-sm font-medium', expired ? 'text-muted-foreground' : daysLeft <= 7 ? 'text-rose-600 dark:text-rose-400' : daysLeft <= 30 ? 'text-primary dark:text-primary' : 'text-primary dark:text-primary')}
                     >
                       {expired ? '만료됨' : `${daysLeft}일 남음`}
                     </span>
                   </div>
                 </div>
 
-                {!isPaid && data.paymentStatus !== '결제취소' && <p className="text-xs text-amber-700 dark:text-amber-300">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>}
+                {!isPaid && data.paymentStatus !== '결제취소' && <p className="text-xs text-primary dark:text-primary">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>}
                 {isCancelled && <p className="text-xs text-rose-700 dark:text-rose-300">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>}
                 {isExpired && isPaid && !isCancelled && <p className="text-xs text-muted-foreground">만료된 패스는 연장만 가능합니다.</p>}
               </CardContent>
 
               {isEditMode && (
                 <CardFooter className="flex justify-center gap-2 bg-background dark:bg-card">
-                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
+                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary">
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장
                   </Button>
@@ -465,7 +465,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
               <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <History className="h-5 w-5 text-primary dark:text-primary" />
                   사용 내역
                 </CardTitle>
                 <CardDescription>패키지 횟수가 차감된 신청서 목록입니다.</CardDescription>
@@ -557,7 +557,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                       {previewExpiryDate && (
                         <>
                           <ChevronRight className="inline h-4 w-4 mx-1 text-muted-foreground" />
-                          <span className="font-medium text-emerald-600 dark:text-emerald-400">{fmtDate(previewExpiryDate)}</span>
+                          <span className="font-medium text-primary dark:text-primary">{fmtDate(previewExpiryDate)}</span>
                         </>
                       )}
                     </div>
@@ -619,7 +619,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <p className="text-sm text-muted-foreground mt-1">
                       현재 남은 횟수: {data.remainingSessions}회
                       {sessionAdjustment.amount !== 0 && (
-                        <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>
+                        <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-primary dark:text-primary' : 'text-rose-600 dark:text-rose-400')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>
                       )}
                     </p>
                     <div className="flex items-center gap-2">

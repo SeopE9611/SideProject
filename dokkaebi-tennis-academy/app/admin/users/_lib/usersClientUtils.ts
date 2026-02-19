@@ -31,9 +31,9 @@ export const roleColors: Record<'admin' | 'user', string> = {
 };
 
 export const STATUS = {
-  active: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  suspended: 'bg-amber-100 text-amber-800 border-amber-200',
-  deleted: 'bg-red-100 text-red-800 border-red-200',
+  active: 'bg-primary text-primary border-border',
+  suspended: 'bg-muted text-primary border-border',
+  deleted: 'bg-destructive text-destructive border-destructive',
 } as const;
 
 export type UserStatusKey = keyof typeof STATUS;

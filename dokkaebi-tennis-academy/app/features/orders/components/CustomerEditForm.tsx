@@ -81,7 +81,7 @@ export default function CustomerEditForm({ initialData, orderId, resourcePath, o
       <div>
         <label className="block text-sm font-medium">이름</label>
         <Input {...register('name', { required: '필수 입력입니다.' })} />
-        {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
+        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">이메일</label>
@@ -91,7 +91,7 @@ export default function CustomerEditForm({ initialData, orderId, resourcePath, o
             pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: '유효한 이메일을 입력하세요.' },
           })}
         />
-        {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
+        {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">전화번호</label>
@@ -105,12 +105,12 @@ export default function CustomerEditForm({ initialData, orderId, resourcePath, o
             주소 검색
           </Button>
         </div>
-        {errors.postalCode && <p className="text-red-500 text-xs">{errors.postalCode.message}</p>}
+        {errors.postalCode && <p className="text-destructive text-xs">{errors.postalCode.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">기본 주소</label>
         <Textarea readOnly {...register('address', { required: '필수 입력입니다.' })} rows={2} />
-        {errors.address && <p className="text-red-500 text-xs">{errors.address.message}</p>}
+        {errors.address && <p className="text-destructive text-xs">{errors.address.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">상세 주소</label>

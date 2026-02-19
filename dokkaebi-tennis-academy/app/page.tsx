@@ -472,10 +472,10 @@ export default function Home() {
               shrink-0 inline-flex items-center justify-center
               rounded-lg px-4 py-2
               text-xs bp-sm:text-sm font-semibold
-              bg-slate-900 text-foreground
-              dark:bg-card dark:text-slate-900
+              bg-card text-foreground
+              dark:bg-card dark:text-foreground
               transition-colors
-              group-hover:bg-slate-800 dark:group-hover:bg-slate-100
+              group-hover:bg-card dark:group-hover:bg-muted
             "
               >
                 바로가기
@@ -508,7 +508,7 @@ export default function Home() {
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 1</div>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground dark:text-muted-foreground">STEP 1</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
                 <p className="text-[10px] bp-sm:text-xs text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>
@@ -516,7 +516,7 @@ export default function Home() {
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 2</div>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground dark:text-muted-foreground">STEP 2</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">방문·택배</h3>
                 <p className="text-[10px] bp-sm:text-xs text-muted-foreground">방문 예약 또는 택배 발송</p>
               </div>
@@ -525,7 +525,7 @@ export default function Home() {
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 3</div>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground dark:text-muted-foreground">STEP 3</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>
                 <p className="text-[10px] bp-sm:text-xs text-muted-foreground">장착/텐션 세팅 후 검수</p>
               </div>
@@ -534,7 +534,7 @@ export default function Home() {
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-900 dark:text-violet-300">
                   <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 4</div>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground dark:text-muted-foreground">STEP 4</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">수령</h3>
                 <p className="text-[10px] bp-sm:text-xs text-muted-foreground">방문 수령 또는 배송</p>
               </div>

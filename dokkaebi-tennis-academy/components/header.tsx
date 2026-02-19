@@ -427,7 +427,7 @@ const Header = () => {
                       router.push('/services/apply');
                     }}
                   >
-                    <span className="font-semibold text-amber-700 dark:text-amber-400">장착 서비스 즉시 예약</span>
+                    <span className="font-semibold text-primary dark:text-primary">장착 서비스 즉시 예약</span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Button>
 
@@ -689,7 +689,7 @@ const Header = () => {
                 {/* 사용자 정보 카드 */}
                 <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-border">
                   <div className="flex items-start justify-between">
-                    {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-slate-700 shadow-sm">
+                    {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-border shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
                           <AvatarFallback
                             className="bg-gradient-to-br from-blue-500 to-emerald-500 

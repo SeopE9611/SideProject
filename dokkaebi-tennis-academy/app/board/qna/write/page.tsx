@@ -430,7 +430,7 @@ export default function QnaWritePage() {
             <CardContent className="p-8 space-y-8">
               <div ref={categoryWrapRef} className="space-y-3">
                 <Label htmlFor="category" className="text-base font-semibold">
-                  카테고리 <span className="text-red-500">*</span>
+                  카테고리 <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={category}
@@ -439,7 +439,7 @@ export default function QnaWritePage() {
                     clearErrors(['category', 'product']);
                   }}
                 >
-                  <SelectTrigger id="category" className={`h-12 bg-card dark:bg-muted ${fieldErrors.category ? 'border-red-400 focus:ring-red-400' : ''}`}>
+                  <SelectTrigger id="category" className={`h-12 bg-card dark:bg-muted ${fieldErrors.category ? 'border-destructive focus:ring-red-400' : ''}`}>
                     <SelectValue placeholder="문의 카테고리를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -452,7 +452,7 @@ export default function QnaWritePage() {
                     <SelectItem value="member">회원</SelectItem>
                   </SelectContent>
                 </Select>
-                {fieldErrors.category && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.category}</p>}
+                {fieldErrors.category && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.category}</p>}
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (
@@ -473,7 +473,7 @@ export default function QnaWritePage() {
                   <div className="text-sm text-muted-foreground dark:text-muted-foreground">
                     <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
                   </div>
-                  {fieldErrors.product && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.product}</p>}
+                  {fieldErrors.product && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.product}</p>}
 
                   {/* 탭처럼 보이는 간단한 토글 */}
                   <div className="grid md:grid-cols-2 gap-4">
@@ -481,7 +481,7 @@ export default function QnaWritePage() {
                     <div className="rounded-lg border border-border p-4">
                       <div className="font-semibold mb-3">내 구매상품</div>
                       {!me && <div className="mb-2 text-xs text-muted-foreground">로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.</div>}
-                      {me && ordersError && <div className="mb-2 text-sm text-red-600 dark:text-red-400">구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.</div>}
+                      {me && ordersError && <div className="mb-2 text-sm text-destructive dark:text-destructive">구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.</div>}
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {me && myProducts.length === 0 && <div className="text-sm text-muted-foreground">구매 이력이 없습니다.</div>}
                         {myProducts.map((p) => (
@@ -546,7 +546,7 @@ export default function QnaWritePage() {
 
               <div className="space-y-3">
                 <Label htmlFor="title" className="text-base font-semibold">
-                  제목 <span className="text-red-500">*</span>
+                  제목 <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="title"
@@ -559,12 +559,12 @@ export default function QnaWritePage() {
                   placeholder="문의 제목을 작성해주세요(4자이상)"
                   className="h-12 bg-card dark:bg-muted text-base"
                 />
-                {fieldErrors.title && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.title}</p>}
+                {fieldErrors.title && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.title}</p>}
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="content" className="text-base font-semibold">
-                  문의 내용 <span className="text-red-500">*</span>
+                  문의 내용 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="content"
@@ -577,7 +577,7 @@ export default function QnaWritePage() {
                   placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
                   className="min-h-[200px] bg-card dark:bg-muted text-base resize-none"
                 />
-                {fieldErrors.content && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.content}</p>}
+                {fieldErrors.content && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.content}</p>}
                 <p className="text-sm text-muted-foreground">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
               </div>
 
@@ -587,7 +587,7 @@ export default function QnaWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-red-400 dark:border-red-500' : 'border-border dark:border-border'} rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors`}
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive dark:border-destructive' : 'border-border dark:border-border'} rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -612,7 +612,7 @@ export default function QnaWritePage() {
                       파일 선택
                     </Button>
                   </div>
-                  {fieldErrors.images && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.images}</p>}
+                  {fieldErrors.images && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.images}</p>}
 
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
@@ -624,7 +624,7 @@ export default function QnaWritePage() {
                           const isImage = file.type?.startsWith('image/');
                           const previewUrl = isImage ? previews[index] : null;
                           return (
-                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card dark:bg-muted shadow-sm ring-1 ring-border/60 hover:ring-2 hover:ring-blue-400 transition">
+                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card dark:bg-muted shadow-sm ring-1 ring-border/60 hover:ring-2 hover:ring-ring transition">
                               {/* 콘텐츠 */}
                               {isImage ? (
                                 previewUrl ? (
@@ -737,7 +737,7 @@ export default function QnaWritePage() {
                 {viewerImages.length > 1 && (
                   <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
                     {viewerImages.map((thumb, i) => (
-                      <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-blue-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
+                      <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                         <Image src={thumb || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
                       </button>
                     ))}

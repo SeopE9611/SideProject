@@ -6,7 +6,7 @@ type Status = 'active' | 'suspended' | 'deleted';
 
 export default function StatusBadge({ status, className }: { status: Status; className?: string }) {
   // 상태별 톤 매핑 (사이트 톤에 맞춘 파스텔)
-  const tone = status === 'active' ? 'bg-emerald-100 text-emerald-700' : status === 'suspended' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700';
+  const tone = status === 'active' ? 'bg-primary text-primary' : status === 'suspended' ? 'bg-muted text-primary' : 'bg-rose-100 text-rose-700';
 
   const label = status === 'active' ? '활성' : status === 'suspended' ? '비활성' : '삭제됨';
 

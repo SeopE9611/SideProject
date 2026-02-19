@@ -50,17 +50,17 @@ const fetcher = async (url: string): Promise<any> => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case '배송중':
-      return <Truck className="h-4 w-4 text-blue-500" />;
+      return <Truck className="h-4 w-4 text-primary" />;
     case '배송완료':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+      return <CheckCircle className="h-4 w-4 text-primary" />;
     case '대기중':
       return <Clock className="h-4 w-4 text-yellow-500" />;
     case '결제완료':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+      return <CheckCircle className="h-4 w-4 text-primary" />;
     case '구매확정':
-      return <CheckCircle className="h-4 w-4 text-emerald-500" />;
+      return <CheckCircle className="h-4 w-4 text-primary" />;
     default:
-      return <Ban className="h-4 w-4 text-red-500" />;
+      return <Ban className="h-4 w-4 text-destructive" />;
   }
 };
 
@@ -195,10 +195,10 @@ export default function OrderList() {
     return (
       <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
-            <Package className="h-8 w-8 text-red-600 dark:text-red-400" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive dark:bg-destructive">
+            <Package className="h-8 w-8 text-destructive dark:text-destructive" />
           </div>
-          <p className="text-red-600 dark:text-red-400">주문 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="text-destructive dark:text-destructive">주문 내역을 불러오는 중 오류가 발생했습니다.</p>
         </CardContent>
       </Card>
     );
@@ -215,7 +215,7 @@ export default function OrderList() {
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
-            <ShoppingBag className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+            <ShoppingBag className="h-10 w-10 text-primary dark:text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
           <p className="text-muted-foreground">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
@@ -260,7 +260,7 @@ export default function OrderList() {
               <div className="flex items-start justify-between gap-3 mb-6">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
-                    <ShoppingBag className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                    <ShoppingBag className="h-6 w-6 text-primary dark:text-primary" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
@@ -268,7 +268,7 @@ export default function OrderList() {
 
                       {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                       {order.stringingApplicationId ? (
-                        <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">신청서 연결됨</span>
+                        <span className="shrink-0 rounded-full border border-border bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary dark:text-primary">신청서 연결됨</span>
                       ) : null}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">
@@ -285,7 +285,7 @@ export default function OrderList() {
 
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === 'requested' && (
-                    <Badge variant="outline" className="ml-1 border-amber-300 bg-amber-50 text-[11px] font-medium text-amber-800">
+                    <Badge variant="outline" className="ml-1 border-border bg-muted text-[11px] font-medium text-primary">
                       취소 요청됨
                     </Badge>
                   )}
@@ -337,7 +337,7 @@ export default function OrderList() {
                 </div>
 
                 <div className="hidden bp-sm:flex items-center gap-3">
-                  <Button size="sm" variant="outline" asChild className="border-border hover:border-emerald-300 hover:bg-emerald-50 dark:border-border dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary bg-transparent">
                     <Link href={detailHref} className="inline-flex items-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
@@ -354,7 +354,7 @@ export default function OrderList() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent"
+                              className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary bg-transparent"
                               disabled={!isDelivered || isConfirmed || confirmingOrderId === order.id}
                               onClick={() => handleConfirmPurchase(order.id)}
                             >
@@ -380,7 +380,7 @@ export default function OrderList() {
                     {order.shippingInfo?.withStringService ? (
                       // 신청서 ID가 있으면 무조건 "신청서 보기"
                       order.stringingApplicationId ? (
-                        <Button size="sm" variant="outline" className="border-emerald-300 hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-600 dark:hover:border-emerald-500 dark:hover:bg-emerald-950 bg-transparent" asChild>
+                        <Button size="sm" variant="outline" className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary bg-transparent" asChild>
                           {/* 성공페이지(/services/success) 대신 "마이페이지 신청내역 상세"로 보내는게 더 자연스러움 */}
                           <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex items-center gap-1">
                             신청서 보기
@@ -397,7 +397,7 @@ export default function OrderList() {
                       ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-emerald-300 bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:border-emerald-600 dark:from-emerald-950 dark:to-green-950 dark:text-emerald-300">
+                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 text-sm font-semibold text-primary dark:border-border dark:from-emerald-950 dark:to-green-950 dark:text-primary">
                               <CheckCircle className="mr-1 h-3 w-3" />
                               교체 신청 완료
                             </div>
@@ -427,14 +427,14 @@ export default function OrderList() {
 
                 {/* Mobile(<bp-sm): 핵심 1~2개만 노출 + 나머지는 더보기 */}
                 <div className="grid bp-sm:hidden grid-cols-12 items-center gap-2">
-                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-border hover:border-emerald-300 hover:bg-emerald-50 bg-transparent`}>
+                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-border hover:border-border hover:bg-primary bg-transparent`}>
                     <Link href={detailHref} className="inline-flex w-full items-center justify-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
                   {order.stringingApplicationId ? (
-                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-border dark:hover:bg-primary bg-transparent">
                       <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
                         신청서 보기
                         <ArrowRight className="h-3 w-3" />
@@ -555,7 +555,7 @@ export default function OrderList() {
       {/* '더 보기' 버튼 */}
       <div className="flex justify-center pt-4">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-emerald-200 dark:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent">
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : items.length ? (

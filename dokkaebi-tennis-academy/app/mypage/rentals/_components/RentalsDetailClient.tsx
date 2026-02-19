@@ -419,12 +419,12 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div
  className={`rounded-xl border p-6 ${
  banner.tone === 'success'
- ? 'bg-success/10 border-success/35 text-success dark:bg-success/20 dark:border-success/45 dark:text-success'
- : 'bg-warning/10 border-warning/35 text-warning-foreground dark:bg-warning/20 dark:border-warning/45 dark:text-warning-foreground'
+ ? 'bg-primary/10 border-border/35 text-primary dark:bg-primary/20 dark:border-border/45 dark:text-primary'
+ : 'bg-muted/10 border-border/35 text-foreground dark:bg-muted/20 dark:border-border/45 dark:text-foreground'
  }`}
  >
  <div className="flex items-center gap-3">
- {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-success dark:text-success" /> : <AlertCircle className="h-6 w-6 text-warning" />}
+ {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-primary dark:text-primary" /> : <AlertCircle className="h-6 w-6 text-primary" />}
  <div>
  <p className="font-semibold text-lg">{banner.title}</p>
  {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}

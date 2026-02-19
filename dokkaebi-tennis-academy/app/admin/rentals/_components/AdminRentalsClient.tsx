@@ -57,7 +57,7 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-card text-muted-foreground dark:bg-card',
-  paid: 'bg-blue-500/10 text-blue-500 dark:bg-blue-500/20',
+  paid: 'bg-primary text-primary dark:bg-primary',
   out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
   returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
 };
@@ -82,7 +82,7 @@ export default function AdminRentalsClient() {
   }
   function getServiceBadge(r: RentalRow) {
     if (r.withStringService) {
-      return { label: '교체서비스 포함', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' };
+      return { label: '교체서비스 포함', className: 'bg-primary text-primary dark:bg-primary dark:text-primary' };
     }
     return { label: '단독', className: 'bg-background text-foreground' };
   }
@@ -116,7 +116,7 @@ export default function AdminRentalsClient() {
 
   function getSettlementBadge() {
     // 대여 화면의 정산 앵커는 항상 “대여”
-    return { label: '정산: 대여', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200' };
+    return { label: '정산: 대여', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' };
   }
 
   const router = useRouter();
@@ -404,9 +404,9 @@ export default function AdminRentalsClient() {
   function PaymentBadge({ item }: { item: RentalRow }) {
     const s = derivePaymentStatus(item);
     return s === 'paid' ? (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[11px]">결제확정</span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary text-primary text-[11px]">결제확정</span>
     ) : (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-[11px]">입금대기</span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-[11px]">입금대기</span>
     );
   }
 
@@ -603,7 +603,7 @@ export default function AdminRentalsClient() {
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200')}>교체서비스 포함</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>교체서비스 포함</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서 연결</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[7])}>{FLOW_SHORT[7]}</Badge>
@@ -683,7 +683,7 @@ export default function AdminRentalsClient() {
                               >
                                 <div className="inline-flex items-center gap-1 w-full truncate">
                                   {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
-                                  {r.cancelRequest?.status === 'requested' && <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" aria-label="취소 요청된 대여" />}
+                                  {r.cancelRequest?.status === 'requested' && <AlertTriangle className="h-3.5 w-3.5 text-primary shrink-0" aria-label="취소 요청된 대여" />}
                                   <span className="inline-block truncate">{shortenId(rid)}</span>
                                 </div>
 
@@ -725,7 +725,7 @@ export default function AdminRentalsClient() {
                                   </Button>
                                 </div>
 
-                                {r.cancelRequest?.status === 'requested' && <p className="mt-2 text-sm text-amber-500">취소 요청이 접수된 대여입니다.</p>}
+                                {r.cancelRequest?.status === 'requested' && <p className="mt-2 text-sm text-primary">취소 요청이 접수된 대여입니다.</p>}
 
                                 {/* 교체서비스 포함 안내 */}
                                 {r.withStringService && <p className="mt-2 text-[11px] text-muted-foreground">교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서 상태/배송을 관리합니다)</p>}
@@ -733,7 +733,7 @@ export default function AdminRentalsClient() {
                                   시나리오: <span className="font-medium text-foreground">{flow.label}</span>
                                 </p>
                                 <p className="mt-1 text-[11px] text-muted-foreground">{settlement.label}</p>
-                                {warnMissingApp && <p className="mt-2 text-[11px] text-amber-500">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
+                                {warnMissingApp && <p className="mt-2 text-[11px] text-primary">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
 
                                 {/* 신청서 연결이 있으면 툴팁에서 바로 이동 링크 제공 */}
                                 {r.stringingApplicationId && (

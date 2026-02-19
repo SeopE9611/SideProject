@@ -274,7 +274,7 @@ export default function AdminReviewListClient() {
       return { date: '-', time: '-' };
     }
   }
-  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200');
+  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' : 'bg-primary text-primary hover:bg-primary');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
   const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';
@@ -303,8 +303,8 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">전체 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.total ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-blue-50 dark:bg-blue-900/30">
-                <MessageSquare className="h-5 w-5 text-blue-600" />
+              <div className="rounded-md p-2 bg-primary dark:bg-primary">
+                <MessageSquare className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -329,8 +329,8 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">5점 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-emerald-50 dark:bg-emerald-900/30">
-                <Award className="h-5 w-5 text-emerald-600" />
+              <div className="rounded-md p-2 bg-primary dark:bg-primary">
+                <Award className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -376,7 +376,7 @@ export default function AdminReviewListClient() {
           <Input
             type="search"
             placeholder="리뷰 검색…"
-            className="pl-10 h-9 text-sm border-border dark:border-border focus:border-emerald-500 focus:ring-emerald-500"
+            className="pl-10 h-9 text-sm border-border dark:border-border focus:border-border focus:ring-emerald-500"
             value={qRaw}
             onChange={(e) => setQRaw(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setSize(1)}
@@ -414,7 +414,7 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 리스트 카드 */}
-      <div className="rounded-lg ring-1 ring-gray-200 dark:ring-slate-700 bg-card dark:bg-card shadow-sm">
+      <div className="rounded-lg ring-1 ring-ring dark:ring-ring bg-card dark:bg-card shadow-sm">
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
           {/* 헤더 라벨 */}
           <div
@@ -434,7 +434,7 @@ export default function AdminReviewListClient() {
           </div>
 
           {error ? (
-            <div className="p-8 text-center text-red-500">목록을 불러오지 못했습니다.</div>
+            <div className="p-8 text-center text-destructive">목록을 불러오지 못했습니다.</div>
           ) : !data && isValidating ? (
             <div className="p-8 text-center text-muted-foreground">불러오는 중…</div>
           ) : rows.length === 0 ? (
@@ -455,9 +455,9 @@ export default function AdminReviewListClient() {
                     'items-center gap-y-2 gap-x-3 px-3',
                     compact ? 'py-2' : 'py-3',
                     'transition-colors cursor-pointer',
-                    'even:bg-background hover:bg-emerald-50/30',
-                    'dark:even:bg-card dark:hover:bg-emerald-400/10',
-                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-emerald-50/40 dark:bg-emerald-900/20' : '',
+                    'even:bg-background hover:bg-primary',
+                    'dark:even:bg-card dark:hover:bg-primary',
+                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-primary dark:bg-primary' : '',
                   ].join(' ')}
                 >
                   {/* 체크박스 */}
@@ -501,7 +501,7 @@ export default function AdminReviewListClient() {
                     {r.content && r.content.length > 80 && (
                       <button
                         type="button"
-                        className="mt-1 text-xs text-emerald-700 hover:underline"
+                        className="mt-1 text-xs text-primary hover:underline"
                         onClick={(e) => {
                           e.stopPropagation();
                           setExpanded((s) => ({ ...s, [r._id]: !s[r._id] }));
@@ -538,7 +538,7 @@ export default function AdminReviewListClient() {
 
                   {/* 타입 */}
                   <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
-                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-slate-200/80 dark:ring-slate-700 shrink-0'}>
+                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-ring dark:ring-ring shrink-0'}>
                       {typeLabel(r.type)}
                     </Badge>
                   </div>
@@ -578,7 +578,7 @@ export default function AdminReviewListClient() {
                             </>
                           )}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} className="text-red-600 focus:text-red-600 cursor-pointer" onSelect={() => doDelete(r._id)}>
+                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} className="text-destructive focus:text-destructive cursor-pointer" onSelect={() => doDelete(r._id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           <span>삭제</span>
                         </DropdownMenuItem>
@@ -594,17 +594,17 @@ export default function AdminReviewListClient() {
         {/* 선택 액션 바 */}
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
           <div
-            className="w-full border-t border-emerald-200/70 dark:border-emerald-900/40
-  bg-emerald-50/80 dark:bg-emerald-900/20 backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg"
+            className="w-full border-t border-border dark:border-border
+  bg-primary dark:bg-primary backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg"
           >
-            <span className="inline-flex items-center gap-2 text-emerald-900 dark:text-emerald-200">
+            <span className="inline-flex items-center gap-2 text-primary dark:text-primary">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
               <span
                 className="inline-flex items-center rounded-full bg-card dark:bg-card
       ring-1 ring-emerald-200 dark:ring-emerald-800
-      text-emerald-800 dark:text-emerald-200 font-semibold text-xs px-2 py-0.5"
+      text-primary dark:text-primary font-semibold text-xs px-2 py-0.5"
               >
                 {selected.length}개 선택됨
               </span>
@@ -614,8 +614,8 @@ export default function AdminReviewListClient() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelected([])}
-                className="h-8 px-3 border-emerald-200 text-emerald-800 hover:bg-emerald-100/40
-             dark:border-emerald-800 dark:text-emerald-100 dark:hover:bg-emerald-900/30"
+                className="h-8 px-3 border-border text-primary hover:bg-primary
+             dark:border-border dark:text-primary dark:hover:bg-primary"
               >
                 해제
               </Button>
@@ -652,7 +652,7 @@ export default function AdminReviewListClient() {
           {detail && (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className={typeBadgeClass(detail.type) + ' ring-1 ring-inset ring-slate-200/80'}>
+                <Badge variant="outline" className={typeBadgeClass(detail.type) + ' ring-1 ring-inset ring-ring'}>
                   {typeLabel(detail.type)}
                 </Badge>
                 <Badge variant={detail.status === 'visible' ? 'default' : 'secondary'}>{detail.status === 'visible' ? '공개' : '비공개'}</Badge>
@@ -694,7 +694,7 @@ export default function AdminReviewListClient() {
                             setViewerIndex(i);
                             setViewerOpen(true);
                           }}
-                          className="relative w-16 h-16 rounded-md overflow-hidden border dark:border-border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="relative w-16 h-16 rounded-md overflow-hidden border dark:border-border focus:outline-none focus:ring-2 focus:ring-ring"
                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                         >
                           <Image src={src} alt={`review-photo-${i}`} fill className="object-cover" loading="lazy" />

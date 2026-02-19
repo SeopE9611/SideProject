@@ -193,7 +193,7 @@ export default function ForceChangePasswordClient() {
               <form onSubmit={onSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword" className="text-sm font-medium">
-                    새 비밀번호 <span className="text-red-500">*</span>
+                    새 비밀번호 <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="newPassword"
@@ -205,13 +205,13 @@ export default function ForceChangePasswordClient() {
                     }}
                     placeholder="8자 이상 입력해주세요"
                     required
-                    className={fieldErrors.newPassword ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/20' : ''}
+                    className={fieldErrors.newPassword ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : ''}
                   />
-                  <p className="min-h-[18px] text-sm text-red-600 dark:text-red-400">{fieldErrors.newPassword ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.newPassword ?? ''}</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                    새 비밀번호 확인 <span className="text-red-500">*</span>
+                    새 비밀번호 확인 <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="confirmPassword"
@@ -223,9 +223,9 @@ export default function ForceChangePasswordClient() {
                     }}
                     placeholder="비밀번호를 다시 입력해주세요"
                     required
-                    className={fieldErrors.confirm ? 'border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500/20' : ''}
+                    className={fieldErrors.confirm ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : ''}
                   />
-                  <p className="min-h-[18px] text-sm text-red-600 dark:text-red-400">{fieldErrors.confirm ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.confirm ?? ''}</p>
                 </div>
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
                   {loading ? '변경 중…' : '비밀번호 변경'}

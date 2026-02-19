@@ -35,9 +35,9 @@ export default function SideMenu() {
       'group relative z-0 block rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
       'hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-emerald-50/50',
       'dark:hover:from-blue-950/30 dark:hover:to-emerald-950/30',
-      'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-300/80 dark:hover:ring-slate-700/60 hover:z-10 active:scale-[0.99]',
+      'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring dark:hover:ring-ring hover:z-10 active:scale-[0.99]',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-      isActive ? 'bg-gradient-to-r from-blue-50 to-emerald-50 text-blue-700 dark:from-blue-950/50 dark:to-emerald-950/50 dark:text-blue-400 shadow-sm' : 'text-muted-foreground hover:text-foreground',
+      isActive ? 'bg-gradient-to-r from-blue-50 to-emerald-50 text-primary dark:from-blue-950/50 dark:to-emerald-950/50 dark:text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
   };
 
@@ -47,7 +47,7 @@ export default function SideMenu() {
       'group relative z-0 block rounded-md px-3 py-1.5 text-[13px] transition-all duration-200',
       'hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100',
       'dark:hover:from-slate-900/50 dark:hover:to-slate-800/50',
-      'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-300/70 dark:hover:ring-slate-700/60 hover:z-10 active:scale-[0.99]',
+      'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring dark:hover:ring-ring hover:z-10 active:scale-[0.99]',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
       isActive ? 'bg-gradient-to-r from-slate-100 to-slate-50 text-foreground font-medium dark:from-slate-800/50 dark:to-slate-900/30 shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
@@ -86,7 +86,7 @@ export default function SideMenu() {
               </Link>
 
               <Link href="/services/apply" className={linkClass('/services/apply')}>
-                <span className="flex items-center justify-between font-semibold text-amber-700 dark:text-amber-400">
+                <span className="flex items-center justify-between font-semibold text-primary dark:text-primary">
                   장착 서비스 즉시 예약
                   <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5" />
                 </span>

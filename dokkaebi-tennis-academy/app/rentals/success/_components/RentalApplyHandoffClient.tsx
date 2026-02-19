@@ -35,11 +35,11 @@ export default function RentalApplyHandoffClient({ href, rentalId, seconds = 12,
   }, [remain, cancelled, safeHref, router]);
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex items-start justify-center bg-slate-50 py-10 bp-sm:py-14 px-3">
-      <Card className="w-full max-w-lg shadow-sm border-slate-200">
+    <div className="min-h-[calc(100vh-120px)] flex items-start justify-center bg-muted py-10 bp-sm:py-14 px-3">
+      <Card className="w-full max-w-lg shadow-sm border-border">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
-            <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary">
+            <CheckCircle2 className="h-7 w-7 text-primary" />
           </div>
           <CardTitle className="text-2xl bp-sm:text-3xl">대여 신청 접수 완료</CardTitle>
           <CardDescription className="text-base">
@@ -50,19 +50,19 @@ export default function RentalApplyHandoffClient({ href, rentalId, seconds = 12,
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="rounded-lg bg-slate-50 p-4 flex items-center justify-between gap-3">
-            <div className="text-sm text-slate-600">대여 번호</div>
+          <div className="rounded-lg bg-muted p-4 flex items-center justify-between gap-3">
+            <div className="text-sm text-muted-foreground">대여 번호</div>
             <div className="font-mono text-sm font-semibold">{rentalId}</div>
           </div>
 
-          <div className="rounded-lg bg-amber-50/60 p-4">
+          <div className="rounded-lg bg-muted p-4">
             <div className="flex items-start gap-2">
-              <Clock className="mt-0.5 h-4 w-4 text-amber-700" />
+              <Clock className="mt-0.5 h-4 w-4 text-primary" />
               <div className="flex-1">
-                <div className="text-sm font-semibold text-amber-900">스트링 교체 신청서로 이동 중</div>
-                <div className="mt-1 text-xs text-amber-900/80">{cancelled ? <>자동 이동이 취소되었습니다. 준비되면 아래 버튼으로 이동해 주세요.</> : <>준비되면 신청서 페이지로 자동 이동합니다. ({remain}s)</>}</div>
+                <div className="text-sm font-semibold text-primary">스트링 교체 신청서로 이동 중</div>
+                <div className="mt-1 text-xs text-primary">{cancelled ? <>자동 이동이 취소되었습니다. 준비되면 아래 버튼으로 이동해 주세요.</> : <>준비되면 신청서 페이지로 자동 이동합니다. ({remain}s)</>}</div>
               </div>
-              {!cancelled ? <Loader2 className="h-4 w-4 animate-spin text-amber-700" /> : null}
+              {!cancelled ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : null}
             </div>
           </div>
         </CardContent>

@@ -346,7 +346,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         <div className="container mx-auto px-4 py-8">
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
             <CardContent className="space-y-4 p-6">
-              <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
+              <div className="rounded-md border border-destructive bg-destructive px-4 py-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/board/free">목록으로</Link>
@@ -380,7 +380,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-white md:text-3xl">자유 게시판 글 수정</h1>
             <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground md:text-base">기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.</p>
             {/* 이탈 경고(고정 노출) */}
-            <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
@@ -425,7 +425,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       onClick={() => setCategory(opt.value)}
                       className={cn(
                         'rounded-full border px-2 py-0.5 text-[11px]',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        category === opt.value ? 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}
@@ -467,7 +467,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-card dark:bg-card"
+                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card dark:bg-card"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -514,7 +514,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
+                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
@@ -526,7 +526,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-red-500"
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-destructive"
                               >
                                 <X className="h-3 w-3" />
                               </button>
@@ -540,10 +540,10 @@ export default function FreeBoardEditClient({ id }: Props) {
               </div>
 
               {/* 에러 메시지 */}
-              {errorMsg && <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200">{errorMsg}</div>}
+              {errorMsg && <div className="rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">{errorMsg}</div>}
 
               {conflictOpen && (
-                <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+                <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
                   <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
                   <p className="mt-1">최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해 주세요.</p>
                   <div className="mt-3 flex flex-wrap gap-2">
