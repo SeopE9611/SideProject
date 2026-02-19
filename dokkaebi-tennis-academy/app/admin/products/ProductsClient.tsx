@@ -41,7 +41,7 @@ type StatusKey = (typeof STATUS_KEYS)[number];
 const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.ElementType }> = {
   active: {
     label: '판매중',
-    color: 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200 ' + 'dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-800',
+    color: 'bg-muted text-foreground ring-1 ring-emerald-200 ' + 'dark:bg-muted dark:text-foreground dark:ring-emerald-800',
     Icon: CheckCircle2,
   },
   low_stock: {
@@ -51,7 +51,7 @@ const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.E
   },
   out_of_stock: {
     label: '품절',
-    color: 'bg-rose-100 text-rose-800 ring-1 ring-rose-200 ' + 'dark:bg-rose-900/30 dark:text-rose-300 dark:ring-rose-800',
+    color: 'bg-muted text-foreground ring-1 ring-rose-200 ' + 'dark:bg-muted dark:text-foreground dark:ring-rose-800',
     Icon: XCircle,
   },
 };
@@ -216,13 +216,13 @@ export default function ProductsClient() {
   };
 
   return (
-    <div className={['min-h-screen', 'bg-gradient-to-b from-slate-50 via-white to-slate-50', 'dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950'].join(' ')}>
+    <div className={['min-h-screen', 'bg-gradient-to-b from-primary via-white to-accent', 'dark:bg-gradient-to-b dark:from-primary dark:via-primary dark:to-accent'].join(' ')}>
       <div className="container py-8 px-6">
         {commonErrorMessage && <div className="text-center text-red-500">{commonErrorMessage}</div>}
         <div className="mb-2">
           <div className="flex items-center space-x-3 mb-4">
             <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
-              <Package className="h-8 w-8 text-blue-600" />
+              <Package className="h-8 w-8 text-foreground" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground">상품 관리</h1>
@@ -235,15 +235,15 @@ export default function ProductsClient() {
           {[
             {
               label: '전체 상품',
-              icon: <Package className="h-6 w-6 text-blue-600" />,
+              icon: <Package className="h-6 w-6 text-foreground" />,
               value: totalAll,
-              bgColor: 'bg-blue-50 dark:bg-blue-950/20',
+              bgColor: 'bg-muted dark:bg-muted',
             },
             {
               label: '판매 중',
-              icon: <CheckCircle className="h-6 w-6 text-green-600" />,
+              icon: <CheckCircle className="h-6 w-6 text-foreground" />,
               value: activeAll,
-              bgColor: 'bg-green-50 dark:bg-green-950/20',
+              bgColor: 'bg-muted dark:bg-muted',
             },
             {
               label: '재고 부족',
@@ -253,31 +253,31 @@ export default function ProductsClient() {
             },
             {
               label: '품절',
-              icon: <XCircle className="h-6 w-6 text-rose-600" />,
+              icon: <XCircle className="h-6 w-6 text-foreground" />,
               value: outOfStockAll,
-              bgColor: 'bg-rose-50 dark:bg-rose-950/20',
+              bgColor: 'bg-muted dark:bg-muted',
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30">
+            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent border border-border dark:border-border">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-blue-200/50 dark:bg-blue-800/50 animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-muted dark:bg-muted animate-pulse align-middle" /> : c.value}</p>
                   </div>
-                  <div className={`${c.bgColor} rounded-xl p-3 border border-blue-100 dark:border-blue-800/30`}>{c.icon}</div>
+                  <div className={`${c.bgColor} rounded-xl p-3 border border-border dark:border-border`}>{c.icon}</div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </section>
 
-        <Card className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-blue-100 dark:border-blue-800/30 flex-1 min-h-0 flex flex-col">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/30 dark:to-teal-950/30 border-b border-blue-100 dark:border-blue-800/30 pb-4 shrink-0">
+        <Card className="shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent border border-border dark:border-border flex-1 min-h-0 flex flex-col">
+          <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border dark:border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
-                <CardTitle className="text-xl font-semibold text-blue-800 dark:text-blue-200">스트링 목록</CardTitle>
-                <CardDescription className="text-blue-600 dark:text-blue-400">{total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
+                <CardTitle className="text-xl font-semibold text-foreground dark:text-foreground">스트링 목록</CardTitle>
+                <CardDescription className="text-foreground dark:text-foreground">{total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
               </div>
               <Button
                 asChild
@@ -285,8 +285,8 @@ export default function ProductsClient() {
                   // 사이즈/레이아웃
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
                   // 색상(라이트/다크 모두 자연스러운 플랫)
-                  'bg-blue-600 hover:bg-primary text-primary-foreground',
-                  'dark:bg-sky-500 dark:hover:bg-sky-400',
+                  'bg-muted hover:bg-primary text-primary-foreground',
+                  'dark:bg-muted dark:hover:bg-muted',
                   // 경계/그림자: 지나치지 않게만
                   'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
                   // 포커스 접근성
@@ -318,12 +318,12 @@ export default function ProductsClient() {
                       value={searchTerm}
                       onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-8 h-9 text-xs
-             border-blue-200 focus:border-blue-400
-             dark:border-border dark:focus:border-blue-500
+             border-border focus:border-border
+             dark:border-border dark:focus:border-border
              bg-card dark:bg-card"
                     />
                     {searchTerm && (
-                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-blue-50 dark:hover:bg-blue-950/20" onClick={() => handleSearchChange('')}>
+                      <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-muted dark:hover:bg-muted" onClick={() => handleSearchChange('')}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
@@ -331,7 +331,7 @@ export default function ProductsClient() {
                 </div>
 
                 {/* 필터 */}
-                <div className="grid w-full gap-2 border-t border-blue-100 dark:border-blue-800/30 pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                <div className="grid w-full gap-2 border-t border-border dark:border-border pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
                   <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
                   <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
                   <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
@@ -339,7 +339,7 @@ export default function ProductsClient() {
                     variant="outline"
                     size="sm"
                     onClick={resetFilters}
-                    className="w-full border-blue-200 hover:bg-blue-50
+                    className="w-full border-border hover:bg-muted
              dark:border-border dark:hover:bg-card"
                   >
                     필터 초기화
@@ -347,7 +347,7 @@ export default function ProductsClient() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full bg-transparent border-blue-200 hover:bg-blue-50
+                    className="w-full bg-transparent border-border hover:bg-muted
              dark:border-border dark:hover:bg-card"
                     onClick={() => setSort(null)}
                   >
@@ -359,35 +359,35 @@ export default function ProductsClient() {
 
             {/* 테이블 */}
             <div className="flex-1">
-              <div className="overflow-auto rounded-lg border border-blue-100 dark:border-blue-800/30">
+              <div className="overflow-auto rounded-lg border border-border dark:border-border">
                 <Table className="table-fixed [&_tr]:border-0">
                   <TableHeader
                     className="sticky top-0 z-10 backdrop-blur
-             bg-blue-50/80 supports-[backdrop-filter]:bg-blue-50/60
+             bg-muted supports-[backdrop-filter]:bg-muted
              dark:bg-card dark:supports-[backdrop-filter]:bg-card
-             border-b border-blue-100 dark:border-border"
+             border-b border-border dark:border-border"
                   >
-                    <TableRow className="border-b border-blue-100 dark:border-blue-800/30">
-                      <TableHead className="w-[32%] text-left text-blue-700 dark:text-blue-300">
+                    <TableRow className="border-b border-border dark:border-border">
+                      <TableHead className="w-[32%] text-left text-foreground dark:text-foreground">
                         {renderSortButton({ field: 'name', children: '스트링명' })}
                       </TableHead>
-                      <TableHead className="w-[12%] text-center text-blue-700 dark:text-blue-300">
+                      <TableHead className="w-[12%] text-center text-foreground dark:text-foreground">
                         {renderSortButton({ field: 'brand', align: 'center', children: '브랜드' })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-center text-blue-700 dark:text-blue-300">
+                      <TableHead className="w-[10%] text-center text-foreground dark:text-foreground">
                         {renderSortButton({ field: 'gauge', align: 'center', children: '게이지' })}
                       </TableHead>
-                      <TableHead className="w-[14%] text-center text-blue-700 dark:text-blue-300">
+                      <TableHead className="w-[14%] text-center text-foreground dark:text-foreground">
                         {renderSortButton({ field: 'material', align: 'center', children: '재질' })}
                       </TableHead>
-                      <TableHead className="w-[12%] text-right text-blue-700 dark:text-blue-300">
+                      <TableHead className="w-[12%] text-right text-foreground dark:text-foreground">
                         {renderSortButton({ field: 'price', align: 'right', children: '가격' })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-right text-blue-700 dark:text-blue-300">
+                      <TableHead className="w-[10%] text-right text-foreground dark:text-foreground">
                         {renderSortButton({ field: 'stock', align: 'right', children: '재고' })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-center text-blue-700 dark:text-blue-300">상태</TableHead>
-                      <TableHead className="w-[10%] text-right text-blue-700 dark:text-blue-300">관리</TableHead>
+                      <TableHead className="w-[10%] text-center text-foreground dark:text-foreground">상태</TableHead>
+                      <TableHead className="w-[10%] text-right text-foreground dark:text-foreground">관리</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -408,12 +408,12 @@ export default function ProductsClient() {
                                 onClick={() => {
                                   resetFilters();
                                 }}
-                                className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                                className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted"
                               >
                                 필터 초기화
                               </Button>
                               {searchTerm && (
-                                <Button variant="ghost" size="sm" onClick={() => handleSearchChange('')} className="hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                                <Button variant="ghost" size="sm" onClick={() => handleSearchChange('')} className="hover:bg-muted dark:hover:bg-muted">
                                   검색어 지우기
                                 </Button>
                               )}
@@ -428,14 +428,14 @@ export default function ProductsClient() {
                         return (
                           <TableRow
                             key={s._id}
-                            className="h-14 border-b border-blue-100 last:border-b-0
+                            className="h-14 border-b border-border last:border-b-0
              dark:border-border
-             hover:bg-blue-50/30 dark:hover:bg-card
-             even:bg-blue-50/20 dark:even:bg-card
+             hover:bg-muted dark:hover:bg-card
+             even:bg-muted dark:even:bg-card
              transition-colors"
                           >
                             <TableCell className="text-left align-middle py-3">
-                              <Link href={`/products/${s._id}`} className="hover:text-blue-600 dark:hover:text-blue-400">
+                              <Link href={`/products/${s._id}`} className="hover:text-foreground dark:hover:text-foreground">
                                 <div className="space-y-1">
                                   <div className="truncate font-medium text-foreground dark:text-muted-foreground">{s.name}</div>
                                   <div className="font-mono text-[11px] text-muted-foreground">{s.sku}</div>
@@ -446,8 +446,8 @@ export default function ProductsClient() {
                             <TableCell className="text-center align-middle">
                               <Badge
                                 variant="secondary"
-                                className="px-2 py-0.5 rounded-full border bg-blue-100 text-blue-700 border-blue-200
-             dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
+                                className="px-2 py-0.5 rounded-full border bg-muted text-foreground border-border
+             dark:bg-muted dark:text-foreground dark:border-border"
                               >
                                 {brandLabel(s.brand)}
                               </Badge>
@@ -459,7 +459,7 @@ export default function ProductsClient() {
                             <TableCell className="text-right align-middle font-medium text-foreground dark:text-muted-foreground">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
 
                             <TableCell className="text-right align-middle">
-                              {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-blue-600 dark:text-blue-400">{s.inventory.stock}</span> : <span className="font-medium text-rose-600 dark:text-rose-400">품절</span>}
+                              {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-foreground dark:text-foreground">{s.inventory.stock}</span> : <span className="font-medium text-foreground dark:text-foreground">품절</span>}
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
@@ -472,11 +472,11 @@ export default function ProductsClient() {
                             <TableCell className="text-right align-middle">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="p-0 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                                  <Button variant="ghost" size="sm" className="p-0 hover:bg-muted dark:hover:bg-muted">
                                     <MoreHorizontal />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="border-blue-100 dark:border-blue-800/30">
+                                <DropdownMenuContent align="end" className="border-border dark:border-border">
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
                                   <DropdownMenuItem asChild>
                                     <Link href={`/products/${s._id}`}>상세 보기</Link>
@@ -517,10 +517,10 @@ export default function ProductsClient() {
                 <span className="text-sm text-muted-foreground">
                   {currentPage} / {totalPages}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages) - 1))} disabled={currentPage <= 1} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages) - 1))} disabled={currentPage <= 1} className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
                   이전
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, Math.min(p, totalPages) + 1))} disabled={currentPage >= totalPages} className="border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, Math.min(p, totalPages) + 1))} disabled={currentPage >= totalPages} className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
                   다음
                 </Button>
               </div>
