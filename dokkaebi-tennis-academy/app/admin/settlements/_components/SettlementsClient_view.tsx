@@ -251,9 +251,9 @@ export default function SettlementsClient() {
       return <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />;
     }
     if (sortDirection === 'asc') {
-      return <ArrowUp className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
+      return <ArrowUp className="w-3.5 h-3.5 text-success" />;
     }
-    return <ArrowDown className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
+    return <ArrowDown className="w-3.5 h-3.5 text-success" />;
   };
 
   // 세션 캐시 → 초기 상태 프리필(재방문 최적화)
@@ -316,12 +316,12 @@ export default function SettlementsClient() {
   // UI
   // ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:bg-gradient-to-b dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg">
-              <ChartBar className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
+              <ChartBar className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground ">정산 관리</h1>
@@ -337,10 +337,10 @@ export default function SettlementsClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground ">전체 정산 월</p>
-                  <p className="text-3xl font-bold text-foreground ">{isLoading ? <span className="inline-block h-9 w-16 rounded bg-muted/70 dark:bg-gray-700/60 animate-pulse" /> : totalSettlements}</p>
+                  <p className="text-3xl font-bold text-foreground ">{isLoading ? <span className="inline-block h-9 w-16 rounded bg-muted/70 animate-pulse" /> : totalSettlements}</p>
                 </div>
-                <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-3 border border-emerald-100 dark:border-emerald-800/30">
-                  <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="bg-muted rounded-xl p-3 border border-border">
+                  <Calendar className="h-6 w-6 text-success" />
                 </div>
               </div>
             </CardContent>
@@ -364,7 +364,7 @@ export default function SettlementsClient() {
             value={totalRefunds ?? 0}
             storageKey="settlements.kpi.compact.refund"
             formatCompact={formatKRWCard}
-            icon={<TrendingDown className="h-6 w-6 text-rose-600 dark:text-rose-400" />}
+            icon={<TrendingDown className="h-6 w-6 text-destructive" />}
             isLoading={isLoading}
             hint={true}
             skeletonWidthClass="w-24"
@@ -376,7 +376,7 @@ export default function SettlementsClient() {
             value={totalNet ?? 0}
             storageKey="settlements.kpi.compact.net"
             formatCompact={formatKRWCard}
-            icon={<Activity className="h-6 w-6 text-accent dark:text-purple-400" />}
+            icon={<Activity className="h-6 w-6 text-accent" />}
             isLoading={isLoading}
             hint={true}
             skeletonWidthClass="w-28"
@@ -388,11 +388,11 @@ export default function SettlementsClient() {
             <button
               onClick={() => setTab('snapshot')}
               className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${
-                tab === 'snapshot' ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+                tab === 'snapshot' ? 'text-success' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
               스냅샷 관리
-              {tab === 'snapshot' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-full" />}
+              {tab === 'snapshot' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
             </button>
             <button
               onClick={async () => {
@@ -406,11 +406,11 @@ export default function SettlementsClient() {
               }}
               disabled={doing.live}
               className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${
-                tab === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
+                tab === 'live' ? 'text-success' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
               }`}
             >
               실시간 조회
-              {tab === 'live' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-full" />}
+              {tab === 'live' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
             </button>
           </div>
         </div>
@@ -453,7 +453,7 @@ export default function SettlementsClient() {
                         }
                       }}
                       disabled={doing.create}
-                      className="px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="px-4 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {doing.create ? (
                         <>
@@ -497,7 +497,7 @@ export default function SettlementsClient() {
                     <button
                       onClick={() => setPendingDeleteAction({ type: 'bulk', count: selectedSnapshots.size })}
                       disabled={deleting || selectedSnapshots.size === 0}
-                      className="px-4 py-3 rounded-xl border-2 border-rose-200 dark:border-rose-700 bg-card hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-rose-600 dark:text-rose-400"
+                      className="px-4 py-3 rounded-xl border-2 border-destructive/40 bg-card hover:bg-destructive/10 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-destructive"
                     >
                       {deleting ? (
                         <>
@@ -520,9 +520,9 @@ export default function SettlementsClient() {
               {/* 데스크탑 */}
               <div className="hidden md:block overflow-x-auto">
                 <div className="min-w-[980px]">
-                  <div className="sticky top-0 z-10 backdrop-blur-sm bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
+                  <div className="sticky top-0 z-10 backdrop-blur-sm bg-muted border-b border-border">
                     <div
-                      className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200"
+                      className="grid gap-3 p-5 text-sm font-semibold text-foreground"
                       style={{
                         gridTemplateColumns: '40px 90px 110px 110px 110px 90px 90px 90px 110px 40px',
                       }}
@@ -532,32 +532,32 @@ export default function SettlementsClient() {
                           type="checkbox"
                           checked={selectedSnapshots.size === (data ?? []).length && (data ?? []).length > 0}
                           onChange={toggleSelectAll}
-                          className="w-4 h-4 rounded border-emerald-300 text-emerald-600 focus:ring-ring cursor-pointer"
+                          className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer"
                           aria-label="전체 선택"
                         />
                       </div>
                       <div className="text-center">월</div>
-                      <button onClick={() => toggleSort('paid')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                      <button onClick={() => toggleSort('paid')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
                         매출
                         {renderSortIcon('paid')}
                       </button>
-                      <button onClick={() => toggleSort('refund')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                      <button onClick={() => toggleSort('refund')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
                         환불
                         {renderSortIcon('refund')}
                       </button>
-                      <button onClick={() => toggleSort('net')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                      <button onClick={() => toggleSort('net')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
                         순익
                         {renderSortIcon('net')}
                       </button>
-                      <button onClick={() => toggleSort('orders')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                      <button onClick={() => toggleSort('orders')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
                         주문수
                         {renderSortIcon('orders')}
                       </button>
-                      <button onClick={() => toggleSort('applications')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                      <button onClick={() => toggleSort('applications')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
                         신청수
                         {renderSortIcon('applications')}
                       </button>
-                      <button onClick={() => toggleSort('packages')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors">
+                      <button onClick={() => toggleSort('packages')} className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-success transition-colors">
                         패키지수
                         {renderSortIcon('packages')}
                       </button>
@@ -571,23 +571,23 @@ export default function SettlementsClient() {
                     <div className="divide-y divide-gray-100 dark:divide-gray-800">
                       {[...Array(5)].map((_, i) => (
                         <div key={i} className="grid gap-3 p-5 animate-pulse" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
-                          <div className="h-5 bg-emerald-100 dark:bg-emerald-900/30 rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
+                          <div className="h-5 bg-muted rounded" />
                         </div>
                       ))}
                     </div>
                   ) : !data || data.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 px-4">
-                      <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-full p-4 mb-4">
-                        <Package className="w-12 h-12 text-emerald-600 dark:text-emerald-400" />
+                      <div className="bg-muted rounded-full p-4 mb-4">
+                        <Package className="w-12 h-12 text-success" />
                       </div>
                       <p className="text-lg font-semibold text-foreground mb-2">데이터가 없습니다</p>
                       <p className="text-sm text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
@@ -597,7 +597,7 @@ export default function SettlementsClient() {
                       {(sortedData() ?? []).map((row, idx: number) => (
                         <div key={row.yyyymm}>
                           <div
-                            className="grid gap-3 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200"
+                            className="grid gap-3 p-5 text-sm font-semibold text-foreground"
                             style={{
                               gridTemplateColumns: '40px 90px 110px 110px 110px 90px 90px 90px 110px 40px',
                             }}
@@ -607,14 +607,14 @@ export default function SettlementsClient() {
                                 type="checkbox"
                                 checked={selectedSnapshots.has(String(row.yyyymm))}
                                 onChange={() => toggleSelect(String(row.yyyymm))}
-                                className="w-4 h-4 rounded border-emerald-300 text-emerald-600 focus:ring-ring cursor-pointer"
+                                className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer"
                                 aria-label={`${row.yyyymm} 선택`}
                               />
                             </div>
 
                             <div className="flex items-center justify-center gap-2">
                               <button
-                                className="font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 hover:underline underline-offset-4 transition-all"
+                                className="font-semibold text-success hover:text-foreground hover:underline underline-offset-4 transition-all"
                                 onClick={() => {
                                   const { from, to } = monthEdges(String(row.yyyymm));
                                   router.push(`/admin/orders?from=${from}&to=${to}`);
@@ -628,7 +628,7 @@ export default function SettlementsClient() {
 
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(row.totals?.paid || 0).toLocaleString()}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(row.totals?.refund || 0).toLocaleString()}</div>
-                            <div className="text-center tabular-nums text-sm font-bold text-emerald-700 dark:text-emerald-300 flex items-center justify-center">{(row.totals?.net || 0).toLocaleString()}</div>
+                            <div className="text-center tabular-nums text-sm font-bold text-success flex items-center justify-center">{(row.totals?.net || 0).toLocaleString()}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{row.breakdown?.orders || 0}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{row.breakdown?.applications || 0}</div>
                             <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{row.breakdown?.packages || 0}</div>
@@ -641,13 +641,13 @@ export default function SettlementsClient() {
                                 </span>
                               )}
                               {statusMap[String(row.yyyymm)] === 'ok' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 font-medium border border-border ">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-success/15 text-success font-medium border border-border ">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   최신
                                 </span>
                               )}
                               {statusMap[String(row.yyyymm)] === 'stale' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 font-medium border border-rose-200 dark:border-rose-800">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 text-destructive font-medium border border-destructive/40">
                                   <AlertTriangle className="w-3.5 h-3.5" />
                                   갱신 필요
                                 </span>
@@ -737,7 +737,7 @@ export default function SettlementsClient() {
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
-                                      className="text-rose-600 focus:text-rose-600"
+                                      className="text-destructive focus:text-destructive"
                                       onSelect={async () => {
                                         setOpenMenuId(null);
                                         setPendingDeleteAction({ type: 'single', yyyymm: String(row.yyyymm) });
@@ -753,11 +753,11 @@ export default function SettlementsClient() {
                           </div>
 
                           {openMap[String(row.yyyymm)] && statusMap[String(row.yyyymm)] === 'stale' && diffMap[String(row.yyyymm)] && (
-                            <div className="mx-5 mb-5 rounded-2xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
-                              <div className="p-4 border-b border-rose-200 dark:border-rose-800 bg-card/50 backdrop-blur-sm flex items-center justify-between">
+                            <div className="mx-5 mb-5 rounded-2xl border-2 border-destructive/40 bg-destructive/10 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
+                              <div className="p-4 border-b border-destructive/40 bg-card/50 backdrop-blur-sm flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                  <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-                                  <span className="font-semibold text-sm text-rose-900 dark:text-rose-100">검증 결과 비교</span>
+                                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                                  <span className="font-semibold text-sm text-destructive">검증 결과 비교</span>
                                 </div>
                                 <button
                                   className="text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground transition-colors font-medium"
@@ -773,8 +773,8 @@ export default function SettlementsClient() {
                               </div>
 
                               <div className="p-5">
-                                <div className="rounded-xl border-2 border-rose-200 dark:border-rose-800 overflow-hidden bg-card shadow-sm">
-                                  <div className="grid grid-cols-7 gap-4 p-4 bg-rose-50/50 dark:bg-rose-950/20 text-xs font-semibold border-b border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100">
+                                <div className="rounded-xl border-2 border-destructive/40 overflow-hidden bg-card shadow-sm">
+                                  <div className="grid grid-cols-7 gap-4 p-4 bg-destructive/10 text-xs font-semibold border-b border-destructive/40 text-destructive">
                                     <div></div>
                                     <div className="text-right">매출</div>
                                     <div className="text-right">환불</div>
@@ -803,11 +803,11 @@ export default function SettlementsClient() {
                                   </div>
                                 </div>
 
-                                <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-rose-100 dark:bg-rose-900/30 border-2 border-rose-300 dark:border-rose-700">
-                                  <AlertTriangle className="w-5 h-5 text-rose-700 dark:text-rose-300 flex-shrink-0" />
-                                  <span className="text-sm text-rose-800 dark:text-rose-200 flex-1 font-medium">값이 다릅니다. '지금 갱신'을 눌러 스냅샷을 업데이트 하세요.</span>
+                                <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-destructive/15 border-2 border-destructive/40">
+                                  <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
+                                  <span className="text-sm text-destructive flex-1 font-medium">값이 다릅니다. '지금 갱신'을 눌러 스냅샷을 업데이트 하세요.</span>
                                   <button
-                                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
+                                    className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
                                     disabled={doing.rebuild === row.yyyymm}
                                     onClick={async () => {
                                       try {
@@ -857,36 +857,36 @@ export default function SettlementsClient() {
               {/* 모바일 */}
               <div className="md:hidden px-3 py-3 space-y-3">
                 {!isLoading && data && data.length > 0 && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-lg">
-                    <input type="checkbox" checked={selectedSnapshots.size === data.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-emerald-300 text-emerald-600 focus:ring-ring cursor-pointer" aria-label="전체 선택" />
+                  <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
+                    <input type="checkbox" checked={selectedSnapshots.size === data.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer" aria-label="전체 선택" />
                     <span className="text-sm font-medium text-foreground ">전체 선택</span>
                   </div>
                 )}
 
                 {isLoading ? (
-                  [...Array(3)].map((_, i) => <div key={i} className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-card p-4 shadow-sm animate-pulse h-32" />)
+                  [...Array(3)].map((_, i) => <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-sm animate-pulse h-32" />)
                 ) : !data || data.length === 0 ? (
-                  <div className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-card p-6 text-center">
-                    <div className="bg-emerald-50 dark:bg-emerald-900/30 rounded-full p-4 mb-4 inline-flex">
-                      <Package className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                  <div className="rounded-xl border border-border bg-card p-6 text-center">
+                    <div className="bg-muted rounded-full p-4 mb-4 inline-flex">
+                      <Package className="w-8 h-8 text-success" />
                     </div>
                     <p className="text-sm font-semibold text-foreground mb-1">데이터가 없습니다</p>
                     <p className="text-xs text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
                   </div>
                 ) : (
                   (sortedData() ?? []).map((row) => (
-                    <div key={row.yyyymm} className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-card p-4 shadow-sm">
+                    <div key={row.yyyymm} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <input
                             type="checkbox"
                             checked={selectedSnapshots.has(String(row.yyyymm))}
                             onChange={() => toggleSelect(String(row.yyyymm))}
-                            className="w-4 h-4 rounded border-emerald-300 text-emerald-600 focus:ring-ring cursor-pointer"
+                            className="w-4 h-4 rounded border-border text-success focus:ring-ring cursor-pointer"
                             aria-label={`${row.yyyymm} 선택`}
                           />
                           <button
-                            className="font-semibold text-emerald-700 dark:text-emerald-300 hover:underline underline-offset-4"
+                            className="font-semibold text-success hover:underline underline-offset-4"
                             onClick={() => {
                               const { from, to } = monthEdges(String(row.yyyymm));
                               router.push(`/admin/orders?from=${from}&to=${to}`);
@@ -970,7 +970,7 @@ export default function SettlementsClient() {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-rose-600 focus:text-rose-600"
+                              className="text-destructive focus:text-destructive"
                               onSelect={async () => {
                                 setOpenMenuId(null);
                                 setPendingDeleteAction({ type: 'single', yyyymm: String(row.yyyymm) });
@@ -991,7 +991,7 @@ export default function SettlementsClient() {
                         <div className="text-right tabular-nums text-foreground ">{(row.totals?.refund || 0).toLocaleString()}</div>
 
                         <div className="text-muted-foreground ">순익</div>
-                        <div className="text-right tabular-nums font-semibold text-emerald-700 dark:text-emerald-300">{(row.totals?.net || 0).toLocaleString()}</div>
+                        <div className="text-right tabular-nums font-semibold text-success">{(row.totals?.net || 0).toLocaleString()}</div>
 
                         <div className="text-muted-foreground ">주문수</div>
                         <div className="text-right tabular-nums text-foreground ">{row.breakdown?.orders || 0}</div>
@@ -1011,13 +1011,13 @@ export default function SettlementsClient() {
                           </span>
                         )}
                         {statusMap[String(row.yyyymm)] === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 font-medium border border-border ">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-success/15 text-success font-medium border border-border ">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             최신
                           </span>
                         )}
                         {statusMap[String(row.yyyymm)] === 'stale' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 font-medium border border-rose-200 dark:border-rose-800">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 text-destructive font-medium border border-destructive/40">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             갱신 필요
                           </span>
@@ -1026,11 +1026,11 @@ export default function SettlementsClient() {
                       </div>
 
                       {openMap[String(row.yyyymm)] && statusMap[String(row.yyyymm)] === 'stale' && diffMap[String(row.yyyymm)] && (
-                        <div className="mt-4 rounded-xl border-2 border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 overflow-hidden">
-                          <div className="p-3 border-b border-rose-200 dark:border-rose-800 bg-card/50 backdrop-blur-sm flex items-center justify-between">
+                        <div className="mt-4 rounded-xl border-2 border-destructive/40 bg-destructive/10 overflow-hidden">
+                          <div className="p-3 border-b border-destructive/40 bg-card/50 backdrop-blur-sm flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                              <span className="font-semibold text-xs text-rose-900 dark:text-rose-100">검증 결과 비교</span>
+                              <AlertTriangle className="w-4 h-4 text-destructive" />
+                              <span className="font-semibold text-xs text-destructive">검증 결과 비교</span>
                             </div>
                             <button className="text-xs text-muted-foreground hover:text-foreground dark:hover:text-foreground transition-colors font-medium" onClick={() => setOpenMap((prev) => ({ ...prev, [String(row.yyyymm)]: false }))}>
                               닫기
@@ -1038,7 +1038,7 @@ export default function SettlementsClient() {
                           </div>
 
                           <div className="p-3 space-y-2">
-                            <div className="text-xs font-semibold text-rose-900 dark:text-rose-100 mb-2">스냅샷</div>
+                            <div className="text-xs font-semibold text-destructive mb-2">스냅샷</div>
                             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                               <div className="text-muted-foreground ">매출</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}</div>
@@ -1054,7 +1054,7 @@ export default function SettlementsClient() {
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.packages}</div>
                             </div>
 
-                            <div className="text-xs font-semibold text-rose-900 dark:text-rose-100 mb-2">실시간</div>
+                            <div className="text-xs font-semibold text-destructive mb-2">실시간</div>
                             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                               <div className="text-muted-foreground ">매출</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}</div>
@@ -1071,7 +1071,7 @@ export default function SettlementsClient() {
                             </div>
 
                             <button
-                              className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                               disabled={doing.rebuild === row.yyyymm}
                               onClick={async () => {
                                 try {
@@ -1130,7 +1130,7 @@ export default function SettlementsClient() {
                       <label className="block text-sm font-semibold mb-2 text-foreground ">종료일</label>
                       <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-all" />
                     </div>
-                    {invalidRange && <p className="text-sm text-rose-600 mt-1">시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.</p>}{' '}
+                    {invalidRange && <p className="text-sm text-destructive mt-1">시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.</p>}{' '}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
@@ -1172,7 +1172,7 @@ export default function SettlementsClient() {
 
                     <button
                       onClick={fetchLive}
-                      className="px-3 sm:px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
+                      className="px-3 sm:px-4 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 col-span-2 sm:col-span-1"
                       disabled={doing.live || invalidRange}
                     >
                       {doing.live ? (
@@ -1224,8 +1224,8 @@ export default function SettlementsClient() {
               <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-visible">
                 <div className="hidden md:block overflow-x-auto">
                   <div className="min-w-[640px]">
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-emerald-100 dark:border-emerald-800/30">
-                      <div className="grid gap-4 p-5 text-sm font-semibold text-emerald-800 dark:text-emerald-200" style={{ gridTemplateColumns: '1fr 120px 120px 120px 100px 100px 100px' }}>
+                    <div className="bg-muted border-b border-border">
+                      <div className="grid gap-4 p-5 text-sm font-semibold text-foreground" style={{ gridTemplateColumns: '1fr 120px 120px 120px 100px 100px 100px' }}>
                         <div className="text-center">기간</div>
                         <div className="text-center tabular-nums">매출</div>
                         <div className="text-center tabular-nums">환불</div>
@@ -1235,32 +1235,32 @@ export default function SettlementsClient() {
                         <div className="text-center tabular-nums">패키지수</div>
                       </div>
                     </div>
-                    <div className="grid gap-4 p-5 border-b border-border hover:bg-emerald-50/30 dark:hover:bg-emerald-950/10 transition-colors" style={{ gridTemplateColumns: '1fr 120px 120px 120px 100px 100px 100px ' }}>
+                    <div className="grid gap-4 p-5 border-b border-border hover:bg-muted/70 transition-colors" style={{ gridTemplateColumns: '1fr 120px 120px 120px 100px 100px 100px ' }}>
                       <div className="text-sm font-medium text-foreground text-center flex items-center justify-center">
                         {live.range.from} ~ {live.range.to}
                       </div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(live.totals?.paid || 0).toLocaleString()}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{(live.totals?.refund || 0).toLocaleString()}</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-emerald-700 dark:text-emerald-300 flex items-center justify-center">{(live.totals?.net || 0).toLocaleString()}</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-success flex items-center justify-center">{(live.totals?.net || 0).toLocaleString()}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.orders || 0}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.applications || 0}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.packages || 0}</div>
                     </div>
-                    <div className="grid gap-4 p-5 bg-emerald-50/50 dark:bg-emerald-950/20" style={{ gridTemplateColumns: '1fr 120px 120px 120px 100px 100px 100px' }}>
-                      <div className="text-sm font-bold text-emerald-900 dark:text-emerald-100 text-center flex items-center justify-center">총계</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-emerald-900 dark:text-emerald-100 flex items-center justify-center">{(live.totals?.paid || 0).toLocaleString()}</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-emerald-900 dark:text-emerald-100 flex items-center justify-center">{(live.totals?.refund || 0).toLocaleString()}</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-emerald-900 dark:text-emerald-100 flex items-center justify-center">{(live.totals?.net || 0).toLocaleString()}</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-emerald-900 dark:text-emerald-100 flex items-center justify-center">{live.breakdown?.orders || 0}</div>
-                      <div className="text-center tabular-nums text-sm font-bold text-emerald-900 dark:text-emerald-100 flex items-center justify-center">{live.breakdown?.applications || 0}</div>
+                    <div className="grid gap-4 p-5 bg-muted" style={{ gridTemplateColumns: '1fr 120px 120px 120px 100px 100px 100px' }}>
+                      <div className="text-sm font-bold text-foreground text-center flex items-center justify-center">총계</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">{(live.totals?.paid || 0).toLocaleString()}</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">{(live.totals?.refund || 0).toLocaleString()}</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">{(live.totals?.net || 0).toLocaleString()}</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">{live.breakdown?.orders || 0}</div>
+                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">{live.breakdown?.applications || 0}</div>
                       <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">{live.breakdown?.packages || 0}</div>
                     </div>
                   </div>
                 </div>
 
                 <div className="md:hidden p-4">
-                  <div className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-card p-4 shadow-sm">
-                    <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-3 text-center">
+                  <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                    <div className="text-sm font-semibold text-success mb-3 text-center">
                       {live.range.from} ~ {live.range.to}
                     </div>
 
@@ -1272,7 +1272,7 @@ export default function SettlementsClient() {
                       <div className="text-right tabular-nums text-foreground ">{(live.totals?.refund || 0).toLocaleString()}</div>
 
                       <div className="text-muted-foreground ">순익</div>
-                      <div className="text-right tabular-nums font-bold text-emerald-700 dark:text-emerald-300">{(live.totals?.net || 0).toLocaleString()}</div>
+                      <div className="text-right tabular-nums font-bold text-success">{(live.totals?.net || 0).toLocaleString()}</div>
 
                       <div className="text-muted-foreground ">주문수</div>
                       <div className="text-right tabular-nums text-foreground ">{live.breakdown?.orders || 0}</div>

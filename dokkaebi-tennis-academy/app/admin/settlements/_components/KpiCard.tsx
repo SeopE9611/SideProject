@@ -26,7 +26,7 @@ function scaleByLength(len: number) {
   if (len <= 12) return 0.82;
   return 0.76; // 더 길어지면 조금 더 축소
 }
-const numberBaseClass = 'text-3xl font-bold text-gray-900 dark:text-gray-100 ' + 'tabular-nums tracking-tight leading-none whitespace-nowrap';
+const numberBaseClass = 'text-3xl font-bold text-foreground ' + 'tabular-nums tracking-tight leading-none whitespace-nowrap';
 
 const formatFull = (n: number) => `₩${n.toLocaleString()}`;
 
@@ -99,11 +99,11 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
   }, [recomputeScale]);
 
   return (
-    <div className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm overflow-hidden rounded-xl">
+    <div className="border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-hidden rounded-xl">
       <div className="p-6">
         <div className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-3">
           <div ref={wrapRef} className="min-w-0 overflow-hidden">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{label}</p>
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
             <button
               type="button"
               onClick={() => setCompact((v) => !v)}
@@ -111,7 +111,7 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
               className="block w-full text-left focus:outline-none"
             >
               {isLoading ? (
-                <span className={`inline-block h-8 ${skeletonWidthClass} rounded bg-gray-200/70 dark:bg-gray-700/60 animate-pulse`} />
+                <span className={`inline-block h-8 ${skeletonWidthClass} rounded bg-muted/70 animate-pulse`} />
               ) : (
                 <span
                   ref={textRef}
@@ -128,11 +128,11 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
                 </span>
               )}
 
-              {hint && <span className="mt-1 block text-xs text-gray-400 whitespace-nowrap overflow-hidden text-ellipsis">클릭하여 단위 전환</span>}
+              {hint && <span className="mt-1 block text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">클릭하여 단위 전환</span>}
             </button>
           </div>
 
-          {icon && <div className="w-10 h-10 flex-shrink-0 grid place-items-center rounded-xl bg-gray-50/60 dark:bg-gray-900/30 border border-gray-100 dark:border-gray-800/30">{icon}</div>}
+          {icon && <div className="w-10 h-10 flex-shrink-0 grid place-items-center rounded-xl bg-muted/60 border border-border/60">{icon}</div>}
         </div>
       </div>
     </div>
