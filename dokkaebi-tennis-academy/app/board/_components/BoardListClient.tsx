@@ -16,6 +16,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { showErrorToast } from '@/lib/toast';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
+import { getCategoryBadgeClass, getCategoryBadgeText } from '@/app/board/_components/board-config';
 import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import ErrorBox from '@/app/board/_components/ErrorBox';
@@ -453,7 +454,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 분류 뱃지 */}
                         <div className="flex flex-col items-center justify-center gap-1">
-                          <span className={config.categoryMap[post.category ?? '']?.badgeClass ?? config.defaultCategoryBadgeClass}>{config.categoryMap[post.category ?? '']?.label ?? '분류 없음'}</span>
+                          <span className={getCategoryBadgeClass(config.categoryMap[post.category ?? '']?.badgePreset ?? config.defaultCategoryBadgePreset)}>
+                            {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류 없음'}
+                          </span>
 
                           {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-[11px] text-muted-foreground">{config.brandLabelMap?.[post.brand] ?? post.brand}</span> : null}
                         </div>
@@ -565,7 +568,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       {/* 1줄: 번호 + 분류 뱃지 */}
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span className="text-[11px] tabular-nums text-muted-foreground/80">{typeof post.postNo === 'number' ? post.postNo : '-'}</span>
-                        <span className={config.categoryMap[post.category ?? '']?.badgeClass ?? config.defaultCategoryBadgeClass}>{config.categoryMap[post.category ?? '']?.label ?? '분류 없음'}</span>
+                        <span className={getCategoryBadgeClass(config.categoryMap[post.category ?? '']?.badgePreset ?? config.defaultCategoryBadgePreset)}>
+                          {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류 없음'}
+                        </span>
                       </div>
 
                       {/* 2줄: 제목 */}
