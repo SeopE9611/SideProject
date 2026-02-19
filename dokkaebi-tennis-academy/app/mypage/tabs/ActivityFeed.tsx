@@ -95,12 +95,12 @@ const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, '.');
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-muted text-muted-foreground border border-border',
   paid: 'bg-primary/15 text-accent border border-border',
-  out: 'bg-secondary text-secondary-foreground border border-border',
+  out: 'bg-secondary text-foreground border border-border',
   returned: 'bg-primary/15 text-accent border border-border',
   canceled: 'bg-destructive/15 text-destructive border border-border',
 
   대기중: 'bg-muted text-muted-foreground border border-border',
-  대여중: 'bg-secondary text-secondary-foreground border border-border',
+  대여중: 'bg-secondary text-foreground border border-border',
   반납완료: 'bg-primary/15 text-accent border border-border',
   취소: 'bg-destructive/15 text-destructive border border-border',
 };
