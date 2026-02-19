@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { MessageSquarePlus, Check } from 'lucide-react';
 
 type Props = {
@@ -50,19 +51,19 @@ export default function OrderReviewCTA({ orderId, reviewAllDone, unreviewedCount
   }
 
   // CTA + 배지
-  const Badge = unreviewedCount && unreviewedCount > 0 ? <span className="inline-flex items-center rounded-full bg-white/70 ring-1 ring-slate-200 text-slate-700 text-[11px] px-2 py-0.5">미작성 {unreviewedCount}개</span> : null;
+  const unreviewedBadge = unreviewedCount && unreviewedCount > 0 ? <Badge variant="neutral" className="text-[11px]">미작성 {unreviewedCount}개</Badge> : null;
 
   // 하나 바로 쓸 수 있는 대상이 있으면 곧바로 작성 페이지
   if (reviewNextTargetProductId) {
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ''}`}>
-        <Button size={size} asChild className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg">
+        <Button size={size} asChild variant="highlight" className="shadow-lg">
           <Link href={`/reviews/write?productId=${reviewNextTargetProductId}&orderId=${orderId}`}>
             <MessageSquarePlus className="mr-1 h-4 w-4" />
             리뷰 작성하기
           </Link>
         </Button>
-        {Badge}
+        {unreviewedBadge}
       </div>
     );
   }
@@ -74,7 +75,7 @@ export default function OrderReviewCTA({ orderId, reviewAllDone, unreviewedCount
         <Button size={size} variant="outline" asChild>
           <Link href={`/mypage?tab=orders&orderId=${orderId}#reviews-cta`}>리뷰 작성하기</Link>
         </Button>
-        {Badge}
+        {unreviewedBadge}
       </div>
     );
   }

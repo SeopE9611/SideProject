@@ -102,7 +102,7 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
                 <div key={`${d.kind}:${d.id}`} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">주문번호 : ({String(d.id)})</p>
+                      <p className="text-sm text-muted-foreground">주문번호 : ({String(d.id)})</p>
                     </div>
                   </div>
 

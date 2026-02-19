@@ -30,7 +30,7 @@ export default function AdminMobileMenu() {
 
         <nav className="space-y-5 px-4 py-4" aria-label="관리자 모바일 네비게이션">
           <section>
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">빠른 이동</h2>
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">빠른 이동</h2>
             <ul className="grid grid-cols-2 gap-2">
               {ADMIN_MOBILE_QUICK_ITEMS.map((item) => {
                 const Icon = item.icon;
@@ -43,7 +43,7 @@ export default function AdminMobileMenu() {
                         href={item.href}
                         className={cn(
                           'flex h-full items-center gap-2 rounded-lg border px-3 py-2 text-sm',
-                          active ? 'border-primary/40 bg-primary/10 text-primary' : 'border-slate-200 text-slate-700 hover:bg-slate-50',
+                          active ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border text-foreground hover:bg-background',
                         )}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
@@ -58,7 +58,7 @@ export default function AdminMobileMenu() {
 
           {SIDEBAR_SECTIONS.map((section) => (
             <section key={section.label}>
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">{section.label}</h2>
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{section.label}</h2>
               <ul className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
@@ -71,7 +71,7 @@ export default function AdminMobileMenu() {
                           href={item.href}
                           className={cn(
                             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                            active ? 'bg-primary/10 text-primary' : 'text-slate-700 hover:bg-slate-100',
+                            active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-accent',
                           )}
                         >
                           <Icon className="h-4 w-4 shrink-0" />

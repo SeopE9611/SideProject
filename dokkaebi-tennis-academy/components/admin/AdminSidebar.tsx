@@ -31,19 +31,19 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
       <aside
         className={cn(
           'sticky top-14 h-[calc(100vh-3.5rem)] shrink-0',
-          'border-r border-slate-200/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60',
-          'dark:bg-slate-900/70 dark:border-slate-700',
+          'border-r border-border/60 bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/60',
+          'dark:bg-background/70 dark:border-border',
           'transition-[width] duration-300 ease-in-out will-change-[width]',
           collapsed ? 'w-16' : 'w-64',
         )}
       >
         <div className={cn('relative flex items-center justify-between', collapsed ? 'px-2 py-2' : 'px-3 py-3')}>
-          {!collapsed && <div className="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">도깨비 테니스</div>}
+          {!collapsed && <div className="text-sm font-semibold tracking-tight text-foreground">도깨비 테니스</div>}
           <button
             onClick={() => setCollapsed((v) => !v)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md
-                       border border-slate-200 bg-white text-slate-600 hover:bg-slate-50
-                       dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                       border border-border bg-card text-muted-foreground hover:bg-background
+                       dark:border-border dark:bg-card dark:text-muted-foreground"
             aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -55,7 +55,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         <nav className="mt-2 h-[calc(100%-2.75rem)] overflow-y-auto px-2 pb-8">
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.label} className="mt-3">
-              <div className={cn('px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400', collapsed && 'px-0 text-center')}>{section.label}</div>
+              <div className={cn('px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground', collapsed && 'px-0 text-center')}>{section.label}</div>
               <ul className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
@@ -67,7 +67,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       href={item.href}
                       className={cn(
                         'group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm outline-none transition-colors',
-                        active ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/70',
+                        active ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'text-muted-foreground hover:bg-accent dark:text-muted-foreground dark:hover:bg-accent',
                       )}
                     >
                       <span className={cn('absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-primary transition-all', active ? 'w-1.5 opacity-100' : 'w-0 opacity-0 group-hover:w-1 group-hover:opacity-60')} />
@@ -98,7 +98,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
             </div>
           ))}
 
-          <div className={cn('mt-6 px-3 text-[11px] text-slate-400', collapsed && 'px-0 text-center')}>v1.0 • 관리자</div>
+          <div className={cn('mt-6 px-3 text-[11px] text-muted-foreground', collapsed && 'px-0 text-center')}>v1.0 • 관리자</div>
         </nav>
       </aside>
     </TooltipProvider>
