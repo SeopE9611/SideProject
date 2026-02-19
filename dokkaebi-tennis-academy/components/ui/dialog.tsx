@@ -28,7 +28,7 @@ function DialogOverlay({ className, ...props }: React.ComponentProps<typeof Dial
       data-slot="dialog-overlay"
       className={cn(
         // 배경을 조금 더 “모달답게” + 유리 느낌(blur)
-        'fixed inset-0 z-50 bg-black/55 backdrop-blur-[2px]',
+        'fixed inset-0 z-50 bg-overlay/60 backdrop-blur-[2px]',
         // 부드러운 페이드
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
