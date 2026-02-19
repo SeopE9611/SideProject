@@ -36,10 +36,9 @@ function MobileBrandGrid({ brands, onPick }: { brands: { name: string; href: str
             key={b.name}
             variant="outline"
             className="relative z-0 h-9 justify-center rounded-lg border-border text-sm
-              hover:bg-gradient-to-r hover:from-blue-50 hover:to-emerald-50 
-              dark:hover:from-blue-950/20 dark:hover:to-emerald-950/20
+              hover:bg-accent/60
               transition-all duration-200 bg-transparent
-              hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-200/60 hover:z-10 active:scale-[0.99]
+              hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99]
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => onPick(b.href)}
           >
@@ -356,7 +355,7 @@ const Header = () => {
           {/* 상단 로고/검색 */}
           <div
             className="shrink-0 p-6 pb-4 border-b border-border 
-                  bg-gradient-to-br from-white/50 to-slate-50/50 dark:from-slate-900/50 dark:to-slate-950/50"
+                  bg-muted/30"
           >
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
               <div
@@ -371,7 +370,7 @@ const Header = () => {
               <SearchPreview
                 placeholder="스트링 / 라켓 검색."
                 className="w-full rounded-lg border-border
-        focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-colors"
+        focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors"
                 onSelect={() => setOpen(false)}
               />
             </div>
@@ -383,8 +382,7 @@ const Header = () => {
               <AccordionItem value="strings" className="border-none">
                 <AccordionTrigger
                   value="strings"
-                  className="py-3 px-3 rounded-lg hover:bg-slate-100 
-                          dark:hover:bg-slate-800 hover:no-underline transition-all group"
+                  className="py-3 px-3 rounded-lg hover:bg-accent/60 hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
@@ -406,9 +404,9 @@ const Header = () => {
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                          hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+                          hover:bg-accent/50 transition-all
                             relative z-0
-                            hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-slate-200/70 hover:z-10
+                            hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10
                             active:scale-[0.99]
                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     onClick={() => {
@@ -521,7 +519,7 @@ const Header = () => {
                       variant="ghost"
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                               text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+                               hover:bg-accent/50 transition-all
  "
                       onClick={() => {
                         setOpen(false);
@@ -564,7 +562,7 @@ const Header = () => {
                       variant="ghost"
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                               text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                               hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+                               hover:bg-accent/50 transition-all
  "
                       onClick={() => {
                         setOpen(false);
@@ -606,7 +604,7 @@ const Header = () => {
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
                             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-                             hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+                             hover:bg-accent/50 transition-all
 "
                     onClick={() => {
                       setOpen(false);
@@ -644,8 +642,7 @@ const Header = () => {
               <AccordionItem value="support" className="border-none">
                 <AccordionTrigger
                   value="support"
-                  className="py-3 px-3 rounded-lg hover:bg-slate-100 
-        dark:hover:bg-slate-800 hover:no-underline transition-all group"
+                  className="py-3 px-3 rounded-lg hover:bg-accent/60 hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
@@ -669,7 +666,7 @@ const Header = () => {
                       variant="ghost"
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-             hover:from-blue-50/50 hover:to-emerald-50/50 transition-all
+             hover:bg-accent/50 transition-all
  "
                       onClick={() => {
                         setOpen(false);
@@ -710,11 +707,11 @@ const Header = () => {
                           className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums"
                           aria-label="포인트 보기"
                         >
-                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">P</span>
+                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">P</span>
                           <span className="inline-flex items-center gap-1">
                             {pointsBalance === null ? (
                               <>
-                                <Loader2 className="h-3.5 w-3.5 animate-spin text-slate-500 dark:text-slate-300" aria-hidden="true" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
                                 <span className="sr-only">포인트 불러오는 중</span>
                               </>
                             ) : (
@@ -741,7 +738,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-accent/50"
                     onClick={() => {
                       setOpen(false);
                       router.push('/mypage');
@@ -755,7 +752,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-accent/50"
                     onClick={() => {
                       setOpen(false);
                       router.push('/messages');
@@ -770,7 +767,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-accent/50"
                     onClick={() => {
                       setOpen(false);
                       router.push('/cart');
@@ -834,7 +831,7 @@ const Header = () => {
             aria-hidden="true"
             className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300
             ${isScrolled ? 'h-[56px]' : 'h-[72px]'}
-            bg-white/70 dark:bg-slate-900/60 backdrop-blur-md
+            bg-background/70 backdrop-blur-md
             border-b border-border`}
           />
           <SiteContainer
@@ -853,7 +850,7 @@ const Header = () => {
               </SheetTrigger>
 
               <Link href="/" className="flex flex-col items-center group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
-                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-accent dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
+                <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-accent transition-colors">도깨비 테니스</div>
                 <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
               </Link>
 
@@ -869,7 +866,7 @@ const Header = () => {
 
             <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-3 bp-lg:gap-4">
               <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈">
-                <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-accent dark:group-hover:text-blue-400 transition-colors">도깨비 테니스</div>
+                <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-accent transition-colors">도깨비 테니스</div>
                 <div className="text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">DOKKAEBI TENNIS SHOP</div>
               </Link>
 
@@ -881,7 +878,7 @@ const Header = () => {
                       key={item.name}
                       href={item.href}
                       className={`inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-                      ${active ? 'text-accent dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/30 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:text-accent hover:bg-slate-100/60 dark:hover:bg-slate-800/50'}`}
+                      ${active ? 'bg-primary text-primary-foreground font-semibold' : 'text-foreground hover:text-accent hover:bg-accent/50'}`}
                       aria-current={active ? 'page' : undefined}
                       aria-label={`${item.name} 페이지로 이동`}
                     >
@@ -897,7 +894,7 @@ const Header = () => {
                       <button
                         type="button"
                         className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-                      text-slate-700 dark:text-slate-300 hover:text-accent hover:bg-slate-100/60 dark:hover:bg-slate-800/50
+                      text-foreground hover:text-accent hover:bg-accent/50
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         aria-label="더보기 메뉴"
                       >
@@ -912,7 +909,7 @@ const Header = () => {
                         return (
                           <DropdownMenuItem
                             key={item.name}
-                            className={active ? 'bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 font-semibold' : undefined}
+                            className={active ? 'bg-primary text-primary-foreground font-semibold' : undefined}
                             onSelect={(e) => {
                               e.preventDefault();
                               setOverflowMenuOpen(false);
@@ -935,7 +932,7 @@ const Header = () => {
               {/* 검색 (PC 전용) */}
               <div className="ml-auto shrink-0 flex justify-end">
                 <div className="min-w-[180px]" style={{ width: 'clamp(220px, 24vw, 560px)' }}>
-                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-white/80 dark:bg-slate-800/70 border border-border focus-within:ring-2 ring-ring transition-all duration-200" />
+                  <SearchPreview placeholder="스트링 / 라켓 검색..." className="w-full rounded-full bg-background/80 border border-border focus-within:ring-2 focus-within:ring-ring transition-all duration-200" />
                 </div>
               </div>
 
@@ -975,7 +972,7 @@ const Header = () => {
                       <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
                         {pointsBalance === null ? (
                           <>
-                            <Loader2 className="h-4 w-4 animate-spin text-slate-500 dark:text-slate-300" aria-hidden="true" />
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
                             <span className="sr-only">포인트 불러오는 중</span>
                           </>
                         ) : (
