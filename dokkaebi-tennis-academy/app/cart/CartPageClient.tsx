@@ -257,7 +257,7 @@ export default function CartPageClient() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-background to-background dark:from-background dark:via-background dark:to-background">
+    <div className="min-h-full bg-background dark:bg-background">
       {/* 장착 대상 스트링 정리 확인 다이얼로그 */}
       <AlertDialog
         open={cleanupDialogOpen}
@@ -297,7 +297,7 @@ export default function CartPageClient() {
         </AlertDialogContent>
       </AlertDialog>
       {/* 헤더 */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary text-primary-foreground">
+      <div className="relative overflow-hidden bg-primary text-primary-foreground">
         <div className="absolute inset-0 bg-foreground/10" />
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
@@ -344,11 +344,11 @@ export default function CartPageClient() {
             {/* 목록 */}
             <div className="bp-lg:col-span-2 space-y-5">
               <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl">
-                <CardHeader className="rounded-t-lg bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background">
+                <CardHeader className="rounded-t-lg bg-muted dark:bg-background">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <CardTitle className="flex items-center gap-3">
-                        <span className="rounded-2xl bg-gradient-to-r from-muted to-muted p-2 shadow-lg dark:from-background dark:to-background">
+                        <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
                           <ShoppingBag className="h-5 w-5 text-accent dark:text-accent" />
                         </span>
                         선택한 상품 ({cartItems.length}개)
@@ -551,7 +551,7 @@ export default function CartPageClient() {
                   })}
                 </CardContent>
 
-                <CardFooter className="rounded-b-lg bg-gradient-to-r from-muted/50 to-muted/50 dark:from-background dark:to-background">
+                <CardFooter className="rounded-b-lg bg-muted/50 dark:bg-background">
                   <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
                     <Button variant="outline" className="group border-0 shadow-sm hover:bg-muted dark:hover:bg-primary" asChild>
                       <Link href="/products" className="flex items-center gap-2">
@@ -561,7 +561,7 @@ export default function CartPageClient() {
                     </Button>
                     <Button
                       variant="destructive"
-                      className="bg-gradient-to-r from-background to-background shadow-lg hover:from-primary hover:to-primary"
+                      className="bg-background shadow-lg hover:bg-primary"
                       onClick={() => {
                         if (confirm('장바구니의 모든 상품을 비울까요?')) clearCart();
                       }}
@@ -580,7 +580,7 @@ export default function CartPageClient() {
             <div className="bp-lg:col-span-1">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
                 <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-primary via-primary to-primary p-4 bp-sm:p-6 text-primary-foreground">
+                  <div className="bg-primary p-4 bp-sm:p-6 text-primary-foreground">
                     <CardTitle className="flex items-center gap-3 text-xl">
                       <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
@@ -605,7 +605,7 @@ export default function CartPageClient() {
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-muted to-muted dark:from-background dark:to-background p-4 rounded-xl border border-border dark:border-border">
+                    <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border dark:border-border">
                       <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 혜택</span>
@@ -633,7 +633,7 @@ export default function CartPageClient() {
                         {bundleEditHref ? (
                           <Button
                             asChild
-                            className="h-14 w-full transform bg-gradient-to-r from-primary to-primary text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
+                            className="h-14 w-full transform bg-primary text-primary-foreground text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
@@ -643,7 +643,7 @@ export default function CartPageClient() {
                           </Button>
                         ) : (
                           <Button
-                            className="h-14 w-full transform bg-gradient-to-r from-primary to-primary text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
+                            className="h-14 w-full transform bg-primary text-primary-foreground text-lg font-semibold shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl flex items-center justify-center gap-3"
                             size="lg"
                             onClick={() => showErrorToast(serviceBlockToastMessage)}
                           >
@@ -654,12 +654,12 @@ export default function CartPageClient() {
                         )}
                       </>
                     ) : loading ? (
-                      <Button className="h-14 w-full transform bg-gradient-to-r from-primary to-primary font-semibold opacity-70" size="lg" disabled>
+                      <Button className="h-14 w-full transform bg-primary text-primary-foreground font-semibold opacity-70" size="lg" disabled>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         로그인 확인 중...
                       </Button>
                     ) : (
-                      <Button className="h-14 w-full transform bg-gradient-to-r from-primary to-primary font-semibold hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl" size="lg" asChild>
+                      <Button className="h-14 w-full transform bg-primary text-primary-foreground font-semibold hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl" size="lg" asChild>
                         <Link href={checkoutHref} className="flex items-center gap-3">
                           <ShoppingBag className="h-5 w-5" />
                           {user ? '주문하기' : '로그인 후 주문하기'}
@@ -675,14 +675,14 @@ export default function CartPageClient() {
         ) : (
           <div className="mx-auto max-w-2xl">
             <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl text-center overflow-hidden">
-              <div className="bg-gradient-to-r from-muted to-muted p-12 dark:from-background dark:to-background">
-                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-primary to-primary shadow-xl">
+              <div className="bg-muted p-12 dark:bg-background">
+                <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-primary shadow-xl">
                   <PackageOpen className="h-12 w-12 text-primary-foreground" />
                 </div>
                 <h2 className="mb-4 text-3xl font-bold text-foreground dark:text-foreground">장바구니가 비어있습니다</h2>
                 <p className="mb-8 text-lg text-muted-foreground dark:text-muted-foreground">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
                 <Button
-                  className="transform bg-gradient-to-r from-primary to-primary px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:from-primary/90 hover:to-primary/90 hover:shadow-2xl"
+                  className="transform bg-primary px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
                   size="lg"
                   asChild
                 >
@@ -719,22 +719,22 @@ export default function CartPageClient() {
                     </div>
                   )}
                   {bundleEditHref ? (
-                    <Button asChild className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold hover:from-primary/90 hover:to-primary/90">
+                    <Button asChild className="h-12 w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
                       <Link href={bundleEditHref}>번들 수량/스트링 변경</Link>
                     </Button>
                   ) : (
-                    <Button className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold hover:from-primary/90 hover:to-primary/90" onClick={() => showErrorToast(serviceBlockToastMessage)}>
+                    <Button className="h-12 w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90" onClick={() => showErrorToast(serviceBlockToastMessage)}>
                       {blockServiceCheckoutByComposition ? '구성 정리 후 주문하기' : '수량 맞춘 뒤 주문하기'}
                     </Button>
                   )}
                 </div>
               ) : loading ? (
-                <Button className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold opacity-70" disabled>
+                <Button className="h-12 w-full bg-primary text-primary-foreground font-semibold opacity-70" disabled>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   로그인 확인 중...
                 </Button>
               ) : (
-                <Button asChild className="h-12 w-full bg-gradient-to-r from-primary to-primary font-semibold hover:from-primary/90 hover:to-primary/90">
+                <Button asChild className="h-12 w-full bg-primary text-primary-foreground font-semibold hover:bg-primary/90">
                   <Link href={checkoutHref}>{user ? '주문하기' : '로그인 후 주문하기'}</Link>
                 </Button>
               )}
