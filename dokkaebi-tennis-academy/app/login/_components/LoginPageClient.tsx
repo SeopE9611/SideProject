@@ -608,27 +608,27 @@ export default function LoginPageClient() {
  };
 
  return (
- <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20 flex items-center justify-center p-4">
- <div className="absolute top-10 left-10 w-20 h-20 bg-emerald-400/20 rounded-full blur-2xl animate-pulse"></div>
- <div className="absolute bottom-10 right-10 w-32 h-32 bg-green-400/10 rounded-full blur-3xl animate-pulse"></div>
+ <div className="min-h-screen bg-gradient-to-br from-primary via-white to-accent dark:from-primary dark:via-primary dark:to-accent flex items-center justify-center p-4">
+ <div className="absolute top-10 left-10 w-20 h-20 bg-muted rounded-full blur-2xl animate-pulse"></div>
+ <div className="absolute bottom-10 right-10 w-32 h-32 bg-muted rounded-full blur-3xl animate-pulse"></div>
 
  <div className="relative w-full max-w-6xl">
- <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-slate-800/95 border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
- <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white relative overflow-hidden">
+ <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
+ <div className="bg-gradient-to-r from-primary via-primary to-accent p-6 text-white relative overflow-hidden">
  <div className="absolute inset-0 bg-black/10"></div>
  <div className="relative text-center">
  {/* <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div> */}
  <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비 테니스</h1>
- <p className="text-emerald-100 mt-2 font-medium">Dokkaebi Tennis Shop</p>
+ <p className="text-foreground mt-2 font-medium">Dokkaebi Tennis Shop</p>
  </div>
  </div>
 
  <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
- <TabsList className="grid w-full grid-cols-2 bg-slate-100 dark:bg-slate-700">
- <TabsTrigger value="login" className="data-[state=active]:bg-card dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 font-semibold">
+ <TabsList className="grid w-full grid-cols-2 bg-muted dark:bg-muted">
+ <TabsTrigger value="login" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
  로그인
  </TabsTrigger>
- <TabsTrigger value="register" className="data-[state=active]:bg-card dark:data-[state=active]:bg-slate-800 data-[state=active]:shadow-md data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 font-semibold">
+ <TabsTrigger value="register" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
  회원가입
  </TabsTrigger>
  </TabsList>
@@ -637,8 +637,8 @@ export default function LoginPageClient() {
  <TabsContent value="login" className="p-6">
  <div className="space-y-6">
  <div className="text-center">
- <h2 className="text-2xl font-bold text-slate-800 ">로그인</h2>
- <p className="text-slate-600 dark:text-slate-400 mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
+ <h2 className="text-2xl font-bold text-foreground ">로그인</h2>
+ <p className="text-foreground dark:text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
  </div>
 
  <form
@@ -656,11 +656,11 @@ export default function LoginPageClient() {
  </div>
  )} */}
  <div className="space-y-2">
- <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
+ <Label htmlFor="email" className="text-foreground dark:text-foreground font-medium">
  이메일
  </Label>
  <div className="relative">
- <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+ <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
  id="email"
  data-cy="login-email"
@@ -672,7 +672,7 @@ export default function LoginPageClient() {
  const pwVal = (document.getElementById('password') as HTMLInputElement | null)?.value ?? '';
  setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
  }}
- className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
+ className="pl-10 h-12 border-border dark:border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
  />
  </div>
  {loginFieldErrors.email && (
@@ -684,11 +684,11 @@ export default function LoginPageClient() {
  </div>
 
  <div className="space-y-2">
- <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">
+ <Label htmlFor="password" className="text-foreground dark:text-foreground font-medium">
  비밀번호
  </Label>
  <div className="relative">
- <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+ <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
  id="password"
  data-cy="login-password"
@@ -700,13 +700,13 @@ export default function LoginPageClient() {
  const emailVal = (document.getElementById('email') as HTMLInputElement | null)?.value ?? '';
  setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
  }}
- className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-emerald-500 dark:focus:border-emerald-400"
+ className="pl-10 pr-10 h-12 border-border dark:border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
  />
  <Button
  type="button"
  variant="ghost"
  size="icon"
- className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+ className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground hover:text-foreground dark:hover:text-foreground"
  onClick={() => setShowPassword(!showPassword)}
  >
  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -721,8 +721,8 @@ export default function LoginPageClient() {
  </div>
 
  <div className="flex items-center justify-between">
- <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
- <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+ <label className="flex items-center gap-2 text-sm text-foreground dark:text-foreground">
+ <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-border text-foreground focus:ring-emerald-500" />
  이메일 저장
  </label>
  <Link
@@ -733,7 +733,7 @@ export default function LoginPageClient() {
  e.stopPropagation();
  }
  }}
- className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline"
+ className="text-sm text-foreground dark:text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
  >
  비밀번호 찾기
  </Link>
@@ -741,7 +741,7 @@ export default function LoginPageClient() {
 
  <Button
  type="submit"
- className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+ className="w-full h-12 bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
  disabled={loginLoading}
  data-cy="login-submit"
  >
@@ -758,10 +758,10 @@ export default function LoginPageClient() {
 
  <div className="relative">
  <div className="absolute inset-0 flex items-center">
- <span className="w-full border-t border-slate-200 dark:border-slate-600" />
+ <span className="w-full border-t border-border dark:border-border" />
  </div>
  <div className="relative flex justify-center text-xs uppercase">
- <span className="bg-card dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400 font-medium">SNS 계정으로 로그인</span>
+ <span className="bg-card dark:bg-muted px-4 text-foreground dark:text-foreground font-medium">SNS 계정으로 로그인</span>
  </div>
  </div>
 
@@ -769,14 +769,14 @@ export default function LoginPageClient() {
 
  {showGuestLookup && (
  <div className="text-center">
- <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-4 mb-4 border border-emerald-200/50 dark:border-emerald-800/50">
+ <div className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent rounded-xl p-4 mb-4 border border-border dark:border-border">
  <div className="flex items-center justify-center gap-2 mb-3">
- <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
- <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">비회원도 주문하실 수 있습니다</p>
+ <Shield className="h-5 w-5 text-foreground dark:text-foreground" />
+ <p className="text-sm font-semibold text-foreground dark:text-foreground">비회원도 주문하실 수 있습니다</p>
  </div>
  <Button
  variant="outline"
- className="w-full border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+ className="w-full border-border dark:border-border text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
  onClick={() => {
  if (!confirmLeaveIfDirty()) return;
  router.push('/order-lookup');
@@ -794,8 +794,8 @@ export default function LoginPageClient() {
  <TabsContent value="register" className="p-6">
  <div className="space-y-6">
  <div className="text-center">
- <h2 className="text-2xl font-bold text-slate-800 ">회원가입</h2>
- <p className="text-slate-600 dark:text-slate-400 mt-2">도깨비 테니스의 회원이 되어보세요</p>
+ <h2 className="text-2xl font-bold text-foreground ">회원가입</h2>
+ <p className="text-foreground dark:text-foreground mt-2">도깨비 테니스의 회원이 되어보세요</p>
  </div>
 
  <form onSubmit={handleRegister} className="space-y-6">
@@ -808,8 +808,8 @@ export default function LoginPageClient() {
  <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-6">
  {/* 이메일 */}
  <div className="bp-lg:col-span-2 space-y-2">
- <Label htmlFor="register-email-id" className="flex items-center gap-2 text-sm font-medium text-gray-700">
- <Mail className="h-4 w-4 text-green-600" />
+ <Label htmlFor="register-email-id" className="flex items-center gap-2 text-sm font-medium text-foreground">
+ <Mail className="h-4 w-4 text-foreground" />
  이메일 주소
  </Label>
 
@@ -928,14 +928,14 @@ export default function LoginPageClient() {
  )}
 
  {isSocialOauthRegister && (
- <div className="flex items-center gap-2 text-sm text-green-600">
+ <div className="flex items-center gap-2 text-sm text-foreground">
  <CheckCircle className="h-4 w-4" />
  소셜 로그인 이메일이 자동으로 입력되었습니다.
  </div>
  )}
 
  {!isSocialOauthRegister && isEmailAvailable !== null && (
- <div className={`flex items-center gap-2 text-sm ${isEmailAvailable ? 'text-green-600' : 'text-red-600'}`}>
+ <div className={`flex items-center gap-2 text-sm ${isEmailAvailable ? 'text-foreground' : 'text-red-600'}`}>
  {isEmailAvailable ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
  {isEmailAvailable ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.'}
  </div>
@@ -946,9 +946,9 @@ export default function LoginPageClient() {
  <>
  {/* 비밀번호 */}
  <div className="space-y-2">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">비밀번호</Label>
+ <Label className="text-foreground dark:text-foreground font-medium">비밀번호</Label>
  <div className="relative">
- <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+ <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
  id="register-password"
  type={showRegisterPassword ? 'text' : 'password'}
@@ -959,9 +959,9 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="비밀번호를 입력하세요"
- className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+ className="pl-10 pr-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
- <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
+ <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
  {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
  </Button>
  </div>
@@ -975,9 +975,9 @@ export default function LoginPageClient() {
 
  {/* 비밀번호 확인 */}
  <div className="space-y-2">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">비밀번호 확인</Label>
+ <Label className="text-foreground dark:text-foreground font-medium">비밀번호 확인</Label>
  <div className="relative">
- <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+ <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
  id="register-confirm-password"
  type={showConfirmPassword ? 'text' : 'password'}
@@ -988,9 +988,9 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="비밀번호를 다시 입력하세요"
- className="pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+ className="pl-10 pr-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
- <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-slate-400" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+ <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
  </Button>
  </div>
@@ -1005,9 +1005,9 @@ export default function LoginPageClient() {
  )}
  {/* 이름 */}
  <div className="space-y-2">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">이름</Label>
+ <Label className="text-foreground dark:text-foreground font-medium">이름</Label>
  <div className="relative">
- <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+ <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
  id="register-name"
  value={name}
@@ -1017,7 +1017,7 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="이름을 입력하세요"
- className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+ className="pl-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
  </div>
  {registerFieldErrors.name && (
@@ -1030,9 +1030,9 @@ export default function LoginPageClient() {
 
  {/* 연락처 */}
  <div className="space-y-2">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">연락처</Label>
+ <Label className="text-foreground dark:text-foreground font-medium">연락처</Label>
  <div className="relative">
- <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+ <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
  id="register-phone"
  value={phone}
@@ -1044,7 +1044,7 @@ export default function LoginPageClient() {
  placeholder="연락처를 입력하세요 ('-' 제외)"
  inputMode="numeric"
  maxLength={13}
- className="pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+ className="pl-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
  </div>
  {registerFieldErrors.phone && (
@@ -1058,20 +1058,20 @@ export default function LoginPageClient() {
  {/* 우편번호 */}
  <div className="bp-lg:col-span-2 space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">우편번호</Label>
+ <Label className="text-foreground dark:text-foreground font-medium">우편번호</Label>
  <Button
  id="register-find-postcode"
  type="button"
  variant="outline"
  size="sm"
- className="border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 bg-transparent"
+ className="border-border dark:border-border text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
  onClick={handleFindPostcode}
  >
  <MapPin className="mr-2 h-4 w-4" />
  우편번호 찾기
  </Button>
  </div>
- <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed max-w-xs h-12 border-slate-200 dark:border-slate-600" />
+ <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-muted dark:bg-muted cursor-not-allowed max-w-xs h-12 border-border dark:border-border" />
  {registerFieldErrors.postalCode && (
  <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
  <AlertCircle className="h-4 w-4" />
@@ -1082,8 +1082,8 @@ export default function LoginPageClient() {
 
  {/* 기본 주소 */}
  <div className="bp-lg:col-span-2 space-y-2">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">기본 배송지 주소</Label>
- <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-slate-50 dark:bg-slate-700 cursor-not-allowed h-12 border-slate-200 dark:border-slate-600" />
+ <Label className="text-foreground dark:text-foreground font-medium">기본 배송지 주소</Label>
+ <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-muted dark:bg-muted cursor-not-allowed h-12 border-border dark:border-border" />
  {registerFieldErrors.address && (
  <div className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
  <AlertCircle className="h-4 w-4" />
@@ -1094,7 +1094,7 @@ export default function LoginPageClient() {
 
  {/* 상세 주소 */}
  <div className="bp-lg:col-span-2 space-y-2">
- <Label className="text-slate-700 dark:text-slate-300 font-medium">상세 주소</Label>
+ <Label className="text-foreground dark:text-foreground font-medium">상세 주소</Label>
  <Input
  id="register-address-detail"
  value={addressDetail}
@@ -1104,7 +1104,7 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="상세 주소를 입력하세요"
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400"
+ className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
  />
  </div>
  </div>
@@ -1123,7 +1123,7 @@ export default function LoginPageClient() {
  ? oauthProvider === 'naver'
  ? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'
  : 'w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] font-semibold shadow-lg'
- : 'w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg'
+ : 'w-full h-12 bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-white font-semibold shadow-lg'
  }
  disabled={submitting}
  >
@@ -1160,10 +1160,10 @@ export default function LoginPageClient() {
  <>
  <div className="relative">
  <div className="absolute inset-0 flex items-center">
- <span className="w-full border-t border-slate-200 dark:border-slate-600" />
+ <span className="w-full border-t border-border dark:border-border" />
  </div>
  <div className="relative flex justify-center text-xs uppercase">
- <span className="bg-card dark:bg-slate-800 px-4 text-slate-500 dark:text-slate-400 font-medium">SNS 계정으로 가입</span>
+ <span className="bg-card dark:bg-muted px-4 text-foreground dark:text-foreground font-medium">SNS 계정으로 가입</span>
  </div>
  </div>
  <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} isRegisterMode={true} />

@@ -25,7 +25,7 @@ function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: nu
           key={n}
           type="button"
           aria-label={`${n}점`}
-          className={`text-3xl transition-all duration-200 ${value >= n ? 'text-yellow-400 scale-110' : 'text-slate-300 dark:text-slate-600'} hover:scale-125 hover:text-yellow-300`}
+          className={`text-3xl transition-all duration-200 ${value >= n ? 'text-yellow-400 scale-110' : 'text-foreground dark:text-foreground'} hover:scale-125 hover:text-yellow-300`}
           onClick={() => onChange?.(n)}
         >
           ★
@@ -610,7 +610,7 @@ export default function ReviewWritePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent">
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08] pointer-events-none">
         <svg width="100%" height="100%" viewBox="0 0 800 600" className="absolute inset-0 w-full h-full">
           <defs>
@@ -635,7 +635,7 @@ export default function ReviewWritePage() {
           {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
           <div className="space-y-6">
             {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white p-6 shadow-xl overflow-hidden">
+            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary to-accent text-white p-6 shadow-xl overflow-hidden">
               {/* 코트 라인 장식 */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-white/30"></div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30"></div>
@@ -662,19 +662,19 @@ export default function ReviewWritePage() {
 
             {/* 현재 상품 정보 */}
             {mode === 'product' && currentMeta && (
-              <div className="rounded-xl bg-white dark:bg-slate-800 p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
+              <div className="rounded-xl bg-white dark:bg-muted p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-blue-200 dark:ring-blue-800 shrink-0">
                     {currentMeta.image ? (
                       <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" />
                     ) : (
-                      <div className="h-full w-full grid place-items-center bg-slate-100 dark:bg-slate-700 text-slate-400">IMG</div>
+                      <div className="h-full w-full grid place-items-center bg-muted dark:bg-muted text-foreground">IMG</div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{currentMeta.name}</h3>
+                    <h3 className="font-semibold text-foreground dark:text-foreground truncate">{currentMeta.name}</h3>
                     {orderItems && (
-                      <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                      <div className="text-sm text-foreground dark:text-foreground mt-1">
                         진행률: {orderItems.filter((x) => x.reviewed).length} / {orderItems.length} 완료
                       </div>
                     )}
@@ -685,9 +685,9 @@ export default function ReviewWritePage() {
 
             {/* 다른 상품들 (세로 리스트) */}
             {mode === 'product' && orderItems && orderItems.length > 1 && (
-              <div className="rounded-xl bg-white dark:bg-slate-800 p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
-                <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-                  <div className="w-1 h-4 bg-blue-500 rounded-full"></div>이 주문의 다른 상품
+              <div className="rounded-xl bg-white dark:bg-muted p-5 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700">
+                <h3 className="font-semibold text-foreground dark:text-foreground mb-4 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-muted rounded-full"></div>이 주문의 다른 상품
                 </h3>
 
                 <div className="space-y-3">
@@ -695,15 +695,15 @@ export default function ReviewWritePage() {
                     const isCurrent = it.productId === resolvedProductId;
                     const statusText = it.reviewed ? '완료' : isCurrent ? '작성중' : '미작성';
                     const statusClass = it.reviewed
-                      ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300'
+                      ? 'bg-muted dark:bg-muted text-foreground dark:text-foreground'
                       : isCurrent
-                        ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
-                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+                        ? 'bg-muted dark:bg-muted text-foreground dark:text-foreground'
+                        : 'bg-muted dark:bg-muted text-foreground dark:text-foreground';
 
                     return (
                       <div key={it.productId} className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}>
                         <div className="relative h-10 w-10 overflow-hidden rounded-lg shrink-0">
-                          {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="40px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-white/50 text-slate-400 text-xs">IMG</div>}
+                          {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="40px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-white/50 text-foreground text-xs">IMG</div>}
                         </div>
 
                         <div className="min-w-0 flex-1">
@@ -727,13 +727,13 @@ export default function ReviewWritePage() {
           {/* 오른쪽: 작성 폼 (코트의 오른쪽 서비스 박스) */}
           <div className="relative">
             {/* 중앙선 장식 */}
-            <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-indigo-300 to-purple-200 dark:from-blue-800 dark:via-indigo-700 dark:to-purple-800 opacity-60"></div>
+            <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent opacity-60"></div>
 
-            <div className="rounded-2xl bg-white dark:bg-slate-800 shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden">
+            <div className="rounded-2xl bg-white dark:bg-muted shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden">
               {/* 폼 헤더 */}
-              <div className="bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-700 px-6 py-4 border-b border-slate-200 dark:border-slate-600">
+              <div className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent px-6 py-4 border-b border-border dark:border-border">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">리뷰 작성</h2>
+                  <h2 className="text-lg font-semibold text-foreground dark:text-foreground">리뷰 작성</h2>
                 </div>
               </div>
 
@@ -741,10 +741,10 @@ export default function ReviewWritePage() {
                 {/* 입력 블럭 잠금 오버레이 */}
                 <div className="relative">
                   {state !== 'ok' && (
-                    <div className="absolute inset-0 z-10 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm flex items-center justify-center">
+                    <div className="absolute inset-0 z-10 rounded-xl bg-white/80 dark:bg-muted backdrop-blur-sm flex items-center justify-center">
                       <div className="text-center">
-                        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                        <div className="text-sm text-slate-600 dark:text-slate-300">{state === 'loading' ? '검증 중...' : '작성할 수 없는 상태입니다.'}</div>
+                        <div className="w-8 h-8 border-2 border-border border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                        <div className="text-sm text-foreground dark:text-foreground">{state === 'loading' ? '검증 중...' : '작성할 수 없는 상태입니다.'}</div>
                       </div>
                     </div>
                   )}
@@ -752,11 +752,11 @@ export default function ReviewWritePage() {
                   {/* 서비스 모드: 대상 신청서 선택 */}
                   {mode === 'service' && (
                     <div className="mb-8">
-                      <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3 block">대상 신청서</Label>
+                      <Label className="text-sm font-semibold text-foreground dark:text-foreground mb-3 block">대상 신청서</Label>
 
                       <select
-                        className="w-full h-12 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4
-                 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus:border-blue-500 transition-all duration-200
+                        className="w-full h-12 rounded-xl border border-border dark:border-border bg-white dark:bg-muted px-4
+                 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus:border-border transition-all duration-200
                  text-left whitespace-normal leading-relaxed"
                         value={selectedAppId ?? ''}
                         onChange={(e) => {
@@ -780,71 +780,71 @@ export default function ReviewWritePage() {
 
                       {/* 선택된 신청서 요약 카드 */}
                       {selectedApp && (
-                        <div className="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 p-4">
+                        <div className="mt-3 rounded-xl border border-border dark:border-border bg-muted dark:bg-muted p-4">
                           <div className="flex items-center justify-between">
-                            <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{selectedApp.createdAt ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}` : ''}</div>
+                            <div className="text-sm font-medium text-foreground dark:text-foreground">{selectedApp.createdAt ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}` : ''}</div>
                             {selectedApp.status && <ApplicationStatusBadge status={selectedApp.status} />}
                           </div>
 
                           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                             <div>
-                              <dt className="text-slate-500 dark:text-slate-400">예약일자</dt>
-                              <dd className="text-slate-900 dark:text-slate-100">{formatYMD(selectedApp.preferredDate) || '-'}</dd>
+                              <dt className="text-foreground dark:text-foreground">예약일자</dt>
+                              <dd className="text-foreground dark:text-foreground">{formatYMD(selectedApp.preferredDate) || '-'}</dd>
                             </div>
                             <div>
-                              <dt className="text-slate-500 dark:text-slate-400">예약시간</dt>
-                              <dd className="text-slate-900 dark:text-slate-100">{formatHM(selectedApp.preferredTime) || '-'}</dd>
+                              <dt className="text-foreground dark:text-foreground">예약시간</dt>
+                              <dd className="text-foreground dark:text-foreground">{formatHM(selectedApp.preferredTime) || '-'}</dd>
                             </div>
                             <div>
-                              <dt className="text-slate-500 dark:text-slate-400">라켓</dt>
-                              <dd className="text-slate-900 dark:text-slate-100">{selectedApp.racketType || '-'}</dd>
+                              <dt className="text-foreground dark:text-foreground">라켓</dt>
+                              <dd className="text-foreground dark:text-foreground">{selectedApp.racketType || '-'}</dd>
                             </div>
                             <div>
-                              <dt className="text-slate-500 dark:text-slate-400">스트링</dt>
-                              <dd className="text-slate-900 dark:text-slate-100 truncate">{(selectedApp.stringItems || []).map((s) => s.name).join(', ') || '-'}</dd>
+                              <dt className="text-foreground dark:text-foreground">스트링</dt>
+                              <dd className="text-foreground dark:text-foreground truncate">{(selectedApp.stringItems || []).map((s) => s.name).join(', ') || '-'}</dd>
                             </div>
                           </dl>
 
                           {/* 요청사항 블록 */}
                           {selectedApp.requirements && (
-                            <div className="mt-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/40 p-3">
-                              <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">요청사항</div>
-                              <p className="text-sm text-slate-900 dark:text-slate-100 whitespace-pre-line break-words">{selectedApp.requirements}</p>
+                            <div className="mt-3 rounded-lg border border-border dark:border-border bg-white/60 dark:bg-muted p-3">
+                              <div className="text-xs text-foreground dark:text-foreground mb-1">요청사항</div>
+                              <p className="text-sm text-foreground dark:text-foreground whitespace-pre-line break-words">{selectedApp.requirements}</p>
                             </div>
                           )}
 
-                          <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">신청번호 {selectedApp._id}</div>
+                          <div className="mt-2 text-xs text-foreground dark:text-foreground">신청번호 {selectedApp._id}</div>
                         </div>
                       )}
                     </div>
                   )}
                   {/* 별점 섹션 */}
-                  <div className="text-center py-6 bg-gradient-to-r from-slate-50/50 to-blue-50/50 dark:from-slate-800/50 dark:to-slate-700/50 rounded-xl">
-                    <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-4">만족도를 별점으로 평가해주세요</label>
+                  <div className="text-center py-6 bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent rounded-xl">
+                    <label className="block text-sm font-semibold text-foreground dark:text-foreground mb-4">만족도를 별점으로 평가해주세요</label>
                     <Stars value={rating} onChange={setRating} disabled={state !== 'ok'} />
-                    <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>
+                    <div className="mt-2 text-sm text-foreground dark:text-foreground">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>
                   </div>
 
                   {/* 후기 작성 */}
                   <div className="space-y-4">
-                    <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200">상세 후기</label>
+                    <label className="block text-sm font-semibold text-foreground dark:text-foreground">상세 후기</label>
                     <Textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)"
-                      className="min-h-[180px] resize-y border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-xl"
+                      className="min-h-[180px] resize-y border-border dark:border-border focus:ring-2 focus:ring-blue-500 focus:border-border rounded-xl"
                       disabled={state !== 'ok'}
                     />
-                    <div className="text-xs text-slate-500 dark:text-slate-400 text-right">{content.length} / 1000자</div>
+                    <div className="text-xs text-foreground dark:text-foreground text-right">{content.length} / 1000자</div>
                   </div>
 
                   {/* 사진 업로드 */}
                   <div className="space-y-4">
-                    <Label className="text-sm font-semibold text-slate-800 dark:text-slate-200">사진 첨부 (선택, 최대 5장)</Label>
-                    <div className="rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-600 p-4">
+                    <Label className="text-sm font-semibold text-foreground dark:text-foreground">사진 첨부 (선택, 최대 5장)</Label>
+                    <div className="rounded-xl border-2 border-dashed border-border dark:border-border p-4">
                       <PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} />
                       <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok' || isUploading} />
-                      {isUploading && <div className="mt-2 text-xs text-slate-500">이미지 업로드 중...</div>}
+                      {isUploading && <div className="mt-2 text-xs text-foreground">이미지 업로드 중...</div>}
                     </div>
                   </div>
                 </div>
@@ -871,7 +871,7 @@ export default function ReviewWritePage() {
                 )}
 
                 {/* 액션 버튼들 */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-600">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-border dark:border-border">
                   <Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent">
                     {mode === 'product' ? '제품 상세 이동' : mode === 'service' ? '서비스 소개' : '리뷰 홈'}
                   </Button>
@@ -883,7 +883,7 @@ export default function ReviewWritePage() {
                     type="submit"
                     disabled={locked || isUploading}
                     aria-disabled={locked || isUploading}
-                    className="rounded-xl shadow-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 order-1 sm:order-3"
+                    className="rounded-xl shadow-sm bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-white font-semibold px-8 order-1 sm:order-3"
                   >
                     {isUploading ? '이미지 업로드 중...' : '후기 등록하기'}
                   </Button>
@@ -891,14 +891,14 @@ export default function ReviewWritePage() {
 
                 {/* invalid 진입 시 CTA */}
                 {mode === 'invalid' && (
-                  <div className="text-center py-6 text-sm text-slate-500 dark:text-slate-400">
-                    <div className="font-medium text-slate-700 dark:text-slate-200 mb-2">도움이 필요하신가요?</div>
+                  <div className="text-center py-6 text-sm text-foreground dark:text-foreground">
+                    <div className="font-medium text-foreground dark:text-foreground mb-2">도움이 필요하신가요?</div>
                     <div className="space-x-4">
-                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/services'))} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
+                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/services'))} className="underline underline-offset-2 hover:opacity-80 text-foreground dark:text-foreground">
                         스트링 서비스 소개
                       </button>
                       <span>·</span>
-                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/reviews'))} className="underline underline-offset-2 hover:opacity-80 text-blue-600 dark:text-blue-400">
+                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/reviews'))} className="underline underline-offset-2 hover:opacity-80 text-foreground dark:text-foreground">
                         리뷰 모아보기
                       </button>
                     </div>

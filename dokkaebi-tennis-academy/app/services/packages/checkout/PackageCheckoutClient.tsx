@@ -440,7 +440,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  if (!selectedPackage) {
  return (
- <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+ <div className="min-h-screen bg-background from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent flex items-center justify-center">
  <Card className="max-w-md mx-auto">
  <CardContent className="p-8 text-center">
  <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -465,7 +465,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  const discountAmount = hasDiscount ? selectedPackage.originalPrice! - selectedPackage.price : 0;
 
  return (
- <div className="min-h-full bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+ <div className="min-h-full bg-background from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent">
  {/* Hero Section */}
  <div className="relative overflow-hidden bg-primary    text-foreground">
  <div className="absolute inset-0 bg-black/20"></div>
@@ -483,7 +483,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  <div className="flex items-center gap-6 text-sm">
  <div className="flex items-center gap-2">
- <Shield className="h-4 w-4 text-green-400" />
+ <Shield className="h-4 w-4 text-foreground" />
  <span>SSL 보안 결제</span>
  </div>
  <div className="flex items-center gap-2">
@@ -504,7 +504,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="lg:col-span-2 space-y-6">
  {/* 선택된 패키지 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary 0/10 via-purple-500/10 0/10 p-6">
+ <div className="bg-primary 0/10 via-primary 0/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-accent" />
  선택된 패키지
@@ -515,32 +515,32 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div
  className={`p-6 bg-primary ${
  selectedPackage.color === 'blue'
- ? ' to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
+ ? ' to-accent dark:from-primary dark:to-accent'
  : selectedPackage.color === 'indigo'
- ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
+ ? 'from-primary to-accent dark:from-primary dark:to-accent'
  : selectedPackage.color === 'purple'
- ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
- : 'from-emerald-50  dark:from-emerald-900/20 dark:to-teal-900/20'
+ ? 'from-primary to-accent dark:from-primary dark:to-accent'
+ : 'from-primary  dark:from-primary dark:to-accent'
  } rounded-xl border-2 ${
  selectedPackage.color === 'blue'
- ? 'border-border dark:border-blue-800'
+ ? 'border-border dark:border-border'
  : selectedPackage.color === 'indigo'
- ? 'border-indigo-200 dark:border-indigo-800'
+ ? 'border-border dark:border-border'
  : selectedPackage.color === 'purple'
- ? 'border-purple-200 dark:border-purple-800'
- : 'border-border dark:border-emerald-800'
+ ? 'border-border dark:border-border'
+ : 'border-border dark:border-border'
  }`}
  >
  <div className="flex items-center gap-4 mb-4">
  <div
  className={`w-16 h-16 rounded-full bg-background ${
  selectedPackage.color === 'blue'
- ? '0 to-cyan-500'
+ ? '0 to-accent'
  : selectedPackage.color === 'indigo'
- ? 'from-indigo-500 to-purple-500'
+ ? 'from-primary to-accent'
  : selectedPackage.color === 'purple'
- ? 'from-purple-500 to-pink-500'
- : 'from-emerald-500 0'
+ ? 'from-primary to-accent'
+ : 'from-primary 0'
  } flex items-center justify-center text-foreground shadow-lg`}
  >
  {selectedPackage.color === 'blue' ? (
@@ -556,7 +556,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="flex-1">
  <div className="flex items-center gap-2 mb-2">
  <h3 className="text-2xl font-bold">{selectedPackage.title}</h3>
- {selectedPackage.popular && <Badge className="bg-primary from-indigo-500  text-foreground">인기</Badge>}
+ {selectedPackage.popular && <Badge className="bg-primary from-primary  text-foreground">인기</Badge>}
  </div>
  <p className="text-muted-foreground ">{selectedPackage.description}</p>
  </div>
@@ -568,7 +568,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 교체</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-indigo-600">{selectedPackage.validityPeriod}</div>
+ <div className="text-2xl font-bold text-foreground">{selectedPackage.validityPeriod}</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">유효기간</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
@@ -580,7 +580,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="space-y-4">
  <div>
  <h4 className="font-semibold mb-3 flex items-center">
- <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+ <CheckCircle className="w-4 h-4 mr-2 text-foreground" />
  포함 서비스
  </h4>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -589,12 +589,12 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div
  className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${
  selectedPackage.color === 'blue'
- ? '0 to-cyan-500'
+ ? '0 to-accent'
  : selectedPackage.color === 'indigo'
- ? 'from-indigo-500 to-purple-500'
+ ? 'from-primary to-accent'
  : selectedPackage.color === 'purple'
- ? 'from-purple-500 to-pink-500'
- : 'from-emerald-500 0'
+ ? 'from-primary to-accent'
+ : 'from-primary 0'
  }`}
  ></div>
  <span>{feature}</span>
@@ -623,7 +623,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  {/* 신청자 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary 0/10 via-emerald-500/10 0/10 p-6">
+ <div className="bg-primary 0/10 via-primary 0/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <UserIcon className="h-5 w-5 text-primary" />
  신청자 정보
@@ -646,7 +646,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  touch();
  }}
  placeholder="신청자 이름을 입력하세요"
- className={inputClass('border-2 focus:border-blue-500 transition-colors', 'name', fieldErrors)}
+ className={inputClass('border-2 focus:border-border transition-colors', 'name', fieldErrors)}
  />
  {hasInteracted && fieldErrors.name && <p className="mt-1 text-xs text-primary">{fieldErrors.name}</p>}
  </div>
@@ -664,13 +664,13 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  touch();
  }}
  placeholder="example@naver.com"
- className={inputClass('border-2 focus:border-purple-500 transition-colors', 'email', fieldErrors)}
+ className={inputClass('border-2 focus:border-border transition-colors', 'email', fieldErrors)}
  />
  {hasInteracted && fieldErrors.email && <p className="mt-1 text-xs text-primary">{fieldErrors.email}</p>}
  </div>
  <div className="space-y-2 sm:col-span-2">
  <Label htmlFor="applicant-phone" className="flex items-center gap-2">
- <Phone className="h-4 w-4 text-teal-600" />
+ <Phone className="h-4 w-4 text-foreground" />
  연락처
  </Label>
  <Input
@@ -681,13 +681,13 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  touch();
  }}
  placeholder="연락처를 입력하세요 ('-' 제외)"
- className={inputClass('border-2 focus:border-teal-500 transition-colors', 'phone', fieldErrors)}
+ className={inputClass('border-2 focus:border-border transition-colors', 'phone', fieldErrors)}
  />
  {hasInteracted && fieldErrors.phone && <p className="mt-1 text-xs text-primary">{fieldErrors.phone}</p>}
  </div>
  </div>
 
- <div className="bg-primary  to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-4 rounded-lg border border-border dark:border-blue-800">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
  <div className="flex items-center space-x-2">
  <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!user} />
  <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-accent dark:text-accent'}`}>
@@ -702,7 +702,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  {/* 서비스 이용 방식 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary from-purple-500/10 via-pink-500/10 to-red-500/10 p-6">
+ <div className="bg-primary from-primary via-primary to-red-500/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <MapPin className="h-5 w-5 text-primary" />
  서비스 이용 방식
@@ -719,7 +719,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  }}
  >
  {/* 매장 방문 */}
- <div className="flex items-center space-x-3 p-4 bg-primary  to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-border dark:border-blue-800">
+ <div className="flex items-center space-x-3 p-4 bg-primary  to-accent dark:from-primary dark:to-accent rounded-lg border border-border dark:border-border">
  <RadioGroupItem value="방문이용" id="방문이용" />
  <Label htmlFor="방문이용" className="flex-1 cursor-pointer font-medium">
  매장 방문 (도깨비 테니스 아카데미 방문)
@@ -729,7 +729,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  {/* 출장 서비스 – 비활성화 */}
  <div
- className="flex items-center space-x-3 p-4 bg-primary from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800 opacity-50 cursor-not-allowed"
+ className="flex items-center space-x-3 p-4 bg-primary from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border dark:border-border opacity-50 cursor-not-allowed"
  aria-disabled="true"
  onClick={(e) => e.preventDefault()}
  >
@@ -764,7 +764,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  <div className="space-y-2">
  <Label htmlFor="service-address-detail">상세 주소</Label>
- <Input id="service-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="border-2 focus:border-blue-500 transition-colors" />
+ <Input id="service-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
 
  <div className="bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
@@ -778,14 +778,14 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <MessageSquare className="h-4 w-4 text-primary" />
  서비스 요청사항
  </Label>
- <Textarea id="service-request" value={serviceRequest} onChange={(e) => setServiceRequest(e.target.value)} placeholder="서비스 이용 시 요청사항을 입력하세요" className="border-2 focus:border-green-500 transition-colors" />
+ <Textarea id="service-request" value={serviceRequest} onChange={(e) => setServiceRequest(e.target.value)} placeholder="서비스 이용 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
  </CardContent>
  </Card>
 
  {/* 결제 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-6">
+ <div className="bg-primary from-primary via-primary to-accent p-6">
  <CardTitle className="flex items-center gap-3">
  <CreditCard className="h-5 w-5 text-primary" />
  결제 정보
@@ -797,7 +797,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="space-y-3">
  <Label>결제 방법</Label>
  <RadioGroup defaultValue="bank-transfer" className="space-y-3">
- <div className="flex items-center space-x-3 p-4 bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+ <div className="flex items-center space-x-3 p-4 bg-primary  to-accent dark:from-primary dark:to-accent rounded-lg border-2 border-border dark:border-border">
  <RadioGroupItem value="bank-transfer" id="bank-transfer" />
  <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
  무통장입금
@@ -816,7 +816,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  touch();
  }}
  >
- <SelectTrigger className="border-2 focus:border-emerald-500">
+ <SelectTrigger className="border-2 focus:border-border">
  <SelectValue placeholder="입금 계좌를 선택하세요" />
  </SelectTrigger>
  <SelectContent>
@@ -837,12 +837,12 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  touch();
  }}
  placeholder="입금자명을 입력하세요"
- className={inputClass('border-2 focus:border-emerald-500 transition-colors', 'depositor', fieldErrors)}
+ className={inputClass('border-2 focus:border-border transition-colors', 'depositor', fieldErrors)}
  />
  {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-primary">{fieldErrors.depositor}</p>}
  </div>
 
- <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-blue-800">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
  <div className="flex items-center gap-2 mb-3">
  <Shield className="h-5 w-5 text-accent" />
  <p className="font-semibold text-accent dark:text-accent">무통장입금 안내</p>
@@ -868,7 +868,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  {/* 주문자 동의 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary from-red-500/10 via-pink-500/10 to-rose-500/10 p-6">
+ <div className="bg-primary from-red-500/10 via-primary to-accent p-6">
  <CardTitle className="flex items-center gap-3">
  <Shield className="h-5 w-5 text-primary" />
  주문자 동의
@@ -876,7 +876,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
  <CardContent className="p-6">
  <div className="space-y-4">
- <div className="bg-primary from-slate-50  dark:from-slate-700 dark:to-slate-600 p-4 rounded-lg">
+ <div className="bg-primary from-primary  dark:from-primary dark:to-accent p-4 rounded-lg">
  <div className="flex items-center space-x-2">
  <Checkbox
  id="agree-all"
@@ -911,7 +911,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  setState: setAgreeRefund,
  },
  ].map((item, index) => (
- <div key={item.id} className="flex items-center justify-between p-3 bg-primary from-slate-50/50 to-blue-50/30 dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg">
+ <div key={item.id} className="flex items-center justify-between p-3 bg-primary from-primary to-accent dark:from-primary dark:to-accent rounded-lg">
  <div className="flex items-center space-x-2">
  <Checkbox
  id={item.id}
@@ -979,12 +979,12 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
  </div>
 
- <div className="bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
- <div className="flex items-center gap-2 text-primary dark:text-green-400 mb-2">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
+ <div className="flex items-center gap-2 text-primary dark:text-foreground mb-2">
  <Star className="h-4 w-4" />
  <span className="font-semibold">패키지 혜택</span>
  </div>
- <div className="text-sm text-primary dark:text-green-400 space-y-1">
+ <div className="text-sm text-primary dark:text-foreground space-y-1">
  <p>• {selectedPackage.sessions}회 스트링 교체 서비스</p>
  <p>• 유효기간: {selectedPackage.validityPeriod}</p>
  <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
@@ -992,7 +992,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
  </div>
 
- <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-blue-800">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
  <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">패키지 안내</span>
