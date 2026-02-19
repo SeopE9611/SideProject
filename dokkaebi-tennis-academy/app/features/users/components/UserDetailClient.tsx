@@ -40,12 +40,12 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
       {/* 상단 액션바 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow">
+          <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center shadow">
             <User className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">{u.name || '(이름없음)'}</h1>
-            <p className="text-sm text-gray-500">{u.email}</p>
+            <p className="text-sm text-muted-foreground">{u.email}</p>
           </div>
         </div>
 
@@ -58,37 +58,37 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
       </div>
 
       {/* 프로필 카드 */}
-      <Card className="border-0 bg-white/80">
+      <Card className="border-0 bg-card">
         <CardHeader>
           <CardTitle>프로필</CardTitle>
           <CardDescription>기본 정보와 권한</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-gray-600" />
+            <Shield className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">권한:</span>
             <Badge variant="outline" className="shrink-0">
               {u.role === 'admin' ? '관리자' : '일반'}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-600" />
+            <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">가입일:</span>
-            <span className="text-sm text-gray-700">{u.createdAt ? new Date(u.createdAt).toLocaleString() : '-'}</span>
+            <span className="text-sm text-foreground">{u.createdAt ? new Date(u.createdAt).toLocaleString() : '-'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-600" />
+            <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">마지막 로그인:</span>
-            <span className="text-sm text-gray-700">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '-'}</span>
+            <span className="text-sm text-foreground">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : '-'}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm">상태:</span>
             {u.isDeleted ? (
-              <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+              <Badge variant="destructive" className="border-transparent">
                 삭제됨
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+              <Badge variant="success" className="border-transparent">
                 활성
               </Badge>
             )}
@@ -97,22 +97,22 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
       </Card>
 
       {/* 연락/주소 카드 */}
-      <Card className="border-0 bg-white/80">
+      <Card className="border-0 bg-card">
         <CardHeader>
           <CardTitle>연락 & 주소</CardTitle>
           <CardDescription>배송지 및 연락처</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-gray-600" />
+            <Mail className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">{u.email || '-'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-gray-600" />
+            <Phone className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">{u.phone || '-'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-gray-600" />
+            <MapPin className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
               {u.postalCode ? `[${u.postalCode}] ` : ''}
               {(u.address || '') + (u.addressDetail ? ` ${u.addressDetail}` : '') || '-'}

@@ -368,7 +368,7 @@ export default function UserDetailClient({ id }: { id: string }) {
           {/* 상단 스티키 액션바 */}
           <div
             className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-slate-200/70 dark:border-slate-800/70
-             bg-white/80 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-950/60"
+             bg-card/80 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-950/60"
           >
             <div className="mx-auto max-w-5xl flex items-center justify-between gap-2">
               {/* 좌측: 뒤로 */}
@@ -840,7 +840,7 @@ function normalizeIp(ip?: string) {
 // 한 줄 UI
 function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os: string; browser: string; isMobile: boolean }; highlight?: boolean }) {
   return (
-    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-slate-200/70 dark:border-slate-800/70 bg-white/80 dark:bg-slate-950/60', highlight && 'ring-1 ring-emerald-200/70 dark:ring-emerald-900/40')}>
+    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-slate-200/70 dark:border-slate-800/70 bg-card/80 dark:bg-slate-950/60', highlight && 'ring-1 ring-emerald-200/70 dark:ring-emerald-900/40')}>
       <div className={cn('grid size-9 place-items-center rounded-lg', s.isMobile ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300')}>
         {s.isMobile ? <Smartphone className="h-4 w-4" /> : <MonitorSmartphone className="h-4 w-4" />}
       </div>

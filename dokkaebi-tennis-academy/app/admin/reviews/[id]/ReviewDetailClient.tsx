@@ -70,11 +70,11 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       <div className="p-6">
         <div className="flex h-[60vh] flex-col items-center justify-center space-y-6">
           <div className="text-center">
-            <MessageSquare className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">리뷰를 찾을 수 없습니다</h1>
-            <p className="text-gray-600">요청하신 리뷰가 존재하지 않거나 삭제되었습니다.</p>
+            <MessageSquare className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+            <h1 className="text-3xl font-bold text-foreground mb-2">리뷰를 찾을 수 없습니다</h1>
+            <p className="text-muted-foreground">요청하신 리뷰가 존재하지 않거나 삭제되었습니다.</p>
           </div>
-          <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/admin/reviews">
               <ArrowLeft className="mr-2 h-4 w-4" />
               리뷰 목록으로 돌아가기
@@ -90,9 +90,9 @@ export default function ReviewDetailClient({ reviewId }: Props) {
     return (
       <div className="flex items-center space-x-1">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
+          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/40'}`} />
         ))}
-        <span className="ml-2 text-lg font-semibold text-gray-900">{rating}/5</span>
+        <span className="ml-2 text-lg font-semibold text-foreground">{rating}/5</span>
       </div>
     );
   };
@@ -138,19 +138,19 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       {/* 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
             <MessageSquare className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">리뷰 상세 보기</h1>
-            <p className="mt-2 text-lg text-gray-600">고객 리뷰의 상세 정보를 확인하고 관리하세요</p>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">리뷰 상세 보기</h1>
+            <p className="mt-2 text-lg text-muted-foreground">고객 리뷰의 상세 정보를 확인하고 관리하세요</p>
           </div>
         </div>
       </div>
 
       {/* 네비게이션 */}
       <div className="flex items-center justify-between mb-6">
-        <Button variant="outline" size="sm" asChild className="border-gray-200 text-gray-700 hover:bg-gray-50 bg-transparent">
+        <Button variant="outline" size="sm" asChild className="bg-transparent">
           <Link href="/admin/reviews">
             <ArrowLeft className="mr-2 h-4 w-4" />
             리뷰 목록으로 돌아가기
@@ -159,14 +159,14 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       </div>
 
       {/* 카드 */}
-      <Card className="border-0 bg-white/80 shadow-xl backdrop-blur-sm max-w-4xl mx-auto">
+      <Card className="border-0 bg-card shadow-xl backdrop-blur-sm max-w-4xl mx-auto">
         <CardHeader className="pb-6">
           <div className="flex flex-col space-y-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold text-gray-900">리뷰 정보</CardTitle>
+              <CardTitle className="text-2xl font-bold text-foreground">리뷰 정보</CardTitle>
               {getReviewTypeBadge(review.type)}
             </div>
-            <CardDescription className="text-gray-600">해당 리뷰에 대한 상세 정보를 확인할 수 있습니다.</CardDescription>
+            <CardDescription className="text-muted-foreground">해당 리뷰에 대한 상세 정보를 확인할 수 있습니다.</CardDescription>
           </div>
         </CardHeader>
 
@@ -188,14 +188,14 @@ export default function ReviewDetailClient({ reviewId }: Props) {
               </div>
               <div className="space-y-2">
                 <div>
-                  <p className="text-sm text-gray-600">이름</p>
+                  <p className="text-sm text-muted-foreground">이름</p>
                   <p className="font-medium text-gray-900">{review.authorName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">이메일</p>
+                  <p className="text-sm text-muted-foreground">이메일</p>
                   <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4 text-gray-400" />
-                    <p className="text-gray-700">{review.authorEmail}</p>
+                    <p className="text-foreground">{review.authorEmail}</p>
                   </div>
                 </div>
               </div>
@@ -210,20 +210,20 @@ export default function ReviewDetailClient({ reviewId }: Props) {
               </div>
               <div className="space-y-2">
                 <div>
-                  <p className="text-sm text-gray-600">작성일</p>
+                  <p className="text-sm text-muted-foreground">작성일</p>
                   <p className="font-medium text-gray-900">{formatDate(review.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">리뷰 타입</p>
+                  <p className="text-sm text-muted-foreground">리뷰 타입</p>
                   <div className="flex items-center space-x-2">
                     <Tag className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-700">
+                    <span className="text-foreground">
                       {review.type === 'lesson' && '레슨 리뷰'}
                       {review.type === 'stringing' && '스트링 서비스 리뷰'}
                       {review.type === 'product' && '상품 리뷰'}
                     </span>
                   </div>
-                  {review.type === 'product' && review.productName && <p className="text-sm text-gray-500 mt-1">상품명: {review.productName}</p>}
+                  {review.type === 'product' && review.productName && <p className="text-sm text-muted-foreground mt-1">상품명: {review.productName}</p>}
                 </div>
               </div>
             </div>
