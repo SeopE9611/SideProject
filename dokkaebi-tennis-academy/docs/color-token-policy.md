@@ -87,6 +87,17 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 3. hover/active는 토큰 기반(`primary/90` 또는 별도 `--primary-hover`)으로 정의.
 4. 일반 UI는 하드코딩 hex 금지, 브랜드 제휴 UI만 예외 허용.
 
+
+## `text-muted-foreground` 적용 기준 (다크 모드 가독성 보호)
+- `text-muted-foreground`는 **보조 정보**(메타데이터, 설명 문구, 보조 라벨, 타임스탬프)에만 사용한다.
+- 페이지/카드의 핵심 제목, 본문 값, 표의 헤더/주요 셀 값은 기본적으로 `text-foreground`를 사용한다.
+- 다크 모드에서만 흐려 보이는 문제를 막기 위해 `text-foreground dark:text-muted-foreground` 조합은 사용하지 않는다.
+- 상태값 강조(금액, 수량, 상태명)는 우선 `text-foreground` 또는 의미 색상(`text-primary`, `text-destructive`)을 사용한다.
+- 점검 체크리스트
+  - 제목/주요 데이터가 `text-muted-foreground`면 `text-foreground`로 승격
+  - 테이블 헤더가 `text-muted-foreground`면 `text-foreground`로 승격
+  - 설명/보조 캡션만 `text-muted-foreground` 유지
+
 ## 규칙
 - 일반 UI 컴포넌트는 hex/inlined color를 직접 사용하지 않고 디자인 토큰 클래스(`bg-*`, `text-*`, `border-*`)를 사용한다.
 - 제휴사 브랜드 아이덴티티가 요구되는 경우에만 예외를 허용한다.

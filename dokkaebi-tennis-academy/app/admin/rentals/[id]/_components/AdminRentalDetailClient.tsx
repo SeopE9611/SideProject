@@ -299,7 +299,7 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2">
-                <Button variant="outline" size="sm" className="h-8 border-border text-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-secondary/60" asChild>
+                <Button variant="outline" size="sm" className="h-8 border-border text-foreground hover:bg-muted" asChild>
                   <Link href="/admin/rentals">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로 돌아가기
@@ -307,7 +307,7 @@ export default function AdminRentalDetailClient() {
                 </Button>
 
                 {data?.status !== 'canceled' && (
-                  <Button asChild variant="outline" size="sm" className="h-8 border-border text-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-secondary/60 whitespace-nowrap">
+                  <Button asChild variant="outline" size="sm" className="h-8 border-border text-foreground hover:bg-muted whitespace-nowrap">
                     <Link href={`/admin/rentals/${id}/shipping-update`}>
                       <Truck className="h-4 w-4 mr-2" />
                       {data?.shipping?.outbound?.trackingNumber ? '출고 운송장 수정' : '출고 운송장 등록'}
