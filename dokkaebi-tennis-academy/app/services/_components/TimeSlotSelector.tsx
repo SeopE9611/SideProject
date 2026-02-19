@@ -61,7 +61,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
                   type="button"
                   disabled
                   title={isReserved ? '이미 예약된 시간대입니다' : '지난 시간대입니다'}
-                  className={baseBtn + ' cursor-not-allowed bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 border-gray-100 dark:border-gray-800'}
+                  className={baseBtn + ' cursor-not-allowed bg-muted dark:bg-gray-800 text-muted-foreground dark:text-muted-foreground border-gray-100 dark:border-border'}
                   aria-disabled
                 >
                   {time}
@@ -72,7 +72,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
             const selectedStyles =
               selected === time
                 ? ' bg-primary text-primary-foreground border-primary/70 shadow-sm'
-                : ' bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 dark:hover:border-gray-600';
+                : ' bg-card dark:bg-slate-800 text-foreground dark:text-gray-100 border-border dark:border-border hover:bg-background dark:hover:bg-slate-700 hover:border-border dark:hover:border-gray-600';
 
             return (
               <button key={time} type="button" className={baseBtn + selectedStyles} onClick={() => onSelect(time)} aria-pressed={selected === time}>
@@ -84,8 +84,8 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
 
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm px-4 py-3 shadow-sm">
-              <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-gray-300 dark:border-gray-600 border-t-transparent" />
+            <div className="rounded-2xl bg-card/60 dark:bg-slate-900/60 backdrop-blur-sm px-4 py-3 shadow-sm">
+              <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-border dark:border-gray-600 border-t-transparent" />
               <p className="mt-2 text-xs text-muted-foreground text-center">시간대 불러오는 중…</p>
             </div>
           </div>

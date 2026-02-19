@@ -178,17 +178,17 @@ export default function OrderLookupPage() {
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+    <div className="min-h-full bg-background from-emerald-50  ">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600">
+      <div className="relative overflow-hidden bg-primary   ">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative container mx-auto px-4 py-16">
-          <div className="text-center text-white">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+          <div className="text-center text-foreground">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
               <Search className="w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">비회원 주문 조회</h1>
-            <p className="text-xl text-emerald-100 max-w-2xl mx-auto">주문 시 입력하신 정보로 간편하게 주문 내역을 확인하세요</p>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">주문 시 입력하신 정보로 간편하게 주문 내역을 확인하세요</p>
           </div>
         </div>
       </div>
@@ -196,19 +196,19 @@ export default function OrderLookupPage() {
       <div className="container mx-auto py-12 px-4 md:px-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
-            <Link href="/login" onClick={onLeaveToLoginClick} className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 transition-colors group">
+            <Link href="/login" onClick={onLeaveToLoginClick} className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
             </Link>
           </div>
 
           {/* Main Card */}
-          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-4 mx-auto">
-                <Package className="w-6 h-6 text-white" />
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary from-emerald-500 0 rounded-full mb-4 mx-auto">
+                <Package className="w-6 h-6 text-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">주문 정보 입력</CardTitle>
+              <CardTitle className="text-2xl font-bold bg-primary   bg-clip-text text-transparent">주문 정보 입력</CardTitle>
               <CardDescription className="text-base text-muted-foreground">주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다</CardDescription>
             </CardHeader>
 
@@ -219,7 +219,7 @@ export default function OrderLookupPage() {
                 {/* Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
-                    <User className="w-4 h-4 text-emerald-600" />
+                    <User className="w-4 h-4 text-primary" />
                     이름 <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
@@ -230,9 +230,9 @@ export default function OrderLookupPage() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500 hover:border-emerald-300'}`}
+                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? 'border-red-300 focus:border-red-500' : 'border-border focus:border-emerald-500 hover:border-emerald-300'}`}
                     />
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                   {errors.name && (
                     <p className="text-sm text-red-500 flex items-center gap-1">
@@ -245,7 +245,7 @@ export default function OrderLookupPage() {
                 {/* Email Field */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-emerald-600" />
+                    <Mail className="w-4 h-4 text-primary" />
                     이메일 <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative">
@@ -257,9 +257,9 @@ export default function OrderLookupPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-emerald-500 hover:border-emerald-300'}`}
+                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-border focus:border-emerald-500 hover:border-emerald-300'}`}
                     />
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                   {errors.email && (
                     <p className="text-sm text-red-500 flex items-center gap-1">
@@ -272,7 +272,7 @@ export default function OrderLookupPage() {
                 {/* Phone Field */}
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-emerald-600" />
+                    <Phone className="w-4 h-4 text-primary" />
                     전화번호 (선택)
                   </Label>
                   <div className="relative">
@@ -283,9 +283,9 @@ export default function OrderLookupPage() {
                       placeholder="01012345678 (- 제외)"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="pl-10 h-12 border-2 border-gray-200 focus:border-emerald-500 hover:border-emerald-300 transition-all duration-200"
+                      className="pl-10 h-12 border-2 border-border focus:border-emerald-500 hover:border-emerald-300 transition-all duration-200"
                     />
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
                   {errors.phone && (
                     <p className="text-sm text-red-500 flex items-center gap-1">
@@ -300,13 +300,13 @@ export default function OrderLookupPage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
+                <div className="bg-primary from-emerald-50  border border-border rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
-                      <Clock className="w-5 h-5 text-emerald-600 mt-0.5" />
+                      <Clock className="w-5 h-5 text-primary mt-0.5" />
                     </div>
                     <div className="text-sm">
-                      <p className="font-medium text-emerald-800 mb-1">조회 가능한 주문</p>
+                      <p className="font-medium text-accent-foreground mb-1">조회 가능한 주문</p>
                       <p className="text-emerald-700">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
                     </div>
                   </div>
@@ -317,12 +317,12 @@ export default function OrderLookupPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 font-semibold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                  className="w-full h-12 font-semibold bg-primary   hover:from-emerald-700 hover:to-teal-700 text-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-border/30 border-t-white rounded-full animate-spin"></div>
                       조회 중...
                     </div>
                   ) : (
@@ -335,7 +335,7 @@ export default function OrderLookupPage() {
 
                 <p className="text-xs text-center text-muted-foreground">
                   회원이신가요?{' '}
-                  <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                  <Link href="/login" className="text-primary hover:text-emerald-700 font-medium">
                     로그인하기
                   </Link>
                 </p>
@@ -345,28 +345,28 @@ export default function OrderLookupPage() {
 
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-100">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full mb-4">
-                <Shield className="w-6 h-6 text-emerald-600" />
+            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-gray-100">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-4">
+                <Shield className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">안전한 조회</h3>
-              <p className="text-sm text-gray-600">개인정보 보호를 위한 안전한 주문 조회 시스템</p>
+              <h3 className="font-semibold text-foreground mb-2">안전한 조회</h3>
+              <p className="text-sm text-muted-foreground">개인정보 보호를 위한 안전한 주문 조회 시스템</p>
             </div>
 
-            <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-100">
+            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-gray-100">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-100 rounded-full mb-4">
                 <Clock className="w-6 h-6 text-teal-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">실시간 조회</h3>
-              <p className="text-sm text-gray-600">최신 주문 상태를 실시간으로 확인 가능</p>
+              <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>
+              <p className="text-sm text-muted-foreground">최신 주문 상태를 실시간으로 확인 가능</p>
             </div>
 
-            <div className="text-center p-6 bg-white/60 backdrop-blur-sm rounded-xl border border-gray-100">
+            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-gray-100">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-cyan-100 rounded-full mb-4">
                 <Package className="w-6 h-6 text-cyan-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">상세 정보</h3>
-              <p className="text-sm text-gray-600">배송 추적부터 결제 정보까지 한눈에</p>
+              <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
+              <p className="text-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>
             </div>
           </div>
         </div>

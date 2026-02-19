@@ -414,7 +414,7 @@ export default function CheckoutButton({
     <>
       <Button
         onClick={handleSubmit}
-        className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300"
+        className="w-full h-14 text-lg font-semibold bg-primary   hover:from-emerald-700 hover:to-green-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300"
         size="lg"
         disabled={disabled || isSubmitting}
       >
@@ -435,7 +435,7 @@ export default function CheckoutButton({
       {isSubmitting && (
         <div className="fixed inset-0 z-[60] bg-black/10 backdrop-blur-[2px] cursor-wait">
           <div className="absolute inset-0 grid place-items-center">
-            <div className="flex items-center gap-3 rounded-xl bg-white/90 px-4 py-3 shadow">
+            <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
               <Loader2 className="h-5 w-5 animate-spin" />
               <span className="text-sm">주문을 처리하고 있어요…</span>
             </div>

@@ -94,7 +94,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <ClearCartOnMount />
  <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
 
- <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+ <div className="min-h-full bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
  <SiteContainer variant="wide" className="py-12">
  <div data-cy="checkout-handoff">
  <CheckoutApplyHandoffClient href={appHref} orderId={order._id.toString()} seconds={8} />
@@ -145,18 +145,18 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <BackButtonGuard />
  <ClearCartOnMount />
  <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
- <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+ <div className="min-h-full bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
  {/* Hero Section */}
- <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 text-white dark:from-green-700 dark:via-emerald-700 dark:to-teal-700">
+ <div className="relative overflow-hidden bg-primary  via-emerald-600  text-foreground dark:from-green-700 dark:via-emerald-700 dark:to-teal-700">
  <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
  <SiteContainer variant="wide" className="relative py-16">
  <div className="text-center">
  <div className="inline-flex items-center justify-center w-20 h-20 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full mb-6 ">
- <CheckCircle className="h-12 w-12 text-white" />
+ <CheckCircle className="h-12 w-12 text-foreground" />
  </div>
  <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
- <p className="text-xl text-green-100 mb-6">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+ <p className="text-xl text-muted-foreground mb-6">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
 
  {/* <div className="flex flex-wrap justify-center gap-6 text-sm">
  <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <span>빠른 처리</span>
  </div>
  <div className="flex items-center gap-2">
- <Star className="h-4 w-4 text-yellow-400" />
+ <Star className="h-4 w-4 text-accent-foreground" />
  <span>프리미엄 서비스</span>
  </div>
  </div> */}
@@ -177,16 +177,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  {/* 서비스 ON이면 항상 노출 */}
  {order.shippingInfo?.withStringService && (
  <div className="mt-8 max-w-2xl mx-auto">
- <div className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur-sm border border-yellow-300/30 rounded-xl p-6 text-center">
+ <div className="bg-primary from-yellow-400/20 to-orange-400/20 backdrop-blur-sm border border-yellow-300/30 rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
  <div className="p-2 bg-yellow-400/20 rounded-full">
- <Package className="h-6 w-6 text-yellow-300" />
+ <Package className="h-6 w-6 text-accent-foreground" />
  </div>
  <h3 className="text-xl font-bold text-yellow-100">스트링 장착 서비스 포함</h3>
  </div>
  {/* 문구 분기: 방문/택배 */}
  <p className="text-yellow-200 mb-4">{order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}</p>
- <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg" asChild>
+ <Button className="bg-primary from-yellow-500 0 hover:from-yellow-600 hover:to-orange-600 text-foreground font-semibold shadow-lg" asChild>
  {/* 신청서로 곧바로 이동 (자동 생성 전제) */}
  <Link href={appHref} className="flex items-center gap-2">
  장착 서비스 신청서 작성하기
@@ -204,7 +204,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <div className="max-w-4xl mx-auto space-y-6">
  {/* 주문 정보 카드 */}
  <Card data-cy="checkout-success-order-card" className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
- <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-teal-500/10 p-6">
+ <div className="bg-primary 0/10 via-purple-500/10 0/10 p-6">
  <CardTitle className="flex items-center gap-3 text-2xl">
  <Package className="h-6 w-6 text-accent" />
  주문 정보
@@ -216,7 +216,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <CardContent className="p-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
  <div className="space-y-4">
- <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+ <div className="flex items-center gap-3 p-4 bg-primary  to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
  <Clock className="h-5 w-5 text-accent" />
  <div>
  <p className="text-sm text-slate-600 dark:text-slate-400">주문일자</p>
@@ -230,8 +230,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  </p>
  </div>
  </div>
- <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
- <CreditCard className="h-5 w-5 text-green-600" />
+ <div className="flex items-center gap-3 p-4 bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+ <CreditCard className="h-5 w-5 text-primary" />
  <div>
  <p className="text-sm text-slate-600 dark:text-slate-400">결제 방법</p>
  <p className="font-semibold text-slate-800 dark:text-slate-200">무통장입금</p>
@@ -239,7 +239,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  </div>
  </div>
 
- <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+ <div className="bg-primary from-yellow-50  dark:from-yellow-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
  <div className="flex items-center gap-2 mb-4">
  <CreditCard className="h-5 w-5 text-orange-600" />
  <h3 className="font-bold text-orange-700 dark:text-orange-400">입금 계좌 정보</h3>
@@ -253,7 +253,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  ) : (
  <p className="text-slate-500">선택된 은행 없음</p>
  )}
- <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+ <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-border dark:border-red-800">
  <p className="text-red-700 dark:text-red-400 font-semibold text-sm">⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
  </div>
  </div>
@@ -264,7 +264,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  {/* 주문 상품 */}
  <div className="mb-6">
  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
- <Package className="h-5 w-5 text-purple-600" /> 주문 상품
+ <Package className="h-5 w-5 text-primary" /> 주문 상품
  </h3>
  <div className="space-y-3">
  {populatedItems.map((item: PopulatedItem, index: number) => {
@@ -273,7 +273,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  const totalItemPrice = formatPrice(item.price * itemQuantity);
 
  return (
- <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50/50 to-blue-50/30 rounded-lg">
+ <div key={index} className="flex justify-between items-center p-4 bg-primary from-slate-50/50 to-blue-50/30 rounded-lg">
  <div className="flex-1">
  <p className="font-semibold">{item.name}</p>
  <p className="text-sm text-slate-600">수량: {itemQuantity}개</p>
@@ -293,10 +293,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  {/* 배송 정보 */}
  <div className="mb-6">
  <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-slate-800 dark:text-slate-200">
- <MapPin className="h-5 w-5 text-green-600" />
+ <MapPin className="h-5 w-5 text-primary" />
  배송 정보
  </h3>
- <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800 space-y-2">
+ <div className="bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800 space-y-2">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div>
  <span className="text-sm text-slate-600 dark:text-slate-400">수령인:</span>
@@ -323,7 +323,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <Separator className="my-6" />
 
  {/* 결제 금액 - 안전한 데이터 처리 */}
- <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+ <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-blue-800">
  <div className="space-y-2">
  {Number(pointsUsed) > 0 && (
  <div className="flex justify-between items-center">
@@ -349,10 +349,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  </div>
  </CardContent>
 
- <CardFooter className="bg-gradient-to-r from-slate-50/50 via-blue-50/30 to-purple-50/30 dark:from-slate-800/50 dark:via-slate-700/30 dark:to-slate-600/30 p-6">
+ <CardFooter className="bg-primary from-slate-50/50 via-blue-50/30 to-purple-50/30 dark:from-slate-800/50 dark:via-slate-700/30 dark:to-slate-600/30 p-6">
  <div className="flex flex-col sm:flex-row gap-4 w-full">
  <Button
- className="flex-1 h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+ className="flex-1 h-12 bg-primary    hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
  asChild
  >
  <Link href={isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id}`} className="flex items-center gap-2">
@@ -370,7 +370,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
  {/* 안내사항 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl">
- <CardHeader className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+ <CardHeader className="bg-primary from-indigo-500/10 via-purple-500/10 to-pink-500/10">
  <CardTitle className="flex items-center gap-3">
  <Shield className="h-5 w-5 text-indigo-600" />
  주문 안내사항
@@ -379,30 +379,30 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <CardContent className="p-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="space-y-4">
- <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+ <div className="flex items-start gap-3 p-4 bg-primary  to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
  <CreditCard className="h-5 w-5 text-accent mt-0.5" />
  <div>
  <h4 className="font-semibold text-accent dark:text-accent mb-1">입금 안내</h4>
  <p className="text-sm text-accent dark:text-accent">주문하신 상품의 결제 금액을 위 계좌로 입금해주세요.</p>
  </div>
  </div>
- <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
- <Package className="h-5 w-5 text-green-600 mt-0.5" />
+ <div className="flex items-start gap-3 p-4 bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+ <Package className="h-5 w-5 text-primary mt-0.5" />
  <div>
- <h4 className="font-semibold text-green-700 dark:text-green-400 mb-1">배송 안내</h4>
- <p className="text-sm text-green-600 dark:text-green-400">입금 확인 후 배송이 시작됩니다.</p>
+ <h4 className="font-semibold text-primary dark:text-green-400 mb-1">배송 안내</h4>
+ <p className="text-sm text-primary dark:text-green-400">입금 확인 후 배송이 시작됩니다.</p>
  </div>
  </div>
  </div>
  <div className="space-y-4">
- <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
- <Star className="h-5 w-5 text-purple-600 mt-0.5" />
+ <div className="flex items-start gap-3 p-4 bg-primary from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
+ <Star className="h-5 w-5 text-primary mt-0.5" />
  <div>
  <h4 className="font-semibold text-purple-700 dark:text-purple-400 mb-1">주문 확인</h4>
- <p className="text-sm text-purple-600 dark:text-purple-400">주문 내역은 마이페이지에서 확인하실 수 있습니다.</p>
+ <p className="text-sm text-primary dark:text-purple-400">주문 내역은 마이페이지에서 확인하실 수 있습니다.</p>
  </div>
  </div>
- <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
+ <div className="flex items-start gap-3 p-4 bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
  <Phone className="h-5 w-5 text-orange-600 mt-0.5" />
  <div>
  <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-1">고객 지원</h4>

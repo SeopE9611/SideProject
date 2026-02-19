@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StringServiceApplyLoading() {
   return (
-    <div className="min-h-full bg-gray-50 py-8 px-4">
+    <div className="min-h-full bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>

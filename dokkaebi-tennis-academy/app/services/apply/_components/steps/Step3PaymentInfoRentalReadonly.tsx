@@ -23,8 +23,8 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 mb-4">
-          <CreditCard className="h-8 w-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary from-purple-500  mb-4">
+          <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
         <p className="text-muted-foreground">대여 결제에서 이미 결제가 완료되었습니다</p>

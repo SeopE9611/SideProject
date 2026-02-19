@@ -346,7 +346,7 @@ export default function TensionGuidePage() {
 
               {/* 결과 섹션 */}
               <div className="space-y-6">
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-accent/10 to-primary/20 dark:from-accent/15 dark:to-muted/90 overflow-hidden">
+                <Card className="border-0 shadow-lg bg-background from-accent/10 to-primary/20 dark:from-accent/15 dark:to-muted/90 overflow-hidden">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-foreground dark:text-primary-foreground/90">
                       <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -365,7 +365,7 @@ export default function TensionGuidePage() {
                         <span>20kg</span>
                         <span>32kg</span>
                       </div>
-                      <div className="relative h-3 bp-sm:h-4 bg-gradient-to-r from-accent to-primary rounded-full shadow-inner">
+                      <div className="relative h-3 bp-sm:h-4 bg-primary from-accent to-primary rounded-full shadow-inner">
                         <div
                           className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card dark:bg-background ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
                           style={{ left: `calc(${((calculatedTension - 20) / 12) * 100}% - 12px)` }}
@@ -438,7 +438,7 @@ export default function TensionGuidePage() {
                     <CardHeader className="pb-3 bp-md:pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3 bp-sm:gap-4">
-                          <div className={`w-10 h-10 bp-sm:w-12 bp-sm:h-12 bp-md:w-14 bp-md:h-14 bg-gradient-to-br ${player.color} rounded-xl bp-md:rounded-2xl flex items-center justify-center shadow-md`}>
+                          <div className={`w-10 h-10 bp-sm:w-12 bp-sm:h-12 bp-md:w-14 bp-md:h-14 bg-background ${player.color} rounded-xl bp-md:rounded-2xl flex items-center justify-center shadow-md`}>
                             <IconComponent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 bp-md:h-7 bp-md:w-7 text-primary-foreground" />
                           </div>
                           <div>
@@ -462,7 +462,7 @@ export default function TensionGuidePage() {
                         </div>
                         <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                           <div
-                            className={`absolute h-full bg-gradient-to-r ${player.color} rounded-full`}
+                            className={`absolute h-full bg-primary ${player.color} rounded-full`}
                             style={{
                               left: `${((player.tensionRange[0] - 20) / 12) * 100}%`,
                               width: `${((player.tensionRange[1] - player.tensionRange[0]) / 12) * 100}%`,
@@ -500,11 +500,11 @@ export default function TensionGuidePage() {
             <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-md:gap-6">
               {stringTypes.map((string, index) => (
                 <Card key={index} className="overflow-hidden border bg-card hover:shadow-md transition-all duration-300">
-                  <div className={`h-1.5 bp-md:h-2 bg-gradient-to-r ${string.color}`} />
+                  <div className={`h-1.5 bp-md:h-2 bg-primary ${string.color}`} />
                   <CardHeader className="pb-3 bp-md:pb-4">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <CardTitle className="flex items-center gap-2 bp-sm:gap-3 text-base bp-sm:text-lg bp-md:text-xl text-card-foreground">
-                        <div className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 bg-gradient-to-br ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}>
+                        <div className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 bg-background ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}>
                           <string.icon className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary-foreground" />
                         </div>
                         {string.name}
@@ -571,7 +571,7 @@ export default function TensionGuidePage() {
             <div className="grid gap-4 bp-md:gap-6">
               {/* 텐션 이해하기 */}
               <Card className="overflow-hidden border bg-card">
-                <div className="h-1 bg-gradient-to-r from-accent via-accent to-primary" />
+                <div className="h-1 bg-primary from-accent via-accent to-primary" />
                 <CardHeader className="pb-3 bp-md:pb-4">
                   <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-card-foreground">
                     <BarChart3 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-accent" />

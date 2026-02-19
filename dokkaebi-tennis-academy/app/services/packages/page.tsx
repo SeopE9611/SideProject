@@ -294,10 +294,10 @@ export default function StringPackagesPage() {
    return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600">
+        <div className="absolute inset-0 bg-background  via-indigo-600 ">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full" viewBox="0 0 400 300" fill="none">
               <defs>
@@ -313,14 +313,14 @@ export default function StringPackagesPage() {
           <div className="absolute inset-0 bg-black/20"></div>
         </div>
 
-        <SiteContainer variant="wide" className="relative z-10 text-center text-white">
+        <SiteContainer variant="wide" className="relative z-10 text-center text-foreground">
           <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
+            <Badge className="mb-6 bg-card/20 text-foreground border-border/30 backdrop-blur-sm">
               <Package className="w-4 h-4 mr-2" />
               프리미엄 스트링 패키지
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">스트링 교체 패키지</h1>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-primary  via-blue-100  bg-clip-text text-transparent">스트링 교체 패키지</h1>
 
             <p className="text-base sm:text-xl md:text-2xl mb-8 text-blue-100 leading-relaxed">
               정기적인 스트링 교체로 최상의 경기력을 유지하세요
@@ -329,29 +329,29 @@ export default function StringPackagesPage() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-6 mb-10">
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <Percent className="w-5 h-5 text-green-400" />
                 <span className="text-sm font-medium">최대 17% 할인</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <Calendar className="w-5 h-5 text-blue-400" />
                 <span className="text-sm font-medium">최대 12개월 유효</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
                 <Shield className="w-5 h-5 text-purple-400" />
                 <span className="text-sm font-medium">품질 보장</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
+              <Button size="lg" className="bg-primary 0 to-indigo-600 hover: hover:to-indigo-700 text-foreground border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
                 <Link href="#packages">
                   <ArrowRight className="w-5 h-5 mr-2" />
                   패키지 선택하기
                 </Link>
               </Button>
 
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent" asChild>
+              <Button size="lg" variant="outline" className="border-border/30 text-foreground hover:bg-card/10 backdrop-blur-sm bg-transparent" asChild>
                 <Link href="/services">
                   <Phone className="w-5 h-5 mr-2" />
                   상담 받기
@@ -363,15 +363,15 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Package Cards Section */}
-      <section id="packages" ref={packagesSectionRef} className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 scroll-mt-24">
+      <section id="packages" ref={packagesSectionRef} className="py-20 bg-background   dark:from-gray-800 dark:to-gray-900 scroll-mt-24">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <Badge className="mb-4 bg-accent text-blue-800 dark:bg-blue-900 dark:text-blue-200">
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">스트링 교체 패키지</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-indigo-600 bg-clip-text text-transparent">스트링 교체 패키지</h2>
+            <p className="text-xl text-muted-foreground dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               플레이 빈도와 필요에 맞는 패키지를 선택하세요.
               <br />
               모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
@@ -387,21 +387,21 @@ export default function StringPackagesPage() {
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}
               >
-                {pkg.popular && <div className="absolute top-0 right-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
+                {pkg.popular && <div className="absolute top-0 right-0 bg-primary from-indigo-500  text-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
 
-                {pkg.discount && <div className="absolute top-0 left-0 bg-gradient-to-r from-red-500 to-pink-600 text-white px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
+                {pkg.discount && <div className="absolute top-0 left-0 bg-primary from-red-500  text-foreground px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
 
                 <div
-                  className={`h-2 bg-gradient-to-r ${
-                    pkg.color === 'blue' ? 'from-blue-500 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 to-teal-500'
+                  className={`h-2 bg-primary ${
+                    pkg.color === 'blue' ? '0 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
                   }`}
                 ></div>
 
                 <CardHeader className="text-center pb-4">
                   <div
-                    className={`mx-auto mb-4 w-20 h-20 rounded-full bg-gradient-to-br ${
-                      pkg.color === 'blue' ? 'from-blue-500 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 to-teal-500'
-                    } flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                    className={`mx-auto mb-4 w-20 h-20 rounded-full bg-background ${
+                      pkg.color === 'blue' ? '0 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
+                    } flex items-center justify-center text-foreground shadow-lg group-hover:scale-110 transition-transform duration-300`}
                   >
                     {pkg.icon}
                   </div>
@@ -409,16 +409,16 @@ export default function StringPackagesPage() {
                   <CardDescription className="text-base mb-4">{pkg.description}</CardDescription>
 
                   <div className="space-y-2">
-                    <div className="text-4xl font-bold text-blue-600">{pkg.price.toLocaleString()}원</div>
-                    {pkg.originalPrice && <div className="text-lg text-gray-400 line-through">{pkg.originalPrice.toLocaleString()}원</div>}
-                    <div className="text-sm text-gray-600 dark:text-gray-400">회당 {(pkg.price / pkg.sessions).toLocaleString()}원</div>
+                    <div className="text-4xl font-bold text-primary">{pkg.price.toLocaleString()}원</div>
+                    {pkg.originalPrice && <div className="text-lg text-muted-foreground line-through">{pkg.originalPrice.toLocaleString()}원</div>}
+                    <div className="text-sm text-muted-foreground dark:text-muted-foreground">회당 {(pkg.price / pkg.sessions).toLocaleString()}원</div>
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-indigo-600 mb-1">{pkg.sessions}회</div>
-                    <div className="text-sm text-gray-500">유효기간: {pkg.validityPeriod}</div>
+                    <div className="text-sm text-muted-foreground">유효기간: {pkg.validityPeriod}</div>
                   </div>
 
                   <Separator />
@@ -432,8 +432,8 @@ export default function StringPackagesPage() {
                       {pkg.features.map((feature, idx) => (
                         <li key={idx} className="flex items-start text-sm">
                           <div
-                            className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-gradient-to-r ${
-                              pkg.color === 'blue' ? 'from-blue-500 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 to-teal-500'
+                            className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${
+                              pkg.color === 'blue' ? '0 to-cyan-500' : pkg.color === 'indigo' ? 'from-indigo-500 to-purple-500' : pkg.color === 'purple' ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
                             }`}
                           ></div>
                           <span>{feature}</span>
@@ -443,14 +443,14 @@ export default function StringPackagesPage() {
                   </div>
 
                   <div
-                    className={`bg-gradient-to-r ${
+                    className={`bg-primary ${
                       pkg.color === 'blue'
-                        ? 'from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
+                        ? ' to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
                         : pkg.color === 'indigo'
                           ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
                           : pkg.color === 'purple'
                             ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
-                            : 'from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20'
+                            : 'from-emerald-50  dark:from-emerald-900/20 dark:to-teal-900/20'
                     } rounded-xl p-4`}
                   >
                     <h4 className="font-semibold mb-3 flex items-center">
@@ -459,7 +459,7 @@ export default function StringPackagesPage() {
                     </h4>
                     <div className="space-y-1">
                       {pkg.benefits.map((benefit, idx) => (
-                        <div key={idx} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <div key={idx} className="text-sm font-medium text-foreground dark:text-gray-300">
                           • {benefit}
                         </div>
                       ))}
@@ -467,15 +467,15 @@ export default function StringPackagesPage() {
                   </div>
 
                   <Button
-                    className={`w-full bg-gradient-to-r ${
+                    className={`w-full bg-primary ${
                       pkg.color === 'blue'
-                        ? 'from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700'
+                        ? '0  hover: hover:to-cyan-700'
                         : pkg.color === 'indigo'
-                          ? 'from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700'
+                          ? 'from-indigo-500  hover:from-indigo-600 hover:to-purple-700'
                           : pkg.color === 'purple'
-                            ? 'from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'
-                            : 'from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700'
-                    } text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
+                            ? 'from-purple-500  hover: hover:to-pink-700'
+                            : 'from-emerald-500  hover: hover:to-teal-700'
+                    } text-foreground border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`}
                     asChild
                   >
                     <Link href={`/services/packages/checkout?package=${pkg.id}`}>
@@ -491,32 +491,32 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Additional Benefits Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-500 relative overflow-hidden">
+      <section className="py-20 bg-background  via-indigo-600 to-purple-500 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]"></div>
         </div>
 
         <SiteContainer variant="wide" className="relative z-10">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-white/20 text-white border-white/30">
+            <Badge className="mb-4 bg-card/20 text-foreground border-border/30">
               <Award className="w-4 h-4 mr-2" />
               추가 혜택
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">패키지만의 특별한 혜택</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">패키지만의 특별한 혜택</h2>
             <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">단순한 할인을 넘어서는 프리미엄 서비스를 경험하세요.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {additionalBenefits.map((benefit, index) => (
-              <div key={index} className="group bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+              <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                 <div
-                  className={`w-16 h-16 bg-gradient-to-br ${
+                  className={`w-16 h-16 bg-background ${
                     benefit.color === 'blue' ? 'from-blue-400 to-cyan-400' : benefit.color === 'indigo' ? 'from-indigo-400 to-purple-400' : benefit.color === 'purple' ? 'from-purple-400 to-pink-400' : 'from-emerald-400 to-teal-400'
-                  } rounded-full flex items-center justify-center text-white mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
+                  } rounded-full flex items-center justify-center text-foreground mx-auto mb-6 group-hover:scale-110 transition-transform duration-300`}
                 >
                   {benefit.icon}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-4 text-center">{benefit.title}</h3>
+                <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>
                 <p className="text-blue-100 text-center leading-relaxed">{benefit.description}</p>
               </div>
             ))}
@@ -525,14 +525,14 @@ export default function StringPackagesPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <section className="py-20 bg-background   dark:from-gray-900 dark:to-gray-800">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            <Badge className="mb-4 bg-accent text-blue-800 dark:bg-blue-900 dark:text-blue-200">
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">패키지 이용 안내</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-indigo-600 bg-clip-text text-transparent">패키지 이용 안내</h2>
           </div>
 
           <div className="max-w-4xl mx-auto">
@@ -557,8 +557,8 @@ export default function StringPackagesPage() {
               ].map((faq, index) => (
                 <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <CardContent className="p-6">
-                    <h3 className="font-bold text-lg mb-3 text-blue-600">Q. {faq.question}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">A. {faq.answer}</p>
+                    <h3 className="font-bold text-lg mb-3 text-primary">Q. {faq.question}</h3>
+                    <p className="text-muted-foreground dark:text-gray-300 leading-relaxed">A. {faq.answer}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -566,7 +566,7 @@ export default function StringPackagesPage() {
           </div>
 
           <div className="text-center mt-12">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+            <Button size="lg" className="bg-primary  to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
               <Link href="/board/qna">
                 <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이 있으신가요?
               </Link>

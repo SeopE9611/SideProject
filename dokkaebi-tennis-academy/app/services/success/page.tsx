@@ -199,8 +199,8 @@ export default async function StringServiceSuccessPage(props: Props) {
  <>
  <BackButtonGuard />
 
- <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
- <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-500 py-20">
+ <div className="min-h-full bg-background from-slate-50 via-blue-50  dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+ <div className="relative overflow-hidden bg-primary  via-indigo-600 to-purple-500 py-20">
  <div className="absolute inset-0 bg-black/20"></div>
  <div className="absolute inset-0 opacity-10">
  <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -221,11 +221,11 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse delay-500"></div>
  </div>
 
- <div className="relative container mx-auto px-4 text-center text-white">
+ <div className="relative container mx-auto px-4 text-center text-foreground">
  <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-card/20 backdrop-blur-sm mb-8">
  <CheckCircle className="h-12 w-12 text-accent" />
  </div>
- <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">신청이 완료되었습니다!</h1>
+ <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-primary  to-blue-200 bg-clip-text text-transparent">신청이 완료되었습니다!</h1>
  <p className="text-xl md:text-2xl text-accent max-w-3xl mx-auto leading-relaxed">도깨비 테니스 아카데미에서 확인 후 빠르게 연락드리겠습니다</p>
  <div className="mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
  <Calendar className="h-5 w-5" />
@@ -235,7 +235,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  {isSelfShip && (
  <div className="mt-10 max-w-2xl mx-auto px-4">
- <div className="bg-gradient-to-r from-blue-400/20 to-indigo-400/20 backdrop-blur-sm border border-blue-300/30 rounded-xl p-6 text-center">
+ <div className="bg-primary from-blue-400/20 to-indigo-400/20 backdrop-blur-sm border border-blue-300/30 rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
  <div className="p-2 bg-blue-400/20 rounded-full">
  <Package className="h-6 w-6 text-accent" />
@@ -247,7 +247,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <br />
  <span className="text-sm text-accent/80">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
  </p>
- <Button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg" asChild>
+ <Button className="bg-primary 0 to-indigo-500 hover: hover:to-indigo-600 text-foreground font-semibold shadow-lg" asChild>
  <Link href={`/services/applications/${applicationId}/shipping`} className="flex items-center gap-2">
  운송장 등록하기
  <ArrowRight className="h-4 w-4" />
@@ -261,7 +261,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="container mx-auto px-4 py-16">
  <div className="max-w-5xl mx-auto">
  <Card className="mb-8 backdrop-blur-sm bg-card/90 dark:bg-slate-800/90 border-0 shadow-2xl">
- <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-t-lg">
+ <CardHeader className="bg-primary  to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-t-lg">
  <div className="flex items-center justify-between">
  <div>
  <CardTitle className="text-2xl font-bold text-foreground flex items-center">
@@ -273,7 +273,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </CardDescription>
  </div>
  <div className="text-right">
- <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-accent rounded-full text-sm font-medium">
+ <div className="inline-flex items-center px-4 py-2 bg-accent text-accent rounded-full text-sm font-medium">
  <CheckCircle className="h-4 w-4 mr-2" />
  접수 완료
  </div>
@@ -283,7 +283,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <CardContent className="p-8">
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
- <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
+ <div className="bg-background  to-indigo-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
  <div className="flex items-center mb-3">
  <Calendar className="h-6 w-6 text-accent mr-3" />
  <h3 className="font-semibold text-foreground ">신청일자</h3>
@@ -291,7 +291,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-2xl font-bold text-accent">{new Date(application.createdAt).toLocaleDateString('ko-KR')}</p>
  </div>
 
- <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
+ <div className="bg-background from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
  <div className="flex items-center mb-3">
  <CreditCard className="h-6 w-6 text-indigo-600 mr-3" />
  <h3 className="font-semibold text-foreground ">결제 요약</h3>
@@ -320,7 +320,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div>
  <div className="flex justify-between items-center border-t pt-3">
  <span className="font-semibold">합계</span>
- <span className="font-semibold text-green-600 dark:text-green-400">{Number(displayTotal).toLocaleString()}원</span>
+ <span className="font-semibold text-primary dark:text-green-400">{Number(displayTotal).toLocaleString()}원</span>
  </div>
  </div>
  ) : order ? (
@@ -333,12 +333,12 @@ export default async function StringServiceSuccessPage(props: Props) {
  {application.packageApplied && <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">패키지 적용으로 입금 불필요</p>}
  </div>
 
- <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
+ <div className="bg-background from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 p-6 rounded-xl">
  <div className="flex items-center mb-3">
- <Clock className="h-6 w-6 text-purple-600 mr-3" />
+ <Clock className="h-6 w-6 text-primary mr-3" />
  <h3 className="font-semibold text-foreground ">희망 일시</h3>
  </div>
- <p className="text-lg font-bold text-purple-600">{visitTimeLabel}</p>
+ <p className="text-lg font-bold text-primary">{visitTimeLabel}</p>
  </div>
  </div>
  {rental && (
@@ -348,7 +348,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  대여 정보
  </h3>
 
- <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+ <div className="bg-primary  via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-border dark:border-slate-500">
  {/* 상단: 대여 번호 */}
  <div className="mb-4">
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">대여 번호</p>
@@ -360,7 +360,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-1">대여 라켓</p>
  <p className="font-semibold text-foreground ">{rental.brand ? `${racketBrandLabel(rental.brand)} ${rental.model ?? ''}` : '라켓 정보 없음'}</p>
  <div className="mt-2 flex items-center gap-2">
- <Badge className="bg-blue-100 text-accent dark:bg-blue-900/30 dark:text-accent">대여 {Number(rental.days ?? 0)}일</Badge>
+ <Badge className="bg-accent text-accent dark:bg-blue-900/30 dark:text-accent">대여 {Number(rental.days ?? 0)}일</Badge>
  </div>
  </div>
 
@@ -383,7 +383,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <span>{rentalStringingFee.toLocaleString()}원</span>
  </div>
 
- <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 mt-4">
+ <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-blue-800 mt-4">
  <div className="flex justify-between items-center font-bold">
  <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
  <span className="text-accent">{Number(displayTotal).toLocaleString()}원</span>
@@ -402,7 +402,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  구매 정보
  </h3>
 
- <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+ <div className="bg-primary  via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-border dark:border-slate-500">
  {/* 상단: 주문 번호 */}
  <div className="mb-4">
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">주문 번호</p>
@@ -424,7 +424,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <span>{Number(serviceSubtotal).toLocaleString()}원</span>
  </div>
 
- <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800 mt-4">
+ <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-border dark:border-blue-800 mt-4">
  <div className="flex justify-between items-center font-bold">
  <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
  <span className="text-accent">{Number(displayTotal).toLocaleString()}원</span>
@@ -440,20 +440,20 @@ export default async function StringServiceSuccessPage(props: Props) {
  // ===== 패키지 적용 카드 =====
  <div className="mb-8">
  <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
- <Ticket className="h-6 w-6 mr-3 text-emerald-600" />
+ <Ticket className="h-6 w-6 mr-3 text-primary" />
  패키지 적용됨
  </h3>
 
- <div className="rounded-xl p-6 border-2 border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20">
+ <div className="rounded-xl p-6 border-2 border-border/70 bg-background from-emerald-50  dark:from-emerald-900/20 dark:to-teal-900/20">
  <div className="flex items-start gap-4">
- <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-600 text-white grid place-content-center shadow-sm">
+ <div className="h-10 w-10 shrink-0 rounded-full bg-primary text-foreground grid place-content-center shadow-sm">
  <Ticket className="h-5 w-5" />
  </div>
 
  <div className="flex-1">
  <div className="flex items-center gap-2">
  <span className="font-semibold text-emerald-900 dark:text-emerald-200">교체 패키지가 자동 적용되었습니다.</span>
- <Badge className="bg-emerald-600/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">입금 불필요</Badge>
+ <Badge className="bg-primary/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">입금 불필요</Badge>
  </div>
 
  <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
@@ -485,7 +485,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </span>
  <span className="tabular-nums">{remainPct}%</span>
  </div>
- <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
+ <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
  <div className="h-full bg-emerald-500" style={{ width: `${remainPct}%` }} />
  </div>
  <div className="mt-1 text-xs text-slate-500">
@@ -508,7 +508,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  무통장 입금 안내
  </h3>
 
- <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-blue-200 dark:border-slate-500">
+ <div className="bg-primary  via-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl p-6 border-2 border-border dark:border-slate-500">
  <p className="text-sm text-muted-foreground mb-4">아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.</p>
 
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -526,7 +526,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div>
  <div className="bg-card dark:bg-slate-800 p-4 rounded-lg shadow-sm">
  <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-1">입금 금액</p>
- <p className="font-bold text-lg text-green-600">{Number(displayTotal).toLocaleString()}원</p>
+ <p className="font-bold text-lg text-primary">{Number(displayTotal).toLocaleString()}원</p>
  </div>
  </div>
 
@@ -537,7 +537,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div>
  )}
 
- <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">
+ <div className="mt-4 p-4 bg-primary from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border border-orange-200 dark:border-orange-700">
  <div className="flex items-center">
  <Zap className="h-5 w-5 text-orange-600 mr-2" />
  <p className="font-semibold text-orange-800 dark:text-orange-200">입금 기한: {new Date(application.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
@@ -557,21 +557,21 @@ export default async function StringServiceSuccessPage(props: Props) {
  신청자 정보
  </h3>
  <div className="space-y-4">
- <div className="flex items-center p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+ <div className="flex items-center p-4 bg-background dark:bg-slate-700 rounded-lg">
  <User className="h-5 w-5 text-muted-foreground mr-3" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">이름</p>
  <p className="font-semibold text-foreground ">{application.name}</p>
  </div>
  </div>
- <div className="flex items-center p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+ <div className="flex items-center p-4 bg-background dark:bg-slate-700 rounded-lg">
  <Mail className="h-5 w-5 text-muted-foreground mr-3" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">이메일</p>
  <p className="font-semibold text-foreground ">{application.email}</p>
  </div>
  </div>
- <div className="flex items-center p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+ <div className="flex items-center p-4 bg-background dark:bg-slate-700 rounded-lg">
  <Phone className="h-5 w-5 text-muted-foreground mr-3" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">연락처</p>
@@ -587,12 +587,12 @@ export default async function StringServiceSuccessPage(props: Props) {
  배송지 정보
  </h3>
  <div className="space-y-4">
- <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+ <div className="p-4 bg-background dark:bg-slate-700 rounded-lg">
  <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-1">주소</p>
  <p className="font-semibold text-foreground ">{application.shippingInfo?.address}</p>
- {application.shippingInfo?.addressDetail && <p className="text-gray-700 mt-1">{application.shippingInfo.addressDetail}</p>}
+ {application.shippingInfo?.addressDetail && <p className="text-foreground mt-1">{application.shippingInfo.addressDetail}</p>}
  </div>
- <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
+ <div className="p-4 bg-background dark:bg-slate-700 rounded-lg">
  <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-1">우편번호</p>
  <p className="font-semibold text-foreground ">{application.shippingInfo?.postalCode}</p>
  </div>
@@ -604,18 +604,18 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="space-y-6">
  <h3 className="text-xl font-bold text-foreground flex items-center">
- <Racquet className="h-6 w-6 mr-3 text-purple-600" />
+ <Racquet className="h-6 w-6 mr-3 text-primary" />
  장착 정보
  </h3>
  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
+ <div className="p-6 bg-background  to-indigo-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
  <div className="flex items-center mb-3">
  <Racquet className="h-5 w-5 text-accent mr-2" />
  <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">라켓</p>
  </div>
  <p className="font-bold text-lg text-foreground ">{application.stringDetails.racketType}</p>
  </div>
- <div className="p-6 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
+ <div className="p-6 bg-background from-indigo-50 to-purple-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
  <div className="flex items-center mb-3">
  <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">스트링</p>
  </div>
@@ -624,9 +624,9 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div> */}
 
  {application.stringDetails.requirements && (
- <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
+ <div className="p-6 bg-background from-purple-50 to-blue-50 dark:from-slate-700 dark:to-slate-600 rounded-xl">
  <div className="flex items-start mb-3">
- <FileText className="h-5 w-5 text-purple-600 mr-2 mt-0.5" />
+ <FileText className="h-5 w-5 text-primary mr-2 mt-0.5" />
  <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">요청사항</p>
  </div>
  <p className="text-foreground leading-relaxed">{application.stringDetails.requirements}</p>
@@ -640,14 +640,14 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="space-y-3">
  {racketLines.map((line: any, idx: number) => (
- <div key={line.id ?? idx} className="p-4 rounded-lg bg-gray-50 dark:bg-slate-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+ <div key={line.id ?? idx} className="p-4 rounded-lg bg-background dark:bg-slate-700 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
  <div>
  <p className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">라켓 {line.racketType || line.racketLabel || `${idx + 1}번`}</p>
 
  {line.stringName && <p className="font-semibold text-foreground ">스트링: {line.stringName}</p>}
  </div>
 
- <div className="text-sm text-gray-700 dark:text-gray-200 text-right">
+ <div className="text-sm text-foreground dark:text-gray-200 text-right">
  {(line.tensionMain || line.tensionCross) && (
  <p>
  텐션&nbsp;
@@ -665,15 +665,15 @@ export default async function StringServiceSuccessPage(props: Props) {
  )}
  </CardContent>
 
- <CardFooter className="bg-gray-50 dark:bg-slate-700 rounded-b-lg p-8">
+ <CardFooter className="bg-background dark:bg-slate-700 rounded-b-lg p-8">
  <div className="flex flex-col sm:flex-row gap-4 w-full">
- <Button className="flex-1 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white transition-all duration-200" asChild>
+ <Button className="flex-1 h-12 bg-primary 0 to-indigo-600 hover: hover:to-indigo-700 text-foreground transition-all duration-200" asChild>
  <Link href={`/mypage?${new URLSearchParams({ tab: 'applications', id: String(application._id) }).toString()}`}>
  <FileText className="h-5 w-5 mr-2" />
  신청 내역 보기
  </Link>
  </Button>
- <Button variant="outline" className="flex-1 h-12 hover:bg-gray-50 transition-colors duration-200 bg-transparent" asChild>
+ <Button variant="outline" className="flex-1 h-12 hover:bg-background transition-colors duration-200 bg-transparent" asChild>
  <Link href="/">
  <Home className="h-5 w-5 mr-2" />
  홈으로 돌아가기
@@ -695,15 +695,15 @@ export default async function StringServiceSuccessPage(props: Props) {
  <ul className="space-y-3">
  <li className="flex items-start">
  <CheckCircle className="h-5 w-5 text-accent mr-3 mt-0.5 flex-shrink-0" />
- <span className="text-gray-700 ">신청 정보를 정확히 입력했는지 다시 확인해주세요.</span>
+ <span className="text-foreground ">신청 정보를 정확히 입력했는지 다시 확인해주세요.</span>
  </li>
  <li className="flex items-start">
  <CheckCircle className="h-5 w-5 text-accent mr-3 mt-0.5 flex-shrink-0" />
- <span className="text-gray-700 ">신청서에 따라 장착 담당자가 확인 후 연락드릴 예정입니다.</span>
+ <span className="text-foreground ">신청서에 따라 장착 담당자가 확인 후 연락드릴 예정입니다.</span>
  </li>
  <li className="flex items-start">
  <CheckCircle className="h-5 w-5 text-accent mr-3 mt-0.5 flex-shrink-0" />
- <span className="text-gray-700 ">문의 사항은 고객센터(02-1234-5678)로 연락 주세요.</span>
+ <span className="text-foreground ">문의 사항은 고객센터(02-1234-5678)로 연락 주세요.</span>
  </li>
  </ul>
  </CardContent>
@@ -718,7 +718,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </CardHeader>
  <CardContent>
  <div className="space-y-4">
- <div className="flex items-center p-3 bg-blue-50 dark:bg-slate-700 rounded-lg">
+ <div className="flex items-center p-3 bg-accent dark:bg-slate-700 rounded-lg">
  <Shield className="h-6 w-6 text-accent mr-3" />
  <div>
  <p className="font-semibold text-foreground ">정품 보장</p>
@@ -732,7 +732,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">빠르고 정확한 장착 서비스</p>
  </div>
  </div>
- <div className="flex items-center p-3 bg-purple-50 dark:bg-slate-700 rounded-lg">
+ <div className="flex items-center p-3 bg-accent dark:bg-slate-700 rounded-lg">
  <Award className="h-6 w-6 text-purple-500 mr-3" />
  <div>
  <p className="font-semibold text-foreground ">전문가 상담</p>

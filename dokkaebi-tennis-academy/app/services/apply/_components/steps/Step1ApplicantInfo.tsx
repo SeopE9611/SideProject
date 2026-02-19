@@ -109,8 +109,8 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
   return (
     <div className="relative space-y-5">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 mb-4">
-          <User className="h-8 w-8 text-white" />
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary 0  mb-4">
+          <User className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
         <p className="text-muted-foreground">정확한 정보를 입력해주세요</p>
@@ -190,7 +190,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
               placeholder=""
             />
             {!orderId && !isMember && (
-              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 bg-transparent">
+              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap hover:bg-accent hover:border-blue-300 transition-colors duration-200 bg-transparent">
                 <MapPin className="h-4 w-4 mr-2" />
                 우편번호 검색
               </Button>
@@ -241,11 +241,11 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             className="
                 block cursor-pointer rounded-xl
                 border border-slate-200/80 dark:border-slate-700/60
-                bg-white/90 dark:bg-slate-800/80
+                bg-card/90 dark:bg-slate-800/80
                 px-4 py-3 shadow-sm
                 hover:bg-slate-50 dark:hover:bg-slate-700/80
                 transition text-sm
-                peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+                peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
               "
           >
             <div className="font-semibold mb-1 text-slate-900 dark:text-slate-100">자가 발송 안내</div>
@@ -267,7 +267,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 // 그리고 안내 페이지로 이동
                 router.push(`/services/applications/${applicationId}/shipping`);
               }}
-              className="inline-flex items-center rounded-md bg-amber-500 px-3 py-2 text-white hover:bg-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
+              className="inline-flex items-center rounded-md bg-amber-500 px-3 py-2 text-foreground hover:bg-amber-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
             >
               운송장/자가발송 안내 보기
             </button>
@@ -297,8 +297,8 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
             <Label
               htmlFor="cm-self"
-              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-card dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
@@ -314,8 +314,8 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
             <Label
               htmlFor="cm-visit"
-              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-card dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
@@ -332,9 +332,9 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
             <Label
               htmlFor="cm-pickup"
-              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
-             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
-             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-white dark:peer-disabled:hover:bg-slate-800"
+              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-card dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+             peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
+             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-slate-800"
             >
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4" />
@@ -376,7 +376,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       </div>
       {/* 로딩 오버레이 */}
       {isUserLoading && (
-        <div className="absolute inset-0 z-10 rounded-2xl bg-white/45 dark:bg-slate-900/40 backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
+        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-slate-900/40 backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
           <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-400 dark:border-slate-500 border-t-transparent" />
             <span className="text-sm">회원 정보 불러오는 중…</span>
@@ -384,7 +384,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+        <div className="bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
             <div className="text-sm">

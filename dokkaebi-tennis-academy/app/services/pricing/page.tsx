@@ -86,7 +86,7 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Tennis court line pattern background */}
       <div
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
@@ -99,23 +99,23 @@ export default function PricingPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-full mb-6">
-            <Wrench className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">장착 서비스 요금</span>
+          <div className="inline-flex items-center gap-2 bg-accent dark:bg-blue-900/30 px-4 py-2 rounded-full mb-6">
+            <Wrench className="h-5 w-5 text-primary dark:text-blue-400" />
+            <span className="text-sm font-semibold text-primary dark:text-blue-300">장착 서비스 요금</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">장착 비용 안내</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-foreground mb-4">장착 비용 안내</h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">투명하고 합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다</p>
         </div>
 
         {/* Service Plans */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center">장착 서비스 요금</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-8 text-center">장착 서비스 요금</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {basicServices.map((service, index) => (
               <Card key={index} className={`relative hover:shadow-lg transition-all duration-300 ${service.popular ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''}`}>
                 {service.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-600 hover:bg-blue-600">
+                    <Badge className="bg-primary hover:bg-primary">
                       <Star className="h-3 w-3 mr-1" />
                       인기
                     </Badge>
@@ -123,7 +123,7 @@ export default function PricingPage() {
                 )}
                 <CardHeader className="text-center">
                   <CardTitle className="text-xl">{service.name}</CardTitle>
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{service.price}</div>
+                  <div className="text-3xl font-bold text-primary dark:text-blue-400">{service.price}</div>
                   <div className="flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <Clock className="h-4 w-4" />
                     소요시간: {service.time}
@@ -150,22 +150,22 @@ export default function PricingPage() {
 
         {/* String Prices */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center">스트링 가격대별 안내</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-8 text-center">스트링 가격대별 안내</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {stringPrices.map((category, index) => (
               <Card key={index} className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <Shield className="h-5 w-5 text-primary dark:text-blue-400" />
                     {category.category}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {category.ranges.map((range, i) => (
-                      <div key={i} className="border-l-4 border-blue-200 dark:border-blue-800 pl-4">
+                      <div key={i} className="border-l-4 border-border dark:border-blue-800 pl-4">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-slate-900 dark:text-white">{range.name}</span>
+                          <span className="font-semibold text-slate-900 dark:text-foreground">{range.name}</span>
                           <Badge variant="secondary">{range.price}</Badge>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{range.examples}</p>
@@ -180,18 +180,18 @@ export default function PricingPage() {
 
         {/* Additional Services */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center">추가 서비스</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-8 text-center">추가 서비스</h2>
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {additionalServices.map((service, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                     <div>
-                      <div className="font-semibold text-slate-900 dark:text-white">{service.name}</div>
+                      <div className="font-semibold text-slate-900 dark:text-foreground">{service.name}</div>
                       <div className="text-sm text-slate-500 dark:text-slate-400">{service.time}</div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">{service.description}</p>
                     </div>
-                    <div className="font-bold text-blue-600 dark:text-blue-400">{service.price}</div>
+                    <div className="font-bold text-primary dark:text-blue-400">{service.price}</div>
                   </div>
                 ))}
               </div>
@@ -200,10 +200,10 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-blue-200 dark:border-blue-800">
+        <Card className="bg-primary  to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-border dark:border-blue-800">
           <CardContent className="p-8 text-center">
-            <Zap className="h-12 w-12 text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>
+            <Zap className="h-12 w-12 text-primary dark:text-blue-400 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">전문가가 직접 장착하는 프리미엄 서비스를 합리적인 가격에 만나보세요</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>

@@ -266,7 +266,7 @@ export default function Step2MountingInfo(props: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-background to-background mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary from-background to-background mb-4">
           <ClipboardList className="h-8 w-8 text-primary-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
@@ -287,7 +287,7 @@ export default function Step2MountingInfo(props: Props) {
               스트링 종류 <span className="text-destructive">*</span>
             </Label>
             <div className="mt-2 space-y-2">
-              <div className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border border-destructive/30 dark:border-destructive/30 rounded-lg p-4">
+              <div className="bg-primary from-background to-background dark:from-background dark:to-background border border-destructive/30 dark:border-destructive/30 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <Zap className="h-5 w-5 text-destructive dark:text-destructive mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-destructive dark:text-destructive">
@@ -429,7 +429,7 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           )}
 
-          <div className="bg-gradient-to-r from-muted to-background dark:from-background dark:to-background border border-border dark:border-border rounded-lg p-4">
+          <div className="bg-primary from-muted to-background dark:from-background dark:to-background border border-border dark:border-border rounded-lg p-4">
             <h3 className="font-semibold text-accent dark:text-accent mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2" />
               예상 장착 비용
@@ -671,7 +671,7 @@ export default function Step2MountingInfo(props: Props) {
         )}
         {/* 라켓/라인 세부 입력 (선택 사항) */}
         {lineCount > 0 && (
-          <Card className="border-none bg-gradient-to-br from-muted/50 to-muted/30 dark:from-background dark:to-background shadow-sm">
+          <Card className="border-none bg-background from-muted/50 to-muted/30 dark:from-background dark:to-background shadow-sm">
             <CardHeader className="pb-4 space-y-1">
               <CardTitle className="text-base font-semibold text-foreground dark:text-foreground">라켓별 세부 장착 정보</CardTitle>
               <CardDescription className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
@@ -733,9 +733,9 @@ export default function Step2MountingInfo(props: Props) {
               {linesForSubmit.map((line, index) => (
                 <div key={line.id ?? index} className="group relative rounded-xl bg-card dark:bg-card/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b border-border dark:border-border/50">
+                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary from-background to-background dark:from-background dark:to-background border-b border-border dark:border-border/50">
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary shadow-sm">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background from-primary to-primary shadow-sm">
                         <span className="text-sm font-bold text-primary-foreground">{index + 1}</span>
                       </div>
                       <span className="text-sm font-medium text-foreground dark:text-muted-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
