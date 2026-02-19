@@ -377,7 +377,7 @@ export default function PackageOrdersClient() {
   const thClasses =
     'sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle ' +
     'bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:bg-card dark:supports-[backdrop-filter]:bg-card ' +
-    'border-b border-border dark:border-border text-muted-foreground dark:text-muted-foreground ' +
+    'border-b border-border dark:border-border text-foreground ' +
     'font-semibold text-[11px] leading-[1.05] box-border';
 
   const tdClasses = 'px-3 py-2 align-middle text-center text-[11px] leading-tight tabular-nums';
