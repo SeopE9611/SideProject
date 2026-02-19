@@ -98,7 +98,7 @@ export default function Wishlist() {
             더 보기
           </Button>
         ) : (
-          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         )}
       </div>
     </div>

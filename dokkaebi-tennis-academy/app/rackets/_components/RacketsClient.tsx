@@ -70,16 +70,16 @@ export default function RacketsClient() {
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-lg bg-gray-200/60 dark:bg-gray-700/50 animate-pulse" />
+            <div key={i} className="h-56 rounded-lg bg-muted/80/60 dark:bg-muted/50 animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="p-8 text-center text-gray-500">등록된 라켓이 없습니다.</div>
+        <div className="p-8 text-center text-muted-foreground">등록된 라켓이 없습니다.</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {items.map((it) => (
             <Link key={it.id} href={`/rackets/${it.id}`} className="group overflow-hidden rounded-xl border hover:shadow transition">
-              <div className="aspect-[4/5] bg-gray-100 relative">
+              <div className="aspect-[4/5] bg-muted relative">
                 {it.images?.[0] ? (
                   <Image src={it.images[0]} alt={`${it.brand} ${it.model}`} fill sizes="(max-width:768px) 50vw, (max-width:1200px) 33vw, 25vw" className="object-cover" />
                 ) : (
@@ -88,7 +88,7 @@ export default function RacketsClient() {
                 {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-rose-600 text-white shadow">대여 불가</span>}
               </div>
               <div className="p-3 space-y-1">
-                <div className="text-sm text-gray-500">{it.brand}</div>
+                <div className="text-sm text-muted-foreground">{it.brand}</div>
                 <div className="font-medium group-hover:underline">{it.model}</div>
                 <div className="text-sm">
                   상태: <span className="font-semibold">{it.condition}</span>

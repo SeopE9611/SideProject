@@ -279,7 +279,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Calendar className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">주문일시</span>
+ <span className="text-sm font-medium text-foreground ">주문일시</span>
  </div>
  <p className="text-lg font-semibold text-foreground dark:text-foreground">{formatDate(orderDetail.date)}</p>
  </div>
@@ -287,7 +287,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <CreditCard className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">총 결제금액</span>
+ <span className="text-sm font-medium text-foreground ">총 결제금액</span>
  </div>
  <p className="text-lg font-semibold text-foreground dark:text-foreground">{formatCurrency(orderDetail.total)}</p>
  </div>
@@ -295,7 +295,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-gray-700 ">주문 상태</span>
+ <span className="text-sm font-medium text-foreground ">주문 상태</span>
  </div>
  <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} />
  </div>
@@ -475,7 +475,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  ) : (
  <CardContent className="p-4 bp-sm:p-6">
  <div className="space-y-4">
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <User className="h-4 w-4 text-muted-foreground" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">이름</p>
@@ -483,7 +483,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Mail className="h-4 w-4 text-muted-foreground" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">이메일</p>
@@ -491,7 +491,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Phone className="h-4 w-4 text-muted-foreground" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">전화번호</p>
@@ -499,7 +499,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
 
- <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">주소</p>
@@ -512,7 +512,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  )}
  {isEditMode && canUserEdit && !editingCustomer && (
- <CardFooter className="pt-3 flex justify-center bg-gray-50/50 ">
+ <CardFooter className="pt-3 flex justify-center bg-muted/50 ">
  <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-blue-50 border-blue-200">
  고객정보 수정
  </Button>
@@ -530,7 +530,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
  <CardContent className="p-4 bp-sm:p-6">
  <div className="space-y-4">
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Truck className="h-4 w-4 text-muted-foreground" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">배송 방법</p>
@@ -544,7 +544,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Calendar className="h-4 w-4 text-muted-foreground" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">예상 수령일</p>
@@ -554,7 +554,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {orderDetail.shippingInfo.invoice?.trackingNumber && (
  <>
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">택배사</p>
  <p className="font-semibold text-foreground dark:text-foreground">
@@ -568,7 +568,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </p>
  </div>
  </div>
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">운송장 번호</p>
  <p className="font-semibold text-foreground dark:text-foreground">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
@@ -590,14 +590,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
  <CardContent className="p-4 bp-sm:p-6">
  <div className="space-y-4">
- <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+ <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 상태</p>
  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
  </div>
  </div>
 
- <div className="p-3 bg-gray-50 rounded-lg">
+ <div className="p-3 bg-muted rounded-lg">
  <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
  </div>
 
@@ -622,7 +622,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardContent className="p-4 bp-sm:p-6">
  <div className="space-y-4">
  {orderDetail.items.map((item, idx) => (
- <div key={idx} className="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors space-x-4">
+ <div key={idx} className="flex items-center p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-gray-700 transition-colors space-x-4">
  {/* 상품 썸네일 */}
  {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded" />}
 
@@ -683,7 +683,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardContent className="p-4 bp-sm:p-6">
  {orderDetail.shippingInfo.deliveryRequest ? (
  <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
- <p className="text-gray-700 whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
+ <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
  </div>
  ) : (
  <p className="text-muted-foreground dark:text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
@@ -691,7 +691,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  )}
  {isEditMode && canUserEdit && !editingRequest && (
- <CardFooter className="flex justify-center bg-gray-50/50 ">
+ <CardFooter className="flex justify-center bg-muted/50 ">
  <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-orange-50 border-orange-200">
  요청사항 수정
  </Button>

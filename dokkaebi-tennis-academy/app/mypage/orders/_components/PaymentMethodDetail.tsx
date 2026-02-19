@@ -14,7 +14,7 @@ export default function PaymentMethodDetail({ method, bankKey, depositor }: Paym
       <div className="text-sm font-medium">결제 방식</div>
       <div className="flex flex-col gap-1">
         {bankInfo && (
-          <div className="mt-1 rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-800 leading-relaxed border border-gray-200 space-y-1">
+          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{method}</div>
             <div className="font-medium">{bankInfo.label}</div>
             <div className="font-mono tracking-wide">{bankInfo.account}</div>

@@ -530,7 +530,7 @@ export default function ActivityFeed() {
   return (
     <div className="space-y-5 bp-sm:space-y-6 bp-lg:space-y-8 fade-in">
       <div className="grid grid-cols-2 bp-md:grid-cols-4 gap-3 bp-sm:gap-4">
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-muted   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-border  p-2">
               <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground " />
@@ -890,7 +890,7 @@ export default function ActivityFeed() {
                       return (
                         <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card  border border-border p-4 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
                           <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
-                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
+                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-background to-muted dark:from-slate-700 dark:to-muted p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
 
                             <div className="flex-1 min-w-0 space-y-3">
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">

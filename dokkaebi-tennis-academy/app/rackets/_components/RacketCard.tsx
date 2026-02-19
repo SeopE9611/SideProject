@@ -53,12 +53,12 @@ function RacketAvailBadge({ id }: { id: string }) {
 
   // 로딩 중에 1/1 같은 가짜 값이 보이는 깜빡임 방지
   if (!ready) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap animate-pulse">수량 확인중</div>;
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-foreground dark:bg-card dark:text-foreground whitespace-nowrap animate-pulse">수량 확인중</div>;
   }
 
   // 판매 완료(보유 0)
   if (isSold) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 whitespace-nowrap">판매 완료 (재고 0)</div>;
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-foreground dark:bg-card dark:text-foreground whitespace-nowrap">판매 완료 (재고 0)</div>;
   }
 
   // 전량 대여중
@@ -97,7 +97,7 @@ const RacketCard = React.memo(
 
     if (viewMode === 'list') {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 relative">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-blue-300 dark:hover:border-blue-500 relative">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect x="0" y="0" width="400" height="200" stroke="currentColor" strokeWidth="2" />
@@ -151,7 +151,7 @@ const RacketCard = React.memo(
                       ) : (
                         <Button
                           size="sm"
-                          className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                          className="shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
                           disabled
                           aria-disabled
                           title={rentDisabledTitle}
@@ -163,7 +163,7 @@ const RacketCard = React.memo(
                     ) : (
                       <Button
                         size="sm"
-                        className="shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400 text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
+                        className="shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground text-xs bp-sm:text-base w-full justify-center whitespace-nowrap"
                         disabled
                         aria-disabled
                         title={rentDisabledTitle}
@@ -175,7 +175,7 @@ const RacketCard = React.memo(
                   </div>
 
                   <div className="mt-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
-                    <Button asChild size="sm" variant="outline" className="w-full bg-white/80 dark:bg-slate-900/30 shadow text-xs bp-sm:text-base justify-center whitespace-nowrap">
+                    <Button asChild size="sm" variant="outline" className="w-full bg-card/80 dark:bg-card/30 shadow text-xs bp-sm:text-base justify-center whitespace-nowrap">
                       <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
                         <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                         <span className="bp-sm:hidden">상세</span>
@@ -193,7 +193,7 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 group relative">
+      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-blue-300 dark:hover:border-blue-500 group relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
@@ -208,7 +208,7 @@ const RacketCard = React.memo(
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <div className="flex gap-2">
               <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
-                <Button size="sm" className="bg-white text-black hover:bg-gray-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-lg text-xs bp-sm:text-base">
+                <Button size="sm" className="bg-card text-black hover:bg-muted dark:bg-muted dark:text-foreground dark:hover:bg-card shadow-lg text-xs bp-sm:text-base">
                   <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
 
                   <span className="bp-sm:hidden">상세</span>
@@ -256,13 +256,13 @@ const RacketCard = React.memo(
                     <RentDialog id={racket.id} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} size="sm" preventCardNav={true} full={false} className="w-full justify-center" />
                   </div>
                 ) : (
-                  <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title={rentDisabledTitle}>
+                  <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground" disabled aria-disabled title={rentDisabledTitle}>
                     <Briefcase className="w-4 h-4 mr-1.5" />
                     품절
                   </Button>
                 )
               ) : (
-                <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-gray-300 text-gray-600 cursor-not-allowed dark:bg-slate-700 dark:text-slate-400" disabled aria-disabled title={rentDisabledTitle}>
+                <Button size="sm" className="flex-1 min-w-0 shadow-lg bg-muted/70 text-muted-foreground cursor-not-allowed dark:bg-muted dark:text-muted-foreground" disabled aria-disabled title={rentDisabledTitle}>
                   <Briefcase className="w-4 h-4 mr-1.5" />
                   대여 불가
                 </Button>

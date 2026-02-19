@@ -30,10 +30,10 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
   const doc = await getData(id);
   if (!doc) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-muted dark:to-muted">
         <SiteContainer variant="wide" className="py-12">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200">존재하지 않는 라켓입니다.</h1>
+            <h1 className="text-2xl font-bold text-foreground">존재하지 않는 라켓입니다.</h1>
           </div>
         </SiteContainer>
       </div>

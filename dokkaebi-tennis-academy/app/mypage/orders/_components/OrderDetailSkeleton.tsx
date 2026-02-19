@@ -28,7 +28,7 @@ export default function OrderDetailSkeleton() {
           {/* ----------------------- */}
           {/* 2-2-1. 주문 상태 카드 (col-span-3) */}
           {/* ----------------------- */}
-          <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
+          <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 {/* “주문 상태” 텍스트 스켈레톤 */}
@@ -51,7 +51,7 @@ export default function OrderDetailSkeleton() {
           {/* ----------------------- */}
           {/* 2-2-2. 고객 정보 카드 */}
           {/* ----------------------- */}
-          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+          <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 {/* 사용자 아이콘 스켈레톤 (원형) */}
@@ -78,7 +78,7 @@ export default function OrderDetailSkeleton() {
           {/* ----------------------- */}
           {/* 2-2-3. 배송 정보 카드 */}
           {/* ----------------------- */}
-          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+          <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 {/* 트럭 아이콘 스켈레톤 (원형) */}
@@ -103,7 +103,7 @@ export default function OrderDetailSkeleton() {
           {/* ----------------------- */}
           {/* 2-2-4. 결제 정보 카드 */}
           {/* ----------------------- */}
-          <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+          <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 {/* 신용카드 아이콘 스켈레톤 (원형) */}
@@ -128,7 +128,7 @@ export default function OrderDetailSkeleton() {
           {/* ----------------------- */}
           {/* 2-2-5. 주문 항목 테이블 카드 (col-span-3) */}
           {/* ----------------------- */}
-          <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
+          <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 {/* 장바구니 아이콘 스켈레톤 (원형) */}
@@ -138,9 +138,9 @@ export default function OrderDetailSkeleton() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="rounded-xl border border-border shadow-sm overflow-hidden">
                 {/* 테이블 헤더 스켈레톤 */}
-                <div className="flex w-full bg-gray-50 px-4 py-2">
+                <div className="flex w-full bg-muted px-4 py-2">
                   <Skeleton className="h-4 w-1/4" /> {/* 상품/서비스 */}
                   <Skeleton className="h-4 w-1/4 ml-auto" /> {/* 수량 */}
                   <Skeleton className="h-4 w-1/4 ml-auto" /> {/* 가격 */}
@@ -148,7 +148,7 @@ export default function OrderDetailSkeleton() {
                 </div>
                 {/* 테이블 바디 3개 행 분량 */}
                 {Array.from({ length: 3 }).map((_, rowIdx) => (
-                  <div key={rowIdx} className="flex items-center px-4 py-2 border-t border-gray-200">
+                  <div key={rowIdx} className="flex items-center px-4 py-2 border-t border-border">
                     <Skeleton className="h-4 w-1/4" />
                     <Skeleton className="h-4 w-1/4 ml-auto" />
                     <Skeleton className="h-4 w-1/4 ml-auto" />
@@ -163,7 +163,7 @@ export default function OrderDetailSkeleton() {
         {/* ======================= */}
         {/* 3. 요청사항 카드 */}
         {/* ======================= */}
-        <Card className="rounded-xl border-gray-200 bg-white shadow-md">
+        <Card className="rounded-xl border-border bg-card shadow-md">
           <CardHeader className="pb-3">
             <Skeleton className="h-6 w-32" />
             <Skeleton className="mt-1 h-4 w-2/3" />
@@ -176,7 +176,7 @@ export default function OrderDetailSkeleton() {
         {/* ======================= */}
         {/* 4. 처리 이력 스켈레톤 */}
         {/* ======================= */}
-        <Card className="rounded-xl border-gray-200 bg-white shadow-md">
+        <Card className="rounded-xl border-border bg-card shadow-md">
           <CardHeader>
             <Skeleton className="h-6 w-32" />
           </CardHeader>

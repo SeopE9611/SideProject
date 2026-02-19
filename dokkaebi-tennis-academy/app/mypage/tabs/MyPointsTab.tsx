@@ -81,7 +81,7 @@ export default function MyPointsTab() {
 
   if (!data?.ok) {
     return (
-      <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+      <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
         <CardContent className="flex flex-col items-center justify-center py-12 bp-sm:py-16">
           <div className="bg-destructive/10 rounded-full p-4 mb-4">
             <Coins className="h-8 w-8 text-destructive" />
@@ -102,16 +102,16 @@ export default function MyPointsTab() {
       <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 text-white">
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors duration-300" />
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12" />
-          <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full -ml-10 -mb-10" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
+          <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+              <div className="bg-card/20 backdrop-blur-sm rounded-lg p-2 shadow-lg">
                 <Coins className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
               </div>
               {stats.recentTrend !== 0 && (
-                <Badge variant="secondary" className="bg-white/20 backdrop-blur-sm text-white border-0 px-2 py-0.5 text-xs">
+                <Badge variant="secondary" className="bg-card/20 backdrop-blur-sm text-white border-0 px-2 py-0.5 text-xs">
                   {stats.recentTrend > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
                   {stats.recentTrend > 0 ? '+' : ''}
                   {fmt(stats.recentTrend)}
@@ -131,7 +131,7 @@ export default function MyPointsTab() {
           </CardContent>
         </Card>
 
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white dark:bg-slate-800">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card dark:bg-card">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
@@ -149,7 +149,7 @@ export default function MyPointsTab() {
           </CardContent>
         </Card>
 
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white dark:bg-slate-800 bp-md:col-span-2 bp-lg:col-span-1">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card dark:bg-card bp-md:col-span-2 bp-lg:col-span-1">
           <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
@@ -168,12 +168,12 @@ export default function MyPointsTab() {
         </Card>
       </div>
 
-      <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 border-b p-5 bp-sm:p-6">
+      <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-background to-muted dark:from-background/50 dark:to-muted/50 border-b p-5 bp-sm:p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-2.5 shadow-md">
-                <Calendar className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                <Calendar className="h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
               </div>
               <div>
                 <CardTitle className="text-lg bp-sm:text-xl">포인트 내역</CardTitle>
@@ -275,7 +275,7 @@ export default function MyPointsTab() {
         </CardContent>
 
         {data.items.length > 0 && (
-          <div className="border-t bg-muted/30 dark:bg-slate-900/30 px-4 bp-sm:px-6 py-4">
+          <div className="border-t bg-muted/30 dark:bg-card/30 px-4 bp-sm:px-6 py-4">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground tabular-nums">
                 <span className="hidden bp-sm:inline">페이지 </span>

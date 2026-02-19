@@ -33,13 +33,13 @@
 //   const getStatusColor = (status: string) => {
 //     switch (status) {
 //       case '접수완료':
-//         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+//         return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
 //       case '검토 중':
 //         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
 //       case '완료':
 //         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
 //       default:
-//         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+//         return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
 //     }
 //   };
 

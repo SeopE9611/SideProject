@@ -487,7 +487,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-white dark:bg-slate-800">
+              <div className="flex items-center border border-blue-200 dark:border-blue-700 rounded-lg p-1 bg-card dark:bg-card">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -508,10 +508,10 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               </div>
 
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-white dark:bg-slate-800 text-sm">
+                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-blue-500 dark:focus:border-blue-400 bg-card dark:bg-card text-sm">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
-                <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+                <SelectContent className="dark:bg-card dark:border-border">
                   <SelectItem value="latest">최신순</SelectItem>
                   <SelectItem value="price-low">가격 낮은순</SelectItem>
                   <SelectItem value="price-high">가격 높은순</SelectItem>

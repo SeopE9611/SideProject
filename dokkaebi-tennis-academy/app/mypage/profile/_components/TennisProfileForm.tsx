@@ -307,7 +307,7 @@ export default function TennisProfileForm() {
   };
 
   return (
-    <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+    <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
       <CardHeader className="bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-950/30 dark:to-indigo-950/30 border-b">
         <div className="flex items-center gap-3">
           <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-3 shadow-lg">
@@ -322,16 +322,16 @@ export default function TennisProfileForm() {
 
       <CardContent className="p-8 space-y-8">
         {isLoading ? (
-          <p className="text-sm text-slate-500">테니스 프로필을 불러오는 중입니다...</p>
+          <p className="text-sm text-muted-foreground">테니스 프로필을 불러오는 중입니다...</p>
         ) : (
           <>
             {/* 플레이어 기본 정보 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">플레이어 기본 정보</h3>
+              <h3 className="text-sm font-semibold text-foreground dark:text-foreground">플레이어 기본 정보</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 {/* 레벨 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">실력 레벨</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">실력 레벨</Label>
                   <Select value={profile.level} onValueChange={(value) => updateField('level', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="레벨을 선택해주세요" />
@@ -347,7 +347,7 @@ export default function TennisProfileForm() {
 
                 {/* 손 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">사용 손</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">사용 손</Label>
                   <Select value={profile.hand} onValueChange={(value) => updateField('hand', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="오른손 / 왼손" />
@@ -362,7 +362,7 @@ export default function TennisProfileForm() {
 
                 {/* 플레이 스타일 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">플레이 스타일</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">플레이 스타일</Label>
                   <Select value={profile.playStyle} onValueChange={(value) => updateField('playStyle', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="플레이 스타일 선택" />
@@ -381,22 +381,22 @@ export default function TennisProfileForm() {
 
             {/* 2. 메인 라켓 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">메인 라켓</h3>
+              <h3 className="text-sm font-semibold text-foreground dark:text-foreground">메인 라켓</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">브랜드</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">브랜드</Label>
                   <Input value={profile.mainRacket.brand} onChange={(e) => updateMainRacket('brand', e.target.value)} placeholder="예: 바볼랏, 윌슨" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">모델명</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">모델명</Label>
                   <Input value={profile.mainRacket.model} onChange={(e) => updateMainRacket('model', e.target.value)} placeholder="예: Pure Drive 2021" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">무게 (g)</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">무게 (g)</Label>
                   <Input value={profile.mainRacket.weight} onChange={(e) => updateMainRacket('weight', e.target.value)} placeholder="예: 300" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">밸런스</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">밸런스</Label>
                   <Input value={profile.mainRacket.balance} onChange={(e) => updateMainRacket('balance', e.target.value)} placeholder="예: 320mm, 3pts HL" />
                 </div>
               </div>
@@ -404,30 +404,30 @@ export default function TennisProfileForm() {
 
             {/* 3. 메인 스트링 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">메인 스트링</h3>
+              <h3 className="text-sm font-semibold text-foreground dark:text-foreground">메인 스트링</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">브랜드</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">브랜드</Label>
                   <Input value={profile.mainString.brand} onChange={(e) => updateMainString('brand', e.target.value)} placeholder="예: Luxilon" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">모델명</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">모델명</Label>
                   <Input value={profile.mainString.model} onChange={(e) => updateMainString('model', e.target.value)} placeholder="예: Alu Power" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">게이지</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">게이지</Label>
                   <Input value={profile.mainString.gauge} onChange={(e) => updateMainString('gauge', e.target.value)} placeholder="예: 1.25, 16L" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">재질</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">재질</Label>
                   <Input value={profile.mainString.material} onChange={(e) => updateMainString('material', e.target.value)} placeholder="예: 폴리, 멀티, 내추럴" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">메인 텐션 (kg)</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">메인 텐션 (kg)</Label>
                   <Input value={profile.mainString.tensionMain} onChange={(e) => updateMainString('tensionMain', e.target.value)} placeholder="예: 23" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-600 dark:text-slate-300">크로스 텐션 (kg)</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">크로스 텐션 (kg)</Label>
                   <Input value={profile.mainString.tensionCross} onChange={(e) => updateMainString('tensionCross', e.target.value)} placeholder="예: 22" />
                 </div>
               </div>
@@ -435,15 +435,15 @@ export default function TennisProfileForm() {
 
             {/* 4. 소개 문구 */}
             <div className="space-y-2">
-              <Label className="text-xs text-slate-600 dark:text-slate-300">소개 / 한 줄 설명</Label>
+              <Label className="text-xs text-muted-foreground dark:text-muted-foreground">소개 / 한 줄 설명</Label>
               <Textarea value={profile.note} onChange={(e) => updateField('note', e.target.value)} rows={3} placeholder="예: 중급, 탑스핀 위주로 치고 더블스를 좋아합니다." />
             </div>
 
             {/* 5. 공개 여부 */}
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900/40 px-4 py-3">
+            <div className="flex items-center justify-between rounded-xl bg-muted dark:bg-card/40 px-4 py-3">
               <div className="space-y-0.5">
-                <p className="text-sm font-medium text-slate-800 dark:text-slate-100">커뮤니티에서 테니스 프로필 공개</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">작성자 프로필 카드에서 라켓/스트링 정보를 보여줄지 여부를 설정합니다.</p>
+                <p className="text-sm font-medium text-foreground dark:text-foreground">커뮤니티에서 테니스 프로필 공개</p>
+                <p className="text-xs text-muted-foreground">작성자 프로필 카드에서 라켓/스트링 정보를 보여줄지 여부를 설정합니다.</p>
               </div>
               <Switch checked={profile.isPublic} onCheckedChange={(checked) => updateField('isPublic', checked)} />
             </div>

@@ -79,7 +79,7 @@ const fetcher = (url: string) =>
 const Stars = ({ rating }: { rating: number }) => (
   <div className="flex items-center gap-1">
     {Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} fill="currentColor" />
+      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-yellow-400' : 'text-muted-foreground/60 dark:text-muted-foreground'}`} fill="currentColor" />
     ))}
   </div>
 );
@@ -89,7 +89,7 @@ const StarsInput = ({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" aria-label={`${n}점`} onClick={() => onChange(n)} className={`text-xl leading-none transition-transform hover:scale-[1.06] ${value >= n ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}>
+        <button key={n} type="button" aria-label={`${n}점`} onClick={() => onChange(n)} className={`text-xl leading-none transition-transform hover:scale-[1.06] ${value >= n ? 'text-yellow-400' : 'text-muted-foreground/60 dark:text-muted-foreground'}`}>
           ★
         </button>
       ))}
@@ -370,9 +370,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       {/* 목록 */}
       {itemsToRender.length ? (
         itemsToRender.map((it) => (
-          <Card key={it._id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <Card key={it._id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
-              <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
+              <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
             <CardContent className="relative p-6 space-y-4">
@@ -389,7 +389,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-1">{it.title}</h3>
+                    <h3 className="font-semibold text-foreground mb-1">{it.title}</h3>
                     <div className="flex items-center gap-2">
                       <Stars rating={it.rating} />
                       <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">{Number(it.rating).toFixed(1)}</span>
@@ -442,8 +442,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               </div>
 
               {/* 본문 */}
-              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap break-words">{it.content}</p>
+              <div className="bg-muted rounded-lg p-4">
+                <p className="text-foreground leading-relaxed whitespace-pre-wrap break-words">{it.content}</p>
 
                 {/* 첨부 이미지 프리뷰 */}
                 {it.photos?.length ? (
@@ -458,12 +458,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               </div>
 
               {/* 푸터 */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex items-center justify-between pt-4 border-t border-border/60 dark:border-border/60">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>{(it.createdAt || '').slice(0, 10)}</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Package className="h-3.5 w-3.5" />
                   <span>{it.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}</span>
                 </div>
@@ -472,13 +472,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </Card>
         ))
       ) : (
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
           <CardContent className="p-12 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
               <Star className="h-10 w-10 text-yellow-600 dark:text-yellow-400" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">작성한 리뷰가 없습니다</h3>
-            <p className="mb-6 text-slate-600 dark:text-slate-400">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>
+            <h3 className="mb-2 text-xl font-semibold text-foreground">작성한 리뷰가 없습니다</h3>
+            <p className="mb-6 text-muted-foreground">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>
           </CardContent>
         </Card>
       )}
@@ -496,7 +496,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             )}
           </Button>
         ) : itemsToRender.length ? (
-          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
 

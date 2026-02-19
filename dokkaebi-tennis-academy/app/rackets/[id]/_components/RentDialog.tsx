@@ -68,14 +68,14 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
 
           <div className="space-y-4">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
-              <div className="text-sm text-slate-600 dark:text-slate-400 mb-1">선택한 라켓</div>
-              <div className="font-semibold text-slate-900 dark:text-slate-100">
+              <div className="text-sm text-muted-foreground mb-1">선택한 라켓</div>
+              <div className="font-semibold text-foreground">
                 {brand} {model}
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">기간 선택</div>
+              <div className="text-sm font-semibold text-foreground">기간 선택</div>
               <div className="grid grid-cols-3 gap-2">
                 {[7, 15, 30].map((d) => (
                   <button
@@ -84,7 +84,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
                     className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${
                       period === d
                         ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
+                        : 'border-border hover:border-slate-300 dark:hover:border-slate-600 text-foreground'
                     }`}
                   >
                     {d}일
@@ -93,17 +93,17 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 p-4 rounded-lg border border-slate-200 dark:border-slate-600 space-y-2">
+            <div className="bg-gradient-to-r from-background to-muted dark:from-slate-800 dark:to-slate-700 p-4 rounded-lg border border-border dark:border-slate-600 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-400">대여 수수료</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100">{fee.toLocaleString()}원</span>
+                <span className="text-sm text-muted-foreground">대여 수수료</span>
+                <span className="font-bold text-foreground">{fee.toLocaleString()}원</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600 dark:text-slate-400">보증금</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100">{(rental.deposit ?? 0).toLocaleString()}원</span>
+                <span className="text-sm text-muted-foreground">보증금</span>
+                <span className="font-bold text-foreground">{(rental.deposit ?? 0).toLocaleString()}원</span>
               </div>
               <div className="pt-2 border-t border-slate-300 dark:border-slate-600">
-                <div className="text-xs text-slate-500 dark:text-slate-400">* 반납 완료 시 보증금 환불 (연체/파손 시 차감)</div>
+                <div className="text-xs text-muted-foreground">* 반납 완료 시 보증금 환불 (연체/파손 시 차감)</div>
               </div>
             </div>
           </div>
