@@ -29,18 +29,24 @@ html body[data-scroll-locked] {
 
 /* 라이트 모드용 CSS 변수 정의 */
 :root {
+  /* Page base */
   --background: 120 100% 99%;
   --foreground: 120 4% 11%;
 
+  /* Surface (card/panel) */
+  --surface: 0 0% 100%;
+  --surface-foreground: 120 4% 11%;
   --card: 0 0% 100%;
   --card-foreground: 120 4% 11%;
 
   --popover: 0 0% 100%;
   --popover-foreground: 120 4% 11%;
 
+  /* Primary action (CTA / main interaction) */
   --primary: 133 59% 41%;
-  --primary-foreground: 120 4% 11%;
+  --primary-foreground: 120 100% 99%;
 
+  /* Secondary emphasis */
   --accent: 130 57% 33%;
   --accent-foreground: 120 100% 99%;
 
@@ -76,18 +82,24 @@ html body[data-scroll-locked] {
 
 /* 다크 모드용 CSS 변수 정의 */
 .dark {
+  /* Page base */
   --background: 120 4% 11%;
   --foreground: 120 100% 99%;
 
+  /* Surface (card/panel) */
+  --surface: 120 4% 13%;
+  --surface-foreground: 120 100% 99%;
   --card: 120 4% 13%;
   --card-foreground: 120 100% 99%;
 
   --popover: 120 4% 13%;
   --popover-foreground: 120 100% 99%;
 
+  /* Primary action (CTA / main interaction) */
   --primary: 133 59% 41%;
-  --primary-foreground: 120 4% 11%;
+  --primary-foreground: 120 100% 99%;
 
+  /* Secondary emphasis */
   --accent: 130 57% 33%;
   --accent-foreground: 120 100% 99%;
 
