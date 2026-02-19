@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function StringServiceSuccessLoading() {
   return (
-    <div className="grid min-h-[100svh] place-items-center bg-gray-50 py-8 px-4">
+    <div className="grid min-h-[100svh] place-items-center bg-background py-8 px-4">
       <div className="max-w-md w-full">
         <Card>
           <CardContent className="pt-8 pb-8 text-center">
@@ -28,7 +28,7 @@ export default function StringServiceSuccessLoading() {
             </div>
 
             {/* 하단 안내 스켈레톤 */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="mt-8 pt-6 border-t border-border">
               <div className="space-y-2">
                 <Skeleton className="h-3 w-3/4 mx-auto" />
                 <Skeleton className="h-3 w-1/2 mx-auto" />

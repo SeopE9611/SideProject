@@ -1,13 +1,28 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { ReactElement } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Star, Users, Trophy, Target, Award, ArrowRight, Phone, Mail, MapPin, Calendar } from 'lucide-react';
 
 export default function AcademyPage() {
+  type ProgramVariant = 'primary' | 'accent' | 'muted';
+
   // 프로그램 데이터
-  const programs = [
+  const programs: Array<{
+    id: number;
+    title: string;
+    description: string;
+    features: string[];
+    price: string;
+    duration: string;
+    icon: ReactElement;
+    variant: ProgramVariant;
+    students: string;
+    satisfaction: string;
+    isPopular?: boolean;
+  }> = [
     {
       id: 1,
       title: '성인반',
@@ -16,7 +31,7 @@ export default function AcademyPage() {
       price: '월 180,000원 (주 2회) / 월 250,000원 (주 3회)',
       duration: '3개월 과정',
       icon: <Users className="h-8 w-8" />,
-      color: 'from-blue-500 to-cyan-500',
+      variant: 'primary',
       students: '120+',
       satisfaction: '96%',
     },
@@ -29,7 +44,7 @@ export default function AcademyPage() {
       duration: '3개월 과정',
       icon: <Trophy className="h-8 w-8" />,
       isPopular: true,
-      color: 'from-purple-500 to-pink-500',
+      variant: 'accent',
       students: '80+',
       satisfaction: '98%',
     },
@@ -41,11 +56,39 @@ export default function AcademyPage() {
       price: '월 200,000원 (주 1회)',
       duration: '3개월 과정',
       icon: <Target className="h-8 w-8" />,
-      color: 'from-green-500 to-teal-500',
+      variant: 'muted',
       students: '40+',
       satisfaction: '94%',
     },
   ];
+
+
+  const variantStyles = {
+    primary: {
+      bar: 'bg-primary',
+      icon: 'bg-primary text-primary-foreground',
+      dot: 'bg-primary',
+      price: 'text-primary',
+      stat: 'text-primary',
+      button: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    },
+    accent: {
+      bar: 'bg-accent',
+      icon: 'bg-accent text-accent-foreground',
+      dot: 'bg-accent',
+      price: 'text-accent-foreground',
+      stat: 'text-accent-foreground',
+      button: 'bg-accent text-accent-foreground hover:bg-accent/90',
+    },
+    muted: {
+      bar: 'bg-muted',
+      icon: 'bg-muted text-foreground',
+      dot: 'bg-muted-foreground',
+      price: 'text-foreground',
+      stat: 'text-foreground',
+      button: 'bg-secondary text-secondary-foreground hover:bg-secondary/90',
+    },
+  } as const;
 
   // 강사 데이터
   const coaches = [
@@ -136,9 +179,9 @@ export default function AcademyPage() {
     <div className="relative">
       {/* ▶ 고정된 오버레이 */}
       <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-        <p className="text-white text-2xl md:text-4xl font-semibold">이 페이지는 사용하지 않습니다. (아카데미 페이지)</p>
-        <p className="text-sm text-gray-300">다시 활성화되기 전까지 현재 이 페이지는 접근 제한 상태입니다.</p>
-        <Button asChild size="lg" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-xl">
+        <p className="text-foreground text-2xl md:text-4xl font-semibold">이 페이지는 사용하지 않습니다. (아카데미 페이지)</p>
+        <p className="text-sm text-muted-foreground">다시 활성화되기 전까지 현재 이 페이지는 접근 제한 상태입니다.</p>
+        <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl">
           <Link href="/">홈으로 이동</Link>
         </Button>
       </div>
@@ -147,59 +190,59 @@ export default function AcademyPage() {
         {/* Hero 섹션 */}
         <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
           {/* 배경 그라데이션 */}
-          <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-blue-600 to-purple-600">
+          <div className="absolute inset-0 bg-background">
             <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1200&text=Tennis+Academy')] bg-cover bg-center opacity-20"></div>
             <div className="absolute inset-0 bg-black/20"></div>
           </div>
 
           {/* 장식 요소 */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-24 h-24 bg-yellow-400/20 rounded-full blur-lg  "></div>
-          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-green-400/30 rounded-full blur-md animate-pulse delay-1000"></div>
+          <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-24 h-24 bg-accent/30 rounded-full blur-lg  "></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-primary/20 rounded-full blur-md animate-pulse delay-1000"></div>
 
-          <div className="container relative z-10 text-center text-white">
+          <div className="container relative z-10 text-center text-foreground">
             <div className="max-w-4xl mx-auto">
-              <Badge className="mb-6 bg-white/20 text-white border-white/30 backdrop-blur-sm">
+              <Badge className="mb-6 bg-accent text-accent-foreground border-border backdrop-blur-sm">
                 <Award className="w-4 h-4 mr-2" />
                 테니스 교육 전문 기관
               </Badge>
 
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent">도깨비 테니스 아카데미</h1>
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 text-foreground">도깨비 테니스 아카데미</h1>
 
-              <p className="text-xl md:text-2xl mb-8 text-green-100 leading-relaxed">
+              <p className="text-xl md:text-2xl mb-8 text-muted-foreground leading-relaxed">
                 누구나 즐길 수 있는 체계적인 테니스 프로그램
                 <br />
-                <span className="text-yellow-300 font-semibold">당신의 테니스 실력을 한 단계 업그레이드하세요</span>
+                <span className="text-accent-foreground font-semibold">당신의 테니스 실력을 한 단계 업그레이드하세요</span>
               </p>
 
               {/* 통계 정보 */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                  <div className="text-3xl font-bold text-yellow-300">240+</div>
-                  <div className="text-sm text-green-100">수강생</div>
+                <div className="bg-card border border-border rounded-xl p-4">
+                  <div className="text-3xl font-bold text-foreground">240+</div>
+                  <div className="text-sm text-muted-foreground">수강생</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                  <div className="text-3xl font-bold text-yellow-300">15년</div>
-                  <div className="text-sm text-green-100">운영 경력</div>
+                <div className="bg-card border border-border rounded-xl p-4">
+                  <div className="text-3xl font-bold text-foreground">15년</div>
+                  <div className="text-sm text-muted-foreground">운영 경력</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                  <div className="text-3xl font-bold text-yellow-300">96%</div>
-                  <div className="text-sm text-green-100">만족도</div>
+                <div className="bg-card border border-border rounded-xl p-4">
+                  <div className="text-3xl font-bold text-foreground">96%</div>
+                  <div className="text-sm text-muted-foreground">만족도</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                  <div className="text-3xl font-bold text-yellow-300">4.8</div>
-                  <div className="text-sm text-green-100">평점</div>
+                <div className="bg-card border border-border rounded-xl p-4">
+                  <div className="text-3xl font-bold text-foreground">4.8</div>
+                  <div className="text-sm text-muted-foreground">평점</div>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
                   <Link href="#apply">
                     <Calendar className="w-5 h-5 mr-2" />
                     수강 신청하기
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm bg-transparent" asChild>
+                <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent backdrop-blur-sm bg-transparent" asChild>
                   <Link href="#programs">
                     <ArrowRight className="w-5 h-5 mr-2" />
                     프로그램 둘러보기
@@ -211,22 +254,22 @@ export default function AcademyPage() {
 
           {/* 스크롤 인디케이터 */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2  ">
-            <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
+            <div className="w-6 h-10 border-2 border-border rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-muted-foreground rounded-full mt-2 animate-pulse"></div>
             </div>
           </div>
         </section>
 
         {/* 프로그램 소개 섹션 */}
-        <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800" id="programs">
+        <section className="py-20 bg-background" id="programs">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <Badge className="mb-4 bg-accent text-accent-foreground">
                 <Trophy className="w-4 h-4 mr-2" />
                 맞춤형 교육 프로그램
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">프로그램 소개</h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">프로그램 소개</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 도깨비 테니스 아카데미는 다양한 연령과 수준에 맞춘 프로그램을 제공합니다.
                 <br />
                 여러분의 목표와 일정에 맞는 프로그램을 선택해보세요.
@@ -237,34 +280,34 @@ export default function AcademyPage() {
               {programs.map((program) => (
                 <Card
                   key={program.id}
-                  className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 ${
-                    program.isPopular ? 'ring-2 ring-purple-500 scale-105' : ''
+                  className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card border border-border ${
+                    program.isPopular ? 'ring-2 ring-primary scale-105' : ''
                   }`}
                 >
                   {program.isPopular && (
-                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 text-sm font-bold rounded-bl-xl">
+                    <div className="absolute top-0 right-0 bg-accent text-accent-foreground px-4 py-2 text-sm font-bold rounded-bl-xl">
                       <Star className="w-4 h-4 inline mr-1" />
                       인기 프로그램
                     </div>
                   )}
 
                   {/* 상단 그라데이션 바 */}
-                  <div className={`h-2 bg-gradient-to-r ${program.color}`}></div>
+                  <div className={`h-2 ${variantStyles[program.variant].bar}`}></div>
 
                   <CardHeader className="text-center pb-4">
-                    <div className={`mx-auto mb-4 w-20 h-20 rounded-full bg-gradient-to-br ${program.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>{program.icon}</div>
+                    <div className={`mx-auto mb-4 w-20 h-20 rounded-full ${variantStyles[program.variant].icon} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>{program.icon}</div>
                     <CardTitle className="text-2xl font-bold mb-2">{program.title}</CardTitle>
                     <CardDescription className="text-base">{program.description}</CardDescription>
 
                     {/* 통계 정보 */}
                     <div className="flex justify-center gap-4 mt-4">
                       <div className="text-center">
-                        <div className="font-bold text-lg text-blue-600">{program.students}</div>
-                        <div className="text-xs text-gray-500">수강생</div>
+                        <div className="font-bold text-lg text-foreground">{program.students}</div>
+                        <div className="text-xs text-muted-foreground">수강생</div>
                       </div>
                       <div className="text-center">
-                        <div className="font-bold text-lg text-green-600">{program.satisfaction}</div>
-                        <div className="text-xs text-gray-500">만족도</div>
+                        <div className="font-bold text-lg text-foreground">{program.satisfaction}</div>
+                        <div className="text-xs text-muted-foreground">만족도</div>
                       </div>
                     </div>
                   </CardHeader>
@@ -273,13 +316,13 @@ export default function AcademyPage() {
                     {/* 주요 특징 */}
                     <div>
                       <h4 className="font-semibold mb-3 flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                        <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                         프로그램 특징
                       </h4>
                       <ul className="space-y-2">
                         {program.features.map((feature, index) => (
                           <li key={index} className="flex items-start text-sm">
-                            <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${program.color} mt-2 mr-3 flex-shrink-0`}></div>
+                            <div className={`w-2 h-2 rounded-full ${variantStyles[program.variant].bar} mt-2 mr-3 flex-shrink-0`}></div>
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -287,17 +330,17 @@ export default function AcademyPage() {
                     </div>
 
                     {/* 가격 정보 */}
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4">
+                    <div className="bg-muted rounded-xl p-4">
                       <div className="text-center">
-                        <div className="font-medium text-gray-700 dark:text-gray-300">수강료</div>
-                        <div className={`text-lg font-bold bg-gradient-to-r ${program.color} bg-clip-text text-transparent`}>{program.price}</div>
-                        <div className="text-sm text-gray-500 mt-1">{program.duration}</div>
+                        <div className="font-medium text-muted-foreground">수강료</div>
+                        <div className={`text-lg font-bold ${variantStyles[program.variant].bar} bg-clip-text text-transparent`}>{program.price}</div>
+                        <div className="text-sm text-muted-foreground mt-1">{program.duration}</div>
                       </div>
                     </div>
                   </CardContent>
 
                   <CardFooter>
-                    <Button className={`w-full bg-gradient-to-r ${program.color} hover:opacity-90 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`} asChild>
+                    <Button className={`w-full ${variantStyles[program.variant].button} shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300`} asChild>
                       <Link href="#apply">
                         <Calendar className="w-4 h-4 mr-2" />
                         신청하기
@@ -311,7 +354,7 @@ export default function AcademyPage() {
         </section>
 
         {/* 강사 소개 섹션 */}
-        <section className="py-20 bg-gradient-to-br from-blue-600 via-purple-600 to-green-500 relative overflow-hidden">
+        <section className="py-20 bg-background relative overflow-hidden">
           {/* 배경 패턴 */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('/placeholder.svg?height=400&width=400&text=Pattern')] bg-repeat opacity-20"></div>
@@ -319,12 +362,12 @@ export default function AcademyPage() {
 
           <div className="container relative z-10">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-white/20 text-white border-white/30">
+              <Badge className="mb-4 bg-accent text-accent-foreground border-border">
                 <Users className="w-4 h-4 mr-2" />
                 전문 코칭진
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">강사 소개</h2>
-              <p className="text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">강사 소개</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 도깨비 테니스 아카데미의 전문 코치진을 소개합니다.
                 <br />
                 풍부한 경험과 전문 지식을 바탕으로 여러분의 테니스 실력 향상을 도와드립니다.
@@ -333,11 +376,11 @@ export default function AcademyPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {coaches.map((coach) => (
-                <Card key={coach.id} className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/95 backdrop-blur-sm dark:bg-gray-800/95">
+                <Card key={coach.id} className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card backdrop-blur-sm">
                   <div className="relative overflow-hidden">
                     <Image src={coach.image || '/placeholder.svg'} alt={coach.name} width={400} height={400} className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 flex items-center">
-                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                    <div className="absolute top-4 right-4 bg-card backdrop-blur-sm border border-border rounded-full px-3 py-1 flex items-center">
+                      <Star className="w-4 h-4 text-accent-foreground mr-1" />
                       <span className="text-sm font-bold">{coach.rating}</span>
                     </div>
                   </div>
@@ -345,7 +388,7 @@ export default function AcademyPage() {
                   <CardHeader>
                     <div className="text-center">
                       <CardTitle className="text-2xl font-bold mb-1">{coach.name}</CardTitle>
-                      <div className="text-blue-600 font-semibold mb-2">{coach.position}</div>
+                      <div className="text-primary font-semibold mb-2">{coach.position}</div>
                       <Badge variant="outline" className="mb-4">
                         {coach.experience}
                       </Badge>
@@ -353,11 +396,11 @@ export default function AcademyPage() {
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{coach.description}</p>
+                    <p className="text-muted-foreground leading-relaxed">{coach.description}</p>
 
                     <div>
                       <h4 className="font-semibold mb-2 flex items-center">
-                        <Target className="w-4 h-4 mr-2 text-blue-500" />
+                        <Target className="w-4 h-4 mr-2 text-primary" />
                         전문 분야
                       </h4>
                       <div className="flex flex-wrap gap-2">
@@ -371,13 +414,13 @@ export default function AcademyPage() {
 
                     <div>
                       <h4 className="font-semibold mb-2 flex items-center">
-                        <Award className="w-4 h-4 mr-2 text-green-500" />
+                        <Award className="w-4 h-4 mr-2 text-primary" />
                         주요 경력
                       </h4>
                       <ul className="space-y-1">
                         {coach.achievements.map((achievement, index) => (
                           <li key={index} className="flex items-start text-sm">
-                            <CheckCircle className="w-3 h-3 mt-1 mr-2 text-green-500 flex-shrink-0" />
+                            <CheckCircle className="w-3 h-3 mt-1 mr-2 text-primary flex-shrink-0" />
                             <span>{achievement}</span>
                           </li>
                         ))}
@@ -391,15 +434,15 @@ export default function AcademyPage() {
         </section>
 
         {/* 아카데미 시설 섹션 */}
-        <section className="py-20 bg-gradient-to-b from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
+        <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <Badge className="mb-4 bg-accent text-accent-foreground">
                 <Award className="w-4 h-4 mr-2" />
                 최신 시설 완비
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">아카데미 시설</h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">아카데미 시설</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 최신 시설과 장비를 갖춘 도깨비 테니스 아카데미에서
                 <br />
                 최적의 환경에서 테니스를 배워보세요.
@@ -408,7 +451,7 @@ export default function AcademyPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {facilities.map((facility, index) => (
-                <Card key={index} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
+                <Card key={index} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
                   <div className="relative overflow-hidden">
                     <Image src={facility.image || '/placeholder.svg'} alt={facility.name} width={400} height={300} className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -416,12 +459,12 @@ export default function AcademyPage() {
 
                   <CardContent className="p-6">
                     <h3 className="text-xl font-bold mb-3">{facility.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">{facility.description}</p>
+                    <p className="text-muted-foreground mb-4 leading-relaxed">{facility.description}</p>
 
                     <div className="space-y-2">
                       {facility.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center text-sm">
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                          <CheckCircle className="w-4 h-4 text-primary mr-2 flex-shrink-0" />
                           <span>{feature}</span>
                         </div>
                       ))}
@@ -434,15 +477,15 @@ export default function AcademyPage() {
         </section>
 
         {/* 고객 후기 섹션 */}
-        <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+              <Badge className="mb-4 bg-accent text-accent-foreground">
                 <Star className="w-4 h-4 mr-2" />
                 수강생 만족도 96%
               </Badge>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">고객 후기</h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
                 도깨비 테니스 아카데미를 수강한
                 <br />
                 수강생들의 생생한 후기입니다.
@@ -451,31 +494,31 @@ export default function AcademyPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
               {reviews.map((review, index) => (
-                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white dark:bg-gray-800">
+                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
                   <CardContent className="p-8">
                     <div className="flex items-center mb-4">
                       <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
                       <div>
                         <h4 className="font-bold text-lg">{review.name}</h4>
-                        <p className="text-sm text-blue-600">{review.program}</p>
-                        <p className="text-xs text-gray-500">{review.date}</p>
+                        <p className="text-sm text-primary">{review.program}</p>
+                        <p className="text-xs text-muted-foreground">{review.date}</p>
                       </div>
                     </div>
 
                     <div className="flex mb-4">
                       {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                        <Star key={i} className="h-5 w-5 fill-yellow-400 text-accent-foreground" />
                       ))}
                     </div>
 
-                    <blockquote className="text-gray-700 dark:text-gray-300 italic leading-relaxed">"{review.comment}"</blockquote>
+                    <blockquote className="text-foreground italic leading-relaxed">"{review.comment}"</blockquote>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
             <div className="text-center">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
                 <Link href="/reviews/write?type=academy">
                   <Star className="w-5 h-5 mr-2" />
                   리뷰 작성하기
@@ -486,17 +529,17 @@ export default function AcademyPage() {
         </section>
 
         {/* 수강 신청 안내 섹션 */}
-        <section className="py-20 bg-gradient-to-br from-green-600 via-blue-600 to-purple-600 relative overflow-hidden" id="apply">
+        <section className="py-20 bg-background relative overflow-hidden" id="apply">
           {/* 배경 장식 */}
-          <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-24 h-24 bg-yellow-400/20 rounded-full blur-lg  "></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-accent/30 rounded-full blur-lg  "></div>
 
           <div className="container relative z-10">
             <div className="max-w-4xl mx-auto">
-              <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm dark:bg-gray-800/95 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-600 to-blue-600 p-8 text-center text-white">
+              <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm overflow-hidden">
+                <div className="bg-card p-8 text-center text-foreground border-b border-border">
                   <h2 className="text-4xl font-bold mb-4">수강 신청 안내</h2>
-                  <p className="text-xl text-green-100">
+                  <p className="text-xl text-muted-foreground">
                     도깨비 테니스 아카데미의 프로그램에 관심이 있으신가요?
                     <br />
                     아래 문의하기 버튼을 통해 상담을 신청하시거나, 전화로 문의해주세요.
@@ -505,39 +548,39 @@ export default function AcademyPage() {
 
                 <CardContent className="p-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                      <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                    <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                      <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
                         <Phone className="h-8 w-8" />
                       </div>
                       <h3 className="text-lg font-bold mb-2">전화 문의</h3>
-                      <div className="text-2xl font-bold text-blue-600 mb-2">02-123-4567</div>
-                      <p className="text-sm text-gray-500">
+                      <div className="text-2xl font-bold text-foreground mb-2">02-123-4567</div>
+                      <p className="text-sm text-muted-foreground">
                         평일 09:00 - 18:00
                         <br />
                         토요일 09:00 - 12:00
                       </p>
                     </div>
 
-                    <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                    <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                      <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-accent-foreground mx-auto mb-4">
                         <Mail className="h-8 w-8" />
                       </div>
                       <h3 className="text-lg font-bold mb-2">이메일 문의</h3>
-                      <div className="text-lg font-bold text-blue-600 mb-2">info@dokkaebi.com</div>
-                      <p className="text-sm text-gray-500">
+                      <div className="text-lg font-bold text-foreground mb-2">info@dokkaebi.com</div>
+                      <p className="text-sm text-muted-foreground">
                         24시간 접수
                         <br />
                         1일 이내 답변
                       </p>
                     </div>
 
-                    <div className="text-center p-6 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-shadow duration-300">
-                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-green-600 rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                    <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                      <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center text-secondary-foreground mx-auto mb-4">
                         <MapPin className="h-8 w-8" />
                       </div>
                       <h3 className="text-lg font-bold mb-2">방문 상담</h3>
-                      <div className="text-sm font-medium text-blue-600 mb-2">서울시 강남구 테니스로 123</div>
-                      <p className="text-sm text-gray-500">
+                      <div className="text-sm font-medium text-foreground mb-2">서울시 강남구 테니스로 123</div>
+                      <p className="text-sm text-muted-foreground">
                         사전 예약 필수
                         <br />
                         현장 시설 견학 가능
@@ -545,44 +588,44 @@ export default function AcademyPage() {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 mb-8">
+                  <div className="bg-muted rounded-xl p-6 mb-8">
                     <h3 className="text-xl font-bold mb-4 text-center">
-                      <CheckCircle className="w-5 h-5 inline mr-2 text-green-500" />
+                      <CheckCircle className="w-5 h-5 inline mr-2 text-primary" />
                       수강 신청 혜택
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="flex items-center">
-                        <Award className="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" />
+                        <Award className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
                         <div>
                           <p className="font-medium">무료 체험 레슨</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">첫 수업 무료 체험</p>
+                          <p className="text-sm text-muted-foreground">첫 수업 무료 체험</p>
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <Trophy className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
+                        <Trophy className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
                         <div>
                           <p className="font-medium">장비 무료 대여</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">라켓, 볼 무료 제공</p>
+                          <p className="text-sm text-muted-foreground">라켓, 볼 무료 제공</p>
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <Users className="w-5 h-5 text-purple-500 mr-3 flex-shrink-0" />
+                        <Users className="w-5 h-5 text-accent-foreground mr-3 flex-shrink-0" />
                         <div>
                           <p className="font-medium">개인 맞춤 상담</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">레벨 테스트 및 상담</p>
+                          <p className="text-sm text-muted-foreground">레벨 테스트 및 상담</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button size="lg" className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
                       <Link href="/board/qna/write">
                         <Mail className="mr-2 h-5 w-5" />
                         문의하러 가기
                       </Link>
                     </Button>
-                    <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent" asChild>
+                    <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent bg-transparent" asChild>
                       <Link href="/board/qna">
                         <ArrowRight className="mr-2 h-5 w-5" />
                         자주 묻는 질문 보기

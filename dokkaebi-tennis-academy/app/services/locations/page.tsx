@@ -48,7 +48,7 @@ export default function LocationsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Tennis court line pattern background */}
       <div
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
@@ -61,11 +61,11 @@ export default function LocationsPage() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 px-4 py-2 rounded-full mb-6">
-            <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">오프라인 매장 찾기</span>
+          <div className="inline-flex items-center gap-2 bg-accent dark:bg-blue-900/30 px-4 py-2 rounded-full mb-6">
+            <MapPin className="h-5 w-5 text-primary dark:text-blue-400" />
+            <span className="text-sm font-semibold text-primary dark:text-blue-300">오프라인 매장 찾기</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">매장 위치 안내</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-foreground mb-4">매장 위치 안내</h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
         </div>
 
@@ -124,8 +124,8 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    <p className="text-sm font-medium text-blue-700 dark:text-blue-300">{location.specialNote}</p>
+                  <div className="bg-accent dark:bg-blue-900/20 p-3 rounded-lg">
+                    <p className="text-sm font-medium text-primary dark:text-blue-300">{location.specialNote}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-1">
@@ -146,13 +146,13 @@ export default function LocationsPage() {
         </div>
 
         {/* <div className="mb-16">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8 text-center">예약 절차</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-8 text-center">예약 절차</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {reservationSteps.map((step, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-2">{step.title}</h3>
+                  <div className="w-12 h-12 bg-primary text-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
+                  <h3 className="font-semibold text-slate-900 dark:text-foreground mb-2">{step.title}</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400">{step.description}</p>
                 </CardContent>
               </Card>
@@ -160,14 +160,14 @@ export default function LocationsPage() {
           </div>
         </div> */}
 
-        {/* <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-blue-200 dark:border-blue-800">
+        {/* <Card className="bg-primary  to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-border dark:border-blue-800">
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">예약 및 상담</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-foreground mb-4">예약 및 상담</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <Phone className="h-5 w-5 text-primary dark:text-blue-400" />
                     <div>
                       <div className="font-semibold">전화 예약</div>
                       <div className="text-sm text-slate-600 dark:text-slate-400">02-123-4567</div>
@@ -175,7 +175,7 @@ export default function LocationsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <Calendar className="h-5 w-5 text-primary dark:text-blue-400" />
                     <div>
                       <div className="font-semibold">온라인 신청</div>
                       <div className="text-sm text-slate-600 dark:text-slate-400">스트링 교체 신청서 작성</div>
@@ -184,18 +184,18 @@ export default function LocationsPage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">서비스 특징</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-foreground mb-4">서비스 특징</h3>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                     전문가 직접 서비스
                   </li>
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                     무료 텐션 및 스트링 상담
                   </li>
                   <li className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                     정밀한 디지털 스트링머신 사용
                   </li>
                 </ul>

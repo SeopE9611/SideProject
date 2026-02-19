@@ -51,7 +51,7 @@ export default function PriceSummaryCard({
   return (
     <Card className="overflow-hidden border border-slate-200/70 dark:border-slate-700/70 shadow-sm">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-slate-800 dark:via-slate-700 dark:to-slate-600 text-white px-4 py-3">
+      <div className="bg-primary from-slate-900 via-slate-800 to-slate-700 dark:from-slate-800 dark:via-slate-700 dark:to-slate-600 text-foreground px-4 py-3">
         <div className="flex items-center gap-2">
           <ReceiptText className="h-4 w-4" />
           <p className="text-sm font-semibold">요금 요약</p>
@@ -160,10 +160,10 @@ export default function PriceSummaryCard({
           {usingPackage && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Ticket className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
+                <Ticket className="h-4 w-4 text-primary dark:text-emerald-500" />
                 <p className="text-sm font-medium">패키지 적용</p>
               </div>
-              <p className="text-sm text-emerald-600 dark:text-emerald-500">교체비 0원</p>
+              <p className="text-sm text-primary dark:text-emerald-500">교체비 0원</p>
             </div>
           )}
 

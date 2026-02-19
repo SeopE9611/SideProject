@@ -325,7 +325,7 @@ export default function Home() {
                   const title = (b.label ?? '').split('\n')[0] || '광고 문의';
 
                   const baseClass =
-                    'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
+                    'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-border transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
 
                   const inner = (
                     <>
@@ -335,13 +335,13 @@ export default function Home() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
                         </>
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" />
+                        <div className="absolute inset-0 bg-card" />
                       )}
 
                       <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
 
                       <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
-                        <div className={b.img ? 'text-white' : 'text-slate-900 dark:text-white'}>
+                        <div className={b.img ? 'text-foreground' : 'text-foreground'}>
                           <div className="text-2xl bp-sm:text-2xl font-bold leading-tight">{title}</div>
                         </div>
                       </div>
@@ -380,59 +380,59 @@ export default function Home() {
       <section className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-xl bp-sm:text-2xl font-bold text-slate-900 dark:text-white">빠른 메뉴</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">원하는 서비스를 바로 이용하세요</p>
+            <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">빠른 메뉴</h2>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">원하는 서비스를 바로 이용하세요</p>
           </div>
           <div className="grid gap-3 bp-sm:gap-4 bp-md:gap-5 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
             <Link
               href="/services/apply"
-              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800"
+              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border"
             >
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-900 dark:text-blue-300 dark:group-hover:bg-blue-600">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">교체 서비스 신청</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-slate-600 dark:text-slate-400">라켓/스트링 선택 후 한 번에</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
+                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">라켓/스트링 선택 후 한 번에</p>
               </div>
             </Link>
 
             <Link
               href="/services/tension-guide"
-              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800"
+              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border"
             >
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white dark:bg-emerald-900 dark:text-emerald-300 dark:group-hover:bg-emerald-600">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">장착/텐션 가이드</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-slate-600 dark:text-slate-400">초보도 쉽게 고르기</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">장착/텐션 가이드</h3>
+                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">초보도 쉽게 고르기</p>
               </div>
             </Link>
 
             <Link
               href="/board/market"
-              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800"
+              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border"
             >
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white dark:bg-amber-900 dark:text-amber-300 dark:group-hover:bg-amber-600">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">중고 거래</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-slate-600 dark:text-slate-400">라켓/스트링/장비 거래</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">중고 거래</h3>
+                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">라켓/스트링/장비 거래</p>
               </div>
             </Link>
 
             <Link
               href="/board"
-              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg dark:from-slate-900 dark:to-slate-800"
+              className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border"
             >
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-violet-100 text-violet-600 transition-colors group-hover:bg-violet-600 group-hover:text-white dark:bg-violet-900 dark:text-violet-300 dark:group-hover:bg-violet-600">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">커뮤니티</h3>
-                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-slate-600 dark:text-slate-400">리뷰·자유·사용기</p>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">커뮤니티</h3>
+                <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">리뷰·자유·사용기</p>
               </div>
             </Link>
           </div>
@@ -444,8 +444,8 @@ export default function Home() {
           <Link href="/rackets/finder" className="group block">
             <div
               className="
-            rounded-2xl border border-slate-200 dark:border-slate-800
-            bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-950
+            rounded-2xl border border-border
+            bg-card
             p-5 bp-sm:p-6
             flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between
             gap-4
@@ -456,15 +456,14 @@ export default function Home() {
                 <div
                   className="
                 flex h-12 w-12 items-center justify-center rounded-xl
-                bg-blue-100 text-blue-600
-                dark:bg-blue-950/40 dark:text-blue-300
+                bg-accent text-accent-foreground
               "
                 >
                   <Search className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm bp-sm:text-base font-bold text-slate-900 dark:text-white">라켓 파인더</div>
-                  <p className="mt-1 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
+                  <div className="text-sm bp-sm:text-base font-bold text-foreground">라켓 파인더</div>
+                  <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
                 </div>
               </div>
 
@@ -473,8 +472,8 @@ export default function Home() {
               shrink-0 inline-flex items-center justify-center
               rounded-lg px-4 py-2
               text-xs bp-sm:text-sm font-semibold
-              bg-slate-900 text-white
-              dark:bg-white dark:text-slate-900
+              bg-slate-900 text-foreground
+              dark:bg-card dark:text-slate-900
               transition-colors
               group-hover:bg-slate-800 dark:group-hover:bg-slate-100
             "
@@ -499,36 +498,36 @@ export default function Home() {
       {/* 서비스 플로우 */}
       <section className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
-          <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 p-6 bp-sm:p-8 dark:from-slate-900 dark:to-slate-800">
+          <div className="rounded-2xl bg-card border border-border p-6 bp-sm:p-8">
             <div className="mb-6 bp-sm:mb-8 text-center">
-              <h2 className="text-xl bp-sm:text-2xl font-bold text-slate-900 dark:text-white">스트링 교체 프로세스</h2>
-              <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">처음 방문해도 쉽게 이해할 수 있어요</p>
+              <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">스트링 교체 프로세스</h2>
+              <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">처음 방문해도 쉽게 이해할 수 있어요</p>
             </div>
             <div className="mb-6 bp-sm:mb-8 grid gap-4 bp-sm:gap-6 grid-cols-2 bp-lg:grid-cols-4">
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 1</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">신청서 작성</h3>
-                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">라켓/스트링/옵션 선택</p>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
+                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-300">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 2</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">방문·택배</h3>
-                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">방문 예약 또는 택배 발송</p>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">방문·택배</h3>
+                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">방문 예약 또는 택배 발송</p>
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 3</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">작업 진행</h3>
-                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">장착/텐션 세팅 후 검수</p>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>
+                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">장착/텐션 세팅 후 검수</p>
               </div>
 
               <div className="flex flex-col items-center text-center">
@@ -536,14 +535,14 @@ export default function Home() {
                   <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-slate-500 dark:text-slate-400">STEP 4</div>
-                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-slate-900 dark:text-white">수령</h3>
-                <p className="text-[10px] bp-sm:text-xs text-slate-600 dark:text-slate-400">방문 수령 또는 배송</p>
+                <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">수령</h3>
+                <p className="text-[10px] bp-sm:text-xs text-muted-foreground">방문 수령 또는 배송</p>
               </div>
             </div>
             <div className="text-center">
               <Link
                 href="/services/apply"
-                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 bp-sm:px-6 py-2.5 bp-sm:py-3 text-xs bp-sm:text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 bp-sm:px-6 py-2.5 bp-sm:py-3 text-xs bp-sm:text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary/90"
               >
                 <Wrench className="h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4" />
                 지금 신청하기
@@ -557,8 +556,8 @@ export default function Home() {
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl font-bold text-slate-900 dark:text-white">스트링</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">프로가 선택하는 테니스 스트링</p>
+            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">스트링</h2>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">프로가 선택하는 테니스 스트링</p>
           </div>
           <div className="mb-6 bp-sm:mb-8">
             <div className="flex justify-center">
@@ -568,7 +567,7 @@ export default function Home() {
                   className={`
                   shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                   transition-all duration-300 whitespace-nowrap
-                  ${activeStringBrand === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                  ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
                 `}
                 >
                   전체
@@ -580,7 +579,7 @@ export default function Home() {
                     className={`
                     shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                     transition-all duration-300 whitespace-nowrap
-                    ${activeStringBrand === b.value ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                    ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
                   `}
                   >
                     {b.label}
@@ -613,8 +612,8 @@ export default function Home() {
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
-            <h2 className="text-2xl bp-sm:text-3xl font-bold text-slate-900 dark:text-white">중고 라켓</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-slate-600 dark:text-slate-400">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
+            <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">중고 라켓</h2>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
           </div>
           <div className="mb-6 bp-sm:mb-8">
             <div className="flex justify-center">
@@ -624,7 +623,7 @@ export default function Home() {
                   className={`
                   shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                   transition-all duration-300 whitespace-nowrap
-                  ${activeBrand === 'all' ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                  ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
                 `}
                 >
                   전체
@@ -636,7 +635,7 @@ export default function Home() {
                     className={`
                     shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                     transition-all duration-300 whitespace-nowrap
-                    ${activeBrand === b.value ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}
+                    ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
                   `}
                   >
                     {b.label}

@@ -24,8 +24,8 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 mb-4">
-          <CheckCircle className="h-8 w-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary 0 to-emerald-600 mb-4">
+          <CheckCircle className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">추가 요청</h2>
         <p className="text-muted-foreground">추가 요청사항을 입력해주세요</p>
@@ -33,7 +33,7 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
 
       {/* 안내 배너: 주문/회원 기반일 때 */}
       {(orderId || isMember) && (
-        <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+        <div className="bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
             <div className="text-sm">
@@ -49,14 +49,14 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
       )}
 
       {/* 패키지 관련 최종 안내 */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/30 p-5">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-card/70 dark:bg-slate-900/30 p-5">
         <div className="flex items-center gap-2">
           <Badge
             className={
               packageInsufficient
-                ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-red-200/80'
+                ? 'bg-accent text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-border/80'
                 : usingPackage
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 border border-emerald-200/80'
+                  ? 'bg-accent text-emerald-700 dark:bg-emerald-900/40 dark:text-muted-foreground border border-border/80'
                   : 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-100 border border-slate-200/80'
             }
           >
