@@ -59,7 +59,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  className="
  w-full pl-12 rounded-2xl
  border border-cyan-300 dark:border-cyan-700
- bg-card dark:bg-[#1a2230] shadow-md
+ bg-card shadow-md
  text-foreground 
  placeholder:text-muted-foreground dark:placeholder:text-muted-foreground
  focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400
@@ -73,7 +73,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  <div
  className="
  absolute z-50 mt-2 w-full
- bg-card dark:bg-[#222e3a]
+ bg-card
  border border-gray-100 dark:border-border
  shadow-lg rounded-2xl max-h-80 overflow-y-auto
  transition-all

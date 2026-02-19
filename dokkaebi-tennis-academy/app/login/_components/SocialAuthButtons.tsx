@@ -9,6 +9,7 @@ type Props = {
   isRegisterMode?: boolean;
 };
 
+// 브랜드 예외: 카카오/네이버/구글 로그인 버튼은 각 제휴사 브랜드 가이드에 따른 고유 색상(hex)을 유지합니다.
 export default function SocialAuthButtons({ onKakaoClick, onNaverClick, onGoogleClick, isRegisterMode = false }: Props) {
   return (
     <div className="space-y-3">

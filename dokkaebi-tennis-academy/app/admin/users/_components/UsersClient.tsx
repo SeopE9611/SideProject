@@ -770,6 +770,7 @@ export default function UsersClient() {
                             {/* 소셜 배지: 카카오/네이버 */}
                             {Array.isArray(u.socialProviders) && u.socialProviders.length > 0 && (
                               <div className="mt-1 flex items-center gap-1">
+                                {/* 브랜드 예외: 소셜 로그인 연동 상태 뱃지는 각 브랜드 식별 색상을 유지합니다. */}
                                 {u.socialProviders.includes('kakao') && <Badge className="bg-[#FEE500] text-[#191919] hover:bg-[#FDD835] border-0 text-[10px] h-5 px-2">카카오</Badge>}
                                 {u.socialProviders.includes('naver') && <Badge className="bg-[#03C75A] text-white hover:bg-[#02B350] border-0 text-[10px] h-5 px-2">네이버</Badge>}
                               </div>
