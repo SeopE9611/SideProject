@@ -9,7 +9,7 @@ export const badgeBaseOutlined = `${badgeBase} border`;
 
 const SEMANTIC_BADGE = {
   success: 'bg-primary/15 text-accent dark:text-primary border border-border',
-  info: 'bg-secondary text-secondary-foreground border border-border',
+  info: 'bg-secondary text-foreground border border-border',
   neutral: 'bg-muted text-muted-foreground border border-border',
   danger: 'bg-destructive/15 text-destructive border border-border',
   outline: 'bg-transparent text-foreground border border-border',

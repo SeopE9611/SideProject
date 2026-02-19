@@ -135,7 +135,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
               <span className="text-xs text-muted-foreground bp-sm:text-sm">{brandText}</span>
               <div className="flex items-center gap-1.5">
                 {racket.year ? (
-                  <Badge variant="secondary" className={cn('h-5 px-2 text-[10px] font-medium', 'bg-secondary/80 text-secondary-foreground', 'transition-colors duration-200')}>
+                  <Badge variant="secondary" className={cn('h-5 px-2 text-[10px] font-medium', 'bg-secondary/80 text-foreground', 'transition-colors duration-200')}>
                     {racket.year}
                   </Badge>
                 ) : null}
