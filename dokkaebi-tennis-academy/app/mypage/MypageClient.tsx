@@ -135,7 +135,7 @@ export default function MypageClient({ user }: Props) {
 
   return (
     <AuthGuard>
-      <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+      <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-background dark:via-slate-800 dark:to-blue-900/20">
         <div
           className="absolute inset-0 opacity-5 dark:opacity-10 bp-xs:hidden"
           style={{
@@ -146,15 +146,15 @@ export default function MypageClient({ user }: Props) {
         <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="absolute inset-0 bp-xs:hidden">
-            <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
-            <div className="absolute top-32 right-20 w-16 h-16 bg-white/5 rounded-full" />
-            <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-pulse" />
+            <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
+            <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full" />
+            <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
           </div>
 
           <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-lg:py-16">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center gap-4 mb-6 bp-sm:mb-8">
-                <div className="bg-white/20 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 shadow-lg">
+                <div className="bg-card/20 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 shadow-lg">
                   <User className="h-6 w-6 bp-sm:h-8 bp-sm:w-8" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -164,17 +164,17 @@ export default function MypageClient({ user }: Props) {
               </div>
 
               <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg">
+                <div className="bg-card/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg">
                   <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-blue-200" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{ordersCount}</div>
                   <div className="text-xs bp-sm:text-sm text-blue-200">총 주문</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg">
+                <div className="bg-card/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-indigo-200" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{applicationsCount}</div>
                   <div className="text-xs bp-sm:text-sm text-indigo-200">서비스 신청</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg col-span-2 bp-lg:col-span-1">
+                <div className="bg-card/10 backdrop-blur-sm rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center shadow-lg col-span-2 bp-lg:col-span-1">
                   <UserCheck className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-blue-300" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{user.role === 'admin' ? '관리자' : '일반 회원'}</div>
                   <div className="text-xs bp-sm:text-sm text-blue-300">회원 등급</div>
@@ -188,7 +188,7 @@ export default function MypageClient({ user }: Props) {
           <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
             <div className="hidden bp-lg:block bp-lg:col-span-1">
               <div className="sticky top-8">
-                <Card className="border-0 shadow-2xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
@@ -212,7 +212,7 @@ export default function MypageClient({ user }: Props) {
                               )}
                             </>
                           ) : (
-                            <span className="text-xs text-slate-500 dark:text-slate-400">일반 계정</span>
+                            <span className="text-xs text-muted-foreground">일반 계정</span>
                           )}
                         </div>
                       </div>
@@ -227,19 +227,19 @@ export default function MypageClient({ user }: Props) {
             {/* 메인 콘텐츠 */}
             <div className="bp-lg:col-span-3 min-w-0">
               <Tabs value={currentTab} onValueChange={handleTabChange}>
-                <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm mb-6 bp-sm:mb-8">
+                <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm mb-6 bp-sm:mb-8">
                   <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                    <TabsList className="h-auto w-full p-1 bg-slate-100 dark:bg-slate-700 grid grid-cols-4 gap-1 bp-md:grid-cols-9">
+                    <TabsList className="h-auto w-full p-1 bg-muted dark:bg-muted grid grid-cols-4 gap-1 bp-md:grid-cols-9">
                       <TabsTrigger
                         value="activity"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <Layers className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">전체</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="orders"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">주문 내역</span>
@@ -247,7 +247,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="applications"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <CalendarCheck className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">신청 내역</span>
@@ -255,7 +255,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="rentals"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <Briefcase className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">대여 내역</span>
@@ -263,7 +263,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="wishlist"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">위시리스트</span>
@@ -271,20 +271,20 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="reviews"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">리뷰 관리</span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0">
+                      <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0">
                         <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">Q&A 내역</span>
                       </TabsTrigger>
 
                       <TabsTrigger
                         value="passes"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">패키지</span>
@@ -292,7 +292,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="points"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
                       >
                         <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">적립 포인트</span>
@@ -303,10 +303,10 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 전체 활동 탭 */}
                 <TabsContent value="activity" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
-                        <div className="rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg bg-slate-100 dark:bg-slate-700">
+                        <div className="rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg bg-muted dark:bg-muted">
                           <Layers className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -326,7 +326,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 주문 내역 탭 */}
                 <TabsContent value="orders" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -346,7 +346,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 신청 내역 탭 */}
                 <TabsContent value="applications" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:via-emerald-950/20 dark:to-teal-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-green-100 to-teal-100 dark:from-emerald-900 dark:to-emerald-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -372,7 +372,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 대여 내역 탭 */}
                 <TabsContent value="rentals" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-indigo-100 to-blue-100 dark:from-indigo-900 dark:to-blue-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -400,7 +400,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 위시리스트 탭 */}
                 <TabsContent value="wishlist" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -422,7 +422,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 리뷰 관리 탭 */}
                 <TabsContent value="reviews" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900 dark:to-blue-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -444,7 +444,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* Q&A 내역 탭 */}
                 <TabsContent value="qna" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -466,7 +466,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 패키지 탭 */}
                 <TabsContent value="passes" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900 dark:to-purple-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">
@@ -488,7 +488,7 @@ export default function MypageClient({ user }: Props) {
 
                 {/* 적립 포인트 탭 */}
                 <TabsContent value="points" className="mt-0">
-                  <Card className="border-0 shadow-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm">
+                  <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className="bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900 dark:to-yellow-900 rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg">

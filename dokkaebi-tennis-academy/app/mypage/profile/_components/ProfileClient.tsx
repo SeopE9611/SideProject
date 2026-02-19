@@ -280,7 +280,7 @@ export default function ProfileClient({ user }: Props) {
  };
 
  return (
- <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900/20">
+ <div className="min-h-full bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-background dark:via-slate-800 dark:to-blue-900/20">
  <div
  className="absolute inset-0 opacity-5 dark:opacity-10"
  style={{
@@ -321,9 +321,9 @@ export default function ProfileClient({ user }: Props) {
  <div className="container mx-auto px-4 py-12">
  <div className="max-w-4xl mx-auto">
  <Tabs defaultValue="profile" className="space-y-8">
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardContent className="p-6">
- <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-slate-100 dark:bg-slate-700">
+ <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted dark:bg-muted">
  <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
  <User className="h-5 w-5" />
  <span className="text-xs font-medium">기본정보</span>
@@ -338,7 +338,7 @@ export default function ProfileClient({ user }: Props) {
  </TabsTrigger>
  <TabsTrigger
  value="tennis-profile"
- className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-200 data-[state=active]:bg-card data-[state=active]:text-accent data-[state=active]:shadow-md"
+ className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground dark:text-foreground data-[state=active]:bg-card data-[state=active]:text-accent data-[state=active]:shadow-md"
  >
  <MdSportsTennis className="h-5 w-5" />
  <span className="text-xs font-medium">테니스 프로필</span>
@@ -352,7 +352,7 @@ export default function ProfileClient({ user }: Props) {
  </Card>
 
  <TabsContent value="profile">
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b">
  <div className="flex items-center gap-3">
  <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl p-3 shadow-lg">
@@ -375,13 +375,13 @@ export default function ProfileClient({ user }: Props) {
  <Camera className="mr-2 h-4 w-4" />
  이미지 변경
  </Button>
- <p className="text-sm text-slate-500 dark:text-slate-400">JPG, PNG 파일만 업로드 가능합니다</p>
+ <p className="text-sm text-muted-foreground">JPG, PNG 파일만 업로드 가능합니다</p>
  </div>
  </div>
 
  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
  <div className="space-y-2">
- <Label htmlFor="name" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+ <Label htmlFor="name" className="flex items-center gap-2 text-foreground">
  <User className="h-4 w-4" />
  이름 *
  </Label>
@@ -389,11 +389,11 @@ export default function ProfileClient({ user }: Props) {
  id="name"
  value={profileData.name ?? ''}
  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="이름을 입력해주세요"
  />
  {/* 소셜 가입/연동 제공자 표시 (표시용) */}
- <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+ <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
  <span className="font-medium">가입/연동:</span>
  {socialProviders.length ? (
  <>
@@ -414,7 +414,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  <div className="space-y-2">
- <Label htmlFor="email" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+ <Label htmlFor="email" className="flex items-center gap-2 text-foreground">
  <Mail className="h-4 w-4" />
  이메일 *
  </Label>
@@ -423,12 +423,12 @@ export default function ProfileClient({ user }: Props) {
  type="email"
  value={profileData.email ?? ''}
  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="example@naver.com"
  />
  </div>
  <div className="space-y-2 md:col-span-2">
- <Label htmlFor="phone" className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+ <Label htmlFor="phone" className="flex items-center gap-2 text-foreground">
  <Phone className="h-4 w-4" />
  전화번호
  </Label>
@@ -436,7 +436,7 @@ export default function ProfileClient({ user }: Props) {
  id="phone"
  value={profileData.phone ?? ''}
  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="01012345678"
  />
  </div>
@@ -453,7 +453,7 @@ export default function ProfileClient({ user }: Props) {
  </TabsContent>
 
  <TabsContent value="password">
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-b">
  <div className="flex items-center gap-3">
  <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-2xl p-3 shadow-lg">
@@ -467,7 +467,7 @@ export default function ProfileClient({ user }: Props) {
  </CardHeader>
  <CardContent className="p-8 space-y-6">
  <div className="space-y-2">
- <Label htmlFor="currentPassword" className="text-slate-700 dark:text-slate-300">
+ <Label htmlFor="currentPassword" className="text-foreground">
  현재 비밀번호 *
  </Label>
  <Input
@@ -475,11 +475,11 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.currentPassword}
  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  />
  </div>
  <div className="space-y-2">
- <Label htmlFor="newPassword" className="text-slate-700 dark:text-slate-300">
+ <Label htmlFor="newPassword" className="text-foreground">
  새 비밀번호 *
  </Label>
  <Input
@@ -487,12 +487,12 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.newPassword}
  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  />
- <p className="text-sm text-slate-500 dark:text-slate-400">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
+ <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
  </div>
  <div className="space-y-2">
- <Label htmlFor="confirmPassword" className="text-slate-700 dark:text-slate-300">
+ <Label htmlFor="confirmPassword" className="text-foreground">
  새 비밀번호 확인 *
  </Label>
  <Input
@@ -500,7 +500,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.confirmPassword}
  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  />
  </div>
 
@@ -515,7 +515,7 @@ export default function ProfileClient({ user }: Props) {
  </TabsContent>
 
  <TabsContent value="address">
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-b">
  <div className="flex items-center gap-3">
  <div className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-2xl p-3 shadow-lg">
@@ -530,11 +530,11 @@ export default function ProfileClient({ user }: Props) {
  <CardContent className="p-8 space-y-6">
  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
  <div className="space-y-2">
- <Label htmlFor="zipCode" className="text-slate-700 dark:text-slate-300">
+ <Label htmlFor="zipCode" className="text-foreground">
  우편번호
  </Label>
  <div className="flex gap-2">
- <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="12345" />
+ <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground cursor-default" placeholder="12345" />
  <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-blue-200 dark:border-blue-700 text-accent dark:text-accent hover:bg-blue-50 dark:hover:bg-blue-900/20" variant="outline">
  검색
  </Button>
@@ -542,13 +542,13 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  <div className="space-y-2">
- <Label htmlFor="address1" className="text-slate-700 dark:text-slate-300">
+ <Label htmlFor="address1" className="text-foreground">
  주소
  </Label>
- <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
+ <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
  </div>
  <div className="space-y-2">
- <Label htmlFor="address2" className="text-slate-700 dark:text-slate-300">
+ <Label htmlFor="address2" className="text-foreground">
  상세주소
  </Label>
  <Input
@@ -560,7 +560,7 @@ export default function ProfileClient({ user }: Props) {
  address: { ...profileData.address, address2: e.target.value },
  })
  }
- className="h-12 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="동, 호수 등 상세주소"
  />
  </div>
@@ -581,7 +581,7 @@ export default function ProfileClient({ user }: Props) {
 
  <TabsContent value="preferences">
  <div className="space-y-8">
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-b">
  <div className="flex items-center gap-3">
  <div className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">
@@ -594,12 +594,12 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </CardHeader>
  <CardContent className="p-8 space-y-6">
- <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+ <div className="flex items-center justify-between p-4 bg-muted dark:bg-muted rounded-xl">
  <div>
- <Label htmlFor="email-marketing" className="font-medium text-slate-700 dark:text-slate-300">
+ <Label htmlFor="email-marketing" className="font-medium text-foreground">
  이메일 수신
  </Label>
- <p className="text-sm text-slate-500 dark:text-slate-400">할인 쿠폰, 신상품 소식을 이메일로 받아보세요.</p>
+ <p className="text-sm text-muted-foreground">할인 쿠폰, 신상품 소식을 이메일로 받아보세요.</p>
  </div>
  <Switch
  id="email-marketing"
@@ -613,12 +613,12 @@ export default function ProfileClient({ user }: Props) {
  />
  </div>
  <Separator />
- <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+ <div className="flex items-center justify-between p-4 bg-muted dark:bg-muted rounded-xl">
  <div>
- <Label htmlFor="sms-marketing" className="font-medium text-slate-700 dark:text-slate-300">
+ <Label htmlFor="sms-marketing" className="font-medium text-foreground">
  SMS 수신
  </Label>
- <p className="text-sm text-slate-500 dark:text-slate-400">주문 상태, 배송 정보를 SMS로 받아보세요.</p>
+ <p className="text-sm text-muted-foreground">주문 상태, 배송 정보를 SMS로 받아보세요.</p>
  </div>
  <Switch
  id="sms-marketing"
@@ -632,12 +632,12 @@ export default function ProfileClient({ user }: Props) {
  />
  </div>
  <Separator />
- <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700 rounded-xl">
+ <div className="flex items-center justify-between p-4 bg-muted dark:bg-muted rounded-xl">
  <div>
- <Label htmlFor="push-marketing" className="font-medium text-slate-700 dark:text-slate-300">
+ <Label htmlFor="push-marketing" className="font-medium text-foreground">
  앱 푸시 알림
  </Label>
- <p className="text-sm text-slate-500 dark:text-slate-400">앱을 통해 실시간 알림을 받아보세요.</p>
+ <p className="text-sm text-muted-foreground">앱을 통해 실시간 알림을 받아보세요.</p>
  </div>
  <Switch
  id="push-marketing"
@@ -660,7 +660,7 @@ export default function ProfileClient({ user }: Props) {
  </CardContent>
  </Card>
 
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-slate-800/95 backdrop-blur-sm border-red-200 dark:border-red-800">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border-red-200 dark:border-red-800">
  <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 border-b border-red-200 dark:border-red-800">
  <div className="flex items-center gap-3">
  <div className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900 dark:to-pink-900 rounded-2xl p-3 shadow-lg">

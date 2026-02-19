@@ -73,13 +73,13 @@ export default function QnAList() {
   // 빈 상태
   if (!isValidating && qnas.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900 dark:to-teal-900">
             <MessageCircleQuestion className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">문의 내역이 없습니다</h3>
-          <p className="mb-6 text-slate-600 dark:text-slate-400">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
+          <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
+          <p className="mb-6 text-muted-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
           <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
             <Link href="/board/qna/write" className="inline-flex items-center gap-2">
               문의하기
@@ -95,9 +95,9 @@ export default function QnAList() {
   return (
     <div className="space-y-6">
       {qnas.map((qna) => (
-        <Card key={qna.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+        <Card key={qna.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
-            <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
+            <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
           <CardContent className="relative p-6">
@@ -110,7 +110,7 @@ export default function QnAList() {
                   <Badge variant="outline" className="mb-2 border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-300">
                     {qna.category}
                   </Badge>
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-100 line-clamp-2">{qna.title}</h3>
+                  <h3 className="font-semibold text-foreground line-clamp-2">{qna.title}</h3>
                 </div>
               </div>
 
@@ -122,13 +122,13 @@ export default function QnAList() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between pt-4 border-t border-border/60 dark:border-border/60">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <span>{qna.date}</span>
               </div>
 
-              <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 transition-colors bg-transparent">
+              <Button size="sm" variant="outline" asChild className="border-border hover:border-emerald-300 hover:bg-emerald-50 dark:border-border dark:hover:border-emerald-600 dark:hover:bg-emerald-950 transition-colors bg-transparent">
                 <Link href={`/board/qna/${qna.id}`} className="inline-flex items-center gap-1">
                   상세보기
                   <ArrowRight className="h-3 w-3" />
@@ -146,7 +146,7 @@ export default function QnAList() {
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : qnas.length ? (
-          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
     </div>

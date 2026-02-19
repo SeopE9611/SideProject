@@ -284,13 +284,13 @@ export default function ApplicationsClient() {
   return (
     <div className="space-y-6">
       {applications.length === 0 ? (
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
           <CardContent className="p-12 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900">
               <FileText className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">신청 내역이 없습니다</h3>
-            <p className="mb-6 text-slate-600 dark:text-slate-400">아직 신청하신 서비스가 없습니다.</p>
+            <h3 className="mb-2 text-xl font-semibold text-foreground">신청 내역이 없습니다</h3>
+            <p className="mb-6 text-muted-foreground">아직 신청하신 서비스가 없습니다.</p>
           </CardContent>
         </Card>
       ) : (
@@ -338,9 +338,9 @@ export default function ApplicationsClient() {
           // 취소 요청 가능 여부
           const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
           return (
-            <Card key={app.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <Card key={app.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
-                <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
+                <div className="h-full w-full bg-card rounded-lg" />
               </div>
 
               <CardContent className="relative p-6">
@@ -358,8 +358,8 @@ export default function ApplicationsClient() {
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100">{app.type}</h3>
-                      <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                      <h3 className="font-semibold text-foreground">{app.type}</h3>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {formatDateTime(app.appliedAt)}
                       </div>
@@ -370,13 +370,13 @@ export default function ApplicationsClient() {
                           <Link href={`/mypage?tab=orders&orderId=${orderId}`}>
                             <Badge
                               variant="outline"
-                              className="border-slate-200 bg-slate-50/80 text-[11px] font-medium text-slate-700
-          dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                              className="border-border bg-muted/80 text-[11px] font-medium text-foreground
+          dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-slate-800"
                             >
                               원 주문 상세 보기
                             </Badge>
                           </Link>
-                          <span className="text-[11px] text-slate-400 dark:text-slate-500">주문 ID 끝자리 {orderId.slice(-6)}</span>
+                          <span className="text-[11px] text-slate-400 dark:text-muted-foreground">주문 ID 끝자리 {orderId.slice(-6)}</span>
                         </div>
                       )}
 
@@ -384,7 +384,7 @@ export default function ApplicationsClient() {
                       {hasRentalLink && rentalId && (
                         <div className="mt-1 flex items-center gap-2">
                           <Link href={`/mypage?tab=rentals&rentalId=${rentalId}`}>
-                            <Badge variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50">
+                            <Badge variant="outline" className="border-border text-foreground hover:bg-muted">
                               원 대여 상세 보기
                             </Badge>
                           </Link>
@@ -392,7 +392,7 @@ export default function ApplicationsClient() {
                         </div>
                       )}
 
-                      {collectionLabel && <div className="mt-1 inline-flex items-center rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{collectionLabel}</div>}
+                      {collectionLabel && <div className="mt-1 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground dark:bg-card dark:text-muted-foreground">{collectionLabel}</div>}
                     </div>
                   </div>
 
@@ -422,21 +422,21 @@ export default function ApplicationsClient() {
                     <>
                       {/* 방문 수령(매장 방문)일 때만 희망일시 카드 표시 */}
                       {isVisit && app.preferredDate && app.preferredTime && (
-                        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                          <Clock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">매장 방문 희망일시</div>
-                            <div className="font-medium text-slate-900 dark:text-slate-100">{visitTimeLabel}</div>
+                            <div className="text-xs text-muted-foreground uppercase tracking-wide">매장 방문 희망일시</div>
+                            <div className="font-medium text-foreground">{visitTimeLabel}</div>
                           </div>
                         </div>
                       )}
 
                       {/* 라켓 & 스트링 정보 (핵심 정보만 표시) */}
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                        <MdSportsTennis className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                        <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">라켓 & 스트링</div>
-                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">라켓 & 스트링</div>
+                          <div className="font-medium text-foreground">
                             {app.racketType ?? '-'} / {app.stringType ?? '-'}
                           </div>
                         </div>
@@ -444,27 +444,27 @@ export default function ApplicationsClient() {
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                        <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                        <User className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">이름</div>
-                          <div className="font-medium text-slate-900 dark:text-slate-100">{app.applicantName}</div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">이름</div>
+                          <div className="font-medium text-foreground">{app.applicantName}</div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                        <Phone className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">연락처</div>
-                          <div className="font-medium text-slate-900 dark:text-slate-100">{app.phone}</div>
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">연락처</div>
+                          <div className="font-medium text-foreground">{app.phone}</div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-                        <GraduationCap className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">코스 & 일정</div>
-                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                          <div className="text-xs text-muted-foreground uppercase tracking-wide">코스 & 일정</div>
+                          <div className="font-medium text-foreground">
                             {app.course ?? '-'} / {app.schedule ?? '-'}
                           </div>
                         </div>
@@ -473,9 +473,9 @@ export default function ApplicationsClient() {
                   )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border/60 dark:border-border/60">
                   {/* 간단한 신청 정보 요약 */}
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <FileText className="h-4 w-4" />
                     <span>{app.type}</span>
                   </div>
@@ -486,7 +486,7 @@ export default function ApplicationsClient() {
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/mypage?tab=applications&applicationId=${app.id}`)}
-                      className="border-slate-200 hover:border-green-500 hover:bg-green-50 dark:border-slate-700 dark:hover:border-green-600 dark:hover:bg-green-950 transition-colors"
+                      className="border-border hover:border-green-500 hover:bg-green-50 dark:border-border dark:hover:border-green-600 dark:hover:bg-green-950 transition-colors"
                     >
                       상세보기
                       <ArrowRight className="ml-1 h-3 w-3" />
@@ -524,7 +524,7 @@ export default function ApplicationsClient() {
                                     size="sm"
                                     disabled={!canConfirm}
                                     onClick={() => handleConfirmService(app.id)}
-                                    className="border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 dark:border-slate-700 dark:hover:bg-emerald-950 transition-colors"
+                                    className="border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50 dark:border-border dark:hover:bg-emerald-950 transition-colors"
                                   >
                                     <CheckCircle className="mr-1 h-4 w-4" />
                                     {label}
@@ -580,7 +580,7 @@ export default function ApplicationsClient() {
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : applications.length ? (
-          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
 

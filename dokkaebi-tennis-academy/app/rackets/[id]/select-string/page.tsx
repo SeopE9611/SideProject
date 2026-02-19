@@ -72,7 +72,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     return (
       <SiteContainer variant="wide" className="py-10 space-y-2">
         <h1 className="text-lg font-semibold">현재 구매할 수 없는 라켓입니다.</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">{reasonLabel}</p>
+        <p className="text-sm text-muted-foreground">{reasonLabel}</p>
         <a className="text-sm underline" href={`/rackets/${id}`}>
           상세로 돌아가기
         </a>

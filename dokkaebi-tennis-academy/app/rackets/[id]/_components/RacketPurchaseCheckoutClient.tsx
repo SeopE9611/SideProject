@@ -210,7 +210,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
     <div className="mx-auto max-w-2xl space-y-6 p-4">
       <div className="rounded-lg border p-4">
         <div className="text-lg font-semibold">라켓 구매</div>
-        <div className="mt-2 text-sm text-slate-600">
+        <div className="mt-2 text-sm text-muted-foreground">
           {racket.brand} {racket.model}
         </div>
         <div className="mt-1 text-sm">가격: {racket.price.toLocaleString()}원</div>

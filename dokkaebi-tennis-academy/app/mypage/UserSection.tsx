@@ -26,10 +26,10 @@ export default function UserSection({ user }: Props) {
           <User className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div>
-          <p className="text-xl font-bold text-slate-800 dark:text-slate-100">{user?.name ?? '이름 없음'}님, 반갑습니다!</p>
+          <p className="text-xl font-bold text-foreground dark:text-foreground">{user?.name ?? '이름 없음'}님, 반갑습니다!</p>
           <div className="flex items-center gap-2 mt-2">
-            <Mail className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-            <p className="text-sm text-slate-600 dark:text-slate-400">{user?.email ?? '이메일 없음'}</p>
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{user?.email ?? '이메일 없음'}</p>
           </div>
         </div>
       </div>

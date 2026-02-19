@@ -101,7 +101,7 @@
 
 //             <div className="grid gap-6 md:grid-cols-3">
 //               {/* 주문 상태 및 요약 */}
-//               <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md ">
+//               <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md ">
 //                 <CardHeader className="pb-3">
 //                   <div className="flex items-center justify-between">
 //                     <CardTitle>주문 상태</CardTitle>
@@ -116,7 +116,7 @@
 //               </Card>
 //               {/* 고객 정보 */}
 //               {orderDetail.customer ? (
-//                 <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+//                 <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
 //                   <CardHeader className="pb-3">
 //                     <CardTitle className="flex items-center">
 //                       <User className="mr-2 h-5 w-5" />내 정보
@@ -156,7 +156,7 @@
 //                 <div className="text-center text-sm text-destructive italic">고객 정보가 없습니다.</div>
 //               )}
 //               {/* 배송 정보 */}
-//               <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+//               <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
 //                 <CardHeader className="pb-3">
 //                   <CardTitle className="flex items-center">
 //                     <Truck className="mr-2 h-5 w-5" />
@@ -192,7 +192,7 @@
 //                 </CardContent>
 //               </Card>
 //               {/* 결제 정보 */}
-//               <Card className="rounded-xl border-gray-200 bg-white shadow-md px-2 py-3">
+//               <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
 //                 <CardHeader className="pb-3">
 //                   <CardTitle className="flex items-center">
 //                     <CreditCard className="mr-2 h-5 w-5" />
@@ -219,7 +219,7 @@
 //                 </CardContent>
 //               </Card>
 //               {/* 주문 항목 */}
-//               <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
+//               <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
 //                 <CardHeader className="pb-3">
 //                   <CardTitle className="flex items-center">
 //                     <ShoppingCart className="mr-2 h-5 w-5" />
@@ -227,9 +227,9 @@
 //                   </CardTitle>
 //                 </CardHeader>
 //                 <CardContent>
-//                   <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+//                   <div className="rounded-xl border border-border shadow-sm overflow-hidden">
 //                     <table className="w-full text-sm">
-//                       <thead className="bg-gray-100 text-gray-700">
+//                       <thead className="bg-muted text-foreground">
 //                         <tr>
 //                           <th className="px-4 py-3 text-left font-medium">상품/서비스</th>
 //                           <th className="px-4 py-3 text-center font-medium">수량</th>
@@ -260,7 +260,7 @@
 //                 </CardContent>
 //               </Card>
 //               {/*  요청사항 */}
-//               <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
+//               <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
 //                 <CardHeader className="pb-3">
 //                   <CardTitle>배송 요청사항</CardTitle>
 //                   <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>

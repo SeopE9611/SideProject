@@ -17,7 +17,7 @@ const RadioGroupItem = React.forwardRef<React.ElementRef<typeof RadioGroupPrimit
       'text-foreground',
       'data-[state=checked]:border-accent data-[state=checked]:bg-accent',
       '',
-      'ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400',
+      'ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       'disabled:cursor-not-allowed disabled:opacity-50',
       className
     )}

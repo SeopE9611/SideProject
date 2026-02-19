@@ -414,13 +414,13 @@ export default function QnaWritePage() {
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">문의하기</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">궁금한 점을 자세히 작성해주세요</p>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">문의하기</h1>
+                <p className="text-lg text-muted-foreground dark:text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
               </div>
             </div>
           </div>
 
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+          <Card className="border-0 bg-card/80 dark:bg-card/80 shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50 border-b">
               <CardTitle className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-teal-600" />
@@ -439,7 +439,7 @@ export default function QnaWritePage() {
                     clearErrors(['category', 'product']);
                   }}
                 >
-                  <SelectTrigger id="category" className={`h-12 bg-white dark:bg-gray-700 ${fieldErrors.category ? 'border-red-400 focus:ring-red-400' : ''}`}>
+                  <SelectTrigger id="category" className={`h-12 bg-card dark:bg-muted ${fieldErrors.category ? 'border-red-400 focus:ring-red-400' : ''}`}>
                     <SelectValue placeholder="문의 카테고리를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -456,7 +456,7 @@ export default function QnaWritePage() {
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (
-                  <div className="mt-2 text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                  <div className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
                     <Badge variant="secondary">프리필</Badge>
                     <span>
                       선택된 상품: <strong>{preProductName || preProductId}</strong>
@@ -470,7 +470,7 @@ export default function QnaWritePage() {
 
               {category === 'product' && !preProductId && (
                 <div ref={productWrapRef} className="space-y-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                  <div className="text-sm text-muted-foreground dark:text-muted-foreground">
                     <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
                   </div>
                   {fieldErrors.product && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.product}</p>}
@@ -478,12 +478,12 @@ export default function QnaWritePage() {
                   {/* 탭처럼 보이는 간단한 토글 */}
                   <div className="grid md:grid-cols-2 gap-4">
                     {/* 내 구매상품 */}
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="rounded-lg border border-border p-4">
                       <div className="font-semibold mb-3">내 구매상품</div>
-                      {!me && <div className="mb-2 text-xs text-gray-500 dark:text-gray-400">로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.</div>}
+                      {!me && <div className="mb-2 text-xs text-muted-foreground">로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.</div>}
                       {me && ordersError && <div className="mb-2 text-sm text-red-600 dark:text-red-400">구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.</div>}
                       <div className="space-y-2 max-h-60 overflow-auto">
-                        {me && myProducts.length === 0 && <div className="text-sm text-gray-500">구매 이력이 없습니다.</div>}
+                        {me && myProducts.length === 0 && <div className="text-sm text-muted-foreground">구매 이력이 없습니다.</div>}
                         {myProducts.map((p) => (
                           <button
                             key={p.id}
@@ -492,25 +492,25 @@ export default function QnaWritePage() {
                               setProduct(p);
                               clearErrors('product');
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
                           >
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-gray-500">{p.id}</div>
+                            <div className="text-xs text-muted-foreground">{p.id}</div>
                           </button>
                         ))}
                       </div>
                     </div>
 
                     {/* 전체 상품 검색 */}
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="rounded-lg border border-border p-4">
                       <div className="font-semibold mb-3">전체 상품 검색</div>
                       <div className="relative mb-3">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명으로 검색" className="pl-9 bg-white dark:bg-gray-700" />
+                        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명으로 검색" className="pl-9 bg-card dark:bg-muted" />
                       </div>
                       <div className="space-y-2 max-h-60 overflow-auto">
-                        {!q.trim() && <div className="text-sm text-gray-500">검색어를 입력하세요.</div>}
-                        {q.trim() && searchProducts.length === 0 && <div className="text-sm text-gray-500">검색 결과가 없습니다.</div>}
+                        {!q.trim() && <div className="text-sm text-muted-foreground">검색어를 입력하세요.</div>}
+                        {q.trim() && searchProducts.length === 0 && <div className="text-sm text-muted-foreground">검색 결과가 없습니다.</div>}
                         {searchProducts.map((p) => (
                           <button
                             key={p.id}
@@ -519,10 +519,10 @@ export default function QnaWritePage() {
                               setProduct(p);
                               clearErrors('product');
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
                           >
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-gray-500">{p.id}</div>
+                            <div className="text-xs text-muted-foreground">{p.id}</div>
                           </button>
                         ))}
                       </div>
@@ -557,7 +557,7 @@ export default function QnaWritePage() {
                     clearErrors('title');
                   }}
                   placeholder="문의 제목을 작성해주세요(4자이상)"
-                  className="h-12 bg-white dark:bg-gray-700 text-base"
+                  className="h-12 bg-card dark:bg-muted text-base"
                 />
                 {fieldErrors.title && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.title}</p>}
               </div>
@@ -575,10 +575,10 @@ export default function QnaWritePage() {
                     clearErrors('content');
                   }}
                   placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
-                  className="min-h-[200px] bg-white dark:bg-gray-700 text-base resize-none"
+                  className="min-h-[200px] bg-card dark:bg-muted text-base resize-none"
                 />
                 {fieldErrors.content && <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.content}</p>}
-                <p className="text-sm text-gray-500 dark:text-gray-400">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
+                <p className="text-sm text-muted-foreground">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
               </div>
 
               <div ref={imagesWrapRef} className="space-y-3">
@@ -597,7 +597,7 @@ export default function QnaWritePage() {
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ' ? fileInputRef.current?.click() : null)}
                   >
                     <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">클릭하여 이미지를 선택하거나 드래그하여 업로드하세요</p>
+                    <p className="text-sm text-muted-foreground mb-2">클릭하여 이미지를 선택하거나 드래그하여 업로드하세요</p>
                     <Input ref={fileInputRef} id="image" type="file" multiple accept="image/*" onChange={handleFileChange} className="sr-only" />
                     <Button
                       type="button"
@@ -617,30 +617,30 @@ export default function QnaWritePage() {
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">첨부된 파일 ({selectedFiles.length}/3)</p>
+                      <p className="text-sm font-medium text-foreground">첨부된 파일 ({selectedFiles.length}/3)</p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {selectedFiles.map((file, index) => {
                           const isImage = file.type?.startsWith('image/');
                           const previewUrl = isImage ? previews[index] : null;
                           return (
-                            <div key={index} className="group relative rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition">
+                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card dark:bg-muted shadow-sm ring-1 ring-border/60 hover:ring-2 hover:ring-blue-400 transition">
                               {/* 콘텐츠 */}
                               {isImage ? (
                                 previewUrl ? (
                                   <img src={previewUrl || '/placeholder.svg'} alt={file.name} className="w-full h-28 object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} role="button" />
                                 ) : (
-                                  <div className="h-28 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                                  <div className="h-28 rounded bg-muted dark:bg-card animate-pulse" />
                                 )
                               ) : (
-                                <div className="h-28 flex items-center justify-center text-xs text-gray-500 px-2 text-center">{file.name}</div>
+                                <div className="h-28 flex items-center justify-center text-xs text-muted-foreground px-2 text-center">{file.name}</div>
                               )}
 
                               {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-white/85 dark:bg-gray-800/85">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card/85 dark:bg-card/85">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
 
                               {/* 삭제 버튼 */}
-                              <button type="button" className="absolute top-1.5 right-1.5 rounded-full bg-white/95 dark:bg-gray-800/95 shadow p-1 opacity-90 hover:opacity-100" onClick={() => removeFile(index)} aria-label="첨부 제거">
+                              <button type="button" className="absolute top-1.5 right-1.5 rounded-full bg-card/95 dark:bg-card/95 shadow p-1 opacity-90 hover:opacity-100" onClick={() => removeFile(index)} aria-label="첨부 제거">
                                 <X className="h-4 w-4" />
                               </button>
 
@@ -666,25 +666,25 @@ export default function QnaWritePage() {
                     </div>
                   )}
                   {/* 제한 안내 뱃지 */}
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground">
                     • 최대 3개 / 파일당 최대 5MB
                     <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div className="flex items-start space-x-3 p-4 bg-muted dark:bg-muted/50 rounded-lg">
                 <Checkbox id="private" checked={isPrivate} onCheckedChange={(checked) => setIsPrivate(checked as boolean)} className="mt-1" />
                 <div className="space-y-1">
                   <label htmlFor="private" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                     비공개 문의로 작성
                   </label>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">비공개로 설정하면 작성자와 관리자만 내용을 볼 수 있습니다.</p>
+                  <p className="text-xs text-muted-foreground">비공개로 설정하면 작성자와 관리자만 내용을 볼 수 있습니다.</p>
                 </div>
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between p-8 border-t bg-gray-50/50 dark:bg-gray-700/20">
+            <CardFooter className="flex justify-between p-8 border-t bg-muted/50 dark:bg-muted/20">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/qna" onClick={guardLinkLeave}>
                   취소
@@ -711,7 +711,7 @@ export default function QnaWritePage() {
                       <button
                         type="button"
                         onClick={prevViewer}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-card/20 dark:bg-card/30 hover:bg-card/30 dark:hover:bg-card/40"
                         aria-label="이전"
                       >
                         <ChevronLeft className="h-5 w-5" />
@@ -719,7 +719,7 @@ export default function QnaWritePage() {
                       <button
                         type="button"
                         onClick={nextViewer}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-card/20 dark:bg-card/30 hover:bg-card/30 dark:hover:bg-card/40"
                         aria-label="다음"
                       >
                         <ChevronRight className="h-5 w-5" />
@@ -728,7 +728,7 @@ export default function QnaWritePage() {
                   )}
 
                   {/* 닫기 */}
-                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40" aria-label="닫기">
+                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card/20 dark:bg-card/30 hover:bg-card/30 dark:hover:bg-card/40" aria-label="닫기">
                     <X className="h-5 w-5" />
                   </button>
                 </div>

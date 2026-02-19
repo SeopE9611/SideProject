@@ -12,8 +12,8 @@ function getIconProps(status: string) {
     case '대기중':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-gray-300 bg-gray-100',
-        iconClasses: 'text-gray-600',
+        wrapperClasses: 'border-gray-300 bg-muted',
+        iconClasses: 'text-muted-foreground',
       };
     case '결제완료':
       return {
@@ -135,7 +135,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   };
 
   return (
-    <Card className="md:col-span-3 rounded-xl border-gray-200 bg-white shadow-md">
+    <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
       <CardHeader className="pb-3">
         <CardTitle>처리 이력</CardTitle>
         <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
@@ -145,7 +145,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
         {pages === undefined ? (
           Array.from({ length: LIMIT }).map((_, i) => (
             <div key={i} className="flex animate-pulse space-x-4 py-3">
-              <div className="h-10 w-10 rounded-full bg-gray-200" />
+              <div className="h-10 w-10 rounded-full bg-muted/80" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-4 w-1/3" />
                 <Skeleton className="h-4 w-full" />

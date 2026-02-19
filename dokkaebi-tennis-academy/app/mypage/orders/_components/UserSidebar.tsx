@@ -17,7 +17,7 @@ export function UserSidebar() {
       value: 'activity',
       icon: Layers,
       gradient: 'from-slate-600 to-slate-700',
-      bgGradient: 'from-slate-50 to-slate-100 dark:from-slate-900/30 dark:to-slate-800/20',
+      bgGradient: 'from-background to-muted dark:from-background/30 dark:to-muted/20',
     },
     {
       label: '주문 내역',
@@ -79,8 +79,8 @@ export function UserSidebar() {
       label: '회원 정보 수정',
       value: 'profile',
       icon: UserCog,
-      gradient: 'from-slate-500 to-gray-500',
-      bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20',
+      gradient: 'from-background0 to-gray-500',
+      bgGradient: 'from-background to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20',
     },
   ];
 
@@ -97,7 +97,7 @@ export function UserSidebar() {
             variant="ghost"
             className={cn(
               'w-full justify-start gap-3 h-12 px-4 transition-all duration-300 group relative overflow-hidden rounded-xl',
-              isActive ? `bg-gradient-to-r ${bgGradient} border border-transparent shadow-md ring-1 ring-slate-900/6 dark:ring-white/10` : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
+              isActive ? `bg-gradient-to-r ${bgGradient} border border-transparent shadow-md ring-1 ring-slate-900/6 dark:ring-white/10` : 'hover:bg-muted dark:hover:bg-slate-700/50'
             )}
             asChild
           >
@@ -105,14 +105,14 @@ export function UserSidebar() {
               <div
                 className={cn(
                   'flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 shadow-sm',
-                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 group-hover:bg-slate-200 dark:group-hover:bg-slate-600'
+                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted dark:bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-slate-600'
                 )}
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={cn('font-medium transition-colors duration-300', isActive ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100')}>{label}</span>
+              <span className={cn('font-medium transition-colors duration-300', isActive ? 'text-foreground' : 'text-foreground group-hover:text-foreground dark:group-hover:text-slate-100')}>{label}</span>
               <ChevronRight
-                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-slate-600 dark:text-slate-400 transform translate-x-1' : 'text-slate-400 dark:text-slate-600 group-hover:text-slate-600 dark:group-hover:text-slate-400')}
+                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-muted-foreground transform translate-x-1' : 'text-slate-400 dark:text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-slate-400')}
               />
             </Link>
           </Button>

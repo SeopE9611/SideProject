@@ -58,14 +58,14 @@ export default function PassList() {
   return (
     <Card className="border-0">
       <CardContent className="space-y-4">
-        {items.length === 0 && <div className="text-slate-500 dark:text-slate-400">보유 중인 패키지 이용권이 없습니다.</div>}
+        {items.length === 0 && <div className="text-muted-foreground">보유 중인 패키지 이용권이 없습니다.</div>}
         {items.map((p) => {
           const remainPct = Math.max(0, Math.min(100, (p.remainingCount / p.packageSize) * 100));
           const dday = now ? Math.ceil((new Date(p.expiresAt).getTime() - now) / 86400000) : null;
           const statusBadge = p.status === 'active' ? p.isExpiringSoon ? <Badge variant="destructive">만료 임박</Badge> : <Badge>활성</Badge> : p.status === 'expired' ? <Badge variant="outline">만료</Badge> : <Badge variant="secondary">정지</Badge>;
 
           return (
-            <div key={p.id} className="bg-white dark:bg-slate-900 p-3 shadow-sm ring-1 ring-slate-200/70 dark:ring-slate-700/70">
+            <div key={p.id} className="bg-card p-3 shadow-sm ring-1 ring-border/70 dark:ring-border/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
@@ -75,14 +75,14 @@ export default function PassList() {
                     <div className="font-semibold">
                       {p.planTitle ?? '교체 서비스 패키지'} {p.packageSize}회권
                     </div>
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                    <div className="text-sm text-muted-foreground">
                       구매일 {new Date(p.purchasedAt).toLocaleDateString()} · 만료일 {new Date(p.expiresAt).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {statusBadge}
-                  <div className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground dark:text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     {dday === null ? '계산중' : dday >= 0 ? `D-${dday}` : `만료됨`}
                   </div>
@@ -91,17 +91,17 @@ export default function PassList() {
 
               {/* Progress */}
               <div className="mt-4">
-                <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-muted/80 dark:bg-muted overflow-hidden">
                   <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${remainPct}%` }} />
                 </div>
-                <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                <div className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
                   사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}
                 </div>
               </div>
 
               {/* 최근 사용 이력 */}
               {p.recentUsages?.length > 0 && (
-                <div className="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                <div className="mt-3 text-sm text-muted-foreground dark:text-muted-foreground">
                   최근 사용{' '}
                   {p.recentUsages.slice(-3).map((u, idx) => (
                     <span key={idx} className="mr-2">

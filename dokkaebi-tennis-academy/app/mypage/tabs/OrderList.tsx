@@ -217,8 +217,8 @@ export default function OrderList() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
             <ShoppingBag className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">주문 내역이 없습니다</h3>
-          <p className="text-slate-600 dark:text-slate-400">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
+          <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
+          <p className="text-muted-foreground">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
         </CardContent>
       </Card>
     );
@@ -250,9 +250,9 @@ export default function OrderList() {
         const showMobileStringApply = Boolean(order.shippingInfo?.withStringService) && !order.isStringServiceApplied && !hasLinkedApplication;
 
         return (
-          <Card key={order.id} className="group relative overflow-hidden border-0 bg-white dark:bg-slate-900 shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
+          <Card key={order.id} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
-              <div className="h-full w-full bg-white dark:bg-slate-900 rounded-lg" />
+              <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
             <CardContent className="relative p-4 bp-sm:p-6">
@@ -264,14 +264,14 @@ export default function OrderList() {
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">{isStringOrder ? '스트링 주문 + 교체 서비스 포함' : `스트링 주문`}</h3>
+                      <h3 className="font-semibold text-foreground truncate">{isStringOrder ? '스트링 주문 + 교체 서비스 포함' : `스트링 주문`}</h3>
 
                       {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                       {order.stringingApplicationId ? (
                         <span className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">신청서 연결됨</span>
                       ) : null}
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
                     </div>
@@ -294,11 +294,11 @@ export default function OrderList() {
 
               {/* Customer Info */}
               {order.userSnapshot?.name && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 mb-4">
-                  <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted mb-4">
+                  <User className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">주문자</div>
-                    <div className="font-medium text-slate-900 dark:text-slate-100">{order.userSnapshot.name}</div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide">주문자</div>
+                    <div className="font-medium text-foreground">{order.userSnapshot.name}</div>
                   </div>
                 </div>
               )}
@@ -306,19 +306,19 @@ export default function OrderList() {
               {/* Order Items */}
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <Package className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">주문 상품</span>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">주문 상품</span>
                 </div>
                 <div className="space-y-2">
                   {order.items.map((item, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted">
                       {/* 상품 썸네일 */}
-                      {item.imageUrl ? <img src={item.imageUrl || '/placeholder.svg'} alt={item.name} className="h-10 w-10 shrink-0 rounded object-cover" /> : <div className="h-10 w-10 shrink-0 rounded bg-slate-200 dark:bg-slate-700" />}
+                      {item.imageUrl ? <img src={item.imageUrl || '/placeholder.svg'} alt={item.name} className="h-10 w-10 shrink-0 rounded object-cover" /> : <div className="h-10 w-10 shrink-0 rounded bg-muted/80 dark:bg-muted" />}
 
                       {/* 상품명 + 가격/수량 (모바일에서 자연스럽게 줄바꿈) */}
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-slate-900 dark:text-slate-100 break-words">{item.name}</div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+                        <div className="text-sm font-medium text-foreground break-words">{item.name}</div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                           <span>{(item.price ?? 0).toLocaleString()}원</span>
                           <span className="text-slate-400">×</span>
                           <span>{item.quantity}개</span>
@@ -330,14 +330,14 @@ export default function OrderList() {
               </div>
 
               {/* Footer */}
-              <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4 pt-4 border-t border-border/60 dark:border-border/60">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-                  <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{typeof order.totalPrice === 'number' ? `${order.totalPrice.toLocaleString()}원` : '총 결제 금액 정보 없음'}</span>
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-lg font-bold text-foreground">{typeof order.totalPrice === 'number' ? `${order.totalPrice.toLocaleString()}원` : '총 결제 금액 정보 없음'}</span>
                 </div>
 
                 <div className="hidden bp-sm:flex items-center gap-3">
-                  <Button size="sm" variant="outline" asChild className="border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="border-border hover:border-emerald-300 hover:bg-emerald-50 dark:border-border dark:hover:border-emerald-600 dark:hover:bg-emerald-950 bg-transparent">
                     <Link href={detailHref} className="inline-flex items-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
@@ -427,7 +427,7 @@ export default function OrderList() {
 
                 {/* Mobile(<bp-sm): 핵심 1~2개만 노출 + 나머지는 더보기 */}
                 <div className="grid bp-sm:hidden grid-cols-12 items-center gap-2">
-                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 bg-transparent`}>
+                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-border hover:border-emerald-300 hover:bg-emerald-50 bg-transparent`}>
                     <Link href={detailHref} className="inline-flex w-full items-center justify-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
@@ -450,7 +450,7 @@ export default function OrderList() {
                   ) : null}
                   <DropdownMenu open={openMenuOrderId === order.id} onOpenChange={(open) => setOpenMenuOrderId(open ? order.id : null)}>
                     <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="outline" className="col-span-2 h-9 w-full border-slate-200 bg-transparent">
+                      <Button size="icon" variant="outline" className="col-span-2 h-9 w-full border-border bg-transparent">
                         <MoreVertical className="h-4 w-4" />
                         <span className="sr-only">더보기</span>
                       </Button>
@@ -559,7 +559,7 @@ export default function OrderList() {
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : items.length ? (
-          <span className="text-sm text-slate-500">마지막 페이지입니다</span>
+          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
     </div>

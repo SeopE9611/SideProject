@@ -212,8 +212,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       <SiteContainer variant="wide" className="py-16">
         <div className="flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-            <p className="text-sm text-slate-500">스트링을 불러오는 중...</p>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-slate-900" />
+            <p className="text-sm text-muted-foreground">스트링을 불러오는 중...</p>
           </div>
         </div>
       </SiteContainer>
@@ -221,22 +221,22 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-background to-white">
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-slate-900">스트링 선택</h1>
+          <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-foreground">스트링 선택</h1>
 
           {isFromCart ? (
-            <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">
+            <p className="text-sm bp-md:text-base text-muted-foreground leading-relaxed">
               <span className="font-semibold">장바구니 번들 수정 모드</span>입니다. 수량과 스트링을 변경한 뒤 장바구니로 돌아갑니다.
             </p>
           ) : (
-            <p className="text-sm bp-md:text-base text-slate-600 leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
+            <p className="text-sm bp-md:text-base text-muted-foreground leading-relaxed">라켓과 함께 구매하실 스트링을 선택해주세요. 선택한 스트링은 라켓과 함께 한 번에 결제됩니다.</p>
           )}
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-50 -z-0" />
             <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
@@ -253,8 +253,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs font-medium text-green-600 mb-1">선택된 라켓</p>
-                    <h3 className="text-xl font-bold text-slate-900 mb-1">{racket.name}</h3>
-                    <p className="text-lg font-semibold text-slate-700">{racket.price.toLocaleString()}원</p>
+                    <h3 className="text-xl font-bold text-foreground mb-1">{racket.name}</h3>
+                    <p className="text-lg font-semibold text-foreground">{racket.price.toLocaleString()}원</p>
                   </div>
                 </div>
               </div>
@@ -262,11 +262,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
           </div>
 
           {/* 번들 수량 */}
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 bp-md:p-6 shadow-sm">
+          <div className="mt-4 rounded-2xl border border-border bg-card p-4 bp-md:p-6 shadow-sm">
             <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-3">
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-900">번들 수량 (라켓 + 스트링)</p>
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="text-sm font-semibold text-foreground">번들 수량 (라켓 + 스트링)</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   이 수량만큼 <span className="font-medium">라켓/스트링/교체비</span>가 함께 계산되고, STEP2의 <span className="font-medium">라켓별 세부 장착 정보</span>도 자동 생성됩니다.
                 </p>
               </div>
@@ -288,7 +288,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
         {/* 스트링 목록 */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-slate-900 text-center">사용 가능한 스트링</h2>
+          <h2 className="text-2xl font-bold text-foreground text-center">사용 가능한 스트링</h2>
           <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">
             {products.map((p: any) => {
               const stringId = String(p._id);
@@ -305,12 +305,12 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                 <div
                   key={stringId}
                   className={[
-                    'group relative overflow-hidden border rounded-2xl bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
-                    isCurrent ? 'border-blue-500 ring-2 ring-blue-300' : 'border-slate-200 hover:border-slate-300',
+                    'group relative overflow-hidden border rounded-2xl bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+                    isCurrent ? 'border-blue-500 ring-2 ring-blue-300' : 'border-border hover:border-slate-300',
                   ].join(' ')}
                 >
                   <div className="p-5 flex flex-col h-full">
-                    <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 aspect-square flex items-center justify-center">
+                    <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-background to-muted aspect-square flex items-center justify-center">
                       {stringImage ? (
                         <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                       ) : (
@@ -329,10 +329,10 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-slate-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">{p.name}</h3>
+                        <h3 className="font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">{p.name}</h3>
                         {isCurrent && <span className="shrink-0 rounded-full bg-blue-50 px-2 py-1 text-[11px] font-semibold text-blue-700">현재 선택</span>}
                       </div>
-                      <p className="text-lg font-bold text-slate-900">{Number(p.price ?? 0).toLocaleString()}원</p>
+                      <p className="text-lg font-bold text-foreground">{Number(p.price ?? 0).toLocaleString()}원</p>
                       {/* 재고 힌트 */}
                       {manageStock && typeof stock === 'number' && stock > 0 && stock <= lowStock && <p className="text-xs text-orange-600">현재 남은 수량 {stock}개</p>}
                       {isShort && (
@@ -382,7 +382,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
         {hasMore && (
           <div className="flex justify-center pt-4">
-            <Button onClick={loadMore} disabled={isFetchingMore} className="px-8 py-6 rounded-xl font-medium bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50 transition-all duration-300">
+            <Button onClick={loadMore} disabled={isFetchingMore} className="px-8 py-6 rounded-xl font-medium bg-card border-2 border-border text-foreground hover:border-slate-300 hover:bg-muted disabled:opacity-50 transition-all duration-300">
               {isFetchingMore ? (
                 <span className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />

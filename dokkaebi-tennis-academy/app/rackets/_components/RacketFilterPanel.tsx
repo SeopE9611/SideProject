@@ -55,14 +55,14 @@ export default function RacketFilterPanel({
 }: Props) {
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl bg-white/70 dark:bg-slate-800/70 p-6 shadow-lg">
+      <div className="rounded-xl bg-card/70 dark:bg-card/70 p-6 shadow-lg">
         <SkeletonFilterDetailed />
       </div>
     );
   }
 
   return (
-    <div className={cn('rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-6 shadow-xl')}>
+    <div className={cn('rounded-xl border border-border bg-card/80 dark:bg-card/80 backdrop-blur-sm p-6 shadow-xl')}>
       <AnimatePresence mode="wait">
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
           <div className="flex items-center justify-between mb-6">
@@ -98,7 +98,7 @@ export default function RacketFilterPanel({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="라켓 모델 검색..."
-                className="pl-10 pr-10 rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400 transition-colors w-full"
+                className="pl-10 pr-10 rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400 transition-colors w-full"
               />
               {searchQuery && (
                 <button
@@ -127,10 +127,10 @@ export default function RacketFilterPanel({
               브랜드
             </Label>
             <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
-              <SelectTrigger className="rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
+              <SelectTrigger className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
-              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+              <SelectContent className="dark:bg-card dark:border-border">
                 <SelectItem value="all">전체</SelectItem>
                 {brands.map((b) => (
                   <SelectItem key={b.value} value={b.value}>
@@ -145,10 +145,10 @@ export default function RacketFilterPanel({
           <div className="space-y-1.5 mb-6">
             <Label>상태 등급</Label>
             <Select value={selectedCondition ?? 'all'} onValueChange={(v) => setSelectedCondition(v === 'all' ? null : v)}>
-              <SelectTrigger className="rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400">
+              <SelectTrigger className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
-              <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
+              <SelectContent className="dark:bg-card dark:border-border">
                 <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="A">A (최상)</SelectItem>
                 <SelectItem value="B">B (양호)</SelectItem>
@@ -169,7 +169,7 @@ export default function RacketFilterPanel({
                   onChangePriceMin(raw === '' ? null : Number(raw));
                 }}
                 placeholder="최소"
-                className="rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400"
+                className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400"
               />
               <span className="text-muted-foreground">~</span>
               <Input
@@ -180,7 +180,7 @@ export default function RacketFilterPanel({
                   onChangePriceMax(raw === '' ? null : Number(raw));
                 }}
                 placeholder="최대"
-                className="rounded-lg border-2 border-slate-200 dark:border-slate-700 focus:border-blue-500 dark:focus:border-blue-400"
+                className="rounded-lg border-2 border-border focus:border-blue-500 dark:focus:border-blue-400"
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
