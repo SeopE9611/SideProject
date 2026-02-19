@@ -20,9 +20,9 @@ export default function OrderPrefillBadge({ orderId, rentalId }: OrderPrefillBad
           <span className="font-semibold text-blue-900 dark:text-blue-100">프리필</span>
         </div>
         <span className="h-4 w-px bg-blue-200 dark:bg-blue-700" />
-        <span className="text-sm text-slate-600 dark:text-slate-300">{typeLabel}</span>
-        <code className="rounded bg-card dark:bg-slate-800 px-2 py-0.5 text-xs font-mono text-primary dark:text-blue-400 border border-blue-100 dark:border-blue-900">{resolvedId}</code>
-        <span className="text-sm text-slate-600 dark:text-slate-300">기준으로 자동 채워짐</span>
+        <span className="text-sm text-muted-foreground dark:text-muted-foreground">{typeLabel}</span>
+        <code className="rounded bg-card dark:bg-card px-2 py-0.5 text-xs font-mono text-primary dark:text-blue-400 border border-blue-100 dark:border-blue-900">{resolvedId}</code>
+        <span className="text-sm text-muted-foreground dark:text-muted-foreground">기준으로 자동 채워짐</span>
       </div>
     </div>
   );

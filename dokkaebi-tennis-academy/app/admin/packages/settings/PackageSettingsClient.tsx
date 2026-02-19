@@ -192,15 +192,15 @@ export default function PackageSettingsClient() {
           <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-8 border border-purple-100 shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-white rounded-full p-3 shadow-md">
+                <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-purple-600" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-gray-900">패키지 설정</h1>
-                  <p className="mt-1 text-gray-600">스트링 패키지 상품의 가격과 설정을 관리합니다</p>
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground">패키지 설정</h1>
+                  <p className="mt-1 text-muted-foreground">스트링 패키지 상품의 가격과 설정을 관리합니다</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="bg-white/60 backdrop-blur-sm border-purple-200 hover:bg-purple-50" asChild>
+              <Button variant="outline" size="sm" className="bg-card backdrop-blur-sm border-purple-200 hover:bg-purple-50" asChild>
                 <Link href="/admin/packages">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   패키지 관리로 돌아가기
@@ -210,14 +210,14 @@ export default function PackageSettingsClient() {
           </div>
 
           <Tabs defaultValue="packages" className="space-y-8">
-            <Card className="border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
+            <Card className="border-0 shadow-2xl bg-card backdrop-blur-sm">
               <CardContent className="p-6">
-                <TabsList className="grid w-full grid-cols-2 h-auto p-1 bg-slate-100">
-                  <TabsTrigger value="packages" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white data-[state=active]:shadow-md">
+                <TabsList className="grid w-full grid-cols-2 h-auto p-1 bg-background">
+                  <TabsTrigger value="packages" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card data-[state=active]:shadow-md">
                     <Package className="h-5 w-5" />
                     <span className="text-xs font-medium">패키지 상품</span>
                   </TabsTrigger>
-                  <TabsTrigger value="general" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-white data-[state=active]:shadow-md">
+                  <TabsTrigger value="general" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card data-[state=active]:shadow-md">
                     <Settings className="h-5 w-5" />
                     <span className="text-xs font-medium">일반 설정</span>
                   </TabsTrigger>
@@ -230,8 +230,8 @@ export default function PackageSettingsClient() {
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">패키지 상품 관리</h2>
-                    <p className="text-gray-600">패키지별 가격, 혜택, 유효기간을 설정할 수 있습니다.</p>
+                    <h2 className="text-2xl font-bold text-foreground">패키지 상품 관리</h2>
+                    <p className="text-muted-foreground">패키지별 가격, 혜택, 유효기간을 설정할 수 있습니다.</p>
                   </div>
                   <Button onClick={addNewPackage} className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="mr-2 h-4 w-4" />새 패키지 추가
@@ -242,7 +242,7 @@ export default function PackageSettingsClient() {
                   {packageConfigs
                     .sort((a, b) => a.sortOrder - b.sortOrder)
                     .map((pkg) => (
-                      <Card key={pkg.id} className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+                      <Card key={pkg.id} className="border-0 bg-card shadow-lg backdrop-blur-sm">
                         <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
@@ -349,20 +349,20 @@ export default function PackageSettingsClient() {
                             <div className="space-y-4">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(pkg.price)}</p>
-                                  {pkg.originalPrice && <p className="text-sm text-gray-500 line-through">{formatCurrency(pkg.originalPrice)}</p>}
+                                  <p className="text-2xl font-bold text-foreground">{formatCurrency(pkg.price)}</p>
+                                  {pkg.originalPrice && <p className="text-sm text-muted-foreground line-through">{formatCurrency(pkg.originalPrice)}</p>}
                                 </div>
                                 <div className="text-right">
                                   <p className="text-lg font-semibold text-blue-600">{pkg.sessions}회</p>
-                                  <p className="text-sm text-gray-500">{pkg.validityDays}일 유효</p>
+                                  <p className="text-sm text-muted-foreground">{pkg.validityDays}일 유효</p>
                                 </div>
                               </div>
 
-                              <p className="text-gray-600">{pkg.description}</p>
+                              <p className="text-muted-foreground">{pkg.description}</p>
 
                               <div className="space-y-2">
-                                <p className="text-sm font-medium text-gray-700">포함 혜택:</p>
-                                <ul className="text-sm text-gray-600 space-y-1">
+                                <p className="text-sm font-medium text-foreground">포함 혜택:</p>
+                                <ul className="text-sm text-muted-foreground space-y-1">
                                   {pkg.features.map((feature, index) => (
                                     <li key={index} className="flex items-center">
                                       <span className="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span>
@@ -389,7 +389,7 @@ export default function PackageSettingsClient() {
 
             {/* 일반 설정 */}
             <TabsContent value="general">
-              <Card className="border-0 bg-white/80 shadow-lg backdrop-blur-sm">
+              <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
                   <CardTitle className="flex items-center space-x-2">
                     <Settings className="h-5 w-5 text-green-600" />
@@ -427,7 +427,7 @@ export default function PackageSettingsClient() {
                           }))
                         }
                       />
-                      <p className="text-sm text-gray-500">만료 며칠 전에 고객에게 알림을 보낼지 설정</p>
+                      <p className="text-sm text-muted-foreground">만료 며칠 전에 고객에게 알림을 보낼지 설정</p>
                     </div>
 
                     <div className="space-y-2">
@@ -473,27 +473,27 @@ export default function PackageSettingsClient() {
                           }))
                         }
                       />
-                      <p className="text-sm text-gray-500">패키지 연장 시 부과할 수수료 비율</p>
+                      <p className="text-sm text-muted-foreground">패키지 연장 시 부과할 수수료 비율</p>
                     </div>
                   </div>
 
                   <div className="space-y-4 pt-4 border-t">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between p-4 bg-background rounded-xl">
                       <div>
-                        <Label htmlFor="enablePackages" className="font-medium text-gray-700">
+                        <Label htmlFor="enablePackages" className="font-medium text-foreground">
                           패키지 시스템 활성화
                         </Label>
-                        <p className="text-sm text-gray-500">패키지 상품 판매를 활성화/비활성화합니다.</p>
+                        <p className="text-sm text-muted-foreground">패키지 상품 판매를 활성화/비활성화합니다.</p>
                       </div>
                       <Switch id="enablePackages" checked={generalSettings.enablePackages} onCheckedChange={(checked) => setGeneralSettings((prev) => ({ ...prev, enablePackages: checked }))} />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between p-4 bg-background rounded-xl">
                       <div>
-                        <Label htmlFor="allowExtension" className="font-medium text-gray-700">
+                        <Label htmlFor="allowExtension" className="font-medium text-foreground">
                           패키지 연장 허용
                         </Label>
-                        <p className="text-sm text-gray-500">고객이 패키지 연장을 요청할 수 있도록 허용합니다.</p>
+                        <p className="text-sm text-muted-foreground">고객이 패키지 연장을 요청할 수 있도록 허용합니다.</p>
                       </div>
                       <Switch id="allowExtension" checked={generalSettings.allowExtension} onCheckedChange={(checked) => setGeneralSettings((prev) => ({ ...prev, allowExtension: checked }))} />
                     </div>

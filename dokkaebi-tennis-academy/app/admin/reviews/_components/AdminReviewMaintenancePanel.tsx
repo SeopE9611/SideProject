@@ -83,14 +83,14 @@ export default function AdminReviewMaintenancePanel() {
   const disabled = loading !== null;
 
   return (
-    <Card className="border-0 shadow-md bg-white/80 dark:bg-slate-800/80">
+    <Card className="border-0 shadow-md bg-card dark:bg-card">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+        <CardTitle className="flex items-center gap-2 text-foreground dark:text-white">
           <Wrench className="h-5 w-5" />
           리뷰 유지보수
         </CardTitle>
         <CardContent>
-          <span className="font-bold text-slate-800 dark:text-slate-200">개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!! </span>
+          <span className="font-bold text-foreground dark:text-muted-foreground">개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!! </span>
         </CardContent>
       </CardHeader>
 
@@ -118,7 +118,7 @@ export default function AdminReviewMaintenancePanel() {
         {/* 잠금 상태 / 강제 해제 */}
         <div className="flex flex-wrap items-center gap-3 text-sm">
           {loading ? (
-            <div className="inline-flex items-center gap-2 text-slate-600">
+            <div className="inline-flex items-center gap-2 text-muted-foreground">
               <Lock className="h-4 w-4" />
               유지보수 실행 중… (다른 탭에서는 잠시 실행 불가)
             </div>
@@ -147,7 +147,7 @@ export default function AdminReviewMaintenancePanel() {
         </div>
 
         {/* 기능 설명 */}
-        <div className="rounded-md bg-slate-50 dark:bg-slate-900/50 p-3 text-[13px] text-slate-700 dark:text-slate-200 space-y-2">
+        <div className="rounded-md bg-background dark:bg-card p-3 text-[13px] text-foreground dark:text-muted-foreground space-y-2">
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
@@ -169,7 +169,7 @@ export default function AdminReviewMaintenancePanel() {
         </div>
 
         {/* 결과 출력 */}
-        {lastResult && <pre className="mt-2 whitespace-pre-wrap rounded-md bg-slate-50 dark:bg-slate-900/60 p-3 text-xs">{JSON.stringify(lastResult, null, 2)}</pre>}
+        {lastResult && <pre className="mt-2 whitespace-pre-wrap rounded-md bg-background dark:bg-card p-3 text-xs">{JSON.stringify(lastResult, null, 2)}</pre>}
       </CardContent>
     </Card>
   );

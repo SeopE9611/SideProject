@@ -181,7 +181,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="container py-8">
  <div className="max-w-4xl mx-auto space-y-6">
  {/* 패키지 주문 정보 카드 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-2xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
  <div className="bg-primary 0/10 via-purple-500/10 0/10 p-6">
  <CardTitle className="flex items-center gap-3 text-2xl">
  <Package className="h-6 w-6 text-accent" />
@@ -231,19 +231,19 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-accent">{packageInfo.sessions}회</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 교체</div>
  </div>
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-indigo-600">{packageInfo.validityPeriod}</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">유효기간</div>
  </div>
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-primary">{perSessionPrice.toLocaleString()}원</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">회당 가격</div>
  </div>
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-primary">{formatPrice(packageInfo.price)}원</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">총 금액</div>
  </div>
@@ -256,8 +256,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="flex items-center gap-3 p-4 bg-primary  to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
  <Clock className="h-5 w-5 text-accent" />
  <div>
- <p className="text-sm text-slate-600 dark:text-slate-400">주문일자</p>
- <p className="font-semibold text-slate-800 dark:text-slate-200">
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">주문일자</p>
+ <p className="font-semibold text-foreground dark:text-muted-foreground">
  {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR', {
  year: 'numeric',
  month: 'long',
@@ -270,8 +270,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="flex items-center gap-3 p-4 bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
  <CreditCard className="h-5 w-5 text-primary" />
  <div>
- <p className="text-sm text-slate-600 dark:text-slate-400">결제 방법</p>
- <p className="font-semibold text-slate-800 dark:text-slate-200">무통장입금</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 방법</p>
+ <p className="font-semibold text-foreground dark:text-muted-foreground">무통장입금</p>
  </div>
  </div>
  </div>
@@ -282,13 +282,13 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <h3 className="font-bold text-orange-700 dark:text-orange-400">입금 계좌 정보</h3>
  </div>
  {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
- <div className="bg-card dark:bg-slate-800 p-4 rounded-lg border-2 border-orange-200 dark:border-orange-800 space-y-2">
- <div className="font-semibold text-slate-800 dark:text-slate-200">{bankLabelMap[paymentInfo.bank].label}</div>
+ <div className="bg-card dark:bg-card p-4 rounded-lg border-2 border-orange-200 dark:border-orange-800 space-y-2">
+ <div className="font-semibold text-foreground dark:text-muted-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
  <div className="font-mono text-lg font-bold text-accent">{bankLabelMap[paymentInfo.bank].account}</div>
- <div className="text-sm text-slate-600 dark:text-slate-400">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
+ <div className="text-sm text-muted-foreground dark:text-muted-foreground">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
  </div>
  ) : (
- <p className="text-slate-500">선택된 은행 없음</p>
+ <p className="text-muted-foreground">선택된 은행 없음</p>
  )}
  <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-border dark:border-red-800">
  <p className="text-red-700 dark:text-red-400 font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
@@ -300,41 +300,41 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  {/* 신청자 정보 */}
  <div className="mb-6">
- <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-slate-800 dark:text-slate-200">
+ <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground dark:text-muted-foreground">
  <MapPin className="h-5 w-5 text-primary" />
  신청자 정보
  </h3>
  <div className="bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800 space-y-2">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div>
- <span className="text-sm text-slate-600 dark:text-slate-400">신청자:</span>
- <span className="ml-2 font-semibold text-slate-800 dark:text-slate-200">{serviceInfo?.name || '정보 없음'}</span>
+ <span className="text-sm text-muted-foreground dark:text-muted-foreground">신청자:</span>
+ <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.name || '정보 없음'}</span>
  </div>
  <div>
- <span className="text-sm text-slate-600 dark:text-slate-400">연락처:</span>
- <span className="ml-2 font-semibold text-slate-800 dark:text-slate-200">{serviceInfo?.phone || '정보 없음'}</span>
+ <span className="text-sm text-muted-foreground dark:text-muted-foreground">연락처:</span>
+ <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.phone || '정보 없음'}</span>
  </div>
  </div>
  <div>
- <span className="text-sm text-slate-600 dark:text-slate-400">이메일:</span>
- <span className="ml-2 font-semibold text-slate-800 dark:text-slate-200">{serviceInfo?.email || '정보 없음'}</span>
+ <span className="text-sm text-muted-foreground dark:text-muted-foreground">이메일:</span>
+ <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.email || '정보 없음'}</span>
  </div>
  <div>
- <span className="text-sm text-slate-600 dark:text-slate-400">서비스 방식:</span>
- <span className="ml-2 font-semibold text-slate-800 dark:text-slate-200">{serviceInfo?.serviceMethod || '정보 없음'}</span>
+ <span className="text-sm text-muted-foreground dark:text-muted-foreground">서비스 방식:</span>
+ <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo?.serviceMethod || '정보 없음'}</span>
  </div>
  {serviceInfo?.serviceMethod === '출장서비스' && serviceInfo?.address && (
  <div>
- <span className="text-sm text-slate-600 dark:text-slate-400">서비스 주소:</span>
- <span className="ml-2 font-semibold text-slate-800 dark:text-slate-200">
+ <span className="text-sm text-muted-foreground dark:text-muted-foreground">서비스 주소:</span>
+ <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">
  {serviceInfo.address} {serviceInfo.addressDetail}
  </span>
  </div>
  )}
  {serviceInfo?.serviceRequest && (
  <div>
- <span className="text-sm text-slate-600 dark:text-slate-400">서비스 요청사항:</span>
- <span className="ml-2 font-semibold text-slate-800 dark:text-slate-200">{serviceInfo.serviceRequest}</span>
+ <span className="text-sm text-muted-foreground dark:text-muted-foreground">서비스 요청사항:</span>
+ <span className="ml-2 font-semibold text-foreground dark:text-muted-foreground">{serviceInfo.serviceRequest}</span>
  </div>
  )}
  </div>
@@ -345,10 +345,10 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  {/* 결제 금액 */}
  <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-blue-800">
  <div className="flex justify-between items-center text-2xl font-bold">
- <span className="text-slate-800 dark:text-slate-200">총 결제 금액</span>
+ <span className="text-foreground dark:text-muted-foreground">총 결제 금액</span>
  <span className="text-accent">{formatPrice(packageOrder.totalPrice)}원</span>
  </div>
- <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">패키지 이용료 (입금 확인 후 활성화)</p>
+ <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-2">패키지 이용료 (입금 확인 후 활성화)</p>
  </div>
  </CardContent>
 
@@ -378,7 +378,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </Card>
 
  {/* 안내사항 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
  <CardHeader className="bg-primary from-indigo-500/10 via-purple-500/10 to-pink-500/10">
  <CardTitle className="flex items-center gap-3">
  <Shield className="h-5 w-5 text-indigo-600" />

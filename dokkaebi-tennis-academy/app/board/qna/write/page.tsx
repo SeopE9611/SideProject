@@ -492,7 +492,7 @@ export default function QnaWritePage() {
                               setProduct(p);
                               clearErrors('product');
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
                           >
                             <div className="font-medium">{p.name}</div>
                             <div className="text-xs text-muted-foreground">{p.id}</div>
@@ -505,7 +505,7 @@ export default function QnaWritePage() {
                     <div className="rounded-lg border border-border p-4">
                       <div className="font-semibold mb-3">전체 상품 검색</div>
                       <div className="relative mb-3">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명으로 검색" className="pl-9 bg-card dark:bg-muted" />
                       </div>
                       <div className="space-y-2 max-h-60 overflow-auto">
@@ -519,7 +519,7 @@ export default function QnaWritePage() {
                               setProduct(p);
                               clearErrors('product');
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-gray-800 ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
                           >
                             <div className="font-medium">{p.name}</div>
                             <div className="text-xs text-muted-foreground">{p.id}</div>
@@ -587,7 +587,7 @@ export default function QnaWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-red-400 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors`}
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-red-400 dark:border-red-500' : 'border-border dark:border-border'} rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -596,7 +596,7 @@ export default function QnaWritePage() {
                     }}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ' ? fileInputRef.current?.click() : null)}
                   >
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground mb-2">클릭하여 이미지를 선택하거나 드래그하여 업로드하세요</p>
                     <Input ref={fileInputRef} id="image" type="file" multiple accept="image/*" onChange={handleFileChange} className="sr-only" />
                     <Button

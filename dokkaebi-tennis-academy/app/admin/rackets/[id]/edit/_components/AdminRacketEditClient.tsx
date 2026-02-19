@@ -66,10 +66,10 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8">
+          <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border dark:border-border p-8">
             <div className="space-y-4">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-12 bg-slate-100 dark:bg-slate-700 rounded animate-pulse" />
+                <div key={i} className="h-12 bg-background dark:bg-card rounded animate-pulse" />
               ))}
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-red-200 dark:border-red-900 p-8 text-center">
+          <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-red-200 dark:border-red-900 p-8 text-center">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-600 dark:text-red-400">데이터를 불러오지 못했습니다.</p>
             <Link href="/admin/rackets" className="mt-4 inline-block">
@@ -99,7 +99,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
       <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-900 dark:via-teal-900 dark:to-cyan-900">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 mb-4">
+            <Button variant="ghost" size="sm" className="text-white hover:bg-card mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               목록으로
             </Button>
@@ -140,7 +140,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border dark:border-border p-6">
           <AdminRacketForm initial={data} submitLabel="저장" onSubmit={onSubmit} />
         </div>
       </div>

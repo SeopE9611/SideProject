@@ -49,35 +49,35 @@ export default function PriceSummaryCard({
   const methodText = collectionMethod === 'courier_pickup' ? '기사 방문(+3,000원)' : collectionMethod === 'visit' ? '매장 방문' : '자가 발송';
 
   return (
-    <Card className="overflow-hidden border border-slate-200/70 dark:border-slate-700/70 shadow-sm">
+    <Card className="overflow-hidden border border-border dark:border-border shadow-sm">
       {/* Header */}
       <div className="bg-primary from-slate-900 via-slate-800 to-slate-700 dark:from-slate-800 dark:via-slate-700 dark:to-slate-600 text-foreground px-4 py-3">
         <div className="flex items-center gap-2">
           <ReceiptText className="h-4 w-4" />
           <p className="text-sm font-semibold">요금 요약</p>
         </div>
-        <p className="text-[11px] text-slate-300 dark:text-slate-400 mt-1">{headerHint ?? '입력에 따라 실시간 반영됩니다'}</p>
+        <p className="text-[11px] text-muted-foreground dark:text-muted-foreground mt-1">{headerHint ?? '입력에 따라 실시간 반영됩니다'}</p>
       </div>
 
       <CardContent className="pt-5">
         {/* 선택 요약 */}
         <div className="grid grid-cols-1 gap-3 mb-4">
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-muted-foreground dark:text-muted-foreground">
               <CalendarDays className="h-4 w-4" />
               <span>희망일</span>
             </div>
             <span className="tabular-nums">{preferredDate || '—'}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-muted-foreground dark:text-muted-foreground">
               <Clock3 className="h-4 w-4" />
               <span>시간대</span>
             </div>
             <span className="tabular-nums">{preferredTime || '—'}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2 text-muted-foreground dark:text-muted-foreground">
               <MethodIcon className="h-4 w-4" />
               <span>수거 방식</span>
             </div>
@@ -91,7 +91,7 @@ export default function PriceSummaryCard({
         <div className="space-y-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <BadgeDollarSign className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+              <BadgeDollarSign className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">교체비</p>
                 <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 장착비만' : stringIncluded ? '스트링 상품 선택: 스트링 포함' : '스트링 상품 선택: 별도 구매 필요'}</p>
@@ -106,7 +106,7 @@ export default function PriceSummaryCard({
               {rentalDeposit > 0 && (
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <Box className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                     <p className="text-sm font-medium">보증금</p>
                   </div>
                   <p className="text-sm">{won(rentalDeposit)}</p>
@@ -116,7 +116,7 @@ export default function PriceSummaryCard({
               {rentalFee > 0 && (
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                    <Box className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                     <p className="text-sm font-medium">대여료</p>
                   </div>
                   <p className="text-sm">{won(rentalFee)}</p>
@@ -128,7 +128,7 @@ export default function PriceSummaryCard({
             racketPrice > 0 && (
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <Box className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                  <Box className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                   <p className="text-sm font-medium">라켓 금액</p>
                 </div>
                 <p className="text-sm">{won(racketPrice)}</p>
@@ -139,7 +139,7 @@ export default function PriceSummaryCard({
           {stringPrice > 0 && (
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
-                <ReceiptText className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                <ReceiptText className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
                 <p className="text-sm font-medium">스트링 금액</p>
               </div>
               <p className="text-sm">{won(stringPrice)}</p>
@@ -148,7 +148,7 @@ export default function PriceSummaryCard({
 
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+              <Package className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">수거비(택배 기사 방문)</p>
                 <p className="text-xs text-muted-foreground">후정산</p>

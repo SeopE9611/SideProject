@@ -33,7 +33,7 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
                 <p className="text-xs text-muted-foreground mt-1 hidden sm:block">{step.description}</p>
               </div>
             </div>
-            {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? 'bg-primary 0 ' : 'bg-gray-300'}`} />}
+            {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? 'bg-primary 0 ' : 'bg-muted'}`} />}
           </div>
         ))}
       </div>

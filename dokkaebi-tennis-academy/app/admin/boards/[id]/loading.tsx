@@ -22,7 +22,7 @@ export default function BoardPostDetailLoading() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="md:col-span-2 dark:bg-gray-800">
+          <Card className="md:col-span-2 dark:bg-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
@@ -49,7 +49,7 @@ export default function BoardPostDetailLoading() {
           </Card>
 
           <div className="flex flex-col gap-6">
-            <Card className="dark:bg-gray-800">
+            <Card className="dark:bg-card">
               <CardHeader>
                 <Skeleton className="h-6 w-[120px]" />
               </CardHeader>
@@ -85,7 +85,7 @@ export default function BoardPostDetailLoading() {
               </CardContent>
             </Card>
 
-            <Card className="dark:bg-gray-800">
+            <Card className="dark:bg-card">
               <CardHeader>
                 <Skeleton className="h-6 w-[120px]" />
               </CardHeader>

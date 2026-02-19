@@ -232,14 +232,14 @@ export default function MypageClient({ user }: Props) {
                     <TabsList className="h-auto w-full p-1 bg-muted dark:bg-muted grid grid-cols-4 gap-1 bp-md:grid-cols-9">
                       <TabsTrigger
                         value="activity"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <Layers className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">전체</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="orders"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">주문 내역</span>
@@ -247,7 +247,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="applications"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <CalendarCheck className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">신청 내역</span>
@@ -255,7 +255,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="rentals"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <Briefcase className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">대여 내역</span>
@@ -263,7 +263,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="wishlist"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">위시리스트</span>
@@ -271,20 +271,20 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="reviews"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">리뷰 관리</span>
                       </TabsTrigger>
 
-                      <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0">
+                      <TabsTrigger value="qna" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">Q&A 내역</span>
                       </TabsTrigger>
 
                       <TabsTrigger
                         value="passes"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">패키지</span>
@@ -292,7 +292,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="points"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md min-w-0"
+                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
                       >
                         <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">적립 포인트</span>

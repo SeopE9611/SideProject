@@ -306,7 +306,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         </div>
 
         {/* 리스트 카드 */}
-        <Card className="border-0 bg-white/90 shadow-xl backdrop-blur-sm dark:bg-gray-900/80">
+        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-muted/50">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">

@@ -33,7 +33,7 @@ const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
   만료: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
   일시정지: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200 dark:border-amber-800',
   취소: 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800',
-  대기: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/40 dark:text-slate-200 dark:border-slate-700',
+  대기: 'bg-background text-foreground border-border dark:bg-card dark:text-muted-foreground dark:border-border',
 };
 
 const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
@@ -208,7 +208,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         <Skeleton className="h-8 w-64" />
         <div className="grid gap-6 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="dark:bg-slate-900/50 dark:border-slate-800">
+            <Card key={i} className="dark:bg-card dark:border-border">
               <CardHeader>
                 <Skeleton className="h-6 w-32" />
               </CardHeader>
@@ -307,11 +307,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-950">
         <div className="container py-6">
           {/* 헤더 카드 */}
-          <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+          <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-border dark:bg-card dark:border-border">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="rounded-xl p-3 bg-slate-100 dark:bg-slate-800">
-                  <PackageIcon className="h-7 w-7 text-slate-700 dark:text-slate-200" />
+                <div className="rounded-xl p-3 bg-background dark:bg-card">
+                  <PackageIcon className="h-7 w-7 text-foreground dark:text-muted-foreground" />
                 </div>
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold tracking-tight">패키지 상세 관리</h1>
@@ -319,13 +319,13 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button asChild variant="outline" className="border-slate-300 dark:border-slate-700">
+                <Button asChild variant="outline" className="border-border dark:border-border">
                   <Link href="/admin/packages">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로
                   </Link>
                 </Button>
-                <Button variant={isEditMode ? 'destructive' : 'outline'} onClick={() => setIsEditMode((v) => !v)} className={isEditMode ? '' : 'border-slate-300 dark:border-slate-700'}>
+                <Button variant={isEditMode ? 'destructive' : 'outline'} onClick={() => setIsEditMode((v) => !v)} className={isEditMode ? '' : 'border-border dark:border-border'}>
                   <Edit3 className="mr-1 h-4 w-4" />
                   {isEditMode ? '편집 취소' : '편집 모드'}
                 </Button>
@@ -334,7 +334,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
             {/* 요약 KPI */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
-              <div className="rounded-xl p-4 border bg-white/70 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+              <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
                 <div className="flex items-center gap-2 mb-1.5">
                   <PackageIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">패키지 유형</span>
@@ -342,7 +342,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <p className="text-lg font-semibold">{data.packageType}</p>
               </div>
 
-              <div className="rounded-xl p-4 border bg-white/70 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+              <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Target className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">남은 횟수</span>
@@ -350,7 +350,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">{data.remainingSessions}회</p>
               </div>
 
-              <div className="rounded-xl p-4 border bg-white/70 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+              <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
                 <div className="flex items-center gap-2 mb-1.5">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">결제 금액</span>
@@ -358,7 +358,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <p className="text-lg font-semibold">{new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(data.price)}</p>
               </div>
 
-              <div className="rounded-xl p-4 border bg-white/70 border-slate-200 dark:bg-slate-900/60 dark:border-slate-800">
+              <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">만료일</span>
@@ -370,8 +370,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* 고객 정보 */}
-            <Card className="border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
-              <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+            <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
+              <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                   고객 정보
@@ -384,7 +384,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   { icon: <Phone className="h-4 w-4" />, label: '전화번호', value: data.customer.phone ?? '-' },
                   { icon: <MapPin className="h-4 w-4" />, label: '서비스 유형', value: data.serviceType },
                 ].map((row, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-background dark:bg-card">
                     <span className="text-muted-foreground">{row.icon}</span>
                     <div>
                       <p className="text-xs text-muted-foreground">{row.label}</p>
@@ -396,8 +396,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
 
             {/* 패키지 상태 */}
-            <Card className="border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
-              <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+            <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
+              <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <PackageIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -407,22 +407,22 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background dark:bg-card">
                   <span className="text-sm text-muted-foreground">현재 상태</span>
                   <PackageCurrentStatusSelect orderId={packageId} passStatus={data.passStatus} paymentStatus={data.paymentStatus ?? '결제대기'} onUpdated={() => mutate()} />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-background dark:bg-card">
                   <span className="text-sm text-muted-foreground">결제 상태</span>
                   <Badge className={payStatusColors[data.paymentStatus ?? '결제대기']}>{data.paymentStatus ?? '결제대기'}</Badge>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">
+                <div className="p-3 rounded-lg bg-background dark:bg-card">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">이용 진행률</span>
                     <span className="text-sm font-medium">{progressPercentage}%</span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700">
+                  <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
                     <div className="h-2 rounded-full bg-sky-600 dark:bg-sky-400 transition-all" style={{ width: `${progressPercentage}%` }} />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
@@ -431,7 +431,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40">
+                <div className="p-3 rounded-lg bg-background dark:bg-card">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">만료까지</span>
                     <span
@@ -448,7 +448,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               </CardContent>
 
               {isEditMode && (
-                <CardFooter className="flex justify-center gap-2 bg-slate-50/60 dark:bg-slate-800/30">
+                <CardFooter className="flex justify-center gap-2 bg-background dark:bg-card">
                   <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장
@@ -462,8 +462,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
 
             {/* 사용 내역 */}
-            <Card className="md:col-span-2 border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
-              <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+            <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
+              <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center gap-2">
                   <History className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   사용 내역
@@ -476,7 +476,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 ) : (
                   <div className="space-y-4">
                     {usageHistory.map((u) => (
-                      <div key={u.id} className="border rounded-lg p-4 transition-colors border-slate-200 bg-white/60 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:bg-slate-800/60">
+                      <div key={u.id} className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
@@ -503,8 +503,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
 
             {/* 운영 내역 */}
-            <Card className="md:col-span-2 border-slate-200 bg-card/80 shadow-lg dark:bg-slate-900/60 dark:border-slate-800">
-              <CardHeader className="border-b border-slate-200 dark:border-slate-800">
+            <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
+              <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   운영 내역 (연장/횟수)
@@ -544,7 +544,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           {/* 연장 모달 */}
           {showExtensionForm && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <Card className="w-full max-w-md mx-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+              <Card className="w-full max-w-md mx-4 border-border dark:border-border dark:bg-card">
                 <CardHeader>
                   <CardTitle>패키지 연장</CardTitle>
                   <CardDescription>패키지의 유효기간을 연장합니다.</CardDescription>
@@ -608,7 +608,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           {/* 횟수 조절 모달 */}
           {editingSessions && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <Card className="w-full max-w-md mx-4 border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+              <Card className="w-full max-w-md mx-4 border-border dark:border-border dark:bg-card">
                 <CardHeader>
                   <CardTitle>횟수 조절</CardTitle>
                   <CardDescription>패키지의 남은 횟수를 조절합니다.</CardDescription>

@@ -480,8 +480,8 @@ export default function AdminNotificationsClient() {
               로딩 중...
             </div>
           ) : detail ? (
-            <div className="max-h-[60vh] overflow-auto rounded-lg border border-border/40 bg-slate-950 p-4">
-              <pre className="text-xs text-slate-100">
+            <div className="max-h-[60vh] overflow-auto rounded-lg border border-border/40 bg-card p-4">
+              <pre className="text-xs text-muted-foreground">
                 {JSON.stringify(
                   (() => {
                     const rendered = asRecord(detail.rendered);

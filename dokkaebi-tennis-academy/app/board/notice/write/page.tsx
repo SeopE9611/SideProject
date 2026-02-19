@@ -483,8 +483,8 @@ export default function NoticeWritePage() {
                 <Bell className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">중요한 소식을 회원들에게 전달하세요</p>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
+                <p className="text-lg text-muted-foreground dark:text-muted-foreground">중요한 소식을 회원들에게 전달하세요</p>
               </div>
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function NoticeWritePage() {
               </div>
             </div>
           )}
-          <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+          <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b">
               <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5 text-blue-600" />
@@ -525,7 +525,7 @@ export default function NoticeWritePage() {
                   카테고리 <span className="text-red-500">*</span>
                 </Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger id="category" className="h-12 bg-white dark:bg-gray-700">
+                  <SelectTrigger id="category" className="h-12 bg-card dark:bg-card">
                     <SelectValue placeholder="공지사항 카테고리를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -577,20 +577,20 @@ export default function NoticeWritePage() {
                 <Label htmlFor="title" className="text-base font-semibold">
                   제목 <span className="text-red-500">*</span>
                 </Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="공지사항 제목을 입력해주세요" className="h-12 bg-white dark:bg-gray-700 text-base" />
+                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="공지사항 제목을 입력해주세요" className="h-12 bg-card dark:bg-card text-base" />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="content" className="text-base font-semibold">
                   내용 <span className="text-red-500">*</span>
                 </Label>
-                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="공지사항 내용을 작성해주세요" className="min-h-[300px] bg-white dark:bg-gray-700 text-base resize-none" />
+                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="공지사항 내용을 작성해주세요" className="min-h-[300px] bg-card dark:bg-card text-base resize-none" />
               </div>
               {/* 기존 첨부 (수정 모드에서만 표시) */}
               {editId && existingAttachments.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-base font-semibold">기존 첨부</Label>
-                  <ul className="divide-y rounded-lg border bg-white/70 dark:bg-gray-800/50">
+                  <ul className="divide-y rounded-lg border bg-card dark:bg-card">
                     {existingAttachments.map((att, idx) => {
                       const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(att.url);
                       return (
@@ -599,11 +599,11 @@ export default function NoticeWritePage() {
                             {isImage ? (
                               <img src={att.url || '/placeholder.svg'} alt={att.name ?? 'image'} className="h-10 w-10 rounded object-cover border" />
                             ) : (
-                              <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-gray-500">FILE</div>
+                              <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-muted-foreground">FILE</div>
                             )}
                             <div className="min-w-0">
                               <div className="truncate text-sm font-medium">{att.name ?? att.url}</div>
-                              <div className="text-xs text-gray-500">{att.size ? `${(att.size / 1024).toFixed(0)} KB` : ''}</div>
+                              <div className="text-xs text-muted-foreground">{att.size ? `${(att.size / 1024).toFixed(0)} KB` : ''}</div>
                             </div>
                           </div>
                           <div className="shrink-0 flex items-center gap-2">
@@ -621,7 +621,7 @@ export default function NoticeWritePage() {
                       );
                     })}
                   </ul>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     * ‘제거’를 누르면 저장 시 해당 첨부가 게시물에서 제외됩니다.
                     {` `}
                     {`(옵션) 스토리지 파일 삭제도 활성화되면 실제 파일도 함께 삭제됩니다.`}
@@ -635,7 +635,7 @@ export default function NoticeWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -650,8 +650,8 @@ export default function NoticeWritePage() {
                       addFiles(Array.from(e.dataTransfer.files || []));
                     }}
                   >
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요</p>
+                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-2">클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요</p>
                     <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" onChange={onInputChange} className="sr-only" />
 
                     <Button
@@ -671,7 +671,7 @@ export default function NoticeWritePage() {
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">첨부된 파일 ({selectedFiles.length}/5)</p>
+                      <p className="text-sm font-medium text-foreground dark:text-muted-foreground">첨부된 파일 ({selectedFiles.length}/5)</p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {selectedFiles.map((file, index) => {
@@ -679,7 +679,7 @@ export default function NoticeWritePage() {
                           const url = blobUrls[index]; // 이미지 썸네일/문서 다운로드에 사용
 
                           return (
-                            <div key={index} className="group relative rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition">
+                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card dark:bg-card shadow-sm ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition">
                               {/* 콘텐츠 */}
                               {isImage ? (
                                 url ? (
@@ -687,7 +687,7 @@ export default function NoticeWritePage() {
                                     <NextImage src={url} alt={file.name} fill className="object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} priority={false} />
                                   </div>
                                 ) : (
-                                  <div className="h-28 rounded bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                                  <div className="h-28 rounded bg-background dark:bg-card animate-pulse" />
                                 )
                               ) : (
                                 <div className="h-28 flex flex-col items-center justify-center gap-1 px-2 text-center">
@@ -695,7 +695,7 @@ export default function NoticeWritePage() {
                                   <a
                                     href={url ?? '#'}
                                     download={file.name}
-                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 transition"
+                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-card text-white hover:bg-card dark:bg-background dark:text-foreground transition"
                                   >
                                     다운로드
                                   </a>
@@ -703,10 +703,10 @@ export default function NoticeWritePage() {
                               )}
 
                               {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-white/85 dark:bg-gray-800/85">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card dark:bg-card">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
 
                               {/* 삭제 버튼 */}
-                              <button type="button" className="absolute top-1.5 right-1.5 rounded-full bg-white/95 dark:bg-gray-800/95 shadow p-1 opacity-90 hover:opacity-100" onClick={() => removeFile(index)} aria-label="첨부 제거">
+                              <button type="button" className="absolute top-1.5 right-1.5 rounded-full bg-card dark:bg-card shadow p-1 opacity-90 hover:opacity-100" onClick={() => removeFile(index)} aria-label="첨부 제거">
                                 <X className="h-4 w-4" />
                               </button>
 
@@ -731,7 +731,7 @@ export default function NoticeWritePage() {
                     </div>
                   )}
                   {/* 제한 안내 뱃지 */}
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground dark:text-muted-foreground">
                     • 최대 5개 / 파일당 최대 10MB
                     <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP), 문서(PDF/DOC/DOCX)
                   </div>
@@ -745,12 +745,12 @@ export default function NoticeWritePage() {
                     <Pin className="h-4 w-4 mr-1 text-blue-600" />
                     상단 고정
                   </label>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">중요한 공지사항을 게시판 상단에 고정하여 표시합니다.</p>
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">중요한 공지사항을 게시판 상단에 고정하여 표시합니다.</p>
                 </div>
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between p-8 border-t bg-gray-50/50 dark:bg-gray-700/20">
+            <CardFooter className="flex justify-between p-8 border-t bg-background dark:bg-card">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/notice" onClick={guardLeave}>
                   취소
@@ -780,7 +780,7 @@ export default function NoticeWritePage() {
                       <button
                         type="button"
                         onClick={prevViewer}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card dark:bg-card hover:bg-card dark:hover:bg-card"
                         aria-label="이전"
                       >
                         <ChevronLeft className="h-5 w-5" />
@@ -788,7 +788,7 @@ export default function NoticeWritePage() {
                       <button
                         type="button"
                         onClick={nextViewer}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card dark:bg-card hover:bg-card dark:hover:bg-card"
                         aria-label="다음"
                       >
                         <ChevronRight className="h-5 w-5" />
@@ -796,7 +796,7 @@ export default function NoticeWritePage() {
                     </>
                   )}
 
-                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 dark:bg-white/30 hover:bg-white/30 dark:hover:bg-white/40" aria-label="닫기">
+                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card dark:bg-card hover:bg-card dark:hover:bg-card" aria-label="닫기">
                     <X className="h-5 w-5" />
                   </button>
                 </div>

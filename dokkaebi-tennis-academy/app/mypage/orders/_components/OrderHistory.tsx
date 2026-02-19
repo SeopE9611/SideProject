@@ -12,7 +12,7 @@ function getIconProps(status: string) {
     case '대기중':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-gray-300 bg-muted',
+        wrapperClasses: 'border-border bg-muted',
         iconClasses: 'text-muted-foreground',
       };
     case '결제완료':

@@ -97,7 +97,7 @@ export function UserSidebar() {
             variant="ghost"
             className={cn(
               'w-full justify-start gap-3 h-12 px-4 transition-all duration-300 group relative overflow-hidden rounded-xl',
-              isActive ? `bg-gradient-to-r ${bgGradient} border border-transparent shadow-md ring-1 ring-slate-900/6 dark:ring-white/10` : 'hover:bg-muted dark:hover:bg-slate-700/50'
+              isActive ? `bg-gradient-to-r ${bgGradient} border border-transparent shadow-md ring-1 ring-slate-900/6 dark:ring-white/10` : 'hover:bg-muted dark:hover:bg-card'
             )}
             asChild
           >
@@ -105,14 +105,14 @@ export function UserSidebar() {
               <div
                 className={cn(
                   'flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 shadow-sm',
-                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted dark:bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-slate-600'
+                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted dark:bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-card'
                 )}
               >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={cn('font-medium transition-colors duration-300', isActive ? 'text-foreground' : 'text-foreground group-hover:text-foreground dark:group-hover:text-slate-100')}>{label}</span>
+              <span className={cn('font-medium transition-colors duration-300', isActive ? 'text-foreground' : 'text-foreground group-hover:text-foreground dark:group-hover:text-muted-foreground')}>{label}</span>
               <ChevronRight
-                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-muted-foreground transform translate-x-1' : 'text-slate-400 dark:text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-slate-400')}
+                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-muted-foreground transform translate-x-1' : 'text-muted-foreground dark:text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-muted-foreground')}
               />
             </Link>
           </Button>

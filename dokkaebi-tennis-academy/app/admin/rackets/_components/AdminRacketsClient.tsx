@@ -95,12 +95,12 @@ export default function AdminRacketsClient() {
       <div className="container py-8 px-6">
         <div className="mb-6">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+            <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
               <MdSportsTennis className="h-8 w-8 text-emerald-600" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">중고 라켓 관리</h1>
-              <p className="mt-2 text-base text-gray-600 dark:text-gray-400">중고 라켓 재고를 효율적으로 관리하세요</p>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground">중고 라켓 관리</h1>
+              <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">중고 라켓 재고를 효율적으로 관리하세요</p>
             </div>
           </div>
         </div>
@@ -136,8 +136,8 @@ export default function AdminRacketsClient() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.label}</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-emerald-200/50 dark:bg-emerald-800/50 animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">{c.label}</p>
+                    <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-emerald-200/50 dark:bg-emerald-800/50 animate-pulse align-middle" /> : c.value}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-emerald-100 dark:border-emerald-800/30`}>{c.icon}</div>
                 </div>
@@ -159,7 +159,7 @@ export default function AdminRacketsClient() {
                 asChild
                 className={[
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
-                  'bg-emerald-600 hover:bg-emerald-700 text-white',
+                  'bg-emerald-600 hover:bg-primary text-primary-foreground',
                   'dark:bg-emerald-500 dark:hover:bg-emerald-400',
                   'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400',
@@ -186,14 +186,14 @@ export default function AdminRacketsClient() {
                       placeholder="브랜드, 모델 검색..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 h-9 text-xs border-emerald-200 focus:border-emerald-400 dark:border-slate-700 dark:focus:border-emerald-500 bg-white dark:bg-slate-900"
+                      className="pl-8 h-9 text-xs border-emerald-200 focus:border-emerald-400 dark:border-border dark:focus:border-emerald-500 bg-card dark:bg-card"
                     />
                   </div>
                 </div>
 
                 <div className="grid w-full gap-2 border-t border-emerald-100 dark:border-emerald-800/30 pt-3 sm:grid-cols-2 md:grid-cols-3">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="border-emerald-200 dark:border-slate-700">
+                    <SelectTrigger className="border-emerald-200 dark:border-border">
                       <SelectValue placeholder="상태 필터" />
                     </SelectTrigger>
                     <SelectContent>
@@ -206,7 +206,7 @@ export default function AdminRacketsClient() {
                   </Select>
 
                   <Select value={conditionFilter} onValueChange={setConditionFilter}>
-                    <SelectTrigger className="border-emerald-200 dark:border-slate-700">
+                    <SelectTrigger className="border-emerald-200 dark:border-border">
                       <SelectValue placeholder="등급 필터" />
                     </SelectTrigger>
                     <SelectContent>
@@ -225,7 +225,7 @@ export default function AdminRacketsClient() {
                       setStatusFilter('all');
                       setConditionFilter('all');
                     }}
-                    className="w-full border-emerald-200 hover:bg-emerald-50 dark:border-slate-700 dark:hover:bg-slate-900/40"
+                    className="w-full border-emerald-200 hover:bg-emerald-50 dark:border-border dark:hover:bg-card"
                   >
                     필터 초기화
                   </Button>
@@ -251,15 +251,15 @@ export default function AdminRacketsClient() {
               ) : !filteredItems.length ? (
                 <div className="overflow-auto rounded-lg border border-emerald-100 dark:border-emerald-800/30">
                   <div className="p-12 text-center">
-                    <Package className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">조건에 맞는 라켓이 없습니다.</div>
+                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <div className="text-sm font-medium text-foreground dark:text-muted-foreground">조건에 맞는 라켓이 없습니다.</div>
                     <div className="text-xs text-muted-foreground mt-2">필터를 초기화하거나 검색어를 수정해 보세요.</div>
                   </div>
                 </div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-emerald-100 dark:border-emerald-800/30">
                   <Table>
-                    <TableHeader className="sticky top-0 z-10 backdrop-blur bg-emerald-50/80 supports-[backdrop-filter]:bg-emerald-50/60 dark:bg-slate-900/60 dark:supports-[backdrop-filter]:bg-slate-900/50 border-b border-emerald-100 dark:border-slate-700">
+                    <TableHeader className="sticky top-0 z-10 backdrop-blur bg-emerald-50/80 supports-[backdrop-filter]:bg-emerald-50/60 dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-emerald-100 dark:border-border">
                       <TableRow className="border-b border-emerald-100 dark:border-emerald-800/30">
                         <TableHead className="text-left text-emerald-700 dark:text-emerald-300">라켓 정보</TableHead>
                         <TableHead className="text-right text-emerald-700 dark:text-emerald-300">가격</TableHead>
@@ -272,18 +272,18 @@ export default function AdminRacketsClient() {
                     </TableHeader>
                     <TableBody>
                       {filteredItems.map((item) => (
-                        <TableRow key={item.id} className="border-b border-emerald-100 last:border-b-0 dark:border-slate-700 hover:bg-emerald-50/30 dark:hover:bg-slate-800/40 even:bg-emerald-50/20 dark:even:bg-slate-900/30 transition-colors">
+                        <TableRow key={item.id} className="border-b border-emerald-100 last:border-b-0 dark:border-border hover:bg-emerald-50/30 dark:hover:bg-card even:bg-emerald-50/20 dark:even:bg-card transition-colors">
                           <TableCell className="py-4">
                             <div className="flex items-center gap-3">
                               {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
                               <div>
-                                <div className="font-semibold text-slate-900 dark:text-white">{racketBrandLabel(item.brand)}</div>
-                                <div className="text-sm text-slate-600 dark:text-slate-400">{item.model}</div>
+                                <div className="font-semibold text-foreground dark:text-white">{racketBrandLabel(item.brand)}</div>
+                                <div className="text-sm text-muted-foreground dark:text-muted-foreground">{item.model}</div>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <span className="font-semibold text-slate-900 dark:text-white">{item.price?.toLocaleString()}원</span>
+                            <span className="font-semibold text-foreground dark:text-white">{item.price?.toLocaleString()}원</span>
                           </TableCell>
                           <TableCell className="text-center">
                             <ConditionBadge condition={item.condition} />

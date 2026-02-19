@@ -369,7 +369,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
                       <div className="space-y-2">
                         <div className="text-sm font-medium">HTML</div>
-                        {html ? <iframe title={`html-preview-${idx}`} srcDoc={html} sandbox="" className="h-[520px] w-full rounded-md border border-border/40 bg-white" /> : <div className="text-sm text-muted-foreground">HTML 없음</div>}
+                        {html ? <iframe title={`html-preview-${idx}`} srcDoc={html} sandbox="" className="h-[520px] w-full rounded-md border border-border/40 bg-card" /> : <div className="text-sm text-muted-foreground">HTML 없음</div>}
                       </div>
 
                       <div className="space-y-2">

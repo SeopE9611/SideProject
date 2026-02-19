@@ -557,7 +557,7 @@ export default function BoardsClient() {
                                     </Badge>
                                     {r.status === 'pending' && <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30">대기</Badge>}
                                     {r.status === 'resolved' && <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">완료</Badge>}
-                                    {r.status === 'rejected' && <Badge className="bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/30">반려</Badge>}
+                                    {r.status === 'rejected' && <Badge className="bg-card text-muted-foreground dark:text-muted-foreground border-border">반려</Badge>}
                                   </div>
 
                                   <div>

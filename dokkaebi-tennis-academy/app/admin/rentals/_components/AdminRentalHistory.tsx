@@ -75,8 +75,8 @@ function getActionMeta(action: HistoryItem['action']) {
       return {
         label: '취소 거절',
         Icon: XCircle,
-        wrapperClasses: 'border-slate-300/70 bg-slate-100/40 dark:border-slate-600/60 dark:bg-slate-900/30',
-        iconClasses: 'text-slate-700 dark:text-slate-200',
+        wrapperClasses: 'border-border bg-background dark:border-border dark:bg-card',
+        iconClasses: 'text-foreground dark:text-muted-foreground',
       };
     case 'cancel-withdrawn':
       return {

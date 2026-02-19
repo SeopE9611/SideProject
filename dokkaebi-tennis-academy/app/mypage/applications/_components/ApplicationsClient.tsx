@@ -371,12 +371,12 @@ export default function ApplicationsClient() {
                             <Badge
                               variant="outline"
                               className="border-border bg-muted/80 text-[11px] font-medium text-foreground
-          dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-slate-800"
+          dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-card"
                             >
                               원 주문 상세 보기
                             </Badge>
                           </Link>
-                          <span className="text-[11px] text-slate-400 dark:text-muted-foreground">주문 ID 끝자리 {orderId.slice(-6)}</span>
+                          <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">주문 ID 끝자리 {orderId.slice(-6)}</span>
                         </div>
                       )}
 

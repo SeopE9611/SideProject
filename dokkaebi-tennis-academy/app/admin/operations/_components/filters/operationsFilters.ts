@@ -14,13 +14,13 @@ export function prevMonthYyyymmKST() {
 }
 
 export function flowBadgeClass(flow?: Flow) {
-  if (!flow) return 'bg-slate-500/10 text-slate-700';
-  if (flow === 3) return 'bg-slate-500/10 text-slate-700';
+  if (!flow) return 'bg-card text-foreground';
+  if (flow === 3) return 'bg-card text-foreground';
   if (flow === 6 || flow === 7) return 'bg-violet-500/10 text-violet-700';
   if (flow === 4 || flow === 5) return 'bg-orange-500/10 text-orange-700';
   return 'bg-sky-500/10 text-sky-700';
 }
 
 export function settlementBadgeClass() {
-  return 'bg-slate-500/10 text-slate-600';
+  return 'bg-card text-muted-foreground';
 }

@@ -55,7 +55,7 @@ function mapApiToViewModel(response?: AdminRentalsListResponseDto): { items: Ren
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-gray-500/10 text-gray-500 dark:bg-gray-500/20',
+  pending: 'bg-card text-muted-foreground dark:bg-card',
   paid: 'bg-blue-500/10 text-blue-500 dark:bg-blue-500/20',
   out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
   returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
@@ -83,7 +83,7 @@ export default function AdminRentalsClient() {
     if (r.withStringService) {
       return { label: '교체서비스 포함', className: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200' };
     }
-    return { label: '단독', className: 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200' };
+    return { label: '단독', className: 'bg-background text-foreground dark:bg-card dark:text-muted-foreground' };
   }
   function getLinkBadge(r: RentalRow) {
     if (r.stringingApplicationId) {
@@ -397,7 +397,7 @@ export default function AdminRentalsClient() {
   }
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
-  const thClasses = 'px-4 py-2 text-center align-middle border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-700 dark:text-gray-300';
+  const thClasses = 'px-4 py-2 text-center align-middle border-b border-border dark:border-border font-semibold text-foreground dark:text-muted-foreground';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
   function PaymentBadge({ item }: { item: RentalRow }) {
@@ -422,7 +422,7 @@ export default function AdminRentalsClient() {
     }
 
     const map = {
-      none: ['운송장 없음', 'bg-slate-100 text-slate-700'],
+      none: ['운송장 없음', 'bg-background text-foreground'],
       'outbound-set': ['출고 운송장', 'bg-indigo-100 text-indigo-700'],
       'return-set': ['반납 운송장', 'bg-violet-100 text-violet-700'],
     } as const;
@@ -444,7 +444,7 @@ export default function AdminRentalsClient() {
         </div>
       </div>
 
-      <Card className="mb-5 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-6 py-5">
+      <Card className="mb-5 rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-6 py-5">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
@@ -583,7 +583,7 @@ export default function AdminRentalsClient() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-4 py-5">
+      <Card className="rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             {data ? (
@@ -593,15 +593,15 @@ export default function AdminRentalsClient() {
               </>
             ) : (
               <>
-                <Skeleton className="h-5 w-24 rounded bg-gray-200 dark:bg-gray-700" />
-                <Skeleton className="h-4 w-36 rounded bg-gray-100 dark:bg-gray-600" />
+                <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-card" />
+                <Skeleton className="h-4 w-36 rounded bg-background dark:bg-card" />
               </>
             )}
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground dark:bg-card dark:text-muted-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200')}>교체서비스 포함</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서 연결</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
@@ -612,24 +612,24 @@ export default function AdminRentalsClient() {
         </CardHeader>
         <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
           <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
-            <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-900 shadow-sm">
+            <TableHeader className="sticky top-0 bg-background dark:bg-card shadow-sm">
               <TableRow>
                 <TableHead className={cn(thClasses, 'w-[140px]')}>대여 ID</TableHead>
                 <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'customer' && 'text-primary')}>
                   고객
-                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 dark:text-gray-600 transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>라켓</TableHead>
                 <TableHead onClick={() => handleSort('date')} className={cn(thClasses, 'w-36 cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'date' && 'text-primary')}>
                   대여일
-                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 dark:text-gray-600 transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
+                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'date' && sortDirection === 'desc' && 'rotate-180')} />
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>기간</TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>상태</TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>결제/배송</TableHead>
                 <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
                   금액
-                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-gray-300 dark:text-gray-600 transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
+                  <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>…</TableHead>
               </TableRow>

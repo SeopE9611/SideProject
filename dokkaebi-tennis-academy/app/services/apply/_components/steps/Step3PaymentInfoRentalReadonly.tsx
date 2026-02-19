@@ -30,7 +30,7 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
         <p className="text-muted-foreground">대여 결제에서 이미 결제가 완료되었습니다</p>
       </div>
 
-      <Card className="border border-slate-200/70 dark:border-slate-700/70">
+      <Card className="border border-border dark:border-border">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <ReceiptText className="h-4 w-4" />
@@ -43,19 +43,19 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-slate-600 dark:text-slate-300">보증금</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">보증금</span>
             <span className="font-medium tabular-nums">{won(deposit)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600 dark:text-slate-300">대여료</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">대여료</span>
             <span className="font-medium tabular-nums">{won(fee)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600 dark:text-slate-300">스트링 상품</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">스트링 상품</span>
             <span className="font-medium tabular-nums">{won(stringPrice)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-600 dark:text-slate-300">교체 서비스</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">교체 서비스</span>
             <span className="font-medium tabular-nums">{won(stringingFee)}</span>
           </div>
           <div className="pt-2 border-t flex items-center justify-between">

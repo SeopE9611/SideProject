@@ -66,12 +66,12 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                   이번 신청은 일반 교체비 결제로 진행됩니다.
                 </p>
               ) : usingPackage ? (
-                <p className="mt-2 text-sm text-slate-800 dark:text-slate-50 leading-relaxed">
+                <p className="mt-2 text-sm text-foreground dark:text-muted-foreground leading-relaxed">
                   이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-emerald-700 dark:text-emerald-300">교체비는 0원</span>
                   으로 처리되며, 패키지에서 <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                 </p>
               ) : (
-                <p className="mt-2 text-sm text-slate-800 dark:text-slate-50 leading-relaxed">패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도 패키지를 사용할 수 있습니다.</p>
+                <p className="mt-2 text-sm text-foreground dark:text-muted-foreground leading-relaxed">패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도 패키지를 사용할 수 있습니다.</p>
               )}
 
               {/* 숫자 요약 뱃지들 */}
@@ -100,9 +100,9 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
                 return (
                   <div className="mt-4">
-                    <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
+                    <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span>
-                        총 {total}회 중 <span className="font-medium text-slate-700">{used}</span>회 사용
+                        총 {total}회 중 <span className="font-medium text-foreground">{used}</span>회 사용
                       </span>
                       <span className="tabular-nums">{remainPct}%</span>
                     </div>
@@ -125,7 +125,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                   }}
                   className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:border-emerald-600"
                 />
-                <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-slate-500 dark:text-slate-400' : 'cursor-pointer text-xs text-slate-800 dark:text-slate-100'}>
+                <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-muted-foreground dark:text-muted-foreground' : 'cursor-pointer text-xs text-foreground dark:text-muted-foreground'}>
                   이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
                 </Label>
               </div>
@@ -134,14 +134,14 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
         </div>
       ) : (
         /* 패키지 없음 카드 다크모드 적용 */
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/20 p-5">
+        <div className="rounded-2xl border border-border dark:border-border bg-background dark:bg-card p-5">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 shrink-0 rounded-full bg-slate-400/20 dark:bg-slate-600/20 grid place-content-center text-slate-500 dark:text-slate-400">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-muted dark:bg-card grid place-content-center text-muted-foreground dark:text-muted-foreground">
               <Ticket className="h-5 w-5" />
             </div>
             <div>
               <div className="font-medium dark:text-foreground">패키지가 없거나 잔여 횟수가 없습니다.</div>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비 제외)</p>
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비 제외)</p>
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
               name="shippingBank"
               value={formData.shippingBank}
               onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
-              className="w-full border border-border dark:border-gray-600 px-3 py-2 rounded-md bg-card dark:bg-slate-800 dark:text-foreground focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full border border-border dark:border-border px-3 py-2 rounded-md bg-card dark:bg-card dark:text-foreground focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
             >
               <option value="" disabled hidden>
                 입금하실 은행을 선택해주세요.
@@ -178,16 +178,16 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                 계좌 정보
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-card dark:bg-slate-800 rounded-lg border dark:border-slate-700">
-                  <span className="text-sm text-muted-foreground dark:text-gray-300">은행</span>
+                <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border dark:border-border">
+                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">은행</span>
                   <span className="font-medium text-foreground dark:text-foreground">{(bankLabelMap as any)[formData.shippingBank].label}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-card dark:bg-slate-800 rounded-lg border dark:border-slate-700">
-                  <span className="text-sm text-muted-foreground dark:text-gray-300">계좌번호</span>
+                <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border dark:border-border">
+                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">계좌번호</span>
                   <span className="font-mono font-medium text-foreground dark:text-foreground">{(bankLabelMap as any)[formData.shippingBank].account}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-card dark:bg-slate-800 rounded-lg border dark:border-slate-700">
-                  <span className="text-sm text-muted-foreground dark:text-gray-300">예금주</span>
+                <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border dark:border-border">
+                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">예금주</span>
                   <span className="font-medium text-foreground dark:text-foreground">{(bankLabelMap as any)[formData.shippingBank].holder}</span>
                 </div>
               </div>

@@ -19,7 +19,7 @@ export type BoardTypeConfig = {
   brandLabelMap?: Record<string, string>;
 };
 
-const defaultCategoryBadgeClass = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-500 dark:bg-gray-800/60 dark:text-gray-300';
+const defaultCategoryBadgeClass = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground';
 
 function createCategoryMap(categories: CategoryConfig[]) {
   return Object.fromEntries(categories.map((category) => [category.value, category]));
@@ -45,7 +45,7 @@ export const FREE_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'info', label: '정보', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' },
     { value: 'qna', label: '질문', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' },
     { value: 'tip', label: '노하우', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' },
-    { value: 'etc', label: '기타', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200' },
+    { value: 'etc', label: '기타', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-background text-foreground dark:bg-card dark:text-muted-foreground' },
   ]),
   defaultCategoryBadgeClass,
 };
@@ -99,9 +99,9 @@ export const GEAR_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'bag', label: '가방', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' },
     { value: 'apparel', label: '의류', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300' },
     { value: 'grip', label: '그립', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300' },
-    { value: 'accessory', label: '악세서리', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200' },
+    { value: 'accessory', label: '악세서리', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-background text-foreground dark:bg-card dark:text-muted-foreground' },
     { value: 'ball', label: '테니스볼', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300' },
-    { value: 'other', label: '기타', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-300' },
+    { value: 'other', label: '기타', badgeClass: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground' },
   ]),
   defaultCategoryBadgeClass,
 };

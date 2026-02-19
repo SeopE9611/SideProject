@@ -37,22 +37,22 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 py-8 px-4">
         <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
+            <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
               <Truck className="h-8 w-8 text-blue-600 mx-auto" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">배송 정보 관리</h1>
-            <p className="text-gray-600 dark:text-gray-400">주문 데이터를 불러올 수 없습니다.</p>
+            <h1 className="text-2xl font-bold text-foreground dark:text-muted-foreground mb-2">배송 정보 관리</h1>
+            <p className="text-muted-foreground dark:text-muted-foreground">주문 데이터를 불러올 수 없습니다.</p>
           </div>
 
-          <div className="rounded-2xl border border-red-200 bg-white/80 p-6 shadow-lg dark:border-red-900/50 dark:bg-gray-900/70">
-            <p className="text-sm text-gray-700 dark:text-gray-200">
+          <div className="rounded-2xl border border-red-200 bg-card p-6 shadow-lg dark:border-red-900/50 dark:bg-card">
+            <p className="text-sm text-foreground dark:text-muted-foreground">
               입력한 ID가 <strong>주문 ID</strong>가 아닐 수 있습니다. (예: <strong>교체서비스 신청서 ID</strong>를 주문 URL에 넣은 경우)
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href="/admin/orders" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Link href="/admin/orders" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-background dark:hover:bg-card">
                 주문 목록으로
               </Link>
-              <Link href="/admin/applications/stringing" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Link href="/admin/applications/stringing" className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-background dark:hover:bg-card">
                 교체서비스 신청 목록으로
               </Link>
             </div>
@@ -95,11 +95,11 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
       <div className="container mx-auto max-w-2xl">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
+          <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
             <Truck className="h-8 w-8 text-blue-600 mx-auto" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">{pageTitle}</h1>
-          <p className="text-gray-600 dark:text-gray-400">{pageDesc}</p>
+          <h1 className="text-3xl font-bold text-foreground dark:text-muted-foreground mb-2">{pageTitle}</h1>
+          <p className="text-muted-foreground dark:text-muted-foreground">{pageDesc}</p>
         </div>
 
         <ShippingFormClient

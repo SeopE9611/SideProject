@@ -22,12 +22,12 @@ export const splitDateTime = (iso?: string) => {
 };
 
 export const th =
-  'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-gray-50/90 dark:bg-gray-900/70 shadow-sm border-b border-slate-200 dark:border-slate-700 text-[12px] font-semibold text-slate-600 dark:text-slate-300 text-center';
+  'sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-background dark:bg-card shadow-sm border-b border-border dark:border-border text-[12px] font-semibold text-muted-foreground dark:text-muted-foreground text-center';
 export const td = 'px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums';
 
 export const roleColors: Record<'admin' | 'user', string> = {
   admin: 'bg-purple-100 text-purple-800 border-purple-200',
-  user: 'bg-slate-100 text-slate-700 border-slate-200',
+  user: 'bg-background text-foreground border-border',
 };
 
 export const STATUS = {
