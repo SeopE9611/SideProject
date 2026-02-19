@@ -320,7 +320,7 @@ export default function OrderList() {
                         <div className="text-sm font-medium text-foreground break-words">{item.name}</div>
                         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                           <span>{(item.price ?? 0).toLocaleString()}원</span>
-                          <span className="text-slate-400">×</span>
+                          <span className="text-muted-foreground">×</span>
                           <span>{item.quantity}개</span>
                         </div>
                       </div>

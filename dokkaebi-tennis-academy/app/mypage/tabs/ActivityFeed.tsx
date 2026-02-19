@@ -598,7 +598,7 @@ export default function ActivityFeed() {
           <Button size="sm" variant={filter === 'done' ? 'default' : 'outline'} onClick={() => setFilter('done')} className="rounded-lg h-9">
             완료
           </Button>
-          <div className="h-4 w-px bg-border dark:bg-slate-600 mx-1" />
+          <div className="h-4 w-px bg-border dark:bg-card mx-1" />
           <span className="text-sm font-medium text-foreground ">종류:</span>
           <Button size="sm" variant={kindFilter === 'all' ? 'default' : 'outline'} onClick={() => setKindFilter('all')} className="rounded-lg h-9">
             전체
@@ -612,7 +612,7 @@ export default function ActivityFeed() {
           <Button size="sm" variant={kindFilter === 'rental' ? 'default' : 'outline'} onClick={() => setKindFilter('rental')} className="rounded-lg h-9">
             대여
           </Button>
-          <div className="h-4 w-px bg-border dark:bg-slate-600 mx-1" />
+          <div className="h-4 w-px bg-border dark:bg-card mx-1" />
           <Button size="sm" variant={actionOnly ? 'default' : 'outline'} onClick={() => setActionOnly((v) => !v)} className="rounded-lg h-9">
             액션 필요만
           </Button>

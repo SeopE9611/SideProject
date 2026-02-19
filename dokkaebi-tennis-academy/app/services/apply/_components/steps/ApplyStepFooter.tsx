@@ -22,7 +22,7 @@ type Props = {
 
 export default function ApplyStepFooter({ currentStep, onPrev, onNext, isStepValid, isSubmitting, isOrderSlotBlocked, handleSubmit }: Props) {
   return (
-    <div className="flex justify-between mt-12 pt-8 border-t dark:border-slate-700">
+    <div className="flex justify-between mt-12 pt-8 border-t dark:border-border">
       <Button type="button" variant="outline" onClick={onPrev} disabled={currentStep === 1} className="px-8 py-3 transition-colors duration-200">
         이전
       </Button>

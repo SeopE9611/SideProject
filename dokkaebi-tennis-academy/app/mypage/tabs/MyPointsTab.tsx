@@ -201,7 +201,7 @@ export default function MyPointsTab() {
               {data.items.map((it, idx) => (
                 <div
                   key={it.id}
-                  className="group relative p-4 bp-sm:p-5 bp-lg:p-6 hover:bg-muted/30 dark:hover:bg-slate-700/30 transition-colors duration-200"
+                  className="group relative p-4 bp-sm:p-5 bp-lg:p-6 hover:bg-muted/30 dark:hover:bg-card transition-colors duration-200"
                   style={{
                     animation: `fadeIn 0.3s ease-out ${idx * 0.05}s both`,
                   }}

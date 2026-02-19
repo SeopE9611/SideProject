@@ -362,17 +362,17 @@ export default function FreeBoardWriteClient() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 > 글쓰기 */}
-            <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+            <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/free" onClick={guardLeave} className="text-gray-500 underline-offset-2 hover:underline dark:text-gray-300">
+              <Link href="/board/free" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 자유 게시판
               </Link>
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white md:text-3xl">자유 게시판 글쓰기</h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 md:text-base">테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-white md:text-3xl">자유 게시판 글쓰기</h1>
+            <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground md:text-base">테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.</p>
           </div>
 
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
@@ -390,14 +390,14 @@ export default function FreeBoardWriteClient() {
         </div>
 
         {/* 글쓰기 카드 */}
-        <Card className="border-0 bg-white/90 shadow-xl backdrop-blur-sm dark:bg-gray-900/80">
+        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/40">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-lg">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
             <div>
               <CardTitle className="text-base md:text-lg">자유 게시판 글 작성</CardTitle>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는 표현을 사용해 주세요.</p>
+              <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground md:text-sm">다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는 표현을 사용해 주세요.</p>
             </div>
           </CardHeader>
 
@@ -417,7 +417,7 @@ export default function FreeBoardWriteClient() {
                       }}
                       className={cn(
                         'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-gray-200 text-gray-600 dark:border-gray-700 dark:text-gray-300',
+                        category === opt.value ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/40 dark:text-blue-100' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}
@@ -441,7 +441,7 @@ export default function FreeBoardWriteClient() {
                   maxLength={TITLE_MAX}
                 />
                 {fieldErrors.title ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.title}</p> : null}
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
               </div>
@@ -462,11 +462,11 @@ export default function FreeBoardWriteClient() {
                   maxLength={CONTENT_MAX}
                 />
                 {fieldErrors.content ? <p className="text-xs text-red-600 dark:text-red-400">{fieldErrors.content}</p> : null}
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
 
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
+                <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
@@ -481,7 +481,7 @@ export default function FreeBoardWriteClient() {
 
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
                     <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
                   </TabsContent>
 
@@ -489,7 +489,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-white/60 dark:bg-gray-900/40"
+                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer bg-card dark:bg-card"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -507,9 +507,9 @@ export default function FreeBoardWriteClient() {
                         addFiles(Array.from(e.dataTransfer.files || []));
                       }}
                     >
-                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-300">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground dark:text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
+                      <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
                         이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
                       </p>
                       <Button
@@ -531,26 +531,26 @@ export default function FreeBoardWriteClient() {
                     {/* 선택된 파일 카드 목록 */}
                     {selectedFiles.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                           첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-white dark:bg-gray-900/80 px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
+                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-gray-200/60 hover:ring-2 hover:ring-blue-400 transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>
-                                <span className="text-gray-500 dark:text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="text-muted-foreground dark:text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                               </div>
 
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/80 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-red-500"
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-red-500"
                               >
                                 <X className="h-3 w-3" />
                               </button>

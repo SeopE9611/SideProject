@@ -84,12 +84,12 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
   const c = category ?? '';
 
   // 공통 fallback
-  const gray = 'bg-gray-100 text-gray-600 dark:bg-gray-800/60 dark:text-gray-300';
+  const gray = 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground';
 
   if (kind === 'free') {
     switch (c) {
       case 'general':
-        return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+        return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
       case 'info':
         return 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300';
       case 'qna':
@@ -131,7 +131,7 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
     case 'grip':
       return 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300';
     case 'accessory':
-      return 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200';
+      return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
     case 'ball':
       return 'bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300';
     case 'other':
@@ -165,7 +165,7 @@ function CommunityLatestCard({
   emptyText: string;
 }) {
   return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+    <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
       <CardHeader className={`${headerClassName} border-b`}>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -195,10 +195,10 @@ function CommunityLatestCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">{emptyText}</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">{emptyText}</div>
           ) : (
             items.map((post) => (
-              <div key={post.id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+              <div key={post.id} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
@@ -209,13 +209,13 @@ function CommunityLatestCard({
                           </Badge>
                         )}
 
-                        <Link href={`${listHref}/${post.id}`} className="font-semibold text-gray-900 dark:text-white hover:opacity-80 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`${listHref}/${post.id}`} className="font-semibold text-foreground dark:text-white hover:opacity-80 transition-colors flex-1 min-w-0 truncate">
                           {post.title}
                         </Link>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground dark:text-muted-foreground">
                       <span>{post.nickname ?? '익명'}</span>
                       <span>{fmt(post.createdAt)}</span>
                       <span className="flex items-center">
@@ -243,7 +243,7 @@ function FiveLineSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+        <div key={i} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
           <div className="space-y-2">
             <Skeleton className="h-5 w-3/4" />
             <div className="flex items-center space-x-4">
@@ -324,7 +324,7 @@ const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
 function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
   return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
+    <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -355,10 +355,10 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">등록된 공지가 없습니다.</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">등록된 공지가 없습니다.</div>
           ) : (
             items.map((notice) => (
-              <div key={notice._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+              <div key={notice._id} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
@@ -378,7 +378,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 제목 (1줄 말줄임) */}
-                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 min-w-0 truncate">
                           {notice.title}
                         </Link>
                       </div>
@@ -404,8 +404,8 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                       </div>
                     </div>
 
-                    {!!notice.excerpt && <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{notice.excerpt}</p>}
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                    {!!notice.excerpt && <p className="text-sm text-muted-foreground dark:text-muted-foreground mb-2">{notice.excerpt}</p>}
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground dark:text-muted-foreground">
                       <span>{fmt(notice.createdAt)}</span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
@@ -425,7 +425,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
 
 function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: boolean; error?: any }) {
   return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
+    <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-950/50 dark:to-teal-900/50 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -454,10 +454,10 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">등록된 문의가 없습니다.</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">등록된 문의가 없습니다.</div>
           ) : (
             items.map((qna) => (
-              <div key={qna._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+              <div key={qna._id} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     {/* 제목 줄: 왼쪽(카테고리/제목) · 오른쪽(답변상태) */}
@@ -470,7 +470,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
                         </Badge>
 
                         {/* 제목 (마지막, 잘림 처리) */}
-                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-foreground dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex-1 min-w-0 truncate">
                           {qna.title}
                         </Link>
                       </div>
@@ -483,7 +483,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground dark:text-muted-foreground">
                       <span>{qna.authorName ?? '익명'}</span>
                       <span>{fmt(qna.createdAt)}</span>
                       <span className="flex items-center">
@@ -504,7 +504,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
 
 function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoading?: boolean; error?: any }) {
   return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm h-full">
+    <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -533,21 +533,21 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500">등록된 리뷰가 없습니다.</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">등록된 리뷰가 없습니다.</div>
           ) : (
             items.map((review) => (
-              <div key={review._id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
+              <div key={review._id} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1 min-w-0">
                       <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getReviewTypeColor(review.type)}`}>
                         {review.type === 'product' ? '상품' : review.type === 'service' ? '서비스' : '기타'}
                       </Badge>
-                      <Link href="/reviews" className="font-semibold text-gray-900 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex-1 min-w-0 truncate ">
+                      <Link href="/reviews" className="font-semibold text-foreground dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex-1 min-w-0 truncate ">
                         {reviewExcerpt(review)}
                       </Link>
                     </div>
-                    <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground dark:text-muted-foreground">
                       <span>{review.userName ?? '익명'}</span>
                       <span>{fmt(review.createdAt)}</span>
                       <span className="flex items-center">
@@ -568,7 +568,7 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
 
 function CommunityIntroCard() {
   return (
-    <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+    <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
       <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/50 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -578,7 +578,7 @@ function CommunityIntroCard() {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-6 space-y-4 text-sm text-gray-600 dark:text-gray-300">
+      <CardContent className="p-6 space-y-4 text-sm text-muted-foreground dark:text-muted-foreground">
         <p>자유게시판, 중고거래, 장비 사용기, 리뷰까지 한 곳에서 빠르게 둘러볼 수 있어요.</p>
 
         <div className="grid gap-2 sm:grid-cols-4">
@@ -656,9 +656,9 @@ export default function BoardPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
               <MessageSquare className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white">게시판</h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground dark:text-white">게시판</h1>
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">리뷰와 커뮤니티 게시판의 최신글을 한 곳에서 확인해 보세요.</p>
+          <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">리뷰와 커뮤니티 게시판의 최신글을 한 곳에서 확인해 보세요.</p>
         </div>
 
         {/* 메인 게시판 카드들 */}

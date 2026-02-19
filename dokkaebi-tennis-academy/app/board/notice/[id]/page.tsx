@@ -151,7 +151,7 @@ export default function NoticeDetailPage() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
-              <div className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              <div className="mb-2 text-sm text-muted-foreground dark:text-muted-foreground">
                 <span className="font-medium text-teal-600 dark:text-teal-400">고객센터</span>
                 <span className="mx-1">›</span>
                 <span>공지사항</span>
@@ -160,7 +160,7 @@ export default function NoticeDetailPage() {
               {/* 공지 목록으로 돌아가기 */}
               <Link
                 href="/board/notice"
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white/80 border border-gray-200 rounded-full shadow-sm hover:bg-gray-50 hover:text-gray-900 transition-colors dark:bg-gray-800/80 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border rounded-full shadow-sm hover:bg-background hover:text-foreground transition-colors dark:bg-card dark:text-muted-foreground dark:border-border dark:hover:border-border"
               >
                 <ArrowLeft className="h-4 w-4" />
                 공지사항 목록으로 돌아가기
@@ -172,13 +172,13 @@ export default function NoticeDetailPage() {
             </Button>
           </div>
 
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80">
-            <CardHeader className="border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50">
+          <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
+            <CardHeader className="border-b border-border dark:border-border bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
-                    <div className="h-8 bg-gray-200 rounded-lg w-3/4 dark:bg-gray-700"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 dark:bg-gray-700"></div>
+                    <div className="h-8 bg-muted rounded-lg w-3/4 dark:bg-card"></div>
+                    <div className="h-4 bg-muted rounded w-1/2 dark:bg-card"></div>
                   </div>
                 )}
                 {error && (
@@ -218,10 +218,10 @@ export default function NoticeDetailPage() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg flex-shrink-0 mt-1">
                           <Bell className="h-5 w-5 text-white" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white leading-tight">{notice.title}</h1>
+                        <h1 className="text-3xl font-bold text-foreground dark:text-white leading-tight">{notice.title}</h1>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground dark:text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           <span className="font-medium">작성일</span>
@@ -263,13 +263,13 @@ export default function NoticeDetailPage() {
             <CardContent className="p-8 space-y-8">
               {!isLoading && error && (
                 <div className="text-center py-10">
-                  <p className="text-gray-600 dark:text-gray-300">{errorBody}</p>
+                  <p className="text-muted-foreground dark:text-muted-foreground">{errorBody}</p>
                 </div>
               )}
               {!isLoading && !error && notice && (
                 <>
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
-                    <div className="whitespace-pre-line break-words leading-relaxed text-gray-800 dark:text-gray-200">{String(notice.content || '')}</div>
+                    <div className="whitespace-pre-line break-words leading-relaxed text-foreground dark:text-muted-foreground">{String(notice.content || '')}</div>
                   </div>
 
                   {imageAtts.length > 0 && (
@@ -278,7 +278,7 @@ export default function NoticeDetailPage() {
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
                           <ImageIcon className="h-5 w-5 text-blue-600" />
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">이미지</h2>
+                          <h2 className="text-xl font-semibold text-foreground dark:text-white">이미지</h2>
                           <Badge variant="secondary" className="ml-2">
                             {imageAtts.length}개
                           </Badge>
@@ -295,7 +295,7 @@ export default function NoticeDetailPage() {
                                   alt: (imageAtts[0] as any)?.name || 'image-1',
                                 })
                               }
-                              className="block w-full overflow-hidden rounded-xl border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 shadow-lg hover:shadow-xl dark:border-gray-700 dark:hover:border-blue-400"
+                              className="block w-full overflow-hidden rounded-xl border-2 border-border hover:border-blue-500 transition-all duration-300 shadow-lg hover:shadow-xl dark:border-border dark:hover:border-blue-400"
                               aria-label="이미지 확대 보기"
                             >
                               <div className="relative">
@@ -320,7 +320,7 @@ export default function NoticeDetailPage() {
                                   <button
                                     type="button"
                                     onClick={() => setLightbox({ open: true, src: url, alt: name })}
-                                    className="relative block w-full rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg dark:border-gray-700 dark:hover:border-blue-400"
+                                    className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-blue-400"
                                     aria-label={`${name} 이미지 보기`}
                                   >
                                     <img src={url || '/placeholder.svg'} alt={name} className="w-full h-40 object-cover" />
@@ -343,7 +343,7 @@ export default function NoticeDetailPage() {
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5 text-blue-600" />
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">첨부파일</h2>
+                          <h2 className="text-xl font-semibold text-foreground dark:text-white">첨부파일</h2>
                           <Badge variant="secondary" className="ml-2">
                             {fileAtts.length}개
                           </Badge>
@@ -361,15 +361,15 @@ export default function NoticeDetailPage() {
                             return (
                               <div
                                 key={`file-${i}`}
-                                className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200"
+                                className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border dark:border-border transition-colors duration-200"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                                     <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <div className="font-medium text-gray-900 dark:text-white truncate">{name}</div>
-                                    {size && <div className="text-sm text-gray-500 dark:text-gray-400">{size}</div>}
+                                    <div className="font-medium text-foreground dark:text-white truncate">{name}</div>
+                                    {size && <div className="text-sm text-muted-foreground dark:text-muted-foreground">{size}</div>}
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -414,9 +414,9 @@ export default function NoticeDetailPage() {
               </div>
             )}
 
-            <CardFooter className="border-t border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50/50 to-teal-50/50 dark:from-blue-950/20 dark:to-teal-950/20 p-6">
+            <CardFooter className="border-t border-border dark:border-border bg-gradient-to-r from-blue-50/50 to-teal-50/50 dark:from-blue-950/20 dark:to-teal-950/20 p-6">
               <div className="w-full flex justify-center">
-                <Button variant="outline" size="lg" asChild className="px-8 bg-white/80 hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-800">
+                <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:bg-card dark:hover:bg-card">
                   <Link href="/board/notice">
                     <ArrowUp className="mr-2 h-4 w-4" />
                     목록으로 돌아가기

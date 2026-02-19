@@ -120,7 +120,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       case 'product':
         return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">상품 리뷰</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">기타 리뷰</Badge>;
+        return <Badge className="bg-background text-foreground hover:bg-muted">기타 리뷰</Badge>;
     }
   };
 
@@ -173,50 +173,50 @@ export default function ReviewDetailClient({ reviewId }: Props) {
         <CardContent className="space-y-8">
           {/* 평점 */}
           <div className="text-center py-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3">고객 평점</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-3">고객 평점</h3>
             {renderRating(review.rating)}
           </div>
 
           {/* 기본 정보 */}
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4 p-6 bg-gray-50 rounded-xl">
+            <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
                 <div className="bg-blue-100 rounded-lg p-2">
                   <User className="h-5 w-5 text-blue-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900">작성자 정보</h3>
+                <h3 className="font-semibold text-foreground">작성자 정보</h3>
               </div>
               <div className="space-y-2">
                 <div>
                   <p className="text-sm text-muted-foreground">이름</p>
-                  <p className="font-medium text-gray-900">{review.authorName}</p>
+                  <p className="font-medium text-foreground">{review.authorName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">이메일</p>
                   <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                     <p className="text-foreground">{review.authorEmail}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 p-6 bg-gray-50 rounded-xl">
+            <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
                 <div className="bg-emerald-100 rounded-lg p-2">
                   <Calendar className="h-5 w-5 text-emerald-600" />
                 </div>
-                <h3 className="font-semibold text-gray-900">리뷰 정보</h3>
+                <h3 className="font-semibold text-foreground">리뷰 정보</h3>
               </div>
               <div className="space-y-2">
                 <div>
                   <p className="text-sm text-muted-foreground">작성일</p>
-                  <p className="font-medium text-gray-900">{formatDate(review.createdAt)}</p>
+                  <p className="font-medium text-foreground">{formatDate(review.createdAt)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">리뷰 타입</p>
                   <div className="flex items-center space-x-2">
-                    <Tag className="h-4 w-4 text-gray-400" />
+                    <Tag className="h-4 w-4 text-muted-foreground" />
                     <span className="text-foreground">
                       {review.type === 'lesson' && '레슨 리뷰'}
                       {review.type === 'stringing' && '스트링 서비스 리뷰'}
@@ -229,18 +229,18 @@ export default function ReviewDetailClient({ reviewId }: Props) {
             </div>
           </div>
 
-          <Separator className="bg-gray-200" />
+          <Separator className="bg-muted" />
 
           {/* 내용 */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">리뷰 내용</h3>
+            <h3 className="text-lg font-semibold text-foreground">리뷰 내용</h3>
             <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border-l-4 border-emerald-500">
-              <p className="text-gray-800 leading-relaxed whitespace-pre-line text-lg">"{review.content}"</p>
+              <p className="text-foreground leading-relaxed whitespace-pre-line text-lg">"{review.content}"</p>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+        <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-border">
           <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-red-600 hover:bg-red-700 text-white">
             {isDeleting ? (
               <>

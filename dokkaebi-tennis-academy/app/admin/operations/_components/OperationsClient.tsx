@@ -325,7 +325,7 @@ export default function OperationsClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className="mb-5 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-6 py-5">
+      <Card className="mb-5 rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-6 py-5">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
@@ -349,7 +349,7 @@ export default function OperationsClient() {
           </div>
 
           {/* 필터 컴포넌트들 */}
-          <div className="grid w-full gap-2 border-t border-gray-200 dark:border-gray-700 pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
+          <div className="grid w-full gap-2 border-t border-border dark:border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
             <Select
               value={kind}
               onValueChange={(v: any) => {
@@ -496,17 +496,17 @@ export default function OperationsClient() {
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-gray-200 dark:border-gray-700 pt-3 mt-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-border dark:border-border pt-3 mt-1">
             <span className="font-medium text-foreground">범례</span>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>주문</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">|</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400')}>통합(연결됨)</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-600 dark:text-slate-400')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground dark:text-muted-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700 dark:text-rose-400')}>연결오류</Badge>
 
-            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">|</span>
             <span className="font-medium text-foreground">시나리오</span>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
@@ -517,7 +517,7 @@ export default function OperationsClient() {
       </Card>
 
       {/* 업무 목록 카드 */}
-      <Card className="rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 shadow-md px-4 py-5">
+      <Card className="rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             {data ? (
@@ -527,8 +527,8 @@ export default function OperationsClient() {
               </>
             ) : (
               <>
-                <Skeleton className="h-5 w-24 rounded bg-gray-200 dark:bg-gray-700" />
-                <Skeleton className="h-4 w-36 rounded bg-gray-100 dark:bg-gray-600" />
+                <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-card" />
+                <Skeleton className="h-4 w-36 rounded bg-background dark:bg-card" />
               </>
             )}
           </div>
@@ -552,15 +552,15 @@ export default function OperationsClient() {
         <CardContent className="p-0 pt-2">
           {isLoading ? (
             <div className="space-y-2 p-4">
-              <Skeleton className="h-12 w-full rounded bg-gray-200 dark:bg-gray-700" />
-              <Skeleton className="h-12 w-full rounded bg-gray-200 dark:bg-gray-700" />
-              <Skeleton className="h-12 w-full rounded bg-gray-200 dark:bg-gray-700" />
+              <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
+              <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
+              <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-b border-gray-200 dark:border-gray-700">
+                  <TableRow className="hover:bg-transparent border-b border-border dark:border-border">
                     <TableHead className={thClasses}>유형</TableHead>
                     <TableHead className={thClasses}>ID</TableHead>
                     <TableHead className={thClasses}>고객</TableHead>
@@ -689,7 +689,7 @@ export default function OperationsClient() {
                     return (
                       <Fragment key={g.key}>
                         {/* 그룹 대표(앵커) Row */}
-                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-slate-50/50 dark:bg-slate-900/30')}>
+                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-background dark:bg-card')}>
                           <TableCell className={tdClasses}>
                             <div className="flex flex-col gap-1">
                               {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
@@ -703,10 +703,10 @@ export default function OperationsClient() {
 
                               {/* 통합/단독 + (그룹 건수) */}
                               <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-emerald-500/10 text-emerald-600' : g.anchor.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-500/10 text-slate-600')}>
+                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-emerald-500/10 text-emerald-600' : g.anchor.isIntegrated ? 'bg-emerald-500/10 text-emerald-600' : 'bg-card text-muted-foreground')}>
                                   {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
                                 </Badge>
-                                {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700')}>{g.items.length}건</Badge>}
+                                {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>{g.items.length}건</Badge>}
                               </div>
                               {/* 7개 시나리오(Flow) */}
                               <div className="flex flex-wrap gap-1">
@@ -805,7 +805,7 @@ export default function OperationsClient() {
                           <TableCell className={tdClasses}>
                             <div className="space-y-1">
                               {g.anchor.paymentLabel ? (
-                                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{g.anchor.paymentLabel}</Badge>
+                                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
                               ) : (
                                 <span className="text-xs text-muted-foreground">-</span>
                               )}
@@ -865,7 +865,7 @@ export default function OperationsClient() {
                         {isGroup &&
                           isOpen &&
                           children.map((it) => (
-                            <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-slate-50/30 dark:bg-slate-900/20 hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
+                            <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-background dark:bg-card hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
                               <TableCell className={tdClasses}>
                                 <div className="flex flex-col gap-1">
                                   <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(it.kind)))}>{opsKindLabel(it.kind)}</Badge>
@@ -879,7 +879,7 @@ export default function OperationsClient() {
                               <TableCell className={tdClasses}>
                                 <div className="space-y-1 pl-6">
                                   <div className="flex flex-wrap items-center gap-2">
-                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-slate-500/10 text-slate-700 dark:text-slate-300')}>연결</Badge>
+                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground dark:text-muted-foreground')}>연결</Badge>
                                     <div className="font-medium text-sm">{shortenId(it.id)}</div>
                                     {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
                                       <Badge
@@ -913,7 +913,7 @@ export default function OperationsClient() {
 
                               <TableCell className={tdClasses}>
                                 {it.paymentLabel ? (
-                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-slate-500/10 text-slate-600')}>{it.paymentLabel}</Badge>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-card text-muted-foreground')}>{it.paymentLabel}</Badge>
                                 ) : (
                                   <span className="text-xs text-muted-foreground">-</span>
                                 )}
@@ -964,7 +964,7 @@ export default function OperationsClient() {
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 pt-4 mt-4">
+            <div className="flex items-center justify-between border-t border-border dark:border-border px-4 pt-4 mt-4">
               <p className="text-xs text-muted-foreground">
                 {page} / {totalPages} 페이지 (총 {total.toLocaleString('ko-KR')}건)
               </p>

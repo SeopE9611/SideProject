@@ -49,7 +49,7 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
       )}
 
       {/* 패키지 관련 최종 안내 */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-card/70 dark:bg-slate-900/30 p-5">
+      <div className="rounded-2xl border border-border dark:border-border bg-card/70 dark:bg-card p-5">
         <div className="flex items-center gap-2">
           <Badge
             className={
@@ -57,12 +57,12 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
                 ? 'bg-accent text-red-700 dark:bg-red-900/40 dark:text-red-100 border border-border/80'
                 : usingPackage
                   ? 'bg-accent text-emerald-700 dark:bg-emerald-900/40 dark:text-muted-foreground border border-border/80'
-                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-100 border border-slate-200/80'
+                  : 'bg-background text-foreground dark:bg-card dark:text-muted-foreground border border-border'
             }
           >
             {packageInsufficient ? '패키지 적용 불가' : usingPackage ? '패키지 적용' : '일반 결제'}
           </Badge>
-          <p className="text-sm text-slate-700 dark:text-slate-200">
+          <p className="text-sm text-foreground dark:text-muted-foreground">
             {packageInsufficient ? '이번 신청은 패키지 잔여 부족으로 일반 결제로 진행됩니다.' : usingPackage ? '이번 신청은 패키지로 처리되어 교체비가 0원으로 계산됩니다.' : '이번 신청은 일반 결제(무통장 입금)로 진행됩니다.'}
           </p>
         </div>

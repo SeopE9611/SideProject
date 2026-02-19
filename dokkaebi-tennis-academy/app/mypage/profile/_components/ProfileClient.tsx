@@ -324,15 +324,15 @@ export default function ProfileClient({ user }: Props) {
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardContent className="p-6">
  <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted dark:bg-muted">
- <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md">
  <User className="h-5 w-5" />
  <span className="text-xs font-medium">기본정보</span>
  </TabsTrigger>
- <TabsTrigger value="password" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <TabsTrigger value="password" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md">
  <Shield className="h-5 w-5" />
  <span className="text-xs font-medium">비밀번호</span>
  </TabsTrigger>
- <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <TabsTrigger value="address" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md">
  <MapPin className="h-5 w-5" />
  <span className="text-xs font-medium">배송지</span>
  </TabsTrigger>
@@ -343,7 +343,7 @@ export default function ProfileClient({ user }: Props) {
  <MdSportsTennis className="h-5 w-5" />
  <span className="text-xs font-medium">테니스 프로필</span>
  </TabsTrigger>
- <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-md">
+ <TabsTrigger value="preferences" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md">
  <Bell className="h-5 w-5" />
  <span className="text-xs font-medium">설정</span>
  </TabsTrigger>
@@ -389,7 +389,7 @@ export default function ProfileClient({ user }: Props) {
  id="name"
  value={profileData.name ?? ''}
  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="이름을 입력해주세요"
  />
  {/* 소셜 가입/연동 제공자 표시 (표시용) */}
@@ -423,7 +423,7 @@ export default function ProfileClient({ user }: Props) {
  type="email"
  value={profileData.email ?? ''}
  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="example@naver.com"
  />
  </div>
@@ -436,7 +436,7 @@ export default function ProfileClient({ user }: Props) {
  id="phone"
  value={profileData.phone ?? ''}
  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="01012345678"
  />
  </div>
@@ -475,7 +475,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.currentPassword}
  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  />
  </div>
  <div className="space-y-2">
@@ -487,7 +487,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.newPassword}
  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  />
  <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
  </div>
@@ -500,7 +500,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.confirmPassword}
  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  />
  </div>
 
@@ -560,7 +560,7 @@ export default function ProfileClient({ user }: Props) {
  address: { ...profileData.address, address2: e.target.value },
  })
  }
- className="h-12 border-border dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
+ className="h-12 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400"
  placeholder="동, 호수 등 상세주소"
  />
  </div>

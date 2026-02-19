@@ -622,7 +622,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardContent className="p-4 bp-sm:p-6">
  <div className="space-y-4">
  {orderDetail.items.map((item, idx) => (
- <div key={idx} className="flex items-center p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-gray-700 transition-colors space-x-4">
+ <div key={idx} className="flex items-center p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-card transition-colors space-x-4">
  {/* 상품 썸네일 */}
  {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded" />}
 

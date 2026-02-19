@@ -24,7 +24,7 @@ import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 import { DEFAULT_PACKAGE_LIST_FILTERS, PASS_STATUS_LABELS, badgeSizeCls, fetcher, packageStatusColors, packageTypeColors, paymentStatusColors, type PackageListItem, type PackageMetrics, type PackageOrder, type PackageType, type PackagesResponse, type PassStatus, type PaymentStatus, type ServiceType, type SortKey } from '@/app/admin/packages/_lib/packagesPageConfig';
 
 function SkeletonBox({ className = '' }: { className?: string }) {
-  return <div className={cn('animate-pulse rounded bg-slate-200/70 dark:bg-slate-700/50', className)} />;
+  return <div className={cn('animate-pulse rounded bg-muted dark:bg-card', className)} />;
 }
 
 function SortableTH({
@@ -376,8 +376,8 @@ export default function PackageOrdersClient() {
   // 공통 스타일 상수
   const thClasses =
     'sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle ' +
-    'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-900/70 dark:supports-[backdrop-filter]:bg-slate-900/60 ' +
-    'border-b border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 ' +
+    'bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:bg-card dark:supports-[backdrop-filter]:bg-card ' +
+    'border-b border-border dark:border-border text-muted-foreground dark:text-muted-foreground ' +
     'font-semibold text-[11px] leading-[1.05] box-border';
 
   const tdClasses = 'px-3 py-2 align-middle text-center text-[11px] leading-tight tabular-nums';
@@ -438,7 +438,7 @@ export default function PackageOrdersClient() {
       case 'destructive':
         return 'bg-red-100 text-red-800 border border-red-200';
       case 'muted':
-        return 'bg-gray-100 text-gray-800 border border-gray-200';
+        return 'bg-background text-foreground border border-border';
       case 'warning':
         return 'bg-amber-100 text-amber-800 border border-amber-200';
       case 'success':
@@ -656,9 +656,9 @@ export default function PackageOrdersClient() {
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
-              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm max-h-[60vh] min-w-0">
+              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border dark:border-border shadow-sm max-h-[60vh] min-w-0">
                 <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs " aria-busy={isValidating && packages.length === 0}>
-                  <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-900 shadow-sm">
+                  <TableHeader className="sticky top-0 bg-background dark:bg-card shadow-sm">
                     <TableRow>
                       <TableHead className={cn(thClasses, 'w-[120px]')}>패키지 ID</TableHead>
 
@@ -754,7 +754,7 @@ export default function PackageOrdersClient() {
                       <TableRow>
                         <TableCell colSpan={11} className="py-12">
                           <div className="flex flex-col items-center gap-3 text-center">
-                            <div className="text-base font-medium text-slate-700 dark:text-slate-300">{hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}</div>
+                            <div className="text-base font-medium text-foreground dark:text-muted-foreground">{hasAnyFilter ? '검색 결과가 없습니다.' : '등록된 패키지가 없습니다.'}</div>
                             <div className="text-sm text-muted-foreground">{hasAnyFilter ? '검색어나 필터를 조정해 보세요.' : '첫 패키지를 생성해 보세요.'}</div>
 
                             <div className="mt-2 flex items-center gap-2">
@@ -838,9 +838,9 @@ export default function PackageOrdersClient() {
                                     <div className="flex flex-col items-center text-center">
                                       <span className="font-medium max-w-[200px] truncate">
                                         {baseName}
-                                        {isGuest && <span className="ml-1 text-xs text-gray-500">(비회원)</span>}
+                                        {isGuest && <span className="ml-1 text-xs text-muted-foreground">(비회원)</span>}
                                       </span>
-                                      <span className="text-xs text-muted-foreground dark:text-gray-400 max-w-[200px] truncate">{cEmail}</span>
+                                      <span className="text-xs text-muted-foreground dark:text-muted-foreground max-w-[200px] truncate">{cEmail}</span>
                                     </div>
                                   );
                                 })()}
@@ -862,7 +862,7 @@ export default function PackageOrdersClient() {
                               {/* 진행률 (바 + %) */}
                               <TableCell className={cn(tdClasses, col.progress, 'whitespace-nowrap')}>
                                 <div className="flex flex-col items-center gap-1">
-                                  <div className="w-[56px] bg-gray-200 rounded-full h-1.5 xl:w-[72px] dark:bg-slate-700" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
+                                  <div className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card" role="progressbar" aria-label="진행률" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercentage}>
                                     <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
                                   </div>
                                   <span className="text-xs font-medium">{progressPercentage}%</span>
@@ -962,7 +962,7 @@ export default function PackageOrdersClient() {
                           {it}
                         </Button>
                       ) : (
-                        <span key={idx} className="px-2 text-muted-foreground dark:text-slate-400 select-none">
+                        <span key={idx} className="px-2 text-muted-foreground dark:text-muted-foreground select-none">
                           …
                         </span>
                       )

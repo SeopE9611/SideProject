@@ -33,7 +33,7 @@ export default function BoardsLoading() {
               <Skeleton className="h-10 w-full sm:w-[300px]" />
             </div>
 
-            <div className="rounded-md border dark:border-gray-700">
+            <div className="rounded-md border dark:border-border">
               <Table>
                 <TableHeader>
                   <TableRow>

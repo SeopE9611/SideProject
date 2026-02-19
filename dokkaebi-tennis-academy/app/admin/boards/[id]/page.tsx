@@ -46,7 +46,7 @@ function getStatusColor(status: string) {
     case 'public':
       return 'bg-green-500/20 text-green-500 hover:bg-green-500/30';
     case 'hidden':
-      return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
+      return 'bg-card text-muted-foreground hover:bg-card';
     default:
       return 'bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30';
   }
@@ -74,7 +74,7 @@ function getBoardTypeColor(type: string) {
     case 'faq':
       return 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30';
     default:
-      return 'bg-gray-500/20 text-gray-500 hover:bg-gray-500/30';
+      return 'bg-card text-muted-foreground hover:bg-card';
   }
 }
 
@@ -163,12 +163,12 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           <div className="bg-gradient-to-r from-blue-50 via-teal-50 to-green-50 dark:from-blue-950/20 dark:via-teal-950/20 dark:to-green-950/20 rounded-2xl p-8 border border-blue-100 dark:border-blue-800/30 shadow-lg">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+                <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">게시물 상세 보기</h1>
-                  <p className="mt-1 text-gray-600 dark:text-gray-400">게시물의 상세 정보를 확인하고 관리할 수 있습니다.</p>
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-muted-foreground">게시물 상세 보기</h1>
+                  <p className="mt-1 text-muted-foreground dark:text-muted-foreground">게시물의 상세 정보를 확인하고 관리할 수 있습니다.</p>
                 </div>
               </div>
               <BoardDetailActions postId={postId} currentStatus={postStatus} />
@@ -184,7 +184,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                   {!!post.category && <Badge variant="outline">{post.category}</Badge>}
                   {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
                 </div>
-                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">{post.title || '(제목 없음)'}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-foreground dark:text-muted-foreground">{post.title || '(제목 없음)'}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="prose prose-blue dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: safeContent }} />
@@ -196,31 +196,31 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                 <CardTitle className="text-blue-800 dark:text-blue-200">게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
                   <User className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">{post.authorDisplayName || post.authorNickname || '작성자 미상'}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{post.authorNickname || post.authorId || '-'}</p>
+                    <p className="text-sm font-medium leading-none text-foreground dark:text-muted-foreground">{post.authorDisplayName || post.authorNickname || '작성자 미상'}</p>
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">{post.authorNickname || post.authorId || '-'}</p>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
                   <Calendar className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">작성일</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{formatDate(post.createdAt)}</p>
+                    <p className="text-sm font-medium leading-none text-foreground dark:text-muted-foreground">작성일</p>
+                    <p className="text-sm text-muted-foreground dark:text-muted-foreground">{formatDate(post.createdAt)}</p>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
                   <Eye className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">조회수</p>
+                    <p className="text-sm font-medium leading-none text-foreground dark:text-muted-foreground">조회수</p>
                     <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.views ?? 0)}</p>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
                   <MessageSquare className="mr-3 h-4 w-4 text-blue-600" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-gray-900 dark:text-gray-100">댓글</p>
+                    <p className="text-sm font-medium leading-none text-foreground dark:text-muted-foreground">댓글</p>
                     <p className="text-sm text-blue-600 dark:text-blue-400 font-semibold">{Number(post.commentsCount ?? 0)}개</p>
                   </div>
                 </div>

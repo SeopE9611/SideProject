@@ -11,7 +11,7 @@ export default function ProductsTableSkeleton({ rows = 10 }: { rows?: number }) 
         <TableRow key={i} className="animate-pulse">
           {Array.from({ length: COLS }).map((__, j) => (
             <TableCell key={j}>
-              <div className="h-4 w-[70%] rounded bg-gray-200/70" />
+              <div className="h-4 w-[70%] rounded bg-muted" />
             </TableCell>
           ))}
         </TableRow>

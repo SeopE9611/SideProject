@@ -221,12 +221,12 @@ export default function ProductsClient() {
         {commonErrorMessage && <div className="text-center text-red-500">{commonErrorMessage}</div>}
         <div className="mb-2">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="bg-white dark:bg-gray-800 rounded-full p-3 shadow-md">
+            <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
               <Package className="h-8 w-8 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100">상품 관리</h1>
-              <p className="mt-2 text-base text-gray-600 dark:text-gray-400">테니스 스트링 상품을 효율적으로 관리하세요</p>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-muted-foreground">상품 관리</h1>
+              <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">테니스 스트링 상품을 효율적으로 관리하세요</p>
             </div>
           </div>
         </div>
@@ -262,8 +262,8 @@ export default function ProductsClient() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{c.label}</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-blue-200/50 dark:bg-blue-800/50 animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">{c.label}</p>
+                    <p className="text-3xl font-bold text-foreground dark:text-muted-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-blue-200/50 dark:bg-blue-800/50 animate-pulse align-middle" /> : c.value}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-blue-100 dark:border-blue-800/30`}>{c.icon}</div>
                 </div>
@@ -285,7 +285,7 @@ export default function ProductsClient() {
                   // 사이즈/레이아웃
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
                   // 색상(라이트/다크 모두 자연스러운 플랫)
-                  'bg-blue-600 hover:bg-blue-700 text-white',
+                  'bg-blue-600 hover:bg-primary text-primary-foreground',
                   'dark:bg-sky-500 dark:hover:bg-sky-400',
                   // 경계/그림자: 지나치지 않게만
                   'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
@@ -319,8 +319,8 @@ export default function ProductsClient() {
                       onChange={(e) => handleSearchChange(e.target.value)}
                       className="pl-8 h-9 text-xs
              border-blue-200 focus:border-blue-400
-             dark:border-slate-700 dark:focus:border-blue-500
-             bg-white dark:bg-slate-900"
+             dark:border-border dark:focus:border-blue-500
+             bg-card dark:bg-card"
                     />
                     {searchTerm && (
                       <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-blue-50 dark:hover:bg-blue-950/20" onClick={() => handleSearchChange('')}>
@@ -340,7 +340,7 @@ export default function ProductsClient() {
                     size="sm"
                     onClick={resetFilters}
                     className="w-full border-blue-200 hover:bg-blue-50
-             dark:border-slate-700 dark:hover:bg-slate-900/40"
+             dark:border-border dark:hover:bg-card"
                   >
                     필터 초기화
                   </Button>
@@ -348,7 +348,7 @@ export default function ProductsClient() {
                     variant="outline"
                     size="sm"
                     className="w-full bg-transparent border-blue-200 hover:bg-blue-50
-             dark:border-slate-700 dark:hover:bg-slate-900/40"
+             dark:border-border dark:hover:bg-card"
                     onClick={() => setSort(null)}
                   >
                     정렬 초기화
@@ -364,8 +364,8 @@ export default function ProductsClient() {
                   <TableHeader
                     className="sticky top-0 z-10 backdrop-blur
              bg-blue-50/80 supports-[backdrop-filter]:bg-blue-50/60
-             dark:bg-slate-900/60 dark:supports-[backdrop-filter]:bg-slate-900/50
-             border-b border-blue-100 dark:border-slate-700"
+             dark:bg-card dark:supports-[backdrop-filter]:bg-card
+             border-b border-blue-100 dark:border-border"
                   >
                     <TableRow className="border-b border-blue-100 dark:border-blue-800/30">
                       <TableHead className="w-[32%] text-left text-blue-700 dark:text-blue-300">
@@ -399,7 +399,7 @@ export default function ProductsClient() {
                       <TableRow className="border-0">
                         <TableCell colSpan={8} className="text-center" style={{ height: ROW_PX * PAGE_SIZE }}>
                           <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">조건에 맞는 스트링이 없습니다.</div>
+                            <div className="text-sm font-medium text-foreground dark:text-muted-foreground">조건에 맞는 스트링이 없습니다.</div>
                             <div className="text-xs text-muted-foreground">필터를 초기화하거나 검색어를 수정해 보세요.</div>
                             <div className="mt-3 flex items-center gap-2">
                               <Button
@@ -429,15 +429,15 @@ export default function ProductsClient() {
                           <TableRow
                             key={s._id}
                             className="h-14 border-b border-blue-100 last:border-b-0
-             dark:border-slate-700
-             hover:bg-blue-50/30 dark:hover:bg-slate-800/40
-             even:bg-blue-50/20 dark:even:bg-slate-900/30
+             dark:border-border
+             hover:bg-blue-50/30 dark:hover:bg-card
+             even:bg-blue-50/20 dark:even:bg-card
              transition-colors"
                           >
                             <TableCell className="text-left align-middle py-3">
                               <Link href={`/products/${s._id}`} className="hover:text-blue-600 dark:hover:text-blue-400">
                                 <div className="space-y-1">
-                                  <div className="truncate font-medium text-gray-900 dark:text-gray-100">{s.name}</div>
+                                  <div className="truncate font-medium text-foreground dark:text-muted-foreground">{s.name}</div>
                                   <div className="font-mono text-[11px] text-muted-foreground">{s.sku}</div>
                                 </div>
                               </Link>
@@ -453,10 +453,10 @@ export default function ProductsClient() {
                               </Badge>
                             </TableCell>
 
-                            <TableCell className="text-center align-middle text-gray-900 dark:text-gray-100">{s.gauge}</TableCell>
-                            <TableCell className="text-center align-middle text-gray-900 dark:text-gray-100">{materialLabel(s.material)}</TableCell>
+                            <TableCell className="text-center align-middle text-foreground dark:text-muted-foreground">{s.gauge}</TableCell>
+                            <TableCell className="text-center align-middle text-foreground dark:text-muted-foreground">{materialLabel(s.material)}</TableCell>
 
-                            <TableCell className="text-right align-middle font-medium text-gray-900 dark:text-gray-100">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
+                            <TableCell className="text-right align-middle font-medium text-foreground dark:text-muted-foreground">{s.price?.toLocaleString?.() ?? s.price}원</TableCell>
 
                             <TableCell className="text-right align-middle">
                               {s.inventory?.stock && s.inventory.stock > 0 ? <span className="font-medium text-blue-600 dark:text-blue-400">{s.inventory.stock}</span> : <span className="font-medium text-rose-600 dark:text-rose-400">품절</span>}

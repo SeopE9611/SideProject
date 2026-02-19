@@ -240,16 +240,16 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
           <div
             className="
                 block cursor-pointer rounded-xl
-                border border-slate-200/80 dark:border-slate-700/60
-                bg-card/90 dark:bg-slate-800/80
+                border border-border dark:border-border
+                bg-card/90 dark:bg-card
                 px-4 py-3 shadow-sm
-                hover:bg-slate-50 dark:hover:bg-slate-700/80
+                hover:bg-background dark:hover:bg-card
                 transition text-sm
                 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
               "
           >
-            <div className="font-semibold mb-1 text-slate-900 dark:text-slate-100">자가 발송 안내</div>
-            <p className="mb-3 text-slate-700 dark:text-slate-300">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
+            <div className="font-semibold mb-1 text-foreground dark:text-muted-foreground">자가 발송 안내</div>
+            <p className="mb-3 text-foreground dark:text-muted-foreground">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
             <button
               type="button"
               onClick={async () => {
@@ -297,7 +297,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
             <Label
               htmlFor="cm-self"
-              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-card dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+              className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
              peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
@@ -314,7 +314,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
             <Label
               htmlFor="cm-visit"
-              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-card dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+              className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
              peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
@@ -332,9 +332,9 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
             <Label
               htmlFor="cm-pickup"
-              className="block cursor-pointer rounded-xl border border-slate-200 dark:border-slate-700 bg-card dark:bg-slate-800 px-4 py-3 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition
+              className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
              peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-blue-900/30 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-blue-200 dark:peer-data-[state=checked]:ring-blue-800
-             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-slate-800"
+             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
             >
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4" />
@@ -344,7 +344,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             </Label>
           </div>
         </RadioGroup>
-        {lockCollection && <p className="mt-2 text-xs text-slate-500">라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.</p>}
+        {lockCollection && <p className="mt-2 text-xs text-muted-foreground">라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.</p>}
 
         {/* 기사 방문 수거 선택 시 추가 입력 */}
         {normalizeCollection(formData.collectionMethod) === 'courier_pickup' && !courierPickupDisabled && (
@@ -376,9 +376,9 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       </div>
       {/* 로딩 오버레이 */}
       {isUserLoading && (
-        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-slate-900/40 backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
-          <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-400 dark:border-slate-500 border-t-transparent" />
+        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-slate-200/60 dark:ring-slate-700/60 grid place-content-center">
+          <div className="flex items-center gap-3 text-foreground dark:text-muted-foreground">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border dark:border-border border-t-transparent" />
             <span className="text-sm">회원 정보 불러오는 중…</span>
           </div>
         </div>

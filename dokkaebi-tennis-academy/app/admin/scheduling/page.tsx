@@ -240,8 +240,8 @@ export default function StringingSettingsPage() {
                 <Settings2 className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{/* was: text-slate-900 */}교체 서비스 예약 · 영업일 설정</h1>
-                <p className="text-sm text-muted-foreground mt-1">{/* was: text-slate-600 */}영업일 및 예약 슬롯 관리</p>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">{/* was: text-foreground */}교체 서비스 예약 · 영업일 설정</h1>
+                <p className="text-sm text-muted-foreground mt-1">{/* was: text-muted-foreground */}영업일 및 예약 슬롯 관리</p>
               </div>
             </div>
           </div>
@@ -302,11 +302,11 @@ export default function StringingSettingsPage() {
               <CardContent className="space-y-8 p-6">
                 <div>
                   <div className="mb-4 flex items-center justify-between">
-                    <Label className="text-sm font-medium text-foreground">{/* was: text-slate-700 */}동시 수용량</Label>
+                    <Label className="text-sm font-medium text-foreground">{/* was: text-foreground */}동시 수용량</Label>
                     <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm px-3 py-1">{capacity}명</Badge>
                   </div>
                   <Slider value={[capacity]} onValueChange={(v) => setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))} min={1} max={10} step={1} className="mt-3" />
-                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{/* was: text-slate-500 */}예) 2로 저장하면 동일 시간대 최대 2건까지 접수됩니다.</p>
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{/* was: text-muted-foreground */}예) 2로 저장하면 동일 시간대 최대 2건까지 접수됩니다.</p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">

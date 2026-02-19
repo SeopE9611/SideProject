@@ -503,7 +503,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  {/* 주문 정보 입력 폼 */}
  <div className="lg:col-span-2 space-y-6">
  {/* 선택된 패키지 정보 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
  <div className="bg-primary 0/10 via-purple-500/10 0/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-accent" />
@@ -563,15 +563,15 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-accent">{selectedPackage.sessions}회</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 교체</div>
  </div>
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-indigo-600">{selectedPackage.validityPeriod}</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">유효기간</div>
  </div>
- <div className="text-center p-4 bg-card/50 dark:bg-slate-800/50 rounded-lg">
+ <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-primary">{perSessionPrice.toLocaleString()}원</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">회당 가격</div>
  </div>
@@ -622,7 +622,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </Card>
 
  {/* 신청자 정보 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
  <div className="bg-primary 0/10 via-emerald-500/10 0/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <UserIcon className="h-5 w-5 text-primary" />
@@ -694,14 +694,14 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  이 정보를 저장
  </label>
  </div>
- {!user && <p className="text-xs text-slate-500 dark:text-slate-400 ml-6 mt-1">로그인 후 정보를 저장할 수 있습니다.</p>}
+ {!user && <p className="text-xs text-muted-foreground dark:text-muted-foreground ml-6 mt-1">로그인 후 정보를 저장할 수 있습니다.</p>}
  </div>
  </div>
  </CardContent>
  </Card>
 
  {/* 서비스 이용 방식 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
  <div className="bg-primary from-purple-500/10 via-pink-500/10 to-red-500/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <MapPin className="h-5 w-5 text-primary" />
@@ -754,12 +754,12 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  우편번호 찾기
  </Button>
  </div>
- <Input id="service-postal" readOnly value={postalCode} placeholder="우편번호" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed max-w-[200px] border-2" />
+ <Input id="service-postal" readOnly value={postalCode} placeholder="우편번호" className="bg-background dark:bg-card cursor-not-allowed max-w-[200px] border-2" />
  </div>
 
  <div className="space-y-2">
  <Label htmlFor="service-address">서비스 주소</Label>
- <Input id="service-address" readOnly value={address} placeholder="기본 주소" className="bg-slate-100 dark:bg-slate-700 cursor-not-allowed border-2" />
+ <Input id="service-address" readOnly value={address} placeholder="기본 주소" className="bg-background dark:bg-card cursor-not-allowed border-2" />
  </div>
 
  <div className="space-y-2">
@@ -784,7 +784,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </Card>
 
  {/* 결제 정보 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
  <div className="bg-primary from-emerald-500/10 via-teal-500/10 to-cyan-500/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <CreditCard className="h-5 w-5 text-primary" />
@@ -867,7 +867,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </Card>
 
  {/* 주문자 동의 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-slate-800/80 border-0 shadow-xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
  <div className="bg-primary from-red-500/10 via-pink-500/10 to-rose-500/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Shield className="h-5 w-5 text-primary" />
@@ -889,7 +889,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  setAgreeRefund(newValue);
  }}
  />
- <label htmlFor="agree-all" className="font-semibold text-lg text-slate-800 dark:text-slate-200">
+ <label htmlFor="agree-all" className="font-semibold text-lg text-foreground dark:text-muted-foreground">
  전체 동의
  </label>
  </div>
@@ -923,7 +923,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
  }}
  />
- <label htmlFor={item.id} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+ <label htmlFor={item.id} className="text-sm font-medium text-foreground dark:text-muted-foreground">
  {item.label}
  </label>
  </div>
@@ -941,7 +941,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  {/* 주문 요약 */}
  <div className="lg:col-span-1">
  <div className="lg:sticky lg:top-20">
- <Card className="backdrop-blur-sm bg-card/90 dark:bg-slate-800/90 border-0 shadow-2xl overflow-hidden">
+ <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl overflow-hidden">
  <div className="bg-primary    p-6 text-foreground">
  <CardTitle className="flex items-center gap-3 text-xl">
  <div className="p-2 bg-card/20 rounded-full">
@@ -953,19 +953,19 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <CardContent className="p-6 space-y-6">
  <div className="space-y-4">
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">패키지 금액</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">패키지 금액</span>
  <span className="font-semibold text-lg">{selectedPackage.price.toLocaleString()}원</span>
  </div>
 
  {hasDiscount && (
  <>
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">정가</span>
- <span className="text-slate-400 line-through">{selectedPackage.originalPrice!.toLocaleString()}원</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">정가</span>
+ <span className="text-muted-foreground line-through">{selectedPackage.originalPrice!.toLocaleString()}원</span>
  </div>
 
  <div className="flex justify-between items-center">
- <span className="text-slate-600 dark:text-slate-400">할인 금액</span>
+ <span className="text-muted-foreground dark:text-muted-foreground">할인 금액</span>
  <span className="text-primary font-semibold">-{discountAmount.toLocaleString()}원</span>
  </div>
  </>

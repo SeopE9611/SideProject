@@ -90,7 +90,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </div>
         <div className="relative container py-16">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg">
+            <div className="p-3 bg-card backdrop-blur-sm rounded-2xl shadow-lg">
               <UserCog2Icon className="h-8 w-8" />
             </div>
             <div>

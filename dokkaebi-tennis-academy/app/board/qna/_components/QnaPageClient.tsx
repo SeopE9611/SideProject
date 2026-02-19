@@ -285,20 +285,20 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">고객센터 · Q&amp;A</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">도깨비 테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">고객센터 · Q&amp;A</h1>
+                <p className="text-lg text-muted-foreground dark:text-muted-foreground">도깨비 테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>
           </div>
 
           {/* KPI 미사용 주석처리 (삭제는 일단 대기) */}
           {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">전체 문의</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{total}</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 문의</p>
+                    <p className="text-2xl font-bold text-foreground dark:text-white">{total}</p>
                   </div>
                   <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-2">
                     <MessageSquare className="h-5 w-5 text-teal-600 dark:text-teal-400" />
@@ -307,12 +307,12 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">답변 완료</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{answeredCount}</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">답변 완료</p>
+                    <p className="text-2xl font-bold text-foreground dark:text-white">{answeredCount}</p>
                   </div>
                   <div className="bg-green-50 dark:bg-green-950/50 rounded-xl p-2">
                     <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -321,12 +321,12 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">답변 대기</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{waitingCount}</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">답변 대기</p>
+                    <p className="text-2xl font-bold text-foreground dark:text-white">{waitingCount}</p>
                   </div>
                   <div className="bg-yellow-50 dark:bg-yellow-950/50 rounded-xl p-2">
                     <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
@@ -335,12 +335,12 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               </CardContent>
             </Card>
 
-            <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-lg backdrop-blur-sm">
+            <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">총 조회수</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalViews}</p>
+                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">총 조회수</p>
+                    <p className="text-2xl font-bold text-foreground dark:text-white">{totalViews}</p>
                   </div>
                   <div className="bg-purple-50 dark:bg-purple-950/50 rounded-xl p-2">
                     <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -351,13 +351,13 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
           </div> */}
         </div>
 
-        <Card className="border-0 bg-white/80 dark:bg-gray-800/80 shadow-xl backdrop-blur-sm">
+        <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50 border-b">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-teal-600" />
                 <span>Q&A 목록</span>
-                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-gray-300/70 border-t-gray-700 rounded-full animate-spin" />}
+                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-gray-700 rounded-full animate-spin" />}
               </div>
 
               <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
@@ -383,7 +383,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     pushUrl({ page: nextPage, category: v, answerFilter, keyword, field });
                   }}
                 >
-                  <SelectTrigger className="w-[140px] bg-white dark:bg-gray-700">
+                  <SelectTrigger className="w-[140px] bg-card dark:bg-card">
                     <SelectValue placeholder="카테고리" />
                   </SelectTrigger>
                   <SelectContent>
@@ -411,7 +411,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     pushUrl({ page: nextPage, category, answerFilter: nextAnswerFilter, keyword, field });
                   }}
                 >
-                  <SelectTrigger className="w-[120px] bg-white dark:bg-gray-700">
+                  <SelectTrigger className="w-[120px] bg-card dark:bg-card">
                     <SelectValue placeholder="답변 상태" />
                   </SelectTrigger>
                   <SelectContent>
@@ -424,7 +424,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
 
               <div className="flex items-center space-x-2">
                 <Select value={inputField} onValueChange={(v) => setInputField(v === 'title' || v === 'content' || v === 'title_content' ? v : 'all')}>
-                  <SelectTrigger className="w-[120px] bg-white dark:bg-gray-700">
+                  <SelectTrigger className="w-[120px] bg-card dark:bg-card">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
                   <SelectContent>
@@ -436,11 +436,11 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 </Select>
 
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="search"
                     placeholder="검색어를 입력하세요"
-                    className="w-[200px] pl-10 bg-white dark:bg-gray-700"
+                    className="w-[200px] pl-10 bg-card dark:bg-card"
                     value={inputKeyword}
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
@@ -516,7 +516,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   const displayTitle = qna.isSecret && !canOpenSecret ? '비밀글입니다' : qna.title;
 
                   const CardInner = (
-                    <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-gray-200 dark:border-gray-700">
+                    <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-border dark:border-border">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
@@ -537,9 +537,9 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                               </Badge>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
+                            <h3 className="text-lg font-semibold text-foreground dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
 
-                            <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-500">
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground dark:text-muted-foreground">
                               <div className="flex items-center space-x-2">
                                 <Avatar className="h-6 w-6">
                                   <AvatarFallback className="text-xs">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
@@ -581,16 +581,16 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   );
                 })}
 
-              {!isLoading && !error && items.length === 0 && <div className="text-sm text-gray-500">{keyword.trim() ? '검색 결과가 없습니다.' : '등록된 문의가 없습니다.'}</div>}
+              {!isLoading && !error && items.length === 0 && <div className="text-sm text-muted-foreground">{keyword.trim() ? '검색 결과가 없습니다.' : '등록된 문의가 없습니다.'}</div>}
             </div>
 
             <div className="mt-8 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2">
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card dark:bg-card" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">첫 페이지</span>
                   «
                 </Button>
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card dark:bg-card" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="15 18 9 12 15 6" />
@@ -602,7 +602,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     key={pageNumber}
                     variant="outline"
                     size="sm"
-                    className={pageNumber === page ? 'h-10 w-10 bg-teal-600 text-white border-teal-600' : 'h-10 w-10 bg-white dark:bg-gray-700'}
+                    className={pageNumber === page ? 'h-10 w-10 bg-primary text-primary-foreground border-teal-600' : 'h-10 w-10 bg-card dark:bg-card'}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >
@@ -610,13 +610,13 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   </Button>
                 ))}
 
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card dark:bg-card" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
-                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-700" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card dark:bg-card" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">마지막 페이지</span>
                   »
                 </Button>
@@ -631,7 +631,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     placeholder="페이지"
                     className="h-10 w-20"
                   />
-                  <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-white dark:bg-gray-700" disabled={isBusy}>
+                  <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-card dark:bg-card" disabled={isBusy}>
                     이동
                   </Button>
                 </form>

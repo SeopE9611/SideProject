@@ -292,8 +292,8 @@ export default function UserDetailClient({ id }: { id: string }) {
       <div className="space-y-6">
         <div className="h-10 w-64 rounded-xl bg-muted animate-pulse" />
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="h-60 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-muted/30 animate-pulse" />
-          <div className="h-60 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 bg-muted/30 animate-pulse" />
+          <div className="h-60 rounded-2xl border border-border dark:border-border bg-muted/30 animate-pulse" />
+          <div className="h-60 rounded-2xl border border-border dark:border-border bg-muted/30 animate-pulse" />
         </div>
       </div>
     );
@@ -367,8 +367,8 @@ export default function UserDetailClient({ id }: { id: string }) {
         <TooltipProvider>
           {/* 상단 스티키 액션바 */}
           <div
-            className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-slate-200/70 dark:border-slate-800/70
-             bg-card/80 dark:bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-slate-950/60"
+            className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border dark:border-border
+             bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card"
           >
             <div className="mx-auto max-w-5xl flex items-center justify-between gap-2">
               {/* 좌측: 뒤로 */}
@@ -487,7 +487,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
           {/* 히어로 헤더 */}
           <div
-            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-emerald-50/25 to-slate-50 dark:from-slate-900 dark:via-transparent dark:to-slate-950', 'border-slate-200/70 dark:border-slate-800/70')}
+            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-emerald-50/25 to-slate-50 dark:from-slate-900 dark:via-transparent dark:to-slate-950', 'border-border dark:border-border')}
           >
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">
@@ -508,7 +508,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-xl md:text-2xl font-bold tracking-tight">{user.name ?? '(이름없음)'}</h1>
-                    <Badge variant="secondary" className={user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700'}>
+                    <Badge variant="secondary" className={user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-background text-foreground'}>
                       {user.role === 'admin' ? '관리자' : '일반'}
                     </Badge>
                     <StatusBadge status={statusKey(user)} />
@@ -591,9 +591,9 @@ export default function UserDetailClient({ id }: { id: string }) {
                   />
 
                   {/* 최근 로그인 장치 */}
-                  <div className="mt-2 rounded-xl border bg-white/70 dark:bg-slate-950/60 border-slate-200/70 dark:border-slate-800/70 p-2">
+                  <div className="mt-2 rounded-xl border bg-card dark:bg-card border-border dark:border-border p-2">
                     <div className="mb-2 flex items-center justify-between">
-                      <div className="text-sm font-medium text-slate-700 dark:text-slate-200">최근 로그인 장치</div>
+                      <div className="text-sm font-medium text-foreground dark:text-muted-foreground">최근 로그인 장치</div>
                       <Button variant="outline" size="sm" onClick={() => setCleanupOpen(true)} className="whitespace-nowrap">
                         세션 로그 정리
                       </Button>
@@ -740,7 +740,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                           readOnly
                           aria-readonly
                           value={form.postalCode ?? user.postalCode ?? ''}
-                          className="bg-muted/40 text-slate-700 dark:text-slate-200"
+                          className="bg-muted/40 text-foreground dark:text-muted-foreground"
                           onClick={handleOpenPostcode} // 클릭만으로도 검색 열기 원하면 유지
                         />
                         <Button variant="outline" className="shrink-0 whitespace-nowrap" onClick={handleOpenPostcode} disabled={!daumReady}>
@@ -751,7 +751,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
                     {/* 주소 */}
                     <FormRow label="주소" htmlFor="addr" colSpan>
-                      <Input id="addr" readOnly aria-readonly value={form.address ?? user.address ?? ''} className="bg-muted/40 text-slate-700 dark:text-slate-200" onClick={handleOpenPostcode} />
+                      <Input id="addr" readOnly aria-readonly value={form.address ?? user.address ?? ''} className="bg-muted/40 text-foreground dark:text-muted-foreground" onClick={handleOpenPostcode} />
                     </FormRow>
 
                     {/* 상세주소 */}
@@ -840,7 +840,7 @@ function normalizeIp(ip?: string) {
 // 한 줄 UI
 function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os: string; browser: string; isMobile: boolean }; highlight?: boolean }) {
   return (
-    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-slate-200/70 dark:border-slate-800/70 bg-card/80 dark:bg-slate-950/60', highlight && 'ring-1 ring-emerald-200/70 dark:ring-emerald-900/40')}>
+    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border dark:border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-emerald-200/70 dark:ring-emerald-900/40')}>
       <div className={cn('grid size-9 place-items-center rounded-lg', s.isMobile ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300')}>
         {s.isMobile ? <Smartphone className="h-4 w-4" /> : <MonitorSmartphone className="h-4 w-4" />}
       </div>
@@ -852,7 +852,7 @@ function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os:
           <Badge className={cn('border-0 hidden sm:inline-block', s.isMobile ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700')}>{s.isMobile ? '모바일' : '데스크탑'}</Badge>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <code className="rounded bg-slate-100 px-1.5 py-0.5 dark:bg-slate-800">{normalizeIp(s.ip)}</code>
+          <code className="rounded bg-background px-1.5 py-0.5 dark:bg-card">{normalizeIp(s.ip)}</code>
           <span className="shrink-0">
             {new Date(s.at).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })} · {fromNowK(s.at)}
           </span>
@@ -888,11 +888,11 @@ function StatCard({
     emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300',
     sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300',
     violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300',
-    slate: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    slate: 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground',
   };
 
   const content = (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200/70 dark:border-slate-800/70 p-3 bg-white/70 dark:bg-slate-950/60 shadow-sm">
+    <div className="flex items-center gap-3 rounded-xl border border-border dark:border-border p-3 bg-card dark:bg-card shadow-sm">
       <div className={cn('grid size-8 place-items-center rounded-lg', toneMap[tone])}>{icon}</div>
       <div className="flex-1">
         <div className="text-xs text-muted-foreground">{label}</div>
@@ -936,7 +936,7 @@ function Row({ title, subtitle, right, href }: { title: React.ReactNode; subtitl
     </div>
   );
   return href ? (
-    <Link href={href} target="_blank" rel="noreferrer" className="block hover:bg-slate-50 dark:hover:bg-slate-900/50 rounded-lg px-2 -mx-2 py-2 transition-colors">
+    <Link href={href} target="_blank" rel="noreferrer" className="block hover:bg-background dark:hover:bg-card rounded-lg px-2 -mx-2 py-2 transition-colors">
       {core}
     </Link>
   ) : (

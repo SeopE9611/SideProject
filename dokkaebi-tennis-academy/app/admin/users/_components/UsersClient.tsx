@@ -647,11 +647,11 @@ export default function UsersClient() {
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {canSuspend && canUnsuspend && (
                 <>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/70 dark:bg-white/5 border border-blue-200/70 dark:border-blue-800 px-2 py-1 text-blue-700 dark:text-blue-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card dark:bg-card border border-blue-200/70 dark:border-blue-800 px-2 py-1 text-blue-700 dark:text-blue-200">
                     <UserCheck className="h-3.5 w-3.5" />
                     활성화 가능 {selectedRows.filter((u) => !u.isDeleted && u.isSuspended).length}건
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/70 dark:bg-white/5 border border-blue-200/70 dark:border-blue-800 px-2 py-1 text-blue-700 dark:text-blue-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card dark:bg-card border border-blue-200/70 dark:border-blue-800 px-2 py-1 text-blue-700 dark:text-blue-200">
                     <UserX className="h-3.5 w-3.5" />
                     비활성화 가능 {selectedRows.filter((u) => !u.isDeleted && !u.isSuspended).length}건
                   </span>
@@ -680,7 +680,7 @@ export default function UsersClient() {
         </div>
 
         <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
-          <div className="relative rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm min-w-0">
+          <div className="relative rounded-2xl border border-border dark:border-border shadow-sm min-w-0">
             <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
               {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
               <colgroup>
@@ -693,7 +693,7 @@ export default function UsersClient() {
                 <col style={{ width: '64px' }} />
                 <col style={{ width: '44px' }} />
               </colgroup>
-              <TableHeader className="sticky top-0 z-10 bg-slate-50/90 backdrop-blur shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
+              <TableHeader className="sticky top-0 z-10 bg-background backdrop-blur shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
                 <TableRow>
                   <TableHead className={cn(th, 'w-[40px] px-0')}>
                     <Checkbox ref={allCheckboxRef} checked={isAllSelected} onCheckedChange={() => handleSelectAll()} aria-label="전체 선택" className="mx-auto" />
@@ -716,29 +716,29 @@ export default function UsersClient() {
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={`sk-${i}`} className="border-b last:border-0">
                       <TableCell className={td}>
-                        <div className="h-4 w-4 mx-auto rounded bg-gray-200" />
+                        <div className="h-4 w-4 mx-auto rounded bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-3.5 w-40 mx-auto rounded bg-gray-200" />
-                        <div className="h-3 w-28 mx-auto mt-1 rounded bg-gray-200" />
+                        <div className="h-3.5 w-40 mx-auto rounded bg-muted" />
+                        <div className="h-3 w-28 mx-auto mt-1 rounded bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-4 w-10 mx-auto rounded-full bg-gray-200" />
+                        <div className="h-4 w-10 mx-auto rounded-full bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-3.5 w-24 mx-auto rounded bg-gray-200" />
+                        <div className="h-3.5 w-24 mx-auto rounded bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-3.5 w-48 mx-auto rounded bg-gray-200" />
+                        <div className="h-3.5 w-48 mx-auto rounded bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-3.5 w-28 mx-auto rounded bg-gray-200" />
+                        <div className="h-3.5 w-28 mx-auto rounded bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-4 w-10 mx-auto rounded-full bg-gray-200" />
+                        <div className="h-4 w-10 mx-auto rounded-full bg-muted" />
                       </TableCell>
                       <TableCell className={td}>
-                        <div className="h-5 w-5 mx-auto rounded bg-gray-200" />
+                        <div className="h-5 w-5 mx-auto rounded bg-muted" />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -763,7 +763,7 @@ export default function UsersClient() {
                             <span className="font-medium truncate">{u.name || '(이름없음)'}</span>
                             <div className="flex items-center gap-1 text-[11px] text-muted-foreground min-w-0">
                               <span className="truncate">{u.email}</span>
-                              <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-100" onClick={() => copy(u.email)} title="복사" aria-label="이메일 복사">
+                              <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background" onClick={() => copy(u.email)} title="복사" aria-label="이메일 복사">
                                 <Copy className="w-3 h-3" />
                               </button>
                             </div>
@@ -790,12 +790,12 @@ export default function UsersClient() {
                               <a href={`tel:${u.phone}`} className="underline decoration-dotted">
                                 {u.phone}
                               </a>
-                              <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-100" onClick={() => copy(u.phone!)} title="복사" aria-label="전화번호 복사">
+                              <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background" onClick={() => copy(u.phone!)} title="복사" aria-label="전화번호 복사">
                                 <Copy className="w-3 h-3" />
                               </button>
                             </div>
                           ) : (
-                            <span className="text-slate-400">-</span>
+                            <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
 
@@ -804,7 +804,7 @@ export default function UsersClient() {
                           <div className="min-w-0 flex items-center justify-center gap-1">
                             <span className="truncate block max-w-[250px]">{shortAddress(u.address)}</span>
                             <button
-                              className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-slate-100"
+                              className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
                               onClick={() => copy(fullAddress(u.postalCode, u.address, u.addressDetail))}
                               title="전체 주소 복사"
                               aria-label="주소 복사"

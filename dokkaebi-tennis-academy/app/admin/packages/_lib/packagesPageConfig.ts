@@ -19,9 +19,9 @@ export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
 export const packageStatusColors: Record<PassStatus | '대기', string> = {
   비활성: 'bg-amber-100 text-amber-800 border-amber-200',
   활성: 'bg-green-100 text-green-800 border-green-200',
-  만료: 'bg-gray-100 text-gray-800 border-gray-200',
+  만료: 'bg-background text-foreground border-border',
   취소: 'bg-red-100 text-red-800 border-red-200',
-  대기: 'bg-slate-100 text-slate-700 border-slate-200',
+  대기: 'bg-background text-foreground border-border',
 };
 
 export type PackageListItem = AdminPackageListItemDto;
