@@ -1118,6 +1118,7 @@ export default function LoginPageClient() {
  <Button
  type="submit"
  className={
+ // 브랜드 예외: 소셜 회원가입 완료 버튼은 제휴사(Naver/Kakao) 브랜드 색상을 유지합니다.
  isSocialOauthRegister
  ? oauthProvider === 'naver'
  ? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'
