@@ -213,7 +213,7 @@ export default function ServicesPage() {
                     <p className="text-muted-foreground dark:text-muted-foreground mb-6">
                       스트링 교체 신청서를 통해 예약 요청을 남겨주세요. <br />
                     </p>
-                    <Button className="w-full bg-primary hover:bg-primary/90" asChild>
+                    <Button variant="default" className="w-full" asChild>
                       <Link href="/services/apply">
                         <Calendar className="w-4 h-4 mr-2" />
                         교체 신청하러 가기
@@ -255,13 +255,13 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                  <Button variant="outline" className="border-border text-foreground hover:bg-primary hover:text-primary-foreground bg-transparent" asChild>
+                  <Button variant="outline"  asChild>
                     <Link href="/board/qna">
                       <HelpCircle className="mr-2 h-4 w-4" />
                       자주 묻는 질문
                     </Link>
                   </Button>
-                  <Button className="bg-primary hover:bg-primary/90" asChild>
+                  <Button variant="default" asChild>
                     <Link href="/products">
                       <ArrowRight className="mr-2 h-4 w-4" />
                       테니스 스트링 쇼핑하기
@@ -304,13 +304,13 @@ export default function ServicesPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
+              <Button size="lg" variant="default" className="shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300" asChild>
                 <Link href="#booking">
                   <Calendar className="w-5 h-5 mr-2" />
                   지금 예약하기
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-border/30 text-primary-foreground hover:bg-card/10 backdrop-blur-sm bg-transparent" asChild>
+              <Button size="lg" variant="outline" className="backdrop-blur-sm" asChild>
                 <Link href="#string-types">
                   <ArrowRight className="w-5 h-5 mr-2" />
                   서비스 둘러보기
@@ -604,7 +604,7 @@ export default function ServicesPage() {
           </div> */}
 
           <div className="text-center">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
+            <Button size="lg" variant="default" className="shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
               {/* <Link href="/reviews/write?service=stringing"> */}
               <Link href="/reviews">
                 <Star className="w-5 h-5 mr-2" />

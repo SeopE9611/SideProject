@@ -167,7 +167,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <h3 className="text-xl font-bold text-yellow-100">패키지 활성화 안내</h3>
  </div>
  <p className="text-yellow-200 mb-4">입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다.</p>
- <Button className="bg-primary from-yellow-500 0 hover:from-yellow-600 hover:to-orange-600 text-foreground font-semibold shadow-lg" asChild>
+ <Button variant="default" className="font-semibold shadow-lg" asChild>
  <Link href="/services" className="flex items-center gap-2">
  서비스 예약하기
  <ArrowRight className="h-4 w-4" />
@@ -355,7 +355,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <CardFooter className="bg-primary from-slate-50/50 via-blue-50/30 to-purple-50/30 dark:from-slate-800/50 dark:via-slate-700/30 dark:to-slate-600/30 p-6">
  <div className="flex flex-col sm:flex-row gap-4 w-full">
  <Button
- className="flex-1 h-12 bg-primary    hover:from-blue-700 hover:via-purple-700 hover:to-teal-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+ variant="default" className="flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
  asChild
  >
  <Link href={isLoggedIn ? '/mypage?tab=passes' : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
@@ -364,7 +364,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <ArrowRight className="h-4 w-4" />
  </Link>
  </Button>
- <Button variant="outline" className="flex-1 h-12 border-2 hover:bg-slate-50 dark:hover:bg-slate-700 bg-transparent" asChild>
+ <Button variant="outline" className="flex-1 h-12 border-2" asChild>
  <Link href="/services/packages" className="flex items-center gap-2">
  <Gift className="h-5 w-5" />
  다른 패키지 보기

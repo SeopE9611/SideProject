@@ -767,7 +767,7 @@ export default function TensionGuidePage() {
                 <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-primary-foreground">최적의 텐션으로 스트링 서비스를 받아보세요</h3>
                 <p className="text-primary-foreground/90 text-sm bp-md:text-base bp-lg:text-lg">스트링어가 정밀하게 작업해 드립니다</p>
               </div>
-              <Button asChild size="lg" className="bg-card text-accent hover:bg-accent/10 px-6 bp-md:px-8 whitespace-nowrap">
+              <Button asChild size="lg" variant="secondary" className="px-6 bp-md:px-8 whitespace-nowrap">
                 <Link href="/services/apply">
                   스트링 신청하기
                   <ArrowRight className="ml-2 h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -783,7 +783,7 @@ export default function TensionGuidePage() {
                 <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-primary-foreground">나에게 맞는 라켓을 찾아보세요</h3>
                 <p className="text-primary-foreground/90 text-sm bp-md:text-base bp-lg:text-lg">라켓 파인더를 활용해 나의 라켓을 선택해보세요</p>
               </div>
-              <Button asChild size="lg" className="bg-card text-accent hover:bg-accent/10 px-6 bp-md:px-8 whitespace-nowrap">
+              <Button asChild size="lg" variant="secondary" className="px-6 bp-md:px-8 whitespace-nowrap">
                 <Link href="/rackets/finder">
                   라켓 파인더 사용하기
                   <ArrowRight className="ml-2 h-4 w-4 bp-md:h-5 bp-md:w-5" />

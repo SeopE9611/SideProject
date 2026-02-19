@@ -247,7 +247,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <br />
  <span className="text-sm text-accent/80">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
  </p>
- <Button className="bg-primary 0 to-indigo-500 hover: hover:to-indigo-600 text-foreground font-semibold shadow-lg" asChild>
+ <Button variant="default" className="font-semibold shadow-lg" asChild>
  <Link href={`/services/applications/${applicationId}/shipping`} className="flex items-center gap-2">
  운송장 등록하기
  <ArrowRight className="h-4 w-4" />
@@ -667,13 +667,13 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <CardFooter className="bg-background dark:bg-slate-700 rounded-b-lg p-8">
  <div className="flex flex-col sm:flex-row gap-4 w-full">
- <Button className="flex-1 h-12 bg-primary 0 to-indigo-600 hover: hover:to-indigo-700 text-foreground transition-all duration-200" asChild>
+ <Button variant="default" className="flex-1 h-12 transition-all duration-200" asChild>
  <Link href={`/mypage?${new URLSearchParams({ tab: 'applications', id: String(application._id) }).toString()}`}>
  <FileText className="h-5 w-5 mr-2" />
  신청 내역 보기
  </Link>
  </Button>
- <Button variant="outline" className="flex-1 h-12 hover:bg-background transition-colors duration-200 bg-transparent" asChild>
+ <Button variant="outline" className="flex-1 h-12 transition-colors duration-200" asChild>
  <Link href="/">
  <Home className="h-5 w-5 mr-2" />
  홈으로 돌아가기
