@@ -32,6 +32,7 @@ import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/use
 import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/products';
 import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/productFormOptions';
 import { createSearchKeywords } from './hooks/useKeywordGenerator';
+import { adminFormHintTooltipClass } from '@/lib/tooltip-style';
 import { fetchProductDetail } from './actions/productActions';
 import { parseSearchKeywordsInput } from './table/productTableUtils';
 import {
@@ -835,14 +836,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                 side="top"
                                 align="center"
                                 sideOffset={4}
-                                style={{
-                                  backgroundColor: 'rgb(var(--popover))',
-                                  color: 'rgb(var(--popover-foreground))',
-                                  border: '1px solid rgb(var(--border))',
-                                  borderRadius: '8px',
-                                  boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.1)',
-                                }}
-                                className="px-4 py-2 text-sm max-w-[260px]"
+                                className={adminFormHintTooltipClass}
                               >
                                 <p>해당 스트링을 이용한 장착 서비스 비용을 입력하세요.</p>
                               </TooltipContent>

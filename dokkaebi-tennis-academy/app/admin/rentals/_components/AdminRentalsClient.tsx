@@ -22,6 +22,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { racketBrandLabel } from '@/lib/constants';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
+import { adminRichTooltipClass } from '@/lib/tooltip-style';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalsListResponseDto, AdminRentalShippingFilter } from '@/types/admin/rentals';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
@@ -705,11 +706,7 @@ export default function AdminRentalsClient() {
                               side="top"
                               align="center"
                               sideOffset={6}
-                              style={{
-                                backgroundColor: 'rgb(var(--popover))',
-                                color: 'rgb(var(--popover-foreground))',
-                              }}
-                              className="px-5 py-2.5 rounded-lg shadow-lg border text-base min-w-[240px]"
+                              className={adminRichTooltipClass}
                             >
                               <div>
                                 <div className="flex items-center gap-2">
