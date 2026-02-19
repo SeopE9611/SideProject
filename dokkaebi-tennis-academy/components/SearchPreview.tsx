@@ -47,7 +47,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  <div className={`relative ${className}`} ref={containerRef}>
  {/* 입력창 */}
  <div className="relative">
- <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-cyan-500 dark:text-cyan-300" />
+ <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
  <Input
  type="search"
  value={query}
@@ -58,11 +58,11 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  placeholder={placeholder}
  className="
  w-full pl-12 rounded-2xl
- border border-cyan-300 dark:border-cyan-700
+ border border-border
  bg-card shadow-md
  text-foreground 
  placeholder:text-muted-foreground dark:placeholder:text-muted-foreground
- focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400
+ focus:ring-2 focus:ring-ring focus:border-border
  transition-colors
  "
  />
@@ -74,7 +74,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  className="
  absolute z-50 mt-2 w-full
  bg-card
- border border-gray-100 dark:border-border
+ border border-border
  shadow-lg rounded-2xl max-h-80 overflow-y-auto
  transition-all
  "
@@ -90,7 +90,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  href={href}
  className="
  flex items-center gap-4 px-4 py-3
- hover:bg-cyan-50 dark:hover:bg-cyan-900/30
+ hover:bg-accent/50
  transition-all group
  "
  onClick={() => {
@@ -98,14 +98,14 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  onSelect?.(); // 바깥(=Header Sheet)에게 "선택됨" 알림
  }}
  >
- {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl shadow" /> : <div className="w-14 h-14 bg-gray-100 rounded-xl" />}
+ {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl shadow" /> : <div className="w-14 h-14 bg-muted rounded-xl" />}
 
  <div className="flex flex-col gap-1">
- <div className="text-base font-semibold text-gray-800 group-hover:text-cyan-500">{item.name}</div>
+ <div className="text-base font-semibold text-foreground group-hover:text-accent">{item.name}</div>
  <div className="flex items-center gap-2 text-xs text-muted-foreground ">
  {/* 타입 뱃지: 라켓 / 스트링 구분 */}
- <span className="inline-flex items-center rounded-full border border-cyan-300 px-2 py-0.5 text-[11px] text-cyan-700 dark:text-cyan-200">{item.type === 'racket' ? '중고 라켓' : '스트링'}</span>
- {typeof item.price === 'number' && item.price > 0 && <span className="text-cyan-600 dark:text-cyan-300">{item.price.toLocaleString()}원</span>}
+ <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] text-foreground">{item.type === 'racket' ? '중고 라켓' : '스트링'}</span>
+ {typeof item.price === 'number' && item.price > 0 && <span className="text-accent">{item.price.toLocaleString()}원</span>}
  </div>
  </div>
  </Link>
@@ -113,9 +113,9 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  })
  ) : (
  <div className="flex flex-col items-center justify-center py-7 px-4 text-muted-foreground text-base min-h-[120px]">
- <SearchX className="w-10 h-10 text-cyan-400 dark:text-cyan-300 mb-2" />
+ <SearchX className="w-10 h-10 text-muted-foreground mb-2" />
  <div>
- <span className="font-semibold text-cyan-600 dark:text-cyan-300">“{query}”</span>
+ <span className="font-semibold text-accent">“{query}”</span>
  <span>에 대한 검색 결과가 없습니다.</span>
  </div>
  </div>
