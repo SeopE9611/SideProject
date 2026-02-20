@@ -3,6 +3,8 @@
 > 이 문서는 색상 토큰 적용의 **단일 기준 문서(SSOT)** 입니다.  
 > `docs/color-token-replacement-map.md`는 본 문서의 규칙을 실무 치환 예시로 풀어쓴 보조 문서이며, 해석이 충돌하면 항상 본 문서를 우선합니다.
 
+> 브랜드 예외 허용 파일의 고정 목록은 `docs/brand-color-exception-whitelist.md`를 기준으로 관리합니다.
+
 ## 검색 기준
 - `#[0-9A-Fa-f]{3,6}`
 - `style={{ ... }}` 내부의 `color`, `background`, `border`
@@ -120,6 +122,7 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
 - 제휴사 브랜드 아이덴티티(카카오/네이버/구글 등)가 요구되는 경우에만 예외를 허용한다.
 - 일반 피처 UI의 다색 팔레트 사용은 브랜드 예외에 포함되지 않는다.
 - 예외 컴포넌트에는 파일 상단(또는 해당 분기 직전) 주석으로 **브랜드 예외 사유**를 명시한다.
+- 자동 경고 스캔(`npm run scan:brand-color-exceptions`) 기준에서 화이트리스트 외 파일의 hex/raw palette 발견 시 경고를 확인하고 토큰 치환을 우선한다.
 
 ## 코드리뷰 체크리스트 (허용 클래스 / 금지 클래스)
 
