@@ -24,7 +24,7 @@ function variantCopy(variant: LoginGateVariant) {
         </>
       ),
       perks: [
-        { icon: <Ticket className="h-4 w-4 text-indigo-600" />, text: '패키지 잔여 횟수 관리' },
+        { icon: <Ticket className="h-4 w-4 text-primary" />, text: '패키지 잔여 횟수 관리' },
         { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 주문 조회' },
         { icon: <Star className="h-4 w-4 text-primary" />, text: '멤버 전용 혜택' },
       ] satisfies Perk[],
@@ -37,8 +37,8 @@ function variantCopy(variant: LoginGateVariant) {
       minHeight: 'min-h-[100svh]',
       description: <>주문을 진행하려면 로그인 후 다시 시도해주세요.</>,
       perks: [
-        { icon: <ShoppingCart className="h-4 w-4 text-indigo-600" />, text: '주문/구매 내역 관리' },
-        { icon: <Truck className="h-4 w-4 text-sky-600" />, text: '배송/수령 상태 확인' },
+        { icon: <ShoppingCart className="h-4 w-4 text-primary" />, text: '주문/구매 내역 관리' },
+        { icon: <Truck className="h-4 w-4 text-foreground" />, text: '배송/수령 상태 확인' },
         { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 결제/보안' },
       ] satisfies Perk[],
       secondary: { href: '/', label: '홈으로' },
@@ -56,8 +56,8 @@ function variantCopy(variant: LoginGateVariant) {
         </>
       ),
       perks: [
-        { icon: <ShoppingCart className="h-4 w-4 text-indigo-600" />, text: '주문/구매 내역 확인' },
-        { icon: <Truck className="h-4 w-4 text-sky-600" />, text: '배송/수령 상태 확인' },
+        { icon: <ShoppingCart className="h-4 w-4 text-primary" />, text: '주문/구매 내역 확인' },
+        { icon: <Truck className="h-4 w-4 text-foreground" />, text: '배송/수령 상태 확인' },
         { icon: <Shield className="h-4 w-4 text-primary" />, text: '보안 인증 기반 조회' },
       ] satisfies Perk[],
       secondary: { href: '/', label: '홈으로' },
@@ -70,7 +70,7 @@ function variantCopy(variant: LoginGateVariant) {
     perks: [
       { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 계정 보호' },
       { icon: <Star className="h-4 w-4 text-primary" />, text: '멤버 전용 혜택' },
-      { icon: <Ticket className="h-4 w-4 text-indigo-600" />, text: '회원 전용 서비스' },
+      { icon: <Ticket className="h-4 w-4 text-primary" />, text: '회원 전용 서비스' },
     ] satisfies Perk[],
     secondary: { href: '/', label: '홈으로' },
   };
@@ -123,7 +123,7 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
             </CardFooter>
 
             <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-primary/25 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-purple-400/25 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-muted/60 blur-3xl" />
           </Card>
         </div>
       </div>
