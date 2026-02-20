@@ -54,3 +54,14 @@
   - `app/board`: 775
   - `app/mypage`: 809
   - `app/others`(서비스 포함): 691
+
+
+## 추가 점검 (bg/text/dark 조합)
+- 명령: `rg -n "bg-white|dark:bg-slate-|dark:bg-gray-|text-slate-" app components`
+- 결과: 매치 0건 (치환 대상 클래스 미검출)
+- 해석: `bg-card`, `bg-background`, `text-foreground`, `text-muted-foreground` 기반으로 정리된 상태.
+
+## 공통 UI variant 흡수 내역
+- `Card`: `muted` variant 추가 (`bg-muted`, `text-foreground`)로 섹션 카드 보정 흡수.
+- `Button`: `muted` variant 추가로 반복되던 중립 CTA 스타일을 공통화.
+- `Badge`: `info/success/warning/danger`에서 불필요한 `dark:*` 직접 보정 제거.
