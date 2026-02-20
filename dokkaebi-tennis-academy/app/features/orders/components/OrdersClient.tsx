@@ -188,12 +188,12 @@ export default function OrdersClient() {
    */
   function getKindBadge(order: OrderWithType) {
     if (order.__type === 'stringing_application') {
-      return { label: '신청서', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' };
+      return { label: '신청서', className: 'bg-muted text-foreground' };
     }
     // 현재 /admin/orders 목록은 기본적으로 order + 신청서 통합이지만,
     // 타입 확장 대비로 rental_order 케이스도 안전하게 처리해둔다.
     if (order.__type === 'rental_order') {
-      return { label: '대여', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200' };
+      return { label: '대여', className: 'bg-muted text-foreground' };
     }
     return { label: '주문', className: 'bg-primary text-primary dark:bg-primary dark:text-primary' };
   }
@@ -257,13 +257,13 @@ export default function OrdersClient() {
 
   // 운영자 인지 부하를 줄이기 위해 “계열” 단위로 색상만 구분(운영함과 동일 컨셉)
   const FLOW_BADGE_CLASS: Record<Flow, string> = {
-    1: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200',
-    2: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-200',
+    1: 'bg-muted text-foreground',
+    2: 'bg-muted text-foreground',
     3: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground',
-    4: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200',
-    5: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200',
-    6: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
-    7: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
+    4: 'bg-warning/15 text-warning',
+    5: 'bg-warning/15 text-warning',
+    6: 'bg-primary/10 text-primary',
+    7: 'bg-primary/10 text-primary',
   };
 
   function hasRacketItems(items: any[] | undefined) {
@@ -495,7 +495,7 @@ export default function OrdersClient() {
             {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>주문</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>신청서</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>통합(주문+신청)</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground')}>단독</Badge>
               <span className="ml-1">• 같은 색 테두리 = 같은 통합건</span>
@@ -568,10 +568,10 @@ export default function OrdersClient() {
 
                     const borderColors = [
                       'border-border dark:border-border',
-                      'border-green-300 dark:border-green-600',
-                      'border-purple-300 dark:border-purple-600',
-                      'border-pink-300 dark:border-pink-600',
-                      'border-orange-300 dark:border-orange-600',
+                      'border-border',
+                      'border-border',
+                      'border-border',
+                      'border-border',
                     ];
                     const borderColor = borderColors[groupIdx % borderColors.length];
                     const isGrouped = group.length > 1;

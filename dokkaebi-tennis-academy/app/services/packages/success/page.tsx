@@ -117,9 +117,9 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  const perSessionPrice = packageInfo.sessions > 0 && packageInfo.price > 0 ? Math.round(packageInfo.price / packageInfo.sessions) : 0;
 
  return (
- <div className="min-h-full bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+ <div className="min-h-full bg-background from-background via-muted/40 to-muted/60 dark:from-background dark:via-muted/40 dark:to-background">
  {/* Hero Section */}
- <div className="relative overflow-hidden bg-primary  via-indigo-600  text-foreground">
+ <div className="relative overflow-hidden bg-primary text-primary-foreground">
  <div className="absolute inset-0 bg-black/20"></div>
  <div className="absolute inset-0 opacity-20">
  <svg className="w-full h-full" viewBox="0 0 400 300" fill="none">
@@ -143,7 +143,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  <div className="flex flex-wrap justify-center gap-6 text-sm">
  <div className="flex items-center gap-2">
- <Shield className="h-4 w-4 text-green-400" />
+ <Shield className="h-4 w-4 text-success" />
  <span>안전한 결제 완료</span>
  </div>
  <div className="flex items-center gap-2">
@@ -159,14 +159,14 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  {/* 패키지 활성화 안내 */}
  <div className="mt-8 max-w-2xl mx-auto">
- <div className="bg-primary from-yellow-400/20 to-orange-400/20 backdrop-blur-sm border border-yellow-300/30 rounded-xl p-6 text-center">
+ <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
- <div className="p-2 bg-yellow-400/20 rounded-full">
+ <div className="p-2 bg-warning/15 rounded-full">
  <Package className="h-6 w-6 text-accent-foreground" />
  </div>
- <h3 className="text-xl font-bold text-yellow-100">패키지 활성화 안내</h3>
+ <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
  </div>
- <p className="text-yellow-200 mb-4">입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다.</p>
+ <p className="text-muted-foreground mb-4">입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다.</p>
  <Button variant="default" className="font-semibold shadow-lg" asChild>
  <Link href="/services" className="flex items-center gap-2">
  서비스 예약하기
@@ -182,7 +182,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="max-w-4xl mx-auto space-y-6">
  {/* 패키지 주문 정보 카드 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
- <div className="bg-primary 0/10 via-purple-500/10 0/10 p-6">
+ <div className="bg-muted/60 p-6">
  <CardTitle className="flex items-center gap-3 text-2xl">
  <Package className="h-6 w-6 text-accent" />
  패키지 주문 정보
@@ -195,36 +195,18 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  {/* 패키지 정보 */}
  <div className="mb-8">
  <div
- className={`p-6 bg-primary ${
- packageInfo.id.includes('10')
- ? ' to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20'
- : packageInfo.id.includes('30')
- ? 'from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20'
- : packageInfo.id.includes('50')
- ? 'from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20'
- : 'from-emerald-50  dark:from-emerald-900/20 dark:to-teal-900/20'
- } rounded-xl border-2 ${
- packageInfo.id.includes('10')
- ? 'border-border dark:border-border'
- : packageInfo.id.includes('30')
- ? 'border-indigo-200 dark:border-indigo-800'
- : packageInfo.id.includes('50')
- ? 'border-purple-200 dark:border-purple-800'
- : 'border-border dark:border-border'
- }`}
+ className="p-6 bg-muted rounded-xl border-2 border-border"
  >
  <div className="flex items-center gap-4 mb-6">
  <div
- className={`w-16 h-16 rounded-full bg-background ${
- packageInfo.id.includes('10') ? '0 to-cyan-500' : packageInfo.id.includes('30') ? 'from-indigo-500 to-purple-500' : packageInfo.id.includes('50') ? 'from-purple-500 to-pink-500' : 'from-emerald-500 0'
- } flex items-center justify-center text-foreground shadow-lg`}
+ className="w-16 h-16 rounded-full bg-background flex items-center justify-center text-foreground shadow-lg"
  >
  {packageInfo.id.includes('10') ? <Target className="h-8 w-8" /> : packageInfo.id.includes('30') ? <Star className="h-8 w-8" /> : packageInfo.id.includes('50') ? <Award className="h-8 w-8" /> : <Trophy className="h-8 w-8" />}
  </div>
  <div className="flex-1">
  <div className="flex items-center gap-2 mb-2">
  <h3 className="text-2xl font-bold">{packageInfo.title}</h3>
- {packageInfo.id.includes('30') && <Badge className="bg-primary from-indigo-500  text-foreground">인기</Badge>}
+ {packageInfo.id.includes('30') && <Badge className="bg-primary/15 text-primary">인기</Badge>}
  </div>
  <p className="text-muted-foreground ">구매하신 스트링 교체 패키지입니다.</p>
  </div>
@@ -236,7 +218,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 교체</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-indigo-600">{packageInfo.validityPeriod}</div>
+ <div className="text-2xl font-bold text-primary">{packageInfo.validityPeriod}</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">유효기간</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
@@ -253,7 +235,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
  <div className="space-y-4">
- <div className="flex items-center gap-3 p-4 bg-primary  to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+ <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
  <Clock className="h-5 w-5 text-accent" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">주문일자</p>
@@ -267,7 +249,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </p>
  </div>
  </div>
- <div className="flex items-center gap-3 p-4 bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+ <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
  <CreditCard className="h-5 w-5 text-primary" />
  <div>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 방법</p>
@@ -276,13 +258,13 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </div>
  </div>
 
- <div className="bg-primary from-yellow-50  dark:from-yellow-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+ <div className="bg-muted p-6 rounded-xl border border-border">
  <div className="flex items-center gap-2 mb-4">
- <CreditCard className="h-5 w-5 text-orange-600" />
- <h3 className="font-bold text-orange-700 dark:text-orange-400">입금 계좌 정보</h3>
+ <CreditCard className="h-5 w-5 text-warning" />
+ <h3 className="font-bold text-warning">입금 계좌 정보</h3>
  </div>
  {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
- <div className="bg-card dark:bg-card p-4 rounded-lg border-2 border-orange-200 dark:border-orange-800 space-y-2">
+ <div className="bg-card dark:bg-card p-4 rounded-lg border-2 border-border space-y-2">
  <div className="font-semibold text-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
  <div className="font-mono text-lg font-bold text-accent">{bankLabelMap[paymentInfo.bank].account}</div>
  <div className="text-sm text-muted-foreground dark:text-muted-foreground">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
@@ -290,8 +272,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  ) : (
  <p className="text-muted-foreground">선택된 은행 없음</p>
  )}
- <div className="mt-4 p-3 bg-destructive dark:bg-destructive rounded-lg border border-border dark:border-destructive">
- <p className="text-destructive dark:text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+ <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30">
+ <p className="text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
  </div>
  </div>
  </div>
@@ -304,7 +286,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <MapPin className="h-5 w-5 text-primary" />
  신청자 정보
  </h3>
- <div className="bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800 space-y-2">
+ <div className="bg-muted p-4 rounded-lg border border-border space-y-2">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
  <div>
  <span className="text-sm text-muted-foreground dark:text-muted-foreground">신청자:</span>
@@ -343,7 +325,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <Separator className="my-6" />
 
  {/* 결제 금액 */}
- <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl border border-border dark:border-border">
+ <div className="bg-muted p-6 rounded-xl border border-border">
  <div className="flex justify-between items-center text-2xl font-bold">
  <span className="text-foreground">총 결제 금액</span>
  <span className="text-accent">{formatPrice(packageOrder.totalPrice)}원</span>
@@ -352,7 +334,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </div>
  </CardContent>
 
- <CardFooter className="bg-primary from-slate-50/50 via-blue-50/30 to-purple-50/30 dark:from-slate-800/50 dark:via-slate-700/30 dark:to-slate-600/30 p-6">
+ <CardFooter className="bg-muted/40 p-6">
  <div className="flex flex-col sm:flex-row gap-4 w-full">
  <Button
  variant="default" className="flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
@@ -379,43 +361,43 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  {/* 안내사항 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
- <CardHeader className="bg-primary from-indigo-500/10 via-purple-500/10 to-pink-500/10">
+ <CardHeader className="bg-muted/40">
  <CardTitle className="flex items-center gap-3">
- <Shield className="h-5 w-5 text-indigo-600" />
+ <Shield className="h-5 w-5 text-primary" />
  패키지 이용 안내사항
  </CardTitle>
  </CardHeader>
  <CardContent className="p-6">
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="space-y-4">
- <div className="flex items-start gap-3 p-4 bg-primary  to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg">
+ <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
  <CreditCard className="h-5 w-5 text-accent mt-0.5" />
  <div>
  <h4 className="font-semibold text-accent dark:text-accent mb-1">입금 안내</h4>
  <p className="text-sm text-accent dark:text-accent">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화됩니다.</p>
  </div>
  </div>
- <div className="flex items-start gap-3 p-4 bg-primary  to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg">
+ <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
  <Calendar className="h-5 w-5 text-primary mt-0.5" />
  <div>
- <h4 className="font-semibold text-primary dark:text-green-400 mb-1">예약 안내</h4>
- <p className="text-sm text-primary dark:text-green-400">패키지 활성화 후 전화 또는 온라인으로 서비스 예약이 가능합니다.</p>
+ <h4 className="font-semibold text-primary mb-1">예약 안내</h4>
+ <p className="text-sm text-primary">패키지 활성화 후 전화 또는 온라인으로 서비스 예약이 가능합니다.</p>
  </div>
  </div>
  </div>
  <div className="space-y-4">
- <div className="flex items-start gap-3 p-4 bg-primary from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg">
+ <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
  <Star className="h-5 w-5 text-primary mt-0.5" />
  <div>
- <h4 className="font-semibold text-purple-700 dark:text-purple-400 mb-1">유효기간</h4>
- <p className="text-sm text-primary dark:text-purple-400">패키지는 {packageInfo.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
+ <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
+ <p className="text-sm text-muted-foreground">패키지는 {packageInfo.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
  </div>
  </div>
- <div className="flex items-start gap-3 p-4 bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-lg">
- <Phone className="h-5 w-5 text-orange-600 mt-0.5" />
+ <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+ <Phone className="h-5 w-5 text-warning mt-0.5" />
  <div>
- <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-1">고객 지원</h4>
- <p className="text-sm text-orange-600 dark:text-orange-400">패키지 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
+ <h4 className="font-semibold text-warning mb-1">고객 지원</h4>
+ <p className="text-sm text-muted-foreground">패키지 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
  </div>
  </div>
  </div>

@@ -151,13 +151,13 @@ export default function QnaDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-muted/50 dark:from-background dark:via-muted/20 dark:to-background">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
               <div className="mb-2 text-sm text-muted-foreground dark:text-muted-foreground">
-                <span className="font-medium text-teal-600 dark:text-teal-400">고객센터</span>
+                <span className="font-medium text-primary">고객센터</span>
                 <span className="mx-1">›</span>
                 <span>Q&amp;A</span>
               </div>
@@ -182,7 +182,7 @@ export default function QnaDetailPage() {
           </div>
 
           <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-            <CardHeader className="border-b border-border dark:border-border bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50">
+            <CardHeader className="border-b border-border dark:border-border bg-muted/60">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
@@ -231,7 +231,7 @@ export default function QnaDetailPage() {
                     </div>
 
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 shadow-lg flex-shrink-0 mt-1">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg flex-shrink-0 mt-1">
                         <MessageSquare className="h-5 w-5 text-white" />
                       </div>
                       <h1 className="text-3xl font-bold text-foreground dark:text-white leading-tight">{qna.title}</h1>
@@ -240,7 +240,7 @@ export default function QnaDetailPage() {
                     <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground dark:text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-7 w-7 border-2 border-border dark:border-border">
-                          <AvatarFallback className="text-xs font-medium bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
+                          <AvatarFallback className="text-xs font-medium bg-muted text-foreground">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{qna.authorName ?? '익명'}</span>
                       </div>
@@ -252,7 +252,7 @@ export default function QnaDetailPage() {
                       <div className="flex items-center gap-2">
                         <Eye className="h-4 w-4" />
                         <span className="font-medium">조회수</span>
-                        <span className="font-semibold text-teal-600">{qna.viewCount ?? 0}</span>
+                        <span className="font-semibold text-primary">{qna.viewCount ?? 0}</span>
                       </div>
                     </div>
                   </>
@@ -277,7 +277,7 @@ export default function QnaDetailPage() {
                       <Separator className="my-6" />
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-teal-600" />
+                          <FileText className="h-5 w-5 text-primary" />
                           <h3 className="text-lg font-semibold text-foreground dark:text-white">첨부파일</h3>
                           <Badge variant="secondary">{qna.attachments.length}개</Badge>
                         </div>
@@ -294,7 +294,7 @@ export default function QnaDetailPage() {
                                 <button
                                   type="button"
                                   onClick={() => setLightbox({ open: true, src: url, alt: name })}
-                                  className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-teal-500 transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-teal-400"
+                                  className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-primary"
                                 >
                                   <img src={url || '/placeholder.svg'} alt={name} className="w-full h-32 object-cover" />
                                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
@@ -304,7 +304,7 @@ export default function QnaDetailPage() {
                               </div>
                             ) : (
                               <div key={i} className="p-3 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border dark:border-border transition-colors duration-200">
-                                <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-teal-600 hover:text-teal-500 font-medium break-all">
+                                <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-primary hover:text-primary font-medium break-all">
                                   <FileText className="h-4 w-4 flex-shrink-0" />
                                   {name}
                                 </a>
@@ -335,7 +335,7 @@ export default function QnaDetailPage() {
             )}
 
             {(isAuthor || isAdmin) && qna && (
-              <CardFooter className="flex justify-end gap-3 border-t border-border dark:border-border bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-teal-950/20 dark:to-cyan-950/20 p-6">
+              <CardFooter className="flex justify-end gap-3 border-t border-border dark:border-border bg-muted/50 p-6">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
                     <Pencil className="mr-2 h-4 w-4" />
@@ -352,9 +352,9 @@ export default function QnaDetailPage() {
 
           {isAdmin && qna && !qna.answer && (
             <Card className="shadow-lg border-0 bg-card backdrop-blur-sm dark:bg-card">
-              <CardHeader className="border-b border-border dark:border-border bg-gradient-to-r from-teal-50/50 to-cyan-50/50 dark:from-teal-950/20 dark:to-cyan-950/20">
+              <CardHeader className="border-b border-border dark:border-border bg-muted/50">
                 <div className="flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-teal-600" />
+                  <MessageCircle className="h-5 w-5 text-primary" />
                   <h2 className="text-lg font-semibold text-foreground dark:text-white">관리자 답변 작성</h2>
                 </div>
               </CardHeader>
@@ -363,7 +363,7 @@ export default function QnaDetailPage() {
                   value={answerText}
                   onChange={(e) => setAnswerText(e.target.value)}
                   placeholder="답변 내용을 입력하세요"
-                  className="min-h-[140px] bg-card dark:bg-card border-border dark:border-border focus:border-teal-500 focus:ring-teal-500"
+                  className="min-h-[140px] bg-card dark:bg-card border-border dark:border-border focus:border-ring focus:ring-ring"
                 />
                 <div className="flex justify-end">
                   <Button
@@ -380,7 +380,7 @@ export default function QnaDetailPage() {
                       await mutate();
                     }}
                     disabled={!answerText.trim()}
-                    className="px-6 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+                    className="px-6 bg-primary hover:bg-primary/90"
                   >
                     답변 등록
                   </Button>
@@ -390,16 +390,16 @@ export default function QnaDetailPage() {
           )}
 
           {qna?.answer && (
-            <Card className="shadow-lg border-2 border-teal-200 dark:border-teal-800 bg-gradient-to-br from-teal-50/80 to-cyan-50/80 dark:from-teal-950/30 dark:to-cyan-950/30 backdrop-blur-sm">
-              <CardHeader className="border-b border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-100/50 to-cyan-100/50 dark:from-teal-950/50 dark:to-cyan-950/50">
+            <Card className="shadow-lg border-2 border-border bg-muted/40 backdrop-blur-sm">
+              <CardHeader className="border-b border-border bg-muted/60">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/50 rounded-full flex items-center justify-center">
-                        <MessageCircle className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                      <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                        <MessageCircle className="h-4 w-4 text-primary" />
                       </div>
                       <h2 className="text-xl font-bold text-foreground dark:text-white">관리자 답변</h2>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      <Badge variant="secondary" className="bg-success/15 text-success">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         답변 완료
                       </Badge>
@@ -442,8 +442,8 @@ export default function QnaDetailPage() {
 
                   <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground dark:text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6 border border-teal-300 dark:border-teal-700">
-                        <AvatarFallback className="text-xs font-medium bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300">{(qna.answer.authorName ?? '관리자').slice(0, 1)}</AvatarFallback>
+                      <Avatar className="h-6 w-6 border border-border">
+                        <AvatarFallback className="text-xs font-medium bg-muted text-foreground">{(qna.answer.authorName ?? '관리자').slice(0, 1)}</AvatarFallback>
                       </Avatar>
                       <span className="font-medium">{qna.answer.authorName ?? '관리자'}</span>
                     </div>
@@ -463,7 +463,7 @@ export default function QnaDetailPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <Textarea value={answerText} onChange={(e) => setAnswerText(e.target.value)} className="min-h-[140px] bg-card dark:bg-card border-border dark:border-border focus:border-teal-500 focus:ring-teal-500" />
+                    <Textarea value={answerText} onChange={(e) => setAnswerText(e.target.value)} className="min-h-[140px] bg-card dark:bg-card border-border dark:border-border focus:border-ring focus:ring-ring" />
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" onClick={() => setIsEditing(false)}>
                         취소
@@ -481,7 +481,7 @@ export default function QnaDetailPage() {
                           setIsEditing(false);
                           await mutate();
                         }}
-                        className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         저장
                       </Button>
@@ -499,7 +499,7 @@ export default function QnaDetailPage() {
                 목록으로 돌아가기
               </Link>
             </Button>
-            <Button size="lg" asChild className="px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+            <Button size="lg" asChild className="px-8 bg-primary hover:bg-primary/90">
               <Link href="/board/qna/write" onClick={confirmLeave}>
                 <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
               </Link>
