@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "smoke": "node scripts/smoke.mjs",
-    "lint": "eslint . --cache && npm run check:no-new-any && npm run scan:brand-color-exceptions && npm run check:token-palette-consistency",
+    "lint": "eslint . --cache && npm run check:no-new-any && npm run check:color-policy && npm run check:token-palette-consistency",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "typecheck": "tsc --noEmit",
@@ -29,7 +29,9 @@
     "test:e2e:admin-critical:smoke": "BASE_URL=http://localhost:3000 node scripts/admin-critical-smoke.mjs",
     "audit:board-admin": "node scripts/audit-board-admin.mjs",
     "scan:brand-color-exceptions": "node scripts/scan-brand-color-exceptions.mjs",
-    "check:token-palette-consistency": "node scripts/check-token-palette-consistency.mjs"
+    "check:token-palette-consistency": "node scripts/check-token-palette-consistency.mjs",
+    "scan:color-classes": "node scripts/scan-color-classes.mjs",
+    "check:color-policy": "npm run scan:brand-color-exceptions && npm run scan:color-classes"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

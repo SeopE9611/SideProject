@@ -70,7 +70,7 @@ if (violations.length === 0) {
   process.exit(0);
 }
 
-console.warn('⚠️  brand-color exception scan: whitelist 외 파일에서 hex/raw palette가 발견되었습니다.');
+console.error('❌ brand-color exception scan: whitelist 외 파일에서 hex/raw palette가 발견되었습니다.');
 console.warn(`- whitelist: ${[...BRAND_EXCEPTION_WHITELIST].join(', ')}`);
 for (const entry of violations.sort((a, b) => a.file.localeCompare(b.file))) {
   console.warn(`\n- ${entry.file}`);
@@ -81,5 +81,5 @@ for (const entry of violations.sort((a, b) => a.file.localeCompare(b.file))) {
     console.warn(`  - ...and ${entry.found.length - 10} more`);
   }
 }
-console.warn('\n(경고 전용 스캔: 빌드를 차단하지 않음)');
-process.exit(0);
+console.error('\n(차단 스캔: whitelist 외 raw 색상은 CI를 실패시킵니다)');
+process.exit(1);

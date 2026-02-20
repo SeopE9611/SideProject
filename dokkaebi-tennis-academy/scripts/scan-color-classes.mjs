@@ -13,6 +13,7 @@ const keywords = ['bg', 'text', 'border', 'ring', 'from', 'to', 'via'];
 const paletteAlternation = palettes.join('|');
 const keywordAlternation = keywords.join('|');
 const tokenRegex = new RegExp(`(?:[\\w-]+:)*(${keywordAlternation})-(${paletteAlternation})-(\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
+const forbiddenClassComboRegex = /text-foreground\s+dark:text-muted-foreground/g;
 
 function walk(dir, results = []) {
   const absDir = path.join(ROOT, dir);
@@ -45,10 +46,37 @@ function classify(file) {
 const files = scanDirs.flatMap((d) => walk(d));
 const grouped = new Map();
 let total = 0;
+const violations = [];
+
+function getLine(text, index) {
+  return text.slice(0, index).split('\n').length;
+}
 
 for (const file of files) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   const hits = text.match(tokenRegex);
+  const found = [];
+
+  for (const match of text.matchAll(forbiddenClassComboRegex)) {
+    found.push({
+      type: 'forbidden-combo',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(tokenRegex)) {
+    found.push({
+      type: 'raw-palette-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  if (found.length > 0) {
+    violations.push({ file, found });
+  }
+
   if (!hits?.length) continue;
   total += hits.length;
   const group = classify(file);
@@ -72,4 +100,18 @@ for (const [group, items] of sortedGroups) {
     console.log(`  - ${tokenList}`);
   }
   console.log('');
+}
+
+if (violations.length > 0) {
+  console.error('❌ color-class scan: 금지 패턴이 발견되었습니다.');
+  for (const entry of violations.sort((a, b) => a.file.localeCompare(b.file))) {
+    console.error(`\n- ${entry.file}`);
+    for (const issue of entry.found.slice(0, 10)) {
+      console.error(`  - [${issue.type}] L${issue.line}: ${issue.token}`);
+    }
+    if (entry.found.length > 10) {
+      console.error(`  - ...and ${entry.found.length - 10} more`);
+    }
+  }
+  process.exit(1);
 }

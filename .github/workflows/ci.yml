@@ -71,6 +71,9 @@ jobs:
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Check color policy gate
+        run: pnpm check:color-policy
+
       - name: Lint
         run: pnpm lint
 

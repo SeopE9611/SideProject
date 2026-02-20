@@ -134,7 +134,16 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - 제휴사 브랜드 아이덴티티(카카오/네이버/구글 등)가 요구되는 경우에만 예외를 허용한다.
 - 일반 피처 UI의 다색 팔레트 사용은 브랜드 예외에 포함되지 않는다.
 - 예외 컴포넌트에는 파일 상단(또는 해당 분기 직전) 주석으로 **브랜드 예외 사유**를 명시한다.
-- 자동 경고 스캔(`npm run scan:brand-color-exceptions`) 기준에서 화이트리스트 외 파일의 hex/raw palette 발견 시 경고를 확인하고 토큰 치환을 우선한다.
+- 자동 차단 스캔(`npm run check:color-policy`) 기준에서 화이트리스트 외 파일의 hex/raw palette 또는 금지 클래스 조합이 발견되면 CI를 실패시키고 머지할 수 없다.
+
+
+## 차단 기준 (CI Fail Rules)
+- `npm run check:color-policy`는 아래 조건 중 하나라도 충족하면 즉시 `exit 1`로 실패한다.
+  - `scan:brand-color-exceptions`: 브랜드 예외 화이트리스트 외 파일에서 `#hex` 또는 raw palette class(`text-blue-500`, `bg-red-100` 등) 발견
+  - `scan:color-classes`: 금지 조합 `text-foreground dark:text-muted-foreground` 발견
+  - `scan:color-classes`: raw palette class(`slate|gray|...|rose` + `bg|text|border|ring|from|to|via`) 발견
+- 위 실패는 로컬(`pnpm lint`)과 CI(`.github/workflows/ci.yml`의 color policy gate)에서 동일하게 적용한다.
+- 브랜드 예외가 필요한 경우 반드시 `docs/brand-color-exception-whitelist.md`와 스크립트 화이트리스트를 함께 업데이트한 뒤 사유를 코드 주석으로 남긴다.
 
 ## 코드리뷰 체크리스트 (허용 클래스 / 금지 클래스)
 
