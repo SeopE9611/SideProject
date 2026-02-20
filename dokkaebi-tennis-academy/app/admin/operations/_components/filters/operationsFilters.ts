@@ -1,4 +1,5 @@
 import type { OpsKind } from '@/lib/admin-ops-taxonomy';
+import { flowBadgeClass as sharedFlowBadgeClass, linkBadgeClass } from '@/lib/badge-style';
 
 export type Kind = OpsKind;
 export type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -14,13 +15,9 @@ export function prevMonthYyyymmKST() {
 }
 
 export function flowBadgeClass(flow?: Flow) {
-  if (!flow) return 'bg-card text-foreground';
-  if (flow === 3) return 'bg-card text-foreground';
-  if (flow === 6 || flow === 7) return 'bg-primary/10 text-primary';
-  if (flow === 4 || flow === 5) return 'bg-warning/15 text-warning';
-  return 'bg-muted text-foreground';
+  return sharedFlowBadgeClass(flow);
 }
 
 export function settlementBadgeClass() {
-  return 'bg-card text-muted-foreground';
+  return linkBadgeClass('standalone');
 }
