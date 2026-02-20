@@ -42,8 +42,20 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
   - 배지 렌더링 블록 상단에 브랜드 예외 주석 명시
 
 ### 3) 비-UI 범위(참고)
-- `lib/shadcn-plugin.js`: 디자인 토큰 원본 정의(hex)로서 정상 범위.
 - `app/features/notifications/core/render.ts`: 이메일 HTML 렌더러용 컬러 정의/inline style로 웹 UI 토큰 규칙 적용 대상 외.
+
+
+## `lib/shadcn-plugin.js` 참조 전수 점검 결과
+
+실행 명령:
+
+```bash
+rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
+```
+
+점검 결과:
+- 실제 import/require 경로는 없었고, `eslint.config.mjs`의 ignore 항목과 본 문서의 과거 설명에만 등장했습니다.
+- 더 이상 런타임/빌드 경로에서 사용되지 않아 `lib/shadcn-plugin.js` 파일을 제거했습니다.
 
 ## 최소 토큰 세트(3색 유지)
 
@@ -143,3 +155,24 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
   - `rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app components lib`
   - `rg -n "text-blue-|text-emerald-|text-amber-|text-red-|text-slate-|text-gray-|bg-white|bg-blue-|bg-emerald-|bg-amber-|bg-red-|bg-slate-|bg-gray-|border-blue-|border-emerald-|border-amber-|border-red-|border-slate-|border-gray-" app components`
 - raw 팔레트 잔존 파일 목록: 없음 (0건)
+
+
+## 토큰 소스 우선순위 (SSOT)
+
+1. **1순위(유일한 정의 소스): `app/globals.css`**
+   - `:root`, `.dark`에서 디자인 토큰 CSS 변수를 정의한다.
+2. **2순위: `tailwind.config.ts`**
+   - 색상 키(`primary`, `background` 등)는 `hsl(var(--...))` 매핑만 수행한다.
+   - 변수 값 자체(숫자/HSL/hex)는 정의하지 않는다.
+3. **3순위: 개별 컴포넌트(`app/**`, `components/**`, `lib/**`)**
+   - 토큰 클래스 사용만 허용하며, 값 재정의는 금지한다.
+
+필수 규칙:
+- `globals.css` 이외 경로에서 `--primary`, `--background`를 **재정의하지 않는다**.
+- `primary`가 blue 계열(hex `#3b82f6` 등, `text-blue-*`/`bg-blue-*`)로 재등장하지 않도록 CI에서 차단한다.
+
+자동 검증:
+- `npm run check:token-palette-consistency`
+  - `--primary`, `--background` 재정의가 `app/globals.css` 밖에서 발견되면 실패
+  - blue 계열 회귀(`3b82f6`, `blue-*`)가 브랜드 예외 화이트리스트 밖에서 발견되면 실패
+
