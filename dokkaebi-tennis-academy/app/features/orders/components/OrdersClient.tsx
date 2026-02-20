@@ -211,18 +211,18 @@ export default function OrdersClient() {
   function getLinkBadge(order: OrderWithType, isLinkedProductOrder: boolean) {
     if (order.__type === 'stringing_application') {
       if (order.linkedOrderId) {
-        return { label: '주문연결', className: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground' };
+        return { label: '주문연결', className: 'bg-muted text-foreground' };
       }
-      return { label: '단독', className: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground' };
+      return { label: '단독', className: 'bg-muted text-foreground' };
     }
     if (order.__type === 'rental_order') {
       // /admin/orders에는 현재 대여가 나오지 않지만, 타입 확장 대비로 처리
-      return { label: '대여', className: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground' };
+      return { label: '대여', className: 'bg-muted text-foreground' };
     }
     if (isLinkedProductOrder) {
       return { label: '통합(주문+신청)', className: 'bg-primary text-primary dark:bg-primary dark:text-primary' };
     }
-    return { label: '단독', className: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground' };
+    return { label: '단독', className: 'bg-muted text-foreground' };
   }
 
   /**
@@ -259,7 +259,7 @@ export default function OrdersClient() {
   const FLOW_BADGE_CLASS: Record<Flow, string> = {
     1: 'bg-muted text-foreground',
     2: 'bg-muted text-foreground',
-    3: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground',
+    3: 'bg-muted text-foreground',
     4: 'bg-warning/15 text-warning',
     5: 'bg-warning/15 text-warning',
     6: 'bg-primary/10 text-primary',
@@ -302,7 +302,7 @@ export default function OrdersClient() {
     if (order.__type === 'stringing_application') {
       return ctx.isIntegratedApp
         ? { label: '정산: 주문', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' }
-        : { label: '정산: 신청(단독)', className: 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground' };
+        : { label: '정산: 신청(단독)', className: 'bg-muted text-foreground' };
     }
     if (order.__type === 'rental_order') {
       return { label: '정산: 대여', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' };
@@ -346,7 +346,7 @@ export default function OrdersClient() {
   };
 
   // 공통 스타일 상수
-  const thClasses = 'px-4 py-2 text-center align-middle ' + 'border-b border-border dark:border-border ' + 'font-semibold text-foreground dark:text-muted-foreground';
+  const thClasses = 'px-4 py-2 text-center align-middle ' + 'border-b border-border dark:border-border ' + 'font-semibold text-foreground';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
   // 배송정보 업데이트 네비게이션
@@ -497,7 +497,7 @@ export default function OrdersClient() {
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>주문</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>신청서</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>통합(주문+신청)</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground')}>단독</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>단독</Badge>
               <span className="ml-1">• 같은 색 테두리 = 같은 통합건</span>
               <span className="ml-1">• “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록</span>
             </div>
@@ -509,7 +509,7 @@ export default function OrdersClient() {
                   <TableHead className={cn(thClasses, 'w-[140px]')}>주문 ID</TableHead>
                   <TableHead onClick={() => handleSort('customer')} className={cn(thClasses, 'text-center cursor-pointer select-none transition-colors hover:text-primary', sortBy === 'customer' && 'text-primary')}>
                     고객
-                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
+                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground transition-transform', sortBy === 'customer' && sortDirection === 'desc' && 'rotate-180')} />
                   </TableHead>
                   <TableHead className={cn(thClasses, 'w-36')}>
                     <div className="flex items-center justify-center gap-2">
@@ -527,7 +527,7 @@ export default function OrdersClient() {
                   <TableHead className={cn(thClasses, 'text-center')}>유형</TableHead>
                   <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
                     금액
-                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground dark:text-muted-foreground transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
+                    <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
                   </TableHead>
                   <TableHead className={cn(thClasses, 'text-center')}>…</TableHead>
                 </TableRow>
@@ -669,9 +669,9 @@ export default function OrdersClient() {
                                 {/* "이름"만 남기기 */}
                                 {order.customer.name.replace(/\s*\(비회원\)\s*$/, '').replace(/\s*\(탈퇴한 회원\)\s*$/, '')}
                                 {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
-                                {getDisplayUserType(order) && <span className="ml-1 text-xs text-muted-foreground dark:text-muted-foreground">{getDisplayUserType(order)}</span>}
+                                {getDisplayUserType(order) && <span className="ml-1 text-xs text-muted-foreground">{getDisplayUserType(order)}</span>}
                                 {/*  비회원 레이블 */}
-                                {order.customer.name.endsWith('(비회원)') && <span className="ml-1 text-xs text-muted-foreground dark:text-muted-foreground">(비회원)</span>}
+                                {order.customer.name.endsWith('(비회원)') && <span className="ml-1 text-xs text-muted-foreground">(비회원)</span>}
                               </span>
                               <span className="text-[11px] text-muted-foreground">{order.customer.email}</span>
                             </div>
@@ -706,7 +706,7 @@ export default function OrdersClient() {
                               // 통합 주문의 “상품 주문”은 운송장/배송정보를 신청서에서만 관리하도록 정책이 정해져 있으므로
                               // 운송장 컬럼에서는 그 사실을 명시한다.
                               if (isLinkedProductOrder) {
-                                return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground dark:bg-card dark:text-muted-foreground')}>신청서에서 관리</Badge>;
+                                return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>신청서에서 관리</Badge>;
                               }
 
                               const t = getTrackingBadge(order);
