@@ -9,6 +9,8 @@ const cardVariants = cva('rounded-lg bg-card text-card-foreground shadow-sm', {
       outline: 'border',
       // 테두리 없는 카드
       ghost: '',
+      // 배경 강조가 필요한 섹션 카드
+      muted: 'border bg-muted text-foreground',
     },
   },
   defaultVariants: {

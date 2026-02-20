@@ -35,14 +35,14 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
   const list = variant === 'inline' ? items : items.slice(0, 5);
 
   return (
-    <Card className={clsx('mt-6', className)}>
-      <CardHeader className={clsx('rounded-t-lg', variant === 'inline' && 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b border-border dark:border-border')}>
+    <Card variant="muted" className={clsx('mt-6', className)}>
+      <CardHeader className={clsx('rounded-t-lg', variant === 'inline' && 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b border-border')}>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-pink-500" />
             {title}
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={clear} className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
+          <Button size="sm" variant="outline" onClick={clear} className="border-border bg-transparent hover:bg-primary">
             <Trash2 className="h-4 w-4 mr-2" />
             위시리스트 비우기
           </Button>
@@ -63,7 +63,7 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
               <Image src={it.image || '/placeholder.svg'} alt={it.name} width={56} height={56} className="h-14 w-14 rounded-xl border object-cover flex-shrink-0 shadow-sm" />
               {/* 이름/가격 영역 - 긴 이름은 말줄임 */}
               <div className="flex-1 min-w-0">
-                <Link href={`/products/${it.id}`} className="block truncate text-[15px] font-medium hover:underline hover:text-primary dark:hover:text-primary transition-colors">
+                <Link href={`/products/${it.id}`} className="block truncate text-[15px] font-medium transition-colors hover:text-primary hover:underline">
                   {it.name}
                 </Link>
                 <div className="text-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
@@ -74,7 +74,7 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-9 w-9 p-0 border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent"
+                  className="h-9 w-9 border-border bg-transparent p-0 hover:bg-primary"
                   onClick={() => {
                     add({ id: it.id, name: it.name, price: it.price, quantity: 1, image: it.image, stock: it.stock });
                     showSuccessToast('장바구니에 담았습니다.');
@@ -89,7 +89,7 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive dark:hover:bg-destructive"
+                  className="h-9 w-9 p-0 text-muted-foreground hover:bg-destructive hover:text-destructive"
                   onClick={() => handleRemove(it.id)}
                   disabled={removingId === it.id}
                   aria-label="위시리스트에서 삭제"
