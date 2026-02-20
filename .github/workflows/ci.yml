@@ -74,6 +74,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check token palette consistency
+        run: pnpm check:token-palette-consistency
+
   # 2) typecheck (타입 규칙 위반 식별용)
   typecheck:
     runs-on: ubuntu-latest

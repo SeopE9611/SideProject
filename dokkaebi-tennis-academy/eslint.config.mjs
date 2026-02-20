@@ -8,7 +8,7 @@ const compat = new FlatCompat();
 const eslintConfig = [
   js.configs.recommended,
   {
-    ignores: ['.next/**', 'node_modules/**', 'lib/shadcn-plugin.js'],
+    ignores: ['.next/**', 'node_modules/**'],
   },
   ...compat.config({
     extends: ['next/core-web-vitals', 'next/typescript'],
