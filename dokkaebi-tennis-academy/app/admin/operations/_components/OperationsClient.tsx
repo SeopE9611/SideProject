@@ -504,7 +504,7 @@ export default function OperationsClient() {
             <span className="text-muted-foreground dark:text-muted-foreground">|</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary text-primary dark:text-primary')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground dark:text-muted-foreground')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700 dark:text-rose-400')}>연결오류</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive')}>연결오류</Badge>
 
             <span className="text-muted-foreground dark:text-muted-foreground">|</span>
             <span className="font-medium text-foreground">시나리오</span>
@@ -742,19 +742,19 @@ export default function OperationsClient() {
                                     if (hasLinkWarn) {
                                       items.push({
                                         label: '연결오류',
-                                        className: 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+                                        className: 'bg-destructive/10 text-destructive',
                                         title: linkWarnTitle,
                                       });
                                     } else if (hasLinkPending) {
                                       items.push({
                                         label: '작성대기',
-                                        className: 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+                                        className: 'bg-muted text-foreground',
                                         title: linkPendingTitle,
                                       });
                                     }
 
                                     if (isGroup) {
-                                      items.push({ label: '기준', className: 'bg-indigo-500/10 text-indigo-700', title: '그룹의 기준 문서' });
+                                      items.push({ label: '기준', className: 'bg-muted text-foreground', title: '그룹의 기준 문서' });
                                       items.push({ label: opsKindLabel(g.anchor.kind), className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)), title: '기준 문서 종류' });
                                       warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-muted text-primary', title: b.title }));
                                     }
@@ -884,7 +884,7 @@ export default function OperationsClient() {
                                     {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
                                       <Badge
                                         title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')}
-                                        className={cn(badgeBase, badgeSizeSm, 'bg-rose-500/10 text-rose-700 dark:text-rose-400')}
+                                        className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive')}
                                       >
                                         연결오류
                                       </Badge>
