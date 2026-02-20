@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortenId } from '@/lib/shorten';
-import { badgeBase, badgeSizeSm, getShippingBadge, getShippingMethodBadge, getTrackingBadge, orderStatusColors, orderTypeColors, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, flowBadgeClass, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass, orderStatusColors, orderTypeColors, paymentStatusColors } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
 import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
 import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
@@ -188,14 +188,14 @@ export default function OrdersClient() {
    */
   function getKindBadge(order: OrderWithType) {
     if (order.__type === 'stringing_application') {
-      return { label: '신청서', className: 'bg-muted text-foreground' };
+      return { label: '신청서', className: kindBadgeClass('stringing_application') };
     }
     // 현재 /admin/orders 목록은 기본적으로 order + 신청서 통합이지만,
     // 타입 확장 대비로 rental_order 케이스도 안전하게 처리해둔다.
     if (order.__type === 'rental_order') {
-      return { label: '대여', className: 'bg-muted text-foreground' };
+      return { label: '대여', className: kindBadgeClass('rental_order') };
     }
-    return { label: '주문', className: 'bg-primary text-primary dark:bg-primary dark:text-primary' };
+    return { label: '주문', className: kindBadgeClass('order') };
   }
 
   /**
@@ -211,18 +211,18 @@ export default function OrdersClient() {
   function getLinkBadge(order: OrderWithType, isLinkedProductOrder: boolean) {
     if (order.__type === 'stringing_application') {
       if (order.linkedOrderId) {
-        return { label: '주문연결', className: 'bg-muted text-foreground' };
+        return { label: '주문연결', className: linkBadgeClass('linked_order') };
       }
-      return { label: '단독', className: 'bg-muted text-foreground' };
+      return { label: '단독', className: linkBadgeClass('standalone') };
     }
     if (order.__type === 'rental_order') {
       // /admin/orders에는 현재 대여가 나오지 않지만, 타입 확장 대비로 처리
-      return { label: '대여', className: 'bg-muted text-foreground' };
+      return { label: '대여', className: kindBadgeClass('rental_order') };
     }
     if (isLinkedProductOrder) {
-      return { label: '통합(주문+신청)', className: 'bg-primary text-primary dark:bg-primary dark:text-primary' };
+      return { label: '통합(주문+신청)', className: linkBadgeClass('integrated') };
     }
-    return { label: '단독', className: 'bg-muted text-foreground' };
+    return { label: '단독', className: linkBadgeClass('standalone') };
   }
 
   /**
@@ -255,17 +255,6 @@ export default function OrdersClient() {
     7: 'F7 대여+신청',
   };
 
-  // 운영자 인지 부하를 줄이기 위해 “계열” 단위로 색상만 구분(운영함과 동일 컨셉)
-  const FLOW_BADGE_CLASS: Record<Flow, string> = {
-    1: 'bg-muted text-foreground',
-    2: 'bg-muted text-foreground',
-    3: 'bg-muted text-foreground',
-    4: 'bg-warning/15 text-warning',
-    5: 'bg-warning/15 text-warning',
-    6: 'bg-primary/10 text-primary',
-    7: 'bg-primary/10 text-primary',
-  };
-
   function hasRacketItems(items: any[] | undefined) {
     // order.ts의 OrderItem 타입에는 kind가 없어서(응답 스냅샷에는 존재),
     // 런타임 데이터 기준으로 안전하게 any로 검사한다.
@@ -292,7 +281,7 @@ export default function OrdersClient() {
       flow = orderFlowByHasRacket(hasRacketItems((order as any)?.items), isLinkedProductOrder);
     }
 
-    return { flow, shortLabel: FLOW_SHORT[flow], label: FLOW_LABEL[flow], className: FLOW_BADGE_CLASS[flow] };
+    return { flow, shortLabel: FLOW_SHORT[flow], label: FLOW_LABEL[flow], className: flowBadgeClass(flow) };
   }
 
   function getSettlementBadge(order: OrderWithType, ctx: { isIntegratedApp: boolean }) {
@@ -301,13 +290,13 @@ export default function OrdersClient() {
     // - 신청서 행: 통합이면 주문 앵커 / 단독이면 신청서 앵커
     if (order.__type === 'stringing_application') {
       return ctx.isIntegratedApp
-        ? { label: '정산: 주문', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' }
-        : { label: '정산: 신청(단독)', className: 'bg-muted text-foreground' };
+        ? { label: '정산: 주문', className: linkBadgeClass('integrated') }
+        : { label: '정산: 신청(단독)', className: linkBadgeClass('standalone') };
     }
     if (order.__type === 'rental_order') {
-      return { label: '정산: 대여', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' };
+      return { label: '정산: 대여', className: linkBadgeClass('rental') };
     }
-    return { label: '정산: 주문', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' };
+    return { label: '정산: 주문', className: linkBadgeClass('integrated') };
   }
 
   // 날짜 포맷터
@@ -494,10 +483,10 @@ export default function OrdersClient() {
             </div>
             {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>주문</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>신청서</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>통합(주문+신청)</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>단독</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kindBadgeClass('order'))}>주문</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kindBadgeClass('stringing_application'))}>신청서</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('integrated'))}>통합(주문+신청)</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('standalone'))}>단독</Badge>
               <span className="ml-1">• 같은 색 테두리 = 같은 통합건</span>
               <span className="ml-1">• “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록</span>
             </div>
@@ -706,7 +695,7 @@ export default function OrdersClient() {
                               // 통합 주문의 “상품 주문”은 운송장/배송정보를 신청서에서만 관리하도록 정책이 정해져 있으므로
                               // 운송장 컬럼에서는 그 사실을 명시한다.
                               if (isLinkedProductOrder) {
-                                return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground')}>신청서에서 관리</Badge>;
+                                return <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('standalone'))}>신청서에서 관리</Badge>;
                               }
 
                               const t = getTrackingBadge(order);

@@ -9,11 +9,53 @@ export const badgeBaseOutlined = `${badgeBase} border`;
 
 const SEMANTIC_BADGE = {
   success: 'bg-primary/15 text-accent dark:text-primary border border-border',
+  warning: 'bg-warning/15 text-warning border border-border',
   info: 'bg-secondary text-foreground border border-border',
   neutral: 'bg-muted text-muted-foreground border border-border',
-  danger: 'bg-destructive/15 text-destructive border border-border',
-  outline: 'bg-transparent text-foreground border border-border',
+  destructive: 'bg-destructive/15 text-destructive border border-border',
 } as const;
+
+export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
+
+export function badgeToneClass(tone: BadgeSemanticTone) {
+  return SEMANTIC_BADGE[tone];
+}
+
+export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type OrderKindBadgeState = 'order' | 'stringing_application' | 'rental_order' | 'rental';
+export type OrderLinkBadgeState = 'integrated' | 'standalone' | 'linked_order' | 'rental' | 'error';
+
+export function flowBadgeTone(flow?: OrderFlowBadgeState): BadgeSemanticTone {
+  if (!flow || flow === 3) return 'neutral';
+  if (flow === 4 || flow === 5) return 'warning';
+  if (flow === 6 || flow === 7) return 'info';
+  return 'neutral';
+}
+
+export function kindBadgeTone(kind: OrderKindBadgeState): BadgeSemanticTone {
+  if (kind === 'order') return 'info';
+  if (kind === 'rental_order' || kind === 'rental') return 'success';
+  return 'neutral';
+}
+
+export function linkBadgeTone(state: OrderLinkBadgeState): BadgeSemanticTone {
+  if (state === 'integrated') return 'info';
+  if (state === 'error') return 'destructive';
+  if (state === 'rental') return 'success';
+  return 'neutral';
+}
+
+export function flowBadgeClass(flow?: OrderFlowBadgeState) {
+  return badgeToneClass(flowBadgeTone(flow));
+}
+
+export function kindBadgeClass(kind: OrderKindBadgeState) {
+  return badgeToneClass(kindBadgeTone(kind));
+}
+
+export function linkBadgeClass(state: OrderLinkBadgeState) {
+  return badgeToneClass(linkBadgeTone(state));
+}
 
 // 사용자 역할/상태 배지 전역 토큰
 export const userRoleColors = {
@@ -23,7 +65,7 @@ export const userRoleColors = {
 
 export const userStatusColors = {
   active: SEMANTIC_BADGE.success,
-  deleted: SEMANTIC_BADGE.danger,
+  deleted: SEMANTIC_BADGE.destructive,
 } as const;
 
 export function getUserStatusBadge(isDeleted: boolean) {
@@ -40,16 +82,16 @@ export const orderStatusColors: Record<string, string> = {
   배송중: SEMANTIC_BADGE.info,
   배송완료: SEMANTIC_BADGE.success,
   구매확정: SEMANTIC_BADGE.success,
-  취소: SEMANTIC_BADGE.danger,
-  환불: SEMANTIC_BADGE.danger,
+  취소: SEMANTIC_BADGE.destructive,
+  환불: SEMANTIC_BADGE.destructive,
 };
 
 export const paymentStatusColors: Record<string, string> = {
   결제완료: SEMANTIC_BADGE.success,
   결제대기: SEMANTIC_BADGE.neutral,
-  결제실패: SEMANTIC_BADGE.danger,
-  결제취소: SEMANTIC_BADGE.danger,
-  환불: SEMANTIC_BADGE.danger,
+  결제실패: SEMANTIC_BADGE.destructive,
+  결제취소: SEMANTIC_BADGE.destructive,
+  환불: SEMANTIC_BADGE.destructive,
 };
 
 export const orderTypeColors: Record<string, string> = {
@@ -60,7 +102,7 @@ export const orderTypeColors: Record<string, string> = {
 
 export const shippingStatusColors: Record<string, string> = {
   등록됨: SEMANTIC_BADGE.success,
-  미등록: SEMANTIC_BADGE.danger,
+  미등록: SEMANTIC_BADGE.destructive,
   방문수령: SEMANTIC_BADGE.info,
   퀵배송: SEMANTIC_BADGE.info,
   미입력: SEMANTIC_BADGE.neutral,
@@ -138,7 +180,7 @@ export const applicationStatusColors = {
   '검토 중': SEMANTIC_BADGE.neutral,
   '작업 중': SEMANTIC_BADGE.info,
   교체완료: SEMANTIC_BADGE.success,
-  취소: SEMANTIC_BADGE.danger,
+  취소: SEMANTIC_BADGE.destructive,
   default: SEMANTIC_BADGE.neutral,
 } as const;
 
@@ -147,7 +189,7 @@ export const qnaCategoryColors: Record<QnaCategory, string> = {
   상품문의: SEMANTIC_BADGE.success,
   '주문/결제': SEMANTIC_BADGE.info,
   배송: SEMANTIC_BADGE.info,
-  '환불/교환': SEMANTIC_BADGE.danger,
+  '환불/교환': SEMANTIC_BADGE.destructive,
   서비스: SEMANTIC_BADGE.neutral,
   아카데미: SEMANTIC_BADGE.neutral,
   회원: SEMANTIC_BADGE.neutral,
@@ -185,7 +227,7 @@ export const noticeCategoryColors: Record<string, string> = {
   이벤트: SEMANTIC_BADGE.success,
   아카데미: SEMANTIC_BADGE.info,
   점검: SEMANTIC_BADGE.neutral,
-  긴급: SEMANTIC_BADGE.danger,
+  긴급: SEMANTIC_BADGE.destructive,
 };
 
 export function getNoticeCategoryColor(label?: string | null) {
@@ -203,7 +245,7 @@ export type UsedBadgeKind = 'rental' | 'condition';
 const USED_BADGE_META: Record<UsedBadgeKind, Record<string, { label: string; className: string }>> = {
   rental: {
     available: { label: '대여 가능', className: SEMANTIC_BADGE.success },
-    unavailable: { label: '대여 불가', className: SEMANTIC_BADGE.danger },
+    unavailable: { label: '대여 불가', className: SEMANTIC_BADGE.destructive },
     rented: { label: '대여 중', className: SEMANTIC_BADGE.neutral },
     pending: { label: '예약 대기', className: SEMANTIC_BADGE.info },
   },
@@ -211,7 +253,7 @@ const USED_BADGE_META: Record<UsedBadgeKind, Record<string, { label: string; cla
     A: { label: '최상', className: SEMANTIC_BADGE.success },
     B: { label: '양호', className: SEMANTIC_BADGE.info },
     C: { label: '보통', className: SEMANTIC_BADGE.neutral },
-    D: { label: '하', className: SEMANTIC_BADGE.danger },
+    D: { label: '하', className: SEMANTIC_BADGE.destructive },
   },
 };
 
@@ -219,7 +261,7 @@ export function usedBadgeMeta(kind: UsedBadgeKind, state: string) {
   return (
     USED_BADGE_META[kind]?.[state] ?? {
       label: state,
-      className: SEMANTIC_BADGE.outline,
+      className: SEMANTIC_BADGE.neutral,
     }
   );
 }

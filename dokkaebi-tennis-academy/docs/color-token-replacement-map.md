@@ -46,6 +46,7 @@
 - `text-foreground`, `text-muted-foreground`, `text-primary`, `text-destructive`, `text-success`, `text-warning`
 - `bg-background`, `bg-card`, `bg-muted`, `bg-primary`, `bg-accent`, `bg-destructive`
 - `border-border`, `ring-ring`, `focus-visible:ring-ring`
+- 상태 배지(Flow/Kind/Link 포함)는 로컬 클래스 문자열을 직접 작성하지 않고 `lib/badge-style.ts`의 공통 매핑 함수를 사용
 
 ### 금지 클래스
 - 일반 UI에서 `text-red-*`, `text-blue-*`, `bg-green-*`, `border-yellow-*` 등 raw 팔레트 직접 사용
