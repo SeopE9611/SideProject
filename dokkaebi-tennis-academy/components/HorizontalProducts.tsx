@@ -217,7 +217,7 @@ export default function HorizontalProducts({
       </div>
 
       <div className="space-y-1.5 bp-sm:space-y-2 bp-md:space-y-2.5">
-        <div className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground dark:text-muted-foreground font-medium">{p.brand}</div>
+        <div className="text-xs bp-sm:text-sm bp-md:text-base text-foreground dark:text-foreground font-medium">{p.brand}</div>
         <h3
           className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground dark:text-foreground 
           line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug"
@@ -242,7 +242,7 @@ export default function HorizontalProducts({
         <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-accent dark:bg-accent" />
       </div>
       <div className="text-center space-y-1.5">
-        <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-muted-foreground">준비 중</div>
+        <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
         <div className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground">곧 업데이트</div>
       </div>
     </div>

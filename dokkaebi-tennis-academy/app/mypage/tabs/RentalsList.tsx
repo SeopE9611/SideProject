@@ -133,7 +133,7 @@ export default function RentalsList() {
             <Briefcase className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
-          <p className="text-muted-foreground">아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!</p>
+          <p className="text-foreground">아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!</p>
         </CardContent>
       </Card>
     );

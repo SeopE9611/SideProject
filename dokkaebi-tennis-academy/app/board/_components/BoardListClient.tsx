@@ -270,13 +270,13 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 */}
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-sm text-foreground">
               <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
               <span className="mx-1">›</span>
               <span>{config.boardTitle}</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">{config.boardTitle}</h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">{config.boardDescription}</p>
+            <p className="mt-1 text-sm text-foreground md:text-base">{config.boardDescription}</p>
           </div>
 
           <div className="flex gap-2">
@@ -315,7 +315,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               </div>
               <div>
                 <CardTitle className="text-base md:text-lg">{config.boardTitle}</CardTitle>
-                <p className="mt-1 text-xs text-muted-foreground md:text-sm">{config.cardDescription}</p>
+                <p className="mt-1 text-xs text-foreground md:text-sm">{config.cardDescription}</p>
               </div>
             </div>
             {total > 0 && (
@@ -365,7 +365,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                 {/* 카테고리 필터 */}
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-muted-foreground">분류:</span>
+                  <span className="text-foreground">분류:</span>
                   {[{ value: 'all', label: '전체' }, ...config.categories].map((cat) => {
                     const active = category === cat.value;
                     return (
@@ -481,7 +481,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             <DropdownMenuTrigger asChild>
                               <button
                                 type="button"
-                                className="truncate text-muted-foreground underline-offset-4 hover:underline"
+                                className="truncate text-foreground underline-offset-4 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();

@@ -218,7 +218,7 @@ export default function OrderList() {
             <ShoppingBag className="h-10 w-10 text-primary dark:text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
-          <p className="text-muted-foreground">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
+          <p className="text-foreground">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
         </CardContent>
       </Card>
     );

@@ -79,7 +79,7 @@ export default function QnAList() {
             <MessageCircleQuestion className="h-10 w-10 text-primary dark:text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
-          <p className="mb-6 text-muted-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
+          <p className="mb-6 text-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
           <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
             <Link href="/board/qna/write" className="inline-flex items-center gap-2">
               문의하기

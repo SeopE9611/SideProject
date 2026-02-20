@@ -166,7 +166,7 @@ export default function MypageClient({ user }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-5xl font-black mb-1 text-foreground truncate">안녕하세요, {user.name}님!</h1>
-                  <p className="text-sm bp-sm:text-base bp-lg:text-xl text-muted-foreground">도깨비 테니스의 회원이 되어주셔서 감사합니다</p>
+                  <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">도깨비 테니스의 회원이 되어주셔서 감사합니다</p>
                 </div>
               </div>
 
@@ -204,7 +204,7 @@ export default function MypageClient({ user }: Props) {
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg truncate">{user.name}</CardTitle>
                         <div className="flex items-center gap-2 flex-wrap mt-1">
-                          <span className="text-sm text-muted-foreground truncate">{user.email}</span>
+                          <span className="text-sm text-foreground truncate">{user.email}</span>
                           {user.oauthProviders?.length ? (
                             <>
                               {user.oauthProviders.includes('kakao') && (
