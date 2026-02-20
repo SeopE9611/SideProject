@@ -38,7 +38,7 @@ function variantCopy(variant: LoginGateVariant) {
       description: <>주문을 진행하려면 로그인 후 다시 시도해주세요.</>,
       perks: [
         { icon: <ShoppingCart className="h-4 w-4 text-primary" />, text: '주문/구매 내역 관리' },
-        { icon: <Truck className="h-4 w-4 text-foreground" />, text: '배송/수령 상태 확인' },
+        { icon: <Truck className="h-4 w-4 text-primary" />, text: '배송/수령 상태 확인' },
         { icon: <Shield className="h-4 w-4 text-primary" />, text: '안전한 결제/보안' },
       ] satisfies Perk[],
       secondary: { href: '/', label: '홈으로' },
@@ -57,7 +57,7 @@ function variantCopy(variant: LoginGateVariant) {
       ),
       perks: [
         { icon: <ShoppingCart className="h-4 w-4 text-primary" />, text: '주문/구매 내역 확인' },
-        { icon: <Truck className="h-4 w-4 text-foreground" />, text: '배송/수령 상태 확인' },
+        { icon: <Truck className="h-4 w-4 text-primary" />, text: '배송/수령 상태 확인' },
         { icon: <Shield className="h-4 w-4 text-primary" />, text: '보안 인증 기반 조회' },
       ] satisfies Perk[],
       secondary: { href: '/', label: '홈으로' },

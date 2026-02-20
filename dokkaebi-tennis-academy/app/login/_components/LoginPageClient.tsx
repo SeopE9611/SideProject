@@ -608,7 +608,7 @@ export default function LoginPageClient() {
  };
 
  return (
- <div className="min-h-screen bg-[#FCFFFC] dark:bg-[#1A1C1A] flex items-center justify-center p-4">
+ <div className="min-h-screen bg-background flex items-center justify-center p-4">
  <div className="absolute top-10 left-10 w-20 h-20 bg-muted rounded-full blur-2xl animate-pulse"></div>
  <div className="absolute bottom-10 right-10 w-32 h-32 bg-muted rounded-full blur-3xl animate-pulse"></div>
 
