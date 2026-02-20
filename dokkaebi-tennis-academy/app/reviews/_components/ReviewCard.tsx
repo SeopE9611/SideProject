@@ -191,7 +191,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
               {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
               {item.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}
             </Badge>
-            {!!headerTitle && <span className="text-sm font-semibold text-foreground dark:text-muted-foreground bg-muted dark:bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
+            {!!headerTitle && <span className="text-sm font-semibold text-foreground bg-muted dark:bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
           </div>
 
           <div className="flex items-center gap-2">
@@ -287,17 +287,17 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
           <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
           </div>
-          <span className="font-medium text-muted-foreground dark:text-muted-foreground">{displayName}</span>
+          <span className="font-medium text-muted-foreground">{displayName}</span>
         </div>
 
         {/* Rating with tennis court styling */}
         <div className="flex items-center gap-2 p-3 bg-muted/60 rounded-2xl">
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground dark:text-muted-foreground'}`} />
+              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
             ))}
           </div>
-          <span className="ml-1 text-sm font-bold text-foreground dark:text-muted-foreground">{item.rating}/5</span>
+          <span className="ml-1 text-sm font-bold text-foreground">{item.rating}/5</span>
         </div>
 
         {/* Content */}
@@ -305,14 +305,14 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
           <MaskedBlock className="mt-1" />
         ) : (
           <div className="bg-muted dark:bg-muted rounded-2xl p-4">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground dark:text-muted-foreground">{item.content}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.content}</p>
           </div>
         )}
 
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
           <div className="flex items-center justify-between p-3 bg-muted dark:bg-muted rounded-2xl">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground dark:text-muted-foreground">
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
             </span>

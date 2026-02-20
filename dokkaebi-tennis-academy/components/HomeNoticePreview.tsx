@@ -18,8 +18,8 @@ export default function HomeNoticePreview() {
   return (
     <section className="mt-8 bp-sm:mt-10 bp-md:mt-12">
       <div className="mb-4 bp-sm:mb-5 flex items-center justify-between">
-        <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground dark:text-white">공지사항</h2>
-        <Link className="text-sm bp-sm:text-base text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-white transition-colors" href="/board/notice">
+        <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">공지사항</h2>
+        <Link className="text-sm bp-sm:text-base text-muted-foreground hover:text-foreground transition-colors" href="/board/notice">
           더보기
         </Link>
       </div>
@@ -45,7 +45,7 @@ export default function HomeNoticePreview() {
                 <button
                   type="button"
                   onClick={() => mutate()}
-                  className="mt-3 inline-flex items-center rounded-md bg-card px-3 py-1.5 text-xs bp-sm:text-sm font-semibold text-foreground shadow-sm ring-1 ring-inset ring-ring hover:bg-muted dark:bg-card dark:text-white dark:ring-ring dark:hover:bg-card"
+                  className="mt-3 inline-flex items-center rounded-md bg-card px-3 py-1.5 text-xs bp-sm:text-sm font-semibold text-foreground shadow-sm ring-1 ring-inset ring-ring hover:bg-muted dark:bg-card dark:ring-ring dark:hover:bg-card"
                 >
                   다시 시도
                 </button>
@@ -56,13 +56,13 @@ export default function HomeNoticePreview() {
           items.map((p, idx) => (
             <li key={p.id ?? `${p.createdAt}-${idx}`}>
               <Link className="group flex items-start justify-between gap-3 bp-sm:gap-4 rounded-lg px-4 bp-sm:px-5 py-3 bp-sm:py-4 transition-colors hover:bg-muted dark:hover:bg-card" href={`/board/notice/${p.id}`}>
-                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-foreground group-hover:text-foreground dark:text-muted-foreground dark:group-hover:text-white">{p.title}</span>
-                <span className="shrink-0 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
+                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-foreground group-hover:text-foreground">{p.title}</span>
+                <span className="shrink-0 text-xs bp-sm:text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
               </Link>
             </li>
           ))
         ) : (
-          <li key="empty" className="py-10 bp-sm:py-12 text-center text-sm bp-sm:text-base text-muted-foreground dark:text-muted-foreground">
+          <li key="empty" className="py-10 bp-sm:py-12 text-center text-sm bp-sm:text-base text-muted-foreground">
             등록된 공지사항이 없습니다
           </li>
         )}
