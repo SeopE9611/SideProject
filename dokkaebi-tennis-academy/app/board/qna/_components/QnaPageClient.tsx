@@ -297,7 +297,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 문의</p>
+                    <p className="text-sm font-medium text-foreground dark:text-foreground">전체 문의</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{total}</p>
                   </div>
                   <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-2">
@@ -311,7 +311,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">답변 완료</p>
+                    <p className="text-sm font-medium text-foreground dark:text-foreground">답변 완료</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{answeredCount}</p>
                   </div>
                   <div className="bg-green-50 dark:bg-green-950/50 rounded-xl p-2">
@@ -325,7 +325,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">답변 대기</p>
+                    <p className="text-sm font-medium text-foreground dark:text-foreground">답변 대기</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{waitingCount}</p>
                   </div>
                   <div className="bg-yellow-50 dark:bg-yellow-950/50 rounded-xl p-2">
@@ -339,7 +339,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">총 조회수</p>
+                    <p className="text-sm font-medium text-foreground dark:text-foreground">총 조회수</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{totalViews}</p>
                   </div>
                   <div className="bg-purple-50 dark:bg-purple-950/50 rounded-xl p-2">
