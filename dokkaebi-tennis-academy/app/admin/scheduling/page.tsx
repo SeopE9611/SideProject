@@ -20,16 +20,6 @@ import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
 
-const BRAND = {
-  bg: 'bg-primary',
-  bgHover: 'hover:bg-primary',
-  text: 'text-white',
-  softBg: 'bg-primary',
-  softText: 'text-primary',
-  ring: 'ring-emerald-100',
-  border: 'border-border',
-};
-
 type ExceptionItem = {
   date: string;
   closed?: boolean;
@@ -236,8 +226,8 @@ export default function StringingSettingsPage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-3">
-              <div className="rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 shadow-lg shadow-emerald-500/20">
-                <Settings2 className="h-7 w-7 text-white" />
+              <div className="rounded-2xl bg-primary p-3 shadow-lg">
+                <Settings2 className="h-7 w-7 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">{/* was: text-foreground */}교체 서비스 예약 · 영업일 설정</h1>
@@ -303,7 +293,7 @@ export default function StringingSettingsPage() {
                 <div>
                   <div className="mb-4 flex items-center justify-between">
                     <Label className="text-sm font-medium text-foreground">{/* was: text-foreground */}동시 수용량</Label>
-                    <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm px-3 py-1">{capacity}명</Badge>
+                    <Badge className="bg-primary text-primary-foreground shadow-sm px-3 py-1">{capacity}명</Badge>
                   </div>
                   <Slider value={[capacity]} onValueChange={(v) => setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))} min={1} max={10} step={1} className="mt-3" />
                   <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{/* was: text-muted-foreground */}예) 2로 저장하면 동일 시간대 최대 2건까지 접수됩니다.</p>
@@ -314,13 +304,13 @@ export default function StringingSettingsPage() {
                     <Label htmlFor="start" className="text-sm font-medium text-foreground">
                       영업 시작
                     </Label>
-                    <Input id="start" type="time" value={start} onChange={(e) => setStart(e.target.value)} className="border-border focus:border-border focus:ring-emerald-500" />
+                    <Input id="start" type="time" value={start} onChange={(e) => setStart(e.target.value)} className="border-border focus:border-border focus:ring-ring" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="end" className="text-sm font-medium text-foreground">
                       영업 종료
                     </Label>
-                    <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="border-border focus:border-border focus:ring-emerald-500" />
+                    <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="border-border focus:border-border focus:ring-ring" />
                   </div>
                 </div>
 
@@ -339,7 +329,7 @@ export default function StringingSettingsPage() {
                         const v = Number(e.target.value || 30);
                         if (Number.isFinite(v)) setInterval(Math.max(5, Math.min(240, v)));
                       }}
-                      className="w-32 border-border focus:border-border focus:ring-emerald-500"
+                      className="w-32 border-border focus:border-border focus:ring-ring"
                     />
                     <Badge variant="outline" className="border-dashed border-border text-muted-foreground">
                       예: 30분 → 10:00, 10:30…
@@ -363,7 +353,7 @@ export default function StringingSettingsPage() {
                         const v = Number(e.target.value || 30);
                         if (Number.isFinite(v)) setBookingWindowDays(Math.max(1, Math.min(180, v)));
                       }}
-                      className="w-32 border-border focus:border-border focus:ring-emerald-500"
+                      className="w-32 border-border focus:border-border focus:ring-ring"
                     />
                     <Badge variant="outline" className="border-dashed border-border text-muted-foreground">
                       예: 30 → 오늘부터 30일 이내만 신청 가능 (최대 180)
@@ -376,8 +366,8 @@ export default function StringingSettingsPage() {
             <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                  <div className="rounded-xl bg-purple-100 p-2">
-                    <CalendarDays className="h-5 w-5 text-purple-600" />
+                  <div className="rounded-xl bg-muted p-2">
+                    <CalendarDays className="h-5 w-5 text-primary" />
                   </div>
                   영업 요일 · 휴무일
                 </CardTitle>
@@ -395,7 +385,7 @@ export default function StringingSettingsPage() {
                           variant={on ? 'default' : 'outline'}
                           className={
                             on
-                              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 border-0 font-medium'
+                              ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90 border-0 font-medium'
                               : 'bg-card text-muted-foreground hover:bg-accent border-border'
                           }
                           onClick={() => setBusinessDays((prev) => (prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort()))}
@@ -413,10 +403,10 @@ export default function StringingSettingsPage() {
                 <div>
                   <Label className="mb-3 block text-sm font-medium text-foreground">휴무일</Label>
                   <div className="flex items-center gap-2">
-                    <Input type="date" value={holidayInput} onChange={(e) => setHolidayInput(e.target.value)} className="max-w-[200px] border-border focus:border-border focus:ring-emerald-500" />
+                    <Input type="date" value={holidayInput} onChange={(e) => setHolidayInput(e.target.value)} className="max-w-[200px] border-border focus:border-border focus:ring-ring" />
                     <Button
                       type="button"
-                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700"
+                      className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
                       onClick={() => {
                         if (!holidayInput) return;
                         if (!holidays.includes(holidayInput)) setHolidays([...holidays, holidayInput]);
@@ -449,8 +439,8 @@ export default function StringingSettingsPage() {
           <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
             <CardHeader className="border-b border-border bg-card pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                <div className="rounded-xl bg-orange-100 p-2">
-                  <Users className="h-5 w-5 text-orange-600" />
+                <div className="rounded-xl bg-muted p-2">
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
                 예외일 (특별 운영/휴무)
               </CardTitle>
@@ -461,7 +451,7 @@ export default function StringingSettingsPage() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
                   <div className="lg:col-span-2 space-y-2">
                     <Label className="text-xs font-medium text-foreground">날짜</Label>
-                    <Input type="date" value={exInput.date || ''} onChange={(e) => setExInput({ ...exInput, date: e.target.value })} className="border-border bg-card focus:border-border focus:ring-emerald-500" />
+                    <Input type="date" value={exInput.date || ''} onChange={(e) => setExInput({ ...exInput, date: e.target.value })} className="border-border bg-card focus:border-border focus:ring-ring" />
                   </div>
 
                   <div className="flex items-center gap-2 pt-7">
@@ -473,11 +463,11 @@ export default function StringingSettingsPage() {
 
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">시작</Label>
-                    <Input type="time" value={exInput.start || ''} onChange={(e) => setExInput({ ...exInput, start: e.target.value })} className="border-border bg-card focus:border-border focus:ring-emerald-500" />
+                    <Input type="time" value={exInput.start || ''} onChange={(e) => setExInput({ ...exInput, start: e.target.value })} className="border-border bg-card focus:border-border focus:ring-ring" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">종료</Label>
-                    <Input type="time" value={exInput.end || ''} onChange={(e) => setExInput({ ...exInput, end: e.target.value })} className="border-border bg-card focus:border-border focus:ring-emerald-500" />
+                    <Input type="time" value={exInput.end || ''} onChange={(e) => setExInput({ ...exInput, end: e.target.value })} className="border-border bg-card focus:border-border focus:ring-ring" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-foreground">간격(분)</Label>
@@ -487,7 +477,7 @@ export default function StringingSettingsPage() {
                       max={240}
                       value={exInput.interval ?? ''}
                       onChange={(e) => setExInput({ ...exInput, interval: Number(e.target.value) || undefined })}
-                      className="border-border bg-card focus:border-border focus:ring-emerald-500"
+                      className="border-border bg-card focus:border-border focus:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
@@ -498,7 +488,7 @@ export default function StringingSettingsPage() {
                       max={10}
                       value={exInput.capacity ?? ''}
                       onChange={(e) => setExInput({ ...exInput, capacity: Number(e.target.value) || undefined })}
-                      className="border-border bg-card focus:border-border focus:ring-emerald-500"
+                      className="border-border bg-card focus:border-border focus:ring-ring"
                     />
                   </div>
                 </div>
@@ -506,7 +496,7 @@ export default function StringingSettingsPage() {
                 <div className="mt-4 flex items-center gap-2">
                   <Button
                     type="button"
-                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700"
+                    className="bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
                     onClick={() => {
                       if (!exInput.date) {
                         showErrorToast('날짜는 필수입니다.');
@@ -543,7 +533,7 @@ export default function StringingSettingsPage() {
                       <div className="flex-1">
                         <div className="font-semibold text-foreground mb-1">{ex.date}</div>
                         {ex.closed ? (
-                          <Badge className="bg-destructive text-destructive hover:bg-destructive">휴무</Badge>
+                          <Badge variant="destructive">휴무</Badge>
                         ) : (
                           <div className="text-sm text-muted-foreground space-y-0.5">
                             <div>{ex.start && ex.end ? `${ex.start} ~ ${ex.end}` : '시간 미지정(기본값 사용)'}</div>
@@ -583,7 +573,7 @@ export default function StringingSettingsPage() {
             </CardContent>
 
             <CardFooter className="border-t border-border bg-muted/50 flex justify-end gap-3 p-6">
-              <Button onClick={save} disabled={saving} className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50">
+              <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 disabled:opacity-50">
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? '저장 중…' : '저장'}
               </Button>
