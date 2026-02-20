@@ -117,7 +117,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  const perSessionPrice = packageInfo.sessions > 0 && packageInfo.price > 0 ? Math.round(packageInfo.price / packageInfo.sessions) : 0;
 
  return (
- <div className="min-h-full bg-background from-background via-muted/40 to-muted/60 dark:from-background dark:via-muted/40 dark:to-background">
+ <div className="min-h-full bg-gradient-to-b from-background via-muted/40 to-muted/60 dark:from-background dark:via-muted/40 dark:to-background">
  {/* Hero Section */}
  <div className="relative overflow-hidden bg-primary text-primary-foreground">
  <div className="absolute inset-0 bg-black/20"></div>
