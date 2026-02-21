@@ -495,7 +495,7 @@ export default function Home() {
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
-                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground dark:text-muted-foreground">STEP 1</div>
+                <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 1</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
                 <p className="text-[10px] bp-sm:text-xs text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>

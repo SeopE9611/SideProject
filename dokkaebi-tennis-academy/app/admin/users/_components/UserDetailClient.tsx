@@ -292,8 +292,8 @@ export default function UserDetailClient({ id }: { id: string }) {
       <div className="space-y-6">
         <div className="h-10 w-64 rounded-xl bg-muted animate-pulse" />
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="h-60 rounded-2xl border border-border dark:border-border bg-muted/30 animate-pulse" />
-          <div className="h-60 rounded-2xl border border-border dark:border-border bg-muted/30 animate-pulse" />
+          <div className="h-60 rounded-2xl border border-border bg-muted/30 animate-pulse" />
+          <div className="h-60 rounded-2xl border border-border bg-muted/30 animate-pulse" />
         </div>
       </div>
     );
@@ -367,7 +367,7 @@ export default function UserDetailClient({ id }: { id: string }) {
         <TooltipProvider>
           {/* 상단 스티키 액션바 */}
           <div
-            className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border dark:border-border
+            className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border
              bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card"
           >
             <div className="mx-auto max-w-5xl flex items-center justify-between gap-2">
@@ -487,7 +487,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
           {/* 히어로 헤더 */}
           <div
-            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-muted to-card dark:from-background dark:via-transparent dark:to-card', 'border-border dark:border-border')}
+            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-muted to-card dark:from-background dark:via-transparent dark:to-card', 'border-border')}
           >
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">
@@ -591,7 +591,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   />
 
                   {/* 최근 로그인 장치 */}
-                  <div className="mt-2 rounded-xl border bg-card dark:bg-card border-border dark:border-border p-2">
+                  <div className="mt-2 rounded-xl border bg-card border-border p-2">
                     <div className="mb-2 flex items-center justify-between">
                       <div className="text-sm font-medium text-foreground">최근 로그인 장치</div>
                       <Button variant="outline" size="sm" onClick={() => setCleanupOpen(true)} className="whitespace-nowrap">
@@ -840,7 +840,7 @@ function normalizeIp(ip?: string) {
 // 한 줄 UI
 function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os: string; browser: string; isMobile: boolean }; highlight?: boolean }) {
   return (
-    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border dark:border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-ring dark:ring-ring')}>
+    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-ring dark:ring-ring')}>
       <div className={cn('grid size-9 place-items-center rounded-lg', s.isMobile ? 'bg-muted text-foreground dark:bg-muted dark:text-foreground' : 'bg-muted text-foreground dark:bg-muted dark:text-foreground')}>
         {s.isMobile ? <Smartphone className="h-4 w-4" /> : <MonitorSmartphone className="h-4 w-4" />}
       </div>
@@ -892,7 +892,7 @@ function StatCard({
   };
 
   const content = (
-    <div className="flex items-center gap-3 rounded-xl border border-border dark:border-border p-3 bg-card dark:bg-card shadow-sm">
+    <div className="flex items-center gap-3 rounded-xl border border-border p-3 bg-card shadow-sm">
       <div className={cn('grid size-8 place-items-center rounded-lg', toneMap[tone])}>{icon}</div>
       <div className="flex-1">
         <div className="text-xs text-muted-foreground">{label}</div>

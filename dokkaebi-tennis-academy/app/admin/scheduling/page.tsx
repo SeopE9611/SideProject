@@ -236,9 +236,9 @@ export default function StringingSettingsPage() {
             </div>
           </div>
 
-          <div className="mb-8 overflow-hidden rounded-2xl border border-border dark:border-border bg-card shadow-sm">
+          <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-start gap-4 p-6">
-              <div className="rounded-xl bg-muted dark:bg-muted p-2.5 shadow-sm">
+              <div className="rounded-xl bg-muted p-2.5 shadow-sm">
                 <Info className="h-5 w-5 text-primary dark:text-primary" />
               </div>
               <div className="flex-1 text-sm leading-relaxed text-muted-foreground">

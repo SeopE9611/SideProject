@@ -130,7 +130,7 @@ export default function RentalsList() {
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
-            <Briefcase className="h-10 w-10 text-foreground dark:text-foreground" />
+            <Briefcase className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
           <p className="text-foreground">아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!</p>
@@ -155,7 +155,7 @@ export default function RentalsList() {
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
-                  <Briefcase className="h-6 w-6 text-foreground dark:text-foreground" />
+                  <Briefcase className="h-6 w-6 text-foreground" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 {getStatusIcon(r.status)}
                 <Badge className={`px-3 py-1 text-xs font-medium ${getStatusBadgeColor(r.status)}`}>{getStatusLabel(r.status)}</Badge>
-                {r.cancelStatus === 'requested' && <Badge className="bg-muted text-primary dark:bg-muted dark:text-primary border border-border dark:border-border">취소 요청됨</Badge>}
+                {r.cancelStatus === 'requested' && <Badge className="bg-muted text-primary dark:bg-muted dark:text-primary border border-border">취소 요청됨</Badge>}
               </div>
             </div>
 
@@ -316,7 +316,7 @@ export default function RentalsList() {
 
       <div className="flex justify-center pt-4">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted bg-transparent">
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-muted dark:hover:bg-muted bg-transparent">
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : flat.length ? (

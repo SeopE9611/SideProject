@@ -461,7 +461,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 px-3 border-border dark:border-border hover:bg-primary dark:hover:bg-primary"
+                className="bp-lg:hidden h-9 px-3 border-border hover:bg-primary dark:hover:bg-primary"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -476,7 +476,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   onClick={() => setRentOnly((v) => !v)}
                   className={cn(
                     'h-9 px-3',
-                    rentOnly ? 'bg-primary hover:bg-primary text-white border-border dark:bg-primary dark:hover:bg-primary dark:border-border' : 'border-border dark:border-border hover:bg-primary dark:hover:bg-primary',
+                    rentOnly ? 'bg-primary hover:bg-primary text-white border-border dark:bg-primary dark:hover:bg-primary dark:border-border' : 'border-border hover:bg-primary dark:hover:bg-primary',
                   )}
                   aria-pressed={rentOnly}
                   aria-label="대여 가능 라켓만 보기 토글"
@@ -487,7 +487,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center border border-border dark:border-border rounded-lg p-1 bg-card dark:bg-card">
+              <div className="flex items-center border border-border rounded-lg p-1 bg-card">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -508,7 +508,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               </div>
 
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card dark:bg-card text-sm">
+                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card text-sm">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">
@@ -541,7 +541,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               </div>
               <h3 className="text-xl font-semibold mb-2 text-foreground">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-              <Button onClick={handleResetAll} variant="outline" className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
+              <Button onClick={handleResetAll} variant="outline" className="border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
                 필터 초기화
               </Button>
             </div>

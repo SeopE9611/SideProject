@@ -46,7 +46,7 @@ export default function AdminRacketNewClient() {
           <div className="rounded-2xl p-8 border border-border bg-card shadow-lg">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div className="flex items-center space-x-4">
-                <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
+                <div className="bg-card rounded-full p-3 shadow-md">
                   <Package className="h-8 w-8 text-primary" />
                 </div>
                 <div>

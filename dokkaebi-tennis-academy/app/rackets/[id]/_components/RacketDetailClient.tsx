@@ -163,7 +163,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 {images.length > 0 ? (
                   <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={`${racketBrandLabel(racket.brand)} ${racket.model}`} fill className="object-cover transition-transform duration-300 hover:scale-105" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground">이미지 없음</div>
+                  <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">이미지 없음</div>
                 )}
                 {images.length > 1 && (
                   <>
@@ -237,7 +237,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <div className="flex items-baseline gap-3">
                       <span className="text-3xl font-bold text-primary dark:text-primary">{racket.price?.toLocaleString()}원</span>
                     </div>
-                    <div className="text-xs text-muted-foreground bg-muted dark:bg-muted border border-border dark:border-border rounded-lg p-3">* 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.</div>
+                    <div className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3">* 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.</div>
                   </div>
 
                   {/* CTA 영역 */}
@@ -375,7 +375,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {racket.spec?.weight && (
-                      <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">무게</span>
                           <span className="text-foreground font-medium">{racket.spec.weight} g</span>
@@ -383,7 +383,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.balance && (
-                      <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">밸런스</span>
                           <span className="text-foreground font-medium">{racket.spec.balance} mm</span>
@@ -391,7 +391,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.headSize && (
-                      <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">헤드사이즈</span>
                           <span className="text-foreground font-medium">{racket.spec.headSize} in²</span>
@@ -399,7 +399,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.pattern && (
-                      <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">패턴</span>
                           <span className="text-foreground font-medium">{racket.spec.pattern}</span>
@@ -407,14 +407,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.gripSize && (
-                      <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">그립</span>
                           <span className="text-foreground font-medium">{racket.spec.gripSize}</span>
                         </div>
                       </div>
                     )}
-                    <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
+                    <div className="bg-muted p-4 rounded-lg border border-border">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-primary dark:text-primary">상태</span>
                         <span className="text-foreground font-medium">{racket.condition}</span>
@@ -429,7 +429,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       </SiteContainer>
 
       {/* 모바일 전용 하단 Sticky */}
-      <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-border dark:border-border/60">
+      <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-border/60">
         <div className="bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
           <div className="mx-auto max-w-6xl px-4 py-3 pb-[env(safe-area-inset-bottom)]">
             <div className="flex items-center gap-3 pb-3 border-b border-border/60 dark:border-border/60">
@@ -472,7 +472,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 <button
                   type="button"
                   disabled
-                  className="flex-1 h-12 rounded-lg border border-border dark:border-border bg-muted dark:bg-card text-muted-foreground dark:text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <Calendar className="h-4 w-4" />
                   {racket?.rental?.enabled === false ? '대여 불가' : soldOut ? '품절' : '대여 불가'}
@@ -487,7 +487,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 disabled={!racketId}
                 title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
                 className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${
-                  isCompared ? 'border-border bg-primary text-primary' : 'border-border dark:border-border bg-card text-foreground dark:text-foreground'
+                  isCompared ? 'border-border bg-primary text-primary' : 'border-border bg-card text-foreground'
                 } ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <Scale className="h-4 w-4" />
@@ -500,7 +500,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 disabled={compareCount < 2}
                 title={compareCount < 2 ? '비교는 최소 2개부터 가능합니다.' : undefined}
                 className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${
-                  compareCount < 2 ? 'border-border bg-muted text-muted-foreground cursor-not-allowed' : 'border-border dark:border-border bg-card text-foreground dark:text-foreground'
+                  compareCount < 2 ? 'border-border bg-muted text-muted-foreground cursor-not-allowed' : 'border-border bg-card text-foreground'
                 }`}
               >
                 비교하기

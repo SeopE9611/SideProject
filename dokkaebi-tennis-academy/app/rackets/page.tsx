@@ -80,9 +80,9 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                   <p className="text-sm bp-sm:text-base font-semibold text-foreground">교체·장착 신청을 위한 라켓 선택 단계예요</p>
-                  <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
+                  <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">
                     라켓을 선택한 뒤, 결제/대여 흐름에서 신청서가 자동으로 이어질 수 있어요.
-                    <span className="block mt-1 text-sm text-foreground dark:text-foreground">[현재 보기: {rentOnly ? '대여 가능 라켓만' : '전체(구매/대여)'}]</span>
+                    <span className="block mt-1 text-sm text-foreground">[현재 보기: {rentOnly ? '대여 가능 라켓만' : '전체(구매/대여)'}]</span>
                   </p>
                 </div>
 

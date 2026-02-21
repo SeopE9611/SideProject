@@ -17,13 +17,13 @@ export default function BrandBoardPage() {
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
+            <div className="mb-1 text-sm text-muted-foreground">
               <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>브랜드별 게시판</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">브랜드별 게시판 (준비중)</h1>
-            <p className="mt-1 text-sm md:text-base text-muted-foreground dark:text-muted-foreground">윌슨, 바볼랏, 요넥스 등 브랜드별로 라켓/스트링 사용 후기를 모아볼 수 있는 공간입니다. 현재 기능을 준비하고 있습니다.</p>
+            <p className="mt-1 text-sm md:text-base text-muted-foreground">윌슨, 바볼랏, 요넥스 등 브랜드별로 라켓/스트링 사용 후기를 모아볼 수 있는 공간입니다. 현재 기능을 준비하고 있습니다.</p>
           </div>
 
           <Button asChild variant="outline" size="sm" className="shrink-0">
@@ -32,7 +32,7 @@ export default function BrandBoardPage() {
         </div>
 
         {/* 준비중 안내 카드 */}
-        <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
+        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted shadow-lg">
@@ -40,16 +40,16 @@ export default function BrandBoardPage() {
               </div>
               <CardTitle className="text-lg md:text-xl">브랜드별 게시판 기능을 준비 중입니다</CardTitle>
             </div>
-            <span className="text-xs md:text-sm rounded-full border px-3 py-1 text-muted-foreground dark:text-muted-foreground dark:border-border bg-card dark:bg-card">Coming Soon</span>
+            <span className="text-xs md:text-sm rounded-full border px-3 py-1 text-muted-foreground dark:border-border bg-card">Coming Soon</span>
           </CardHeader>
-          <CardContent className="p-6 space-y-3 text-sm md:text-base text-muted-foreground dark:text-muted-foreground">
+          <CardContent className="p-6 space-y-3 text-sm md:text-base text-muted-foreground">
             <p>추후 다음과 같은 기능을 제공할 예정입니다:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>브랜드별 탭/필터를 통한 게시글 분류</li>
               <li>라켓/스트링 모델별 실제 사용 후기 공유</li>
               <li>브랜드별 추천 세팅, 궁합 좋은 조합 논의</li>
             </ul>
-            <p className="pt-2 text-xs md:text-sm text-muted-foreground dark:text-muted-foreground">현재는 상품 상세 페이지와 리뷰 게시판에서 브랜드 후기를 먼저 확인해 보실 수 있습니다.</p>
+            <p className="pt-2 text-xs md:text-sm text-muted-foreground">현재는 상품 상세 페이지와 리뷰 게시판에서 브랜드 후기를 먼저 확인해 보실 수 있습니다.</p>
             <Button asChild size="sm" className="mt-2">
               <Link href="/reviews">리뷰 게시판 둘러보기</Link>
             </Button>

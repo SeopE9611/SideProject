@@ -27,7 +27,7 @@ export default function Wishlist() {
       <Card className="relative overflow-hidden border-0 ">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
-            <Heart className="h-10 w-10 text-foreground dark:text-foreground" />
+            <Heart className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">마음에 드는 상품을 위시리스트에 추가해보세요!</p>
@@ -94,7 +94,7 @@ export default function Wishlist() {
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
+          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
             더 보기
           </Button>
         ) : (

@@ -195,22 +195,22 @@ export default function ServicesPage() {
 
               <CardContent className="p-5 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 bp-md:gap-8 mb-6 bp-md:mb-8">
-                  <div className="text-center p-6 border border-border dark:border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                  <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
                     <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
-                    <p className="text-muted-foreground dark:text-muted-foreground mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
+                    <p className="text-muted-foreground mb-4">가장 빠른 예약은 전화로 문의해 주세요.</p>
                     <div className="text-2xl bp-md:text-3xl font-bold text-foreground mb-2">0507-1392-3493</div>
                     <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
                   </div>
 
-                  <div className="text-center p-6 border border-border dark:border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                  <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
                     <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
-                    <p className="text-muted-foreground dark:text-muted-foreground mb-6">
+                    <p className="text-muted-foreground mb-6">
                       스트링 교체 신청서를 통해 예약 요청을 남겨주세요. <br />
                     </p>
                     <Button variant="default" className="w-full" asChild>
@@ -234,21 +234,21 @@ export default function ServicesPage() {
                       <Clock className="w-5 h-5 text-accent mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">예약 시간</p>
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground">방문 접수 시 완료 10분 전 도착 권장</p>
+                        <p className="text-sm text-muted-foreground">방문 접수 시 완료 10분 전 도착 권장</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Shield className="w-5 h-5 text-accent mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">소요 시간</p>
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground">30분~1시간</p>
+                        <p className="text-sm text-muted-foreground">30분~1시간</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Zap className="w-5 h-5 text-accent mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">100% 예약제</p>
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground">사전 예약 필수</p>
+                        <p className="text-sm text-muted-foreground">사전 예약 필수</p>
                       </div>
                     </div>
                   </div>
@@ -337,7 +337,7 @@ export default function ServicesPage() {
               프리미엄 스트링 컬렉션
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 종류 안내</h2>
-            <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을 제공합니다.
               <br />
               자신에게 맞는 최적의 스트링을 선택해보세요.
@@ -363,7 +363,7 @@ export default function ServicesPage() {
                       {Object.entries(type.performance).map(([key, value]) => (
                         <div key={key} className="flex items-center justify-between">
                           <span className="text-sm capitalize">{key === 'power' ? '파워' : key === 'control' ? '컨트롤' : key === 'spin' ? '스핀' : '내구성'}</span>
-                          <div className="flex-1 mx-3 bg-muted dark:bg-muted rounded-full h-2">
+                          <div className="flex-1 mx-3 bg-muted rounded-full h-2">
                             <div className="h-2 rounded-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${value}%` }}></div>
                           </div>
                           <span className="text-sm font-medium">{value}%</span>
@@ -470,7 +470,7 @@ export default function ServicesPage() {
                 </CardHeader>
 
                 <CardContent>
-                  <p className={`text-sm text-center ${item.popular ? 'text-primary-foreground/90' : 'text-muted-foreground dark:text-muted-foreground'}`}>{item.description}</p>
+                  <p className={`text-sm text-center ${item.popular ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>{item.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -512,7 +512,7 @@ export default function ServicesPage() {
             <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
-                <div key={service.title} className="border border-border dark:border-border rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
+                <div key={service.title} className="border border-border rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground mr-3">{service.icon}</div>
@@ -520,7 +520,7 @@ export default function ServicesPage() {
                     </div>
                     {service.free ? <Badge className="bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
                   </div>
-                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">{service.description}</p>
+                  <p className="text-sm text-muted-foreground">{service.description}</p>
                 </div>
               ))}
             </div>
@@ -537,7 +537,7 @@ export default function ServicesPage() {
               전문적인 프로세스
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 장착 과정</h2>
-            <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               도깨비 테니스 아카데미는 세심한 과정을 통해
               <br />
               최고 품질의 스트링 장착 서비스를 제공합니다.
@@ -549,14 +549,14 @@ export default function ServicesPage() {
               <div key={step.step} className="relative group">
                 {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/40 transform translate-x-4 z-0"></div>}
 
-                <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card dark:bg-card">
+                <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card">
                   <CardContent className="p-5 bp-md:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
                       <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold shadow-lg">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
-                    <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed">{step.description}</p>
+                    <p className="text-muted-foreground leading-relaxed">{step.description}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -576,18 +576,18 @@ export default function ServicesPage() {
         <div className="container">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
-            <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비 테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비 테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {reviews.map((review, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card dark:bg-card">
+              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
                 <CardContent className="p-5 bp-md:p-8">
                   <div className="flex items-center mb-4">
                     <Image src={review.avatar || '/placeholder.svg'} alt={review.name} width={60} height={60} className="rounded-full mr-4" />
                     <div>
                       <h4 className="font-bold text-lg">{review.name}</h4>
-                      <p className="text-sm text-muted-foreground dark:text-muted-foreground">{review.role}</p>
+                      <p className="text-sm text-muted-foreground">{review.role}</p>
                     </div>
                   </div>
 
@@ -597,7 +597,7 @@ export default function ServicesPage() {
                     ))}
                   </div>
 
-                  <blockquote className="text-muted-foreground dark:text-muted-foreground italic leading-relaxed">"{review.comment}"</blockquote>
+                  <blockquote className="text-muted-foreground italic leading-relaxed">"{review.comment}"</blockquote>
                 </CardContent>
               </Card>
             ))}

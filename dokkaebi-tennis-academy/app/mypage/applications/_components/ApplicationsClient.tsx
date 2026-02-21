@@ -376,7 +376,7 @@ export default function ApplicationsClient() {
                               원 주문 상세 보기
                             </Badge>
                           </Link>
-                          <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">주문 ID 끝자리 {orderId.slice(-6)}</span>
+                          <span className="text-[11px] text-muted-foreground">주문 ID 끝자리 {orderId.slice(-6)}</span>
                         </div>
                       )}
 

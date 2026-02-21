@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function ReviewSkeleton() {
   return (
-    <Card className="overflow-hidden rounded-2xl border border-border dark:border-border">
+    <Card className="overflow-hidden rounded-2xl border border-border">
       <CardContent className="p-4 md:p-5 space-y-3 animate-pulse">
         <div className="flex items-center justify-between">
           <div className="h-5 w-28 rounded bg-muted" />

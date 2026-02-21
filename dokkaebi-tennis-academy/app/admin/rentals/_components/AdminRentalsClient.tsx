@@ -398,7 +398,7 @@ export default function AdminRentalsClient() {
   }
 
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
-  const thClasses = 'px-4 py-2 text-center align-middle border-b border-border dark:border-border font-semibold text-foreground';
+  const thClasses = 'px-4 py-2 text-center align-middle border-b border-border font-semibold text-foreground';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
   function PaymentBadge({ item }: { item: RentalRow }) {
@@ -445,7 +445,7 @@ export default function AdminRentalsClient() {
         </div>
       </div>
 
-      <Card className="mb-5 rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-6 py-5">
+      <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">대여 상태와 날짜로 필터링하거나 대여 ID, 고객명, 이메일, 브랜드, 모델로 검색하세요.</CardDescription>
@@ -584,7 +584,7 @@ export default function AdminRentalsClient() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-4 py-5">
+      <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             {data ? (

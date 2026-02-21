@@ -37,11 +37,11 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
       <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-8 px-4">
         <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-8">
-            <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
+            <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
               <Truck className="h-8 w-8 text-primary mx-auto" />
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">배송 정보 관리</h1>
-            <p className="text-muted-foreground dark:text-muted-foreground">주문 데이터를 불러올 수 없습니다.</p>
+            <p className="text-muted-foreground">주문 데이터를 불러올 수 없습니다.</p>
           </div>
 
           <div className="rounded-2xl border border-destructive bg-card p-6 shadow-lg dark:border-destructive dark:bg-card">
@@ -95,11 +95,11 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
       <div className="container mx-auto max-w-2xl">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <div className="bg-card dark:bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
+          <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
             <Truck className="h-8 w-8 text-primary mx-auto" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
-          <p className="text-muted-foreground dark:text-muted-foreground">{pageDesc}</p>
+          <p className="text-muted-foreground">{pageDesc}</p>
         </div>
 
         <ShippingFormClient

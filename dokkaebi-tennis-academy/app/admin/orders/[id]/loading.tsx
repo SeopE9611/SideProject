@@ -18,7 +18,7 @@ export default function OrderDetailLoading() {
         </div>
 
         {/* 주문 상태 카드 */}
-        <Card className="border border-border bg-card dark:bg-card shadow-sm">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader className="pb-3">
             <Skeleton className="h-6 w-40 rounded bg-muted dark:bg-card animate-pulse" />
             <Skeleton className="mt-1 h-4 w-48 rounded bg-background dark:bg-card animate-pulse" />
@@ -35,7 +35,7 @@ export default function OrderDetailLoading() {
         {/* 3열 카드 (고객, 배송, 결제) */}
         <div className="grid gap-6 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="border border-border bg-card dark:bg-card shadow-sm">
+            <Card key={i} className="border border-border bg-card shadow-sm">
               <CardHeader className="pb-3">
                 <Skeleton className="h-5 w-32 rounded bg-muted dark:bg-card animate-pulse" />
               </CardHeader>
@@ -52,7 +52,7 @@ export default function OrderDetailLoading() {
         </div>
 
         {/* 주문 항목 */}
-        <Card className="border border-border bg-card dark:bg-card shadow-sm">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader className="pb-3">
             <Skeleton className="h-6 w-32 rounded bg-muted dark:bg-card animate-pulse" />
           </CardHeader>
@@ -84,7 +84,7 @@ export default function OrderDetailLoading() {
         </Card>
 
         {/* 주문 메모 */}
-        <Card className="border border-border bg-card dark:bg-card shadow-sm">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader className="pb-3">
             <Skeleton className="h-6 w-32 rounded bg-muted dark:bg-card animate-pulse" />
           </CardHeader>
@@ -95,7 +95,7 @@ export default function OrderDetailLoading() {
         </Card>
 
         {/* 처리 이력 */}
-        <Card className="border border-border bg-card dark:bg-card shadow-sm">
+        <Card className="border border-border bg-card shadow-sm">
           <CardHeader className="pb-3">
             <Skeleton className="h-6 w-32 rounded bg-muted dark:bg-card animate-pulse" />
           </CardHeader>

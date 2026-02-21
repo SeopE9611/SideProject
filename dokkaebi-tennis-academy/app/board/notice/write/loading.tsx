@@ -17,7 +17,7 @@ export default function NoticeWriteLoading() {
             </div>
           </div>
 
-          <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
+          <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
             <CardHeader className="border-b">
               <Skeleton className="h-6 w-40" />
             </CardHeader>

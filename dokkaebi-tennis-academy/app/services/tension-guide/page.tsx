@@ -33,7 +33,7 @@ export default function TensionGuidePage() {
       recommended: '처음 시작하시는 분들께는 24kg을 권장합니다',
       color: 'from-accent to-primary',
       bgColor: 'bg-primary/10 dark:bg-primary/15',
-      borderColor: 'border-border dark:border-border',
+      borderColor: 'border-border',
     },
     {
       type: '중급자',
@@ -46,7 +46,7 @@ export default function TensionGuidePage() {
       recommended: '균형 잡힌 플레이를 원하시면 26kg이 적합합니다',
       color: 'from-accent to-primary',
       bgColor: 'bg-accent/10 dark:bg-accent/15',
-      borderColor: 'border-border dark:border-border',
+      borderColor: 'border-border',
     },
     {
       type: '상급자',
@@ -59,7 +59,7 @@ export default function TensionGuidePage() {
       recommended: '빠른 스윙을 가지신 분은 28kg을 권장합니다',
       color: 'from-accent to-primary',
       bgColor: 'bg-accent/10 dark:bg-accent/15',
-      borderColor: 'border-border dark:border-border',
+      borderColor: 'border-border',
     },
     {
       type: '프로/투어',
@@ -72,7 +72,7 @@ export default function TensionGuidePage() {
       recommended: '프로 수준의 파워가 있다면 30kg 이상을 고려하세요',
       color: 'from-accent to-primary',
       bgColor: 'bg-muted/50 dark:bg-muted/40',
-      borderColor: 'border-border dark:border-border',
+      borderColor: 'border-border',
     },
   ];
 
@@ -246,7 +246,7 @@ export default function TensionGuidePage() {
       <div className="mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 py-6 bp-md:py-10 bp-lg:pb-16">
         {/* Navigation Tabs */}
         <Tabs value={activeSection} onValueChange={setActiveSection} className="mb-8 bp-md:mb-12">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-auto p-1 bg-muted dark:bg-muted">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-auto p-1 bg-muted">
             <TabsTrigger value="calculator" className="py-2 bp-sm:py-3 text-[10px] bp-sm:text-xs bp-md:text-sm gap-1 bp-sm:gap-1.5">
               <BarChart3 className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="hidden bp-sm:inline">텐션</span> 계산기
@@ -373,7 +373,7 @@ export default function TensionGuidePage() {
                       </div>
                       <div className="flex justify-between text-xs mt-2">
                         <span className="text-primary dark:text-primary">파워</span>
-                        <span className="text-muted-foreground dark:text-muted-foreground">컨트롤</span>
+                        <span className="text-muted-foreground">컨트롤</span>
                       </div>
                     </div>
 
@@ -532,7 +532,7 @@ export default function TensionGuidePage() {
                         </ul>
                       </div>
                       <div>
-                        <h4 className="text-xs bp-md:text-sm font-semibold text-muted-foreground dark:text-muted-foreground mb-2 flex items-center gap-1">
+                        <h4 className="text-xs bp-md:text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4" /> 단점
                         </h4>
                         <ul className="space-y-1">
@@ -614,8 +614,8 @@ export default function TensionGuidePage() {
                     {/* 높은 텐션 */}
                     <div className="space-y-3 bp-md:space-y-4">
                       <div className="flex items-center gap-2 bp-sm:gap-3">
-                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-muted dark:bg-muted/40 rounded-xl flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground dark:text-muted-foreground" />
+                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-muted/40 rounded-xl flex items-center justify-center">
+                          <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
                         </div>
                         <div>
                           <h4 className="font-semibold text-sm bp-md:text-base text-foreground">높은 텐션 (28-32kg)</h4>
@@ -647,7 +647,7 @@ export default function TensionGuidePage() {
 
               {/* 텐션 관리 팁 */}
               <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-                <Card className="bg-accent/10 dark:bg-accent/10 border-border dark:border-border">
+                <Card className="bg-accent/10 dark:bg-accent/10 border-border">
                   <CardHeader className="pb-2 bp-md:pb-3">
                     <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
                       <Gauge className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -655,7 +655,7 @@ export default function TensionGuidePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 bp-md:space-y-3">
-                    <p className="text-xs bp-md:text-sm text-foreground dark:text-foreground">스트링은 장착 후 지속적으로 텐션이 감소합니다.</p>
+                    <p className="text-xs bp-md:text-sm text-foreground">스트링은 장착 후 지속적으로 텐션이 감소합니다.</p>
                     <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground dark:text-accent">
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />첫 24시간: 10-15% 손실
@@ -671,16 +671,16 @@ export default function TensionGuidePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-accent/10 dark:bg-accent/10 border-border dark:border-border">
+                <Card className="bg-accent/10 dark:bg-accent/10 border-border">
                   <CardHeader className="pb-2 bp-md:pb-3">
-                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground dark:text-foreground">
+                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
                       <Shield className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                       스트링 보관 팁
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 bp-md:space-y-3">
-                    <p className="text-xs bp-md:text-sm text-foreground dark:text-foreground">올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.</p>
-                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground dark:text-muted-foreground">
+                    <p className="text-xs bp-md:text-sm text-foreground">올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.</p>
+                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />
                         직사광선 피하기
@@ -697,16 +697,16 @@ export default function TensionGuidePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-muted/50 dark:bg-muted/40 border-border dark:border-border bp-sm:col-span-2 bp-lg:col-span-1">
+                <Card className="bg-muted/50 dark:bg-muted/40 border-border bp-sm:col-span-2 bp-lg:col-span-1">
                   <CardHeader className="pb-2 bp-md:pb-3">
-                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground dark:text-foreground">
+                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
                       <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                       교체 시기 판단
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 bp-md:space-y-3">
-                    <p className="text-xs bp-md:text-sm text-muted-foreground dark:text-muted-foreground">다음 신호가 나타나면 교체를 고려하세요.</p>
-                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground dark:text-muted-foreground">
+                    <p className="text-xs bp-md:text-sm text-muted-foreground">다음 신호가 나타나면 교체를 고려하세요.</p>
+                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
                         탄력 감소 느낌
