@@ -236,7 +236,7 @@ export default function RentalsList() {
                   </Button>
                 ) : r.withStringService ? (
                   // 교체 서비스가 포함된 대여인데 아직 신청서가 없다면: 바로 신청서 작성으로 유도
-                  <Button size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200" asChild>
                     <Link href={`/services/apply?rentalId=${r.id}`} className="inline-flex items-center gap-1">
                       교체 신청하기
                       <ArrowRight className="h-3 w-3" />
@@ -284,7 +284,7 @@ export default function RentalsList() {
                     </Link>
                   </Button>
                 ) : r.withStringService ? (
-                  <Button size="sm" className="col-span-6 w-full bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                  <Button size="sm" className="col-span-6 w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200" asChild>
                     <Link href={`/services/apply?rentalId=${r.id}`} className="inline-flex w-full items-center justify-center gap-1">
                       교체 신청하기
                       <ArrowRight className="h-3 w-3" />

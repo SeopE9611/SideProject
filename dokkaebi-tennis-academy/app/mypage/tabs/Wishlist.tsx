@@ -31,7 +31,7 @@ export default function Wishlist() {
           </div>
           <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">마음에 드는 상품을 위시리스트에 추가해보세요!</p>
-          <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -58,7 +58,7 @@ export default function Wishlist() {
               <div className="mt-3 flex gap-2">
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-sm"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
                   onClick={() => {
                     addItem({
                       id: it.id,

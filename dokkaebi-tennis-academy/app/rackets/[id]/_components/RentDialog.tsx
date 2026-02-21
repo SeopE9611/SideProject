@@ -53,7 +53,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
     <>
       <Button
         size={size}
-        className={cn(full ? 'w-full h-12 min-w-0 justify-center gap-2' : '', 'bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg', className)}
+        className={cn(full ? 'w-full h-12 min-w-0 justify-center gap-2' : '', 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg', className)}
         onClick={() => setOpen(true)}
       >
         <Calendar className="mr-2 h-4 w-4" />
@@ -63,11 +63,11 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-background to-card bg-clip-text text-transparent">대여 신청</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-foreground">대여 신청</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
+            <div className="bg-muted p-4 rounded-lg border border-border dark:border-border">
               <div className="text-sm text-muted-foreground mb-1">선택한 라켓</div>
               <div className="font-semibold text-foreground">
                 {brand} {model}
@@ -83,7 +83,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
                     onClick={() => setPeriod(d as 7 | 15 | 30)}
                     className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${
                       period === d
-                        ? 'bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-border dark:border-border text-primary dark:text-primary'
+                        ? 'bg-primary/10 border-primary/30 text-foreground'
                         : 'border-border hover:border-border dark:hover:border-border text-foreground'
                     }`}
                   >
@@ -112,7 +112,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
             <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               취소
             </Button>
-            <Button className="bg-gradient-to-r from-background to-card text-white" onClick={onSubmit} disabled={loading}>
+            <Button className="bg-primary text-primary-foreground" onClick={onSubmit} disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

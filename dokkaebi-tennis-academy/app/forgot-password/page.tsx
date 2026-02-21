@@ -49,14 +49,14 @@ export default function ForgotPasswordPage() {
         </div>
 
         <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-background via-muted to-card p-6 text-white relative">
+          <div className="bg-primary p-6 text-primary-foreground relative">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="h-8 w-8 text-white" />
+                <Shield className="h-8 w-8 text-primary-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold text-white">비밀번호 찾기</CardTitle>
-              <CardDescription className="text-primary mt-2">가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.</CardDescription>
+              <CardTitle className="text-2xl font-bold text-primary-foreground">비밀번호 찾기</CardTitle>
+              <CardDescription className="text-primary-foreground/80 mt-2">가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.</CardDescription>
             </div>
           </div>
 
@@ -84,9 +84,9 @@ export default function ForgotPasswordPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-xl p-6 text-center border border-border dark:border-border">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-background to-card rounded-full flex items-center justify-center shadow-lg">
-                    <CheckCircle className="h-8 w-8 text-white" />
+                <div className="bg-muted rounded-xl p-6 text-center border border-border dark:border-border">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                    <CheckCircle className="h-8 w-8 text-primary-foreground" />
                   </div>
                   <p className="text-sm font-semibold text-primary dark:text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
                   <p className="text-xs text-muted-foreground dark:text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
               {!isSubmitted ? (
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   disabled={isSubmitting || !email}
                 >
                   {isSubmitting ? '전송 중...' : '비밀번호 재설정 링크 전송'}

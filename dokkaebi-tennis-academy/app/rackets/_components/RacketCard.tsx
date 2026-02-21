@@ -121,7 +121,7 @@ const RacketCard = React.memo(
               <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
                 <div className="flex-1">
                   <div className="text-sm bp-sm:text-base text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
-                  <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3 dark:text-white">{racket.model}</h3>
+                  <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3 ">{racket.model}</h3>
                   <div className="flex flex-wrap items-center gap-2 mb-2 bp-sm:mb-3">
                     <StatusBadge kind="condition" state={racket.condition} />
                     <RacketAvailBadge id={racket.id} />
@@ -220,7 +220,7 @@ const RacketCard = React.memo(
         </div>
         <CardContent className="p-3 bp-sm:p-6">
           <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors dark:text-white">{racket.model}</CardTitle>
+          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors ">{racket.model}</CardTitle>
 
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <StatusBadge kind="condition" state={racket.condition} />
@@ -237,7 +237,7 @@ const RacketCard = React.memo(
 
             <div className="mt-3 flex gap-2">
               {canBuy ? (
-                <Button asChild size="sm" className="flex-1 min-w-0 bg-gradient-to-r from-background to-card text-white shadow hover:from-background hover:to-card" onClick={(e) => e.stopPropagation()}>
+                <Button asChild size="sm" className="flex-1 min-w-0 bg-primary text-primary-foreground shadow hover:bg-primary/90" onClick={(e) => e.stopPropagation()}>
                   <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()} className="justify-center">
                     <ShoppingCart className="w-4 h-4 mr-1.5" />
                     구매하기

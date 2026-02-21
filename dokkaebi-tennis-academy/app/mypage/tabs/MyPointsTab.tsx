@@ -100,7 +100,7 @@ export default function MyPointsTab() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-background to-card dark:from-background dark:to-card text-white">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-background to-card dark:from-background dark:to-card text-foreground">
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors duration-300" />
           <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
           <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
@@ -111,7 +111,7 @@ export default function MyPointsTab() {
                 <Coins className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
               </div>
               {stats.recentTrend !== 0 && (
-                <Badge variant="secondary" className="bg-card/20 backdrop-blur-sm text-white border-0 px-2 py-0.5 text-xs">
+                <Badge variant="secondary" className="bg-card/20 backdrop-blur-sm text-foreground border-0 px-2 py-0.5 text-xs">
                   {stats.recentTrend > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
                   {stats.recentTrend > 0 ? '+' : ''}
                   {fmt(stats.recentTrend)}

@@ -23,7 +23,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
             <div className="h-1.5 w-full bg-gradient-to-r from-background via-muted to-card" />
 
             <CardContent className="p-8">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-background to-card text-white grid place-content-center shadow-lg mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground grid place-content-center shadow-lg mb-6">
                 <AlertTriangle className="h-7 w-7" />
               </div>
 
@@ -41,7 +41,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
             <CardFooter className="px-8 pb-8">
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => reset()} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+                <Button onClick={() => reset()} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <RefreshCw className="mr-2 h-4 w-4" />
                   다시 시도
                 </Button>
