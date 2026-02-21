@@ -276,13 +276,13 @@ export default function AdminRacketsClient() {
                             <div className="flex items-center gap-3">
                               {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
                               <div>
-                                <div className="font-semibold text-foreground dark:text-white">{racketBrandLabel(item.brand)}</div>
+                                <div className="font-semibold text-foreground">{racketBrandLabel(item.brand)}</div>
                                 <div className="text-sm text-muted-foreground">{item.model}</div>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <span className="font-semibold text-foreground dark:text-white">{item.price?.toLocaleString()}원</span>
+                            <span className="font-semibold text-foreground">{item.price?.toLocaleString()}원</span>
                           </TableCell>
                           <TableCell className="text-center">
                             <ConditionBadge condition={item.condition} />

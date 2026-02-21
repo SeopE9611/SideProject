@@ -22,5 +22,5 @@ export const PACKAGE_VARIANT_TONE_CLASS: Record<PackageVariant, string> = {
   primary: 'bg-primary text-primary-foreground',
   accent: 'bg-accent text-accent-foreground',
   muted: 'bg-muted text-muted-foreground',
-  success: 'bg-success/10 text-white dark:bg-success/10 dark:text-white',
+  success: 'bg-success text-success-foreground',
 };
