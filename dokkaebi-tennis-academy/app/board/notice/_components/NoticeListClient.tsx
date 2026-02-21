@@ -153,7 +153,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                 <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">고객센터 · 공지사항</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
                 <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-muted-foreground">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
 
                             {notice.category && <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)}`}>{notice.category}</Badge>}
 
-                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground dark:text-white hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
+                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
 
                             {(notice.hasImage || notice.hasFile) && (
                               <div className="flex items-center gap-1 sm:gap-1.5">

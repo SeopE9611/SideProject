@@ -525,7 +525,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
         <div className="bp-lg:col-span-3">
           <div className="mb-6 bp-md:mb-8 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-base bp-sm:text-lg font-semibold dark:text-white tabular-nums" aria-live="polite">
+              <div className="text-base bp-sm:text-lg font-semibold text-foreground tabular-nums" aria-live="polite">
                 총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary dark:text-primary font-bold">{total}</span>}개
                 {isCountLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {loadedCount}개)</span>}
               </div>
@@ -600,7 +600,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary dark:text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
+              <h3 className="text-xl font-semibold mb-2 text-foreground">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
               <Button onClick={handleResetAll} variant="outline" className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
                 필터 초기화
@@ -623,7 +623,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               {isFetchingMore && (
                 <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
                   <div className="h-4 w-4 rounded-full border-2 border-border dark:border-border border-t-transparent animate-spin" />
-                  <span className="dark:text-white">더 불러오는 중...</span>
+                  <span className="text-muted-foreground">더 불러오는 중...</span>
                 </div>
               )}
             </>

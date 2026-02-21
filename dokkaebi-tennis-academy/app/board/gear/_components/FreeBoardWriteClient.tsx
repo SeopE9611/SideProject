@@ -320,7 +320,7 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-white md:text-3xl">장비 사용기 글쓰기</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">장비 사용기 글쓰기</h1>
             <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground md:text-base">장비 사용기 글을 작성해보세요.</p>
           </div>
 
