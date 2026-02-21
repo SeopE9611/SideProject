@@ -116,7 +116,7 @@ export default function ReviewsClient() {
     return (
       <div className="flex items-center">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star key={index} className={`h-4 w-4 ${index < rating ? 'text-warning fill-yellow-500' : 'text-muted-foreground'}`} />
+          <Star key={index} className={`h-4 w-4 ${index < rating ? 'text-warning fill-current' : 'text-muted-foreground'}`} />
         ))}
         <span className="ml-2 text-sm font-medium text-foreground">{rating}/5</span>
       </div>

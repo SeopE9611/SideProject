@@ -255,7 +255,7 @@ export default function AdminReviewListClient() {
   const renderStars = (n: number) => (
     <div className="flex items-center">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-warning fill-yellow-500' : 'text-muted-foreground dark:text-muted-foreground'}`} />
+        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-warning fill-current' : 'text-muted-foreground dark:text-muted-foreground'}`} />
       ))}
     </div>
   );
