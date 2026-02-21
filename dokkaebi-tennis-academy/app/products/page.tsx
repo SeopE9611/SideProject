@@ -53,15 +53,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border dark:border-border bg-card/90 dark:bg-card backdrop-blur p-4 bp-sm:p-5">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <p className="text-sm bp-sm:text-base font-semibold text-foreground">장착 서비스 즉시 예약 흐름으로 이동했어요</p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">스트링 결제 완료 후 신청서가 자동으로 연결됩니다.</p>
+                <p className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-muted-foreground">장착 서비스 신청용 스트링을 고르는 중이에요</p>
+                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">스트링 선택 → “교체 서비스 포함 결제” → 결제 완료 후 신청서 페이지로 자동 이동합니다.</p>
               </div>
+
               <div className="flex w-full bp-sm:w-auto gap-2">
-                <Button asChild className="flex-1 bp-sm:flex-none">
-                  <Link href="/services/apply">신청 화면으로</Link>
-                </Button>
                 <Button asChild variant="outline" className="flex-1 bp-sm:flex-none">
                   <Link href="/services">서비스 안내</Link>
+                </Button>
+                <Button asChild className="flex-1 bp-sm:flex-none">
+                  <Link href="/services/pricing">가격 안내</Link>
                 </Button>
               </div>
             </div>

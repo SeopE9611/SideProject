@@ -11,6 +11,12 @@ type Product = {
   ratingAvg?: number;
   ratingCount?: number;
   ratingAverage?: number;
+  inventory?: {
+    stock?: number;
+    status?: 'instock' | 'outofstock' | 'backorder' | string;
+    manageStock?: boolean;
+    allowBackorder?: boolean;
+  };
 };
 
 type Filters = {

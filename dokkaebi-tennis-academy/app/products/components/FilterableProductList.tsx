@@ -45,6 +45,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const isApplyFlow = searchParams.get('from') === 'apply';
 
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState('latest');
@@ -202,6 +203,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     limit: 6,
     minPrice: minPriceParam,
     maxPrice: maxPriceParam,
+    purpose: isApplyFlow ? 'stringing' : undefined,
   });
 
   /**
@@ -613,7 +615,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                   const isLast = i === productsList.length - 1;
                   return (
                     <div key={product._id} ref={isLast ? lastProductRef : undefined}>
-                      <ProductCard product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} />
+                      <ProductCard product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} isApplyFlow={isApplyFlow} />
                     </div>
                   );
                 })}

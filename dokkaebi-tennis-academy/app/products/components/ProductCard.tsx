@@ -26,6 +26,12 @@ export type Product = {
   ratingAvg?: number; // reviews API가 업데이트하는 필드
   ratingCount?: number; // 리뷰 개수
   ratingAverage?: number; // 레거시/호환(maintenance에서 쓰던 키)
+  inventory?: {
+    stock?: number;
+    status?: 'instock' | 'outofstock' | 'backorder' | string;
+    manageStock?: boolean;
+    allowBackorder?: boolean;
+  };
 };
 
 // 한글 라벨 매핑
@@ -62,15 +68,27 @@ type Props = {
   product: Product;
   viewMode: 'grid' | 'list';
   brandLabel: string;
+  isApplyFlow?: boolean;
 };
 
 const ProductCard = React.memo(
-  function ProductCard({ product, viewMode, brandLabel }: Props) {
+  function ProductCard({ product, viewMode, brandLabel, isApplyFlow = false }: Props) {
     const router = useRouter();
     const ratingAvg = Number(product.ratingAvg ?? product.ratingAverage ?? 0);
     const ratingCount = Number(product.ratingCount ?? 0);
     const { has, toggle } = useWishlist();
     const inWish = has(product._id);
+
+    const inventory = product.inventory;
+    const stockRaw = typeof inventory?.stock === 'number' ? inventory.stock : null;
+    const manageStock = inventory?.manageStock === true;
+    const allowBackorder = inventory?.allowBackorder === true;
+    const status = String(inventory?.status ?? '');
+
+    const isSoldOut = status === 'outofstock' || (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
+    const stockForItem = typeof stockRaw === 'number' ? stockRaw : undefined;
+
+    const detailHref = isApplyFlow ? `/products/${product._id}?from=apply` : `/products/${product._id}`;
 
     const setBuyNowItem = useBuyNowStore((s) => s.setItem); // buyNowStore에 맞는 setter 사용
     const clearPdpBundle = usePdpBundleStore((s) => s.clear);
@@ -78,6 +96,10 @@ const ProductCard = React.memo(
     const handleStringSingleBuy = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      if (isSoldOut) {
+        showErrorToast('품절된 상품입니다.');
+        return;
+      }
 
       // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 단품 구매는 clear가 안전
       clearPdpBundle();
@@ -90,6 +112,7 @@ const ProductCard = React.memo(
         price: Number(product.price ?? 0),
         quantity: 1,
         image,
+        stock: stockForItem,
         kind: 'product',
       });
 
@@ -99,6 +122,10 @@ const ProductCard = React.memo(
     const handleStringServiceApply = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      if (isSoldOut) {
+        showErrorToast('품절된 상품입니다.');
+        return;
+      }
 
       // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 작업의뢰도 clear가 안전
       clearPdpBundle();
@@ -112,6 +139,7 @@ const ProductCard = React.memo(
         price: Number(product.price ?? 0),
         quantity: 1,
         image,
+        stock: stockForItem,
         kind: 'product',
       });
 
@@ -139,7 +167,11 @@ const ProductCard = React.memo(
             <div className="relative w-full bp-md:w-48 aspect-[4/3] bp-md:aspect-square flex-shrink-0 overflow-hidden">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill sizes="(max-width: 768px) 100vw, 192px" className="object-cover" />
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
-              {product.isNew && <Badge variant="info" className="absolute right-2 top-2 shadow-sm">NEW</Badge>}
+              {product.isNew && (
+                <Badge variant="info" className="absolute right-2 top-2 shadow-sm">
+                  NEW
+                </Badge>
+              )}
             </div>
             <div className="flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-4">
@@ -172,19 +204,19 @@ const ProductCard = React.memo(
               )}
 
               <div className="grid grid-cols-2 bp-sm:flex gap-2">
-                <Link href={`/products/${product._id}`} className="bp-sm:flex-1">
+                <Link href={detailHref} className="bp-sm:flex-1">
                   <Button variant="default" size="sm" className="w-full h-9 sm:h-10 text-xs sm:text-sm">
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     상세보기
                   </Button>
                 </Link>
 
-                <Button type="button" size="sm" variant="outline" onClick={handleStringSingleBuy} className="h-9 sm:h-10 text-xs sm:text-sm">
-                  단품 구매
+                <Button type="button" size="sm" variant="outline" onClick={handleStringSingleBuy} disabled={isSoldOut} className="h-9 sm:h-10 text-xs sm:text-sm">
+                  {isApplyFlow ? '단품만 구매' : '단품 구매'}
                 </Button>
 
-                <Button type="button" size="sm" variant="secondary" onClick={handleStringServiceApply} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1">
-                  작업 의뢰
+                <Button type="button" size="sm" variant="secondary" onClick={handleStringServiceApply} disabled={isSoldOut} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1">
+                  {isApplyFlow ? '교체 서비스 포함 결제' : '작업 의뢰'}
                 </Button>
 
                 <Button
@@ -199,7 +231,7 @@ const ProductCard = React.memo(
                       showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
                     } catch (e: any) {
                       if (e?.message === 'unauthorized') {
-                        const target = `/products/${product._id}`;
+                        const target = detailHref;
                         router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
                       } else {
                         showErrorToast('처리 중 오류가 발생했습니다.');
@@ -218,7 +250,7 @@ const ProductCard = React.memo(
     }
 
     return (
-      <Link href={`/products/${product._id}`}>
+      <Link href={detailHref}>
         <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/90 dark:bg-card backdrop-blur-sm border border-border dark:border-border hover:border-border dark:hover:border-border group relative">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -230,7 +262,11 @@ const ProductCard = React.memo(
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            {product.isNew && <Badge variant="info" className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs shadow-sm">NEW</Badge>}
+            {product.isNew && (
+              <Badge variant="info" className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs shadow-sm">
+                NEW
+              </Badge>
+            )}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
                 <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-lg" onClick={(e) => e.stopPropagation()}>
@@ -290,19 +326,19 @@ const ProductCard = React.memo(
           </CardContent>
 
           <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2  bp-xxs:flex-col">
-            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringSingleBuy}>
-              단품 구매
+            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringSingleBuy} disabled={isSoldOut}>
+              {isApplyFlow ? '단품만 구매' : '단품 구매'}
             </Button>
 
-            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringServiceApply}>
-              작업의뢰
+            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringServiceApply} disabled={isSoldOut}>
+              {isApplyFlow ? '교체 서비스 포함 결제' : '작업의뢰'}
             </Button>
           </CardFooter>
         </Card>
       </Link>
     );
   },
-  (prev, next) => prev.product._id === next.product._id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel,
+  (prev, next) => prev.product._id === next.product._id && prev.viewMode === next.viewMode && prev.brandLabel === next.brandLabel && Boolean(prev.isApplyFlow) === Boolean(next.isApplyFlow),
 );
 
 export default ProductCard;

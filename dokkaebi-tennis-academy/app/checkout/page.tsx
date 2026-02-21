@@ -102,24 +102,21 @@ export default function CheckoutPage() {
   // 현재 주문 구성에 라켓이 실제로 포함되어 있는지
   const hasRacketInOrder = useMemo(() => orderItems.some((it) => it.kind === 'racket'), [orderItemsKey]);
 
-  // next(로그인 리디렉션)에도 URL 오염이 남지 않도록:
-  // 잘못 들어온 withService=1(라켓 없음)은 next에서 제거해서 전달
+  // next(로그인 리디렉션)에도 URL을 그대로 유지:
+  // - withService=1은 "장착 서비스 포함 결제" 의도 플래그이며,
+  //   라켓이 없더라도(= 보유 라켓 교체 서비스) 정상 흐름이므로 임의로 제거하지 않는다.
   const checkoutHref = useMemo(() => {
     if (!queryString) return '/checkout';
 
     const params = new URLSearchParams(queryString);
 
-    // withService=1 이지만 라켓이 없으면(스트링 단독 등) URL/next에서 제거
-    if (params.get('withService') === '1' && isOrderItemsReady && !hasRacketInOrder) {
-      params.delete('withService');
-    }
-
     const nextQs = params.toString();
     return nextQs ? `/checkout?${nextQs}` : '/checkout';
-  }, [queryString, isOrderItemsReady, hasRacketInOrder]);
+  }, [queryString]);
 
-  // 2중 방어: /checkout?withService=1 이 와도 "라켓이 있을 때만" 자동 ON
-  // - 스트링 단독 주문이 실수로 withService=1로 들어오는 경우, 번들 전용 검증 UI가 뜨는 사고 방지
+  // URL withService=1 → "장착 서비스 포함"으로 최초 상태를 자동 ON
+  // - 라켓 포함: 라켓 구매/대여 + 장착 서비스 번들
+  // - 라켓 없음: 보유 라켓 교체 서비스(스트링 구매 + 신청)
   // - orderItems가 아직 비어있는 경우(스토어 하이드레이션 전)에는 결정을 미루고 기다림
   useEffect(() => {
     // 이미 한 번 적용했으면 이후엔 URL로 상태를 덮어쓰지 않음(사용자 토글 보호)
@@ -135,20 +132,11 @@ export default function CheckoutPage() {
     // withService=1인 경우: 아이템이 로드되기 전이면 기다림
     if (!isOrderItemsReady) return;
 
-    // 라켓이 실제로 있을 때만 자동 ON
-    setWithStringService(hasRacketInOrder);
-
-    // 라켓이 없는데 withService=1이 들어온 "오염 URL"이면 주소창에서 제거(replaceState)
-    if (!hasRacketInOrder) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('withService');
-
-      // Next 내부 history state는 유지한 채 주소만 정리
-      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
-    }
+    // 라켓 유무와 무관하게 "서비스 포함" 의도를 유지한다.
+    setWithStringService(true);
 
     initFlagsRef.current.withServiceApplied = true;
-  }, [withServiceParam, isOrderItemsReady, hasRacketInOrder]);
+  }, [withServiceParam, isOrderItemsReady]);
 
   // 번들(라켓+스트링) 모드: 수량은 1곳(스트링 선택 페이지)에서만 제어한다
   // - 체크아웃에서는 안내만 하고, 서버에서 최종 검증을 수행한다
@@ -815,7 +803,15 @@ export default function CheckoutPage() {
                       disabled={isBundleCheckout}
                       onCheckedChange={(checked) => {
                         if (isBundleCheckout) return;
-                        setWithStringService(!!checked);
+                        const next = !!checked;
+                        setWithStringService(next);
+
+                        // 사용자가 OFF로 내리면 URL에서 withService 제거
+                        if (!next) {
+                          const url = new URL(window.location.href);
+                          url.searchParams.delete('withService');
+                          window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+                        }
                       }}
                     />
                     <Label htmlFor="withStringService" className="font-medium text-foreground dark:text-foreground">
@@ -1281,7 +1277,12 @@ export default function CheckoutPage() {
  */}
                       {fieldErrors.composition && mode !== 'buynow' && (
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-foreground/10 px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-foreground/10">
+                          <Link
+                            href="/cart"
+                            data-no-unsaved-guard
+                            onClick={onLeaveCartClick}
+                            className="inline-flex items-center justify-center rounded-md bg-foreground/10 px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-foreground/10"
+                          >
                             장바구니로 가서 정리하기
                           </Link>
                           <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>
