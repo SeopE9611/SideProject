@@ -27,7 +27,7 @@ export default function HomeNoticePreview() {
         {isLoading ? (
           <>
             {Array.from({ length: 4 }).map((_, i) => (
-              <li key={`skeleton-${i}`} className="rounded-lg bg-card/60 p-4 bp-sm:p-5 dark:bg-black/20">
+              <li key={`skeleton-${i}`} className="rounded-lg bg-card p-4 bp-sm:p-5">
                 <div className="h-4 bp-sm:h-5 w-3/4 animate-pulse rounded bg-muted dark:bg-card" />
                 <div className="mt-2 bp-sm:mt-2.5 h-3 bp-sm:h-4 w-24 bp-sm:w-28 animate-pulse rounded bg-muted dark:bg-card" />
               </li>

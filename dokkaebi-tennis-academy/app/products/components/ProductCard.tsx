@@ -177,7 +177,7 @@ const ProductCard = React.memo(
               <div className="flex flex-col gap-3 mb-4">
                 <div className="flex-1">
                   <div className="text-xs sm:text-sm text-muted-foreground mb-1 font-medium">{brandLabel}</div>
-                  <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 dark:text-white line-clamp-2">{product.name}</h3>
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold mb-2 text-foreground line-clamp-2">{product.name}</h3>
                   <div className="flex items-center gap-2 mb-2">
                     <RatingStars avg={ratingAvg} starClassName="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="text-xs sm:text-sm text-muted-foreground">({ratingCount})</span>
@@ -298,7 +298,7 @@ const ProductCard = React.memo(
 
           <CardContent className="p-3 sm:p-4">
             <div className="text-xs text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
-            <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors dark:text-white min-h-[2.5rem] sm:min-h-[3rem]">{product.name}</CardTitle>
+            <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 text-foreground group-hover:text-primary transition-colors min-h-[2.5rem] sm:min-h-[3rem]">{product.name}</CardTitle>
 
             <div className="flex items-center gap-1.5 mb-2">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
