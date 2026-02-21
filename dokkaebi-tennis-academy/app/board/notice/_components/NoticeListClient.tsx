@@ -137,7 +137,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
   }).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12 space-y-6 sm:space-y-8">
         <div className="flex flex-col space-y-4 sm:space-y-6">
           <div className="flex items-center space-x-3 sm:space-x-4">

@@ -297,7 +297,7 @@ export default function StringPackagesPage() {
    return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
   }
   return (
-    <div className="min-h-screen bg-background from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-background  via-muted ">
@@ -366,7 +366,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Package Cards Section */}
-      <section id="packages" ref={packagesSectionRef} className="py-20 bg-background   dark:from-gray-800 dark:to-gray-900 scroll-mt-24">
+      <section id="packages" ref={packagesSectionRef} className="py-20 bg-background   dark:from-background dark:to-card scroll-mt-24">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent text-primary dark:bg-primary dark:text-primary">
@@ -491,7 +491,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-background   dark:from-gray-900 dark:to-gray-800">
+      <section className="py-20 bg-background   dark:from-background dark:to-card">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent text-primary dark:bg-primary dark:text-primary">

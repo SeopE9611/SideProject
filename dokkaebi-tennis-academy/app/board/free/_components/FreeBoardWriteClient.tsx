@@ -356,7 +356,7 @@ export default function FreeBoardWriteClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

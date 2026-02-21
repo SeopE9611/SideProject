@@ -460,8 +460,8 @@ export default function PackageOrdersClient() {
     <div
         className="
           min-h-screen
-          bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50
-          dark:bg-gradient-to-br dark:from-slate-800 dark:via-slate-900 dark:to-black
+          bg-gradient-to-br from-background via-muted to-card
+          dark:bg-gradient-to-br dark:from-background dark:via-muted dark:to-black
         "
       >
         <div className="container py-6">

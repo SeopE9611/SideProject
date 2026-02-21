@@ -487,7 +487,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
           {/* 히어로 헤더 */}
           <div
-            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-muted to-slate-50 dark:from-slate-900 dark:via-transparent dark:to-slate-950', 'border-border dark:border-border')}
+            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-muted to-card dark:from-background dark:via-transparent dark:to-card', 'border-border dark:border-border')}
           >
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">

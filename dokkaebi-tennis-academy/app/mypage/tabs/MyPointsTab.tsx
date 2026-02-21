@@ -172,7 +172,7 @@ export default function MyPointsTab() {
         <CardHeader className="bg-gradient-to-r from-background to-muted dark:from-background/50 dark:to-muted/50 border-b p-5 bp-sm:p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-xl p-2.5 shadow-md">
+              <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-xl p-2.5 shadow-md">
                 <Calendar className="h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
               </div>
               <div>

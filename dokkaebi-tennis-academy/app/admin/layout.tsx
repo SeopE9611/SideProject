@@ -72,7 +72,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+    <div className="flex min-h-full flex-col bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card text-white">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-0 opacity-20">

@@ -35,7 +35,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
   })();
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-slate-950 dark:via-muted dark:to-muted">
+    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
       <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-10 bp-sm:py-12 bp-md:py-24">
         <div className="absolute inset-0 bg-overlay/20" />
         <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">

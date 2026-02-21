@@ -243,7 +243,7 @@ export default function PackageSettingsClient() {
                     .sort((a, b) => a.sortOrder - b.sortOrder)
                     .map((pkg) => (
                       <Card key={pkg.id} className="border-0 bg-card shadow-lg backdrop-blur-sm">
-                        <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+                        <CardHeader className="bg-gradient-to-r from-background to-card border-b">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <Package className="h-5 w-5 text-primary" />
@@ -390,7 +390,7 @@ export default function PackageSettingsClient() {
             {/* 일반 설정 */}
             <TabsContent value="general">
               <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+                <CardHeader className="bg-gradient-to-r from-background to-card border-b">
                   <CardTitle className="flex items-center space-x-2">
                     <Settings className="h-5 w-5 text-success" />
                     <span>일반 설정</span>

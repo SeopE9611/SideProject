@@ -181,7 +181,7 @@ export default function ForceChangePasswordClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="container py-16">
         <div className="mx-auto max-w-lg">
           <Card className="border-border/40 bg-card/60 backdrop-blur shadow-xl">

@@ -444,8 +444,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div className="grid gap-8 bp-lg:grid-cols-2">
  {/* 고객 정보 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
  <CardTitle className="flex items-center space-x-2">
  <User className="h-5 w-5 text-accent" />
  <span>내 정보</span>
@@ -521,8 +521,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
 
  {/* 배송 정보 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
  <CardTitle className="flex items-center space-x-2">
  <Truck className="h-5 w-5 text-success" />
  <span>배송 정보</span>
@@ -581,8 +581,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
 
  {/* 결제 정보 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
  <CardTitle className="flex items-center space-x-2">
  <CreditCard className="h-5 w-5 text-foreground" />
  <span>결제 정보</span>
@@ -612,8 +612,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
 
  {/* 주문 항목 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
  <CardTitle className="flex items-center space-x-2">
  <ShoppingCart className="h-5 w-5 text-warning" />
  <span>주문 항목</span>
@@ -661,8 +661,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
 
  {/* 요청사항 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b">
+ <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+ <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
  <CardTitle>배송 요청사항</CardTitle>
  <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
  </CardHeader>

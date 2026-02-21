@@ -30,7 +30,7 @@ export default async function RacketDetailPage({ params }: { params: Promise<{ i
   const doc = await getData(id);
   if (!doc) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-slate-950 dark:via-muted dark:to-muted">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
         <SiteContainer variant="wide" className="py-12">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground">존재하지 않는 라켓입니다.</h1>

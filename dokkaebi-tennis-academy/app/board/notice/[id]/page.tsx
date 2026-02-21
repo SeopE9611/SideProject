@@ -146,7 +146,7 @@ export default function NoticeDetailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 flex items-center justify-between gap-3">
@@ -302,7 +302,7 @@ export default function NoticeDetailPage() {
                                 <img
                                   src={(typeof imageAtts[0] === 'string' ? imageAtts[0] : imageAtts[0].url) as string}
                                   alt={(imageAtts[0] as any)?.name || 'image-1'}
-                                  className="w-full h-auto max-h-[70vh] object-contain bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900"
+                                  className="w-full h-auto max-h-[70vh] object-contain bg-gradient-to-br from-background to-card dark:from-background dark:to-card"
                                 />
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
                                   <ExternalLink className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -347,12 +347,12 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
             <CardContent className="p-8">
               {/* Form Title with Divider */}
               <div className="flex items-center gap-4 mb-8">
-                <div className="flex-1 h-px bg-primary from-transparent to-slate-300 dark:to-slate-600"></div>
+                <div className="flex-1 h-px bg-primary from-transparent to-card dark:to-card"></div>
                 <div className="flex items-center gap-2 text-foreground">
                   <Package className="w-5 h-5" />
                   <span className="font-semibold">배송 정보</span>
                 </div>
-                <div className="flex-1 h-px bg-gradient-to-l from-transparent to-slate-300 dark:to-slate-600"></div>
+                <div className="flex-1 h-px bg-gradient-to-l from-transparent to-card dark:to-card"></div>
               </div>
 
               <div className="space-y-6">
