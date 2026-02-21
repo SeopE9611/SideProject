@@ -344,7 +344,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  <div className="flex justify-center bp-md:justify-end">
  <Link className="w-full bp-sm:max-w-xs bp-md:w-auto" href={`/services/apply?orderId=${orderDetail._id}`}>
- <Button className="w-full bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg">스트링 장착 서비스 추가 신청하기</Button>
+ <Button variant="default" className="w-full shadow-lg">스트링 장착 서비스 추가 신청하기</Button>
  </Link>
  </div>
  </div>

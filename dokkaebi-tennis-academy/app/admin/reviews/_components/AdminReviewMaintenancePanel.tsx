@@ -109,7 +109,7 @@ export default function AdminReviewMaintenancePanel() {
             {loading === 'rebuildSummary' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
             평점 재집계
           </Button>
-          <Button size="sm" onClick={() => run('all')} disabled={disabled} className="bg-gradient-to-r from-background to-card text-white hover:from-background hover:to-card">
+          <Button size="sm" onClick={() => run('all')} disabled={disabled} variant="default">
             {loading === 'all' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             전체 실행
           </Button>

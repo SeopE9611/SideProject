@@ -452,7 +452,7 @@ export default function NewStringPage() {
                       취소
                     </Link>
                   </Button>
-                  <Button type="submit" disabled={submitting || uploading} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+                  <Button type="submit" disabled={submitting || uploading} variant="default">
                     <Save className="mr-2 h-4 w-4" />
                     저장
                   </Button>
@@ -1122,7 +1122,7 @@ export default function NewStringPage() {
                   취소
                 </Link>
               </Button>
-              <Button type="submit" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+              <Button type="submit" variant="default">
                 <Save className="mr-2 h-4 w-4" />
                 저장
               </Button>

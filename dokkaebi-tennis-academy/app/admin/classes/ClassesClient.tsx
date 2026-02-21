@@ -171,7 +171,7 @@ export default function ClassesPage() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold text-foreground">클래스 목록</CardTitle>
-            <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg">
+            <Button asChild variant="default" className="shadow-lg">
               <Link href="/admin/classes/new">
                 <Plus className="mr-2 h-4 w-4" />
                 클래스 등록

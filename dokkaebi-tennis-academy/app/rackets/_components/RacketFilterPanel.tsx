@@ -116,7 +116,7 @@ export default function RacketFilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+            <Button type="submit" size="sm" variant="default">
               검색
             </Button>
           </form>

@@ -614,7 +614,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
             취소
           </Link>
         </Button>
-        <Button onClick={handleSubmit} disabled={loading} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+        <Button onClick={handleSubmit} disabled={loading} variant="default">
           <Save className="mr-2 h-4 w-4" />
           {loading ? '저장 중...' : submitLabel}
         </Button>
