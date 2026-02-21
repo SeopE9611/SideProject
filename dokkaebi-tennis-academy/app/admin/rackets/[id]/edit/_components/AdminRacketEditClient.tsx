@@ -96,7 +96,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-900 dark:via-teal-900 dark:to-cyan-900">
+      <div className="relative overflow-hidden bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
             <Button variant="ghost" size="sm" className="text-white hover:bg-card mb-4">

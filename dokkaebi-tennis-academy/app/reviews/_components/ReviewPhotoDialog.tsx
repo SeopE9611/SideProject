@@ -50,7 +50,7 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
         {photos.length > 1 && (
           <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
             {photos.map((src, i) => (
-              <button key={i} type="button" onClick={() => setIdx(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? 'ring-2 ring-emerald-400' : ''}`} aria-label={`썸네일 ${i + 1}`}>
+              <button key={i} type="button" onClick={() => setIdx(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                 <Image src={src || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
               </button>
             ))}

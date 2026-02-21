@@ -104,7 +104,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
   // 에러 텍스트는 "있을 때만" 렌더 (불필요한 상시 여백 제거)
   const errorText = (key: string) => (touched[key] && fieldErrors[key] ? fieldErrors[key] : '');
-  const errCls = 'mt-1 px-3 text-[11px] leading-tight text-rose-600';
+  const errCls = 'mt-1 px-3 text-[11px] leading-tight text-destructive';
 
   return (
     <div className="relative space-y-5">
@@ -267,7 +267,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 // 그리고 안내 페이지로 이동
                 router.push(`/services/applications/${applicationId}/shipping`);
               }}
-              className="inline-flex items-center rounded-md bg-muted px-3 py-2 text-foreground hover:bg-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-300 dark:focus:ring-amber-600"
+              className="inline-flex items-center rounded-md bg-muted px-3 py-2 text-foreground hover:bg-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-ring dark:focus:ring-ring"
             >
               운송장/자가발송 안내 보기
             </button>
@@ -384,15 +384,15 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+        <div className="bg-primary  to-card dark:from-background dark:to-card border border-border dark:border-border rounded-lg p-4">
           <div className="flex items-start space-x-3">
-            <Shield className="h-5 w-5 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+            <Shield className="h-5 w-5 text-warning dark:text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-orange-800 dark:text-orange-300 mb-1">📢 안내사항</p>
-              <p className="text-orange-700 dark:text-orange-200 leading-relaxed">
+              <p className="font-medium text-warning dark:text-warning mb-1">📢 안내사항</p>
+              <p className="text-warning dark:text-warning leading-relaxed">
                 신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
                 <br />
-                변경이 필요한 경우, <span className="text-orange-600 dark:text-orange-400 font-semibold">추가 요청사항</span>에 기재해주세요.
+                변경이 필요한 경우, <span className="text-warning dark:text-warning font-semibold">추가 요청사항</span>에 기재해주세요.
               </p>
             </div>
           </div>

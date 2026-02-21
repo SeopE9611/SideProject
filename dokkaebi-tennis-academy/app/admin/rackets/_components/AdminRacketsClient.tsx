@@ -115,24 +115,24 @@ export default function AdminRacketsClient() {
             },
             {
               label: '판매 가능',
-              icon: <CheckCircle className="h-6 w-6 text-green-600" />,
+              icon: <CheckCircle className="h-6 w-6 text-success" />,
               value: stats.available,
-              bgColor: 'bg-green-50 dark:bg-green-950/20',
+              bgColor: 'bg-success/10 dark:bg-success/10',
             },
             {
               label: '대여 중',
-              icon: <AlertTriangle className="h-6 w-6 text-yellow-600" />,
+              icon: <AlertTriangle className="h-6 w-6 text-warning" />,
               value: stats.rented,
-              bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
+              bgColor: 'bg-warning/10 dark:bg-warning/10',
             },
             {
               label: '판매 완료',
-              icon: <XCircle className="h-6 w-6 text-rose-600" />,
+              icon: <XCircle className="h-6 w-6 text-destructive" />,
               value: stats.sold,
-              bgColor: 'bg-rose-50 dark:bg-rose-950/20',
+              bgColor: 'bg-destructive/10 dark:bg-destructive/10',
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
+            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -146,8 +146,8 @@ export default function AdminRacketsClient() {
           ))}
         </section>
 
-        <Card className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border flex-1 min-h-0 flex flex-col">
-          <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-border dark:border-border pb-4 shrink-0">
+        <Card className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border flex-1 min-h-0 flex flex-col">
+          <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary dark:text-primary">라켓 목록</CardTitle>
@@ -162,7 +162,7 @@ export default function AdminRacketsClient() {
                   'bg-primary hover:bg-primary text-primary-foreground',
                   'dark:bg-primary dark:hover:bg-primary',
                   'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
                   'transition-colors',
                 ].join(' ')}

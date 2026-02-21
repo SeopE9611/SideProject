@@ -79,7 +79,7 @@ const fetcher = (url: string) =>
 const Stars = ({ rating }: { rating: number }) => (
   <div className="flex items-center gap-1">
     {Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-yellow-400' : 'text-muted-foreground/60 dark:text-muted-foreground'}`} fill="currentColor" />
+      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-warning' : 'text-muted-foreground/60 dark:text-muted-foreground'}`} fill="currentColor" />
     ))}
   </div>
 );
@@ -89,7 +89,7 @@ const StarsInput = ({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" aria-label={`${n}점`} onClick={() => onChange(n)} className={`text-xl leading-none transition-transform hover:scale-[1.06] ${value >= n ? 'text-yellow-400' : 'text-muted-foreground/60 dark:text-muted-foreground'}`}>
+        <button key={n} type="button" aria-label={`${n}점`} onClick={() => onChange(n)} className={`text-xl leading-none transition-transform hover:scale-[1.06] ${value >= n ? 'text-warning' : 'text-muted-foreground/60 dark:text-muted-foreground'}`}>
           ★
         </button>
       ))}
@@ -319,7 +319,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   // 에러 카드
   if (error) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
+      <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
         <CardContent className="p-8 text-center">오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</CardContent>
       </Card>
     );
@@ -371,7 +371,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       {itemsToRender.length ? (
         itemsToRender.map((it) => (
           <Card key={it._id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+            <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
@@ -379,12 +379,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               {/* 헤더 영역 */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-yellow-50 ring-1 ring-black/5">
+                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-black/5">
                     {it.cover ? (
                       <Image src={it.cover} alt={it.title} fill sizes="48px" className="object-cover" />
                     ) : (
                       <div className="grid h-full w-full place-items-center">
-                        <Award className="h-6 w-6 text-yellow-600" />
+                        <Award className="h-6 w-6 text-warning" />
                       </div>
                     )}
                   </div>
@@ -392,7 +392,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     <h3 className="font-semibold text-foreground mb-1">{it.title}</h3>
                     <div className="flex items-center gap-2">
                       <Stars rating={it.rating} />
-                      <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">{Number(it.rating).toFixed(1)}</span>
+                      <span className="text-sm font-medium text-warning dark:text-warning">{Number(it.rating).toFixed(1)}</span>
                       {it.status === 'hidden' && (
                         <Badge variant="secondary" className="ml-2">
                           비공개
@@ -474,8 +474,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       ) : (
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
           <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900">
-              <Star className="h-10 w-10 text-yellow-600 dark:text-yellow-400" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+              <Star className="h-10 w-10 text-warning dark:text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">작성한 리뷰가 없습니다</h3>
             <p className="mb-6 text-muted-foreground">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>

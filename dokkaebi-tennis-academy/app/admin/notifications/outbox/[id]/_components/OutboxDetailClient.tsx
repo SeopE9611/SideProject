@@ -108,9 +108,9 @@ function StatusBadge({ status }: { status?: string }) {
     s === 'failed'
       ? 'bg-destructive text-destructive border-destructive'
       : s === 'sent'
-      ? 'bg-green-100 text-green-800 border-green-200'
+      ? 'bg-success/10 text-success border-border'
       : s === 'queued'
-      ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      ? 'bg-warning/10 text-warning border-border'
       : s === 'processing'
       ? 'bg-primary text-primary border-border'
       : 'bg-muted text-muted-foreground border-border/40';

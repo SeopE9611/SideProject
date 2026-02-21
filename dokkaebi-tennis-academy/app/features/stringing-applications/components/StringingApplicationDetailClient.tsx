@@ -1246,7 +1246,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   onCancel={() => setEditingRequirements(false)}
                 />
               ) : data.stringDetails.requirements?.trim() ? (
-                <div className="bg-orange-50 border border-border rounded-lg p-4">
+                <div className="bg-warning/10 border border-border rounded-lg p-4">
                   <p className="text-foreground whitespace-pre-line">{data.stringDetails.requirements}</p>
                 </div>
               ) : (
@@ -1255,7 +1255,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </CardContent>
             {!editingRequirements && isEditMode && (
               <CardFooter className="flex justify-center bg-muted/50 ">
-                <Button size="sm" variant="outline" onClick={() => setEditingRequirements(true)} className="hover:bg-orange-50 border-border">
+                <Button size="sm" variant="outline" onClick={() => setEditingRequirements(true)} className="hover:bg-warning/10 border-border">
                   요청사항 수정
                 </Button>
               </CardFooter>

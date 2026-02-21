@@ -66,8 +66,8 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded-xl p-3">
-                <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-3">
+                <AlertTriangle className="h-6 w-6 text-warning dark:text-warning" />
               </div>
             </div>
           </CardContent>
@@ -81,8 +81,8 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-rose-50 dark:bg-rose-900/30 rounded-xl p-3">
-                <XCircle className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+              <div className="bg-destructive/10 dark:bg-destructive/10 rounded-xl p-3">
+                <XCircle className="h-6 w-6 text-destructive dark:text-destructive" />
               </div>
             </div>
           </CardContent>

@@ -208,7 +208,7 @@ export default function MypageClient({ user }: Props) {
                           {user.oauthProviders?.length ? (
                             <>
                               {user.oauthProviders.includes('kakao') && (
-                                <Badge variant="outline" className="border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300 text-xs py-0 px-2 h-5">
+                                <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/10 dark:text-warning text-xs py-0 px-2 h-5">
                                   카카오
                                 </Badge>
                               )}
@@ -383,7 +383,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className={pageTone.sectionHeader}>
                       <div className="flex items-center gap-3">
                         <div className={pageTone.iconSurface}>
-                          <Briefcase className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-indigo-600 dark:text-indigo-400" />
+                          <Briefcase className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-foreground dark:text-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">대여 내역</CardTitle>

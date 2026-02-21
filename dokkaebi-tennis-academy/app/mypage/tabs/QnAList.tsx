@@ -75,12 +75,12 @@ export default function QnAList() {
     return (
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900 dark:to-teal-900">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
             <MessageCircleQuestion className="h-10 w-10 text-primary dark:text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
           <p className="mb-6 text-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
-          <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+          <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg hover:shadow-xl transition-all duration-200">
             <Link href="/board/qna/write" className="inline-flex items-center gap-2">
               문의하기
               <ArrowRight className="h-4 w-4" />
@@ -96,14 +96,14 @@ export default function QnAList() {
     <div className="space-y-6">
       {qnas.map((qna) => (
         <Card key={qna.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900 dark:to-teal-900">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
                   <MessageCircleQuestion className="h-6 w-6 text-primary dark:text-primary" />
                 </div>
                 <div>
@@ -115,8 +115,8 @@ export default function QnAList() {
               </div>
 
               <div className="flex items-center gap-2">
-                {qna.status === '답변 완료' ? <CheckCircle className="h-5 w-5 text-green-500" /> : <Clock className="h-5 w-5 text-yellow-500" />}
-                <Badge variant={qna.status === '답변 완료' ? 'default' : 'secondary'} className={qna.status === '답변 완료' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'}>
+                {qna.status === '답변 완료' ? <CheckCircle className="h-5 w-5 text-success" /> : <Clock className="h-5 w-5 text-warning" />}
+                <Badge variant={qna.status === '답변 완료' ? 'default' : 'secondary'} className={qna.status === '답변 완료' ? 'bg-gradient-to-r from-background to-card text-white' : 'bg-gradient-to-r from-background to-card text-white'}>
                   {qna.status}
                 </Badge>
               </div>

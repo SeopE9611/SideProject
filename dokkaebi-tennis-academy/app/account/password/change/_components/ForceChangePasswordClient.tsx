@@ -181,7 +181,7 @@ export default function ForceChangePasswordClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-sky-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
       <div className="container py-16">
         <div className="mx-auto max-w-lg">
           <Card className="border-border/40 bg-card/60 backdrop-blur shadow-xl">
@@ -205,7 +205,7 @@ export default function ForceChangePasswordClient() {
                     }}
                     placeholder="8자 이상 입력해주세요"
                     required
-                    className={fieldErrors.newPassword ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : ''}
+                    className={fieldErrors.newPassword ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
                   />
                   <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.newPassword ?? ''}</p>
                 </div>
@@ -223,11 +223,11 @@ export default function ForceChangePasswordClient() {
                     }}
                     placeholder="비밀번호를 다시 입력해주세요"
                     required
-                    className={fieldErrors.confirm ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : ''}
+                    className={fieldErrors.confirm ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
                   />
                   <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.confirm ?? ''}</p>
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
                   {loading ? '변경 중…' : '비밀번호 변경'}
                 </Button>
               </form>

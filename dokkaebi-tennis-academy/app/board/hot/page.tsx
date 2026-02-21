@@ -11,13 +11,13 @@ export const metadata = {
 
 export default function HotBoardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
-              <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+              <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>인기글 모아보기</span>
             </div>
@@ -32,9 +32,9 @@ export default function HotBoardPage() {
 
         {/* 준비중 안내 카드 */}
         <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-orange-50 to-red-100 dark:from-orange-950/50 dark:to-red-900/50">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 shadow-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 shadow-lg">
                 <Flame className="h-5 w-5 text-white" />
               </div>
               <CardTitle className="text-lg md:text-xl">인기글 모아보기 기능을 준비 중입니다</CardTitle>

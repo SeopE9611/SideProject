@@ -116,7 +116,7 @@ export default function ReviewsClient() {
     return (
       <div className="flex items-center">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star key={index} className={`h-4 w-4 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
+          <Star key={index} className={`h-4 w-4 ${index < rating ? 'text-warning fill-yellow-500' : 'text-muted-foreground'}`} />
         ))}
         <span className="ml-2 text-sm font-medium text-foreground">{rating}/5</span>
       </div>
@@ -157,7 +157,7 @@ export default function ReviewsClient() {
       case 'stringing':
         return 'bg-primary text-primary hover:bg-primary';
       case 'product':
-        return 'bg-purple-100 text-purple-800 hover:bg-purple-200';
+        return 'bg-muted text-foreground hover:bg-muted';
       default:
         return 'bg-background text-foreground hover:bg-muted';
     }
@@ -174,7 +174,7 @@ export default function ReviewsClient() {
       {/* 페이지 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
             <Star className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -207,8 +207,8 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">평균 평점</p>
                 <p className="text-3xl font-bold text-foreground">{averageRating.toFixed(1)}</p>
               </div>
-              <div className="bg-yellow-50 rounded-xl p-3">
-                <Star className="h-6 w-6 text-yellow-600" />
+              <div className="bg-warning/10 rounded-xl p-3">
+                <Star className="h-6 w-6 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -235,8 +235,8 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">레슨 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{lessonReviews}</p>
               </div>
-              <div className="bg-purple-50 rounded-xl p-3">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
+              <div className="bg-muted rounded-xl p-3">
+                <TrendingUp className="h-6 w-6 text-foreground" />
               </div>
             </div>
           </CardContent>
@@ -259,7 +259,7 @@ export default function ReviewsClient() {
             <div className="flex items-center space-x-2">
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input type="search" placeholder="리뷰 검색..." className="pl-10 border-border focus:border-border focus:ring-emerald-500" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Input type="search" placeholder="리뷰 검색..." className="pl-10 border-border focus:border-border focus:ring-ring" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               </div>
             </div>
           </div>

@@ -33,11 +33,11 @@ export default function SideMenu() {
     const isActive = isActiveHref(href);
     return cn(
       'group relative z-0 block rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-      'hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-emerald-50/50',
-      'dark:hover:from-blue-950/30 dark:hover:to-emerald-950/30',
+      'hover:bg-gradient-to-r hover:from-background hover:to-card',
+      'dark:hover:from-background dark:hover:to-card',
       'hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring dark:hover:ring-ring hover:z-10 active:scale-[0.99]',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-      isActive ? 'bg-gradient-to-r from-blue-50 to-emerald-50 text-primary dark:from-blue-950/50 dark:to-emerald-950/50 dark:text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground',
+      isActive ? 'bg-gradient-to-r from-background to-card text-primary dark:from-background dark:to-card dark:text-primary shadow-sm' : 'text-muted-foreground hover:text-foreground',
     );
   };
 
@@ -69,12 +69,12 @@ export default function SideMenu() {
         <Accordion type="multiple" defaultValue={['strings', 'rackets', 'packages', 'support', 'boards']}>
           {/* 스트링 */}
           <AccordionItem value="strings" className="border-none">
-            <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100/50 dark:hover:from-blue-950/30 dark:hover:to-blue-900/20 hover:no-underline transition-all group">
+            <AccordionTrigger value="strings" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group">
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow">
                   <Grid2X2 className="h-4 w-4" />
                 </div>
-                <span className="bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent">스트링</span>
+                <span className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card bg-clip-text text-transparent">스트링</span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="strings" className="pb-2 pt-1 space-y-0.5">
@@ -146,12 +146,12 @@ export default function SideMenu() {
 
           {/* 게시판 */}
           <AccordionItem value="boards" className="border-none">
-            <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-rose-50 hover:to-rose-100/50 dark:hover:from-rose-950/30 dark:hover:to-rose-900/20 hover:no-underline transition-all group">
+            <AccordionTrigger value="boards" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group">
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow">
                   <MessageSquareText className="h-4 w-4" />
                 </div>
-                <span className="bg-gradient-to-r from-rose-700 to-rose-600 dark:from-rose-400 dark:to-rose-300 bg-clip-text text-transparent">게시판</span>
+                <span className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card bg-clip-text text-transparent">게시판</span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="boards" className="pb-2 pt-1 space-y-0.5">
@@ -168,12 +168,12 @@ export default function SideMenu() {
 
           {/* 패키지 */}
           <AccordionItem value="packages" className="border-none">
-            <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:no-underline transition-all group">
+            <AccordionTrigger value="packages" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group">
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow">
                   <Gift className="h-4 w-4" />
                 </div>
-                <span className="bg-gradient-to-r from-purple-700 to-purple-600 dark:from-purple-400 dark:to-purple-300 bg-clip-text text-transparent">패키지</span>
+                <span className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card bg-clip-text text-transparent">패키지</span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="packages" className="pb-2 pt-1 space-y-0.5">
@@ -190,12 +190,12 @@ export default function SideMenu() {
 
           {/* 중고 라켓 */}
           <AccordionItem value="rackets" className="border-none">
-            <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-emerald-50 hover:to-emerald-100/50 dark:hover:from-emerald-950/30 dark:hover:to-emerald-900/20 hover:no-underline transition-all group">
+            <AccordionTrigger value="rackets" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group">
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow">
                   <MdSportsTennis className="h-4 w-4" />
                 </div>
-                <span className="bg-gradient-to-r from-emerald-700 to-emerald-600 dark:from-emerald-400 dark:to-emerald-300 bg-clip-text text-transparent">중고 라켓</span>
+                <span className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card bg-clip-text text-transparent">중고 라켓</span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="rackets" className="pb-2 pt-1 space-y-0.5">
@@ -225,12 +225,12 @@ export default function SideMenu() {
 
           {/* 고객센터 */}
           <AccordionItem value="support" className="border-none">
-            <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-blue-50/60 hover:to-teal-50/60 dark:hover:from-blue-950/40 dark:hover:to-teal-950/40 hover:no-underline transition-all group">
+            <AccordionTrigger value="support" className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group">
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-teal-600 text-white shadow-md group-hover:shadow-lg transition-shadow">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow">
                   <MessageSquare className="h-4 w-4" />
                 </div>
-                <span className="bg-gradient-to-r from-blue-700 via-teal-600 to-teal-500 dark:from-blue-300 dark:via-teal-300 dark:to-teal-200 bg-clip-text text-transparent">고객센터</span>
+                <span className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card bg-clip-text text-transparent">고객센터</span>
               </span>
             </AccordionTrigger>
             <AccordionContent value="support" className="pb-2 pt-1 space-y-0.5">

@@ -359,7 +359,7 @@ const Header = () => {
           >
             <Link href="/" className="flex flex-col group" aria-label="도깨비 테니스 홈" onClick={() => setOpen(false)}>
               <div
-                className="font-bold text-lg bg-gradient-to-r from-blue-600 to-emerald-600 
+                className="font-bold text-lg bg-gradient-to-r from-background to-card 
                       bg-clip-text text-transparent whitespace-nowrap"
               >
                 도깨비 테니스
@@ -387,13 +387,13 @@ const Header = () => {
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-blue-500 to-blue-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                            from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow"
                     >
                       <Grid2X2 className="h-4 w-4" />
                     </div>
                     <span
-                      className="bg-gradient-to-r from-blue-700 to-blue-600 dark:from-blue-400 
-                            dark:to-blue-300 bg-clip-text text-transparent"
+                      className="bg-gradient-to-r from-background to-card dark:from-background 
+                            dark:to-card bg-clip-text text-transparent"
                     >
                       스트링
                     </span>
@@ -421,7 +421,7 @@ const Header = () => {
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
             text-muted-foreground hover:text-foreground hover:bg-gradient-to-r 
-            hover:from-amber-50/50 hover:to-orange-50/50 transition-all"
+            hover:from-background hover:to-card transition-all"
                     onClick={() => {
                       setOpen(false);
                       router.push('/services/apply');
@@ -450,8 +450,8 @@ const Header = () => {
                                 variant="ghost"
                                 className="w-full justify-between rounded-md px-3 py-1.5 text-[13px]
               text-muted-foreground hover:text-foreground
-              hover:bg-gradient-to-r hover:from-amber-50/50 hover:to-orange-50/50
-              dark:hover:from-amber-950/20 dark:hover:to-orange-950/20 transition-all"
+              hover:bg-gradient-to-r hover:from-background hover:to-card
+              dark:hover:from-background dark:hover:to-card transition-all"
                                 onClick={() => {
                                   setOpen(false);
                                   router.push(it.href);
@@ -494,19 +494,19 @@ const Header = () => {
               <AccordionItem value="boards" className="border-none">
                 <AccordionTrigger
                   value="boards"
-                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-rose-50 hover:to-rose-100/50 
-                          dark:hover:from-rose-950/30 dark:hover:to-rose-900/20 hover:no-underline transition-all group"
+                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card 
+                          dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-rose-500 to-rose-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                            from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow"
                     >
                       <MessageSquareText className="h-4 w-4" />
                     </div>
                     <span
-                      className="bg-gradient-to-r from-rose-700 to-rose-600 dark:from-rose-400 
-                            dark:to-rose-300 bg-clip-text text-transparent"
+                      className="bg-gradient-to-r from-background to-card dark:from-background 
+                            dark:to-card bg-clip-text text-transparent"
                     >
                       게시판
                     </span>
@@ -537,19 +537,19 @@ const Header = () => {
               <AccordionItem value="packages" className="border-none">
                 <AccordionTrigger
                   value="packages"
-                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-purple-100/50 
-                          dark:hover:from-purple-950/30 dark:hover:to-purple-900/20 hover:no-underline transition-all group"
+                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background hover:to-card 
+                          dark:hover:from-background dark:hover:to-card hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-purple-500 to-purple-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                            from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow"
                     >
                       <Gift className="h-4 w-4" />
                     </div>
                     <span
-                      className="bg-gradient-to-r from-purple-700 to-purple-600 dark:from-purple-400 
-                            dark:to-purple-300 bg-clip-text text-transparent"
+                      className="bg-gradient-to-r from-background to-card dark:from-background 
+                            dark:to-card bg-clip-text text-transparent"
                     >
                       패키지
                     </span>
@@ -580,20 +580,20 @@ const Header = () => {
               <AccordionItem value="rackets" className="border-none">
                 <AccordionTrigger
                   value="rackets"
-                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-emerald-50 
-                          hover:to-emerald-100/50 dark:hover:from-emerald-950/30 dark:hover:to-emerald-900/20 
+                  className="py-3 px-3 rounded-lg hover:bg-gradient-to-r hover:from-background 
+                          hover:to-card dark:hover:from-background dark:hover:to-card 
                           hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-                            from-emerald-500 to-emerald-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+                            from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow"
                     >
                       <MdSportsTennis className="h-4 w-4" />
                     </div>
                     <span
-                      className="bg-gradient-to-r from-emerald-700 to-emerald-600 dark:from-emerald-400 
-                            dark:to-emerald-300 bg-clip-text text-transparent"
+                      className="bg-gradient-to-r from-background to-card dark:from-background 
+                            dark:to-card bg-clip-text text-transparent"
                     >
                       중고 라켓
                     </span>
@@ -647,13 +647,13 @@ const Header = () => {
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br 
-          from-sky-500 to-sky-600 text-white shadow-md group-hover:shadow-lg transition-shadow"
+          from-background to-card text-white shadow-md group-hover:shadow-lg transition-shadow"
                     >
                       <MessageSquare className="h-4 w-4" />
                     </div>
                     <span
-                      className="bg-gradient-to-r from-sky-700 to-sky-600 dark:from-sky-400 
-          dark:to-sky-300 bg-clip-text text-transparent"
+                      className="bg-gradient-to-r from-background to-card dark:from-background 
+          dark:to-card bg-clip-text text-transparent"
                     >
                       고객센터
                     </span>
@@ -687,12 +687,12 @@ const Header = () => {
             {user ? (
               <>
                 {/* 사용자 정보 카드 */}
-                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/50 to-emerald-50/50 dark:from-blue-950/20 dark:to-emerald-950/20 border border-border">
+                <div className="p-4 rounded-xl bg-gradient-to-r from-background to-card dark:from-background dark:to-card border border-border">
                   <div className="flex items-start justify-between">
                     {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-border shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
                           <AvatarFallback
-                            className="bg-gradient-to-br from-blue-500 to-emerald-500 
+                            className="bg-gradient-to-br from-background to-card 
                             text-white font-semibold"
                           >
                             {user.name?.charAt(0) ?? 'U'}

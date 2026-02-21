@@ -36,9 +36,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-slate-900 dark:via-slate-800 dark:to-emerald-900/20 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:from-slate-900 dark:via-slate-800 dark:to-card flex items-center justify-center p-4">
       <div className="absolute top-10 left-10 w-20 h-20 bg-primary rounded-full blur-2xl animate-pulse"></div>
-      <div className="absolute bottom-10 right-10 w-32 h-32 bg-green-400/10 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-10 right-10 w-32 h-32 bg-success/10 rounded-full blur-3xl animate-pulse"></div>
 
       <div className="relative w-full max-w-md">
         <div className="mb-6">
@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-700 p-6 text-white relative">
+          <div className="bg-gradient-to-r from-background via-muted to-card p-6 text-white relative">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
@@ -78,14 +78,14 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isSubmitting}
-                        className="pl-10 h-12 border-border dark:border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border bg-card/50 dark:bg-muted"
+                        className="pl-10 h-12 border-border dark:border-border focus:border-border focus:ring-ring dark:focus:border-border bg-card/50 dark:bg-muted"
                       />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-xl p-6 text-center border border-border dark:border-border">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center shadow-lg">
+                <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-xl p-6 text-center border border-border dark:border-border">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-background to-card rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-8 w-8 text-white" />
                   </div>
                   <p className="text-sm font-semibold text-primary dark:text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
               {!isSubmitted ? (
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full h-12 bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   disabled={isSubmitting || !email}
                 >
                   {isSubmitting ? '전송 중...' : '비밀번호 재설정 링크 전송'}

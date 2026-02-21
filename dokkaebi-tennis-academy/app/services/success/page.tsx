@@ -320,7 +320,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div>
  <div className="flex justify-between items-center border-t pt-3">
  <span className="font-semibold">합계</span>
- <span className="font-semibold text-primary dark:text-green-400">{Number(displayTotal).toLocaleString()}원</span>
+ <span className="font-semibold text-primary dark:text-success">{Number(displayTotal).toLocaleString()}원</span>
  </div>
  </div>
  ) : order ? (
@@ -583,7 +583,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="space-y-6">
  <h3 className="text-xl font-bold text-foreground flex items-center">
- <MapPin className="h-6 w-6 mr-3 text-indigo-600" />
+ <MapPin className="h-6 w-6 mr-3 text-foreground" />
  배송지 정보
  </h3>
  <div className="space-y-4">
@@ -712,7 +712,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-xl">
  <CardHeader>
  <CardTitle className="flex items-center text-lg">
- <Award className="h-6 w-6 mr-3 text-indigo-600" />
+ <Award className="h-6 w-6 mr-3 text-foreground" />
  서비스 특징
  </CardTitle>
  </CardHeader>
@@ -725,15 +725,15 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">100% 정품 스트링만 사용</p>
  </div>
  </div>
- <div className="flex items-center p-3 bg-indigo-50 dark:bg-card rounded-lg">
- <Clock className="h-6 w-6 text-indigo-500 mr-3" />
+ <div className="flex items-center p-3 bg-muted dark:bg-card rounded-lg">
+ <Clock className="h-6 w-6 text-foreground mr-3" />
  <div>
  <p className="font-semibold text-foreground ">철저한 예약 장착 완료</p>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">빠르고 정확한 장착 서비스</p>
  </div>
  </div>
  <div className="flex items-center p-3 bg-accent dark:bg-card rounded-lg">
- <Award className="h-6 w-6 text-purple-500 mr-3" />
+ <Award className="h-6 w-6 text-foreground mr-3" />
  <div>
  <p className="font-semibold text-foreground ">전문가 상담</p>
  <p className="text-sm text-muted-foreground dark:text-muted-foreground">전문가가 직접 상담</p>

@@ -679,7 +679,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="mt-2 flex items-center gap-2 sm:gap-3">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'fill-muted text-muted'}`} />
+                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-warning' : 'fill-muted text-muted'}`} />
                         ))}
                       </div>
                       <span className="text-xs sm:text-sm text-muted-foreground">
@@ -1046,7 +1046,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
                                       {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-yellow-400' : 'fill-muted text-muted'}`} />
+                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-warning' : 'fill-muted text-muted'}`} />
                                       ))}
                                     </div>
                                     <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">{review.date || '2099-01-01'}</span>

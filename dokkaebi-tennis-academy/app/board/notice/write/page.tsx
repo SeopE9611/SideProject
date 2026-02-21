@@ -469,7 +469,7 @@ export default function NoticeWritePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center space-x-4">
@@ -479,7 +479,7 @@ export default function NoticeWritePage() {
               </Link>
             </Button>
             <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
                 <Bell className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -513,7 +513,7 @@ export default function NoticeWritePage() {
             </div>
           )}
           <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50 border-b">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
               <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5 text-primary" />
                 <span>{editId ? '공지사항 수정' : '새 공지사항 작성'}</span>
@@ -539,7 +539,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="event">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <Badge variant="outline" className="bg-success/10 text-success border-border">
                           이벤트
                         </Badge>
                         <span>할인, 프로모션 등 이벤트</span>
@@ -547,7 +547,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="academy">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                        <Badge variant="outline" className="bg-muted text-foreground border-border">
                           아카데미
                         </Badge>
                         <span>레슨, 프로그램 관련</span>
@@ -555,7 +555,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="maintenance">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                        <Badge variant="outline" className="bg-warning/10 text-warning border-border">
                           점검
                         </Badge>
                         <span>시스템 점검, 휴무 안내</span>
@@ -760,7 +760,7 @@ export default function NoticeWritePage() {
                 <Button variant="outline" size="lg" className="px-6 border-border text-primary hover:bg-primary bg-transparent">
                   임시저장
                 </Button>
-                <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 disabled:opacity-60">
+                <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-background to-card hover:from-background hover:to-card disabled:opacity-60">
                   {submitting ? (editId ? '수정 중…' : '등록 중…') : editId ? '공지사항 수정' : '공지사항 등록'}
                 </Button>
               </div>

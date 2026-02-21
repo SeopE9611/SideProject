@@ -297,10 +297,10 @@ export default function StringPackagesPage() {
    return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
   }
   return (
-    <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-background from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-background  via-indigo-600 ">
+        <div className="absolute inset-0 bg-background  via-muted ">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full" viewBox="0 0 400 300" fill="none">
               <defs>
@@ -323,17 +323,17 @@ export default function StringPackagesPage() {
               프리미엄 스트링 패키지
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-primary  via-blue-100  bg-clip-text text-transparent">스트링 교체 패키지</h1>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-primary  via-muted  bg-clip-text text-transparent">스트링 교체 패키지</h1>
 
             <p className="text-base sm:text-xl md:text-2xl mb-8 text-primary leading-relaxed">
               정기적인 스트링 교체로 최상의 경기력을 유지하세요
               <br />
-              <span className="text-indigo-300 font-semibold">패키지 구매 시 최대 20만원 절약</span>
+              <span className="text-foreground font-semibold">패키지 구매 시 최대 20만원 절약</span>
             </p>
 
             <div className="flex flex-wrap justify-center gap-6 mb-10">
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Percent className="w-5 h-5 text-green-400" />
+                <Percent className="w-5 h-5 text-success" />
                 <span className="text-sm font-medium">최대 17% 할인</span>
               </div>
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
@@ -341,7 +341,7 @@ export default function StringPackagesPage() {
                 <span className="text-sm font-medium">최대 12개월 유효</span>
               </div>
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Shield className="w-5 h-5 text-purple-400" />
+                <Shield className="w-5 h-5 text-foreground" />
                 <span className="text-sm font-medium">품질 보장</span>
               </div>
             </div>
@@ -373,7 +373,7 @@ export default function StringPackagesPage() {
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-indigo-600 bg-clip-text text-transparent">스트링 교체 패키지</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-card bg-clip-text text-transparent">스트링 교체 패키지</h2>
             <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 빈도와 필요에 맞는 패키지를 선택하세요.
               <br />
@@ -385,14 +385,14 @@ export default function StringPackagesPage() {
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
-                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-indigo-200 dark:ring-indigo-800' : ''} ${
+                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring dark:ring-ring' : ''} ${
                   selectedPackage === pkg.id ? 'ring-4 ring-ring' : ''
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}
               >
-                {pkg.popular && <div className="absolute top-0 right-0 bg-primary from-indigo-500  text-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
+                {pkg.popular && <div className="absolute top-0 right-0 bg-primary from-background  text-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
 
-                {pkg.discount && <div className="absolute top-0 left-0 bg-primary from-red-500  text-foreground px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
+                {pkg.discount && <div className="absolute top-0 left-0 bg-primary from-background  text-foreground px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
 
                 <div className={`h-2 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}></div>
 
@@ -412,7 +412,7 @@ export default function StringPackagesPage() {
 
                 <CardContent className="space-y-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-indigo-600 mb-1">{pkg.sessions}회</div>
+                    <div className="text-3xl font-bold text-foreground mb-1">{pkg.sessions}회</div>
                     <div className="text-sm text-muted-foreground">유효기간: {pkg.validityPeriod}</div>
                   </div>
 
@@ -420,7 +420,7 @@ export default function StringPackagesPage() {
 
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+                      <CheckCircle className="w-4 h-4 mr-2 text-success" />
                       포함 서비스
                     </h4>
                     <ul className="space-y-2">
@@ -435,7 +435,7 @@ export default function StringPackagesPage() {
 
                   <div className={`rounded-xl p-4 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <Gift className="w-4 h-4 mr-2 text-orange-500" />
+                      <Gift className="w-4 h-4 mr-2 text-warning" />
                       혜택
                     </h4>
                     <div className="space-y-1">
@@ -461,7 +461,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Additional Benefits Section */}
-      <section className="py-20 bg-background  via-indigo-600 to-purple-500 relative overflow-hidden">
+      <section className="py-20 bg-background  via-muted to-card relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]"></div>
         </div>
@@ -498,7 +498,7 @@ export default function StringPackagesPage() {
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-indigo-600 bg-clip-text text-transparent">패키지 이용 안내</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-card bg-clip-text text-transparent">패키지 이용 안내</h2>
           </div>
 
           <div className="max-w-4xl mx-auto">

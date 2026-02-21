@@ -58,8 +58,8 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-card text-muted-foreground dark:bg-card',
   paid: 'bg-primary text-primary dark:bg-primary',
-  out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
-  returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
+  out: 'bg-muted text-foreground dark:bg-muted',
+  returned: 'bg-success/10 text-success dark:bg-success/10',
 };
 
 const rentalStatusLabels: Record<string, string> = {
@@ -78,7 +78,7 @@ export default function AdminRentalsClient() {
    * - 운영자가 “이 대여가 단독인지 / 교체서비스 포함인지 / 신청서 연결인지”를 한눈에 확인.
    */
   function getKindBadge() {
-    return { label: '대여', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-200' };
+    return { label: '대여', className: 'bg-muted text-foreground dark:bg-muted dark:text-foreground' };
   }
   function getServiceBadge(r: RentalRow) {
     if (r.withStringService) {
@@ -88,7 +88,7 @@ export default function AdminRentalsClient() {
   }
   function getLinkBadge(r: RentalRow) {
     if (r.stringingApplicationId) {
-      return { label: '신청서 연결', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200' };
+      return { label: '신청서 연결', className: 'bg-muted text-foreground dark:bg-muted dark:text-foreground' };
     }
     return null;
   }
@@ -103,8 +103,8 @@ export default function AdminRentalsClient() {
     7: 'F7 대여+신청',
   };
   const FLOW_BADGE_CLASS: Record<Flow, string> = {
-    6: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
-    7: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-200',
+    6: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
+    7: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
   };
 
   function getFlowBadge(r: RentalRow) {
@@ -416,16 +416,16 @@ export default function AdminRentalsClient() {
     if (s === 'both-set') {
       return (
         <div className="inline-flex gap-1">
-          <span className="inline-flex items-center px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[11px]">출고</span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-[11px]">반납</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-foreground text-[11px]">출고</span>
+          <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-foreground text-[11px]">반납</span>
         </div>
       );
     }
 
     const map = {
       none: ['운송장 없음', 'bg-background text-foreground'],
-      'outbound-set': ['출고 운송장', 'bg-indigo-100 text-indigo-700'],
-      'return-set': ['반납 운송장', 'bg-violet-100 text-violet-700'],
+      'outbound-set': ['출고 운송장', 'bg-muted text-foreground'],
+      'return-set': ['반납 운송장', 'bg-muted text-foreground'],
     } as const;
 
     const [label, cls] = map[s];
@@ -604,7 +604,7 @@ export default function AdminRentalsClient() {
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>교체서비스 포함</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200')}>신청서 연결</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground dark:bg-muted dark:text-foreground')}>신청서 연결</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[7])}>{FLOW_SHORT[7]}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getSettlementBadge().className)}>{getSettlementBadge().label}</Badge>

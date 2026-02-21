@@ -536,7 +536,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-700 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary dark:text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>

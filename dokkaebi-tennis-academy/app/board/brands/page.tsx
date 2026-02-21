@@ -12,13 +12,13 @@ export const metadata = {
 
 export default function BrandBoardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
-              <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+              <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>브랜드별 게시판</span>
             </div>
@@ -33,9 +33,9 @@ export default function BrandBoardPage() {
 
         {/* 준비중 안내 카드 */}
         <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/50">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-600 shadow-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted shadow-lg">
                 <Grid2X2 className="h-5 w-5 text-white" />
               </div>
               <CardTitle className="text-lg md:text-xl">브랜드별 게시판 기능을 준비 중입니다</CardTitle>

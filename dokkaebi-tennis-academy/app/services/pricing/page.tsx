@@ -86,7 +86,7 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Tennis court line pattern background */}
       <div
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
@@ -134,7 +134,7 @@ export default function PricingPage() {
                   <ul className="space-y-2">
                     {service.features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        <Check className="h-4 w-4 text-success flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -200,7 +200,7 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <Card className="bg-primary  to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-border dark:border-border">
+        <Card className="bg-primary  to-card dark:from-background dark:to-card border-border dark:border-border">
           <CardContent className="p-8 text-center">
             <Zap className="h-12 w-12 text-primary dark:text-primary mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-foreground dark:text-foreground mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>

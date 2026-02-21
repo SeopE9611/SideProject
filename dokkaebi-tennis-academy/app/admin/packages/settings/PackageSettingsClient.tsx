@@ -186,21 +186,21 @@ export default function PackageSettingsClient() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card">
         <div className="container py-6">
           {/* 헤더 */}
-          <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-8 border border-purple-100 shadow-lg mb-8">
+          <div className="bg-gradient-to-r from-background via-muted to-card rounded-2xl p-8 border border-border shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
-                  <Settings className="h-8 w-8 text-purple-600" />
+                  <Settings className="h-8 w-8 text-foreground" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight text-foreground">패키지 설정</h1>
                   <p className="mt-1 text-muted-foreground">스트링 패키지 상품의 가격과 설정을 관리합니다</p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="bg-card backdrop-blur-sm border-purple-200 hover:bg-purple-50" asChild>
+              <Button variant="outline" size="sm" className="bg-card backdrop-blur-sm border-border hover:bg-muted" asChild>
                 <Link href="/admin/packages">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   패키지 관리로 돌아가기
@@ -248,7 +248,7 @@ export default function PackageSettingsClient() {
                             <div className="flex items-center space-x-2">
                               <Package className="h-5 w-5 text-primary" />
                               <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                              {pkg.isPopular && <Badge className="bg-orange-100 text-orange-800">인기</Badge>}
+                              {pkg.isPopular && <Badge className="bg-warning/10 text-warning">인기</Badge>}
                               {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
                             </div>
                             <div className="flex items-center space-x-2">
@@ -392,7 +392,7 @@ export default function PackageSettingsClient() {
               <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
                 <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
                   <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5 text-green-600" />
+                    <Settings className="h-5 w-5 text-success" />
                     <span>일반 설정</span>
                   </CardTitle>
                   <CardDescription>패키지 시스템의 전반적인 설정을 관리합니다.</CardDescription>
@@ -500,7 +500,7 @@ export default function PackageSettingsClient() {
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-green-600 hover:bg-green-700">
+                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10">
                       <Save className="mr-2 h-4 w-4" />
                       {isSaving ? '저장 중...' : '일반 설정 저장'}
                     </Button>

@@ -270,7 +270,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col space-y-6">
           <div className="flex items-center space-x-4">
@@ -281,7 +281,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             </Button>
 
             <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 shadow-lg">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -300,8 +300,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground dark:text-foreground">전체 문의</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{total}</p>
                   </div>
-                  <div className="bg-teal-50 dark:bg-teal-950/50 rounded-xl p-2">
-                    <MessageSquare className="h-5 w-5 text-teal-600 dark:text-teal-400" />
+                  <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
+                    <MessageSquare className="h-5 w-5 text-success dark:text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -314,8 +314,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground dark:text-foreground">답변 완료</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{answeredCount}</p>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-950/50 rounded-xl p-2">
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
+                    <CheckCircle className="h-5 w-5 text-success dark:text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -328,8 +328,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground dark:text-foreground">답변 대기</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{waitingCount}</p>
                   </div>
-                  <div className="bg-yellow-50 dark:bg-yellow-950/50 rounded-xl p-2">
-                    <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                  <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-2">
+                    <Clock className="h-5 w-5 text-warning dark:text-warning" />
                   </div>
                 </div>
               </CardContent>
@@ -342,8 +342,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground dark:text-foreground">총 조회수</p>
                     <p className="text-2xl font-bold text-foreground dark:text-white">{totalViews}</p>
                   </div>
-                  <div className="bg-purple-50 dark:bg-purple-950/50 rounded-xl p-2">
-                    <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <div className="bg-muted dark:bg-muted rounded-xl p-2">
+                    <Users className="h-5 w-5 text-foreground dark:text-foreground" />
                   </div>
                 </div>
               </CardContent>
@@ -352,15 +352,15 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
         </div>
 
         <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50 border-b">
+          <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5 text-teal-600" />
+                <MessageSquare className="h-5 w-5 text-success" />
                 <span>Q&A 목록</span>
                 {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-gray-700 rounded-full animate-spin" />}
               </div>
 
-              <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+              <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
                 <Link href="/board/qna/write">
                   <Plus className="h-4 w-4 mr-2" />
                   문의하기
@@ -466,7 +466,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     setField(inputField);
                     pushUrl({ page: nextPage, category, answerFilter, keyword: inputKeyword, field: inputField });
                   }}
-                  className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+                  className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card"
                   disabled={isBusy}
                 >
                   {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}
@@ -497,7 +497,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     닫기
                   </Button>
                   {!viewerId && secretBlock.item?._id && (
-                    <Button asChild className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+                    <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
                       <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
                     </Button>
                   )}
@@ -537,7 +537,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                               </Badge>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-foreground dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
+                            <h3 className="text-lg font-semibold text-foreground dark:text-white hover:text-success dark:hover:text-success transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
 
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground dark:text-muted-foreground">
                               <div className="flex items-center space-x-2">
@@ -602,7 +602,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     key={pageNumber}
                     variant="outline"
                     size="sm"
-                    className={pageNumber === page ? 'h-10 w-10 bg-primary text-primary-foreground border-teal-600' : 'h-10 w-10 bg-card dark:bg-card'}
+                    className={pageNumber === page ? 'h-10 w-10 bg-primary text-primary-foreground border-border' : 'h-10 w-10 bg-card dark:bg-card'}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >

@@ -17,8 +17,8 @@ function getIconProps(status: string) {
     case '접수 완료':
       return {
         Icon: ClipboardCheck,
-        wrapperClasses: 'border-yellow-300 bg-yellow-100 ' + 'dark:border-yellow-500/40 dark:bg-yellow-500/10',
-        iconClasses: 'text-yellow-700 dark:text-yellow-300',
+        wrapperClasses: 'border-border bg-warning/10 ' + 'dark:border-border dark:bg-warning/10',
+        iconClasses: 'text-warning dark:text-warning',
       };
 
     case '검토 중':
@@ -30,15 +30,15 @@ function getIconProps(status: string) {
     case '작업 중':
       return {
         Icon: Edit2,
-        wrapperClasses: 'border-indigo-300 bg-indigo-100 ' + 'dark:border-indigo-500/40 dark:bg-indigo-500/10',
-        iconClasses: 'text-indigo-700 dark:text-indigo-300',
+        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-foreground',
       };
     case '교체완료':
     case '교체 완료':
       return {
         Icon: CheckCircle,
-        wrapperClasses: 'border-green-300 bg-green-100 ' + 'dark:border-green-500/40 dark:bg-green-500/10',
-        iconClasses: 'text-green-700 dark:text-green-300',
+        wrapperClasses: 'border-border bg-success/10 ' + 'dark:border-border dark:bg-success/10',
+        iconClasses: 'text-success dark:text-success',
       };
     case '취소':
       return {
@@ -52,14 +52,14 @@ function getIconProps(status: string) {
     case '고객정보수정':
       return {
         Icon: User,
-        wrapperClasses: 'border-purple-300 bg-purple-100 ' + 'dark:border-purple-500/40 dark:bg-purple-500/10',
-        iconClasses: 'text-purple-700 dark:text-purple-300',
+        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-foreground',
       };
     case '요청사항 수정':
       return {
         Icon: MessageSquare,
-        wrapperClasses: 'border-indigo-300 bg-indigo-100 ' + 'dark:border-indigo-500/40 dark:bg-indigo-500/10',
-        iconClasses: 'text-indigo-700 dark:text-indigo-300',
+        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-foreground',
       };
     case '스트링 정보 수정':
       return {
@@ -70,8 +70,8 @@ function getIconProps(status: string) {
     case '결제 금액 자동 업데이트':
       return {
         Icon: DollarSign,
-        wrapperClasses: 'border-green-300 bg-green-100 ' + 'dark:border-green-500/40 dark:bg-green-500/10',
-        iconClasses: 'text-green-700 dark:text-green-300',
+        wrapperClasses: 'border-border bg-success/10 ' + 'dark:border-border dark:bg-success/10',
+        iconClasses: 'text-success dark:text-success',
       };
 
     // 자가 발송(사용자 → 매장) 운송장 관련
@@ -79,8 +79,8 @@ function getIconProps(status: string) {
     case '자가발송 운송장 수정':
       return {
         Icon: Truck,
-        wrapperClasses: 'border-teal-300 bg-teal-100 ' + 'dark:border-teal-500/40 dark:bg-teal-500/10',
-        iconClasses: 'text-teal-700 dark:text-teal-300',
+        wrapperClasses: 'border-border bg-success/10 ' + 'dark:border-border dark:bg-success/10',
+        iconClasses: 'text-success dark:text-success',
       };
 
     // 매장 발송(매장 → 사용자) 운송장 관련
@@ -149,7 +149,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
     <Card className="md:col-span-3 rounded-xl border border-border/60 bg-card text-card-foreground shadow-md dark:bg-card">
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-indigo-600" />
+          <Calendar className="h-5 w-5 text-foreground" />
           <CardTitle className="text-2xl font-semibold">처리 이력</CardTitle>
         </div>
 

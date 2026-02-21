@@ -18,7 +18,7 @@ const PAYMENT_STATUS_OPTIONS = ['결제대기', '결제완료', '결제취소'] 
 
 const badgeClass: Record<string, string> = {
   결제완료: 'bg-primary text-primary border border-border rounded-md px-2 py-1 text-xs font-medium',
-  결제대기: 'bg-orange-100 text-orange-800 border border-orange-200 rounded-md px-2 py-1 text-xs font-medium',
+  결제대기: 'bg-warning/10 text-warning border border-border rounded-md px-2 py-1 text-xs font-medium',
   결제취소: 'bg-destructive text-destructive border border-destructive rounded-md px-2 py-1 text-xs font-medium',
   취소: 'bg-destructive text-destructive border border-destructive rounded-md px-2 py-1 text-xs font-medium',
 };

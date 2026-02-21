@@ -24,8 +24,8 @@ function getIconProps(status: string) {
     case '결제완료':
       return {
         Icon: CreditCard,
-        wrapperClasses: 'border-purple-300/70 bg-purple-100/40 dark:border-purple-600/60 dark:bg-purple-900/30',
-        iconClasses: 'text-purple-700 dark:text-purple-300',
+        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-foreground',
       };
     case '배송중':
       return {
@@ -36,8 +36,8 @@ function getIconProps(status: string) {
     case '배송완료':
       return {
         Icon: PackageCheck,
-        wrapperClasses: 'border-green-300/70 bg-green-100/40 dark:border-green-600/60 dark:bg-green-900/30',
-        iconClasses: 'text-green-700 dark:text-green-300',
+        wrapperClasses: 'border-border bg-success/10 dark:border-border dark:bg-success/10',
+        iconClasses: 'text-success dark:text-success',
       };
     case '환불':
       return {
@@ -54,8 +54,8 @@ function getIconProps(status: string) {
     case '배송정보변경':
       return {
         Icon: Pencil,
-        wrapperClasses: 'border-yellow-300/70 bg-yellow-100/40 dark:border-yellow-600/60 dark:bg-yellow-900/30',
-        iconClasses: 'text-yellow-700 dark:text-yellow-300',
+        wrapperClasses: 'border-border bg-warning/10 dark:border-border dark:bg-warning/10',
+        iconClasses: 'text-warning dark:text-warning',
       };
     default:
       return {

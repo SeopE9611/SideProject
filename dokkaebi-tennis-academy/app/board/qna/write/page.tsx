@@ -400,7 +400,7 @@ export default function QnaWritePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center space-x-4">
@@ -410,7 +410,7 @@ export default function QnaWritePage() {
               </Link>
             </Button>
             <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 shadow-lg">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -421,9 +421,9 @@ export default function QnaWritePage() {
           </div>
 
           <Card className="border-0 bg-card/80 dark:bg-card/80 shadow-xl backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/50 dark:to-cyan-950/50 border-b">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
               <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5 text-teal-600" />
+                <MessageSquare className="h-5 w-5 text-success" />
                 <span>새 문의 작성</span>
               </CardTitle>
             </CardHeader>
@@ -439,7 +439,7 @@ export default function QnaWritePage() {
                     clearErrors(['category', 'product']);
                   }}
                 >
-                  <SelectTrigger id="category" className={`h-12 bg-card dark:bg-muted ${fieldErrors.category ? 'border-destructive focus:ring-red-400' : ''}`}>
+                  <SelectTrigger id="category" className={`h-12 bg-card dark:bg-muted ${fieldErrors.category ? 'border-destructive focus:ring-ring' : ''}`}>
                     <SelectValue placeholder="문의 카테고리를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
@@ -492,7 +492,7 @@ export default function QnaWritePage() {
                               setProduct(p);
                               clearErrors('product');
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? 'ring-2 ring-ring' : ''}`}
                           >
                             <div className="font-medium">{p.name}</div>
                             <div className="text-xs text-muted-foreground">{p.id}</div>
@@ -519,7 +519,7 @@ export default function QnaWritePage() {
                               setProduct(p);
                               clearErrors('product');
                             }}
-                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? 'ring-2 ring-teal-500' : ''}`}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? 'ring-2 ring-ring' : ''}`}
                           >
                             <div className="font-medium">{p.name}</div>
                             <div className="text-xs text-muted-foreground">{p.id}</div>
@@ -587,7 +587,7 @@ export default function QnaWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive dark:border-destructive' : 'border-border dark:border-border'} rounded-lg p-6 text-center hover:border-teal-400 dark:hover:border-teal-500 transition-colors`}
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive dark:border-destructive' : 'border-border dark:border-border'} rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -690,7 +690,7 @@ export default function QnaWritePage() {
                   취소
                 </Link>
               </Button>
-              <Button size="lg" className="px-8 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 disabled:opacity-60" onClick={handleSubmit} disabled={submitting}>
+              <Button size="lg" className="px-8 bg-gradient-to-r from-background to-card hover:from-background hover:to-card disabled:opacity-60" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? '등록 중…' : '문의 등록하기'}
               </Button>
             </CardFooter>

@@ -91,7 +91,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
               <div className="relative">
-                <div className="w-16 h-16 bg-background from-blue-100  dark:from-blue-900/30 dark:to-indigo-900/30 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-background from-background  dark:from-background dark:to-card rounded-full flex items-center justify-center">
                   <Loader2 className="w-8 h-8 text-primary dark:text-primary animate-spin" />
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
-                <Button onClick={() => router.push(`/mypage/applications/${applicationId}`)} className="bg-primary  to-indigo-600 hover:0 hover:to-indigo-500">
+                <Button onClick={() => router.push(`/mypage/applications/${applicationId}`)} className="bg-primary  to-card hover:0 hover:to-card">
                   신청 상세로 이동
                 </Button>
               </div>
@@ -312,11 +312,11 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
         {/* Header Section */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-px bg-primary from-transparent to-blue-400"></div>
-            <div className="w-14 h-14 bg-background  to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-px bg-primary from-transparent to-card"></div>
+            <div className="w-14 h-14 bg-background  to-card rounded-2xl flex items-center justify-center shadow-lg">
               <Truck className="w-7 h-7 text-foreground" />
             </div>
-            <div className="w-12 h-px bg-gradient-to-l from-transparent to-purple-400"></div>
+            <div className="w-12 h-px bg-gradient-to-l from-transparent to-card"></div>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground dark:text-foreground mb-3">{isEdit ? '자가발송 운송장 수정' : '자가발송 운송장 입력'}</h1>
           <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed">{isEdit ? '이미 등록된 운송장 정보를 수정할 수 있습니다.' : '라켓을 발송하신 뒤, 택배사와 송장번호를 입력해 주세요.'}</p>
@@ -324,7 +324,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Info Card */}
-          <Card className="border-border dark:border-border bg-background  to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 shadow-md">
+          <Card className="border-border dark:border-border bg-background  to-card dark:from-background dark:to-card shadow-md">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-primary dark:bg-accent0 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -376,7 +376,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   >
                     <SelectTrigger
                       id="courier"
-                      className={`h-12 text-base border-border dark:border-border focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring ? ' border-destructive focus:border-destructive focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
+                      className={`h-12 text-base border-border dark:border-border focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring ? ' border-destructive focus:border-destructive focus:ring-ring dark:focus:ring-ring' : ''}`}
                     >
                       <SelectValue placeholder="택배사를 선택하세요" />
                     </SelectTrigger>
@@ -394,7 +394,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                 {/* Tracking Number Field */}
                 <div className="space-y-2">
                   <Label htmlFor="trackingNo" className="text-base font-semibold text-foreground dark:text-foreground flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <FileText className="w-4 h-4 text-foreground dark:text-foreground" />
                     송장번호
                     <span className="text-destructive">*</span>
                   </Label>
@@ -403,7 +403,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                     value={form.trackingNo}
                     onChange={onChange('trackingNo')}
                     placeholder="숫자 또는 영문 조합으로 입력해 주세요"
-                    className={`h-12 text-base border-border dark:border-border focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20${fieldErrors.trackingNo ? ' border-destructive focus:border-destructive focus:ring-red-500/20 dark:focus:ring-red-400/20' : ''}`}
+                    className={`h-12 text-base border-border dark:border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring${fieldErrors.trackingNo ? ' border-destructive focus:border-destructive focus:ring-ring dark:focus:ring-ring' : ''}`}
                   />
                   <p className="min-h-[18px] text-sm text-primary dark:text-destructive">{fieldErrors.trackingNo ?? ''}</p>
                 </div>
@@ -411,7 +411,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                 {/* Shipped Date Field */}
                 <div className="space-y-2">
                   <Label htmlFor="shippedAt" className="text-base font-semibold text-foreground dark:text-foreground flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary dark:text-purple-400" />
+                    <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
                     발송일
                     <span className="text-xs text-muted-foreground dark:text-muted-foreground font-normal">(선택사항)</span>
                   </Label>
@@ -420,7 +420,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                     type="date"
                     value={form.shippedAt ?? ''}
                     onChange={onChange('shippedAt')}
-                    className="h-12 text-base border-border dark:border-border focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-purple-400/20"
+                    className="h-12 text-base border-border dark:border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
                   />
                 </div>
 
@@ -471,7 +471,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 h-12 text-base bg-primary  to-indigo-600 hover:0 hover:to-indigo-500 text-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 h-12 text-base bg-primary  to-card hover:0 hover:to-card text-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>

@@ -48,7 +48,7 @@ export default function LocationsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-background from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Tennis court line pattern background */}
       <div
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
@@ -160,7 +160,7 @@ export default function LocationsPage() {
           </div>
         </div> */}
 
-        {/* <Card className="bg-primary  to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border-border dark:border-border">
+        {/* <Card className="bg-primary  to-card dark:from-background dark:to-card border-border dark:border-border">
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>

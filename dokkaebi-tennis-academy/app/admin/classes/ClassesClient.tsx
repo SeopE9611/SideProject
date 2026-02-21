@@ -99,7 +99,7 @@ export default function ClassesPage() {
     <div className="p-6 space-y-8">
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
             <Calendar className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -159,8 +159,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">총 등록자</p>
                 <p className="text-3xl font-bold text-foreground">{classes.reduce((sum, c) => sum + c.enrolled, 0)}</p>
               </div>
-              <div className="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3">
-                <Users className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="bg-muted dark:bg-muted rounded-xl p-3">
+                <Users className="h-6 w-6 text-foreground dark:text-foreground" />
               </div>
             </div>
           </CardContent>
@@ -171,7 +171,7 @@ export default function ClassesPage() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold text-foreground">클래스 목록</CardTitle>
-            <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg">
+            <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg">
               <Link href="/admin/classes/new">
                 <Plus className="mr-2 h-4 w-4" />
                 클래스 등록
@@ -188,7 +188,7 @@ export default function ClassesPage() {
             <div className="flex w-full max-w-sm items-center space-x-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground" />
-                <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-border dark:border-border focus:border-border focus:ring-emerald-500" />
+                <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-border dark:border-border focus:border-border focus:ring-ring" />
               </div>
             </div>
             <div className="flex items-center gap-2">

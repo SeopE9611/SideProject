@@ -38,7 +38,7 @@ export default function AccountDeletedPage() {
     <div className="grid min-h-[100svh] place-items-center bg-background px-4 py-12">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="flex flex-col items-center pt-10 pb-6">
-          <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+          <CheckCircle className="h-16 w-16 text-success mb-4" />
           <h1 className="text-2xl font-bold text-center text-foreground">회원 탈퇴가 정상적으로 완료되었습니다</h1>
         </CardHeader>
 

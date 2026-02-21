@@ -580,7 +580,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  <div>
  <h4 className="font-semibold mb-3 flex items-center">
- <Gift className="w-4 h-4 mr-2 text-orange-500" />
+ <Gift className="w-4 h-4 mr-2 text-warning" />
  혜택
  </h4>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -677,7 +677,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  {/* 서비스 이용 방식 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary from-primary via-primary to-red-500/10 p-6">
+ <div className="bg-primary from-primary via-primary to-card p-6">
  <CardTitle className="flex items-center gap-3">
  <MapPin className="h-5 w-5 text-primary" />
  서비스 이용 방식
@@ -718,11 +718,11 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </RadioGroup>
 
  {serviceMethod === '출장서비스' && (
- <div className="space-y-4 mt-6 p-4 bg-primary from-yellow-50  dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+ <div className="space-y-4 mt-6 p-4 bg-primary from-background  dark:from-background dark:to-card rounded-lg border border-border dark:border-border">
  <div className="space-y-4">
  <div className="flex items-center justify-between">
  <Label htmlFor="service-postal" className="flex items-center gap-2">
- <MapPin className="h-4 w-4 text-orange-600" />
+ <MapPin className="h-4 w-4 text-warning" />
  우편번호
  </Label>
  <Button variant="secondary" size="sm" onClick={handleFindPostcode}>
@@ -742,8 +742,8 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <Input id="service-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
 
- <div className="bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
- <p className="text-sm text-orange-700 dark:text-orange-400 font-medium">출장 서비스는 서울/경기 지역에 한해 제공되며, 별도의 출장비가 발생할 수 있습니다.</p>
+ <div className="bg-primary  to-card dark:from-background dark:to-card p-3 rounded-lg border border-border dark:border-border">
+ <p className="text-sm text-warning dark:text-warning font-medium">출장 서비스는 서울/경기 지역에 한해 제공되며, 별도의 출장비가 발생할 수 있습니다.</p>
  </div>
  </div>
  )}
@@ -843,7 +843,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  {/* 주문자 동의 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary from-red-500/10 via-primary to-accent p-6">
+ <div className="bg-primary from-background via-primary to-accent p-6">
  <CardTitle className="flex items-center gap-3">
  <Shield className="h-5 w-5 text-primary" />
  주문자 동의

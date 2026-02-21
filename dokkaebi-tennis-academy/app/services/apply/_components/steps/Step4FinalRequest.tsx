@@ -24,7 +24,7 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary 0 to-emerald-600 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary 0 to-card mb-4">
           <CheckCircle className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">추가 요청</h2>
@@ -33,12 +33,12 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
 
       {/* 안내 배너: 주문/회원 기반일 때 */}
       {(orderId || isMember) && (
-        <div className="bg-primary  to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+        <div className="bg-primary  to-card dark:from-background dark:to-card border border-border dark:border-border rounded-lg p-4">
           <div className="flex items-start space-x-3">
-            <Shield className="h-5 w-5 text-orange-500 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+            <Shield className="h-5 w-5 text-warning dark:text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-orange-800 dark:text-orange-300 mb-1">📢 안내사항</p>
-              <p className="text-orange-700 dark:text-orange-200 leading-relaxed">
+              <p className="font-medium text-warning dark:text-warning mb-1">📢 안내사항</p>
+              <p className="text-warning dark:text-warning leading-relaxed">
                 신청자/배송 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청서 정보는 자동으로 바뀌지 않습니다.</span>
                 <br />
                 변경이 필요하면 아래 <span className="font-semibold">추가 요청사항</span>에 꼭 남겨주세요.

@@ -35,9 +35,9 @@
 //       case '접수완료':
 //         return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
 //       case '검토 중':
-//         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+//         return 'bg-warning/10 text-warning dark:bg-warning/10 dark:text-warning';
 //       case '완료':
-//         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+//         return 'bg-success/10 text-success dark:bg-success/10 dark:text-success';
 //       default:
 //         return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
 //     }

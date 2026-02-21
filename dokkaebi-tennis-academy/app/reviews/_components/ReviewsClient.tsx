@@ -97,7 +97,7 @@ export default function ReviewsClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative">
       {/* Tennis court background pattern */}
       <div
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.01]"
@@ -110,17 +110,17 @@ export default function ReviewsClient() {
         {/* Header with tennis theme */}
         <div className="text-center space-y-4 mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-background to-card flex items-center justify-center">
               <Trophy className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">고객 리뷰</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-background to-card bg-clip-text text-transparent">고객 리뷰</h1>
           </div>
           <p className="text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
         </div>
 
         {/* Control panel with tennis court styling */}
         <Card className="border-0 bg-card/80 dark:bg-card backdrop-blur-sm shadow-lg rounded-3xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+          <div className="h-1 bg-gradient-to-r from-background via-muted to-card" />
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center gap-4">
               {/* Tabs with tennis court styling */}

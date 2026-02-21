@@ -255,7 +255,7 @@ export default function AdminReviewListClient() {
   const renderStars = (n: number) => (
     <div className="flex items-center">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground dark:text-muted-foreground'}`} />
+        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-warning fill-yellow-500' : 'text-muted-foreground dark:text-muted-foreground'}`} />
       ))}
     </div>
   );
@@ -274,7 +274,7 @@ export default function AdminReviewListClient() {
       return { date: '-', time: '-' };
     }
   }
-  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-purple-100 text-purple-800 hover:bg-purple-200' : 'bg-primary text-primary hover:bg-primary');
+  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary text-primary hover:bg-primary');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
   const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';
@@ -284,7 +284,7 @@ export default function AdminReviewListClient() {
       {/* 헤더 */}
       <div className="mb-2">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
             <Star className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -316,8 +316,8 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">평균 평점</p>
                 <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
               </div>
-              <div className="rounded-md p-2 bg-yellow-50 dark:bg-yellow-900/30">
-                <Star className="h-5 w-5 text-yellow-600" />
+              <div className="rounded-md p-2 bg-warning/10 dark:bg-warning/10">
+                <Star className="h-5 w-5 text-warning" />
               </div>
             </div>
           </CardContent>
@@ -342,8 +342,8 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">서비스 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.byType?.service ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-purple-50 dark:bg-purple-900/30">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
+              <div className="rounded-md p-2 bg-muted dark:bg-muted">
+                <TrendingUp className="h-5 w-5 text-foreground" />
               </div>
             </div>
           </CardContent>
@@ -355,8 +355,8 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">상품 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.byType?.product ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-indigo-50 dark:bg-indigo-900/30">
-                <TrendingUp className="h-5 w-5 text-indigo-600" />
+              <div className="rounded-md p-2 bg-muted dark:bg-muted">
+                <TrendingUp className="h-5 w-5 text-foreground" />
               </div>
             </div>
           </CardContent>
@@ -376,7 +376,7 @@ export default function AdminReviewListClient() {
           <Input
             type="search"
             placeholder="리뷰 검색…"
-            className="pl-10 h-9 text-sm border-border dark:border-border focus:border-border focus:ring-emerald-500"
+            className="pl-10 h-9 text-sm border-border dark:border-border focus:border-border focus:ring-ring"
             value={qRaw}
             onChange={(e) => setQRaw(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setSize(1)}
@@ -603,7 +603,7 @@ export default function AdminReviewListClient() {
               </svg>
               <span
                 className="inline-flex items-center rounded-full bg-card dark:bg-card
-      ring-1 ring-emerald-200 dark:ring-emerald-800
+      ring-1 ring-ring dark:ring-ring
       text-primary dark:text-primary font-semibold text-xs px-2 py-0.5"
               >
                 {selected.length}개 선택됨

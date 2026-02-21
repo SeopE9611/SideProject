@@ -47,15 +47,15 @@ function getActionMeta(action: HistoryItem['action']) {
       return {
         label: '대여 시작',
         Icon: Play,
-        wrapperClasses: 'border-sky-300/70 bg-sky-100/40 dark:border-sky-600/60 dark:bg-sky-900/30',
-        iconClasses: 'text-sky-700 dark:text-sky-300',
+        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-foreground',
       };
     case 'returned':
       return {
         label: '반납 완료',
         Icon: RotateCcw,
-        wrapperClasses: 'border-violet-300/70 bg-violet-100/40 dark:border-violet-600/60 dark:bg-violet-900/30',
-        iconClasses: 'text-violet-700 dark:text-violet-300',
+        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        iconClasses: 'text-foreground dark:text-foreground',
       };
     case 'cancel-request':
       return {
@@ -82,8 +82,8 @@ function getActionMeta(action: HistoryItem['action']) {
       return {
         label: '취소 철회',
         Icon: Undo2,
-        wrapperClasses: 'border-orange-300/70 bg-orange-100/40 dark:border-orange-600/60 dark:bg-orange-900/30',
-        iconClasses: 'text-orange-700 dark:text-orange-300',
+        wrapperClasses: 'border-border bg-warning/10 dark:border-border dark:bg-warning/10',
+        iconClasses: 'text-warning dark:text-warning',
       };
   }
 }
@@ -152,7 +152,7 @@ export default function AdminRentalHistory({ id }: Props) {
     <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
       <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-indigo-600" />
+          <Clock className="h-5 w-5 text-foreground" />
           <span>처리 이력</span>
         </CardTitle>
         <p className="mt-1 text-xs text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>

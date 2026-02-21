@@ -93,7 +93,7 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
       case 'info':
         return 'bg-primary text-primary dark:bg-primary dark:text-primary';
       case 'qna':
-        return 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300';
+        return 'bg-success/10 text-success dark:bg-success/10 dark:text-success';
       case 'tip':
         return 'bg-muted text-primary dark:bg-muted dark:text-primary';
       case 'etc':
@@ -125,15 +125,15 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
     case 'shoes':
       return 'bg-muted text-primary dark:bg-muted dark:text-primary';
     case 'bag':
-      return 'bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300';
+      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'apparel':
-      return 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300';
+      return 'bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive';
     case 'grip':
-      return 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300';
+      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'accessory':
       return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
     case 'ball':
-      return 'bg-lime-50 text-lime-700 dark:bg-lime-900/40 dark:text-lime-300';
+      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'other':
       return gray;
     default:
@@ -325,7 +325,7 @@ const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 border-b">
+      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bell className="h-5 w-5 text-primary" />
@@ -426,10 +426,10 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
 function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-teal-950/50 dark:to-teal-900/50 border-b">
+      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <MessageSquare className="h-5 w-5 text-teal-600" />
+            <MessageSquare className="h-5 w-5 text-success" />
             <span>Q&A</span>
           </div>
           <div className="flex space-x-2">
@@ -470,7 +470,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
                         </Badge>
 
                         {/* 제목 (마지막, 잘림 처리) */}
-                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-foreground dark:text-white hover:text-teal-600 dark:hover:text-teal-400 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-foreground dark:text-white hover:text-success dark:hover:text-success transition-colors flex-1 min-w-0 truncate">
                           {qna.title}
                         </Link>
                       </div>
@@ -505,10 +505,10 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
 function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/50 border-b">
+      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Star className="h-5 w-5 text-purple-600" />
+            <Star className="h-5 w-5 text-foreground" />
             <span>리뷰</span>
           </div>
           <div className="flex space-x-2">
@@ -543,7 +543,7 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
                       <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getReviewTypeColor(review.type)}`}>
                         {review.type === 'product' ? '상품' : review.type === 'service' ? '서비스' : '기타'}
                       </Badge>
-                      <Link href="/reviews" className="font-semibold text-foreground dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex-1 min-w-0 truncate ">
+                      <Link href="/reviews" className="font-semibold text-foreground dark:text-white hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate ">
                         {reviewExcerpt(review)}
                       </Link>
                     </div>
@@ -569,10 +569,10 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
 function CommunityIntroCard() {
   return (
     <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
-      <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-100 dark:from-indigo-950/50 dark:to-purple-900/50 border-b">
+      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <MessageSquare className="h-5 w-5 text-purple-600" />
+            <MessageSquare className="h-5 w-5 text-foreground" />
             <span>커뮤니티 게시판</span>
           </div>
         </CardTitle>
@@ -648,12 +648,12 @@ export default function BoardPage() {
   const gearPosts = Array.isArray(gData?.items) ? (gData.items as CommunityListItem[]) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 섹션 */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
               <MessageSquare className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground dark:text-white">게시판</h1>
@@ -672,8 +672,8 @@ export default function BoardPage() {
           <CommunityLatestCard
             kind="free"
             title="자유게시판"
-            icon={<MessageSquare className="h-5 w-5 text-indigo-600" />}
-            headerClassName="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-950/50 dark:to-indigo-900/50"
+            icon={<MessageSquare className="h-5 w-5 text-foreground" />}
+            headerClassName="bg-gradient-to-r from-background to-card dark:from-background dark:to-card"
             listHref="/board/free"
             writeHref="/board/free/write"
             items={freePosts}
@@ -686,7 +686,7 @@ export default function BoardPage() {
             kind="market"
             title="중고거래"
             icon={<ShoppingBag className="h-5 w-5 text-primary" />}
-            headerClassName="bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/50"
+            headerClassName="bg-gradient-to-r from-background to-card dark:from-background dark:to-card"
             listHref="/board/market"
             writeHref="/board/market/write"
             items={marketPosts}
@@ -699,7 +699,7 @@ export default function BoardPage() {
             kind="gear"
             title="장비 사용기"
             icon={<Dumbbell className="h-5 w-5 text-primary" />}
-            headerClassName="bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/50"
+            headerClassName="bg-gradient-to-r from-background to-card dark:from-background dark:to-card"
             listHref="/board/gear"
             writeHref="/board/gear/write"
             items={gearPosts}

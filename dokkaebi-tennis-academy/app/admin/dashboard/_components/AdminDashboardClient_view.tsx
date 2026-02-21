@@ -427,7 +427,7 @@ export default function AdminDashboardClient() {
                 <span className="text-xs font-medium">교체 서비스</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-sm bg-violet-500/70" />
+                <div className="h-3 w-3 rounded-sm bg-muted" />
                 <span className="text-xs font-medium">패키지</span>
               </div>
               <div className="ml-auto text-sm font-semibold">총 {formatAdminKRW(last14Revenue.reduce((s, d) => s + Number(d.value || 0), 0))}</div>
