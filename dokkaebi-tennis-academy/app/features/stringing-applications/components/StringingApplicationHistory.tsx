@@ -97,7 +97,7 @@ function getIconProps(status: string) {
       return {
         Icon: Clock,
         wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-muted-foreground',
+        iconClasses: 'text-foreground',
       };
 
     // default
@@ -105,7 +105,7 @@ function getIconProps(status: string) {
       return {
         Icon: Clock,
         wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-muted-foreground',
+        iconClasses: 'text-foreground',
       };
   }
 }
@@ -196,7 +196,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
                     const detail = detailWithParen ? detailWithParen.replace(/\)$/, '') : '';
 
                     return (
-                      <p className="mt-1 text-sm text-foreground dark:text-muted-foreground">
+                      <p className="mt-1 text-sm text-foreground">
                         {main?.trim()}
                         {detail && <span className="ml-1 font-medium text-primary dark:text-primary">({detail})</span>}
                       </p>

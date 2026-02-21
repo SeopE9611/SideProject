@@ -19,7 +19,7 @@ function getIconProps(status: string) {
       return {
         Icon: Clock,
         wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-card',
-        iconClasses: 'text-foreground dark:text-muted-foreground',
+        iconClasses: 'text-foreground',
       };
     case '결제완료':
       return {

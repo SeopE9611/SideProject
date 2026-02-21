@@ -9,6 +9,7 @@
 - [ ] 파일당 LOC 권장(300~400)을 확인했다.
 - [ ] LOC 권장 초과 파일이 있다면 분리하지 못한 **구체적 사유**를 작성했다.
 - [ ] P0 any 순증 0(기준선 대비 증가 없음)을 확인했다.
+- [ ] `docs/dark-mode-semantic-checklist.md`의 금지 규칙(의미 역전 금지: 본문/핵심 라벨은 `text-foreground`, 보조 설명/메타는 `text-muted-foreground`)을 점검했다.
 
 ## 테스트
 - [ ] lint/type-check 실행 결과를 첨부했다.

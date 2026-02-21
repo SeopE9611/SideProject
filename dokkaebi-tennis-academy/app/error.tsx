@@ -32,7 +32,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
               </h1>
               <p className="text-muted-foreground dark:text-muted-foreground">페이지를 불러오는 중 오류가 발생했습니다. 아래 버튼으로 다시 시도해보세요.</p>
 
-              {isDev && <pre className="mt-4 max-h-48 overflow-auto rounded-xl bg-muted dark:bg-card p-4 text-xs text-foreground dark:text-muted-foreground ring-1 ring-ring dark:ring-ring">{String(error?.message ?? error)}</pre>}
+              {isDev && <pre className="mt-4 max-h-48 overflow-auto rounded-xl bg-muted dark:bg-card p-4 text-xs text-foreground ring-1 ring-ring dark:ring-ring">{String(error?.message ?? error)}</pre>}
 
               <div className="mt-4">
                 <Badge className="bg-destructive/10 text-destructive dark:text-destructive ring-1 ring-inset ring-ring">일시적인 오류일 수 있습니다</Badge>
