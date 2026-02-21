@@ -166,7 +166,7 @@ export default function ReviewsClient() {
               </Select>
 
               {/* Photo filter checkbox */}
-              <label className="inline-flex items-center gap-2 text-sm font-medium text-foreground dark:text-muted-foreground">
+              <label className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
                 <Checkbox checked={hasPhoto} onCheckedChange={(v) => setHasPhoto(Boolean(v))} className="rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-border" />
                 사진만 보기
               </label>
@@ -211,7 +211,7 @@ export default function ReviewsClient() {
                   <MessageSquareText className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground dark:text-muted-foreground">리뷰가 없습니다</h3>
+                  <h3 className="text-lg font-semibold text-foreground">리뷰가 없습니다</h3>
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground">조건에 맞는 리뷰를 찾을 수 없습니다.</p>
                 </div>
               </div>

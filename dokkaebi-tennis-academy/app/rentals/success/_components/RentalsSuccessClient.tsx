@@ -126,7 +126,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <div className="p-4 bg-gradient-to-r from-slate-50/50 to-card dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-border dark:border-border">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-semibold text-foreground dark:text-muted-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
+                      <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs px-2 py-0.5 rounded-full bg-primary dark:bg-primary text-primary dark:text-primary">상태 {data.racket?.condition}</span>
                         <span className="text-sm text-muted-foreground dark:text-muted-foreground">대여 기간: {data.period}일</span>
@@ -163,7 +163,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <Separator />
                 <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6 rounded-xl border border-border dark:border-border">
                   <div className="flex justify-between items-center text-2xl font-bold">
-                    <span className="text-foreground dark:text-muted-foreground">총 결제 금액</span>
+                    <span className="text-foreground">총 결제 금액</span>
                     <span className="text-primary">{total.toLocaleString()}원</span>
                   </div>
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-2">* 반납 완료 후 보증금 환불 (연체/파손 시 차감)</p>

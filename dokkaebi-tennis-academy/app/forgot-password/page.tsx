@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
               {!isSubmitted ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground dark:text-muted-foreground font-medium">
+                    <Label htmlFor="email" className="text-foreground font-medium">
                       이메일
                     </Label>
                     <div className="relative">

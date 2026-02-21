@@ -43,6 +43,7 @@
 1. `dark:*`가 있어도 **동일 토큰의 중복 표기**(`bg-muted dark:bg-muted`)라면 제거한다.
 2. 동일한 보정이 2회 이상 반복되면 먼저 `Card`/`Button`/`Badge` variant로 승격한다.
 3. 승격 후에도 남는 `dark:*`는 아래에 이유를 기록한다.
+4. **의미 역전 금지**: 다크 모드에서 본문/핵심 라벨을 `text-muted-foreground`로 낮추거나, 보조 설명/메타를 `text-foreground`로 올리지 않는다.
 
 ## dark 전용 클래스 유지 사유 기록
 - 현재 없음.
