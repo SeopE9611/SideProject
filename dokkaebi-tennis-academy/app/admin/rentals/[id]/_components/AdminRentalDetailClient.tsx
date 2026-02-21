@@ -418,7 +418,7 @@ export default function AdminRentalDetailClient() {
               <div className="flex gap-2 flex-wrap">
                 {/* 결제완료 처리(무통장) – pending 상태에서만 노출 */}
                 {canConfirmPayment && (
-                  <Button size="sm" className="h-9 bg-background text-white hover:bg-card" disabled={isBusy || confirming} onClick={onConfirmPayment}>
+                  <Button size="sm" className="h-9 bg-primary text-primary-foreground hover:bg-primary/90" disabled={isBusy || confirming} onClick={onConfirmPayment}>
                     {confirming ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

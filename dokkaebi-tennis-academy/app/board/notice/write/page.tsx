@@ -695,7 +695,7 @@ export default function NoticeWritePage() {
                                   <a
                                     href={url ?? '#'}
                                     download={file.name}
-                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-card text-white hover:bg-card dark:bg-background dark:text-foreground transition"
+                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-muted text-foreground hover:bg-muted/80 transition"
                                   >
                                     다운로드
                                   </a>

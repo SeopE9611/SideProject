@@ -39,7 +39,7 @@ export default function CleanupCreatedButton({ hours = 2 }: { hours?: number }) 
       <button
         onClick={run}
         disabled={loading || !isFeatureEnabled}
-        className="px-3 py-2 rounded bg-muted text-white hover:bg-muted disabled:opacity-50"
+        className="px-3 py-2 rounded bg-muted text-foreground hover:bg-muted/80 disabled:opacity-50"
         title={isFeatureEnabled ? 'created 상태로 오래 남은 대여 신청을 삭제합니다.' : RENTAL_CLEANUP_CREATED_DISABLED_MESSAGE}
       >
         {loading ? '정리 중…' : '데이터 정리'}
