@@ -145,7 +145,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground dark:text-white hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
                           {notice.title}
                         </Link>
                       </div>
@@ -256,7 +256,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                             </Badge>
                           )}
 
-                          <span className="font-semibold text-foreground dark:text-white flex-1 min-w-0 truncate">{qna.title}</span>
+                          <span className="font-semibold text-foreground flex-1 min-w-0 truncate">{qna.title}</span>
                         </div>
 
                         {/* 답변완료/대기 뱃지는 그대로 유지 */}
@@ -328,7 +328,7 @@ export default function SupportPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
               <MessagesSquare className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">고객센터</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터</h1>
           </div>
           <p className="text-sm md:text-base text-muted-foreground dark:text-muted-foreground max-w-xl mx-auto">공지사항과 문의 내역을 한 곳에서 확인하고, 궁금한 점을 남겨주세요.</p>
         </div>

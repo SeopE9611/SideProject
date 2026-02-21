@@ -85,7 +85,7 @@ export default function AdminReviewMaintenancePanel() {
   return (
     <Card className="border-0 shadow-md bg-card dark:bg-card">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground dark:text-white">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <Wrench className="h-5 w-5" />
           리뷰 유지보수
         </CardTitle>

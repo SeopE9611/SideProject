@@ -192,7 +192,7 @@ export default function QnaDetailPage() {
                 )}
                 {!isLoading && error && (
                   <div className="space-y-3">
-                    <h1 className="text-3xl font-bold text-foreground dark:text-white leading-tight">{errorTitle}</h1>
+                    <h1 className="text-3xl font-bold text-foreground leading-tight">{errorTitle}</h1>
                   </div>
                 )}
                 {!isLoading && !error && qna && (
@@ -234,7 +234,7 @@ export default function QnaDetailPage() {
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg flex-shrink-0 mt-1">
                         <MessageSquare className="h-5 w-5 text-white" />
                       </div>
-                      <h1 className="text-3xl font-bold text-foreground dark:text-white leading-tight">{qna.title}</h1>
+                      <h1 className="text-3xl font-bold text-foreground leading-tight">{qna.title}</h1>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground dark:text-muted-foreground">
@@ -278,7 +278,7 @@ export default function QnaDetailPage() {
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground dark:text-white">첨부파일</h3>
+                          <h3 className="text-lg font-semibold text-foreground">첨부파일</h3>
                           <Badge variant="secondary">{qna.attachments.length}개</Badge>
                         </div>
 
@@ -355,7 +355,7 @@ export default function QnaDetailPage() {
               <CardHeader className="border-b border-border dark:border-border bg-muted/50">
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-semibold text-foreground dark:text-white">관리자 답변 작성</h2>
+                  <h2 className="text-lg font-semibold text-foreground">관리자 답변 작성</h2>
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -398,7 +398,7 @@ export default function QnaDetailPage() {
                       <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
                         <MessageCircle className="h-4 w-4 text-primary" />
                       </div>
-                      <h2 className="text-xl font-bold text-foreground dark:text-white">관리자 답변</h2>
+                      <h2 className="text-xl font-bold text-foreground">관리자 답변</h2>
                       <Badge variant="secondary" className="bg-success/15 text-success">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         답변 완료

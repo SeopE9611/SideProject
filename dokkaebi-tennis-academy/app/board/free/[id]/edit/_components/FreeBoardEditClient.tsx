@@ -377,7 +377,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span className="mx-1">›</span>
               <span>글 수정</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-white md:text-3xl">자유 게시판 글 수정</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">자유 게시판 글 수정</h1>
             <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground md:text-base">기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.</p>
             {/* 이탈 경고(고정 노출) */}
             <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">

@@ -22,7 +22,7 @@ export default function BrandBoardPage() {
               <span className="mx-1">›</span>
               <span>브랜드별 게시판</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground dark:text-white">브랜드별 게시판 (준비중)</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">브랜드별 게시판 (준비중)</h1>
             <p className="mt-1 text-sm md:text-base text-muted-foreground dark:text-muted-foreground">윌슨, 바볼랏, 요넥스 등 브랜드별로 라켓/스트링 사용 후기를 모아볼 수 있는 공간입니다. 현재 기능을 준비하고 있습니다.</p>
           </div>
 
