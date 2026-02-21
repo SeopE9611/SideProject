@@ -507,7 +507,7 @@ export default function AcademyPage() {
 
                     <div className="flex mb-4">
                       {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-yellow-400 text-accent-foreground" />
+                        <Star key={i} className="h-5 w-5 text-warning fill-current" />
                       ))}
                     </div>
 

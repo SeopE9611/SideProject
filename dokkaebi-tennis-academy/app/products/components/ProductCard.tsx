@@ -55,7 +55,7 @@ function RatingStars({ avg, starClassName = 'w-3 h-3' }: { avg: number; starClas
           <span key={i} className={`relative inline-block ${starClassName}`}>
             <Star className={`${starClassName} text-warning`} />
             <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-              <Star className={`${starClassName} fill-yellow-400 text-warning`} />
+              <Star className={`${starClassName} text-warning fill-current`} />
             </span>
           </span>
         );
@@ -240,7 +240,7 @@ const ProductCard = React.memo(
                   }}
                   title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
                 >
-                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'fill-red-500 text-destructive' : ''}`} />
+                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'text-destructive fill-current' : ''}`} />
                 </Button>
               </div>
             </div>
@@ -290,7 +290,7 @@ const ProductCard = React.memo(
                   }}
                   title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
                 >
-                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'fill-red-500 text-destructive' : ''}`} />
+                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'text-destructive fill-current' : ''}`} />
                 </Button>
               </div>
             </div>

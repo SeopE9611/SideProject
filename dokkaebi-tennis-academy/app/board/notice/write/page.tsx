@@ -483,7 +483,7 @@ export default function NoticeWritePage() {
                 <Bell className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
                 <p className="text-lg text-muted-foreground dark:text-muted-foreground">중요한 소식을 회원들에게 전달하세요</p>
               </div>
             </div>

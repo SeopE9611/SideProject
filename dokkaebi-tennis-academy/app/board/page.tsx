@@ -209,7 +209,7 @@ function CommunityLatestCard({
                           </Badge>
                         )}
 
-                        <Link href={`${listHref}/${post.id}`} className="font-semibold text-foreground dark:text-white hover:opacity-80 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`${listHref}/${post.id}`} className="font-semibold text-foreground hover:opacity-80 transition-colors flex-1 min-w-0 truncate">
                           {post.title}
                         </Link>
                       </div>
@@ -378,7 +378,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 제목 (1줄 말줄임) */}
-                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground dark:text-white hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
                           {notice.title}
                         </Link>
                       </div>
@@ -470,7 +470,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
                         </Badge>
 
                         {/* 제목 (마지막, 잘림 처리) */}
-                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-foreground dark:text-white hover:text-success dark:hover:text-success transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/qna/${qna._id}`} className="font-semibold text-foreground hover:text-success dark:hover:text-success transition-colors flex-1 min-w-0 truncate">
                           {qna.title}
                         </Link>
                       </div>
@@ -543,7 +543,7 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
                       <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getReviewTypeColor(review.type)}`}>
                         {review.type === 'product' ? '상품' : review.type === 'service' ? '서비스' : '기타'}
                       </Badge>
-                      <Link href="/reviews" className="font-semibold text-foreground dark:text-white hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate ">
+                      <Link href="/reviews" className="font-semibold text-foreground hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate ">
                         {reviewExcerpt(review)}
                       </Link>
                     </div>
@@ -656,7 +656,7 @@ export default function BoardPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
               <MessageSquare className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground dark:text-white">게시판</h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">게시판</h1>
           </div>
           <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">리뷰와 커뮤니티 게시판의 최신글을 한 곳에서 확인해 보세요.</p>
         </div>

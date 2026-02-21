@@ -21,7 +21,7 @@ export default function HotBoardPage() {
               <span className="mx-1">›</span>
               <span>인기글 모아보기</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground dark:text-white">인기글 모아보기 (준비중)</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">인기글 모아보기 (준비중)</h1>
             <p className="mt-1 text-sm md:text-base text-muted-foreground dark:text-muted-foreground">조회수, 댓글 수, 공감 수 등을 기준으로 인기 게시글을 큐레이션하는 페이지입니다. 현재 기능을 준비하고 있습니다.</p>
           </div>
 

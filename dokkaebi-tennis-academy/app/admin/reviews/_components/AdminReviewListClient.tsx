@@ -255,7 +255,7 @@ export default function AdminReviewListClient() {
   const renderStars = (n: number) => (
     <div className="flex items-center">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-warning fill-yellow-500' : 'text-muted-foreground dark:text-muted-foreground'}`} />
+        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-warning fill-current' : 'text-muted-foreground dark:text-muted-foreground'}`} />
       ))}
     </div>
   );
@@ -288,7 +288,7 @@ export default function AdminReviewListClient() {
             <Star className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">리뷰 관리</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">리뷰 관리</h1>
             <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">고객 리뷰를 관리하고 서비스 품질을 향상시키세요</p>
           </div>
         </div>
@@ -474,7 +474,7 @@ export default function AdminReviewListClient() {
 
                   {/* 작성자 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="text-foreground dark:text-white font-medium truncate">{r.userName || r.userEmail || '-'}</div>
+                    <div className="text-foreground font-medium truncate">{r.userName || r.userEmail || '-'}</div>
                     {r.userEmail && r.userName && <div className="text-[12px] text-muted-foreground dark:text-muted-foreground break-all">{r.userEmail}</div>}
                     {r.isDeleted && (
                       <div className="mt-0.5">
@@ -532,7 +532,7 @@ export default function AdminReviewListClient() {
 
                   {/* 작성일 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="text-foreground dark:text-white text-[13px]">{date}</div>
+                    <div className="text-foreground text-[13px]">{date}</div>
                     <div className="text-[12px] text-muted-foreground dark:text-muted-foreground">{time}</div>
                   </div>
 

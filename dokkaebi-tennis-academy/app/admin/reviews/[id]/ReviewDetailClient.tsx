@@ -90,7 +90,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
     return (
       <div className="flex items-center space-x-1">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-warning fill-yellow-500' : 'text-muted-foreground/40'}`} />
+          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-warning fill-current' : 'text-muted-foreground/40'}`} />
         ))}
         <span className="ml-2 text-lg font-semibold text-foreground">{rating}/5</span>
       </div>

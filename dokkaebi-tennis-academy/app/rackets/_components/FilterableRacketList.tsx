@@ -441,7 +441,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
         <div className="bp-lg:col-span-3">
           <div className="mb-6 bp-md:mb-8 space-y-3 bp-sm:space-y-0 bp-sm:flex bp-sm:items-center bp-sm:justify-between">
             <div className="flex items-center justify-between gap-3 bp-sm:justify-start">
-              <div className="text-base bp-sm:text-lg font-semibold dark:text-white">
+              <div className="text-base bp-sm:text-lg font-semibold text-foreground">
                 {rentOnly ? (
                   <>
                     대여 가능 총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary dark:text-primary font-bold">{total}</span>}개 라켓
@@ -539,7 +539,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary dark:text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 dark:text-white">검색 결과가 없습니다</h3>
+              <h3 className="text-xl font-semibold mb-2 text-foreground">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
               <Button onClick={handleResetAll} variant="outline" className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
                 필터 초기화

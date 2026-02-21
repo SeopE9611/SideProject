@@ -218,7 +218,7 @@ export default function NoticeDetailPage() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg flex-shrink-0 mt-1">
                           <Bell className="h-5 w-5 text-white" />
                         </div>
-                        <h1 className="text-3xl font-bold text-foreground dark:text-white leading-tight">{notice.title}</h1>
+                        <h1 className="text-3xl font-bold text-foreground leading-tight">{notice.title}</h1>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground dark:text-muted-foreground">
@@ -278,7 +278,7 @@ export default function NoticeDetailPage() {
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
                           <ImageIcon className="h-5 w-5 text-primary" />
-                          <h2 className="text-xl font-semibold text-foreground dark:text-white">이미지</h2>
+                          <h2 className="text-xl font-semibold text-foreground">이미지</h2>
                           <Badge variant="secondary" className="ml-2">
                             {imageAtts.length}개
                           </Badge>
@@ -343,7 +343,7 @@ export default function NoticeDetailPage() {
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5 text-primary" />
-                          <h2 className="text-xl font-semibold text-foreground dark:text-white">첨부파일</h2>
+                          <h2 className="text-xl font-semibold text-foreground">첨부파일</h2>
                           <Badge variant="secondary" className="ml-2">
                             {fileAtts.length}개
                           </Badge>
@@ -368,7 +368,7 @@ export default function NoticeDetailPage() {
                                     <FileText className="h-5 w-5 text-primary dark:text-primary" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <div className="font-medium text-foreground dark:text-white truncate">{name}</div>
+                                    <div className="font-medium text-foreground truncate">{name}</div>
                                     {size && <div className="text-sm text-muted-foreground dark:text-muted-foreground">{size}</div>}
                                   </div>
                                 </div>

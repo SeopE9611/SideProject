@@ -285,7 +285,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 <MessageSquare className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">고객센터 · Q&amp;A</h1>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
                 <p className="text-lg text-muted-foreground dark:text-muted-foreground">도깨비 테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>
@@ -298,7 +298,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground dark:text-foreground">전체 문의</p>
-                    <p className="text-2xl font-bold text-foreground dark:text-white">{total}</p>
+                    <p className="text-2xl font-bold text-foreground">{total}</p>
                   </div>
                   <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
                     <MessageSquare className="h-5 w-5 text-success dark:text-success" />
@@ -312,7 +312,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground dark:text-foreground">답변 완료</p>
-                    <p className="text-2xl font-bold text-foreground dark:text-white">{answeredCount}</p>
+                    <p className="text-2xl font-bold text-foreground">{answeredCount}</p>
                   </div>
                   <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
                     <CheckCircle className="h-5 w-5 text-success dark:text-success" />
@@ -326,7 +326,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground dark:text-foreground">답변 대기</p>
-                    <p className="text-2xl font-bold text-foreground dark:text-white">{waitingCount}</p>
+                    <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
                   </div>
                   <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-2">
                     <Clock className="h-5 w-5 text-warning dark:text-warning" />
@@ -340,7 +340,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground dark:text-foreground">총 조회수</p>
-                    <p className="text-2xl font-bold text-foreground dark:text-white">{totalViews}</p>
+                    <p className="text-2xl font-bold text-foreground">{totalViews}</p>
                   </div>
                   <div className="bg-muted dark:bg-muted rounded-xl p-2">
                     <Users className="h-5 w-5 text-foreground dark:text-foreground" />
@@ -537,7 +537,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                               </Badge>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-foreground dark:text-white hover:text-success dark:hover:text-success transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
+                            <h3 className="text-lg font-semibold text-foreground hover:text-success dark:hover:text-success transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
 
                             <div className="flex items-center space-x-4 text-sm text-muted-foreground dark:text-muted-foreground">
                               <div className="flex items-center space-x-2">
