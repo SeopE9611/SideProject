@@ -85,7 +85,7 @@ export default function RacketsClient() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 준비중</div>
                 )}
-                {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-rose-600 text-white shadow">대여 불가</span>}
+                {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-white shadow">대여 불가</span>}
               </div>
               <div className="p-3 space-y-1">
                 <div className="text-sm text-muted-foreground">{it.brand}</div>
@@ -98,7 +98,7 @@ export default function RacketsClient() {
                   // 라켓별 진행중 대여 수 조회
                   <RacketAvailBadge id={it.id} />
                 ) : (
-                  <div className="text-xs text-rose-600">대여 불가</div>
+                  <div className="text-xs text-destructive">대여 불가</div>
                 )}
               </div>
             </Link>
@@ -118,5 +118,5 @@ function RacketAvailBadge({ id }: { id: string }) {
   const qty = Number(data?.quantity ?? 1);
   const avail = Math.max(0, Number(data?.available ?? qty - Number(data?.count ?? 0)));
   const soldOut = avail <= 0;
-  return <div className={`text-xs ${soldOut ? 'text-rose-600' : 'text-primary'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>;
+  return <div className={`text-xs ${soldOut ? 'text-destructive' : 'text-primary'}`}>{qty > 1 ? (soldOut ? `대여 중 (0/${qty})` : `잔여 ${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}</div>;
 }

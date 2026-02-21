@@ -47,9 +47,9 @@ function RatingStars({ avg, starClassName = 'w-3 h-3' }: { avg: number; starClas
 
         return (
           <span key={i} className={`relative inline-block ${starClassName}`}>
-            <Star className={`${starClassName} text-yellow-400`} />
+            <Star className={`${starClassName} text-warning`} />
             <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-              <Star className={`${starClassName} fill-yellow-400 text-yellow-400`} />
+              <Star className={`${starClassName} fill-yellow-400 text-warning`} />
             </span>
           </span>
         );
@@ -220,7 +220,7 @@ const ProductCard = React.memo(
     return (
       <Link href={`/products/${product._id}`}>
         <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/90 dark:bg-card backdrop-blur-sm border border-border dark:border-border hover:border-border dark:hover:border-border group relative">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
             <Image
@@ -274,7 +274,7 @@ const ProductCard = React.memo(
                 Object.entries(product.features)
                   .slice(0, 3)
                   .map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10">
+                    <div key={key} className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
                       <span className="text-muted-foreground dark:text-muted-foreground font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (

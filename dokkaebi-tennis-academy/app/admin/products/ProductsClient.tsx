@@ -41,17 +41,17 @@ type StatusKey = (typeof STATUS_KEYS)[number];
 const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.ElementType }> = {
   active: {
     label: '판매중',
-    color: 'bg-muted text-foreground ring-1 ring-emerald-200 ' + 'dark:bg-muted dark:text-foreground dark:ring-emerald-800',
+    color: 'bg-muted text-foreground ring-1 ring-ring ' + 'dark:bg-muted dark:text-foreground dark:ring-ring',
     Icon: CheckCircle2,
   },
   low_stock: {
     label: '재고 부족',
-    color: 'bg-muted text-primary ring-1 ring-amber-200 ' + 'dark:bg-muted dark:text-primary dark:ring-amber-800',
+    color: 'bg-muted text-primary ring-1 ring-ring ' + 'dark:bg-muted dark:text-primary dark:ring-ring',
     Icon: TriangleAlert,
   },
   out_of_stock: {
     label: '품절',
-    color: 'bg-muted text-foreground ring-1 ring-rose-200 ' + 'dark:bg-muted dark:text-foreground dark:ring-rose-800',
+    color: 'bg-muted text-foreground ring-1 ring-ring ' + 'dark:bg-muted dark:text-foreground dark:ring-ring',
     Icon: XCircle,
   },
 };
@@ -247,9 +247,9 @@ export default function ProductsClient() {
             },
             {
               label: '재고 부족',
-              icon: <AlertTriangle className="h-6 w-6 text-yellow-600" />,
+              icon: <AlertTriangle className="h-6 w-6 text-warning" />,
               value: lowStockAll,
-              bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
+              bgColor: 'bg-warning/10 dark:bg-warning/10',
             },
             {
               label: '품절',

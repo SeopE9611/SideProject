@@ -63,7 +63,7 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
         {/* Selected Racket Summary (구매 select-string과 동일 골격) */}
         <div className="max-w-3xl mx-auto space-y-4">
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-50 -z-0" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-background to-card rounded-full blur-3xl opacity-50 -z-0" />
 
             <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
@@ -78,9 +78,9 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-green-600 mb-1">선택된 라켓 (대여)</p>
+                    <p className="text-xs font-medium text-success mb-1">선택된 라켓 (대여)</p>
                     <h3 className="text-xl font-bold text-foreground mb-1">{title}</h3>
                     <p className="text-sm text-muted-foreground">
                       대여 기간: <span className="font-semibold text-foreground">{period}일</span>

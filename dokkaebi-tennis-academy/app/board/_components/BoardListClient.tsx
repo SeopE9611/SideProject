@@ -255,7 +255,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <MessageComposeDialog
         open={composeOpen}
         onOpenChange={(v) => {
@@ -271,7 +271,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 */}
             <div className="mb-1 text-sm text-foreground">
-              <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+              <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>{config.boardTitle}</span>
             </div>
@@ -472,7 +472,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {post.images && post.images.length > 0 && <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-primary" aria-label="이미지 첨부 있음" />}
 
                           {/* 파일 첨부 아이콘 */}
-                          {post.attachments && post.attachments.length > 0 && <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-sky-500" aria-label="파일 첨부 있음" />}
+                          {post.attachments && post.attachments.length > 0 && <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-foreground" aria-label="파일 첨부 있음" />}
                         </div>
 
                         {/* 글쓴이 */}
@@ -587,7 +587,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {/* 파일 첨부 아이콘 */}
                         {post.attachments && post.attachments.length > 0 && (
                           <span className="flex items-center justify-center rounded-full">
-                            <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-sky-500" aria-label="파일 첨부 있음" />
+                            <Paperclip className="h-4 w-4 shrink-0 ml-0.5 text-foreground" aria-label="파일 첨부 있음" />
                           </span>
                         )}
                       </div>

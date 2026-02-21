@@ -295,8 +295,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">기본 정보</CardTitle>
@@ -388,8 +388,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="specs" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">상세 스펙</CardTitle>
@@ -502,8 +502,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="rental" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">대여 설정</CardTitle>
@@ -592,8 +592,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-emerald-50/50 dark:from-gray-900 dark:to-emerald-950/20 border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/30 dark:to-emerald-950/30 border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">이미지</CardTitle>
@@ -614,7 +614,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
             취소
           </Link>
         </Button>
-        <Button onClick={handleSubmit} disabled={loading} className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white">
+        <Button onClick={handleSubmit} disabled={loading} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
           <Save className="mr-2 h-4 w-4" />
           {loading ? '저장 중...' : submitLabel}
         </Button>

@@ -1078,7 +1078,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
  <div>
  <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
- <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+ <span className="font-medium text-success dark:text-success">게시판</span>
  <span className="mx-1">›</span>
  <Link href="${config.routePrefix}" className="text-muted-foreground underline-offset-2 hover:underline ">
  중고 거래 게시판

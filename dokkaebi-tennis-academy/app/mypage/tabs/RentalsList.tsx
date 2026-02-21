@@ -28,7 +28,7 @@ const getStatusIcon = (status: string) => {
     case 'out':
       return <Clock className="h-4 w-4 text-primary" />;
     case 'paid':
-      return <Package className="h-4 w-4 text-indigo-500" />;
+      return <Package className="h-4 w-4 text-foreground" />;
     case 'canceled':
       return <XCircle className="h-4 w-4 text-destructive" />;
     default:
@@ -43,7 +43,7 @@ const getStatusBadgeColor = (status: string) => {
     case 'out':
       return 'bg-primary text-primary dark:bg-primary dark:text-primary';
     case 'paid':
-      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'canceled':
       return 'bg-destructive text-destructive dark:bg-destructive dark:text-destructive';
     default:
@@ -109,7 +109,7 @@ export default function RentalsList() {
 
   if (error) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
+      <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
         <CardContent className="p-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive dark:bg-destructive">
             <Briefcase className="h-8 w-8 text-destructive dark:text-destructive" />
@@ -129,8 +129,8 @@ export default function RentalsList() {
     return (
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 shadow-lg">
-            <Briefcase className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+            <Briefcase className="h-10 w-10 text-foreground dark:text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
           <p className="text-foreground">아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!</p>
@@ -145,17 +145,17 @@ export default function RentalsList() {
         <Card
           key={r.id}
           className={`group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1
-            ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-emerald-200/80 dark:ring-emerald-800/60' : ''}`}
+            ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring dark:ring-ring' : ''}`}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 shadow-lg">
-                  <Briefcase className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+                  <Briefcase className="h-6 w-6 text-foreground dark:text-foreground" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export default function RentalsList() {
 
               {/* Desktop (sm 이상): 기존 동작 유지 */}
               <div className="hidden sm:flex flex-wrap items-center justify-end gap-2">
-                <Button size="sm" variant="outline" asChild className="hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent">
+                <Button size="sm" variant="outline" asChild className="hover:border-border dark:hover:bg-muted bg-transparent">
                   <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex items-center gap-1">
                     상세보기
                     <ArrowRight className="h-3 w-3" />
@@ -236,7 +236,7 @@ export default function RentalsList() {
                   </Button>
                 ) : r.withStringService ? (
                   // 교체 서비스가 포함된 대여인데 아직 신청서가 없다면: 바로 신청서 작성으로 유도
-                  <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                  <Button size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                     <Link href={`/services/apply?rentalId=${r.id}`} className="inline-flex items-center gap-1">
                       교체 신청하기
                       <ArrowRight className="h-3 w-3" />
@@ -267,7 +267,7 @@ export default function RentalsList() {
                   size="sm"
                   variant="outline"
                   asChild
-                  className={`${r.stringingApplicationId || (r.withStringService && !r.stringingApplicationId) ? 'col-span-6' : 'col-span-12'} w-full hover:border-indigo-600 dark:hover:bg-indigo-950 bg-transparent`}
+                  className={`${r.stringingApplicationId || (r.withStringService && !r.stringingApplicationId) ? 'col-span-6' : 'col-span-12'} w-full hover:border-border dark:hover:bg-muted bg-transparent`}
                 >
                   <Link href={`/mypage?tab=rentals&rentalId=${r.id}`} className="inline-flex w-full items-center justify-center gap-1">
                     상세보기
@@ -284,7 +284,7 @@ export default function RentalsList() {
                     </Link>
                   </Button>
                 ) : r.withStringService ? (
-                  <Button size="sm" className="col-span-6 w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                  <Button size="sm" className="col-span-6 w-full bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                     <Link href={`/services/apply?rentalId=${r.id}`} className="inline-flex w-full items-center justify-center gap-1">
                       교체 신청하기
                       <ArrowRight className="h-3 w-3" />
@@ -316,7 +316,7 @@ export default function RentalsList() {
 
       <div className="flex justify-center pt-4">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-indigo-200 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 bg-transparent">
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted bg-transparent">
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : flat.length ? (

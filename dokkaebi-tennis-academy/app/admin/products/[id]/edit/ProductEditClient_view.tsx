@@ -522,7 +522,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <Delete className="mr-2 h-4 w-4" />
                     삭제
                   </Button>
-                  <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
+                  <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
                     <Save className="mr-2 h-4 w-4" />
                     수정완료
                   </Button>
@@ -550,8 +550,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 기본 정보 탭 */}
               <TabsContent value="basic" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
                     <CardTitle className="text-primary dark:text-primary">기본 정보</CardTitle>
                     <CardDescription className="text-primary dark:text-primary">스트링의 기본 정보를 입력하세요.</CardDescription>
                   </CardHeader>
@@ -684,11 +684,11 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 {basicInfo.material === 'hybrid' && (
                   <Card
                     variant="ghost"
-                    className="mt-6 shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20
+                    className="mt-6 shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card
                border border-border dark:border-border"
                   >
                     <CardHeader
-                      className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30
+                      className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card
                           border-b border-border dark:border-border"
                     >
                       <CardTitle className="text-primary dark:text-primary">하이브리드 구성</CardTitle>
@@ -816,8 +816,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 )}
 
                 {/* 가격 정보 카드 */}
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
                     <CardTitle className="text-primary dark:text-primary">가격 정보</CardTitle>
                     <CardDescription className="text-primary dark:text-primary">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
                   </CardHeader>
@@ -890,8 +890,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 성능 및 특성 탭 */}
               <TabsContent value="features" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
                     <CardTitle className="text-primary dark:text-primary">성능 및 특성</CardTitle>
                     <CardDescription className="text-primary dark:text-primary">스트링의 성능과 특성을 설정하세요.</CardDescription>
                   </CardHeader>
@@ -1009,8 +1009,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 재고 관리 탭 */}
               <TabsContent value="inventory" className="space-y-4">
-                <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
                     <CardTitle className="text-primary dark:text-primary">재고 관리</CardTitle>
                     <CardDescription className="text-primary dark:text-primary">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
                   </CardHeader>
@@ -1139,8 +1139,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 이미지 탭 */}
               <TabsContent value="images" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20 border border-border dark:border-border">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-50 dark:from-blue-950/30 dark:to-blue-950/30 border-b border-border dark:border-border">
+                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
                     <CardTitle className="text-primary dark:text-primary">스트링 이미지</CardTitle>
                     <CardDescription className="text-primary dark:text-primary">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
                   </CardHeader>
@@ -1205,7 +1205,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 <Delete className="mr-2 h-4 w-4" />
                 삭제
               </Button>
-              <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-blue-500 to-blue-500 hover:from-blue-600 hover:to-blue-600 text-white">
+              <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
                 <Save className="mr-2 h-4 w-4" />
                 수정완료
               </Button>

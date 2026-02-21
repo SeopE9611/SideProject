@@ -237,7 +237,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
         <div className="max-w-3xl mx-auto">
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full blur-3xl opacity-50 -z-0" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-background to-card rounded-full blur-3xl opacity-50 -z-0" />
             <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
                 {racket.image ? (
@@ -250,9 +250,9 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-green-600 mb-1">선택된 라켓</p>
+                    <p className="text-xs font-medium text-success mb-1">선택된 라켓</p>
                     <h3 className="text-xl font-bold text-foreground mb-1">{racket.name}</h3>
                     <p className="text-lg font-semibold text-foreground">{racket.price.toLocaleString()}원</p>
                   </div>
@@ -334,7 +334,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                       </div>
                       <p className="text-lg font-bold text-foreground">{Number(p.price ?? 0).toLocaleString()}원</p>
                       {/* 재고 힌트 */}
-                      {manageStock && typeof stock === 'number' && stock > 0 && stock <= lowStock && <p className="text-xs text-orange-600">현재 남은 수량 {stock}개</p>}
+                      {manageStock && typeof stock === 'number' && stock > 0 && stock <= lowStock && <p className="text-xs text-warning">현재 남은 수량 {stock}개</p>}
                       {isShort && (
                         <p className="text-xs text-destructive">
                           재고 {stock}개로 번들 수량({workCount}개)을 충족할 수 없어요

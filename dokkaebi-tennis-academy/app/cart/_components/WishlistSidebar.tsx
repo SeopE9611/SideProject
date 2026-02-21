@@ -36,10 +36,10 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
 
   return (
     <Card variant="muted" className={clsx('mt-6', className)}>
-      <CardHeader className={clsx('rounded-t-lg', variant === 'inline' && 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-b border-border')}>
+      <CardHeader className={clsx('rounded-t-lg', variant === 'inline' && 'bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border')}>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-pink-500" />
+            <Heart className="h-5 w-5 text-foreground" />
             {title}
           </CardTitle>
           <Button size="sm" variant="outline" onClick={clear} className="border-border bg-transparent hover:bg-primary">

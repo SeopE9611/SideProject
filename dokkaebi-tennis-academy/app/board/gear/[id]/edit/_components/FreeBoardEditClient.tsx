@@ -311,7 +311,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
             <Skeleton className="h-4 w-16" />
@@ -340,7 +340,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const isNotFound = data && !data.ok && data.error === 'not_found';
   if (error || isNotFound) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4 py-8">
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
             <CardContent className="space-y-4 p-6">
@@ -360,14 +360,14 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 실제 수정 폼 ----------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 장비 사용기 > 글 수정 */}
             <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
-              <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+              <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/gear" onClick={onLeaveLinkClick} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 장비 사용기 게시판
@@ -405,7 +405,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
             <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-              <MessageSquare className="h-4 w-4 text-teal-500" />
+              <MessageSquare className="h-4 w-4 text-success" />
               <span>글 내용 수정</span>
             </CardTitle>
           </CardHeader>

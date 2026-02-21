@@ -146,13 +146,13 @@ export default function NoticeDetailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
               <div className="mb-2 text-sm text-muted-foreground dark:text-muted-foreground">
-                <span className="font-medium text-teal-600 dark:text-teal-400">고객센터</span>
+                <span className="font-medium text-success dark:text-success">고객센터</span>
                 <span className="mx-1">›</span>
                 <span>공지사항</span>
               </div>
@@ -173,7 +173,7 @@ export default function NoticeDetailPage() {
           </div>
 
           <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-            <CardHeader className="border-b border-border dark:border-border bg-gradient-to-r from-blue-50 to-teal-50 dark:from-blue-950/50 dark:to-teal-950/50">
+            <CardHeader className="border-b border-border dark:border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
@@ -215,7 +215,7 @@ export default function NoticeDetailPage() {
                       </div>
 
                       <div className="flex items-start gap-3 mb-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg flex-shrink-0 mt-1">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg flex-shrink-0 mt-1">
                           <Bell className="h-5 w-5 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-foreground dark:text-white leading-tight">{notice.title}</h1>
@@ -381,7 +381,7 @@ export default function NoticeDetailPage() {
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" asChild className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700">
+                                  <Button size="sm" asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드
@@ -414,7 +414,7 @@ export default function NoticeDetailPage() {
               </div>
             )}
 
-            <CardFooter className="border-t border-border dark:border-border bg-gradient-to-r from-blue-50/50 to-teal-50/50 dark:from-blue-950/20 dark:to-teal-950/20 p-6">
+            <CardFooter className="border-t border-border dark:border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6">
               <div className="w-full flex justify-center">
                 <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:bg-card dark:hover:bg-card">
                   <Link href="/board/notice">

@@ -178,7 +178,7 @@ export default function OrderLookupPage() {
   };
 
   return (
-    <div className="min-h-full bg-background from-emerald-50  ">
+    <div className="min-h-full bg-background from-background  ">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-primary   ">
         <div className="absolute inset-0 bg-black/10"></div>
@@ -205,7 +205,7 @@ export default function OrderLookupPage() {
           {/* Main Card */}
           <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary from-emerald-500 0 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary from-background 0 rounded-full mb-4 mx-auto">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold bg-primary   bg-clip-text text-transparent">주문 정보 입력</CardTitle>
@@ -300,7 +300,7 @@ export default function OrderLookupPage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-primary from-emerald-50  border border-border rounded-lg p-4">
+                <div className="bg-primary from-background  border border-border rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       <Clock className="w-5 h-5 text-primary mt-0.5" />
@@ -317,7 +317,7 @@ export default function OrderLookupPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 font-semibold bg-primary   hover:from-emerald-700 hover:to-teal-700 text-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                  className="w-full h-12 font-semibold bg-primary   hover:from-background hover:to-card text-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -354,16 +354,16 @@ export default function OrderLookupPage() {
             </div>
 
             <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-100 rounded-full mb-4">
-                <Clock className="w-6 h-6 text-teal-600" />
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4">
+                <Clock className="w-6 h-6 text-success" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>
               <p className="text-sm text-muted-foreground">최신 주문 상태를 실시간으로 확인 가능</p>
             </div>
 
             <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-cyan-100 rounded-full mb-4">
-                <Package className="w-6 h-6 text-cyan-600" />
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-full mb-4">
+                <Package className="w-6 h-6 text-foreground" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
               <p className="text-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>

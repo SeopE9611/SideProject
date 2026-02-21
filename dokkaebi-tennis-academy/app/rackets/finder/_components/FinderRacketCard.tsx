@@ -50,7 +50,7 @@ function conditionLabel(condition?: string | null) {
     return {
       label: 'A',
       desc: '최상',
-      className: 'bg-primary text-primary dark:text-primary ring-1 ring-emerald-500/30',
+      className: 'bg-primary text-primary dark:text-primary ring-1 ring-ring',
     };
   if (c === 'B')
     return {
@@ -62,7 +62,7 @@ function conditionLabel(condition?: string | null) {
     return {
       label: 'C',
       desc: '보통',
-      className: 'bg-muted text-primary dark:text-primary ring-1 ring-amber-500/30',
+      className: 'bg-muted text-primary dark:text-primary ring-1 ring-ring',
     };
   return { label: c, desc: '', className: 'bg-muted text-muted-foreground ring-1 ring-muted' };
 }
@@ -143,7 +143,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {rentalEnabled ? (
-                  <Badge className="bg-primary text-primary dark:text-primary ring-1 ring-emerald-500/30 hover:bg-primary">대여 가능</Badge>
+                  <Badge className="bg-primary text-primary dark:text-primary ring-1 ring-ring hover:bg-primary">대여 가능</Badge>
                 ) : (
                   <Badge variant="secondary" className="bg-muted/80 text-muted-foreground">
                     대여 불가

@@ -116,9 +116,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-muted dark:to-muted">
+    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-slate-950 dark:via-muted dark:to-muted">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-8">
+      <div className="relative bg-gradient-to-r from-background via-muted to-card text-white py-8">
         <div className="absolute inset-0 bg-black/20"></div>
         {/* Tennis court line pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -176,7 +176,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </>
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">중고</Badge>
+                  <Badge className="bg-gradient-to-r from-background to-card text-white">중고</Badge>
                   <StatusBadge kind="rental" state={rentalState} />
                 </div>
               </div>
@@ -205,7 +205,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <Badge variant="outline" className="mb-2 text-primary border-border dark:text-primary dark:border-border">
                       {racketBrandLabel(racket.brand)}
                     </Badge>
-                    <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{racket.model}</h1>
+                    <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-background to-card bg-clip-text text-transparent">{racket.model}</h1>
                     <div className="mt-2 flex items-center gap-2">
                       <StatusBadge kind="condition" state={racket.condition} />
 
@@ -216,7 +216,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           {isSold ? (
                             <Badge className="bg-muted text-foreground dark:bg-card dark:text-foreground">판매 완료</Badge>
                           ) : isAllRented ? (
-                            <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300">
+                            <Badge className="bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive">
                               전량 대여중 ({rentedCount}/{stock.quantity})
                             </Badge>
                           ) : (
@@ -244,7 +244,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
                     <div className="flex gap-2">
                       <Button
-                        className="flex-1 min-w-0 h-12 bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600"
+                        className="flex-1 min-w-0 h-12 bg-gradient-to-r from-background to-card text-white shadow hover:from-background hover:to-card"
                         onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                         disabled={soldOut}
                         title={soldOut ? (isAllRented ? '현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다.' : '판매가 종료된 상품입니다.') : undefined}
@@ -289,7 +289,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </Button>
                     </div>
 
-                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
+                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-destructive bg-destructive/10 border border-border rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
                   </div>
 
                   {/* 배송 정보 */}
@@ -300,15 +300,15 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-success" />
                         <span>3,000원 (30,000원 이상 무료)</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-success" />
                         <span>오후 2시 이전 주문 시 당일 출고</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-green-600" />
+                        <Shield className="h-4 w-4 text-success" />
                         <span>중고 상품 검수 완료</span>
                       </div>
                     </div>
@@ -330,7 +330,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         <Card className="mt-8 border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 h-16 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 rounded-t-lg">
+              <TabsList className="w-full grid grid-cols-2 h-16 bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-t-lg">
                 <TabsTrigger
                   value="description"
                   className="text-base font-medium h-full data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-card dark:data-[state=active]:text-primary"
@@ -350,12 +350,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               <TabsContent value="description" className="p-8">
                 <div className="prose max-w-none">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-background to-card rounded-lg flex items-center justify-center">
                       <FileText className="h-6 w-6 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-lg">
+                  <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6 rounded-lg">
                     <p className="text-foreground leading-relaxed text-lg">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
                       {racket?.rental?.enabled && ' 대여 서비스도 이용 가능합니다.'}
@@ -367,7 +367,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               <TabsContent value="specifications" className="p-8">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-r from-background to-card rounded-lg flex items-center justify-center">
                       <Settings className="h-6 w-6 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">상세 스펙</h3>
@@ -375,7 +375,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {racket.spec?.weight && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">무게</span>
                           <span className="text-foreground font-medium">{racket.spec.weight} g</span>
@@ -383,7 +383,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.balance && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">밸런스</span>
                           <span className="text-foreground font-medium">{racket.spec.balance} mm</span>
@@ -391,7 +391,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.headSize && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">헤드사이즈</span>
                           <span className="text-foreground font-medium">{racket.spec.headSize} in²</span>
@@ -399,7 +399,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.pattern && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">패턴</span>
                           <span className="text-foreground font-medium">{racket.spec.pattern}</span>
@@ -407,14 +407,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                     )}
                     {racket.spec?.gripSize && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-border">
+                      <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary dark:text-primary">그립</span>
                           <span className="text-foreground font-medium">{racket.spec.gripSize}</span>
                         </div>
                       </div>
                     )}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-border dark:border-border">
+                    <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-primary dark:text-primary">상태</span>
                         <span className="text-foreground font-medium">{racket.condition}</span>
@@ -458,7 +458,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 disabled={!canBuy}
                 title={!canBuy ? (racketId === '' ? '상품 ID가 없어 구매 경로를 만들 수 없습니다.' : isAllRented ? '현재 전량 대여중입니다.' : '판매가 종료된 상품입니다.') : undefined}
                 className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${
-                  canBuy ? 'bg-gradient-to-r from-indigo-500 to-blue-500 text-white' : 'bg-muted dark:bg-muted text-muted-foreground cursor-not-allowed'
+                  canBuy ? 'bg-gradient-to-r from-background to-card text-white' : 'bg-muted dark:bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >
                 <ShoppingCart className="h-4 w-4" />

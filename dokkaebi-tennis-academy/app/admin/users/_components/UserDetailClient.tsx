@@ -487,7 +487,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
           {/* 히어로 헤더 */}
           <div
-            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-emerald-50/25 to-slate-50 dark:from-slate-900 dark:via-transparent dark:to-slate-950', 'border-border dark:border-border')}
+            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-white via-muted to-slate-50 dark:from-slate-900 dark:via-transparent dark:to-slate-950', 'border-border dark:border-border')}
           >
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">
@@ -500,7 +500,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                       'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-white dark:ring-ring',
                       statusKey(user) === 'active' && 'bg-primary',
                       statusKey(user) === 'suspended' && 'bg-muted',
-                      statusKey(user) === 'deleted' && 'bg-rose-500',
+                      statusKey(user) === 'deleted' && 'bg-destructive/10',
                     )}
                   />
                 </div>
@@ -508,7 +508,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-xl md:text-2xl font-bold tracking-tight">{user.name ?? '(이름없음)'}</h1>
-                    <Badge variant="secondary" className={user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-background text-foreground'}>
+                    <Badge variant="secondary" className={user.role === 'admin' ? 'bg-muted text-foreground' : 'bg-background text-foreground'}>
                       {user.role === 'admin' ? '관리자' : '일반'}
                     </Badge>
                     <StatusBadge status={statusKey(user)} />
@@ -840,8 +840,8 @@ function normalizeIp(ip?: string) {
 // 한 줄 UI
 function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os: string; browser: string; isMobile: boolean }; highlight?: boolean }) {
   return (
-    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border dark:border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-emerald-200/70 dark:ring-emerald-900/40')}>
-      <div className={cn('grid size-9 place-items-center rounded-lg', s.isMobile ? 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300' : 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300')}>
+    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border dark:border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-ring dark:ring-ring')}>
+      <div className={cn('grid size-9 place-items-center rounded-lg', s.isMobile ? 'bg-muted text-foreground dark:bg-muted dark:text-foreground' : 'bg-muted text-foreground dark:bg-muted dark:text-foreground')}>
         {s.isMobile ? <Smartphone className="h-4 w-4" /> : <MonitorSmartphone className="h-4 w-4" />}
       </div>
 
@@ -849,7 +849,7 @@ function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os:
         <div className="flex items-center gap-2 text-sm font-medium truncate">
           {s.browser} · {s.os}
           {highlight && <Badge className="border-0 bg-primary text-primary">현재</Badge>}
-          <Badge className={cn('border-0 hidden sm:inline-block', s.isMobile ? 'bg-sky-100 text-sky-700' : 'bg-violet-100 text-violet-700')}>{s.isMobile ? '모바일' : '데스크탑'}</Badge>
+          <Badge className={cn('border-0 hidden sm:inline-block', s.isMobile ? 'bg-muted text-foreground' : 'bg-muted text-foreground')}>{s.isMobile ? '모바일' : '데스크탑'}</Badge>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <code className="rounded bg-background px-1.5 py-0.5 dark:bg-card">{normalizeIp(s.ip)}</code>
@@ -886,8 +886,8 @@ function StatCard({
 }) {
   const toneMap: Record<string, string> = {
     emerald: 'bg-primary text-primary dark:bg-primary dark:text-primary',
-    sky: 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-300',
-    violet: 'bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300',
+    sky: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
+    violet: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
     slate: 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground',
   };
 

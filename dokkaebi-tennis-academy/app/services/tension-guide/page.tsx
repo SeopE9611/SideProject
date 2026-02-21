@@ -201,7 +201,7 @@ export default function TensionGuidePage() {
 
   const getTensionFeedback = (value: number) => {
     if (value < 22) return { level: 'low', text: '매우 낮음 - 파워 중심', color: 'text-primary' };
-    if (value < 25) return { level: 'medium-low', text: '낮음 - 편안함 & 파워', color: 'text-teal-600' };
+    if (value < 25) return { level: 'medium-low', text: '낮음 - 편안함 & 파워', color: 'text-success' };
     if (value < 27) return { level: 'medium', text: '중간 - 균형 잡힌 세팅', color: 'text-accent' };
     if (value < 29) return { level: 'medium-high', text: '높음 - 컨트롤 중심', color: 'text-accent' };
     return { level: 'high', text: '매우 높음 - 최대 컨트롤', color: 'text-muted-foreground' };

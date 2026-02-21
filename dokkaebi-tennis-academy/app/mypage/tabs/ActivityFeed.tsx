@@ -250,7 +250,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (needs) {
       pills.push({
         text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: linked.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-muted text-primary dark:bg-muted ',
+        className: linked.hasTracking ? 'bg-success/10 text-success dark:bg-success/10 ' : 'bg-muted text-primary dark:bg-muted ',
       });
     }
   }
@@ -265,7 +265,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       if (needs) {
         pills.push({
           text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-          className: app.hasTracking ? 'bg-green-50 text-green-600 dark:bg-green-950/50 ' : 'bg-muted text-primary dark:bg-muted ',
+          className: app.hasTracking ? 'bg-success/10 text-success dark:bg-success/10 ' : 'bg-muted text-primary dark:bg-muted ',
         });
       }
     }
@@ -499,7 +499,7 @@ export default function ActivityFeed() {
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 p-8 bp-sm:p-12 text-center fade-in">
+      <div className="rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-8 bp-sm:p-12 text-center fade-in">
         <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-destructive mx-auto mb-4" />
         <p className="text-base bp-sm:text-lg font-medium text-destructive ">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
         <p className="text-sm text-destructive dark:text-destructive mt-2">잠시 후 다시 시도해주세요.</p>
@@ -540,7 +540,7 @@ export default function ActivityFeed() {
           <div className="text-2xl bp-sm:text-3xl font-bold text-foreground ">{counts.all}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-primary dark:bg-primary p-2">
               <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent " />
@@ -550,17 +550,17 @@ export default function ActivityFeed() {
           <div className="text-2xl bp-sm:text-3xl font-bold text-accent ">{counts.active}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-900/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-green-200 dark:bg-green-800 p-2">
-              <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-green-600 dark:text-green-300" />
+            <div className="rounded-lg bg-success/10 dark:bg-success/10 p-2">
+              <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success dark:text-success" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-green-600 ">완료</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-success ">완료</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-green-900 dark:text-green-100">{counts.done}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-success dark:text-success">{counts.done}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-amber-50 to-orange-100   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-muted dark:bg-muted p-2">
               <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary " />
@@ -635,7 +635,7 @@ export default function ActivityFeed() {
       {(actionTop.length > 0 || activeTop.length > 0) && (
         <div className="grid grid-cols-1 gap-4 bp-lg:grid-cols-2 min-w-0">
           {actionTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-destructive/10 to-muted dark:from-amber-950/20 dark:via-orange-950/20 dark:to-amber-950/20 p-5 bp-sm:p-6 border border-border/50 slide-up">
+            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-destructive/10 to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-muted dark:bg-muted p-2">
@@ -761,7 +761,7 @@ export default function ActivityFeed() {
           )}
 
           {activeTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-blue-950/20 p-5 bp-sm:p-6 border border-border/50 slide-up">
+            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-primary dark:bg-primary p-2">

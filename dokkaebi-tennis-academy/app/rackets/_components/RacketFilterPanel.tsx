@@ -67,7 +67,7 @@ export default function RacketFilterPanel({
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">필터</h2>
+              <h2 className="font-bold text-xl bg-gradient-to-r from-background to-card bg-clip-text text-transparent">필터</h2>
               {onClose && (
                 <Button variant="outline" size="sm" onClick={onClose} className="sm:hidden bg-transparent">
                   닫기
@@ -116,7 +116,7 @@ export default function RacketFilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white">
+            <Button type="submit" size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
               검색
             </Button>
           </form>

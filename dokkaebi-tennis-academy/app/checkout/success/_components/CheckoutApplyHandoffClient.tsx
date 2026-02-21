@@ -36,8 +36,8 @@ export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 8 
         <Card className="border-border/60 shadow-sm">
           <CardHeader className="text-center pb-4">
             <div className="mb-6 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent dark:bg-green-950/30">
-                <CheckCircle2 className="h-8 w-8 text-primary dark:text-green-500" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent dark:bg-success/10">
+                <CheckCircle2 className="h-8 w-8 text-primary dark:text-success" />
               </div>
             </div>
             <CardTitle className="text-3xl font-semibold tracking-tight">주문 완료</CardTitle>

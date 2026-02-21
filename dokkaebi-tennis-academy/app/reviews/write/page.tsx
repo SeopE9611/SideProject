@@ -25,7 +25,7 @@ function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: nu
           key={n}
           type="button"
           aria-label={`${n}점`}
-          className={`text-3xl transition-all duration-200 ${value >= n ? 'text-yellow-400 scale-110' : 'text-foreground dark:text-foreground'} hover:scale-125 hover:text-yellow-300`}
+          className={`text-3xl transition-all duration-200 ${value >= n ? 'text-warning scale-110' : 'text-foreground dark:text-foreground'} hover:scale-125 hover:text-warning`}
           onClick={() => onChange?.(n)}
         >
           ★
@@ -643,7 +643,7 @@ export default function ReviewWritePage() {
 
               <div className="relative">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                  <div className="w-2 h-2 rounded-full bg-warning/10"></div>
                   <span className="text-sm font-medium opacity-90">{mode === 'product' ? 'PRODUCT REVIEW' : mode === 'service' ? 'SERVICE REVIEW' : 'INVALID'}</span>
                 </div>
 

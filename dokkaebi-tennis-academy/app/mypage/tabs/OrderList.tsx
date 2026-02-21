@@ -54,7 +54,7 @@ const getStatusIcon = (status: string) => {
     case '배송완료':
       return <CheckCircle className="h-4 w-4 text-primary" />;
     case '대기중':
-      return <Clock className="h-4 w-4 text-yellow-500" />;
+      return <Clock className="h-4 w-4 text-warning" />;
     case '결제완료':
       return <CheckCircle className="h-4 w-4 text-primary" />;
     case '구매확정':
@@ -193,7 +193,7 @@ export default function OrderList() {
   // 에러 처리
   if (error) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950 dark:to-pink-950">
+      <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
         <CardContent className="p-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive dark:bg-destructive">
             <Package className="h-8 w-8 text-destructive dark:text-destructive" />
@@ -214,7 +214,7 @@ export default function OrderList() {
     return (
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
             <ShoppingBag className="h-10 w-10 text-primary dark:text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
@@ -251,7 +251,7 @@ export default function OrderList() {
 
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
@@ -259,7 +259,7 @@ export default function OrderList() {
               {/* Header */}
               <div className="flex items-start justify-between gap-3 mb-6">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900 dark:to-green-900 shadow-lg">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
                     <ShoppingBag className="h-6 w-6 text-primary dark:text-primary" />
                   </div>
                   <div className="min-w-0">
@@ -388,7 +388,7 @@ export default function OrderList() {
                           </Link>
                         </Button>
                       ) : !order.isStringServiceApplied ? (
-                        <Button size="sm" className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                        <Button size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
                           <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
                             스트링 교체 신청
                             <ArrowRight className="h-3 w-3" />
@@ -397,7 +397,7 @@ export default function OrderList() {
                       ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 text-sm font-semibold text-primary dark:border-border dark:from-emerald-950 dark:to-green-950 dark:text-primary">
+                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-gradient-to-r from-background to-card px-4 py-2 text-sm font-semibold text-primary dark:border-border dark:from-background dark:to-card dark:text-primary">
                               <CheckCircle className="mr-1 h-3 w-3" />
                               교체 신청 완료
                             </div>
@@ -441,7 +441,7 @@ export default function OrderList() {
                       </Link>
                     </Button>
                   ) : showMobileStringApply ? (
-                    <Button size="sm" className="col-span-5 w-full whitespace-nowrap bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white" asChild>
+                    <Button size="sm" className="col-span-5 w-full whitespace-nowrap bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white" asChild>
                       <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex w-full items-center justify-center gap-1">
                         교체 신청
                         <ArrowRight className="h-3 w-3" />

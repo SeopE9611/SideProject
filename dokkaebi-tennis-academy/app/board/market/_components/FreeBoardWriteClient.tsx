@@ -380,14 +380,14 @@ export default function FreeBoardWriteClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 중고 거래 게시판 > 글쓰기 */}
             <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
-              <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+              <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/market" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 중고 거래 게시판
@@ -415,7 +415,7 @@ export default function FreeBoardWriteClient() {
 
         {/* 글쓰기 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
-          <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/40">
+          <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
@@ -462,7 +462,7 @@ export default function FreeBoardWriteClient() {
                       if (fieldErrors.brand) setFieldErrors((prev) => ({ ...prev, brand: undefined }));
                     }}
                     disabled={isSubmitting}
-                    className={cn('h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm', fieldErrors.brand ? 'border-destructive focus:border-destructive focus:ring-red-500/20' : '')}
+                    className={cn('h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm', fieldErrors.brand ? 'border-destructive focus:border-destructive focus:ring-ring' : '')}
                   >
                     <option value="">브랜드를 선택해 주세요</option>
                     {getMarketBrandOptions(category).map((o) => (
@@ -489,7 +489,7 @@ export default function FreeBoardWriteClient() {
                   }}
                   disabled={isSubmitting}
                   maxLength={TITLE_MAX}
-                  className={fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : ''}
+                  className={fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
                 />
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
@@ -503,7 +503,7 @@ export default function FreeBoardWriteClient() {
                 <Textarea
                   id="content"
                   ref={contentRef}
-                  className={cn('min-h-[200px] resize-y', fieldErrors.content ? 'border-destructive focus-visible:border-destructive focus-visible:ring-red-500/20' : '')}
+                  className={cn('min-h-[200px] resize-y', fieldErrors.content ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : '')}
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);

@@ -467,7 +467,7 @@ export default function PackageOrdersClient() {
         <div className="container py-6">
           {/* 제목 및 설명 */}
           <div className="flex items-center space-x-3 mb-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
               <Package className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -498,10 +498,10 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
-                    <div className="text-3xl font-bold text-green-600 dark:text-green-400">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
+                    <div className="text-3xl font-bold text-success dark:text-success">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3">
-                    <Calendar className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <div className="bg-success/10 dark:bg-success/10 rounded-xl p-3">
+                    <Calendar className="h-6 w-6 text-success dark:text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -512,10 +512,10 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">총 매출</p>
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
+                    <div className="text-3xl font-bold text-foreground dark:text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
                   </div>
-                  <div className="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3">
-                    <CreditCard className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  <div className="bg-muted dark:bg-muted rounded-xl p-3">
+                    <CreditCard className="h-6 w-6 text-foreground dark:text-foreground" />
                   </div>
                 </div>
               </CardContent>
@@ -526,10 +526,10 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
+                    <div className="text-3xl font-bold text-warning dark:text-warning">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
                   </div>
-                  <div className="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-3">
-                    <Calendar className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-3">
+                    <Calendar className="h-6 w-6 text-warning dark:text-warning" />
                   </div>
                 </div>
               </CardContent>
@@ -890,7 +890,7 @@ export default function PackageOrdersClient() {
                                     <div className="flex flex-col items-center leading-tight">
                                       <span className="text-sm">{date}</span>
                                       <span className="text-xs text-muted-foreground">{time}</span>
-                                      {listState.label !== '취소' && daysUntilExpiry <= 30 && daysUntilExpiry > 0 && <span className="text-xs text-orange-600 font-medium">{daysUntilExpiry}일 남음</span>}
+                                      {listState.label !== '취소' && daysUntilExpiry <= 30 && daysUntilExpiry > 0 && <span className="text-xs text-warning font-medium">{daysUntilExpiry}일 남음</span>}
                                       {listState.label === '만료' && <span className="text-xs text-destructive font-medium">만료됨</span>}
                                     </div>
                                   </TableCell>

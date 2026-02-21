@@ -68,7 +68,7 @@ export default function PassList() {
             <div key={p.id} className="bg-card p-3 shadow-sm ring-1 ring-border/70 dark:ring-border/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 text-white">
+                  <div className="p-2 rounded-xl bg-gradient-to-r from-background to-card text-white">
                     <Ticket className="h-5 w-5" />
                   </div>
                   <div>
@@ -92,7 +92,7 @@ export default function PassList() {
               {/* Progress */}
               <div className="mt-4">
                 <div className="h-2 w-full rounded-full bg-muted/80 dark:bg-muted overflow-hidden">
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${remainPct}%` }} />
+                  <div className="h-2 bg-gradient-to-r from-background to-card" style={{ width: `${remainPct}%` }} />
                 </div>
                 <div className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
                   사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}

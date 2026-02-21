@@ -8,7 +8,7 @@ export default async function AdminUsersPage() {
       <div className="mx-auto max-w-7xl">
         {/* 타이틀 */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
             <UsersIcon className="h-6 w-6 text-white" />
           </div>
           <div>

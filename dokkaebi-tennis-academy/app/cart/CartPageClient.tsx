@@ -330,7 +330,7 @@ export default function CartPageClient() {
                 <span>총 {cartItems.length}개 상품</span>
               </div>
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-400" />
+                <Star className="h-4 w-4 text-warning" />
                 <span>30,000원 이상 무료배송</span>
               </div>
             </div>

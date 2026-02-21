@@ -500,7 +500,7 @@ export default function RacketFinderClient() {
                 className={cn(
                   'flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all',
                   'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
-                  draft.strict && 'bg-muted dark:bg-muted ring-1 ring-amber-500/30',
+                  draft.strict && 'bg-muted dark:bg-muted ring-1 ring-ring',
                 )}
               >
                 <Checkbox checked={draft.strict} onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))} />

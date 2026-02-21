@@ -25,7 +25,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary from-purple-500  mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary from-background  mb-4">
           <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
@@ -38,7 +38,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
           className={
             packageInsufficient
               ? 'mt-6 rounded-2xl border border-border bg-destructive dark:border-destructive dark:bg-destructive p-5'
-              : 'mt-6 rounded-2xl border border-border bg-primary from-emerald-50  dark:border-border dark:from-emerald-950/40 dark:to-teal-950/40 p-5'
+              : 'mt-6 rounded-2xl border border-border bg-primary from-background  dark:border-border dark:from-background dark:to-card p-5'
           }
         >
           <div className="flex items-start gap-4">
@@ -158,7 +158,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
               name="shippingBank"
               value={formData.shippingBank}
               onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
-              className="w-full border border-border dark:border-border px-3 py-2 rounded-md bg-card dark:bg-card dark:text-foreground focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+              className="w-full border border-border dark:border-border px-3 py-2 rounded-md bg-card dark:bg-card dark:text-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200"
             >
               <option value="" disabled hidden>
                 입금하실 은행을 선택해주세요.
@@ -172,7 +172,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
           </div>
 
           {formData.shippingBank && (bankLabelMap as any)[formData.shippingBank] ? (
-            <div className="bg-primary  to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-border dark:border-border rounded-lg p-6">
+            <div className="bg-primary  to-card dark:from-background dark:to-card border border-border dark:border-border rounded-lg p-6">
               <h3 className="font-semibold text-primary dark:text-primary mb-4 flex items-center">
                 <CreditCard className="h-5 w-5 mr-2" />
                 계좌 정보
@@ -198,7 +198,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
             <Label htmlFor="shippingDepositor" className="text-sm font-medium">
               입금자명 <span className="text-destructive">*</span>
             </Label>
-            <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" className="focus:ring-2 focus:ring-purple-500 transition-all duration-200" />
+            <Input id="shippingDepositor" name="shippingDepositor" value={formData.shippingDepositor} onChange={handleInputChange} placeholder="입금자명을 입력하세요" className="focus:ring-2 focus:ring-ring transition-all duration-200" />
           </div>
         </div>
       )}

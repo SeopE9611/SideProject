@@ -25,8 +25,8 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-muted0/10 text-muted-foreground dark:bg-muted0/20',
   paid: 'bg-primary text-accent dark:bg-primary',
-  out: 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20',
-  returned: 'bg-green-500/10 text-green-500 dark:bg-green-500/20',
+  out: 'bg-muted text-foreground dark:bg-muted',
+  returned: 'bg-success/10 text-success dark:bg-success/10',
   canceled: 'bg-destructive text-destructive dark:bg-destructive',
 };
 
@@ -287,7 +287,7 @@ export default function AdminRentalDetailClient() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-950 dark:to-black">
       <div className="container py-10">
         <div className="mx-auto max-w-4xl space-y-8">
-          <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 dark:from-purple-950/20 dark:via-blue-950/20 dark:to-indigo-950/20 rounded-2xl p-8 border border-purple-100 /30 shadow-lg mb-8">
+          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border /30 shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
@@ -433,7 +433,7 @@ export default function AdminRentalDetailClient() {
                 {/* 대여 시작(out) */}
                 <Button
                   size="sm"
-                  className="h-9 bg-sky-600 hover:bg-sky-700"
+                  className="h-9 bg-muted hover:bg-muted"
                   disabled={isBusy || data.status !== 'paid'}
                   onClick={() => {
                     if (isBusy) return;
@@ -609,10 +609,10 @@ export default function AdminRentalDetailClient() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-100 /50">
+                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border /50">
                     <div>
                       <p className="text-sm text-muted-foreground ">총 결제 금액</p>
-                      <p className="text-xl font-bold text-accent dark:text-purple-400">{won(data.amount?.total)}</p>
+                      <p className="text-xl font-bold text-accent dark:text-foreground">{won(data.amount?.total)}</p>
                     </div>
                   </div>
                   <div className="p-4 rounded-lg border bg-muted dark:bg-card/70 /60">
@@ -664,8 +664,8 @@ export default function AdminRentalDetailClient() {
                 {
                   {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">운송장 없음</span>,
-                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-indigo-100 text-accent text-xs">출고 운송장</span>,
-                    'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-xs">반납 운송장</span>,
+                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-accent text-xs">출고 운송장</span>,
+                    'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">반납 운송장</span>,
                     'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary text-primary text-xs">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
                 }

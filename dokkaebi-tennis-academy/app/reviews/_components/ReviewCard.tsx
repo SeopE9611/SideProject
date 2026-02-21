@@ -294,7 +294,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         <div className="flex items-center gap-2 p-3 bg-muted/60 rounded-2xl">
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'fill-yellow-400 text-warning' : 'text-muted-foreground'}`} />
             ))}
           </div>
           <span className="ml-1 text-sm font-bold text-foreground">{item.rating}/5</span>

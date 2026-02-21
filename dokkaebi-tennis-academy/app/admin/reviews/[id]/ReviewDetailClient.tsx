@@ -90,7 +90,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
     return (
       <div className="flex items-center space-x-1">
         {Array.from({ length: 5 }).map((_, index) => (
-          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/40'}`} />
+          <Star key={index} className={`h-6 w-6 ${index < rating ? 'text-warning fill-yellow-500' : 'text-muted-foreground/40'}`} />
         ))}
         <span className="ml-2 text-lg font-semibold text-foreground">{rating}/5</span>
       </div>
@@ -118,7 +118,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       case 'stringing':
         return <Badge className="bg-primary text-primary hover:bg-primary">스트링 서비스 리뷰</Badge>;
       case 'product':
-        return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">상품 리뷰</Badge>;
+        return <Badge className="bg-muted text-foreground hover:bg-muted">상품 리뷰</Badge>;
       default:
         return <Badge className="bg-background text-foreground hover:bg-muted">기타 리뷰</Badge>;
     }
@@ -172,7 +172,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
         <CardContent className="space-y-8">
           {/* 평점 */}
-          <div className="text-center py-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl">
+          <div className="text-center py-6 bg-gradient-to-r from-background to-card rounded-xl">
             <h3 className="text-lg font-semibold text-foreground mb-3">고객 평점</h3>
             {renderRating(review.rating)}
           </div>

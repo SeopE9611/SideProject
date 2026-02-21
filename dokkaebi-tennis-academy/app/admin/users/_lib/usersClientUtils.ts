@@ -26,7 +26,7 @@ export const th =
 export const td = 'px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums';
 
 export const roleColors: Record<'admin' | 'user', string> = {
-  admin: 'bg-purple-100 text-purple-800 border-purple-200',
+  admin: 'bg-muted text-foreground border-border',
   user: 'bg-background text-foreground border-border',
 };
 

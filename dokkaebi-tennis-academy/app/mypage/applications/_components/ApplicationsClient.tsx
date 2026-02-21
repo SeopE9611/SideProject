@@ -107,11 +107,11 @@ const LIMIT = 5;
 const getApplicationStatusIcon = (status: Application['status']) => {
   switch (status) {
     case '검토 중':
-      return <Clock className="h-4 w-4 text-yellow-500" />;
+      return <Clock className="h-4 w-4 text-warning" />;
     case '접수완료':
       return <CheckCircle className="h-4 w-4 text-primary" />;
     case '작업 중':
-      return <Clock className="h-4 w-4 text-sky-500" />;
+      return <Clock className="h-4 w-4 text-foreground" />;
     case '교체완료':
       return <CheckCircle className="h-4 w-4 text-primary" />;
     default:
@@ -286,8 +286,8 @@ export default function ApplicationsClient() {
       {applications.length === 0 ? (
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
           <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900">
-              <FileText className="h-10 w-10 text-green-600 dark:text-green-400" />
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+              <FileText className="h-10 w-10 text-success dark:text-success" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">신청 내역이 없습니다</h3>
             <p className="mb-6 text-muted-foreground">아직 신청하신 서비스가 없습니다.</p>
@@ -339,7 +339,7 @@ export default function ApplicationsClient() {
           const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+              <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
                 <div className="h-full w-full bg-card rounded-lg" />
               </div>
 
@@ -348,13 +348,13 @@ export default function ApplicationsClient() {
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                        isStringService ? 'bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900' : 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900'
+                        isStringService ? 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card' : 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card'
                       }`}
                     >
                       {isStringService ? (
-                        <LayoutGrid className={`h-6 w-6  ${isStringService ? 'text-orange-600 dark:text-orange-400' : 'text-green-600 dark:text-green-400'}`} />
+                        <LayoutGrid className={`h-6 w-6  ${isStringService ? 'text-warning dark:text-warning' : 'text-success dark:text-success'}`} />
                       ) : (
-                        <GraduationCap className="h-6 w-6 text-green-600 dark:text-green-400" />
+                        <GraduationCap className="h-6 w-6 text-success dark:text-success" />
                       )}
                     </div>
                     <div>
@@ -486,7 +486,7 @@ export default function ApplicationsClient() {
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/mypage?tab=applications&applicationId=${app.id}`)}
-                      className="border-border hover:border-green-500 hover:bg-green-50 dark:border-border dark:hover:border-green-600 dark:hover:bg-green-950 transition-colors"
+                      className="border-border hover:border-border hover:bg-success/10 dark:border-border dark:hover:border-border dark:hover:bg-success/10 transition-colors"
                     >
                       상세보기
                       <ArrowRight className="ml-1 h-3 w-3" />

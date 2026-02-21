@@ -64,7 +64,7 @@ function RacketAvailBadge({ id }: { id: string }) {
   // 전량 대여중
   if (isAllRented) {
     return (
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-300 whitespace-nowrap">
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive whitespace-nowrap">
         전량 대여중 ({rentedCount}/{qty})
       </div>
     );
@@ -194,7 +194,7 @@ const RacketCard = React.memo(
     // grid view
     return (
       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-border dark:hover:border-border group relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
           <Image
@@ -237,7 +237,7 @@ const RacketCard = React.memo(
 
             <div className="mt-3 flex gap-2">
               {canBuy ? (
-                <Button asChild size="sm" className="flex-1 min-w-0 bg-gradient-to-r from-indigo-500 to-blue-500 text-white shadow hover:from-indigo-600 hover:to-blue-600" onClick={(e) => e.stopPropagation()}>
+                <Button asChild size="sm" className="flex-1 min-w-0 bg-gradient-to-r from-background to-card text-white shadow hover:from-background hover:to-card" onClick={(e) => e.stopPropagation()}>
                   <Link href={`/rackets/${racket.id}/select-string`} onClick={(e) => e.stopPropagation()} className="justify-center">
                     <ShoppingCart className="w-4 h-4 mr-1.5" />
                     구매하기

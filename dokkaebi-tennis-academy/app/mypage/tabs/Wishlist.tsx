@@ -26,12 +26,12 @@ export default function Wishlist() {
     return (
       <Card className="relative overflow-hidden border-0 ">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-900/30 dark:to-rose-900/30 shadow-lg">
-            <Heart className="h-10 w-10 text-pink-600 dark:text-pink-400" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+            <Heart className="h-10 w-10 text-foreground dark:text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">마음에 드는 상품을 위시리스트에 추가해보세요!</p>
-          <Button asChild className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg hover:shadow-xl transition-all duration-300">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -58,7 +58,7 @@ export default function Wishlist() {
               <div className="mt-3 flex gap-2">
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-sm"
+                  className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-sm"
                   onClick={() => {
                     addItem({
                       id: it.id,

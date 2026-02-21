@@ -35,8 +35,8 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
   })();
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-muted dark:to-muted">
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 py-10 bp-sm:py-12 bp-md:py-24">
+    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-slate-950 dark:via-muted dark:to-muted">
+      <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-10 bp-sm:py-12 bp-md:py-24">
         <div className="absolute inset-0 bg-overlay/20" />
         <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
           <svg className="w-full h-full" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +58,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-white">
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent leading-tight">중고 라켓</h1>
+            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-card bg-clip-text text-transparent leading-tight">중고 라켓</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-primary dark:text-primary max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">

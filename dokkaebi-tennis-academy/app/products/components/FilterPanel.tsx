@@ -103,7 +103,7 @@ export const FilterPanel = React.memo(function FilterPanel({
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
           <div className="flex items-center justify-between mb-4 bp-sm:mb-6">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-lg bp-sm:text-xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">필터</h2>
+              <h2 className="font-bold text-lg bp-sm:text-xl bg-gradient-to-r from-background to-card bg-clip-text text-transparent">필터</h2>
               {onClose && (
                 <Button variant="outline" size="sm" onClick={onClose} className="bp-sm:hidden h-7 px-2 text-xs bg-transparent">
                   닫기
@@ -151,7 +151,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shrink-0">
+            <Button type="submit" size="sm" className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shrink-0">
               검색
             </Button>
           </form>

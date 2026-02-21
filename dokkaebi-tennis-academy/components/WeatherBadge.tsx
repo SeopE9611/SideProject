@@ -34,8 +34,8 @@ export function WeatherBadge() {
       className="
         flex flex-col sm:flex-row sm:items-center gap-1
         border rounded-lg px-4 py-2 text-xs sm:text-sm
-        bg-gradient-to-r from-blue-50 to-emerald-50
-        dark:from-blue-950/30 dark:to-emerald-950/30
+        bg-gradient-to-r from-background to-card
+        dark:from-background dark:to-card
       "
     >
       <div className="font-medium">

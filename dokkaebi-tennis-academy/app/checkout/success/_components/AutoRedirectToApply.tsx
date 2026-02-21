@@ -25,7 +25,7 @@ export default function AutoRedirectToApply({ enabled, href, seconds = 5 }: { en
   if (!enabled) return null;
 
   return (
-    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-yellow-100">
+    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-warning">
       <span>잠시 후 신청서로 이동합니다 ({left}초)</span>
       <Button type="button" variant="secondary" size="sm" onClick={() => setPaused(true)}>
         멈춤

@@ -18,7 +18,7 @@ export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
 
 export const packageStatusColors: Record<PassStatus | '대기', string> = {
   비활성: 'bg-muted text-primary border-border',
-  활성: 'bg-green-100 text-green-800 border-green-200',
+  활성: 'bg-success/10 text-success border-border',
   만료: 'bg-background text-foreground border-border',
   취소: 'bg-destructive text-destructive border-destructive',
   대기: 'bg-background text-foreground border-border',
@@ -41,15 +41,15 @@ export const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 
 export const paymentStatusColors: Record<PaymentStatus, string> = {
   결제완료: 'bg-primary text-primary border-border',
-  결제대기: 'bg-orange-100 text-orange-800 border-orange-200',
+  결제대기: 'bg-warning/10 text-warning border-border',
   결제취소: 'bg-destructive text-destructive border-destructive',
 };
 
 export const packageTypeColors: Record<PackageType, string> = {
-  '10회권': 'bg-purple-100 text-purple-800 border-purple-200',
+  '10회권': 'bg-muted text-foreground border-border',
   '30회권': 'bg-primary text-primary border-border',
-  '50회권': 'bg-green-100 text-green-800 border-green-200',
-  '100회권': 'bg-orange-100 text-orange-800 border-orange-200',
+  '50회권': 'bg-success/10 text-success border-border',
+  '100회권': 'bg-warning/10 text-warning border-border',
 };
 
 export const fetcher = adminFetcher;

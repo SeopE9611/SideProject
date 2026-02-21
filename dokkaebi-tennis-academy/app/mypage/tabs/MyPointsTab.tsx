@@ -100,7 +100,7 @@ export default function MyPointsTab() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 text-white">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-background to-card dark:from-background dark:to-card text-white">
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors duration-300" />
           <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
           <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
@@ -132,11 +132,11 @@ export default function MyPointsTab() {
         </Card>
 
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card dark:bg-card">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 group-hover:opacity-80 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50 rounded-lg p-2 shadow-md">
+              <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-lg p-2 shadow-md">
                 <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary dark:text-primary" />
               </div>
               <TrendingUp className="h-4 w-4 text-primary dark:text-primary opacity-50" />
@@ -150,18 +150,18 @@ export default function MyPointsTab() {
         </Card>
 
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card dark:bg-card bp-md:col-span-2 bp-lg:col-span-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20 group-hover:opacity-80 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/50 dark:to-pink-900/50 rounded-lg p-2 shadow-md">
-                <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-rose-600 dark:text-rose-400" />
+              <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-lg p-2 shadow-md">
+                <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-destructive dark:text-destructive" />
               </div>
-              <TrendingDown className="h-4 w-4 text-rose-600 dark:text-rose-400 opacity-50" />
+              <TrendingDown className="h-4 w-4 text-destructive dark:text-destructive opacity-50" />
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground">사용 포인트 (이번 페이지)</p>
-              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black text-rose-600 dark:text-rose-400">-{fmt(stats.spent)}</p>
+              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black text-destructive dark:text-destructive">-{fmt(stats.spent)}</p>
               <p className="text-xs text-muted-foreground">전체 기준</p>
             </div>
           </CardContent>
@@ -210,15 +210,15 @@ export default function MyPointsTab() {
                     <div className="flex items-start gap-3 bp-sm:gap-4 flex-1 min-w-0">
                       <div
                         className={`shrink-0 rounded-xl p-2 bp-sm:p-2.5 shadow-sm ${
-                          it.amount >= 0 ? 'bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/50 dark:to-teal-900/50' : 'bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/50 dark:to-pink-900/50'
+                          it.amount >= 0 ? 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card' : 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card'
                         }`}
                       >
-                        {it.amount >= 0 ? <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary dark:text-primary" /> : <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-rose-600 dark:text-rose-400" />}
+                        {it.amount >= 0 ? <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary dark:text-primary" /> : <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-destructive dark:text-destructive" />}
                       </div>
 
                       <div className="flex-1 min-w-0 space-y-1.5 bp-sm:space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-base bp-sm:text-lg font-bold tabular-nums ${it.amount >= 0 ? 'text-primary dark:text-primary' : 'text-rose-600 dark:text-rose-400'}`}>
+                          <span className={`text-base bp-sm:text-lg font-bold tabular-nums ${it.amount >= 0 ? 'text-primary dark:text-primary' : 'text-destructive dark:text-destructive'}`}>
                             {it.amount >= 0 ? '+' : ''}
                             {fmt(it.amount)}P
                           </span>

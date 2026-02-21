@@ -14,7 +14,7 @@ export default function ReviewsPage() {
       <div className="mb-6 flex items-center justify-between gap-3">
         <div>
           <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
-            <span className="font-medium text-teal-600 dark:text-teal-400">게시판</span>
+            <span className="font-medium text-success dark:text-success">게시판</span>
             <span className="mx-1">›</span>
             <span>리뷰 게시판</span>
           </div>

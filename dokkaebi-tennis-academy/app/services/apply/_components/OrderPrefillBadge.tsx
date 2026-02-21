@@ -14,7 +14,7 @@ export default function OrderPrefillBadge({ orderId, rentalId }: OrderPrefillBad
 
   return (
     <div className="mb-6">
-      <div className="inline-flex items-center gap-2 rounded-lg bg-primary  to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-border dark:border-border px-4 py-2 shadow-sm">
+      <div className="inline-flex items-center gap-2 rounded-lg bg-primary  to-card dark:from-background dark:to-card border border-border dark:border-border px-4 py-2 shadow-sm">
         <div className="flex items-center gap-1.5">
           <div className="h-2 w-2 rounded-full bg-accent0 dark:bg-primary animate-pulse" />
           <span className="font-semibold text-primary dark:text-primary">프리필</span>

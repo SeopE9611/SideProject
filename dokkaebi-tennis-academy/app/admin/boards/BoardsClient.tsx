@@ -414,7 +414,7 @@ export default function BoardsClient() {
                                   <span className="font-medium">{p.likes}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                  <MessageSquare className="h-4 w-4 text-violet-500" />
+                                  <MessageSquare className="h-4 w-4 text-foreground" />
                                   <span className="font-medium">{p.commentsCount}</span>
                                 </div>
                               </div>

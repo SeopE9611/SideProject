@@ -30,7 +30,7 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 // 배지 색상(라이트/다크 모두 대비 높임)
 const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
   활성: 'bg-primary text-primary border-border dark:bg-primary dark:text-primary dark:border-border',
-  만료: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800',
+  만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/10 dark:text-destructive dark:border-border',
   일시정지: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
   취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
   대기: 'bg-background text-foreground border-border dark:bg-card dark:text-muted-foreground dark:border-border',
@@ -373,7 +373,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
               <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+                  <User className="h-5 w-5 text-foreground dark:text-foreground" />
                   고객 정보
                 </CardTitle>
               </CardHeader>
@@ -423,7 +423,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <span className="text-sm font-medium">{progressPercentage}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
-                    <div className="h-2 rounded-full bg-sky-600 dark:bg-sky-400 transition-all" style={{ width: `${progressPercentage}%` }} />
+                    <div className="h-2 rounded-full bg-muted dark:bg-muted transition-all" style={{ width: `${progressPercentage}%` }} />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>사용: {data.usedSessions}회</span>
@@ -435,7 +435,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">만료까지</span>
                     <span
-                      className={cn('text-sm font-medium', expired ? 'text-muted-foreground' : daysLeft <= 7 ? 'text-rose-600 dark:text-rose-400' : daysLeft <= 30 ? 'text-primary dark:text-primary' : 'text-primary dark:text-primary')}
+                      className={cn('text-sm font-medium', expired ? 'text-muted-foreground' : daysLeft <= 7 ? 'text-destructive dark:text-destructive' : daysLeft <= 30 ? 'text-primary dark:text-primary' : 'text-primary dark:text-primary')}
                     >
                       {expired ? '만료됨' : `${daysLeft}일 남음`}
                     </span>
@@ -443,7 +443,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </div>
 
                 {!isPaid && data.paymentStatus !== '결제취소' && <p className="text-xs text-primary dark:text-primary">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>}
-                {isCancelled && <p className="text-xs text-rose-700 dark:text-rose-300">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>}
+                {isCancelled && <p className="text-xs text-destructive dark:text-destructive">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>}
                 {isExpired && isPaid && !isCancelled && <p className="text-xs text-muted-foreground">만료된 패스는 연장만 가능합니다.</p>}
               </CardContent>
 
@@ -453,7 +453,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장
                   </Button>
-                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled || isExpired} onClick={() => setEditingSessions(true)} className="border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-900/20">
+                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled || isExpired} onClick={() => setEditingSessions(true)} className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
                     <Target className="mr-1 h-4 w-4" />
                     횟수 조절
                   </Button>
@@ -483,11 +483,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                               <Badge variant="outline" className="text-xs">
                                 신청서 ID: {u.applicationId}
                               </Badge>
-                              <Badge className="text-xs bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-300">-{u.sessionsUsed}회 차감</Badge>
+                              <Badge className="text-xs bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive">-{u.sessionsUsed}회 차감</Badge>
                             </div>
                             <p className="font-medium mb-1">{u.description}</p>
                             <p className="text-sm text-muted-foreground">{new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(u.date))}</p>
-                            {u.adminNote && <p className="text-sm text-sky-700 dark:text-sky-300 mt-1">관리자 메모: {u.adminNote}</p>}
+                            {u.adminNote && <p className="text-sm text-foreground dark:text-foreground mt-1">관리자 메모: {u.adminNote}</p>}
                           </div>
                           <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/applications/stringing/${u.applicationId}`} target="_blank" rel="noreferrer">
@@ -506,7 +506,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
               <CardHeader className="border-b border-border dark:border-border">
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <Clock className="h-5 w-5 text-foreground dark:text-foreground" />
                   운영 내역 (연장/횟수)
                 </CardTitle>
                 <CardDescription>패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
@@ -619,7 +619,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <p className="text-sm text-muted-foreground mt-1">
                       현재 남은 횟수: {data.remainingSessions}회
                       {sessionAdjustment.amount !== 0 && (
-                        <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-primary dark:text-primary' : 'text-rose-600 dark:text-rose-400')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>
+                        <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-primary dark:text-primary' : 'text-destructive dark:text-destructive')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>
                       )}
                     </p>
                     <div className="flex items-center gap-2">
