@@ -679,7 +679,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="mt-2 flex items-center gap-2 sm:gap-3">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? 'fill-yellow-400 text-warning' : 'fill-muted text-muted'}`} />
+                          <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < Math.floor(averageRating) ? 'text-warning fill-current' : 'fill-muted text-muted'}`} />
                         ))}
                       </div>
                       <span className="text-xs sm:text-sm text-muted-foreground">
@@ -781,7 +781,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         onClick={handleWishlist}
                         className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? 'bg-destructive/10 border-border text-destructive dark:bg-destructive/15 dark:border-border dark:text-destructive' : ''}`}
                       >
-                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'fill-destructive text-destructive' : ''}`} />
+                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'text-destructive fill-current' : ''}`} />
                         위시리스트
                       </Button>
                     </div>
@@ -1046,7 +1046,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
                                       {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'fill-yellow-400 text-warning' : 'fill-muted text-muted'}`} />
+                                        <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'text-warning fill-current' : 'fill-muted text-muted'}`} />
                                       ))}
                                     </div>
                                     <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">{review.date || '2099-01-01'}</span>
@@ -1443,7 +1443,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           onMouseLeave={() => setHoverRating(null)}
                           onClick={() => setEditForm((s) => ({ ...s, rating: i }))}
                         >
-                          <Star className={`h-6 w-6 ${filled ? 'fill-yellow-500 stroke-yellow-500' : 'stroke-muted-foreground'}`} />
+                          <Star className={`h-6 w-6 ${filled ? 'text-warning fill-current stroke-current' : 'stroke-muted-foreground'}`} />
                         </button>
                       );
                     })}
