@@ -51,7 +51,7 @@ export default function PriceSummaryCard({
   return (
     <Card className="overflow-hidden border border-border dark:border-border shadow-sm">
       {/* Header */}
-      <div className="bg-primary from-slate-900 via-slate-800 to-slate-700 dark:from-slate-800 dark:via-slate-700 dark:to-slate-600 text-foreground px-4 py-3">
+      <div className="bg-primary from-background via-muted to-card dark:from-background dark:via-muted dark:to-card text-foreground px-4 py-3">
         <div className="flex items-center gap-2">
           <ReceiptText className="h-4 w-4" />
           <p className="text-sm font-semibold">요금 요약</p>

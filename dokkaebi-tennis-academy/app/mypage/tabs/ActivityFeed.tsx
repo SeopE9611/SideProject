@@ -858,12 +858,12 @@ export default function ActivityFeed() {
               return (
                 <div key={dayKey} className="space-y-4 slide-up" style={{ animationDelay: `${dayIndex * 50}ms` }}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200  to-transparent" />
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-muted  to-transparent" />
                     <div className="rounded-full bg-muted px-4 py-2 border border-border ">
                       <span className="text-sm font-semibold text-foreground ">{formatDayHeader(dayKey)}</span>
                       <span className="text-xs text-muted-foreground ml-2">{dayItems.length}건</span>
                     </div>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200  to-transparent" />
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-muted  to-transparent" />
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 bp-sm:gap-4 min-w-0">
@@ -890,7 +890,7 @@ export default function ActivityFeed() {
                       return (
                         <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card  border border-border p-4 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
                           <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
-                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-background to-muted dark:from-slate-700 dark:to-muted p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
+                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
 
                             <div className="flex-1 min-w-0 space-y-3">
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">

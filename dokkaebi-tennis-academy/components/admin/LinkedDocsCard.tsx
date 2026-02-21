@@ -91,8 +91,8 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
   const list = sortDocs((docs ?? []).filter((d) => d?.id && d?.href));
 
   return (
-    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-800/50 overflow-hidden mb-8">
-      <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 border-b pb-3">
+    <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden mb-8">
+      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
         <CardTitle className="flex items-center gap-2">
           <Link2 className="h-4 w-4" />
           {title}

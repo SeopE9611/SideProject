@@ -176,7 +176,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getBoardTypeColor(String(post.type ?? ''))}>{getBoardTypeName(String(post.type ?? ''))}</Badge>
@@ -191,7 +191,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+            <Card className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
               <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
                 <CardTitle className="text-primary dark:text-primary">게시물 정보</CardTitle>
               </CardHeader>

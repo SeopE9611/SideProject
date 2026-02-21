@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function BrandBoardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between gap-3">

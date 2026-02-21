@@ -97,7 +97,7 @@ export default function ReviewsClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card relative">
       {/* Tennis court background pattern */}
       <div
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.01]"
@@ -207,7 +207,7 @@ export default function ReviewsClient() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card flex items-center justify-center">
                   <MessageSquareText className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">

@@ -16,7 +16,7 @@ export function UserSidebar() {
       label: '전체 내역 보기',
       value: 'activity',
       icon: Layers,
-      gradient: 'from-slate-600 to-slate-700',
+      gradient: 'from-background to-card',
       bgGradient: 'from-background to-muted dark:from-background/30 dark:to-muted/20',
     },
     {
@@ -79,8 +79,8 @@ export function UserSidebar() {
       label: '회원 정보 수정',
       value: 'profile',
       icon: UserCog,
-      gradient: 'from-background0 to-gray-500',
-      bgGradient: 'from-background to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20',
+      gradient: 'from-background0 to-card',
+      bgGradient: 'from-background to-card dark:from-background dark:to-card',
     },
   ];
 

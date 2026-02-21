@@ -116,7 +116,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-slate-950 dark:via-muted dark:to-muted">
+    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-gradient-to-r from-background via-muted to-card text-white py-8">
         <div className="absolute inset-0 bg-black/20"></div>

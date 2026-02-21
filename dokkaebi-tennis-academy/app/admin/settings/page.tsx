@@ -15,7 +15,7 @@ export default function SettingsPage() {
   useUnsavedChangesGuard(vm.isDirtyAny && !vm.isSubmittingAny);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="container py-10">
         <div className="mx-auto max-w-6xl space-y-6">
           <div>

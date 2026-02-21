@@ -16,7 +16,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
-    <div className="min-h-[60vh] bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-[60vh] bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
           <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-card/90 dark:bg-card">

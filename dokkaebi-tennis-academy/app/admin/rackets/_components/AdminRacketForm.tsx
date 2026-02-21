@@ -295,7 +295,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
@@ -388,7 +388,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="specs" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-primary" />
@@ -502,7 +502,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="rental" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
@@ -592,7 +592,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-gray-900 dark:to-card border border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-primary" />

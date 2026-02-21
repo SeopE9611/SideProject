@@ -243,7 +243,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                 {racket.image ? (
                   <img src={racket.image || '/placeholder.svg'} alt={racket.name} className="w-20 h-20 bp-md:w-24 bp-md:h-24 object-cover rounded-xl shadow-md ring-2 ring-ring" />
                 ) : (
-                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center shadow-md">
+                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-gradient-to-br from-background to-card flex items-center justify-center shadow-md">
                     <ShoppingCart className="w-10 h-10 text-muted-foreground" />
                   </div>
                 )}

@@ -93,7 +93,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-background to-muted dark:from-slate-800 dark:to-slate-700 p-4 rounded-lg border border-border dark:border-border space-y-2">
+            <div className="bg-gradient-to-r from-background to-muted dark:from-background dark:to-card p-4 rounded-lg border border-border dark:border-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">대여 수수료</span>
                 <span className="font-bold text-foreground">{fee.toLocaleString()}원</span>

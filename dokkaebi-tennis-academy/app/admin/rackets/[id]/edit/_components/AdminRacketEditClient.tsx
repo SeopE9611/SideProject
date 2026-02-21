@@ -64,7 +64,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:from-background dark:via-muted dark:to-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-border dark:border-border p-8">
             <div className="space-y-4">
@@ -80,7 +80,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
 
   if (error || !data?.id) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:from-background dark:via-muted dark:to-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-card dark:bg-card rounded-xl shadow-sm border border-destructive dark:border-destructive p-8 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
@@ -95,7 +95,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:from-background dark:via-muted dark:to-card">
       <div className="relative overflow-hidden bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>

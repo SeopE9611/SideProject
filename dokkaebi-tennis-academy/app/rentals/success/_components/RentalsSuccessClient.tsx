@@ -87,7 +87,7 @@ export default function RentalsSuccessClient({ data }: Props) {
   const refundHolder = data.refundAccount?.holder || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
   const refundBankInfo = refundBankKey ? (bankLabelMap as any)[refundBankKey] : null;
   return (
-    <div className="min-h-full bg-gradient-to-br from-slate-50 via-muted to-card dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card text-white dark:from-background dark:via-muted dark:to-card">
         <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
@@ -123,7 +123,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
-                <div className="p-4 bg-gradient-to-r from-slate-50/50 to-card dark:from-slate-700/50 dark:to-slate-600/30 rounded-lg border border-border dark:border-border">
+                <div className="p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border dark:border-border">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
@@ -204,7 +204,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               </div>
             </CardContent>
 
-            <CardFooter className="bg-gradient-to-r from-slate-50/50 via-muted to-card dark:from-slate-800/50 dark:via-slate-700/30 dark:to-slate-600/30 p-6">
+            <CardFooter className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card p-6">
               <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <Button
                   className="flex-1 h-12 bg-gradient-to-r from-background via-muted to-card hover:from-background hover:via-muted hover:to-card shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
