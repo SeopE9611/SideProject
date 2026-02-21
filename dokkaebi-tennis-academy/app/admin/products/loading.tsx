@@ -15,74 +15,74 @@ export default function ProductsLoading() {
     <div className="min-h-full flex flex-col p-6 space-y-8">
       <div className="mb-2">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
+          <div className="bg-card rounded-full p-3 shadow-md">
             <Package className="h-8 w-8 text-primary" />
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">상품 관리</h1>
-            <p className="mt-2 text-base text-muted-foreground dark:text-muted-foreground">테니스 스트링 상품을 효율적으로 관리하세요</p>
+            <p className="mt-2 text-base text-muted-foreground">테니스 스트링 상품을 효율적으로 관리하세요</p>
           </div>
         </div>
       </div>
 
       {/* 전역 통계 카드: 라벨은 실 UI, 숫자만 스켈레톤 */}
       <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 상품</p>
+                <p className="text-sm font-medium text-muted-foreground">전체 상품</p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-primary dark:bg-primary rounded-xl p-3">
-                <Package className="h-6 w-6 text-primary dark:text-primary" />
+              <div className="bg-primary rounded-xl p-3">
+                <Package className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">판매 중</p>
+                <p className="text-sm font-medium text-muted-foreground">판매 중</p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-primary dark:bg-primary rounded-xl p-3">
-                <CheckCircle className="h-6 w-6 text-primary dark:text-primary" />
+              <div className="bg-primary rounded-xl p-3">
+                <CheckCircle className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">재고 부족</p>
+                <p className="text-sm font-medium text-muted-foreground">재고 부족</p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-3">
-                <AlertTriangle className="h-6 w-6 text-warning dark:text-warning" />
+              <div className="bg-warning/10 rounded-xl p-3">
+                <AlertTriangle className="h-6 w-6 text-warning" />
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">품절</p>
+                <p className="text-sm font-medium text-muted-foreground">품절</p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-destructive/10 dark:bg-destructive/10 rounded-xl p-3">
-                <XCircle className="h-6 w-6 text-destructive dark:text-destructive" />
+              <div className="bg-destructive/10 rounded-xl p-3">
+                <XCircle className="h-6 w-6 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -90,12 +90,12 @@ export default function ProductsLoading() {
       </section>
 
       {/* 리스트 카드: 헤더/검색 영역은 실제 UI 비슷하게, 본문은 테이블 스켈레톤 */}
-      <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm flex-1 min-h-0 flex flex-col">
+      <Card className="border-0 bg-card shadow-lg backdrop-blur-sm flex-1 min-h-0 flex flex-col">
         <CardHeader className="pb-4 shrink-0">
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
               <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
-              <CardDescription className="text-muted-foreground dark:text-muted-foreground">목록을 불러오는 중…</CardDescription>
+              <CardDescription className="text-muted-foreground">목록을 불러오는 중…</CardDescription>
             </div>
             <Button disabled className="opacity-70">
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -117,9 +117,9 @@ export default function ProductsLoading() {
           </div>
 
           {/* 테이블 스켈레톤: 고정 높이로 CLS 방지 */}
-          <div className="overflow-hidden rounded-lg border border-border dark:border-border">
+          <div className="overflow-hidden rounded-lg border border-border">
             <Table className="table-fixed">
-              <TableHeader className="bg-card dark:bg-card sticky top-0 z-10">
+              <TableHeader className="bg-card sticky top-0 z-10">
                 <TableRow>
                   {['스트링명', '브랜드', '게이지', '재질', '가격', '재고', '상태', '관리'].map((h) => (
                     <TableHead key={h}>{h}</TableHead>

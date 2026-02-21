@@ -45,5 +45,13 @@
 3. 승격 후에도 남는 `dark:*`는 아래에 이유를 기록한다.
 4. **의미 역전 금지**: 다크 모드에서 본문/핵심 라벨을 `text-muted-foreground`로 낮추거나, 보조 설명/메타를 `text-foreground`로 올리지 않는다.
 
+
+## 정리 적용 체크 (동일 토큰 중복 제거)
+
+- [x] `bg-(muted|card|background) dark:bg-(muted|card|background)` 중복 제거 적용
+- [x] `border-border dark:border-border` 중복 제거 적용
+- [x] `text-muted-foreground dark:text-muted-foreground` 중복 제거 적용
+- [x] 적용 파일군: `components/ui/skeleton.tsx`, `components/ui/table.tsx`, `app/reviews/write/page.tsx`, `app/admin/products/loading.tsx`, `app/admin/rackets/_components/AdminRacketsClient.tsx`
+
 ## dark 전용 클래스 유지 사유 기록
 - 현재 없음.
