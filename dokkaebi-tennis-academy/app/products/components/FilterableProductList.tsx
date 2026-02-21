@@ -538,7 +538,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="bp-lg:hidden h-9 px-3 border-border dark:border-border hover:bg-primary dark:hover:bg-primary shrink-0"
+                className="bp-lg:hidden h-9 px-3 border-border hover:bg-primary dark:hover:bg-primary shrink-0"
                 aria-expanded={showFilters}
                 aria-label="필터 열기"
               >
@@ -549,7 +549,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
             <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
               {/* 뷰 모드 토글 */}
-              <div className="flex items-center border border-border dark:border-border rounded-lg p-1 bg-card dark:bg-card">
+              <div className="flex items-center border border-border rounded-lg p-1 bg-card">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
@@ -570,7 +570,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
               {/* 정렬 */}
               <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card dark:bg-card text-sm">
+                <SelectTrigger className="h-9 w-[150px] bp-sm:w-[180px] rounded-lg border-2 focus:border-border dark:focus:border-border bg-card text-sm">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-card dark:border-border">
@@ -604,7 +604,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               </div>
               <h3 className="text-xl font-semibold mb-2 text-foreground">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-              <Button onClick={handleResetAll} variant="outline" className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
+              <Button onClick={handleResetAll} variant="outline" className="border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
                 필터 초기화
               </Button>
             </div>
@@ -624,7 +624,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
                 <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
-                  <div className="h-4 w-4 rounded-full border-2 border-border dark:border-border border-t-transparent animate-spin" />
+                  <div className="h-4 w-4 rounded-full border-2 border-border border-t-transparent animate-spin" />
                   <span className="text-muted-foreground">더 불러오는 중...</span>
                 </div>
               )}

@@ -1935,7 +1935,7 @@ export default function StringServiceApplyPage() {
 
   if (shouldShowEntryChooser)
     return (
-      <div className="min-h-full bg-card dark:bg-card bp-lg:bg-background bp-lg:from-background bp-lg:via-muted bp-lg: bp-lg:dark:from-background bp-lg:dark:via-muted bp-lg:dark:to-card">
+      <div className="min-h-full bg-card bp-lg:bg-background bp-lg:from-background bp-lg:via-muted bp-lg: bp-lg:dark:from-background bp-lg:dark:via-muted bp-lg:dark:to-card">
         {/* Hero Section */}
         <ApplyHero />
 
@@ -1943,8 +1943,8 @@ export default function StringServiceApplyPage() {
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
           {/* Section Header */}
           <div className="text-center mb-8 bp-sm:mb-10">
-            <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground dark:text-foreground">어떤 방식으로 진행할까요?</h2>
-            <p className="mt-2 text-muted-foreground dark:text-muted-foreground text-sm bp-sm:text-base">원하는 방식을 선택해주세요</p>
+            <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">어떤 방식으로 진행할까요?</h2>
+            <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">원하는 방식을 선택해주세요</p>
           </div>
 
           {/* Option Cards */}
@@ -1953,11 +1953,11 @@ export default function StringServiceApplyPage() {
             <button
               type="button"
               onClick={() => router.push('/products?from=apply')}
-              className="group relative bg-card dark:bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border dark:border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950"
+              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950"
             >
               {/* Recommended Badge */}
               <div className="absolute -top-2.5 left-5">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-card dark:bg-card text-foreground dark:text-foreground">추천</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-card text-foreground">추천</span>
               </div>
 
               {/* Icon */}
@@ -1966,11 +1966,11 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground dark:text-foreground mb-1.5">스트링 구매하고 신청</h3>
-              <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">스트링 결제 후 신청서가 자동으로 연결돼요</p>
+              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">스트링 구매하고 신청</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">스트링 결제 후 신청서가 자동으로 연결돼요</p>
 
               {/* Arrow indicator */}
-              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground dark:text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">
+              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">
                 <span>스트링 보러가기</span>
                 <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -1979,10 +1979,10 @@ export default function StringServiceApplyPage() {
             </button>
 
             {/* Option 2: 라켓 고르고 신청 */}
-            <div className="relative bg-card dark:bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border dark:border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
+            <div className="relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
               {/* Recommended Badge */}
               <div className="absolute -top-2.5 left-5">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-card dark:bg-card text-foreground dark:text-foreground">추천</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-card text-foreground">추천</span>
               </div>
 
               {/* Icon */}
@@ -1991,8 +1991,8 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground dark:text-foreground mb-1.5">라켓 고르고 신청</h3>
-              <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed mb-5">구매·대여 후 스트링까지 함께 신청해요</p>
+              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">라켓 고르고 신청</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">구매·대여 후 스트링까지 함께 신청해요</p>
 
               {/* Action Buttons */}
               <div className="flex gap-2">
@@ -2017,11 +2017,11 @@ export default function StringServiceApplyPage() {
             <button
               type="button"
               onClick={() => router.push('/services/apply?mode=single')}
-              className="group relative bg-card dark:bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border dark:border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950"
+              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950"
             >
               {/* Badge */}
               <div className="absolute -top-2.5 left-5">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted dark:bg-card text-muted-foreground dark:text-muted-foreground">직접입력</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted dark:bg-card text-muted-foreground">직접입력</span>
               </div>
 
               {/* Icon */}
@@ -2030,12 +2030,12 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground dark:text-foreground mb-1.5">신청서만 작성</h3>
-              <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">이미 라켓·스트링이 있다면 바로 작성해요</p>
+              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">신청서만 작성</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">이미 라켓·스트링이 있다면 바로 작성해요</p>
               <p className="mt-1 text-xs text-primary dark:text-primary">금액·결제정보 자동 반영 없음</p>
 
               {/* Arrow indicator */}
-              <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground dark:text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">
+              <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">
                 <span>단독 신청하기</span>
                 <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -2046,11 +2046,11 @@ export default function StringServiceApplyPage() {
 
           {/* Info Banner */}
           <div className="mt-6 bp-sm:mt-8 max-w-5xl mx-auto">
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-background dark:bg-card border border-border dark:border-border">
-              <svg className="w-5 h-5 text-muted-foreground dark:text-muted-foreground flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-background dark:bg-card border border-border">
+              <svg className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
-              <p className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 결제(주문) 이후 신청으로 진행하면 <span className="font-medium text-foreground">금액·결제정보가 자동 반영</span>되어 실수 가능성이 줄어들어요.
               </p>
             </div>
@@ -2060,43 +2060,43 @@ export default function StringServiceApplyPage() {
           <div className="my-8 bp-sm:my-10 max-w-5xl mx-auto">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border dark:border-border" />
+                <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background dark:bg-card px-4 text-sm text-muted-foreground dark:text-muted-foreground">또는</span>
+                <span className="bg-background dark:bg-card px-4 text-sm text-muted-foreground">또는</span>
               </div>
             </div>
           </div>
 
           {/* Orders/Rentals Section */}
           <div className="max-w-5xl mx-auto">
-            <div className="bg-card dark:bg-card rounded-2xl p-5 bp-sm:p-6 border border-border dark:border-border">
+            <div className="bg-card rounded-2xl p-5 bp-sm:p-6 border border-border">
               <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <svg className="w-5 h-5 text-muted-foreground dark:text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
                       />
                     </svg>
-                    <h3 className="text-base bp-sm:text-lg font-semibold text-foreground dark:text-foreground">내 주문/대여 내역에서 이어서</h3>
+                    <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">내 주문/대여 내역에서 이어서</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">마이페이지에서 주문/대여를 선택하면 신청서로 자동 연결돼요</p>
+                  <p className="text-sm text-muted-foreground">마이페이지에서 주문/대여를 선택하면 신청서로 자동 연결돼요</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => router.push('/mypage?tab=orders')}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border dark:border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
+                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
                   >
                     주문 내역
                   </button>
                   <button
                     type="button"
                     onClick={() => router.push('/mypage?tab=rentals')}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border dark:border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
+                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
                   >
                     대여 내역
                   </button>
@@ -2109,7 +2109,7 @@ export default function StringServiceApplyPage() {
     );
 
   return (
-    <div className="min-h-full bg-card dark:bg-card bp-lg:bg-background bp-lg:from-background bp-lg:via-muted bp-lg: bp-lg:dark:from-background bp-lg:dark:via-muted bp-lg:dark:to-card">
+    <div className="min-h-full bg-card bp-lg:bg-background bp-lg:from-background bp-lg:via-muted bp-lg: bp-lg:dark:from-background bp-lg:dark:via-muted bp-lg:dark:to-card">
       {/* Hero Section */}
       <ApplyHero />
 
@@ -2125,7 +2125,7 @@ export default function StringServiceApplyPage() {
           <div className="relative">
             {/* 중앙 메인 폼 */}
             <div className="mx-auto w-full md:w-[800px]">
-              <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
+              <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
                 <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />

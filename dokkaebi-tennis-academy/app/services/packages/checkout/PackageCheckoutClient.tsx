@@ -521,7 +521,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
  </div>
  <CardContent className="p-6">
- <div className={`p-6 rounded-xl border-2 border-border dark:border-border ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
+ <div className={`p-6 rounded-xl border-2 border-border ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
  <div className="flex items-center gap-4 mb-4">
  <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
  {selectedPackage.variant === 'primary' ? (
@@ -546,15 +546,15 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-accent">{selectedPackage.sessions}회</div>
- <div className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 교체</div>
+ <div className="text-sm text-muted-foreground">스트링 교체</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-foreground">{selectedPackage.validityPeriod}</div>
- <div className="text-sm text-muted-foreground dark:text-muted-foreground">유효기간</div>
+ <div className="text-sm text-muted-foreground">유효기간</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
  <div className="text-2xl font-bold text-primary">{perSessionPrice.toLocaleString()}원</div>
- <div className="text-sm text-muted-foreground dark:text-muted-foreground">회당 가격</div>
+ <div className="text-sm text-muted-foreground">회당 가격</div>
  </div>
  </div>
 
@@ -662,14 +662,14 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </div>
  </div>
 
- <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
  <div className="flex items-center space-x-2">
  <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!user} />
  <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-accent dark:text-accent'}`}>
  이 정보를 저장
  </label>
  </div>
- {!user && <p className="text-xs text-muted-foreground dark:text-muted-foreground ml-6 mt-1">로그인 후 정보를 저장할 수 있습니다.</p>}
+ {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 정보를 저장할 수 있습니다.</p>}
  </div>
  </div>
  </CardContent>
@@ -694,7 +694,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  }}
  >
  {/* 매장 방문 */}
- <div className="flex items-center space-x-3 p-4 bg-primary  to-accent dark:from-primary dark:to-accent rounded-lg border border-border dark:border-border">
+ <div className="flex items-center space-x-3 p-4 bg-primary  to-accent dark:from-primary dark:to-accent rounded-lg border border-border">
  <RadioGroupItem value="방문이용" id="방문이용" />
  <Label htmlFor="방문이용" className="flex-1 cursor-pointer font-medium">
  매장 방문 (도깨비 테니스 아카데미 방문)
@@ -704,7 +704,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  {/* 출장 서비스 – 비활성화 */}
  <div
- className="flex items-center space-x-3 p-4 bg-primary from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border dark:border-border opacity-50 cursor-not-allowed"
+ className="flex items-center space-x-3 p-4 bg-primary from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border opacity-50 cursor-not-allowed"
  aria-disabled="true"
  onClick={(e) => e.preventDefault()}
  >
@@ -718,7 +718,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </RadioGroup>
 
  {serviceMethod === '출장서비스' && (
- <div className="space-y-4 mt-6 p-4 bg-primary from-background  dark:from-background dark:to-card rounded-lg border border-border dark:border-border">
+ <div className="space-y-4 mt-6 p-4 bg-primary from-background  dark:from-background dark:to-card rounded-lg border border-border">
  <div className="space-y-4">
  <div className="flex items-center justify-between">
  <Label htmlFor="service-postal" className="flex items-center gap-2">
@@ -742,7 +742,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <Input id="service-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
 
- <div className="bg-primary  to-card dark:from-background dark:to-card p-3 rounded-lg border border-border dark:border-border">
+ <div className="bg-primary  to-card dark:from-background dark:to-card p-3 rounded-lg border border-border">
  <p className="text-sm text-warning dark:text-warning font-medium">출장 서비스는 서울/경기 지역에 한해 제공되며, 별도의 출장비가 발생할 수 있습니다.</p>
  </div>
  </div>
@@ -772,7 +772,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <div className="space-y-3">
  <Label>결제 방법</Label>
  <RadioGroup defaultValue="bank-transfer" className="space-y-3">
- <div className="flex items-center space-x-3 p-4 bg-primary  to-accent dark:from-primary dark:to-accent rounded-lg border-2 border-border dark:border-border">
+ <div className="flex items-center space-x-3 p-4 bg-primary  to-accent dark:from-primary dark:to-accent rounded-lg border-2 border-border">
  <RadioGroupItem value="bank-transfer" id="bank-transfer" />
  <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
  무통장입금
@@ -817,7 +817,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-primary">{fieldErrors.depositor}</p>}
  </div>
 
- <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
  <div className="flex items-center gap-2 mb-3">
  <Shield className="h-5 w-5 text-accent" />
  <p className="font-semibold text-accent dark:text-accent">무통장입금 안내</p>
@@ -928,19 +928,19 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <CardContent className="p-6 space-y-6">
  <div className="space-y-4">
  <div className="flex justify-between items-center">
- <span className="text-muted-foreground dark:text-muted-foreground">패키지 금액</span>
+ <span className="text-muted-foreground">패키지 금액</span>
  <span className="font-semibold text-lg">{selectedPackage.price.toLocaleString()}원</span>
  </div>
 
  {hasDiscount && (
  <>
  <div className="flex justify-between items-center">
- <span className="text-muted-foreground dark:text-muted-foreground">정가</span>
+ <span className="text-muted-foreground">정가</span>
  <span className="text-muted-foreground line-through">{selectedPackage.originalPrice!.toLocaleString()}원</span>
  </div>
 
  <div className="flex justify-between items-center">
- <span className="text-muted-foreground dark:text-muted-foreground">할인 금액</span>
+ <span className="text-muted-foreground">할인 금액</span>
  <span className="text-primary font-semibold">-{discountAmount.toLocaleString()}원</span>
  </div>
  </>
@@ -954,7 +954,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </div>
  </div>
 
- <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
  <div className="flex items-center gap-2 text-primary dark:text-foreground mb-2">
  <Star className="h-4 w-4" />
  <span className="font-semibold">패키지 혜택</span>
@@ -967,7 +967,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </div>
  </div>
 
- <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border dark:border-border">
+ <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
  <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">패키지 안내</span>

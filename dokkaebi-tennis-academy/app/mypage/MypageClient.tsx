@@ -236,7 +236,7 @@ export default function MypageClient({ user }: Props) {
               <Tabs value={currentTab} onValueChange={handleTabChange}>
                 <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm mb-6 bp-sm:mb-8">
                   <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
-                    <TabsList className="h-auto w-full p-1 bg-muted dark:bg-muted grid grid-cols-4 gap-1 bp-md:grid-cols-9">
+                    <TabsList className="h-auto w-full p-1 bg-muted grid grid-cols-4 gap-1 bp-md:grid-cols-9">
                       <TabsTrigger
                         value="activity"
                         className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
@@ -313,7 +313,7 @@ export default function MypageClient({ user }: Props) {
                   <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="border-b p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
-                        <div className="rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg bg-muted dark:bg-muted">
+                        <div className="rounded-xl bp-sm:rounded-2xl p-2.5 bp-sm:p-3 shadow-lg bg-muted">
                           <Layers className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -383,7 +383,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className={pageTone.sectionHeader}>
                       <div className="flex items-center gap-3">
                         <div className={pageTone.iconSurface}>
-                          <Briefcase className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-foreground dark:text-foreground" />
+                          <Briefcase className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">대여 내역</CardTitle>

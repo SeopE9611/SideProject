@@ -48,14 +48,14 @@ function getActionMeta(action: HistoryItem['action']) {
         label: '대여 시작',
         Icon: Play,
         wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-foreground',
+        iconClasses: 'text-foreground',
       };
     case 'returned':
       return {
         label: '반납 완료',
         Icon: RotateCcw,
         wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-foreground',
+        iconClasses: 'text-foreground',
       };
     case 'cancel-request':
       return {

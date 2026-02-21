@@ -83,7 +83,7 @@ export default function RacketCompareTray() {
                       key={it.id}
                       className={cn(
                         'group relative flex h-16 bp-sm:h-18 items-center gap-2 rounded-lg px-2',
-                        'bg-card dark:bg-card/80',
+                        'bg-card/80',
                         'ring-1 ring-primary/20 dark:ring-primary/30',
                         'transition-all duration-200',
                         'hover:ring-primary/40 hover:shadow-sm',

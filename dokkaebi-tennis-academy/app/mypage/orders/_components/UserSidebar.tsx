@@ -105,14 +105,14 @@ export function UserSidebar() {
               <div
                 className={cn(
                   'flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 shadow-sm',
-                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted dark:bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-card'
+                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-card'
                 )}
               >
                 <Icon className="w-4 h-4" />
               </div>
               <span className={cn('font-medium transition-colors duration-300', isActive ? 'text-foreground' : 'text-foreground group-hover:text-foreground dark:group-hover:text-muted-foreground')}>{label}</span>
               <ChevronRight
-                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-muted-foreground transform translate-x-1' : 'text-muted-foreground dark:text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-muted-foreground')}
+                className={cn('w-4 h-4 ml-auto transition-all duration-300', isActive ? 'text-muted-foreground transform translate-x-1' : 'text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-muted-foreground')}
               />
             </Link>
           </Button>

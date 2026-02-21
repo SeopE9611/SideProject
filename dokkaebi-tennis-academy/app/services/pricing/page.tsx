@@ -103,13 +103,13 @@ export default function PricingPage() {
             <Wrench className="h-5 w-5 text-primary dark:text-primary" />
             <span className="text-sm font-semibold text-primary dark:text-primary">장착 서비스 요금</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground dark:text-foreground mb-4">장착 비용 안내</h1>
-          <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">투명하고 합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">장착 비용 안내</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">투명하고 합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다</p>
         </div>
 
         {/* Service Plans */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground dark:text-foreground mb-8 text-center">장착 서비스 요금</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8 text-center">장착 서비스 요금</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {basicServices.map((service, index) => (
               <Card key={index} className={`relative hover:shadow-lg transition-all duration-300 ${service.popular ? 'ring-2 ring-ring dark:ring-ring' : ''}`}>
@@ -124,13 +124,13 @@ export default function PricingPage() {
                 <CardHeader className="text-center">
                   <CardTitle className="text-xl">{service.name}</CardTitle>
                   <div className="text-3xl font-bold text-primary dark:text-primary">{service.price}</div>
-                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     소요시간: {service.time}
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground dark:text-muted-foreground mb-4 text-center">{service.description}</p>
+                  <p className="text-muted-foreground mb-4 text-center">{service.description}</p>
                   <ul className="space-y-2">
                     {service.features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
@@ -150,7 +150,7 @@ export default function PricingPage() {
 
         {/* String Prices */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground dark:text-foreground mb-8 text-center">스트링 가격대별 안내</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8 text-center">스트링 가격대별 안내</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {stringPrices.map((category, index) => (
               <Card key={index} className="hover:shadow-lg transition-all duration-300">
@@ -163,12 +163,12 @@ export default function PricingPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {category.ranges.map((range, i) => (
-                      <div key={i} className="border-l-4 border-border dark:border-border pl-4">
+                      <div key={i} className="border-l-4 border-border pl-4">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-foreground dark:text-foreground">{range.name}</span>
+                          <span className="font-semibold text-foreground">{range.name}</span>
                           <Badge variant="secondary">{range.price}</Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground dark:text-muted-foreground">{range.examples}</p>
+                        <p className="text-sm text-muted-foreground">{range.examples}</p>
                       </div>
                     ))}
                   </div>
@@ -180,16 +180,16 @@ export default function PricingPage() {
 
         {/* Additional Services */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground dark:text-foreground mb-8 text-center">추가 서비스</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-8 text-center">추가 서비스</h2>
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {additionalServices.map((service, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-background dark:bg-card rounded-lg">
                     <div>
-                      <div className="font-semibold text-foreground dark:text-foreground">{service.name}</div>
-                      <div className="text-sm text-muted-foreground dark:text-muted-foreground">{service.time}</div>
-                      <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-2">{service.description}</p>
+                      <div className="font-semibold text-foreground">{service.name}</div>
+                      <div className="text-sm text-muted-foreground">{service.time}</div>
+                      <p className="text-sm text-muted-foreground mt-2">{service.description}</p>
                     </div>
                     <div className="font-bold text-primary dark:text-primary">{service.price}</div>
                   </div>
@@ -200,11 +200,11 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <Card className="bg-primary  to-card dark:from-background dark:to-card border-border dark:border-border">
+        <Card className="bg-primary  to-card dark:from-background dark:to-card border-border">
           <CardContent className="p-8 text-center">
             <Zap className="h-12 w-12 text-primary dark:text-primary mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-foreground dark:text-foreground mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>
-            <p className="text-muted-foreground dark:text-muted-foreground mb-6 max-w-2xl mx-auto">전문가가 직접 장착하는 프리미엄 서비스를 합리적인 가격에 만나보세요</p>
+            <h3 className="text-2xl font-bold text-foreground mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">전문가가 직접 장착하는 프리미엄 서비스를 합리적인 가격에 만나보세요</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild>
                 <Link href="/services">장착 서비스 예약</Link>

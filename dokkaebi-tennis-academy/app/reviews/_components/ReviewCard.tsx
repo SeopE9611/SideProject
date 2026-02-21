@@ -191,7 +191,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
               {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
               {item.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}
             </Badge>
-            {!!headerTitle && <span className="text-sm font-semibold text-foreground bg-muted dark:bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
+            {!!headerTitle && <span className="text-sm font-semibold text-foreground bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
           </div>
 
           <div className="flex items-center gap-2">
@@ -304,14 +304,14 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         {isMasked ? (
           <MaskedBlock className="mt-1" />
         ) : (
-          <div className="bg-muted dark:bg-muted rounded-2xl p-4">
+          <div className="bg-muted rounded-2xl p-4">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.content}</p>
           </div>
         )}
 
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
-          <div className="flex items-center justify-between p-3 bg-muted dark:bg-muted rounded-2xl">
+          <div className="flex items-center justify-between p-3 bg-muted rounded-2xl">
             <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
@@ -326,7 +326,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                     setViewerIndex(idx);
                     setOpen(true);
                   }}
-                  className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted dark:bg-muted focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 transition-transform"
+                  className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 transition-transform"
                   aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
                 >
                   <Image src={src || '/placeholder.svg'} alt={`photo-${idx}`} fill className="object-cover" />

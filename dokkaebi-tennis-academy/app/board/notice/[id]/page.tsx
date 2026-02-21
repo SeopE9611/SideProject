@@ -151,7 +151,7 @@ export default function NoticeDetailPage() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
-              <div className="mb-2 text-sm text-muted-foreground dark:text-muted-foreground">
+              <div className="mb-2 text-sm text-muted-foreground">
                 <span className="font-medium text-success dark:text-success">고객센터</span>
                 <span className="mx-1">›</span>
                 <span>공지사항</span>
@@ -173,7 +173,7 @@ export default function NoticeDetailPage() {
           </div>
 
           <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-            <CardHeader className="border-b border-border dark:border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
+            <CardHeader className="border-b border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
@@ -221,7 +221,7 @@ export default function NoticeDetailPage() {
                         <h1 className="text-3xl font-bold text-foreground leading-tight">{notice.title}</h1>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground dark:text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           <span className="font-medium">작성일</span>
@@ -263,7 +263,7 @@ export default function NoticeDetailPage() {
             <CardContent className="p-8 space-y-8">
               {!isLoading && error && (
                 <div className="text-center py-10">
-                  <p className="text-muted-foreground dark:text-muted-foreground">{errorBody}</p>
+                  <p className="text-muted-foreground">{errorBody}</p>
                 </div>
               )}
               {!isLoading && !error && notice && (
@@ -361,7 +361,7 @@ export default function NoticeDetailPage() {
                             return (
                               <div
                                 key={`file-${i}`}
-                                className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border dark:border-border transition-colors duration-200"
+                                className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className="flex-shrink-0 w-10 h-10 bg-primary dark:bg-primary rounded-lg flex items-center justify-center">
@@ -369,7 +369,7 @@ export default function NoticeDetailPage() {
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <div className="font-medium text-foreground truncate">{name}</div>
-                                    {size && <div className="text-sm text-muted-foreground dark:text-muted-foreground">{size}</div>}
+                                    {size && <div className="text-sm text-muted-foreground">{size}</div>}
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -414,9 +414,9 @@ export default function NoticeDetailPage() {
               </div>
             )}
 
-            <CardFooter className="border-t border-border dark:border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6">
+            <CardFooter className="border-t border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6">
               <div className="w-full flex justify-center">
-                <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:bg-card dark:hover:bg-card">
+                <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:hover:bg-card">
                   <Link href="/board/notice">
                     <ArrowUp className="mr-2 h-4 w-4" />
                     목록으로 돌아가기

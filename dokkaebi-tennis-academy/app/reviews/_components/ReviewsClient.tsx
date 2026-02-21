@@ -115,7 +115,7 @@ export default function ReviewsClient() {
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-background to-card bg-clip-text text-transparent">고객 리뷰</h1>
           </div>
-          <p className="text-muted-foreground dark:text-muted-foreground max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
         </div>
 
         {/* Control panel with tennis court styling */}
@@ -125,7 +125,7 @@ export default function ReviewsClient() {
             <div className="flex flex-wrap items-center gap-4">
               {/* Tabs with tennis court styling */}
               <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                <TabsList className="bg-muted dark:bg-muted rounded-full p-1">
+                <TabsList className="bg-muted rounded-full p-1">
                   <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
                     전체
                   </TabsTrigger>
@@ -140,7 +140,7 @@ export default function ReviewsClient() {
 
               {/* Sort dropdown */}
               <Select value={sort} onValueChange={(v) => setSort(v as any)}>
-                <SelectTrigger className="w-[150px] rounded-full border-border dark:border-border">
+                <SelectTrigger className="w-[150px] rounded-full border-border">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,7 +152,7 @@ export default function ReviewsClient() {
 
               {/* Rating filter */}
               <Select value={rating} onValueChange={(v) => setRating(v as RatingFilter)}>
-                <SelectTrigger className="w-[130px] rounded-full border-border dark:border-border">
+                <SelectTrigger className="w-[130px] rounded-full border-border">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,7 +212,7 @@ export default function ReviewsClient() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold text-foreground">리뷰가 없습니다</h3>
-                  <p className="text-sm text-muted-foreground dark:text-muted-foreground">조건에 맞는 리뷰를 찾을 수 없습니다.</p>
+                  <p className="text-sm text-muted-foreground">조건에 맞는 리뷰를 찾을 수 없습니다.</p>
                 </div>
               </div>
             )}
@@ -224,7 +224,7 @@ export default function ReviewsClient() {
                   onClick={() => setSize(size + 1)}
                   disabled={isValidating}
                   variant="outline"
-                  className="rounded-full px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border dark:border-border hover:bg-primary dark:hover:bg-muted"
+                  className="rounded-full px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border hover:bg-primary dark:hover:bg-muted"
                 >
                   {isValidating ? (
                     <>
@@ -235,7 +235,7 @@ export default function ReviewsClient() {
                   )}
                 </Button>
               ) : (
-                <div className="text-sm text-muted-foreground dark:text-muted-foreground py-6 text-center">마지막 페이지입니다</div>
+                <div className="text-sm text-muted-foreground py-6 text-center">마지막 페이지입니다</div>
               )}
             </div>
           </>

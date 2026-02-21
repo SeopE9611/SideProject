@@ -153,7 +153,7 @@ const ProductCard = React.memo(
 
     if (viewMode === 'list') {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card backdrop-blur-sm border border-border dark:border-border hover:border-border dark:hover:border-border relative">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card backdrop-blur-sm border border-border hover:border-border dark:hover:border-border relative">
           <div className="absolute inset-0 opacity-5 dark:opacity-10">
             <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
               <rect x="0" y="0" width="400" height="200" stroke="currentColor" strokeWidth="2" />
@@ -251,7 +251,7 @@ const ProductCard = React.memo(
 
     return (
       <Link href={detailHref}>
-        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/90 dark:bg-card backdrop-blur-sm border border-border dark:border-border hover:border-border dark:hover:border-border group relative">
+        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/90 dark:bg-card backdrop-blur-sm border border-border hover:border-border dark:hover:border-border group relative">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
@@ -311,10 +311,10 @@ const ProductCard = React.memo(
                   .slice(0, 3)
                   .map(([key, value]) => (
                     <div key={key} className="flex justify-between items-center p-1.5 rounded-md bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
-                      <span className="text-muted-foreground dark:text-muted-foreground font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
+                      <span className="text-muted-foreground font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
                       <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < value ? 'bg-primary' : 'bg-muted dark:bg-muted'}`} />
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < value ? 'bg-primary' : 'bg-muted'}`} />
                         ))}
                       </div>
                     </div>

@@ -624,7 +624,7 @@ export default function LoginPageClient() {
  </div>
 
  <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
- <TabsList className="grid w-full grid-cols-2 bg-muted dark:bg-muted">
+ <TabsList className="grid w-full grid-cols-2 bg-muted">
  <TabsTrigger value="login" className="data-[state=active]:bg-card dark:data-[state=active]:bg-muted data-[state=active]:shadow-md data-[state=active]:text-foreground dark:data-[state=active]:text-foreground font-semibold">
  로그인
  </TabsTrigger>
@@ -638,7 +638,7 @@ export default function LoginPageClient() {
  <div className="space-y-6">
  <div className="text-center">
  <h2 className="text-2xl font-bold text-foreground ">로그인</h2>
- <p className="text-foreground dark:text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
+ <p className="text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
  </div>
 
  <form
@@ -656,7 +656,7 @@ export default function LoginPageClient() {
  </div>
  )} */}
  <div className="space-y-2">
- <Label htmlFor="email" className="text-foreground dark:text-foreground font-medium">
+ <Label htmlFor="email" className="text-foreground font-medium">
  이메일
  </Label>
  <div className="relative">
@@ -672,7 +672,7 @@ export default function LoginPageClient() {
  const pwVal = (document.getElementById('password') as HTMLInputElement | null)?.value ?? '';
  setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
  }}
- className="pl-10 h-12 border-border dark:border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
+ className="pl-10 h-12 border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
  />
  </div>
  {loginFieldErrors.email && (
@@ -684,7 +684,7 @@ export default function LoginPageClient() {
  </div>
 
  <div className="space-y-2">
- <Label htmlFor="password" className="text-foreground dark:text-foreground font-medium">
+ <Label htmlFor="password" className="text-foreground font-medium">
  비밀번호
  </Label>
  <div className="relative">
@@ -700,7 +700,7 @@ export default function LoginPageClient() {
  const emailVal = (document.getElementById('email') as HTMLInputElement | null)?.value ?? '';
  setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
  }}
- className="pl-10 pr-10 h-12 border-border dark:border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
+ className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
  />
  <Button
  type="button"
@@ -721,7 +721,7 @@ export default function LoginPageClient() {
  </div>
 
  <div className="flex items-center justify-between">
- <label className="flex items-center gap-2 text-sm text-foreground dark:text-foreground">
+ <label className="flex items-center gap-2 text-sm text-foreground">
  <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-border text-foreground focus:ring-emerald-500" />
  이메일 저장
  </label>
@@ -733,7 +733,7 @@ export default function LoginPageClient() {
  e.stopPropagation();
  }
  }}
- className="text-sm text-foreground dark:text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
+ className="text-sm text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
  >
  비밀번호 찾기
  </Link>
@@ -758,10 +758,10 @@ export default function LoginPageClient() {
 
  <div className="relative">
  <div className="absolute inset-0 flex items-center">
- <span className="w-full border-t border-border dark:border-border" />
+ <span className="w-full border-t border-border" />
  </div>
  <div className="relative flex justify-center text-xs uppercase">
- <span className="bg-card dark:bg-muted px-4 text-foreground dark:text-foreground font-medium">SNS 계정으로 로그인</span>
+ <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">SNS 계정으로 로그인</span>
  </div>
  </div>
 
@@ -769,14 +769,14 @@ export default function LoginPageClient() {
 
  {showGuestLookup && (
  <div className="text-center">
- <div className="bg-muted rounded-xl p-4 mb-4 border border-border dark:border-border">
+ <div className="bg-muted rounded-xl p-4 mb-4 border border-border">
  <div className="flex items-center justify-center gap-2 mb-3">
- <Shield className="h-5 w-5 text-foreground dark:text-foreground" />
- <p className="text-sm font-semibold text-foreground dark:text-foreground">비회원도 주문하실 수 있습니다</p>
+ <Shield className="h-5 w-5 text-foreground" />
+ <p className="text-sm font-semibold text-foreground">비회원도 주문하실 수 있습니다</p>
  </div>
  <Button
  variant="outline"
- className="w-full border-border dark:border-border text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
+ className="w-full border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
  onClick={() => {
  if (!confirmLeaveIfDirty()) return;
  router.push('/order-lookup');
@@ -795,7 +795,7 @@ export default function LoginPageClient() {
  <div className="space-y-6">
  <div className="text-center">
  <h2 className="text-2xl font-bold text-foreground ">회원가입</h2>
- <p className="text-foreground dark:text-foreground mt-2">도깨비 테니스의 회원이 되어보세요</p>
+ <p className="text-foreground mt-2">도깨비 테니스의 회원이 되어보세요</p>
  </div>
 
  <form onSubmit={handleRegister} className="space-y-6">
@@ -946,7 +946,7 @@ export default function LoginPageClient() {
  <>
  {/* 비밀번호 */}
  <div className="space-y-2">
- <Label className="text-foreground dark:text-foreground font-medium">비밀번호</Label>
+ <Label className="text-foreground font-medium">비밀번호</Label>
  <div className="relative">
  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
@@ -959,7 +959,7 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="비밀번호를 입력하세요"
- className="pl-10 pr-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="pl-10 pr-10 h-12 border-border focus:border-border dark:focus:border-border"
  />
  <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
  {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -975,7 +975,7 @@ export default function LoginPageClient() {
 
  {/* 비밀번호 확인 */}
  <div className="space-y-2">
- <Label className="text-foreground dark:text-foreground font-medium">비밀번호 확인</Label>
+ <Label className="text-foreground font-medium">비밀번호 확인</Label>
  <div className="relative">
  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
@@ -988,7 +988,7 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="비밀번호를 다시 입력하세요"
- className="pl-10 pr-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="pl-10 pr-10 h-12 border-border focus:border-border dark:focus:border-border"
  />
  <Button type="button" variant="ghost" size="icon" className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -1005,7 +1005,7 @@ export default function LoginPageClient() {
  )}
  {/* 이름 */}
  <div className="space-y-2">
- <Label className="text-foreground dark:text-foreground font-medium">이름</Label>
+ <Label className="text-foreground font-medium">이름</Label>
  <div className="relative">
  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
@@ -1017,7 +1017,7 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="이름을 입력하세요"
- className="pl-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="pl-10 h-12 border-border focus:border-border dark:focus:border-border"
  />
  </div>
  {registerFieldErrors.name && (
@@ -1030,7 +1030,7 @@ export default function LoginPageClient() {
 
  {/* 연락처 */}
  <div className="space-y-2">
- <Label className="text-foreground dark:text-foreground font-medium">연락처</Label>
+ <Label className="text-foreground font-medium">연락처</Label>
  <div className="relative">
  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
  <Input
@@ -1044,7 +1044,7 @@ export default function LoginPageClient() {
  placeholder="연락처를 입력하세요 ('-' 제외)"
  inputMode="numeric"
  maxLength={13}
- className="pl-10 h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="pl-10 h-12 border-border focus:border-border dark:focus:border-border"
  />
  </div>
  {registerFieldErrors.phone && (
@@ -1058,20 +1058,20 @@ export default function LoginPageClient() {
  {/* 우편번호 */}
  <div className="bp-lg:col-span-2 space-y-2">
  <div className="flex items-center justify-between">
- <Label className="text-foreground dark:text-foreground font-medium">우편번호</Label>
+ <Label className="text-foreground font-medium">우편번호</Label>
  <Button
  id="register-find-postcode"
  type="button"
  variant="outline"
  size="sm"
- className="border-border dark:border-border text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
+ className="border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
  onClick={handleFindPostcode}
  >
  <MapPin className="mr-2 h-4 w-4" />
  우편번호 찾기
  </Button>
  </div>
- <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-muted dark:bg-muted cursor-not-allowed max-w-xs h-12 border-border dark:border-border" />
+ <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-muted cursor-not-allowed max-w-xs h-12 border-border" />
  {registerFieldErrors.postalCode && (
  <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
@@ -1082,8 +1082,8 @@ export default function LoginPageClient() {
 
  {/* 기본 주소 */}
  <div className="bp-lg:col-span-2 space-y-2">
- <Label className="text-foreground dark:text-foreground font-medium">기본 배송지 주소</Label>
- <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-muted dark:bg-muted cursor-not-allowed h-12 border-border dark:border-border" />
+ <Label className="text-foreground font-medium">기본 배송지 주소</Label>
+ <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-muted cursor-not-allowed h-12 border-border" />
  {registerFieldErrors.address && (
  <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
  <AlertCircle className="h-4 w-4" />
@@ -1094,7 +1094,7 @@ export default function LoginPageClient() {
 
  {/* 상세 주소 */}
  <div className="bp-lg:col-span-2 space-y-2">
- <Label className="text-foreground dark:text-foreground font-medium">상세 주소</Label>
+ <Label className="text-foreground font-medium">상세 주소</Label>
  <Input
  id="register-address-detail"
  value={addressDetail}
@@ -1104,7 +1104,7 @@ export default function LoginPageClient() {
  setRegisterFormError('');
  }}
  placeholder="상세 주소를 입력하세요"
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  />
  </div>
  </div>
@@ -1160,10 +1160,10 @@ export default function LoginPageClient() {
  <>
  <div className="relative">
  <div className="absolute inset-0 flex items-center">
- <span className="w-full border-t border-border dark:border-border" />
+ <span className="w-full border-t border-border" />
  </div>
  <div className="relative flex justify-center text-xs uppercase">
- <span className="bg-card dark:bg-muted px-4 text-foreground dark:text-foreground font-medium">SNS 계정으로 가입</span>
+ <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">SNS 계정으로 가입</span>
  </div>
  </div>
  <SocialAuthButtons onKakaoClick={handleKakaoOAuth} onNaverClick={handleNaverOAuth} isRegisterMode={true} />

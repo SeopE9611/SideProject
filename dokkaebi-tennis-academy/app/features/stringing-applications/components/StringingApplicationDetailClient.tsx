@@ -995,12 +995,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     >
                       <div className="flex items-start gap-2">
                         <div className="mt-0.5">
-                          <Ticket className="h-4 w-4 text-foreground dark:text-foreground" />
+                          <Ticket className="h-4 w-4 text-foreground" />
                         </div>
                         <div className="flex-1 text-xs leading-relaxed">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-foreground dark:text-foreground">패키지 사용 정보</span>
-                            <Badge variant="outline" className={data.packageInfo.applied ? 'border-border text-foreground dark:text-foreground' : 'border-border text-muted-foreground '}>
+                            <span className="font-semibold text-foreground">패키지 사용 정보</span>
+                            <Badge variant="outline" className={data.packageInfo.applied ? 'border-border text-foreground' : 'border-border text-muted-foreground '}>
                               {data.packageInfo.applied ? '이번 신청에 패키지 적용' : '이번 신청에는 패키지 미사용'}
                             </Badge>
                           </div>
@@ -1089,8 +1089,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ">
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground dark:text-foreground">스트링 {stringTypeCount}종</span>
-                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground dark:text-foreground">라켓 {racketCount}자루</span>
+                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground">스트링 {stringTypeCount}종</span>
+                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground">라켓 {racketCount}자루</span>
                 </div>
 
                 <div className="text-xs sm:text-sm font-semibold text-accent ">총 장착비 {totalPrice.toLocaleString()}원</div>
@@ -1337,7 +1337,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <div className="space-y-4">
                   {/* 신청 접수 */}
                   <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                       <Clock className="h-5 w-5 text-accent " />
                     </div>
                     <div className="flex-1">
@@ -1349,8 +1349,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 자가 발송(사용자 → 매장) */}
                   {selfShip?.trackingNo && (
                     <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
-                        <Truck className="h-5 w-5 text-foreground dark:text-foreground" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                        <Truck className="h-5 w-5 text-foreground" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground ">자가 발송 완료</p>
@@ -1369,7 +1369,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 매장 발송(매장 → 사용자) */}
                   {invoice?.trackingNumber && (
                     <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                         <Truck className="h-5 w-5 text-accent dark:text-foreground" />
                       </div>
                       <div className="flex-1">
@@ -1387,8 +1387,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                   {/* 전체 상태 요약 */}
                   <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted dark:bg-muted">
-                      <CheckCircle2 className="h-5 w-5 text-foreground dark:text-foreground" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <CheckCircle2 className="h-5 w-5 text-foreground" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground ">현재 상태</p>

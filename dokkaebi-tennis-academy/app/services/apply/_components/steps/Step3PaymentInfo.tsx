@@ -125,7 +125,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                   }}
                   className="h-4 w-4 data-[state=checked]:bg-primary data-[state=checked]:border-border"
                 />
-                <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-muted-foreground dark:text-muted-foreground' : 'cursor-pointer text-xs text-foreground'}>
+                <Label htmlFor="package-optout" className={formData.packageOptOut ? 'cursor-pointer text-xs text-muted-foreground' : 'cursor-pointer text-xs text-foreground'}>
                   이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
                 </Label>
               </div>
@@ -134,14 +134,14 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
         </div>
       ) : (
         /* 패키지 없음 카드 다크모드 적용 */
-        <div className="rounded-2xl border border-border dark:border-border bg-background dark:bg-card p-5">
+        <div className="rounded-2xl border border-border bg-background dark:bg-card p-5">
           <div className="flex items-start gap-3">
-            <div className="h-10 w-10 shrink-0 rounded-full bg-muted dark:bg-card grid place-content-center text-muted-foreground dark:text-muted-foreground">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-muted dark:bg-card grid place-content-center text-muted-foreground">
               <Ticket className="h-5 w-5" />
             </div>
             <div>
               <div className="font-medium dark:text-foreground">패키지가 없거나 잔여 횟수가 없습니다.</div>
-              <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비 제외)</p>
+              <p className="text-sm text-muted-foreground mt-1">패키지를 보유하면 교체비가 0원으로 처리됩니다. (배송/추가옵션비 제외)</p>
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
               name="shippingBank"
               value={formData.shippingBank}
               onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
-              className="w-full border border-border dark:border-border px-3 py-2 rounded-md bg-card dark:bg-card dark:text-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200"
+              className="w-full border border-border px-3 py-2 rounded-md bg-card dark:text-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200"
             >
               <option value="" disabled hidden>
                 입금하실 은행을 선택해주세요.
@@ -172,23 +172,23 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
           </div>
 
           {formData.shippingBank && (bankLabelMap as any)[formData.shippingBank] ? (
-            <div className="bg-primary  to-card dark:from-background dark:to-card border border-border dark:border-border rounded-lg p-6">
+            <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-6">
               <h3 className="font-semibold text-primary dark:text-primary mb-4 flex items-center">
                 <CreditCard className="h-5 w-5 mr-2" />
                 계좌 정보
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border dark:border-border">
-                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">은행</span>
-                  <span className="font-medium text-foreground dark:text-foreground">{(bankLabelMap as any)[formData.shippingBank].label}</span>
+                <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                  <span className="text-sm text-muted-foreground">은행</span>
+                  <span className="font-medium text-foreground">{(bankLabelMap as any)[formData.shippingBank].label}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border dark:border-border">
-                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">계좌번호</span>
-                  <span className="font-mono font-medium text-foreground dark:text-foreground">{(bankLabelMap as any)[formData.shippingBank].account}</span>
+                <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                  <span className="text-sm text-muted-foreground">계좌번호</span>
+                  <span className="font-mono font-medium text-foreground">{(bankLabelMap as any)[formData.shippingBank].account}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border dark:border-border">
-                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">예금주</span>
-                  <span className="font-medium text-foreground dark:text-foreground">{(bankLabelMap as any)[formData.shippingBank].holder}</span>
+                <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                  <span className="text-sm text-muted-foreground">예금주</span>
+                  <span className="font-medium text-foreground">{(bankLabelMap as any)[formData.shippingBank].holder}</span>
                 </div>
               </div>
             </div>

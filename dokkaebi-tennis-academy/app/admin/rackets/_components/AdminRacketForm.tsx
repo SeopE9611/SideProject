@@ -279,7 +279,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border dark:border-border">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border">
           <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-white">
             기본 정보
           </TabsTrigger>
@@ -295,8 +295,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">기본 정보</CardTitle>
@@ -388,8 +388,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="specs" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">상세 스펙</CardTitle>
@@ -502,8 +502,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="rental" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">대여 설정</CardTitle>
@@ -520,7 +520,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
               </div>
 
               {!form.rental.enabled && (
-                <div className="gap-4 pt-4 border-t border-border dark:border-border">
+                <div className="gap-4 pt-4 border-t border-border">
                   <div className="space-y-2">
                     <Label htmlFor="disabledReason">대여 불가 사유</Label>
                     <Textarea
@@ -535,7 +535,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
               )}
 
               {form.rental.enabled && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border dark:border-border">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
                   <div className="space-y-2">
                     <Label htmlFor="deposit">보증금 (원)</Label>
                     <Input id="deposit" type="number" placeholder="예: 100000" value={form.rental.deposit} onChange={(e) => setForm({ ...form, rental: { ...form.rental, deposit: Number(e.target.value || 0) } })} />
@@ -592,8 +592,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
+          <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
+            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
               <div className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary dark:text-primary">이미지</CardTitle>

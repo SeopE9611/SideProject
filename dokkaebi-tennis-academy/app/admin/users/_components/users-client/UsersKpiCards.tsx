@@ -20,7 +20,7 @@ const KPI_ITEMS: Array<{ key: keyof UsersKpiValues; label: string; valueClassNam
   { key: 'active', label: '활성 회원', valueClassName: 'text-primary dark:text-primary' },
   { key: 'suspended', label: '비활성 회원', valueClassName: 'text-primary dark:text-primary' },
   { key: 'deleted', label: '삭제됨(탈퇴)', valueClassName: 'text-destructive dark:text-destructive' },
-  { key: 'admins', label: '관리자 수', valueClassName: 'text-foreground dark:text-foreground' },
+  { key: 'admins', label: '관리자 수', valueClassName: 'text-foreground' },
 ];
 
 export function UsersKpiCards({ status, values }: UsersKpiCardsProps) {

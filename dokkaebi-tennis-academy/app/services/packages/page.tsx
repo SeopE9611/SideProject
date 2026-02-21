@@ -374,7 +374,7 @@ export default function StringPackagesPage() {
               맞춤형 패키지 선택
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-card bg-clip-text text-transparent">스트링 교체 패키지</h2>
-            <p className="text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 빈도와 필요에 맞는 패키지를 선택하세요.
               <br />
               모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
@@ -406,7 +406,7 @@ export default function StringPackagesPage() {
                   <div className="space-y-2">
                     <div className="text-4xl font-bold text-primary">{pkg.price.toLocaleString()}원</div>
                     {pkg.originalPrice && <div className="text-lg text-muted-foreground line-through">{pkg.originalPrice.toLocaleString()}원</div>}
-                    <div className="text-sm text-muted-foreground dark:text-muted-foreground">회당 {(pkg.price / pkg.sessions).toLocaleString()}원</div>
+                    <div className="text-sm text-muted-foreground">회당 {(pkg.price / pkg.sessions).toLocaleString()}원</div>
                   </div>
                 </CardHeader>
 
@@ -524,7 +524,7 @@ export default function StringPackagesPage() {
                 <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
                   <CardContent className="p-6">
                     <h3 className="font-bold text-lg mb-3 text-primary">Q. {faq.question}</h3>
-                    <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed">A. {faq.answer}</p>
+                    <p className="text-muted-foreground leading-relaxed">A. {faq.answer}</p>
                   </CardContent>
                 </Card>
               ))}

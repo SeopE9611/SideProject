@@ -700,7 +700,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                     {typeof product?.mountingFee === 'number' && (
                       <div className="text-xs sm:text-sm text-muted-foreground">
-                        <span className="inline-flex items-center rounded-md bg-accent/10 dark:bg-accent/10 border border-border dark:border-border px-2 py-1 text-xs">
+                        <span className="inline-flex items-center rounded-md bg-accent/10 dark:bg-accent/10 border border-border px-2 py-1 text-xs">
                           장착 서비스: {product.mountingFee > 0 ? `+${product.mountingFee.toLocaleString()}원` : '무료'}
                         </span>
                       </div>
@@ -739,7 +739,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {product.inventory?.manageStock && product.inventory.stock <= 5 && product.inventory.stock > 0 && (
                       <div className="flex items-center gap-2 p-2.5 sm:p-3 bg-muted/50 border border-border rounded-lg dark:bg-muted/40 dark:border-border">
                         <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">현재 남은 수량이 {product.inventory.stock}개입니다.</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">현재 남은 수량이 {product.inventory.stock}개입니다.</span>
                       </div>
                     )}
 
@@ -761,7 +761,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           </Button>
 
                           <Button
-                            className="flex-1 h-12 rounded-lg border border-border dark:border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                            className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                             disabled={loading || quantity > stock}
                             onClick={handleBuyNowWithService}
                           >
@@ -823,19 +823,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
               <div>
-                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground mb-2 sm:mb-3">추천 대상</h4>
+                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">추천 대상</h4>
                 <div className="space-y-1.5 sm:space-y-2">
                   {selectedPlayerTypes.length > 0 && (
                     <div className="flex items-center gap-2 text-xs sm:text-sm">
                       <div className="w-2 h-2 bg-primary rounded-full shrink-0"></div>
-                      <span className="text-muted-foreground dark:text-muted-foreground">플레이어:</span>
+                      <span className="text-muted-foreground">플레이어:</span>
                       <span className="font-medium">{selectedPlayerTypes.join(', ')}</span>
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
                     <div className="flex items-center gap-2 text-xs sm:text-sm">
                       <div className="w-2 h-2 bg-primary rounded-full shrink-0"></div>
-                      <span className="text-muted-foreground dark:text-muted-foreground">스타일:</span>
+                      <span className="text-muted-foreground">스타일:</span>
                       <span className="font-medium">{selectedPlayStyles.join(', ')}</span>
                     </div>
                   )}
@@ -843,11 +843,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </div>
 
               <div>
-                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground mb-2 sm:mb-3">추가 특성</h4>
+                <h4 className="font-medium text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">추가 특성</h4>
                 {additionalFeaturesText ? (
-                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">{additionalFeaturesText}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{additionalFeaturesText}</p>
                 ) : (
-                  <p className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground italic">추가 특성 정보가 없습니다.</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground italic">추가 특성 정보가 없습니다.</p>
                 )}
               </div>
             </CardContent>
@@ -872,11 +872,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div key={index} className="p-2.5 sm:p-3 bg-accent/10 dark:bg-accent/10 rounded-lg">
                     <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                       <spec.icon className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
-                      <span className="text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground">{spec.name}</span>
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">{spec.name}</span>
                     </div>
                     <div className="flex gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <div key={i} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-primary dark:bg-accent/70' : 'bg-muted dark:bg-muted'}`} />
+                        <div key={i} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-primary dark:bg-accent/70' : 'bg-muted'}`} />
                       ))}
                     </div>
                   </div>
@@ -932,10 +932,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">상품 설명</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
                   <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-4 sm:p-6 rounded-lg">
-                    <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed text-base sm:text-lg">
+                    <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
                       {product.description || '이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다.'}
                     </p>
                   </div>
@@ -948,17 +948,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">상세 스펙</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">상세 스펙</h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {Object.entries(toDisplaySpec())
                       .filter(([, value]) => value)
                       .map(([key, value]) => (
-                        <div key={key} className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
+                        <div key={key} className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border">
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-accent text-sm sm:text-base">{key}</span>
-                            <span className="text-muted-foreground dark:text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
+                            <span className="text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
                           </div>
                         </div>
                       ))}
@@ -972,29 +972,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <div className="w-9 sm:w-10 h-9 sm:h-10 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
                               <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
                             </div>
-                            <h4 className="text-lg sm:text-xl font-bold text-foreground dark:text-foreground">하이브리드 구성</h4>
+                            <h4 className="text-lg sm:text-xl font-bold text-foreground">하이브리드 구성</h4>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
-                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
+                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">메인(Mains)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hMainBrand ?? ''} {hMain?.name ?? ''}
                               </div>
-                              <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
+                              <div className="text-xs sm:text-sm text-muted-foreground">
                                 {hMainGauge ? `게이지: ${hMainGauge}` : null}
                                 {hMainColor ? ` · 색상: ${hMainColor}` : null}
                               </div>
                             </div>
 
                             {/* 크로스 */}
-                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
+                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">크로스(Crosses)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hCrossBrand ?? ''} {hCross?.name ?? ''}
                               </div>
-                              <div className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">
+                              <div className="text-xs sm:text-sm text-muted-foreground">
                                 {hCrossGauge ? `게이지: ${hCrossGauge}` : null}
                                 {hCrossColor ? ` · 색상: ${hCrossColor}` : null}
                               </div>
@@ -1014,7 +1014,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                       </div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">고객 리뷰</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
                     <Button asChild className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                       <Link href={`/reviews/write?productId=${product._id}`}>
@@ -1040,7 +1040,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
-                                  <div className="font-bold text-foreground dark:text-foreground text-sm sm:text-base">
+                                  <div className="font-bold text-foreground text-sm sm:text-base">
                                     {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : (review.user ?? '익명')}
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
@@ -1049,7 +1049,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                         <Star key={i} className={`h-3 w-3 sm:h-4 sm:w-4 ${i < (review.rating || 5) ? 'text-warning fill-current' : 'fill-muted text-muted'}`} />
                                       ))}
                                     </div>
-                                    <span className="text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground">{review.date || '2099-01-01'}</span>
+                                    <span className="text-xs sm:text-sm text-muted-foreground">{review.date || '2099-01-01'}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1192,8 +1192,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                               return (
                                 <div className="space-y-3 sm:space-y-4">
-                                  <div className="bg-card dark:bg-muted/50 p-3 sm:p-4 rounded-lg border border-border dark:border-border">
-                                    <p className="text-muted-foreground dark:text-muted-foreground leading-relaxed text-sm sm:text-base">{review.content}</p>
+                                  <div className="bg-card dark:bg-muted/50 p-3 sm:p-4 rounded-lg border border-border">
+                                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{review.content}</p>
                                   </div>
 
                                   {Array.isArray(review.photos) && review.photos.length > 0 && (
@@ -1203,7 +1203,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           key={i}
                                           type="button"
                                           onClick={() => openViewer(review.photos, i)}
-                                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border dark:border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
+                                          className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
                                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                                         >
                                           <Image src={src || '/placeholder.svg'} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
@@ -1223,8 +1223,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-accent/20 to-primary/20 dark:from-accent/10 dark:to-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
                           <Star className="h-8 w-8 sm:h-10 sm:w-10 text-accent" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-foreground dark:text-foreground mb-2">아직 리뷰가 없습니다</h3>
-                        <p className="text-muted-foreground dark:text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 리뷰가 없습니다</h3>
+                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
                         <Button className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Pencil className="h-4 w-4 mr-2" />
                           리뷰 작성하기
@@ -1241,7 +1241,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-foreground dark:text-foreground">상품 문의</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 문의</h3>
                   </div>
                   <Button asChild className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                     <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
@@ -1258,8 +1258,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-r from-accent/20 to-primary/20 dark:from-accent/10 dark:to-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
                           <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-accent" />
                         </div>
-                        <h4 className="text-lg sm:text-xl font-bold text-foreground dark:text-foreground mb-2">아직 문의가 없습니다</h4>
-                        <p className="text-muted-foreground dark:text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
+                        <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 문의가 없습니다</h4>
+                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
                         <Button asChild className="bg-gradient-to-r from-accent to-primary hover:from-accent hover:to-primary/90 text-primary-foreground shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                         </Button>
@@ -1268,7 +1268,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="space-y-3 sm:space-y-4">
                         {qnas.map((q: any) => (
                           <Link key={q._id} href={`/board/qna/${q._id}`}>
-                            <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border dark:border-border">
+                            <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
                               <CardContent className="p-4 sm:p-5">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 min-w-0">
@@ -1288,7 +1288,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                         </Badge>
                                       </div>
                                       <div className="font-semibold text-foreground truncate hover:text-accent dark:hover:text-accent text-sm sm:text-base">{q.title}</div>
-                                      <div className="flex items-center gap-3 sm:gap-4 text-xs text-muted-foreground dark:text-muted-foreground">
+                                      <div className="flex items-center gap-3 sm:gap-4 text-xs text-muted-foreground">
                                         <span>{q.authorName ?? '익명'}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
                                       </div>
@@ -1355,9 +1355,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="rounded-xl p-3 sm:p-4 bg-card/80 dark:bg-muted/80 shadow-sm animate-pulse">
-                      <div className="aspect-square rounded-lg bg-muted dark:bg-muted mb-2 sm:mb-3"></div>
-                      <div className="h-4 rounded bg-muted dark:bg-muted mb-1.5 sm:mb-2"></div>
-                      <div className="h-4 w-1/2 rounded bg-muted dark:bg-muted"></div>
+                      <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3"></div>
+                      <div className="h-4 rounded bg-muted mb-1.5 sm:mb-2"></div>
+                      <div className="h-4 w-1/2 rounded bg-muted"></div>
                     </div>
                   ))}
                 </div>
@@ -1366,12 +1366,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {/* 실제 관련 상품 */}
                   {relatedFiltered.map((rp: any) => (
                     <Link key={rp._id} href={`/products/${rp._id}`}>
-                      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-border dark:border-border">
+                      <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group border border-border">
                         <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-muted to-muted dark:from-muted dark:to-muted">
                           <img src={rp.images?.[0] || '/placeholder.svg'} alt={rp.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
                         </div>
                         <CardContent className="p-3 sm:p-4">
-                          <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
+                          <div className="text-xs text-muted-foreground mb-0.5 sm:mb-1">{BRAND_MAP[rp.brand] ?? rp.brand}</div>
                           <div className="font-medium line-clamp-2 mb-1.5 sm:mb-2 text-sm sm:text-base group-hover:text-accent dark:group-hover:text-accent transition-colors">{rp.name}</div>
                           <div className="font-bold text-accent text-sm sm:text-base">{Number(rp.price).toLocaleString()}원</div>
                         </CardContent>
@@ -1387,10 +1387,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
  bg-gradient-to-br from-muted/50 to-muted dark:from-card dark:to-muted
  text-center flex flex-col"
                     >
-                      <div className="aspect-square rounded-lg bg-muted dark:bg-muted mb-2 sm:mb-3 flex items-center justify-center">
-                        <span className="text-muted-foreground dark:text-muted-foreground text-sm">준비 중</span>
+                      <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3 flex items-center justify-center">
+                        <span className="text-muted-foreground text-sm">준비 중</span>
                       </div>
-                      <div className="text-sm text-muted-foreground dark:text-muted-foreground">곧 업데이트됩니다</div>
+                      <div className="text-sm text-muted-foreground">곧 업데이트됩니다</div>
                     </div>
                   ))}
                 </div>
@@ -1476,30 +1476,30 @@ export default function ProductDetailClient({ product }: { product: any }) {
       </SiteContainer>
       {/* ===== 모바일 전용 하단 Sticky ===== */}
       {showSticky && (
-        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border dark:border-border">
+        <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border">
           <div className="bg-card dark:bg-background shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
             <SiteContainer variant="wide" className="py-3">
               {/* 상품 정보 섹션 */}
-              <div className="flex items-center gap-3 pb-3 border-b border-border dark:border-border">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
                 {/* 썸네일 */}
-                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted dark:bg-muted shrink-0 border border-border dark:border-border">
+                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0 border border-border">
                   <img src={images[0] || '/placeholder.svg'} alt={product.name} className="w-full h-full object-cover" />
                 </div>
 
                 {/* 제품명 & 가격 */}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-foreground dark:text-foreground truncate leading-tight">{product.name}</div>
+                  <div className="text-sm font-semibold text-foreground truncate leading-tight">{product.name}</div>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="text-lg font-bold text-foreground ">{qtyTotal.toLocaleString()}원</span>
-                    {typeof product?.mountingFee === 'number' && product.mountingFee > 0 && <span className="text-xs text-muted-foreground dark:text-muted-foreground">+서비스 {product.mountingFee.toLocaleString()}원</span>}
+                    {typeof product?.mountingFee === 'number' && product.mountingFee > 0 && <span className="text-xs text-muted-foreground">+서비스 {product.mountingFee.toLocaleString()}원</span>}
                   </div>
                 </div>
 
                 {/* 수량 조절 */}
-                <div className="flex items-center gap-0 rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-muted/50">
+                <div className="flex items-center gap-0 rounded-lg border border-border bg-muted/50 dark:bg-muted/50">
                   <button
                     type="button"
-                    className="h-9 w-9 flex items-center justify-center text-muted-foreground dark:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
+                    className="h-9 w-9 flex items-center justify-center text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
                     aria-label="수량 감소"
                     disabled={!canDec}
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -1511,7 +1511,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
                   <button
                     type="button"
-                    className="h-9 w-9 flex items-center justify-center text-muted-foreground dark:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
+                    className="h-9 w-9 flex items-center justify-center text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed active:bg-muted dark:active:bg-muted transition-colors"
                     aria-label="수량 증가"
                     disabled={!canInc}
                     onClick={() => {
@@ -1541,7 +1541,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <button
                   type="button"
                   onClick={handleBuyNowWithService}
-                  className="flex-1 h-12 rounded-lg border border-border dark:border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                 >
                   <CreditCard className="h-4 w-4" />
                   교체 포함 결제

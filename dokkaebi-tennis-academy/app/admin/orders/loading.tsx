@@ -40,7 +40,7 @@ export default function OrdersLoading() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border border-border bg-card dark:bg-card">
+            <div className="rounded-md border border-border bg-card">
               <Table>
                 <TableHeader>
                   <TableRow>

@@ -25,7 +25,7 @@ function getIconProps(status: string) {
       return {
         Icon: CreditCard,
         wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-foreground',
+        iconClasses: 'text-foreground',
       };
     case '배송중':
       return {

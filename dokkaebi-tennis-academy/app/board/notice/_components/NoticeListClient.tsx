@@ -154,13 +154,13 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground dark:text-muted-foreground">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>
         </div>
 
-        <Card className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm">
+        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b p-5 sm:p-6 md:p-8">
             <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-2 sm:space-x-3">
@@ -170,7 +170,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
                 <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                  <SelectTrigger className="w-full sm:w-[140px] bg-card dark:bg-card text-sm sm:text-base h-10 sm:h-11">
+                  <SelectTrigger className="w-full sm:w-[140px] bg-card text-sm sm:text-base h-10 sm:h-11">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
                   <SelectContent>
@@ -185,7 +185,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                   <Input
                     type="search"
                     placeholder="검색어를 입력하세요"
-                    className="w-full sm:w-[220px] pl-10 sm:pl-12 bg-card dark:bg-card text-sm sm:text-base h-10 sm:h-11"
+                    className="w-full sm:w-[220px] pl-10 sm:pl-12 bg-card text-sm sm:text-base h-10 sm:h-11"
                     value={inputKeyword}
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
@@ -228,7 +228,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
               {!isBusy && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>}
               {items.map((notice) => (
                 <Link key={notice._id} href={`/board/notice/${notice._id}`}>
-                  <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border dark:border-border">
+                  <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
                     <CardContent className="p-5 sm:p-6 md:p-7">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
@@ -266,8 +266,8 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                             )}
                           </div>
 
-                          {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground dark:text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
-                          <div className="flex items-center space-x-3 sm:space-x-4 text-sm sm:text-base text-muted-foreground dark:text-muted-foreground">
+                          {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
+                          <div className="flex items-center space-x-3 sm:space-x-4 text-sm sm:text-base text-muted-foreground">
                             <span>{fmt(notice.createdAt)}</span>
                             <span className="flex items-center">
                               <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />
@@ -284,11 +284,11 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-                <Button variant="outline" size="icon" className="bg-card dark:bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">첫 페이지</span>
                   «
                 </Button>
-                <Button variant="outline" size="icon" className="bg-card dark:bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="15 18 9 12 15 6" />
@@ -299,7 +299,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                     key={pageNumber}
                     variant="outline"
                     size="sm"
-                    className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-border text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-card dark:bg-card text-sm sm:text-base'}
+                    className={pageNumber === page ? 'h-10 w-10 sm:h-12 sm:w-12 bg-primary text-primary-foreground border-border text-sm sm:text-base' : 'h-10 w-10 sm:h-12 sm:w-12 bg-card text-sm sm:text-base'}
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
                   >
@@ -307,13 +307,13 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                   </Button>
                 ))}
 
-                <Button variant="outline" size="icon" className="bg-card dark:bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page + 1)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">다음 페이지</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 sm:h-5 sm:w-5">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </Button>
-                <Button variant="outline" size="icon" className="bg-card dark:bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
+                <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
                   <span className="sr-only">마지막 페이지</span>
                   »
                 </Button>
@@ -328,7 +328,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                     placeholder="페이지"
                     className="h-10 w-20 sm:h-12 rounded-md border border-border bg-card px-2 text-xs sm:text-sm dark:border-border dark:bg-card"
                   />
-                  <Button type="submit" variant="outline" size="sm" className="h-10 sm:h-12 px-2 bg-card dark:bg-card" disabled={isBusy}>
+                  <Button type="submit" variant="outline" size="sm" className="h-10 sm:h-12 px-2 bg-card" disabled={isBusy}>
                     이동
                   </Button>
                 </form>

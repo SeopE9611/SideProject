@@ -319,13 +319,13 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button asChild variant="outline" className="border-border dark:border-border">
+                <Button asChild variant="outline" className="border-border">
                   <Link href="/admin/packages">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로
                   </Link>
                 </Button>
-                <Button variant={isEditMode ? 'destructive' : 'outline'} onClick={() => setIsEditMode((v) => !v)} className={isEditMode ? '' : 'border-border dark:border-border'}>
+                <Button variant={isEditMode ? 'destructive' : 'outline'} onClick={() => setIsEditMode((v) => !v)} className={isEditMode ? '' : 'border-border'}>
                   <Edit3 className="mr-1 h-4 w-4" />
                   {isEditMode ? '편집 취소' : '편집 모드'}
                 </Button>
@@ -371,9 +371,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           <div className="grid gap-6 md:grid-cols-2">
             {/* 고객 정보 */}
             <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
-              <CardHeader className="border-b border-border dark:border-border">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-foreground dark:text-foreground" />
+                  <User className="h-5 w-5 text-foreground" />
                   고객 정보
                 </CardTitle>
               </CardHeader>
@@ -397,7 +397,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
             {/* 패키지 상태 */}
             <Card className="border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
-              <CardHeader className="border-b border-border dark:border-border">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <PackageIcon className="h-5 w-5 text-primary dark:text-primary" />
@@ -423,7 +423,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <span className="text-sm font-medium">{progressPercentage}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
-                    <div className="h-2 rounded-full bg-muted dark:bg-muted transition-all" style={{ width: `${progressPercentage}%` }} />
+                    <div className="h-2 rounded-full bg-muted transition-all" style={{ width: `${progressPercentage}%` }} />
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>사용: {data.usedSessions}회</span>
@@ -449,11 +449,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
               {isEditMode && (
                 <CardFooter className="flex justify-center gap-2 bg-background dark:bg-card">
-                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-border dark:border-border hover:bg-primary dark:hover:bg-primary">
+                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-border hover:bg-primary dark:hover:bg-primary">
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장
                   </Button>
-                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled || isExpired} onClick={() => setEditingSessions(true)} className="border-border dark:border-border hover:bg-muted dark:hover:bg-muted">
+                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled || isExpired} onClick={() => setEditingSessions(true)} className="border-border hover:bg-muted dark:hover:bg-muted">
                     <Target className="mr-1 h-4 w-4" />
                     횟수 조절
                   </Button>
@@ -463,7 +463,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
             {/* 사용 내역 */}
             <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
-              <CardHeader className="border-b border-border dark:border-border">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="flex items-center gap-2">
                   <History className="h-5 w-5 text-primary dark:text-primary" />
                   사용 내역
@@ -487,7 +487,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                             </div>
                             <p className="font-medium mb-1">{u.description}</p>
                             <p className="text-sm text-muted-foreground">{new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(u.date))}</p>
-                            {u.adminNote && <p className="text-sm text-foreground dark:text-foreground mt-1">관리자 메모: {u.adminNote}</p>}
+                            {u.adminNote && <p className="text-sm text-foreground mt-1">관리자 메모: {u.adminNote}</p>}
                           </div>
                           <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/applications/stringing/${u.applicationId}`} target="_blank" rel="noreferrer">
@@ -504,9 +504,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
             {/* 운영 내역 */}
             <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
-              <CardHeader className="border-b border-border dark:border-border">
+              <CardHeader className="border-b border-border">
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-foreground dark:text-foreground" />
+                  <Clock className="h-5 w-5 text-foreground" />
                   운영 내역 (연장/횟수)
                 </CardTitle>
                 <CardDescription>패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
@@ -544,7 +544,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           {/* 연장 모달 */}
           {showExtensionForm && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <Card className="w-full max-w-md mx-4 border-border dark:border-border dark:bg-card">
+              <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
                 <CardHeader>
                   <CardTitle>패키지 연장</CardTitle>
                   <CardDescription>패키지의 유효기간을 연장합니다.</CardDescription>
@@ -608,7 +608,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           {/* 횟수 조절 모달 */}
           {editingSessions && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <Card className="w-full max-w-md mx-4 border-border dark:border-border dark:bg-card">
+              <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
                 <CardHeader>
                   <CardTitle>횟수 조절</CardTitle>
                   <CardDescription>패키지의 남은 횟수를 조절합니다.</CardDescription>
