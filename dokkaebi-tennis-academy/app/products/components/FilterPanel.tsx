@@ -151,7 +151,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shrink-0">
+            <Button type="submit" size="sm" variant="default" className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm shrink-0">
               검색
             </Button>
           </form>

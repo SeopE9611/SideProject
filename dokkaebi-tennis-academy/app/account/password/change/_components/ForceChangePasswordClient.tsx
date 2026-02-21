@@ -227,7 +227,7 @@ export default function ForceChangePasswordClient() {
                   />
                   <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.confirm ?? ''}</p>
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
+                <Button type="submit" disabled={loading} variant="default" className="w-full font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
                   {loading ? '변경 중…' : '비밀번호 변경'}
                 </Button>
               </form>

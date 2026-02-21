@@ -522,7 +522,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <Delete className="mr-2 h-4 w-4" />
                     삭제
                   </Button>
-                  <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+                  <Button type="submit" disabled={uploading || submitting || deleting} variant="default">
                     <Save className="mr-2 h-4 w-4" />
                     수정완료
                   </Button>
@@ -1205,7 +1205,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 <Delete className="mr-2 h-4 w-4" />
                 삭제
               </Button>
-              <Button type="submit" disabled={uploading || submitting || deleting} className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white">
+              <Button type="submit" disabled={uploading || submitting || deleting} variant="default">
                 <Save className="mr-2 h-4 w-4" />
                 수정완료
               </Button>
