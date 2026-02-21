@@ -388,7 +388,7 @@ export default function OrderList() {
                           </Link>
                         </Button>
                       ) : !order.isStringServiceApplied ? (
-                        <Button size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-md hover:shadow-lg transition-all duration-200" asChild>
+                        <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200" asChild>
                           <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
                             스트링 교체 신청
                             <ArrowRight className="h-3 w-3" />
@@ -397,7 +397,7 @@ export default function OrderList() {
                       ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-gradient-to-r from-background to-card px-4 py-2 text-sm font-semibold text-primary dark:border-border dark:from-background dark:to-card dark:text-primary">
+                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-muted px-4 py-2 text-sm font-semibold text-foreground dark:border-border">
                               <CheckCircle className="mr-1 h-3 w-3" />
                               교체 신청 완료
                             </div>
@@ -441,7 +441,7 @@ export default function OrderList() {
                       </Link>
                     </Button>
                   ) : showMobileStringApply ? (
-                    <Button size="sm" className="col-span-5 w-full whitespace-nowrap bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white" asChild>
+                    <Button size="sm" className="col-span-5 w-full whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90" asChild>
                       <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex w-full items-center justify-center gap-1">
                         교체 신청
                         <ArrowRight className="h-3 w-3" />

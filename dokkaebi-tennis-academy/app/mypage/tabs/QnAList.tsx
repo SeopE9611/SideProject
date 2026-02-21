@@ -80,7 +80,7 @@ export default function QnAList() {
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
           <p className="mb-6 text-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
-          <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card text-white shadow-lg hover:shadow-xl transition-all duration-200">
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200">
             <Link href="/board/qna/write" className="inline-flex items-center gap-2">
               문의하기
               <ArrowRight className="h-4 w-4" />
@@ -116,7 +116,7 @@ export default function QnAList() {
 
               <div className="flex items-center gap-2">
                 {qna.status === '답변 완료' ? <CheckCircle className="h-5 w-5 text-success" /> : <Clock className="h-5 w-5 text-warning" />}
-                <Badge variant={qna.status === '답변 완료' ? 'default' : 'secondary'} className={qna.status === '답변 완료' ? 'bg-gradient-to-r from-background to-card text-white' : 'bg-gradient-to-r from-background to-card text-white'}>
+                <Badge variant={qna.status === '답변 완료' ? 'default' : 'secondary'} className={qna.status === '답변 완료' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}>
                   {qna.status}
                 </Badge>
               </div>

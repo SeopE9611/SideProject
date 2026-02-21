@@ -58,7 +58,7 @@ export default function AuthGatePage() {
 
           {msg && <p className="text-sm text-destructive">{msg}</p>}
 
-          <button type="button" disabled={loading || !pw} onClick={handleClick} className="w-full rounded-lg bg-muted hover:bg-muted text-white py-2.5 font-medium disabled:opacity-60">
+          <button type="button" disabled={loading || !pw} onClick={handleClick} className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 font-medium disabled:opacity-60">
             {loading ? '확인 중…' : '입장하기'}
           </button>
 
