@@ -354,7 +354,7 @@ export default function AdminNotificationsClient() {
                         <div
                           className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                            it.status === 'sent' && 'bg-primary text-primary dark:text-primary',
+                            it.status === 'sent' && 'bg-primary/10 text-primary dark:text-primary',
                             it.status === 'queued' && 'bg-muted text-primary dark:text-primary',
                             it.status === 'failed' && 'bg-destructive text-destructive dark:text-destructive'
                           )}
@@ -368,7 +368,7 @@ export default function AdminNotificationsClient() {
                             <h4 className="font-semibold">{it.eventType}</h4>
                             <Badge
                               variant={it.status === 'failed' ? 'destructive' : it.status === 'queued' ? 'secondary' : 'outline'}
-                              className={cn('text-xs', it.status === 'sent' && 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary')}
+                              className={cn('text-xs', it.status === 'sent' && 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary')}
                             >
                               {it.status}
                             </Badge>

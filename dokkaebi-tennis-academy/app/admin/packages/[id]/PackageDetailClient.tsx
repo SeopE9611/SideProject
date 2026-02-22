@@ -29,7 +29,7 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 
 // 배지 색상(라이트/다크 모두 대비 높임)
 const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
-  활성: 'bg-primary text-primary border-border dark:bg-primary dark:text-primary dark:border-border',
+  활성: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
   만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/10 dark:text-destructive dark:border-border',
   일시정지: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
   취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
@@ -37,7 +37,7 @@ const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
 };
 
 const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
-  결제완료: 'bg-primary text-primary border-border dark:bg-primary dark:text-primary dark:border-border',
+  결제완료: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
   결제대기: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
   결제취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
 };

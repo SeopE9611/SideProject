@@ -268,7 +268,7 @@ export default function OrderList() {
 
                       {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                       {order.stringingApplicationId ? (
-                        <span className="shrink-0 rounded-full border border-border bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary dark:text-primary">신청서 연결됨</span>
+                        <span className="shrink-0 rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary/20 dark:text-primary">신청서 연결됨</span>
                       ) : null}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">

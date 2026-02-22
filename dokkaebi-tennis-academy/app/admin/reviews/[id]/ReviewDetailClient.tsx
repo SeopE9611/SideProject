@@ -114,9 +114,9 @@ export default function ReviewDetailClient({ reviewId }: Props) {
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return <Badge className="bg-primary text-primary hover:bg-primary">레슨 리뷰</Badge>;
+        return <Badge className="bg-primary/10 text-primary hover:bg-primary">레슨 리뷰</Badge>;
       case 'stringing':
-        return <Badge className="bg-primary text-primary hover:bg-primary">스트링 서비스 리뷰</Badge>;
+        return <Badge className="bg-primary/10 text-primary hover:bg-primary">스트링 서비스 리뷰</Badge>;
       case 'product':
         return <Badge className="bg-muted text-foreground hover:bg-muted">상품 리뷰</Badge>;
       default:

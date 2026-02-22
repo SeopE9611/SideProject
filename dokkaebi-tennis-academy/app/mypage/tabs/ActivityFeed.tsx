@@ -236,7 +236,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (typeof days === 'number') {
       pills.push({
         text: `${days}일 대여`,
-        className: 'bg-primary text-primary dark:bg-primary dark:text-primary',
+        className: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
       });
     }
   }

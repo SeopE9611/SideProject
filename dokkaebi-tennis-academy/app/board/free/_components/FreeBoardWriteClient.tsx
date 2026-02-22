@@ -417,7 +417,7 @@ export default function FreeBoardWriteClient() {
                       }}
                       className={cn(
                         'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        category === opt.value ? 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}

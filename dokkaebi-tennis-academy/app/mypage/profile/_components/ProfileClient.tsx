@@ -403,7 +403,7 @@ export default function ProfileClient({ user }: Props) {
  </Badge>
  )}
  {socialProviders.includes('naver') && (
- <Badge variant="outline" className="border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary">
+ <Badge variant="outline" className="border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary">
  네이버
  </Badge>
  )}

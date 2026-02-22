@@ -153,9 +153,9 @@ export default function ReviewsClient() {
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return 'bg-primary text-primary hover:bg-primary';
+        return 'bg-primary/10 text-primary hover:bg-primary';
       case 'stringing':
-        return 'bg-primary text-primary hover:bg-primary';
+        return 'bg-primary/10 text-primary hover:bg-primary';
       case 'product':
         return 'bg-muted text-foreground hover:bg-muted';
       default:

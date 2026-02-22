@@ -425,7 +425,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       onClick={() => setCategory(opt.value)}
                       className={cn(
                         'rounded-full border px-2 py-0.5 text-[11px]',
-                        category === opt.value ? 'border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        category === opt.value ? 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
                       )}
                     >
                       {opt.label}

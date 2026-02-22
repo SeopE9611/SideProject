@@ -213,7 +213,7 @@ export default function MypageClient({ user }: Props) {
                                 </Badge>
                               )}
                               {user.oauthProviders.includes('naver') && (
-                                <Badge variant="outline" className="border-border bg-primary text-primary dark:border-border dark:bg-primary dark:text-primary text-xs py-0 px-2 h-5">
+                                <Badge variant="outline" className="border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary text-xs py-0 px-2 h-5">
                                   네이버
                                 </Badge>
                               )}

@@ -39,9 +39,9 @@ const getStatusIcon = (status: string) => {
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
     case 'returned':
-      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
     case 'out':
-      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
     case 'paid':
       return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'canceled':
@@ -165,9 +165,9 @@ export default function RentalsList() {
 
                     {/* 교체 신청서가 연결된 대여임을 한눈에 표시 */}
                     {r.stringingApplicationId ? (
-                      <span className="shrink-0 rounded-full border border-border bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary dark:text-primary">신청서 연결됨</span>
+                      <span className="shrink-0 rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary/20 dark:text-primary">신청서 연결됨</span>
                     ) : r.withStringService ? (
-                      <span className="shrink-0 rounded-full border border-border bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary dark:text-primary">교체 서비스 포함</span>
+                      <span className="shrink-0 rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary/20 dark:text-primary">교체 서비스 포함</span>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -214,7 +214,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-lg font-bold text-foreground">총 {((r.amount?.fee ?? 0) + (r.amount?.deposit ?? 0)).toLocaleString()}원</span>
-                {r.hasReturnShipping ? <Badge className="bg-primary text-primary border border-border dark:bg-primary dark:text-primary">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
+                {r.hasReturnShipping ? <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/20 dark:text-primary">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
               </div>
 
               {/* Desktop (sm 이상): 기존 동작 유지 */}

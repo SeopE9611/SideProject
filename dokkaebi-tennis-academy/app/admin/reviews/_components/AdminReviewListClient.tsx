@@ -274,7 +274,7 @@ export default function AdminReviewListClient() {
       return { date: '-', time: '-' };
     }
   }
-  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary text-primary hover:bg-primary');
+  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary/10 text-primary hover:bg-primary');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
   const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';

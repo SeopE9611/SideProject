@@ -369,7 +369,7 @@ export default function BoardsClient() {
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">#{p.postNo ?? '-'}</span>
                                 {p.status === 'public' ? (
-                                  <Badge className="bg-primary text-primary dark:text-primary border-border">공개</Badge>
+                                  <Badge className="bg-primary/10 text-primary dark:text-primary border-border">공개</Badge>
                                 ) : (
                                   <Badge className="bg-muted text-primary dark:text-primary border-border">숨김</Badge>
                                 )}

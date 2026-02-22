@@ -555,7 +555,7 @@ export default function StringingSettingsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="icon" variant="ghost" className="hover:bg-primary text-primary" onClick={() => setExInput(ex)}>
+                        <Button size="icon" variant="ghost" className="hover:bg-primary/10 text-primary" onClick={() => setExInput(ex)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button size="icon" variant="ghost" className="hover:bg-destructive text-destructive" onClick={() => setExceptions((prev) => prev.filter((x) => x.date !== ex.date))}>

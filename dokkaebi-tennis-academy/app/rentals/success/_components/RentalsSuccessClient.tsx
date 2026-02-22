@@ -128,7 +128,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <div>
                       <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary dark:bg-primary text-primary dark:text-primary">상태 {data.racket?.condition}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary">상태 {data.racket?.condition}</span>
                         <span className="text-sm text-muted-foreground">대여 기간: {data.period}일</span>
                       </div>
                     </div>

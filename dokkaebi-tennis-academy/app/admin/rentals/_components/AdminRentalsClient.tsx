@@ -57,7 +57,7 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-card text-muted-foreground dark:bg-card',
-  paid: 'bg-primary text-primary dark:bg-primary',
+  paid: 'bg-primary/10 text-primary dark:bg-primary',
   out: 'bg-muted text-foreground dark:bg-muted',
   returned: 'bg-success/10 text-success dark:bg-success/10',
 };
@@ -82,7 +82,7 @@ export default function AdminRentalsClient() {
   }
   function getServiceBadge(r: RentalRow) {
     if (r.withStringService) {
-      return { label: '교체서비스 포함', className: 'bg-primary text-primary dark:bg-primary dark:text-primary' };
+      return { label: '교체서비스 포함', className: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' };
     }
     return { label: '단독', className: 'bg-background text-foreground' };
   }
@@ -404,7 +404,7 @@ export default function AdminRentalsClient() {
   function PaymentBadge({ item }: { item: RentalRow }) {
     const s = derivePaymentStatus(item);
     return s === 'paid' ? (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary text-primary text-[11px]">결제확정</span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[11px]">결제확정</span>
     ) : (
       <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-[11px]">입금대기</span>
     );
@@ -603,7 +603,7 @@ export default function AdminRentalsClient() {
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary text-primary dark:bg-primary dark:text-primary')}>교체서비스 포함</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary')}>교체서비스 포함</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground dark:bg-muted dark:text-foreground')}>신청서 연결</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[7])}>{FLOW_SHORT[7]}</Badge>
