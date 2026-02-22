@@ -372,7 +372,7 @@ export default function CheckoutPage() {
   const [servicePickupMethod, setServicePickupMethod] = useState<ServicePickup>('SELF_SEND');
 
   // 안내문구(배송 방법에 따라 분기)
-  const serviceHelpText = deliveryMethod === '방문수령' ? '매장 방문 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하면 수거/반송을 통해 장착 서비스가 진행됩니다.';
+  const serviceHelpText = deliveryMethod === '방문수령' ? '매장 방문 시 현장에서 바로 진행돼요. 보통 15~20분 정도 걸려요.' : '택배로 받으시면, 수거/반송 방식으로 장착 서비스를 진행해요.';
 
   // 동기화: 방문수령이면 SHOP_VISIT 고정, 택배면 기본 SELF_SEND
   useEffect(() => {
@@ -754,11 +754,11 @@ export default function CheckoutPage() {
                 {/* 3) 신청서 자동 이동: 결제 완료 후 success 페이지에서 자동 이동 */}
                 <li className="flex items-center gap-2">
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground text-xs font-semibold">3</span>
-                  <span className="font-medium">신청서 자동 이동</span>
+                  <span className="font-medium">신청서</span>
                 </li>
               </ol>
 
-              <p className="mt-2 text-xs text-muted-foreground">결제가 완료되면 신청서 작성 페이지로 자동 이동해요.</p>
+              <p className="mt-2 text-xs text-muted-foreground">결제 후 신청서로 바로 넘어가요.</p>
             </nav>
           )}
 
@@ -910,7 +910,7 @@ export default function CheckoutPage() {
                   {lockServiceMode && (
                     <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span>
-                        현재 <span className="font-semibold text-foreground">교체 서비스 포함 결제</span> 모드로 진입했어요. 결제 완료 후 신청서 페이지로 자동 이동합니다.
+                        지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제하면 신청서로 바로 넘어가요.
                       </span>
 
                       {/* '상품만 결제'로 바꾸고 싶을 때의 명시적 전환 버튼 */}
