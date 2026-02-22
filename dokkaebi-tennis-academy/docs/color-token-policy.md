@@ -136,12 +136,22 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - 예외 컴포넌트에는 파일 상단(또는 해당 분기 직전) 주석으로 **브랜드 예외 사유**를 명시한다.
 - 자동 차단 스캔(`npm run check:color-policy`) 기준에서 화이트리스트 외 파일의 hex/raw palette 또는 금지 클래스 조합이 발견되면 CI를 실패시키고 머지할 수 없다.
 
+## scan:color-classes 허용 예외 분리
+- `브랜드 화이트리스트`: 카카오/네이버/구글 등 제휴사 식별성 유지 파일만 허용.
+- `비-웹UI 화이트리스트`: 이메일 HTML 렌더러 등 웹 UI 토큰 규칙 적용 대상 외 파일만 허용.
+- 위 두 화이트리스트 외 파일에서 동일 패턴이 검출되면 `scan:color-classes`는 경고가 아니라 즉시 실패(`exit 1`)한다.
+- 스캔 리포트에는 회귀 추적을 위해 다음 3개 지표를 항상 함께 기록한다.
+  - `total matches`
+  - `matched files`
+  - `exception files`
+
 
 ## 차단 기준 (CI Fail Rules)
 - `npm run check:color-policy`는 아래 조건 중 하나라도 충족하면 즉시 `exit 1`로 실패한다.
   - `scan:brand-color-exceptions`: 브랜드 예외 화이트리스트 외 파일에서 `#hex` 또는 raw palette class(`text-blue-500`, `bg-red-100` 등) 발견
   - `scan:color-classes`: 금지 조합 `text-foreground dark:text-muted-foreground` 발견
   - `scan:color-classes`: raw palette class(`slate|gray|...|rose` + `bg|text|border|ring|from|to|via`) 발견
+  - `scan:color-classes`: 하드코딩 중립 클래스 `text-white|text-black|bg-(white|black)/*|border-white/*|ring-black/*|dark:ring-white/*` 발견
 - 위 실패는 로컬(`pnpm lint`)과 CI(`.github/workflows/ci.yml`의 color policy gate)에서 동일하게 적용한다.
 - 브랜드 예외가 필요한 경우 반드시 `docs/brand-color-exception-whitelist.md`와 스크립트 화이트리스트를 함께 업데이트한 뒤 사유를 코드 주석으로 남긴다.
 
@@ -184,4 +194,3 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `npm run check:token-palette-consistency`
   - `--primary`, `--background` 재정의가 `app/globals.css` 밖에서 발견되면 실패
   - blue 계열 회귀(`3b82f6`, `blue-*`)가 브랜드 예외 화이트리스트 밖에서 발견되면 실패
-

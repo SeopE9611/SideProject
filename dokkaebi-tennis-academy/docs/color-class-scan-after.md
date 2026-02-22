@@ -49,11 +49,23 @@
 - 명령: `node scripts/scan-color-classes.mjs app/admin app/board app/services app/mypage`
 - scanned files: 284
 - total matches: 3901
+- matched files: 216
+- exception files: 1
 - 그룹 합계
   - `app/admin`: 1626
   - `app/board`: 775
   - `app/mypage`: 809
   - `app/others`(서비스 포함): 691
+
+## 스캔 패턴 확장 (회귀 감시)
+- 기존: raw palette class(`slate|gray|...|rose` + `bg|text|border|ring|from|to|via`), 금지 조합 `text-foreground dark:text-muted-foreground`
+- 추가: `text-white`, `text-black`, `bg-black/*`, `bg-white/*`, `border-white/*`, `ring-black/*`, `dark:ring-white/*`
+- 보고 지표: `total matches + matched files + exception files`를 고정 출력하여 스캔 회귀 추적.
+
+## 허용 예외 분리 기준
+- 브랜드 예외 화이트리스트: 제휴사 브랜드 식별이 필요한 파일만 허용.
+- 비-웹UI 예외 화이트리스트: 이메일 HTML 렌더러 등 웹 UI 토큰 정책 비적용 범위만 허용.
+- 위 두 화이트리스트에 없는 파일은 동일 패턴 검출 시 경고가 아닌 **실패(exit 1)** 처리.
 
 
 ## 추가 점검 (bg/text/dark 조합)
