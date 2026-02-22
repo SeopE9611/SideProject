@@ -208,7 +208,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                   className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card h-10 sm:h-11 text-sm sm:text-base"
                   disabled={isBusy}
                 >
-                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}
+                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
                 {isAdmin && (

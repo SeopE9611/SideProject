@@ -469,7 +469,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card"
                   disabled={isBusy}
                 >
-                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />}
+                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
               </div>
