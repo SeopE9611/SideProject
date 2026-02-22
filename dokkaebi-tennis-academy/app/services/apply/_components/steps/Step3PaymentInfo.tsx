@@ -106,8 +106,8 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                       </span>
                       <span className="tabular-nums">{remainPct}%</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted dark:bg-muted">
-                      <div className="h-full bg-primary dark:bg-primary" style={{ width: `${remainPct}%` }} />
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
                     </div>
                   </div>
                 );
