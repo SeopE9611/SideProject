@@ -279,17 +279,17 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary border border-border">
-          <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-muted border border-border">
+          <TabsTrigger value="basic" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             기본 정보
           </TabsTrigger>
-          <TabsTrigger value="specs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="specs" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             상세 스펙
           </TabsTrigger>
-          <TabsTrigger value="rental" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="rental" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             대여 설정
           </TabsTrigger>
-          <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="images" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             이미지
           </TabsTrigger>
         </TabsList>
@@ -301,7 +301,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 <Package className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">기본 정보</CardTitle>
               </div>
-              <CardDescription className="text-primary">라켓의 기본 정보를 입력하세요</CardDescription>
+              <CardDescription className="text-muted-foreground">라켓의 기본 정보를 입력하세요</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,7 +394,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 <Settings className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">상세 스펙</CardTitle>
               </div>
-              <CardDescription className="text-primary">라켓의 상세 스펙을 입력하세요</CardDescription>
+              <CardDescription className="text-muted-foreground">라켓의 상세 스펙을 입력하세요</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -508,7 +508,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 <DollarSign className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">대여 설정</CardTitle>
               </div>
-              <CardDescription className="text-primary">대여 가능 여부 및 요금을 설정하세요</CardDescription>
+              <CardDescription className="text-muted-foreground">대여 가능 여부 및 요금을 설정하세요</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center justify-between">
@@ -598,7 +598,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 <ImageIcon className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">이미지</CardTitle>
               </div>
-              <CardDescription className="text-primary">라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
+              <CardDescription className="text-muted-foreground">라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <ImageUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} variant="racket" enablePrimary />

@@ -1057,7 +1057,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               {(review.ownedByMe || isAdmin) && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent/10 dark:hover:bg-accent/10 transition-colors" aria-label="내 리뷰 관리">
+                                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors" aria-label="내 리뷰 관리">
                                       <MoreHorizontal className="h-4 w-4" />
                                     </button>
                                   </DropdownMenuTrigger>

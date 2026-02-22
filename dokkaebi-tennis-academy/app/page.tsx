@@ -462,7 +462,7 @@ export default function Home() {
               text-xs bp-sm:text-sm font-semibold
               bg-muted text-foreground
               transition-colors
-              group-hover:bg-accent group-hover:text-accent-foreground
+              group-hover:bg-primary/10 group-hover:text-foreground dark:group-hover:bg-primary/20
             "
               >
                 바로가기
@@ -551,7 +551,7 @@ export default function Home() {
                   className={`
                   shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                   transition-all duration-300 whitespace-nowrap
-                  ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
+                  ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                 `}
                 >
                   전체
@@ -563,7 +563,7 @@ export default function Home() {
                     className={`
                     shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                     transition-all duration-300 whitespace-nowrap
-                    ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
+                    ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                   `}
                   >
                     {b.label}
@@ -607,7 +607,7 @@ export default function Home() {
                   className={`
                   shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                   transition-all duration-300 whitespace-nowrap
-                  ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
+                  ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                 `}
                 >
                   전체
@@ -619,7 +619,7 @@ export default function Home() {
                     className={`
                     shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                     transition-all duration-300 whitespace-nowrap
-                    ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-accent/80'}
+                    ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                   `}
                   >
                     {b.label}

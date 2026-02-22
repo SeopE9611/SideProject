@@ -266,7 +266,7 @@ export default function HorizontalProducts({
     <Link
       href={moreHref}
       className="group h-full bg-background dark:bg-card rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-        hover:bg-accent dark:hover:bg-accent
+        hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground
         transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">

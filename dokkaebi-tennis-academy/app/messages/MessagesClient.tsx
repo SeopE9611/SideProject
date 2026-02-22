@@ -239,7 +239,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                         return (
                           <button
                             key={m.id}
-                            className={cn('w-full text-left border border-border/30 rounded-lg p-4 transition-all hover:shadow-md hover:border-primary/30', active && 'border-primary/40 bg-primary/5 shadow-md', !active && 'hover:bg-accent/30')}
+                            className={cn('w-full text-left border border-border/30 rounded-lg p-4 transition-all hover:shadow-md hover:border-primary/30', active && 'border-primary/40 bg-primary/5 shadow-md', !active && 'hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground')}
                             onClick={async () => {
                               setSelectedId(m.id);
                               setTimeout(afterOpenDetail, 250);

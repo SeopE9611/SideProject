@@ -138,8 +138,8 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       {/* 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
-            <MessageSquare className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-lg">
+            <MessageSquare className="h-6 w-6" />
           </div>
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">리뷰 상세 보기</h1>
@@ -181,7 +181,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
-                <div className="bg-primary rounded-lg p-2">
+                <div className="bg-primary/10 rounded-lg p-2 text-primary">
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">작성자 정보</h3>
@@ -203,7 +203,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
             <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
-                <div className="bg-primary rounded-lg p-2">
+                <div className="bg-primary/10 rounded-lg p-2 text-primary">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">리뷰 정보</h3>

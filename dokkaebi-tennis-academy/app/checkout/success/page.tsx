@@ -187,7 +187,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   <p className="mb-4 text-primary-foreground/80">
                     {order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
                   </p>
-                  <Button className="bg-accent text-foreground font-semibold shadow-lg hover:bg-accent/90" asChild>
+                  <Button className="bg-accent text-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
                     {/* 신청서로 곧바로 이동 (자동 생성 전제) */}
                     <Link href={appHref} className="flex items-center gap-2">
                       장착 서비스 신청서 작성하기

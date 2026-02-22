@@ -338,7 +338,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </Link>
  )}
 
- <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-accent/10">
+ <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
  <Link href="/mypage?tab=rentals">
  <ArrowLeft className="mr-2 h-4 w-4" />
  목록으로 돌아가기

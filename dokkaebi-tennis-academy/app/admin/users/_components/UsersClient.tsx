@@ -577,7 +577,7 @@ export default function UsersClient() {
       <BulkActionsSection>
       {/* 선택 액션바 */}
       {selectedUsers.length > 0 && (
-        <div className="mb-3 rounded-md bg-primary border border-border p-4">
+        <div className="mb-3 rounded-md bg-card border border-border p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-primary">{selectedUsers.length}명의 회원이 선택됨</span>

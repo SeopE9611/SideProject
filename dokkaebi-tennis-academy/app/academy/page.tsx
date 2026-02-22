@@ -78,7 +78,7 @@ export default function AcademyPage() {
       dot: 'bg-accent',
       price: 'text-accent-foreground',
       stat: 'text-accent-foreground',
-      button: 'bg-accent text-accent-foreground hover:bg-accent/90',
+      button: 'bg-accent text-accent-foreground hover:bg-primary/90',
     },
     muted: {
       bar: 'bg-muted',
@@ -242,7 +242,7 @@ export default function AcademyPage() {
                     수강 신청하기
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent backdrop-blur-sm bg-transparent" asChild>
+                <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground backdrop-blur-sm bg-transparent" asChild>
                   <Link href="#programs">
                     <ArrowRight className="w-5 h-5 mr-2" />
                     프로그램 둘러보기
@@ -625,7 +625,7 @@ export default function AcademyPage() {
                         문의하러 가기
                       </Link>
                     </Button>
-                    <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-accent bg-transparent" asChild>
+                    <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent" asChild>
                       <Link href="/board/qna">
                         <ArrowRight className="mr-2 h-5 w-5" />
                         자주 묻는 질문 보기

@@ -67,7 +67,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       href={item.href}
                       className={cn(
                         'group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm outline-none transition-colors',
-                        active ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'text-muted-foreground hover:bg-accent dark:text-muted-foreground dark:hover:bg-accent',
+                        active ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'text-muted-foreground hover:bg-primary/10 dark:text-muted-foreground dark:hover:bg-primary/20 hover:text-foreground',
                       )}
                     >
                       <span className={cn('absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-primary transition-all', active ? 'w-1.5 opacity-100' : 'w-0 opacity-0 group-hover:w-1 group-hover:opacity-60')} />

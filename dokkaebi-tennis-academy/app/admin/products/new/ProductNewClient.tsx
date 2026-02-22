@@ -463,17 +463,17 @@ export default function NewStringPage() {
             <Separator className="bg-border" />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary border border-border">
-                <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-muted border border-border">
+                <TabsTrigger value="basic" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   기본 정보
                 </TabsTrigger>
-                <TabsTrigger value="features" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="features" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   성능 및 특성
                 </TabsTrigger>
-                <TabsTrigger value="inventory" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="inventory" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   재고 관리
                 </TabsTrigger>
-                <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="images" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   이미지
                 </TabsTrigger>
               </TabsList>
@@ -483,7 +483,7 @@ export default function NewStringPage() {
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
                     <CardTitle className="text-primary">기본 정보</CardTitle>
-                    <CardDescription className="text-primary">스트링의 기본 정보를 입력하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">스트링의 기본 정보를 입력하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -622,7 +622,7 @@ export default function NewStringPage() {
                            border-b border-border"
                     >
                       <CardTitle className="text-primary">하이브리드 구성</CardTitle>
-                      <CardDescription className="text-primary">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
+                      <CardDescription className="text-muted-foreground">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* MAIN */}
@@ -756,7 +756,7 @@ export default function NewStringPage() {
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
                     <CardTitle className="text-primary">가격 정보</CardTitle>
-                    <CardDescription className="text-primary">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -830,7 +830,7 @@ export default function NewStringPage() {
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
                     <CardTitle className="text-primary">성능 및 특성</CardTitle>
-                    <CardDescription className="text-primary">스트링의 성능과 특성을 설정하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">스트링의 성능과 특성을 설정하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
@@ -959,7 +959,7 @@ export default function NewStringPage() {
                 <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
                     <CardTitle className="text-primary">재고 관리</CardTitle>
-                    <CardDescription className="text-primary">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -1087,7 +1087,7 @@ export default function NewStringPage() {
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
                     <CardTitle className="text-primary">스트링 이미지</CardTitle>
-                    <CardDescription className="text-primary">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
+                    <CardDescription className="text-muted-foreground">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <ImageUploader
