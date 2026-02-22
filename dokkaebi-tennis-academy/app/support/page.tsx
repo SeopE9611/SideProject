@@ -326,7 +326,7 @@ export default function SupportPage() {
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-              <MessagesSquare className="h-6 w-6 text-white" />
+              <MessagesSquare className="h-6 w-6 text-foreground" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터</h1>
           </div>

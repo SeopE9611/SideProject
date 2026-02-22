@@ -42,12 +42,12 @@ export default function PhotosReorderGrid({ value, onChange, disabled, className
             onChange(reorder(value, from, idx));
             dragFrom.current = null;
           }}
-          className={`relative aspect-square rounded-md overflow-hidden ring-1 ring-black/10 ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-move'}`}
+          className={`relative aspect-square rounded-md overflow-hidden ring-1 ring-border/10 ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-move'}`}
           aria-label={`사진을 위치 ${idx + 1}로 이동`}
           title={disabled ? '지금은 정렬할 수 없습니다' : '썸네일을 드래그하여 순서를 바꿀 수 있어요'}
         >
           <img src={src} alt={`리뷰 사진 ${idx + 1}`} className="h-full w-full object-cover select-none pointer-events-none" draggable={false} />
-          <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-white">{idx + 1}</span>
+          <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-overlay/60 text-foreground">{idx + 1}</span>
           {!disabled && <span className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-card/80 text-foreground shadow">드래그</span>}
         </li>
       ))}

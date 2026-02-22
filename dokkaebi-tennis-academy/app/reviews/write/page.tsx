@@ -635,7 +635,7 @@ export default function ReviewWritePage() {
           {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
           <div className="space-y-6">
             {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary to-accent text-white p-6 shadow-xl overflow-hidden">
+            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary to-accent text-primary-foreground p-6 shadow-xl overflow-hidden">
               {/* 코트 라인 장식 */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
@@ -648,11 +648,11 @@ export default function ReviewWritePage() {
                 </div>
 
                 <h1 className="text-2xl font-bold mb-2">{title}</h1>
-                <p className="text-white/90 text-sm leading-relaxed">{subtitle}</p>
+                <p className="text-foreground/90 text-sm leading-relaxed">{subtitle}</p>
 
                 {/* 상태 뱃지 */}
                 {badge && (
-                  <div className="mt-4 inline-flex items-center rounded-full bg-card/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-white/20">
+                  <div className="mt-4 inline-flex items-center rounded-full bg-card/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-border/20">
                     <div className="w-1.5 h-1.5 rounded-full bg-card/60 mr-2"></div>
                     {badge}
                   </div>
@@ -883,7 +883,7 @@ export default function ReviewWritePage() {
                     type="submit"
                     disabled={locked || isUploading}
                     aria-disabled={locked || isUploading}
-                    className="rounded-xl shadow-sm bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-white font-semibold px-8 order-1 sm:order-3"
+                    className="rounded-xl shadow-sm bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-primary-foreground font-semibold px-8 order-1 sm:order-3"
                   >
                     {isUploading ? '이미지 업로드 중...' : '후기 등록하기'}
                   </Button>

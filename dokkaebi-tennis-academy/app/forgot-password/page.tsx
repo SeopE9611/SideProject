@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
 
         <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
           <div className="bg-primary p-6 text-primary-foreground relative">
-            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute inset-0 bg-overlay/10"></div>
             <div className="relative text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
                 <Shield className="h-8 w-8 text-primary-foreground" />

@@ -285,7 +285,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         {/* Author info with tennis styling */}
         <div className="flex items-center gap-2 text-xs">
           <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
+            <span className="text-primary-foreground font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
           </div>
           <span className="font-medium text-muted-foreground">{displayName}</span>
         </div>
@@ -330,7 +330,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                   aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
                 >
                   <Image src={src || '/placeholder.svg'} alt={`photo-${idx}`} fill className="object-cover" />
-                  {idx === 3 && item.photos.length > 4 && <div className="absolute inset-0 bg-black/60 text-white text-[10px] font-bold flex items-center justify-center">+{item.photos.length - 3}</div>}
+                  {idx === 3 && item.photos.length > 4 && <div className="absolute inset-0 bg-overlay/60 text-foreground text-[10px] font-bold flex items-center justify-center">+{item.photos.length - 3}</div>}
                 </button>
               ))}
             </div>

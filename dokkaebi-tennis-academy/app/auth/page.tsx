@@ -38,7 +38,7 @@ export default function AuthGatePage() {
 
   return (
     <div className="fixed inset-0 z-[9999]">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-overlay/80 backdrop-blur-sm" />
       <div className="relative h-full flex items-center justify-center p-4">
         <div className="w-full max-w-md rounded-2xl bg-card dark:bg-muted shadow-2xl p-6 space-y-4">
           <h1 className="text-xl font-semibold">🔒 아직 개발 단계입니다</h1>

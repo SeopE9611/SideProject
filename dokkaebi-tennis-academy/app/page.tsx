@@ -325,7 +325,7 @@ export default function Home() {
                   const title = (b.label ?? '').split('\n')[0] || '광고 문의';
 
                   const baseClass =
-                    'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-border transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';
+                    'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-border transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-border/10 dark:focus:ring-ring/30';
 
                   const inner = (
                     <>
@@ -338,7 +338,7 @@ export default function Home() {
                         <div className="absolute inset-0 bg-card" />
                       )}
 
-                      <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
+                      <div className="absolute inset-0 bg-overlay/0 transition-colors group-hover:bg-overlay/5" />
 
                       <div className="relative z-10 flex h-full items-center justify-center p-4 text-center">
                         <div className={b.img ? 'text-foreground' : 'text-foreground'}>

@@ -181,7 +181,7 @@ export default function OrderLookupPage() {
     <div className="min-h-full bg-background from-background  ">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-primary   ">
-        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-16">
           <div className="text-center text-foreground">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
