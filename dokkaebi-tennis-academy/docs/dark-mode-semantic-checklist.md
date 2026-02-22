@@ -55,3 +55,32 @@
 
 ## dark 전용 클래스 유지 사유 기록
 - 현재 없음.
+
+## 2026-02-22 다크 모드 시맨틱 치환 점검 (`dark:(bg|text|border|ring)-(white|black)`)
+
+### 전수 수집 결과
+- 총 4건 (코드 기준, 문서 제외)
+  - `app/products/page.tsx`: `dark:bg-black/30`
+  - `app/rentals/[id]/checkout/loading.tsx`: `dark:bg-black/40`
+  - `app/rentals/success/_components/RentalsSuccessClient.tsx`: `dark:bg-black/40`
+  - `app/rentals/success/loading.tsx`: `dark:bg-black/40`
+
+### 목적별 분류
+- 오버레이: 4건
+- 구분선/링: 0건
+- 텍스트: 0건
+- 카드 표면: 0건
+
+### 분류별 공통 토큰 통합 결과
+- 오버레이: `bg-overlay/*`로 통합
+  - `bg-black/10 dark:bg-black/30` → `bg-overlay/10 dark:bg-overlay/30`
+  - `bg-black/20 dark:bg-black/40` → `bg-overlay/20 dark:bg-overlay/40`
+- 구분선/링: 해당 없음 (`ring-border/*`, `border-border/*` 미대상)
+- 텍스트: 해당 없음 (`text-foreground`, `text-muted-foreground`, `text-primary-foreground` 미대상)
+
+### 페이지 단위 재검증
+- [x] Products (`app/products/page.tsx`): 히어로 오버레이가 `bg-overlay/10 dark:bg-overlay/30`로 치환되어 역할(배경 대비 확보) 유지
+- [x] Rentals Checkout Loading (`app/rentals/[id]/checkout/loading.tsx`): 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 로딩 스켈레톤 대비 유지
+- [x] Rentals Success (`app/rentals/success/_components/RentalsSuccessClient.tsx`): 성공 히어로 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 시각 계층 유지
+- [x] Rentals Success Loading (`app/rentals/success/loading.tsx`): 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 본문 대비 유지
+

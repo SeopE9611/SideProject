@@ -21,7 +21,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-10 bp-sm:py-12 bp-md:py-24">
-        <div className="absolute inset-0 bg-black/10 dark:bg-black/30" />
+        <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
         <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
           <svg className="w-full h-full" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
