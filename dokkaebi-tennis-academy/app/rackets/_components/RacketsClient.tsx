@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 
 // 간단 fetcher (쿠키 포함 필요 시 credentials 옵션)
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -85,7 +86,11 @@ export default function RacketsClient() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 준비중</div>
                 )}
-                {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-primary-foreground shadow">대여 불가</span>}
+                {it.rental?.enabled === false && (
+                  <Badge variant="destructive" className="absolute top-2 left-2 shadow">
+                    대여 불가
+                  </Badge>
+                )}
               </div>
               <div className="p-3 space-y-1">
                 <div className="text-sm text-muted-foreground">{it.brand}</div>
