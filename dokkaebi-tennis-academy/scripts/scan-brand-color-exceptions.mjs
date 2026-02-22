@@ -10,6 +10,9 @@ const BRAND_EXCEPTION_WHITELIST = new Set([
   'app/login/_components/SocialAuthButtons.tsx',
   'app/login/_components/LoginPageClient.tsx',
   'app/admin/users/_components/UsersClient.tsx',
+]);
+
+const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
   'app/features/notifications/core/render.ts',
 ]);
 
@@ -47,7 +50,7 @@ const files = TARGET_DIRS.flatMap((dir) => walk(dir));
 const violations = [];
 
 for (const file of files) {
-  if (BRAND_EXCEPTION_WHITELIST.has(file)) continue;
+  if (BRAND_EXCEPTION_WHITELIST.has(file) || NON_WEB_UI_EXCEPTION_WHITELIST.has(file)) continue;
 
   const abs = path.join(ROOT, file);
   const content = fs.readFileSync(abs, 'utf8');
@@ -72,7 +75,8 @@ if (violations.length === 0) {
 }
 
 console.error('❌ brand-color exception scan: whitelist 외 파일에서 hex/raw palette가 발견되었습니다.');
-console.warn(`- whitelist: ${[...BRAND_EXCEPTION_WHITELIST].join(', ')}`);
+console.warn(`- [brand] whitelist: ${[...BRAND_EXCEPTION_WHITELIST].join(', ')}`);
+console.warn(`- [non-web-ui] whitelist: ${[...NON_WEB_UI_EXCEPTION_WHITELIST].join(', ')}`);
 for (const entry of violations.sort((a, b) => a.file.localeCompare(b.file))) {
   console.warn(`\n- ${entry.file}`);
   for (const issue of entry.found.slice(0, 10)) {
