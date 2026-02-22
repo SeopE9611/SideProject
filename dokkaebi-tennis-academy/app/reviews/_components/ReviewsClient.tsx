@@ -99,12 +99,7 @@ export default function ReviewsClient() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card relative">
       {/* Tennis court background pattern */}
-      <div
-        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.01]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='court' x='0' y='0' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 50h100M50 0v100M25 25h50v50h-50z' stroke='%23334155' strokeWidth='1' fill='none'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23court)'/%3E%3C/svg%3E")`,
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.01] bg-tennis-court-pattern-review" />
 
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-6">
         {/* Header with tennis theme */}

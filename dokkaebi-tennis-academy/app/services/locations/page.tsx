@@ -50,13 +50,7 @@ export default function LocationsPage() {
   return (
     <div className="min-h-screen bg-background from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       {/* Tennis court line pattern background */}
-      <div
-        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 50h100M50 0v100M20 20h60M20 80h60M20 20v60M80 20v60' stroke='%23334155' strokeWidth='1' fill='none'/%3E%3C/svg%3E")`,
-          backgroundSize: '100px 100px',
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-tennis-court-pattern" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}

@@ -143,12 +143,7 @@ export default function MypageClient({ user }: Props) {
   return (
     <AuthGuard>
       <div className="min-h-full bg-background">
-        <div
-          className="absolute inset-0 opacity-5 dark:opacity-10 bp-xs:hidden"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23000000' fillOpacity='0.1'%3E%3Cpath d='M0 30h60v2H0zM28 0v60h2V0z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+        <div className="absolute inset-0 opacity-5 dark:opacity-10 bp-xs:hidden bg-cross-line-pattern" />
 
         <div className={pageTone.heroPanel}>
           <div className="absolute inset-0 bg-muted/40"></div>
