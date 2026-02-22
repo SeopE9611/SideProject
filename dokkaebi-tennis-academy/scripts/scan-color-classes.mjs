@@ -10,10 +10,26 @@ const palettes = [
   'slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'
 ];
 const keywords = ['bg', 'text', 'border', 'ring', 'from', 'to', 'via'];
+
+// 일반 UI 금지 규칙
 const paletteAlternation = palettes.join('|');
 const keywordAlternation = keywords.join('|');
-const tokenRegex = new RegExp(`(?:[\\w-]+:)*(${keywordAlternation})-(${paletteAlternation})-(\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
+const rawPaletteRegex = new RegExp(`(?:[\\w-]+:)*(?:${keywordAlternation})-(?:${paletteAlternation})-(?:\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
 const forbiddenClassComboRegex = /text-foreground\s+dark:text-muted-foreground/g;
+
+// 최소 추가 패턴 (중립 하드코딩 클래스)
+const hardcodedNeutralRegex = /(?:[\w-]+:)*(?:text-(?:white|black)|bg-(?:white|black)\/\d{1,3}|border-white\/\d{1,3}|ring-black\/\d{1,3}|dark:ring-white\/\d{1,3})/g;
+
+// 허용 예외는 명시적으로 분리 관리한다.
+const BRAND_EXCEPTION_WHITELIST = new Set([
+  'app/login/_components/SocialAuthButtons.tsx',
+  'app/login/_components/LoginPageClient.tsx',
+  'app/admin/users/_components/UsersClient.tsx',
+]);
+
+const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
+  'app/features/notifications/core/render.ts',
+]);
 
 function walk(dir, results = []) {
   const absDir = path.join(ROOT, dir);
@@ -21,7 +37,7 @@ function walk(dir, results = []) {
   for (const ent of fs.readdirSync(absDir, { withFileTypes: true })) {
     if (ent.name === 'node_modules' || ent.name === '.next' || ent.name === '.git') continue;
     const abs = path.join(absDir, ent.name);
-    const rel = path.relative(ROOT, abs);
+    const rel = path.relative(ROOT, abs).replaceAll('\\', '/');
     if (ent.isDirectory()) {
       walk(rel, results);
     } else if (exts.has(path.extname(ent.name))) {
@@ -43,18 +59,26 @@ function classify(file) {
   return 'others';
 }
 
-const files = scanDirs.flatMap((d) => walk(d));
-const grouped = new Map();
-let total = 0;
-const violations = [];
-
 function getLine(text, index) {
   return text.slice(0, index).split('\n').length;
 }
 
+function getExceptionType(file) {
+  if (BRAND_EXCEPTION_WHITELIST.has(file)) return 'brand-whitelist';
+  if (NON_WEB_UI_EXCEPTION_WHITELIST.has(file)) return 'non-web-ui';
+  return null;
+}
+
+const files = scanDirs.flatMap((d) => walk(d));
+const grouped = new Map();
+let total = 0;
+const violations = [];
+const exceptionMatches = [];
+const matchedFiles = new Set();
+const exceptionFiles = new Set();
+
 for (const file of files) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
-  const hits = text.match(tokenRegex);
   const found = [];
 
   for (const match of text.matchAll(forbiddenClassComboRegex)) {
@@ -65,7 +89,7 @@ for (const file of files) {
     });
   }
 
-  for (const match of text.matchAll(tokenRegex)) {
+  for (const match of text.matchAll(rawPaletteRegex)) {
     found.push({
       type: 'raw-palette-class',
       token: match[0],
@@ -73,33 +97,65 @@ for (const file of files) {
     });
   }
 
-  if (found.length > 0) {
-    violations.push({ file, found });
+  for (const match of text.matchAll(hardcodedNeutralRegex)) {
+    found.push({
+      type: 'hardcoded-neutral-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
   }
 
-  if (!hits?.length) continue;
-  total += hits.length;
+  if (found.length === 0) continue;
+
+  matchedFiles.add(file);
+  total += found.length;
+
   const group = classify(file);
   if (!grouped.has(group)) grouped.set(group, []);
   const counts = new Map();
-  for (const token of hits) counts.set(token, (counts.get(token) ?? 0) + 1);
+  for (const issue of found) {
+    const key = `${issue.type}:${issue.token}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
   grouped.get(group).push({ file, counts });
+
+  const exceptionType = getExceptionType(file);
+  if (exceptionType) {
+    exceptionFiles.add(file);
+    exceptionMatches.push({ file, found, exceptionType });
+    continue;
+  }
+
+  violations.push({ file, found });
 }
 
 const sortedGroups = [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-console.log(`# color-class scan`);
+console.log('# color-class scan');
 console.log(`- scanned files: ${files.length}`);
 console.log(`- total matches: ${total}`);
+console.log(`- matched files: ${matchedFiles.size}`);
+console.log(`- exception files: ${exceptionFiles.size}`);
 console.log('');
 for (const [group, items] of sortedGroups) {
   const groupTotal = items.reduce((sum, item) => sum + [...item.counts.values()].reduce((s, n) => s + n, 0), 0);
   console.log(`## ${group} (${groupTotal})`);
   for (const item of items.sort((a, b) => a.file.localeCompare(b.file))) {
-    const tokenList = [...item.counts.entries()].sort((a, b) => b[1] - a[1]).map(([token, count]) => `${token}×${count}`).join(', ');
+    const tokenList = [...item.counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([token, count]) => `${token}×${count}`)
+      .join(', ');
     console.log(`- ${item.file}`);
     console.log(`  - ${tokenList}`);
   }
   console.log('');
+}
+
+if (exceptionMatches.length > 0) {
+  console.warn('ℹ️ 허용 예외 매치');
+  for (const entry of exceptionMatches.sort((a, b) => a.file.localeCompare(b.file))) {
+    console.warn(`- ${entry.file} (${entry.exceptionType}, ${entry.found.length} hits)`);
+  }
+  console.warn('');
 }
 
 if (violations.length > 0) {
