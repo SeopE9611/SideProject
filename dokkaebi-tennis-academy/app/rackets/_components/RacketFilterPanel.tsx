@@ -67,7 +67,7 @@ export default function RacketFilterPanel({
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-xl bg-gradient-to-r from-background to-card bg-clip-text text-transparent">필터</h2>
+              <h2 className="font-bold text-xl text-foreground">필터</h2>
               {onClose && (
                 <Button variant="outline" size="sm" onClick={onClose} className="sm:hidden bg-transparent">
                   닫기
