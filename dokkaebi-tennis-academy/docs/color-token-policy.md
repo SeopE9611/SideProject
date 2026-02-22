@@ -42,7 +42,27 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
   - 배지 렌더링 블록 상단에 브랜드 예외 주석 명시
 
 ### 3) 비-UI 범위(참고)
-- `app/features/notifications/core/render.ts`: 이메일 HTML 렌더러용 컬러 정의/inline style로 웹 UI 토큰 규칙 적용 대상 외.
+- `app/features/notifications/core/render.ts`: 이메일 HTML 렌더러로 분류하며 웹 UI 토큰 규칙 적용 대상에서 제외.
+
+## 이메일 템플릿 예외 정책 (고정)
+
+`app/features/notifications/core/render.ts`는 메일 클라이언트(예: Gmail, Outlook)의 CSS 지원 제약으로 인해 **인라인 스타일 기반 렌더링이 필수**이므로, `app/globals.css` 토큰 클래스를 직접 적용하지 않는다.
+
+예외 허용 팔레트(고정):
+- `surface`: `#FCFFFC` — 메일 본문/카드 배경(고대비, 인쇄/다크 변환 내성)
+- `text`: `#1A1C1A` — 제목/본문 기본 텍스트
+- `sub`: `#4A544A` — 보조 텍스트/메타 정보
+- `line`: `#D7E3D7` — 구분선/테이블 보더
+- `bgSoft`: `#F3F8F3` — 요약 표의 key 셀 배경
+- `badgeBg`: `#E9F6EC` — 상태 배지 배경
+- `badgeText`: `#248232` — 상태 배지 텍스트(브랜드 그린)
+- `btnBg`: `#2BA84A` — CTA 배경
+- `btnText`: `#1A1C1A` — CTA 텍스트
+
+운영 규칙:
+- 위 팔레트 외 임의색(`#888`, `#999`, 임의 `rgb/hsl`) 추가를 금지한다.
+- 색상은 반드시 `THEME`의 의미 있는 키를 통해서만 참조한다.
+- 팔레트 조정이 필요하면 본 문서 섹션과 `render.ts`를 동시에 수정해 SSOT를 유지한다.
 
 
 ## `lib/shadcn-plugin.js` 참조 전수 점검 결과
