@@ -636,7 +636,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     <div className="container py-10 space-y-8">
       <div className="mx-auto max-w-4xl">
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent rounded-2xl p-8 border border-border /30 shadow-lg mb-8">
+        <div className="bg-gradient-to-r from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent rounded-2xl p-8 border border-border/30 shadow-lg mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
@@ -1033,7 +1033,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                   {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
                   {data.packageConsumptions && data.packageConsumptions.length > 0 && (
-                    <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground /60 dark:bg-muted ">
+                    <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted ">
                       <div className="mb-1 flex items-center justify-between">
                         <div className="flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5 text-foreground" />
@@ -1060,7 +1060,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border /30">
+                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border/30">
                     <div>
                       <p className="text-sm text-muted-foreground ">결제 금액</p>
                       <p className="text-xl font-bold text-accent dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
@@ -1164,7 +1164,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                       {/* 데이터 행 */}
                       {data.items.map((item, index) => (
-                        <div key={`${item.id}-${index}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-border /70">
+                        <div key={`${item.id}-${index}`} className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-border/70">
                           <div className="pr-2">
                             <p className="font-medium text-foreground truncate">{item.name}</p>
                           </div>

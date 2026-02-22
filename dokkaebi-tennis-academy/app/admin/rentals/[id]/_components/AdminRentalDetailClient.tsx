@@ -287,7 +287,7 @@ export default function AdminRentalDetailClient() {
     <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:bg-gradient-to-br dark:from-background dark:via-muted dark:to-black">
       <div className="container py-10">
         <div className="mx-auto max-w-4xl space-y-8">
-          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border /30 shadow-lg mb-8">
+          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border/30 shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
@@ -538,19 +538,19 @@ export default function AdminRentalDetailClient() {
            관리자 상세에서도 해당 금액 근거를 그대로 노출시킴.
           - 대여만 한 케이스(스트링 미선택)는 UI가 지저분해지지 않도록 조건부 렌더링.
          */}
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-muted-foreground ">브랜드</p>
                       <p className="font-semibold text-foreground ">{racketBrandLabel(data.brand)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-muted-foreground ">모델</p>
                       <p className="font-semibold text-foreground ">{data.model}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-muted-foreground ">대여 기간</p>
                       <p className="font-semibold text-foreground ">{data.days}일</p>
@@ -576,13 +576,13 @@ export default function AdminRentalDetailClient() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-muted-foreground ">대여 수수료</p>
                       <p className="font-semibold text-foreground ">{won(data.amount?.fee)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-muted-foreground ">보증금</p>
                       <p className="font-semibold text-foreground ">{won(data.amount?.deposit)}</p>
@@ -590,7 +590,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   {/* 스트링 상품 금액: 있을 때만 표시 */}
                   {(data.amount?.stringPrice ?? 0) > 0 && (
-                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-muted-foreground ">스트링 상품</p>
@@ -601,7 +601,7 @@ export default function AdminRentalDetailClient() {
 
                   {/* 교체 서비스비(장착비): 있을 때만 표시 */}
                   {(data.amount?.stringingFee ?? 0) > 0 && (
-                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-muted-foreground ">교체 서비스비</p>
@@ -609,13 +609,13 @@ export default function AdminRentalDetailClient() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border /50">
+                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border/50">
                     <div>
                       <p className="text-sm text-muted-foreground ">총 결제 금액</p>
                       <p className="text-xl font-bold text-accent dark:text-foreground">{won(data.amount?.total)}</p>
                     </div>
                   </div>
-                  <div className="p-4 rounded-lg border bg-muted dark:bg-card/70 /60">
+                  <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
                     <p className="text-sm font-medium text-muted-foreground mb-2">보증금 환불 계좌</p>
                     {data?.refundAccount ? (
                       <div className="space-y-1 text-sm">
@@ -674,7 +674,7 @@ export default function AdminRentalDetailClient() {
             <CardContent className="p-6">
               <div className="grid gap-6 md:grid-cols-2">
                 {/* 출고 */}
-                <div className="p-4 rounded-lg border bg-muted dark:bg-card/70 /60">
+                <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
                   <p className="text-sm font-medium text-muted-foreground mb-2">출고</p>
                   {data?.shipping?.outbound?.trackingNumber ? (
                     <div className="space-y-1 text-sm">
@@ -696,7 +696,7 @@ export default function AdminRentalDetailClient() {
                   )}
                 </div>
                 {/* 반납 */}
-                <div className="p-4 rounded-lg border bg-muted dark:bg-card/70 /60">
+                <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
                   <p className="text-sm font-medium text-muted-foreground mb-2">반납</p>
                   {data?.shipping?.return?.trackingNumber ? (
                     <div className="space-y-1 text-sm">
@@ -730,28 +730,28 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-muted-foreground ">대여 시작</p>
                     <p className="font-semibold text-foreground ">{data.outAt ? formatDate(data.outAt) : '-'}</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-muted-foreground ">반납 예정</p>
                     <p className="font-semibold text-foreground ">{data.dueAt ? formatDate(data.dueAt) : '-'}</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-muted-foreground ">반납 완료</p>
                     <p className="font-semibold text-foreground ">{data.returnedAt ? formatDate(data.returnedAt) : '-'}</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border /60">
+                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <CreditCard className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-muted-foreground ">보증금 환불</p>

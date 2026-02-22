@@ -1278,7 +1278,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           {q.category ?? '상품문의'}
                                         </Badge>
                                         {q.isSecret && (
-                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border /40 dark:border-border shrink-0`}>
+                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}>
                                             <Lock className="h-3 w-3 mr-1" />
                                             비밀글
                                           </Badge>
