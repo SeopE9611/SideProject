@@ -173,7 +173,7 @@ export default function ReviewsClient() {
 
               {/* Filter summary and reset */}
               <div className="ml-auto flex items-center gap-3">
-                <Badge variant="secondary" className="gap-2 rounded-full bg-primary text-primary dark:bg-primary dark:text-primary px-3 py-1">
+                <Badge variant="secondary" className="gap-2 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary px-3 py-1">
                   <Target className="h-3.5 w-3.5" />
                   {summary}
                 </Badge>

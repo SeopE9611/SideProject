@@ -112,7 +112,7 @@ function StatusBadge({ status }: { status?: string }) {
       : s === 'queued'
       ? 'bg-warning/10 text-warning border-border'
       : s === 'processing'
-      ? 'bg-primary text-primary border-border'
+      ? 'bg-primary/10 text-primary border-border'
       : 'bg-muted text-muted-foreground border-border/40';
 
   return <Badge className={`border ${cls}`}>{s}</Badge>;

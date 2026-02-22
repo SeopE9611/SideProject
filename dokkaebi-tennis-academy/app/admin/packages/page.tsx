@@ -443,7 +443,7 @@ export default function PackageOrdersClient() {
         return 'bg-muted text-primary border border-border';
       case 'success':
       default:
-        return 'bg-primary text-primary border border-border';
+        return 'bg-primary/10 text-primary border border-border';
     }
   }
 

@@ -91,7 +91,7 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
       case 'general':
         return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
       case 'info':
-        return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+        return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
       case 'qna':
         return 'bg-success/10 text-success dark:bg-success/10 dark:text-success';
       case 'tip':
@@ -106,9 +106,9 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
   if (kind === 'market') {
     switch (c) {
       case 'racket':
-        return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+        return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
       case 'string':
-        return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+        return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
       case 'equipment':
         return 'bg-muted text-primary dark:bg-muted dark:text-primary';
       default:
@@ -119,9 +119,9 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
   // gear
   switch (c) {
     case 'racket':
-      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
     case 'string':
-      return 'bg-primary text-primary dark:bg-primary dark:text-primary';
+      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
     case 'shoes':
       return 'bg-muted text-primary dark:bg-muted dark:text-primary';
     case 'bag':

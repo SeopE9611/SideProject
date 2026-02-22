@@ -72,13 +72,13 @@ function RacketAvailBadge({ id }: { id: string }) {
 
   // “대여중 0”이면 19/19 같은 표기가 어색하므로 “재고 n개”로 표현
   if (rentedCount === 0) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary text-primary dark:bg-primary dark:text-primary whitespace-nowrap">재고 {qty}개</div>;
+    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary whitespace-nowrap">재고 {qty}개</div>;
   }
 
   // 대여중이 있으면 분수(가용/보유) + 대여중 배지로 정보량 확보
   return (
     <div className="flex items-center gap-1.5">
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary text-primary dark:bg-primary dark:text-primary whitespace-nowrap">
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary whitespace-nowrap">
         가용 {avail}/{qty}
       </div>
 

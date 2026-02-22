@@ -27,7 +27,7 @@ export default function SettingsPage() {
           </div>
 
           <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
-            {vm.isBootstrapping && <div className="rounded-lg border border-border bg-primary px-4 py-3 text-sm font-medium text-primary">설정값을 불러오는 중입니다...</div>}
+            {vm.isBootstrapping && <div className="rounded-lg border border-border bg-primary/10 px-4 py-3 text-sm font-medium text-primary">설정값을 불러오는 중입니다...</div>}
             <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 h-auto">
               <TabsTrigger value="site"><Globe className="h-4 w-4 mr-2" />사이트</TabsTrigger>
               <TabsTrigger value="user"><User className="h-4 w-4 mr-2" />사용자</TabsTrigger>

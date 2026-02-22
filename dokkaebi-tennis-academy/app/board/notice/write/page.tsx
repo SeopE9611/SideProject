@@ -531,7 +531,7 @@ export default function NoticeWritePage() {
                   <SelectContent>
                     <SelectItem value="general">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-primary text-primary border-border">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-border">
                           일반
                         </Badge>
                         <span>일반적인 공지사항</span>

@@ -288,7 +288,7 @@ export default function ClassesPage() {
                           variant={cls.status === 'recruiting' ? 'default' : 'secondary'}
                           className={
                             cls.status === 'recruiting'
-                              ? 'bg-primary dark:bg-primary text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary'
+                              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary hover:bg-primary/20 dark:hover:bg-primary/30'
                               : 'bg-destructive dark:bg-destructive text-destructive dark:text-destructive hover:bg-destructive dark:hover:bg-destructive'
                           }
                         >

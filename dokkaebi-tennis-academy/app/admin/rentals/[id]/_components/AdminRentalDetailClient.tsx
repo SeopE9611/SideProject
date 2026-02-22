@@ -568,7 +568,7 @@ export default function AdminRentalDetailClient() {
                 </CardTitle>
                 <div className="ml-auto">
                   {derivePaymentStatus(data) === 'paid' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary text-primary text-xs">결제확정</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">결제확정</span>
                   ) : (
                     <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-xs">입금대기</span>
                   )}
@@ -666,7 +666,7 @@ export default function AdminRentalDetailClient() {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">운송장 없음</span>,
                     'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-accent text-xs">출고 운송장</span>,
                     'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">반납 운송장</span>,
-                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary text-primary text-xs">왕복 운송장</span>,
+                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
                 }
               </div>

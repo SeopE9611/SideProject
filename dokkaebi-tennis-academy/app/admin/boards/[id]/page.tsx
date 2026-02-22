@@ -68,7 +68,7 @@ function getBoardTypeColor(type: string) {
     case 'notice':
       return 'bg-primary/20 text-primary hover:bg-primary/30';
     case 'qna':
-      return 'bg-primary text-primary hover:bg-primary';
+      return 'bg-primary/10 text-primary hover:bg-primary';
     case 'community':
       return 'bg-success/10 text-success hover:bg-success/10';
     case 'faq':

@@ -502,7 +502,7 @@ export default function OperationsClient() {
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
             <span className="text-muted-foreground">|</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary text-primary dark:text-primary')}>통합(연결됨)</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:text-primary')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive')}>연결오류</Badge>
 
@@ -703,7 +703,7 @@ export default function OperationsClient() {
 
                               {/* 통합/단독 + (그룹 건수) */}
                               <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-primary text-primary' : g.anchor.isIntegrated ? 'bg-primary text-primary' : 'bg-card text-muted-foreground')}>
+                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-primary/10 text-primary' : g.anchor.isIntegrated ? 'bg-primary/10 text-primary' : 'bg-card text-muted-foreground')}>
                                   {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
                                 </Badge>
                                 {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>{g.items.length}건</Badge>}

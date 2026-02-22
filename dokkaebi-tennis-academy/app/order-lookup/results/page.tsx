@@ -420,7 +420,7 @@ export default function OrderLookupResultsPage() {
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary px-4 py-2 text-sm font-semibold text-primary cursor-default">
+                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary cursor-default">
                                         <CheckCircle2 className="w-4 h-4 mr-2" />
                                         스트링 신청 완료
                                       </div>
