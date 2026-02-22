@@ -373,8 +373,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
  <CreditCard className="h-5 w-5 text-accent mt-0.5" />
  <div>
- <h4 className="font-semibold text-accent dark:text-accent mb-1">입금 안내</h4>
- <p className="text-sm text-accent dark:text-accent">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화됩니다.</p>
+ <h4 className="font-semibold text-accent mb-1">입금 안내</h4>
+ <p className="text-sm text-accent">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화됩니다.</p>
  </div>
  </div>
  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">

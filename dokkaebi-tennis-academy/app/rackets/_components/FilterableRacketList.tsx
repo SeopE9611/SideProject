@@ -444,12 +444,12 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
               <div className="text-base bp-sm:text-lg font-semibold text-foreground">
                 {rentOnly ? (
                   <>
-                    대여 가능 총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary dark:text-primary font-bold">{total}</span>}개 라켓
+                    대여 가능 총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary font-bold">{total}</span>}개 라켓
                     {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {products.length}개)</span>}
                   </>
                 ) : (
                   <>
-                    총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary dark:text-primary font-bold">{total}</span>}개 라켓
+                    총 {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary font-bold">{total}</span>}개 라켓
                     {isInitialLikeLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {products.length}개)</span>}
                   </>
                 )}
@@ -489,7 +489,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-primary hover:bg-primary dark:bg-primary dark:hover:bg-primary' : 'hover:bg-primary dark:hover:bg-primary')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-primary hover:bg-primary dark:hover:bg-primary' : 'hover:bg-primary dark:hover:bg-primary')}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
@@ -498,7 +498,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-primary hover:bg-primary dark:bg-primary dark:hover:bg-primary' : 'hover:bg-primary dark:hover:bg-primary')}
+                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-primary hover:bg-primary dark:hover:bg-primary' : 'hover:bg-primary dark:hover:bg-primary')}
                 >
                   <List className="w-4 h-4" />
                 </Button>
@@ -526,15 +526,15 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
             </div>
           ) : error ? (
             <div className="text-center py-16">
-              <p className="text-destructive dark:text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
-              <Button onClick={() => mutate()} className="bg-primary hover:bg-primary dark:bg-primary dark:hover:bg-primary">
+              <p className="text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
+              <Button onClick={() => mutate()} className="bg-primary hover:bg-primary dark:hover:bg-primary">
                 다시 시도
               </Button>
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-full flex items-center justify-center">
-                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary dark:text-primary" />
+                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary" />
               </div>
               <h3 className="text-xl font-semibold mb-2 text-foreground">검색 결과가 없습니다</h3>
               <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>

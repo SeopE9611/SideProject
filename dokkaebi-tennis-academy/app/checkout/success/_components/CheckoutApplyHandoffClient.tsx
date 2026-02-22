@@ -59,11 +59,11 @@ export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 5 
             {!cancelled ? (
               <div className="flex items-start gap-3 rounded-lg bg-accent p-4 dark:bg-primary">
                 <div className="flex h-5 w-5 items-center justify-center">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary dark:text-primary" />
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className="text-base font-medium text-primary dark:text-primary">자동 이동 중</p>
-                  <p className="text-base text-primary dark:text-primary">
+                  <p className="text-base font-medium text-primary">자동 이동 중</p>
+                  <p className="text-base text-primary">
                     <span className="font-semibold">{remain}초</span> 후 신청서 페이지로 이동합니다
                   </p>
                 </div>

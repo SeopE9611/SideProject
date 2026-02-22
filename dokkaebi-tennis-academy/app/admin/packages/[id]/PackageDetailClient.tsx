@@ -108,15 +108,15 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
 
         const headTextCls = isPayment
           ? it.paymentStatus === '결제완료'
-            ? 'text-primary dark:text-primary'
+            ? 'text-primary'
             : it.paymentStatus === '결제취소' || it.paymentStatus === '취소'
-              ? 'text-destructive dark:text-destructive'
-              : 'text-primary dark:text-primary'
+              ? 'text-destructive'
+              : 'text-primary'
           : isExtend
-            ? 'text-primary dark:text-primary'
+            ? 'text-primary'
             : it.extendedSessions! < 0
-              ? 'text-destructive dark:text-destructive'
-              : 'text-primary dark:text-primary';
+              ? 'text-destructive'
+              : 'text-primary';
 
         return (
           <li key={it.id} className="pl-8 py-4 border-l border-border relative">
@@ -225,7 +225,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   if (error || !data) {
     return (
       <div className="container py-6">
-        <div className="text-center text-destructive dark:text-destructive">패키지 정보를 불러오는 중 오류가 발생했습니다.</div>
+        <div className="text-center text-destructive">패키지 정보를 불러오는 중 오류가 발생했습니다.</div>
       </div>
     );
   }
@@ -347,7 +347,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   <Target className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">남은 횟수</span>
                 </div>
-                <p className="text-lg font-semibold text-primary dark:text-primary">{data.remainingSessions}회</p>
+                <p className="text-lg font-semibold text-primary">{data.remainingSessions}회</p>
               </div>
 
               <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
@@ -400,7 +400,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CardHeader className="border-b border-border">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
-                    <PackageIcon className="h-5 w-5 text-primary dark:text-primary" />
+                    <PackageIcon className="h-5 w-5 text-primary" />
                     패키지 상태
                   </span>
                   {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -435,15 +435,15 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">만료까지</span>
                     <span
-                      className={cn('text-sm font-medium', expired ? 'text-muted-foreground' : daysLeft <= 7 ? 'text-destructive dark:text-destructive' : daysLeft <= 30 ? 'text-primary dark:text-primary' : 'text-primary dark:text-primary')}
+                      className={cn('text-sm font-medium', expired ? 'text-muted-foreground' : daysLeft <= 7 ? 'text-destructive' : daysLeft <= 30 ? 'text-primary' : 'text-primary')}
                     >
                       {expired ? '만료됨' : `${daysLeft}일 남음`}
                     </span>
                   </div>
                 </div>
 
-                {!isPaid && data.paymentStatus !== '결제취소' && <p className="text-xs text-primary dark:text-primary">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>}
-                {isCancelled && <p className="text-xs text-destructive dark:text-destructive">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>}
+                {!isPaid && data.paymentStatus !== '결제취소' && <p className="text-xs text-primary">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>}
+                {isCancelled && <p className="text-xs text-destructive">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>}
                 {isExpired && isPaid && !isCancelled && <p className="text-xs text-muted-foreground">만료된 패스는 연장만 가능합니다.</p>}
               </CardContent>
 
@@ -465,7 +465,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             <Card className="md:col-span-2 border-border bg-card/80 shadow-lg dark:bg-card dark:border-border">
               <CardHeader className="border-b border-border">
                 <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5 text-primary dark:text-primary" />
+                  <History className="h-5 w-5 text-primary" />
                   사용 내역
                 </CardTitle>
                 <CardDescription>패키지 횟수가 차감된 신청서 목록입니다.</CardDescription>
@@ -557,7 +557,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                       {previewExpiryDate && (
                         <>
                           <ChevronRight className="inline h-4 w-4 mx-1 text-muted-foreground" />
-                          <span className="font-medium text-primary dark:text-primary">{fmtDate(previewExpiryDate)}</span>
+                          <span className="font-medium text-primary">{fmtDate(previewExpiryDate)}</span>
                         </>
                       )}
                     </div>
@@ -619,7 +619,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                     <p className="text-sm text-muted-foreground mt-1">
                       현재 남은 횟수: {data.remainingSessions}회
                       {sessionAdjustment.amount !== 0 && (
-                        <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-primary dark:text-primary' : 'text-destructive dark:text-destructive')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>
+                        <span className={cn('ml-2 font-medium', sessionAdjustment.amount > 0 ? 'text-primary' : 'text-destructive')}>→ {data.remainingSessions + sessionAdjustment.amount}회</span>
                       )}
                     </p>
                     <div className="flex items-center gap-2">

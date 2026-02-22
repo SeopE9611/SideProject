@@ -208,10 +208,10 @@ export default function RacketCompareClient() {
           </div>
         ) : !canCompare ? (
           /* 비교 불가 상태 개선 */
-          <div className="rounded-xl bg-card/80 ring-1 ring-ring dark:ring-ring overflow-hidden">
+          <div className="rounded-xl bg-card/80 ring-1 ring-ring overflow-hidden">
             <div className="bg-muted px-4 py-3 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-primary dark:text-primary" />
-              <span className="text-sm font-medium text-primary dark:text-primary">비교할 라켓이 부족합니다</span>
+              <AlertCircle className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">비교할 라켓이 부족합니다</span>
             </div>
             <div className="p-4 space-y-4">
               <p className="text-sm text-muted-foreground">비교는 최소 2개부터 가능합니다. (현재 {list.length}개)</p>
@@ -373,9 +373,9 @@ export default function RacketCompareClient() {
                           const t = mm && n !== null ? ratio01(n, mm.min, mm.max) : null;
                           const isBaseCol = idx === 0;
 
-                          const deltaClass = isBaseCol || delta === null ? 'text-muted-foreground' : delta > 0 ? 'text-primary dark:text-primary' : delta < 0 ? 'text-destructive dark:text-destructive' : 'text-muted-foreground';
+                          const deltaClass = isBaseCol || delta === null ? 'text-muted-foreground' : delta > 0 ? 'text-primary' : delta < 0 ? 'text-destructive' : 'text-muted-foreground';
 
-                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-primary dark:bg-primary' : delta < 0 ? 'bg-destructive/10 dark:bg-destructive/10' : 'bg-muted/30';
+                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-primary' : delta < 0 ? 'bg-destructive/10 dark:bg-destructive/10' : 'bg-muted/30';
 
                           return (
                             <td key={r.id + row.key} className="p-4 relative overflow-hidden">

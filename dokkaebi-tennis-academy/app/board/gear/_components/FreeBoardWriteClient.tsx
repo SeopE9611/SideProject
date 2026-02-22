@@ -312,7 +312,7 @@ export default function FreeBoardWriteClient() {
           <div>
             {/* 브레드크럼: 게시판 > 장비 사용기 > 글쓰기 */}
             <div className="mb-1 text-sm text-muted-foreground">
-              <span className="font-medium text-success dark:text-success">게시판</span>
+              <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/gear" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 장비 게시판

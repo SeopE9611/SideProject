@@ -463,7 +463,7 @@ export default function NewStringPage() {
             <Separator className="bg-border" />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary border border-border">
                 <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   기본 정보
                 </TabsTrigger>
@@ -482,8 +482,8 @@ export default function NewStringPage() {
               <TabsContent value="basic" className="space-y-4">
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
-                    <CardTitle className="text-primary dark:text-primary">기본 정보</CardTitle>
-                    <CardDescription className="text-primary dark:text-primary">스트링의 기본 정보를 입력하세요.</CardDescription>
+                    <CardTitle className="text-primary">기본 정보</CardTitle>
+                    <CardDescription className="text-primary">스트링의 기본 정보를 입력하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -621,8 +621,8 @@ export default function NewStringPage() {
                       className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card
                            border-b border-border"
                     >
-                      <CardTitle className="text-primary dark:text-primary">하이브리드 구성</CardTitle>
-                      <CardDescription className="text-primary dark:text-primary">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
+                      <CardTitle className="text-primary">하이브리드 구성</CardTitle>
+                      <CardDescription className="text-primary">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* MAIN */}
@@ -755,8 +755,8 @@ export default function NewStringPage() {
                 {/* 가격 정보 카드 */}
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
-                    <CardTitle className="text-primary dark:text-primary">가격 정보</CardTitle>
-                    <CardDescription className="text-primary dark:text-primary">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
+                    <CardTitle className="text-primary">가격 정보</CardTitle>
+                    <CardDescription className="text-primary">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -829,8 +829,8 @@ export default function NewStringPage() {
               <TabsContent value="features" className="space-y-4">
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
-                    <CardTitle className="text-primary dark:text-primary">성능 및 특성</CardTitle>
-                    <CardDescription className="text-primary dark:text-primary">스트링의 성능과 특성을 설정하세요.</CardDescription>
+                    <CardTitle className="text-primary">성능 및 특성</CardTitle>
+                    <CardDescription className="text-primary">스트링의 성능과 특성을 설정하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
@@ -907,7 +907,7 @@ export default function NewStringPage() {
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary dark:text-primary">추천 플레이어 타입</h3>
+                      <h3 className="text-lg font-medium text-primary">추천 플레이어 타입</h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Switch id="player-beginner" checked={tags.beginner} onCheckedChange={(checked) => setTags({ ...tags, beginner: checked })} />
@@ -925,7 +925,7 @@ export default function NewStringPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary dark:text-primary">추천 플레이 스타일</h3>
+                      <h3 className="text-lg font-medium text-primary">추천 플레이 스타일</h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Switch id="style-baseline" checked={tags.baseline} onCheckedChange={(checked) => setTags({ ...tags, baseline: checked })} />
@@ -958,8 +958,8 @@ export default function NewStringPage() {
               <TabsContent value="inventory" className="space-y-4">
                 <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
-                    <CardTitle className="text-primary dark:text-primary">재고 관리</CardTitle>
-                    <CardDescription className="text-primary dark:text-primary">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
+                    <CardTitle className="text-primary">재고 관리</CardTitle>
+                    <CardDescription className="text-primary">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -1031,10 +1031,10 @@ export default function NewStringPage() {
                       <p className="text-sm text-muted-foreground">재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.</p>
                     </div>
 
-                    <Separator className="bg-primary dark:bg-primary" />
+                    <Separator className="bg-primary" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary dark:text-primary">판매 옵션</h3>
+                      <h3 className="text-lg font-medium text-primary">판매 옵션</h3>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
@@ -1086,8 +1086,8 @@ export default function NewStringPage() {
               <TabsContent value="images" className="space-y-4">
                 <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
                   <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
-                    <CardTitle className="text-primary dark:text-primary">스트링 이미지</CardTitle>
-                    <CardDescription className="text-primary dark:text-primary">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
+                    <CardTitle className="text-primary">스트링 이미지</CardTitle>
+                    <CardDescription className="text-primary">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <ImageUploader

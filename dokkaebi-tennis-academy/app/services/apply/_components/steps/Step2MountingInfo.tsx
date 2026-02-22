@@ -289,8 +289,8 @@ export default function Step2MountingInfo(props: Props) {
             <div className="mt-2 space-y-2">
               <div className="bg-primary from-background to-background dark:from-background dark:to-background border border-destructive/30 dark:border-destructive/30 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
-                  <Zap className="h-5 w-5 text-destructive dark:text-destructive mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-destructive dark:text-destructive">
+                  <Zap className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-destructive">
                     <p className="font-medium mb-1">⚠️ 중요 안내</p>
                     {rentalId ? (
                       <>
@@ -385,7 +385,7 @@ export default function Step2MountingInfo(props: Props) {
                 )}
               </div>
 
-              {isOrderSlotBlocked && <p className="mt-1 text-xs text-destructive dark:text-destructive">이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해 주세요.</p>}
+              {isOrderSlotBlocked && <p className="mt-1 text-xs text-destructive">이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해 주세요.</p>}
             </div>
           )}
           {orderId && (
@@ -430,7 +430,7 @@ export default function Step2MountingInfo(props: Props) {
           )}
 
           <div className="bg-primary from-muted to-background dark:from-background dark:to-background border border-border rounded-lg p-4">
-            <h3 className="font-semibold text-accent dark:text-accent mb-4 flex items-center">
+            <h3 className="font-semibold text-accent mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2" />
               예상 장착 비용
             </h3>
@@ -675,7 +675,7 @@ export default function Step2MountingInfo(props: Props) {
             <CardHeader className="pb-4 space-y-1">
               <CardTitle className="text-base font-semibold text-foreground">라켓별 세부 장착 정보</CardTitle>
               <CardDescription className="text-sm text-muted-foreground leading-relaxed">
-                위에서 선택한 <span className="font-semibold text-accent dark:text-accent">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
+                위에서 선택한 <span className="font-semibold text-accent">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -742,7 +742,7 @@ export default function Step2MountingInfo(props: Props) {
                     </div>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted dark:bg-primary">
                       <div className="h-1.5 w-1.5 rounded-full bg-muted dark:bg-primary" />
-                      <span className="text-xs font-medium text-accent dark:text-accent truncate max-w-[200px]">{line.stringName}</span>
+                      <span className="text-xs font-medium text-accent truncate max-w-[200px]">{line.stringName}</span>
                     </div>
                   </div>
 

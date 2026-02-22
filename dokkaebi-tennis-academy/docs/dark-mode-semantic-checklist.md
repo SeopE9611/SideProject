@@ -54,7 +54,22 @@
 - [x] 적용 파일군: `components/ui/skeleton.tsx`, `components/ui/table.tsx`, `app/reviews/write/page.tsx`, `app/admin/products/loading.tsx`, `app/admin/rackets/_components/AdminRacketsClient.tsx`
 
 ## dark 전용 클래스 유지 사유 기록
-- 현재 없음.
+- `components/ui/card.tsx`의 `elevatedGradient` variant는 라이트(`from-white`)와 다크(`dark:from-background`) 시작색이 의도적으로 다르므로 유지.
+- 오버레이 계열(`bg-overlay/*`)은 다크 모드 대비 확보 목적이라 유지.
+
+## 2026-02-22 중복 dark 클래스 정리 결과
+
+### 전수 스캔
+- 명령: `rg -n --pcre2 "(text|bg|border|ring)-([a-z-]+)\\s+dark:\\1-\\2\\b" app components lib`
+- 결과: `0건`
+
+### variant 승격 적용
+- `components/ui/card.tsx`
+  - `Card` variant `elevatedGradient` 추가
+  - `CardHeader` variant `sectionGradient` 추가
+- 적용처
+  - `app/mypage/orders/_components/OrderDetailClient.tsx`
+  - `components/admin/LinkedDocsCard.tsx`
 
 ## 2026-02-22 다크 모드 시맨틱 치환 점검 (`dark:(bg|text|border|ring)-(white|black)`)
 
@@ -83,4 +98,3 @@
 - [x] Rentals Checkout Loading (`app/rentals/[id]/checkout/loading.tsx`): 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 로딩 스켈레톤 대비 유지
 - [x] Rentals Success (`app/rentals/success/_components/RentalsSuccessClient.tsx`): 성공 히어로 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 시각 계층 유지
 - [x] Rentals Success Loading (`app/rentals/success/loading.tsx`): 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 본문 대비 유지
-

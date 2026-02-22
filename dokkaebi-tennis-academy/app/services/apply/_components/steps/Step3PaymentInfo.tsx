@@ -67,7 +67,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                 </p>
               ) : usingPackage ? (
                 <p className="mt-2 text-sm text-foreground leading-relaxed">
-                  이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-primary dark:text-primary">교체비는 0원</span>
+                  이번 신청에는 패키지가 자동으로 적용됩니다. <span className="font-semibold text-primary">교체비는 0원</span>
                   으로 처리되며, 패키지에서 <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                 </p>
               ) : (
@@ -76,14 +76,14 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
               {/* 숫자 요약 뱃지들 */}
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <Badge variant="outline" className="border-border text-primary dark:text-primary">
+                <Badge variant="outline" className="border-border text-primary">
                   필요 {requiredPassCount}회
                 </Badge>
-                <Badge variant="outline" className="border-border text-primary dark:text-primary">
+                <Badge variant="outline" className="border-border text-primary">
                   잔여 {packagePreview.remaining}회
                 </Badge>
                 {packagePreview.expiresAt && (
-                  <Badge variant="outline" className="border-border text-primary dark:text-primary">
+                  <Badge variant="outline" className="border-border text-primary">
                     만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}
                   </Badge>
                 )}
@@ -107,7 +107,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
                       <span className="tabular-nums">{remainPct}%</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-accent dark:bg-primary">
-                      <div className="h-full bg-primary dark:bg-primary" style={{ width: `${remainPct}%` }} />
+                      <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
                     </div>
                   </div>
                 );
@@ -173,7 +173,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
           {formData.shippingBank && (bankLabelMap as any)[formData.shippingBank] ? (
             <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-6">
-              <h3 className="font-semibold text-primary dark:text-primary mb-4 flex items-center">
+              <h3 className="font-semibold text-primary mb-4 flex items-center">
                 <CreditCard className="h-5 w-5 mr-2" />
                 계좌 정보
               </h3>

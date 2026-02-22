@@ -301,7 +301,7 @@ export default function AdminDashboardClient() {
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <div className="rounded-full bg-destructive p-1.5 dark:bg-destructive">
-                  <AlertTriangle className="h-4 w-4 text-destructive dark:text-destructive" />
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
                 </div>
                 긴급 처리
               </CardTitle>
@@ -742,7 +742,7 @@ export default function AdminDashboardClient() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">리뷰 현황</CardTitle>
                 <div className="rounded-lg bg-muted p-2 dark:bg-muted">
-                  <Star className="h-4 w-4 text-primary dark:text-primary" />
+                  <Star className="h-4 w-4 text-primary" />
                 </div>
               </div>
             </CardHeader>
@@ -772,7 +772,7 @@ export default function AdminDashboardClient() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">포인트 7일</CardTitle>
                 <div className="rounded-lg bg-primary p-2 dark:bg-primary">
-                  <Activity className="h-4 w-4 text-primary dark:text-primary" />
+                  <Activity className="h-4 w-4 text-primary" />
                 </div>
               </div>
             </CardHeader>
@@ -796,7 +796,7 @@ export default function AdminDashboardClient() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">커뮤니티</CardTitle>
                 <div className="rounded-lg bg-primary p-2 dark:bg-primary">
-                  <ClipboardList className="h-4 w-4 text-primary dark:text-primary" />
+                  <ClipboardList className="h-4 w-4 text-primary" />
                 </div>
               </div>
             </CardHeader>

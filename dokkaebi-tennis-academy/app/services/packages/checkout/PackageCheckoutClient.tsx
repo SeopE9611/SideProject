@@ -665,7 +665,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
  <div className="flex items-center space-x-2">
  <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!user} />
- <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-accent dark:text-accent'}`}>
+ <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-accent'}`}>
  이 정보를 저장
  </label>
  </div>
@@ -743,7 +743,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </div>
 
  <div className="bg-primary  to-card dark:from-background dark:to-card p-3 rounded-lg border border-border">
- <p className="text-sm text-warning dark:text-warning font-medium">출장 서비스는 서울/경기 지역에 한해 제공되며, 별도의 출장비가 발생할 수 있습니다.</p>
+ <p className="text-sm text-warning font-medium">출장 서비스는 서울/경기 지역에 한해 제공되며, 별도의 출장비가 발생할 수 있습니다.</p>
  </div>
  </div>
  )}
@@ -820,9 +820,9 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
  <div className="flex items-center gap-2 mb-3">
  <Shield className="h-5 w-5 text-accent" />
- <p className="font-semibold text-accent dark:text-accent">무통장입금 안내</p>
+ <p className="font-semibold text-accent">무통장입금 안내</p>
  </div>
- <ul className="space-y-2 text-sm text-accent dark:text-accent">
+ <ul className="space-y-2 text-sm text-accent">
  <li className="flex items-center gap-2">
  <CheckCircle className="h-4 w-4" />
  주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
@@ -968,11 +968,11 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </div>
 
  <div className="bg-primary  to-accent dark:from-primary dark:to-accent p-4 rounded-lg border border-border">
- <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
+ <div className="flex items-center gap-2 text-accent mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">패키지 안내</span>
  </div>
- <div className="text-sm text-accent dark:text-accent space-y-1">
+ <div className="text-sm text-accent space-y-1">
  <p>• 입금 확인 후 패키지가 활성화됩니다.</p>
  <p>• 예약은 전화 또는 온라인으로 가능합니다.</p>
  <p>• 유효기간 내에 모든 횟수를 이용해주세요.</p>

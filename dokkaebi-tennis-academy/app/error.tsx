@@ -28,14 +28,14 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
               </div>
 
               <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
-                <span className="text-destructive dark:text-destructive">문제</span>가 발생했어요
+                <span className="text-destructive">문제</span>가 발생했어요
               </h1>
               <p className="text-muted-foreground">페이지를 불러오는 중 오류가 발생했습니다. 아래 버튼으로 다시 시도해보세요.</p>
 
-              {isDev && <pre className="mt-4 max-h-48 overflow-auto rounded-xl bg-muted dark:bg-card p-4 text-xs text-foreground ring-1 ring-ring dark:ring-ring">{String(error?.message ?? error)}</pre>}
+              {isDev && <pre className="mt-4 max-h-48 overflow-auto rounded-xl bg-muted dark:bg-card p-4 text-xs text-foreground ring-1 ring-ring">{String(error?.message ?? error)}</pre>}
 
               <div className="mt-4">
-                <Badge className="bg-destructive/10 text-destructive dark:text-destructive ring-1 ring-inset ring-ring">일시적인 오류일 수 있습니다</Badge>
+                <Badge className="bg-destructive/10 text-destructive ring-1 ring-inset ring-ring">일시적인 오류일 수 있습니다</Badge>
               </div>
             </CardContent>
 

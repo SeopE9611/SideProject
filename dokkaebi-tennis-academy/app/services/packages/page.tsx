@@ -385,7 +385,7 @@ export default function StringPackagesPage() {
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
-                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring dark:ring-ring' : ''} ${
+                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring' : ''} ${
                   selectedPackage === pkg.id ? 'ring-4 ring-ring' : ''
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}

@@ -330,7 +330,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  ) : (
  <p className="mt-2 text-sm text-muted-foreground ">교체 서비스 비용 기준</p>
  )}
- {application.packageApplied && <p className="mt-2 text-sm text-primary dark:text-primary">패키지 적용으로 입금 불필요</p>}
+ {application.packageApplied && <p className="mt-2 text-sm text-primary">패키지 적용으로 입금 불필요</p>}
  </div>
 
  <div className="bg-muted p-6 rounded-xl">
@@ -452,20 +452,20 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="flex-1">
  <div className="flex items-center gap-2">
- <span className="font-semibold text-primary dark:text-primary">교체 패키지가 자동 적용되었습니다.</span>
- <Badge className="bg-primary/10 text-primary dark:text-primary border border-border">입금 불필요</Badge>
+ <span className="font-semibold text-primary">교체 패키지가 자동 적용되었습니다.</span>
+ <Badge className="bg-primary/10 text-primary border border-border">입금 불필요</Badge>
  </div>
 
  <p className="mt-1 text-sm text-foreground">
- 교체비는 <span className="font-semibold text-primary dark:text-primary">0원</span> 으로 처리 됩니다.
+ 교체비는 <span className="font-semibold text-primary">0원</span> 으로 처리 됩니다.
  </p>
 
  {/* 잔여/만료 pill */}
  <div className="mt-3 flex flex-wrap gap-2">
- <Badge variant="outline" className="border-border text-primary dark:text-primary">
+ <Badge variant="outline" className="border-border text-primary">
  잔여 {appliedPass?.remainingCount ?? '-'}회
  </Badge>
- <Badge variant="outline" className="border-border text-primary dark:text-primary">
+ <Badge variant="outline" className="border-border text-primary">
  만료일 {appliedPass?.expiresAt ? new Date(appliedPass.expiresAt).toLocaleDateString('ko-KR') : '-'}
  </Badge>
  </div>

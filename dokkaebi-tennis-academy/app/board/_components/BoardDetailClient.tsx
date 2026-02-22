@@ -1029,7 +1029,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  placeholder={`@${comment.nickname ?? '회원'} 님께 답글을 남겨 보세요.`}
  autoFocus
  />
- {replyError && <p className="text-xs text-destructive dark:text-destructive">{replyError}</p>}
+ {replyError && <p className="text-xs text-destructive">{replyError}</p>}
  <div className="flex justify-end gap-2">
  <Button
  type="button"
@@ -1078,7 +1078,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
  <div>
  <div className="mb-1 text-sm text-muted-foreground">
- <span className="font-medium text-success dark:text-success">게시판</span>
+ <span className="font-medium text-success">게시판</span>
  <span className="mx-1">›</span>
  <Link href="${config.routePrefix}" className="text-muted-foreground underline-offset-2 hover:underline ">
  중고 거래 게시판
@@ -1441,7 +1441,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  onChange={(e) => setCommentContent(e.target.value)}
  disabled={isCommentSubmitting}
  />
- {commentError && <p className="text-xs text-destructive dark:text-destructive">{commentError}</p>}
+ {commentError && <p className="text-xs text-destructive">{commentError}</p>}
  <div className="flex justify-end">
  <Button type="button" size="sm" className="h-9 bg-primary px-5 text-sm hover:bg-primary/90 dark:bg-muted dark:text-foreground dark:hover:bg-muted" disabled={isCommentSubmitting} onClick={handleSubmitComment}>
  {isCommentSubmitting && <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent dark:border-border dark:border-t-transparent" />}

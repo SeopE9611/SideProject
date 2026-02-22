@@ -356,7 +356,7 @@ export default function ProfileClient({ user }: Props) {
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
  <div className="bg-accent text-accent-foreground rounded-2xl p-3 shadow-lg">
- <User className="h-6 w-6 text-accent dark:text-accent" />
+ <User className="h-6 w-6 text-accent" />
  </div>
  <div>
  <CardTitle className="text-xl">기본정보</CardTitle>
@@ -535,7 +535,7 @@ export default function ProfileClient({ user }: Props) {
  </Label>
  <div className="flex gap-2">
  <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted text-muted-foreground cursor-default" placeholder="12345" />
- <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-accent dark:text-accent hover:bg-primary dark:hover:bg-primary" variant="outline">
+ <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-accent hover:bg-primary dark:hover:bg-primary" variant="outline">
  검색
  </Button>
  </div>
@@ -660,14 +660,14 @@ export default function ProfileClient({ user }: Props) {
  </CardContent>
  </Card>
 
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border-destructive dark:border-destructive">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border-destructive">
  <CardHeader className="bg-destructive/10 border-b border-destructive/30">
  <div className="flex items-center gap-3">
  <div className="bg-destructive/10 text-destructive rounded-2xl p-3 shadow-lg">
  <AlertTriangle className="h-6 w-6 text-destructive" />
  </div>
  <div>
- <CardTitle className="text-xl text-destructive dark:text-destructive">회원 탈퇴</CardTitle>
+ <CardTitle className="text-xl text-destructive">회원 탈퇴</CardTitle>
  <CardDescription>계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.</CardDescription>
  </div>
  </div>
@@ -702,9 +702,9 @@ export default function ProfileClient({ user }: Props) {
  />
  ) : (
  <div className="text-center">
- <div className="bg-destructive dark:bg-destructive border border-destructive dark:border-destructive rounded-xl p-6 mb-6">
+ <div className="bg-destructive border border-destructive rounded-xl p-6 mb-6">
  <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
- <h3 className="text-lg font-semibold text-destructive dark:text-destructive mb-2">정말로 탈퇴하시겠습니까?</h3>
+ <h3 className="text-lg font-semibold text-destructive mb-2">정말로 탈퇴하시겠습니까?</h3>
  <p className="text-sm text-destructive">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
  </div>
  <Button

@@ -840,7 +840,7 @@ function normalizeIp(ip?: string) {
 // 한 줄 UI
 function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os: string; browser: string; isMobile: boolean }; highlight?: boolean }) {
   return (
-    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-ring dark:ring-ring')}>
+    <div className={cn('flex items-center gap-3 p-3 rounded-lg border', 'border-border bg-card/80 dark:bg-card', highlight && 'ring-1 ring-ring')}>
       <div className={cn('grid size-9 place-items-center rounded-lg', s.isMobile ? 'bg-muted text-foreground dark:bg-muted dark:text-foreground' : 'bg-muted text-foreground dark:bg-muted dark:text-foreground')}>
         {s.isMobile ? <Smartphone className="h-4 w-4" /> : <MonitorSmartphone className="h-4 w-4" />}
       </div>

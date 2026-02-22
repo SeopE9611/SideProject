@@ -239,7 +239,7 @@ export default function StringingSettingsPage() {
           <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-start gap-4 p-6">
               <div className="rounded-xl bg-muted p-2.5 shadow-sm">
-                <Info className="h-5 w-5 text-primary dark:text-primary" />
+                <Info className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
                 <p className="font-semibold text-foreground mb-2">운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.</p>

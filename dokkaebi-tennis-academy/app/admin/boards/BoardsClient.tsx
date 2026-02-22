@@ -369,9 +369,9 @@ export default function BoardsClient() {
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">#{p.postNo ?? '-'}</span>
                                 {p.status === 'public' ? (
-                                  <Badge className="bg-primary/10 text-primary dark:text-primary border-border">공개</Badge>
+                                  <Badge className="bg-primary/10 text-primary border-border">공개</Badge>
                                 ) : (
-                                  <Badge className="bg-muted text-primary dark:text-primary border-border">숨김</Badge>
+                                  <Badge className="bg-muted text-primary border-border">숨김</Badge>
                                 )}
                               </div>
 
@@ -550,7 +550,7 @@ export default function BoardsClient() {
                                     {r.targetType === 'post' ? (
                                       <Badge className="bg-muted text-foreground border-border">게시글</Badge>
                                     ) : (
-                                      <Badge className="bg-muted text-primary dark:text-primary border-border">댓글</Badge>
+                                      <Badge className="bg-muted text-primary border-border">댓글</Badge>
                                     )}
                                     <Badge variant="outline" className="font-medium">
                                       {resolveBoardLabel(r.boardType)}

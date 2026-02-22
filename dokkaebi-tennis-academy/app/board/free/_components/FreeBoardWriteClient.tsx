@@ -363,7 +363,7 @@ export default function FreeBoardWriteClient() {
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 > 글쓰기 */}
             <div className="mb-1 text-sm text-muted-foreground">
-              <span className="font-medium text-success dark:text-success">게시판</span>
+              <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/free" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 자유 게시판
@@ -424,7 +424,7 @@ export default function FreeBoardWriteClient() {
                     </button>
                   ))}
                 </div>
-                {fieldErrors.category ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.category}</p> : null}
+                {fieldErrors.category ? <p className="text-xs text-destructive">{fieldErrors.category}</p> : null}
               </div>
               {/* 제목 입력 */}
               <div className="space-y-2">
@@ -440,7 +440,7 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={TITLE_MAX}
                 />
-                {fieldErrors.title ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.title}</p> : null}
+                {fieldErrors.title ? <p className="text-xs text-destructive">{fieldErrors.title}</p> : null}
                 <p className="text-xs text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
@@ -461,7 +461,7 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={CONTENT_MAX}
                 />
-                {fieldErrors.content ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.content}</p> : null}
+                {fieldErrors.content ? <p className="text-xs text-destructive">{fieldErrors.content}</p> : null}
                 <p className="text-xs text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
@@ -472,7 +472,7 @@ export default function FreeBoardWriteClient() {
               {/* 첨부 영역: 이미지 / 파일 탭 */}
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
-                {fieldErrors.attachments ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.attachments}</p> : null}
+                {fieldErrors.attachments ? <p className="text-xs text-destructive">{fieldErrors.attachments}</p> : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="image">이미지 업로드</TabsTrigger>

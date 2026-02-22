@@ -242,7 +242,7 @@ export default function AdminRacketsClient() {
                   </div>
                 </div>
               ) : commonErrorMessage ? (
-                <div className="overflow-auto rounded-lg border border-destructive dark:border-destructive">
+                <div className="overflow-auto rounded-lg border border-destructive">
                   <div className="p-8 text-center">
                     <p className="text-destructive">{commonErrorMessage}</p>
                   </div>

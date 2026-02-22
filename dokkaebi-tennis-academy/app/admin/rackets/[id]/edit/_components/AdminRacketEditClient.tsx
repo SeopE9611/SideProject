@@ -82,9 +82,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:from-background dark:via-muted dark:to-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-card rounded-xl shadow-sm border border-destructive dark:border-destructive p-8 text-center">
+          <div className="bg-card rounded-xl shadow-sm border border-destructive p-8 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <p className="text-destructive dark:text-destructive">데이터를 불러오지 못했습니다.</p>
+            <p className="text-destructive">데이터를 불러오지 못했습니다.</p>
             <Link href="/admin/rackets" className="mt-4 inline-block">
               <Button variant="outline">목록으로 돌아가기</Button>
             </Link>

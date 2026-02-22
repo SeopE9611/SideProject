@@ -330,13 +330,13 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CheckCircle className="h-6 w-6 text-warning" />
  </div>
  <div>
- <p className="font-semibold text-warning dark:text-warning">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
- <p className="text-sm text-warning dark:text-warning">
+ <p className="font-semibold text-warning">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
+ <p className="text-sm text-warning">
  총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
  </p>
- {stringServiceItemCount > 1 && <p className="mt-1 text-xs text-warning dark:text-warning">(상품 기준으로는 교체 서비스 대상 스트링이 {stringServiceItemCount}개 포함되어 있습니다.)</p>}
+ {stringServiceItemCount > 1 && <p className="mt-1 text-xs text-warning">(상품 기준으로는 교체 서비스 대상 스트링이 {stringServiceItemCount}개 포함되어 있습니다.)</p>}
  {hasLinkedStringingApps && (
- <p className="mt-1 text-xs text-warning dark:text-warning">
+ <p className="mt-1 text-xs text-warning">
  이 주문으로 이미 <span className="font-semibold">{linkedStringingApps.length}</span>건의 교체 서비스 신청을 완료했습니다.
  </p>
  )}
@@ -357,15 +357,15 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CheckCircle className="h-6 w-6 text-success" />
  </div>
  <div>
- <p className="font-semibold text-success dark:text-success">이 주문으로 교체 서비스 신청이 완료되었습니다.</p>
- <p className="text-sm text-success dark:text-success">
+ <p className="font-semibold text-success">이 주문으로 교체 서비스 신청이 완료되었습니다.</p>
+ <p className="text-sm text-success">
  이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다.
  </p>
- <p className="text-sm text-success dark:text-success">실제 신청에 포함된 개수와 라켓 정보는 신청 상세 화면에서 확인하실 수 있습니다.</p>
+ <p className="text-sm text-success">실제 신청에 포함된 개수와 라켓 정보는 신청 상세 화면에서 확인하실 수 있습니다.</p>
 
  {/* 연결된 신청 리스트 간단 요약 */}
  {hasLinkedStringingApps && (
- <div className="mt-3 space-y-1 text-xs text-success dark:text-success">
+ <div className="mt-3 space-y-1 text-xs text-success">
  {linkedStringingApps.map((app) => (
  <div key={app.id} className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex flex-wrap items-center gap-2">
@@ -403,12 +403,12 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div id="reviews-cta" className="mt-4">
  {allReviewed ? (
- <div className="bg-primary dark:bg-primary border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
+ <div className="bg-primary border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
  <div className="flex items-center gap-3">
  <CheckCircle className="h-6 w-6 text-primary" />
  <div>
- <p className="font-semibold text-primary dark:text-primary">이 주문은 리뷰를 작성하였습니다.</p>
- <p className="text-sm text-primary dark:text-primary">내가 작성한 리뷰를 확인할 수 있어요.</p>
+ <p className="font-semibold text-primary">이 주문은 리뷰를 작성하였습니다.</p>
+ <p className="text-sm text-primary">내가 작성한 리뷰를 확인할 수 있어요.</p>
  </div>
  </div>
  <Link className="w-full bp-sm:w-auto" href="/mypage?tab=reviews">
@@ -422,9 +422,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-center gap-3">
  <Clock className="h-6 w-6 text-warning" />
  <div>
- <p className="font-semibold text-warning dark:text-warning">이 주문은 리뷰를 작성하지 않았습니다.</p>
- <p className="text-sm text-warning dark:text-warning">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
- <p className="text-sm text-destructive dark:text-destructive">※상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다.</p>
+ <p className="font-semibold text-warning">이 주문은 리뷰를 작성하지 않았습니다.</p>
+ <p className="text-sm text-warning">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
+ <p className="text-sm text-destructive">※상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다.</p>
  </div>
  </div>
  <OrderReviewCTA
@@ -444,8 +444,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div className="grid gap-8 bp-lg:grid-cols-2">
  {/* 고객 정보 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+ <Card variant="elevatedGradient">
+ <CardHeader variant="sectionGradient">
  <CardTitle className="flex items-center space-x-2">
  <User className="h-5 w-5 text-accent" />
  <span>내 정보</span>
@@ -521,8 +521,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
 
  {/* 배송 정보 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+ <Card variant="elevatedGradient">
+ <CardHeader variant="sectionGradient">
  <CardTitle className="flex items-center space-x-2">
  <Truck className="h-5 w-5 text-success" />
  <span>배송 정보</span>
@@ -581,8 +581,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
 
  {/* 결제 정보 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+ <Card variant="elevatedGradient">
+ <CardHeader variant="sectionGradient">
  <CardTitle className="flex items-center space-x-2">
  <CreditCard className="h-5 w-5 text-foreground" />
  <span>결제 정보</span>
@@ -604,7 +604,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border">
  <div>
  <p className="text-sm text-muted-foreground">결제 금액</p>
- <p className="text-xl font-bold text-accent dark:text-accent">{formatCurrency(orderDetail.total)}</p>
+ <p className="text-xl font-bold text-accent">{formatCurrency(orderDetail.total)}</p>
  </div>
  </div>
  </div>
@@ -612,8 +612,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
 
  {/* 주문 항목 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+ <Card variant="elevatedGradient">
+ <CardHeader variant="sectionGradient">
  <CardTitle className="flex items-center space-x-2">
  <ShoppingCart className="h-5 w-5 text-warning" />
  <span>주문 항목</span>
@@ -661,8 +661,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
 
  {/* 요청사항 */}
- <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
- <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+ <Card variant="elevatedGradient">
+ <CardHeader variant="sectionGradient">
  <CardTitle>배송 요청사항</CardTitle>
  <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
  </CardHeader>

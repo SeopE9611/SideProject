@@ -392,7 +392,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     <h3 className="font-semibold text-foreground mb-1">{it.title}</h3>
                     <div className="flex items-center gap-2">
                       <Stars rating={it.rating} />
-                      <span className="text-sm font-medium text-warning dark:text-warning">{Number(it.rating).toFixed(1)}</span>
+                      <span className="text-sm font-medium text-warning">{Number(it.rating).toFixed(1)}</span>
                       {it.status === 'hidden' && (
                         <Badge variant="secondary" className="ml-2">
                           비공개
@@ -475,7 +475,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
           <CardContent className="p-12 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
-              <Star className="h-10 w-10 text-warning dark:text-warning" />
+              <Star className="h-10 w-10 text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">작성한 리뷰가 없습니다</h3>
             <p className="mb-6 text-muted-foreground">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>

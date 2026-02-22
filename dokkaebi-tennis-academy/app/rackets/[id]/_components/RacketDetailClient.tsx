@@ -235,7 +235,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {/* 가격 정보 */}
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-primary dark:text-primary">{racket.price?.toLocaleString()}원</span>
+                      <span className="text-3xl font-bold text-primary">{racket.price?.toLocaleString()}원</span>
                     </div>
                     <div className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3">* 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.</div>
                   </div>
@@ -295,7 +295,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {/* 배송 정보 */}
                   <div className="pt-4 border-t">
                     <h3 className="font-semibold mb-3 flex items-center">
-                      <Truck className="mr-2 h-5 w-5 text-primary dark:text-primary" />
+                      <Truck className="mr-2 h-5 w-5 text-primary" />
                       배송 정보
                     </h3>
                     <div className="space-y-2 text-sm">
@@ -318,7 +318,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             </Card>
 
             <div>
-              <Link href="/rackets" className="text-sm text-primary dark:text-primary hover:underline inline-flex items-center">
+              <Link href="/rackets" className="text-sm text-primary hover:underline inline-flex items-center">
                 <ArrowLeft className="mr-1 h-3 w-3" />
                 목록으로
               </Link>
@@ -377,7 +377,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.weight && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary dark:text-primary">무게</span>
+                          <span className="font-semibold text-primary">무게</span>
                           <span className="text-foreground font-medium">{racket.spec.weight} g</span>
                         </div>
                       </div>
@@ -385,7 +385,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.balance && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary dark:text-primary">밸런스</span>
+                          <span className="font-semibold text-primary">밸런스</span>
                           <span className="text-foreground font-medium">{racket.spec.balance} mm</span>
                         </div>
                       </div>
@@ -393,7 +393,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.headSize && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary dark:text-primary">헤드사이즈</span>
+                          <span className="font-semibold text-primary">헤드사이즈</span>
                           <span className="text-foreground font-medium">{racket.spec.headSize} in²</span>
                         </div>
                       </div>
@@ -401,7 +401,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.pattern && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary dark:text-primary">패턴</span>
+                          <span className="font-semibold text-primary">패턴</span>
                           <span className="text-foreground font-medium">{racket.spec.pattern}</span>
                         </div>
                       </div>
@@ -409,14 +409,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.gripSize && (
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-primary dark:text-primary">그립</span>
+                          <span className="font-semibold text-primary">그립</span>
                           <span className="text-foreground font-medium">{racket.spec.gripSize}</span>
                         </div>
                       </div>
                     )}
                     <div className="bg-muted p-4 rounded-lg border border-border">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-primary dark:text-primary">상태</span>
+                        <span className="font-semibold text-primary">상태</span>
                         <span className="text-foreground font-medium">{racket.condition}</span>
                       </div>
                     </div>

@@ -271,7 +271,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 */}
             <div className="mb-1 text-sm text-foreground">
-              <span className="font-medium text-success dark:text-success">게시판</span>
+              <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>{config.boardTitle}</span>
             </div>

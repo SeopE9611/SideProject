@@ -76,7 +76,7 @@ export default function QnAList() {
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
-            <MessageCircleQuestion className="h-10 w-10 text-primary dark:text-primary" />
+            <MessageCircleQuestion className="h-10 w-10 text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
           <p className="mb-6 text-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
@@ -104,7 +104,7 @@ export default function QnAList() {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
-                  <MessageCircleQuestion className="h-6 w-6 text-primary dark:text-primary" />
+                  <MessageCircleQuestion className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <Badge variant="outline" className="mb-2 border-border text-primary dark:border-border dark:text-primary">

@@ -11,6 +11,7 @@ const cardVariants = cva('rounded-lg bg-card text-card-foreground shadow-sm', {
       ghost: '',
       // 배경 강조가 필요한 섹션 카드
       muted: 'border bg-muted text-foreground',
+      elevatedGradient: 'border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden',
     },
   },
   defaultVariants: {
@@ -23,7 +24,21 @@ type CardProps = React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof card
 const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant, ...props }, ref) => <div ref={ref} className={cn(cardVariants({ variant }), className)} {...props} />);
 Card.displayName = 'Card';
 
-const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />);
+const cardHeaderVariants = cva('flex flex-col space-y-1.5 p-6', {
+  variants: {
+    variant: {
+      default: '',
+      sectionGradient: 'bg-gradient-to-r from-background to-card border-b',
+    },
+  },
+  defaultVariants: {
+    variant: 'default',
+  },
+});
+
+type CardHeaderProps = React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardHeaderVariants>;
+
+const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(({ className, variant, ...props }, ref) => <div ref={ref} className={cn(cardHeaderVariants({ variant }), className)} {...props} />);
 CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(({ className, ...props }, ref) => <h3 ref={ref} className={cn('text-2xl font-semibold leading-none tracking-tight', className)} {...props} />);

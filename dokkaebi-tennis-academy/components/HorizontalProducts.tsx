@@ -236,10 +236,10 @@ export default function HorizontalProducts({
       flex flex-col items-center justify-center"
     >
       <div
-        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-accent dark:bg-accent 
+        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-accent 
         flex items-center justify-center"
       >
-        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-accent dark:bg-accent" />
+        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-accent" />
       </div>
       <div className="text-center space-y-1.5">
         <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
@@ -271,7 +271,7 @@ export default function HorizontalProducts({
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div
-          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-accent dark:bg-accent rounded-full mx-auto 
+          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-accent rounded-full mx-auto 
           flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
           <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-muted-foreground" />
@@ -290,7 +290,7 @@ export default function HorizontalProducts({
       bg-background dark:bg-card/50
       flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-accent dark:bg-accent flex items-center justify-center mb-3">
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-accent flex items-center justify-center mb-3">
         <Inbox className="h-6 w-6 text-muted-foreground" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
@@ -301,11 +301,11 @@ export default function HorizontalProducts({
   const ErrorCard = () => (
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-destructive dark:bg-destructive
+      bg-destructive
       flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive dark:bg-destructive flex items-center justify-center mb-3">
-        <AlertTriangle className="h-6 w-6 text-destructive dark:text-destructive" />
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive flex items-center justify-center mb-3">
+        <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{errorTitle ?? '불러오지 못했어요'}</div>
       <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>

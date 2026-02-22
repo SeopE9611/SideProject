@@ -195,10 +195,10 @@ export default function OrderList() {
     return (
       <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive dark:bg-destructive">
-            <Package className="h-8 w-8 text-destructive dark:text-destructive" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive">
+            <Package className="h-8 w-8 text-destructive" />
           </div>
-          <p className="text-destructive dark:text-destructive">주문 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="text-destructive">주문 내역을 불러오는 중 오류가 발생했습니다.</p>
         </CardContent>
       </Card>
     );
@@ -215,7 +215,7 @@ export default function OrderList() {
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
-            <ShoppingBag className="h-10 w-10 text-primary dark:text-primary" />
+            <ShoppingBag className="h-10 w-10 text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
           <p className="text-foreground">아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!</p>
@@ -260,7 +260,7 @@ export default function OrderList() {
               <div className="flex items-start justify-between gap-3 mb-6">
                 <div className="flex items-start gap-3 min-w-0">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
-                    <ShoppingBag className="h-6 w-6 text-primary dark:text-primary" />
+                    <ShoppingBag className="h-6 w-6 text-primary" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 min-w-0">

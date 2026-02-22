@@ -676,7 +676,7 @@ export default function LoginPageClient() {
  />
  </div>
  {loginFieldErrors.email && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
  </div>
@@ -713,7 +713,7 @@ export default function LoginPageClient() {
  </Button>
  </div>
  {loginFieldErrors.password && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
  </div>
@@ -966,7 +966,7 @@ export default function LoginPageClient() {
  </Button>
  </div>
  {registerFieldErrors.password && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
  </div>
@@ -995,7 +995,7 @@ export default function LoginPageClient() {
  </Button>
  </div>
  {password && confirmPassword && password !== confirmPassword && (
- <div className="flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  비밀번호가 일치하지 않습니다.
  </div>
@@ -1021,7 +1021,7 @@ export default function LoginPageClient() {
  />
  </div>
  {registerFieldErrors.name && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
  </div>
@@ -1048,7 +1048,7 @@ export default function LoginPageClient() {
  />
  </div>
  {registerFieldErrors.phone && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
  </div>
@@ -1073,7 +1073,7 @@ export default function LoginPageClient() {
  </div>
  <Input id="register-postal-code" value={postalCode} placeholder="우편번호를 입력하세요" readOnly className="bg-muted cursor-not-allowed max-w-xs h-12 border-border" />
  {registerFieldErrors.postalCode && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
  </div>
@@ -1085,7 +1085,7 @@ export default function LoginPageClient() {
  <Label className="text-foreground font-medium">기본 배송지 주소</Label>
  <Input id="register-address" value={address} placeholder="기본 주소를 입력하세요" readOnly className="bg-muted cursor-not-allowed h-12 border-border" />
  {registerFieldErrors.address && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
  </div>
@@ -1109,7 +1109,7 @@ export default function LoginPageClient() {
  </div>
  </div>
  {registerFieldErrors.addressDetail && (
- <div className="mt-2 flex items-center gap-2 text-sm text-destructive dark:text-destructive">
+ <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
  <AlertCircle className="h-4 w-4" />
  <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
  </div>

@@ -255,9 +255,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Card className="border-0 bg-gradient-to-br from-destructive/10 to-destructive/10 dark:from-destructive/20 dark:to-destructive/20">
  <CardContent className="p-8 text-center">
  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/15 dark:bg-destructive/20">
- <AlertCircle className="h-8 w-8 text-destructive dark:text-destructive" />
+ <AlertCircle className="h-8 w-8 text-destructive" />
  </div>
- <p className="text-destructive dark:text-destructive">에러: {err}</p>
+ <p className="text-destructive">에러: {err}</p>
  </CardContent>
  </Card>
  );
@@ -424,7 +424,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  }`}
  >
  <div className="flex items-center gap-3">
- {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-primary dark:text-primary" /> : <AlertCircle className="h-6 w-6 text-primary" />}
+ {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-primary" /> : <AlertCircle className="h-6 w-6 text-primary" />}
  <div>
  <p className="font-semibold text-lg">{banner.title}</p>
  {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}
@@ -588,7 +588,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  {data?.shipping?.return?.trackingNumber && (
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/20">
- <Truck className="h-5 w-5 text-primary dark:text-primary" />
+ <Truck className="h-5 w-5 text-primary" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">반납 운송장 등록</p>
@@ -605,7 +605,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/20">
- <CheckCircle className="h-5 w-5 text-primary dark:text-primary" />
+ <CheckCircle className="h-5 w-5 text-primary" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">반납 완료</p>
@@ -615,7 +615,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/20">
- <CreditCard className="h-5 w-5 text-accent dark:text-accent" />
+ <CreditCard className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">보증금 환불</p>

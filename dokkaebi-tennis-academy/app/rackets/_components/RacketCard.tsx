@@ -129,7 +129,7 @@ const RacketCard = React.memo(
                   </div>
                 </div>
                 <div className="text-left bp-lg:text-right">
-                  <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-primary dark:text-primary">{racket.price.toLocaleString()}원</div>
+                  <div className="text-lg bp-sm:text-2xl bp-md:text-3xl font-bold text-primary">{racket.price.toLocaleString()}원</div>
                   <div className="mt-3 grid grid-cols-1 bp-sm:grid-cols-2 gap-2 bp-lg:max-w-[340px] bp-lg:ml-auto">
                     {canBuy ? (
                       <Button asChild size="sm" className="shadow-lg text-xs bp-sm:text-base w-full justify-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -233,7 +233,7 @@ const RacketCard = React.memo(
 
         <CardFooter className="p-3 bp-sm:p-6 pt-0">
           <div className="w-full">
-            <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-primary dark:text-primary">{racket.price.toLocaleString()}원</div>
+            <div className="font-bold text-base bp-sm:text-xl bp-md:text-2xl text-primary">{racket.price.toLocaleString()}원</div>
 
             <div className="mt-3 flex gap-2">
               {canBuy ? (

@@ -31,31 +31,31 @@ function getIconProps(status: string) {
       return {
         Icon: Truck,
         wrapperClasses: 'border-border bg-primary dark:border-border dark:bg-primary',
-        iconClasses: 'text-primary dark:text-primary',
+        iconClasses: 'text-primary',
       };
     case '배송완료':
       return {
         Icon: PackageCheck,
         wrapperClasses: 'border-border bg-success/10 dark:border-border dark:bg-success/10',
-        iconClasses: 'text-success dark:text-success',
+        iconClasses: 'text-success',
       };
     case '환불':
       return {
         Icon: RotateCcw,
         wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
-        iconClasses: 'text-destructive dark:text-destructive',
+        iconClasses: 'text-destructive',
       };
     case '취소':
       return {
         Icon: XCircle,
         wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
-        iconClasses: 'text-destructive dark:text-destructive',
+        iconClasses: 'text-destructive',
       };
     case '배송정보변경':
       return {
         Icon: Pencil,
         wrapperClasses: 'border-border bg-warning/10 dark:border-border dark:bg-warning/10',
-        iconClasses: 'text-warning dark:text-warning',
+        iconClasses: 'text-warning',
       };
     default:
       return {

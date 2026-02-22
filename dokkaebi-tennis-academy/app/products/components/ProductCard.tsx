@@ -184,7 +184,7 @@ const ProductCard = React.memo(
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-xl sm:text-2xl font-bold text-primary dark:text-primary">{product.price.toLocaleString()}원</div>
+                  <div className="text-xl sm:text-2xl font-bold text-primary">{product.price.toLocaleString()}원</div>
                   <div className="text-sm text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
                 </div>
               </div>
@@ -195,7 +195,7 @@ const ProductCard = React.memo(
                     {Object.entries(product.features)
                       .slice(0, 3)
                       .map(([k, v]) => (
-                        <span key={k} className="px-2 py-1 rounded-md bg-primary dark:bg-primary text-foreground">
+                        <span key={k} className="px-2 py-1 rounded-md bg-primary text-foreground">
                           {keyMap[k as keyof typeof keyMap] || k}: {v}/5
                         </span>
                       ))}
@@ -321,7 +321,7 @@ const ProductCard = React.memo(
                   ))}
             </div>
             <div className="flex justify-end">
-              <div className="font-bold text-base sm:text-lg text-primary dark:text-primary">{product.price.toLocaleString()}원</div>
+              <div className="font-bold text-base sm:text-lg text-primary">{product.price.toLocaleString()}원</div>
             </div>
           </CardContent>
 

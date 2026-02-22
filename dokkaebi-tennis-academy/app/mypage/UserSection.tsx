@@ -23,7 +23,7 @@ export default function UserSection({ user }: Props) {
     <div className="border-0 p-6 rounded-2xl shadow-xl bg-gradient-to-r from-background to-card dark:from-background dark:to-card backdrop-blur-sm">
       <div className="flex items-center gap-4 mb-4">
         <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-2xl p-3 shadow-lg">
-          <User className="h-6 w-6 text-primary dark:text-primary" />
+          <User className="h-6 w-6 text-primary" />
         </div>
         <div>
           <p className="text-xl font-bold text-foreground">{user?.name ?? '이름 없음'}님, 반갑습니다!</p>

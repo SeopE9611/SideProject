@@ -376,7 +376,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       </div>
       {/* 로딩 오버레이 */}
       {isUserLoading && (
-        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-ring dark:ring-ring grid place-content-center">
+        <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-ring grid place-content-center">
           <div className="flex items-center gap-3 text-foreground">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
             <span className="text-sm">회원 정보 불러오는 중…</span>
@@ -386,13 +386,13 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       {(orderId || isMember) && (
         <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-4">
           <div className="flex items-start space-x-3">
-            <Shield className="h-5 w-5 text-warning dark:text-warning mt-0.5 flex-shrink-0" />
+            <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-warning dark:text-warning mb-1">📢 안내사항</p>
-              <p className="text-warning dark:text-warning leading-relaxed">
+              <p className="font-medium text-warning mb-1">📢 안내사항</p>
+              <p className="text-warning leading-relaxed">
                 신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
                 <br />
-                변경이 필요한 경우, <span className="text-warning dark:text-warning font-semibold">추가 요청사항</span>에 기재해주세요.
+                변경이 필요한 경우, <span className="text-warning font-semibold">추가 요청사항</span>에 기재해주세요.
               </p>
             </div>
           </div>

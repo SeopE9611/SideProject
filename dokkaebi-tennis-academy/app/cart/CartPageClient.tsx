@@ -349,7 +349,7 @@ export default function CartPageClient() {
                     <div>
                       <CardTitle className="flex items-center gap-3">
                         <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
-                          <ShoppingBag className="h-5 w-5 text-accent dark:text-accent" />
+                          <ShoppingBag className="h-5 w-5 text-accent" />
                         </span>
                         선택한 상품 ({cartItems.length}개)
                       </CardTitle>
@@ -596,21 +596,21 @@ export default function CartPageClient() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">배송비</span>
-                        <span className={shippingFee === 0 ? 'font-semibold text-accent dark:text-accent' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
+                        <span className={shippingFee === 0 ? 'font-semibold text-accent' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
                       </div>
                       <Separator className="opacity-40" />
                       <div className="flex items-center justify-between text-xl font-bold">
                         <span>총 결제 금액</span>
-                        <span className="tabular-nums text-accent dark:text-accent">{formatKRW(total)}원</span>
+                        <span className="tabular-nums text-accent">{formatKRW(total)}원</span>
                       </div>
                     </div>
 
                     <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border">
-                      <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
+                      <div className="flex items-center gap-2 text-accent mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 혜택</span>
                       </div>
-                      <p className="text-sm text-accent dark:text-accent">
+                      <p className="text-sm text-accent">
                         30,000원 이상 구매 시 무료배송
                         {subtotal < 30000 && <span className="block mt-1 font-semibold">{(30000 - subtotal).toLocaleString()}원 더 구매하면 무료배송!</span>}
                       </p>
@@ -708,7 +708,7 @@ export default function CartPageClient() {
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">총 결제 금액</span>
-                <span className="tabular-nums text-lg font-bold text-accent dark:text-accent">{formatKRW(total)}원</span>
+                <span className="tabular-nums text-lg font-bold text-accent">{formatKRW(total)}원</span>
               </div>
               {blockServiceCheckout ? (
                 <div className="space-y-2">

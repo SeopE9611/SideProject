@@ -41,7 +41,7 @@ function getActionMeta(action: HistoryItem['action']) {
         label: '결제 확인',
         Icon: CreditCard,
         wrapperClasses: 'border-border bg-primary dark:border-border dark:bg-primary',
-        iconClasses: 'text-primary dark:text-primary',
+        iconClasses: 'text-primary',
       };
     case 'out':
       return {
@@ -62,14 +62,14 @@ function getActionMeta(action: HistoryItem['action']) {
         label: '취소 요청',
         Icon: Clock,
         wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
-        iconClasses: 'text-primary dark:text-primary',
+        iconClasses: 'text-primary',
       };
     case 'cancel-approved':
       return {
         label: '취소 승인',
         Icon: XCircle,
         wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
-        iconClasses: 'text-destructive dark:text-destructive',
+        iconClasses: 'text-destructive',
       };
     case 'cancel-rejected':
       return {
@@ -83,7 +83,7 @@ function getActionMeta(action: HistoryItem['action']) {
         label: '취소 철회',
         Icon: Undo2,
         wrapperClasses: 'border-border bg-warning/10 dark:border-border dark:bg-warning/10',
-        iconClasses: 'text-warning dark:text-warning',
+        iconClasses: 'text-warning',
       };
   }
 }
@@ -149,7 +149,7 @@ export default function AdminRentalHistory({ id }: Props) {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-b from-background to-card dark:from-background dark:to-card">
+    <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-gradient-to-b from-background to-card dark:from-background dark:to-card">
       <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-foreground" />

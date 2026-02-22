@@ -160,10 +160,10 @@ export default function PriceSummaryCard({
           {usingPackage && (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Ticket className="h-4 w-4 text-primary dark:text-primary" />
+                <Ticket className="h-4 w-4 text-primary" />
                 <p className="text-sm font-medium">패키지 적용</p>
               </div>
-              <p className="text-sm text-primary dark:text-primary">교체비 0원</p>
+              <p className="text-sm text-primary">교체비 0원</p>
             </div>
           )}
 
@@ -172,7 +172,7 @@ export default function PriceSummaryCard({
           {/* 합계 강조 */}
           <div className="flex items-center justify-between">
             <p className="text-base font-semibold">{totalLabel ?? '예상 결제 금액'}</p>
-            <p className="text-base font-bold tabular-nums rounded-md px-2 py-1 ring-1 ring-inset ring-ring dark:ring-ring" aria-live="polite">
+            <p className="text-base font-bold tabular-nums rounded-md px-2 py-1 ring-1 ring-inset ring-ring" aria-live="polite">
               {won(total)}
             </p>
           </div>

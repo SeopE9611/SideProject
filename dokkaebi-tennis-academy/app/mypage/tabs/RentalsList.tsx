@@ -111,10 +111,10 @@ export default function RentalsList() {
     return (
       <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive dark:bg-destructive">
-            <Briefcase className="h-8 w-8 text-destructive dark:text-destructive" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive">
+            <Briefcase className="h-8 w-8 text-destructive" />
           </div>
-          <p className="text-destructive dark:text-destructive">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="text-destructive">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
         </CardContent>
       </Card>
     );
@@ -145,7 +145,7 @@ export default function RentalsList() {
         <Card
           key={r.id}
           className={`group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1
-            ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring dark:ring-ring' : ''}`}
+            ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring' : ''}`}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-card rounded-lg" />

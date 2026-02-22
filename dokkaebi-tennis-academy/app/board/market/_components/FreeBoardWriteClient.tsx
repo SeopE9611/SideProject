@@ -387,7 +387,7 @@ export default function FreeBoardWriteClient() {
           <div>
             {/* 브레드크럼: 게시판 > 중고 거래 게시판 > 글쓰기 */}
             <div className="mb-1 text-sm text-muted-foreground">
-              <span className="font-medium text-success dark:text-success">게시판</span>
+              <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/market" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 중고 거래 게시판
@@ -450,7 +450,7 @@ export default function FreeBoardWriteClient() {
                     </button>
                   ))}
                 </div>
-                {fieldErrors.category ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.category}</p> : null}
+                {fieldErrors.category ? <p className="text-xs text-destructive">{fieldErrors.category}</p> : null}
               </div>
               {isMarketBrandCategory(category) && (
                 <div className="space-y-2" ref={brandRef}>
@@ -471,7 +471,7 @@ export default function FreeBoardWriteClient() {
                       </option>
                     ))}
                   </select>
-                  {fieldErrors.brand ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.brand}</p> : null}
+                  {fieldErrors.brand ? <p className="text-xs text-destructive">{fieldErrors.brand}</p> : null}
                   <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
                 </div>
               )}
@@ -494,7 +494,7 @@ export default function FreeBoardWriteClient() {
                 <p className="text-xs text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
-                {fieldErrors.title ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.title}</p> : null}
+                {fieldErrors.title ? <p className="text-xs text-destructive">{fieldErrors.title}</p> : null}
               </div>
 
               {/* 내용 입력 */}
@@ -515,14 +515,14 @@ export default function FreeBoardWriteClient() {
                 <p className="text-xs text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
-                {fieldErrors.content ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.content}</p> : null}
+                {fieldErrors.content ? <p className="text-xs text-destructive">{fieldErrors.content}</p> : null}
                 <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
-                {fieldErrors.attachments ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.attachments}</p> : null}
+                {fieldErrors.attachments ? <p className="text-xs text-destructive">{fieldErrors.attachments}</p> : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="image">이미지 업로드</TabsTrigger>
