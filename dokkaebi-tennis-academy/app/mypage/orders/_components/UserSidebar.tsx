@@ -79,7 +79,7 @@ export function UserSidebar() {
       label: '회원 정보 수정',
       value: 'profile',
       icon: UserCog,
-      gradient: 'from-background0 to-card',
+      gradient: 'from-background to-card',
       bgGradient: 'from-background to-card dark:from-background dark:to-card',
     },
   ];
