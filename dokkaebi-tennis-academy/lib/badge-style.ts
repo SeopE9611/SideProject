@@ -11,7 +11,7 @@ const SEMANTIC_BADGE = {
   success: 'bg-success/15 text-success border border-success/30',
   warning: 'bg-warning/15 text-warning border border-warning/30',
   info: 'bg-primary/10 text-primary border border-primary/20',
-  neutral: 'bg-muted text-foreground border border-border',
+  neutral: 'bg-card text-foreground border border-border',
   destructive: 'bg-destructive/15 text-destructive border border-destructive/30',
 } as const;
 

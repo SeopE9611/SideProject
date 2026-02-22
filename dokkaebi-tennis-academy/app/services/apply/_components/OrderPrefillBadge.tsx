@@ -14,12 +14,12 @@ export default function OrderPrefillBadge({ orderId, rentalId }: OrderPrefillBad
 
   return (
     <div className="mb-6">
-      <div className="inline-flex items-center gap-2 rounded-lg bg-primary  to-card dark:from-background dark:to-card border border-border px-4 py-2 shadow-sm">
+      <div className="inline-flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2 shadow-sm">
         <div className="flex items-center gap-1.5">
-          <div className="h-2 w-2 rounded-full bg-accent0 dark:bg-primary animate-pulse" />
+          <div className="h-2 w-2 rounded-full bg-primary dark:bg-primary/80 animate-pulse" />
           <span className="font-semibold text-primary">프리필</span>
         </div>
-        <span className="h-4 w-px bg-primary" />
+        <span className="h-4 w-px bg-primary/40" />
         <span className="text-sm text-muted-foreground">{typeLabel}</span>
         <code className="rounded bg-card px-2 py-0.5 text-xs font-mono text-primary border border-border">{resolvedId}</code>
         <span className="text-sm text-muted-foreground">기준으로 자동 채워짐</span>

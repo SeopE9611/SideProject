@@ -178,7 +178,7 @@ export default function OrderLookupPage() {
   };
 
   return (
-    <div className="min-h-full bg-background from-background  ">
+    <div className="min-h-full bg-background">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-primary   ">
         <div className="absolute inset-0 bg-overlay/10"></div>
@@ -205,7 +205,7 @@ export default function OrderLookupPage() {
           {/* Main Card */}
           <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary from-background 0 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold bg-primary   bg-clip-text text-transparent">주문 정보 입력</CardTitle>
@@ -300,7 +300,7 @@ export default function OrderLookupPage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-primary from-background  border border-border rounded-lg p-4">
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       <Clock className="w-5 h-5 text-primary mt-0.5" />
@@ -317,7 +317,7 @@ export default function OrderLookupPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 font-semibold bg-primary   hover:from-background hover:to-card text-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

@@ -118,7 +118,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   return (
     <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-primary text-primary-foreground py-8">
+      <div className="relative bg-muted text-foreground py-8 border border-primary/20 rounded-2xl">
         <div className="absolute inset-0 bg-overlay/20"></div>
         {/* Tennis court line pattern */}
         <div className="absolute inset-0 opacity-10">

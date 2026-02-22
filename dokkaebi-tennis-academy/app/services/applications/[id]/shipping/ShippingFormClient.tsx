@@ -161,7 +161,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
-                <Button onClick={() => router.push(`/mypage/applications/${applicationId}`)} className="bg-primary  to-card hover:0 hover:to-card">
+                <Button onClick={() => router.push(`/mypage/applications/${applicationId}`)} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   신청 상세로 이동
                 </Button>
               </div>
@@ -312,8 +312,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
         {/* Header Section */}
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-px bg-primary from-transparent to-card"></div>
-            <div className="w-14 h-14 bg-background  to-card rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-px bg-primary/30"></div>
+            <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center shadow-lg">
               <Truck className="w-7 h-7 text-foreground" />
             </div>
             <div className="w-12 h-px bg-gradient-to-l from-transparent to-card"></div>
@@ -324,10 +324,10 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Info Card */}
-          <Card className="border-border bg-background  to-card dark:from-background dark:to-card shadow-md">
+          <Card className="border-border bg-card shadow-md">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-primary dark:bg-accent0 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Clock className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="space-y-2">
@@ -347,7 +347,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
             <CardContent className="p-8">
               {/* Form Title with Divider */}
               <div className="flex items-center gap-4 mb-8">
-                <div className="flex-1 h-px bg-primary from-transparent to-card dark:to-card"></div>
+                <div className="flex-1 h-px bg-primary/30"></div>
                 <div className="flex items-center gap-2 text-foreground">
                   <Package className="w-5 h-5" />
                   <span className="font-semibold">배송 정보</span>
@@ -471,7 +471,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 h-12 text-base bg-primary  to-card hover:0 hover:to-card text-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>

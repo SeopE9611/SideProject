@@ -109,7 +109,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
   return (
     <div className="relative space-y-5">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary 0  mb-4">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
           <User className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
