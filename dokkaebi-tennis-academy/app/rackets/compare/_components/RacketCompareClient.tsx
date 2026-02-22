@@ -200,7 +200,7 @@ export default function RacketCompareClient() {
 
         {/* 로딩 상태 */}
         {!mounted ? (
-          <div className="rounded-xl bg-muted/30 dark:bg-muted/20 ring-1 ring-black/5 dark:ring-white/10 p-6">
+          <div className="rounded-xl bg-muted/30 dark:bg-muted/20 ring-1 ring-border/10 p-6">
             <div className="flex items-center gap-3 text-muted-foreground">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               <span className="text-sm">비교 목록을 불러오는 중...</span>
@@ -221,8 +221,8 @@ export default function RacketCompareClient() {
                   <div className="text-sm font-medium">현재 선택된 라켓</div>
                   <div className="flex flex-wrap gap-2">
                     {list.map((r, idx) => (
-                      <div key={r.id} className={cn('group flex items-center gap-3 rounded-lg p-2 pr-3', 'bg-muted/30 dark:bg-muted/20', 'ring-1 ring-black/5 dark:ring-white/10', 'transition-all duration-200', 'hover:ring-primary/30')}>
-                        <div className={cn('relative h-12 w-12 overflow-hidden rounded-md bg-muted/50', 'ring-1 ring-black/5 dark:ring-white/10')}>
+                      <div key={r.id} className={cn('group flex items-center gap-3 rounded-lg p-2 pr-3', 'bg-muted/30', 'ring-1 ring-border/10', 'transition-all duration-200', 'hover:ring-primary/30')}>
+                        <div className={cn('relative h-12 w-12 overflow-hidden rounded-md bg-muted/50', 'ring-1 ring-border/10')}>
                           {r.image ? (
                             <Image src={r.image || '/placeholder.svg'} alt={`${racketBrandLabel(r.brand)} ${r.model}`} fill className="object-cover" unoptimized />
                           ) : (
@@ -266,7 +266,7 @@ export default function RacketCompareClient() {
               <span className="text-sm text-muted-foreground">각 열 상단의 X로 개별 제거 가능합니다.</span>
             </div>
 
-            <div className="overflow-x-auto rounded-xl bg-card/80 ring-1 ring-black/5 dark:ring-white/10 shadow-sm">
+            <div className="overflow-x-auto rounded-xl bg-card/80 ring-1 ring-border/10 shadow-sm">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/30 dark:bg-muted/20">
@@ -310,7 +310,7 @@ export default function RacketCompareClient() {
                         </div>
 
                         <div className="mt-3 flex items-center gap-3">
-                          <div className={cn('relative h-14 w-14 overflow-hidden rounded-lg bg-muted/50 dark:bg-muted/30', 'ring-1 ring-black/5 dark:ring-white/10', !r.image && 'flex items-center justify-center')}>
+                          <div className={cn('relative h-14 w-14 overflow-hidden rounded-lg bg-muted/50', 'ring-1 ring-border/10', !r.image && 'flex items-center justify-center')}>
                             {r.image ? <Image src={r.image || '/placeholder.svg'} alt={`${racketBrandLabel(r.brand)} ${r.model}`} fill className="object-cover" unoptimized /> : <span className="text-[10px] text-muted-foreground">No Image</span>}
                           </div>
                           <div className="text-xs text-muted-foreground font-normal">

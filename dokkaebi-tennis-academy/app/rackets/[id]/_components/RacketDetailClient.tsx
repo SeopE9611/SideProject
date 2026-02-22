@@ -119,7 +119,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-primary text-primary-foreground py-8">
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-overlay/20"></div>
         {/* Tennis court line pattern */}
         <div className="absolute inset-0 opacity-10">
           <svg className="w-full h-full" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -167,10 +167,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 )}
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-primary-foreground hover:bg-black/70" onClick={prevImage}>
+                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 bg-overlay/50 text-primary-foreground hover:bg-overlay/70" onClick={prevImage}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-primary-foreground hover:bg-black/70" onClick={nextImage}>
+                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 bg-overlay/50 text-primary-foreground hover:bg-overlay/70" onClick={nextImage}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </>

@@ -85,7 +85,7 @@ export default function RacketsClient() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 준비중</div>
                 )}
-                {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-white shadow">대여 불가</span>}
+                {it.rental?.enabled === false && <span className="absolute top-2 left-2 rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-primary-foreground shadow">대여 불가</span>}
               </div>
               <div className="p-3 space-y-1">
                 <div className="text-sm text-muted-foreground">{it.brand}</div>

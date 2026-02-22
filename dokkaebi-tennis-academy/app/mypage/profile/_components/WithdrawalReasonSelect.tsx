@@ -70,7 +70,7 @@ export default function WithdrawalReasonSelect({ onSubmit }: WithdrawalReasonSel
       {selectedReason === '기타' && <Textarea value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="자세한 사유를 입력해주세요 (선택사항)" />}
 
       {/* 제출 버튼 */}
-      <button onClick={handleSubmit} disabled={submitting} className={`px-4 py-2 text-sm font-medium text-white bg-destructive hover:bg-destructive/90 rounded-md ${submitting ? 'opacity-60 cursor-not-allowed' : ''}`}>
+      <button onClick={handleSubmit} disabled={submitting} className={`px-4 py-2 text-sm font-medium text-primary-foreground bg-destructive hover:bg-destructive/90 rounded-md ${submitting ? 'opacity-60 cursor-not-allowed' : ''}`}>
         탈퇴하기
       </button>
     </div>

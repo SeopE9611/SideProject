@@ -48,7 +48,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                 {s.caption && (
                   <div className="absolute bottom-4 left-4 bp-sm:bottom-6 bp-sm:left-6 bp-md:bottom-8 bp-md:left-10">
                     <span
-                      className="inline-block rounded-full bg-black/50 text-white
+                      className="inline-block rounded-full bg-overlay/50 text-primary-foreground
                                        text-xs bp-md:text-sm px-3 py-1 backdrop-blur"
                     >
                       {s.caption}
@@ -70,7 +70,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
       {/* 좌우 네비게이션 */}
       <button
         onClick={scrollPrev}
-        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10 bg-card/80 dark:bg-card/80
+        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-border/10 bg-card/80
                    border border-border
                    hover:bg-card shadow-md"
         aria-label="이전 배너"
@@ -79,7 +79,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10 bg-card/80 dark:bg-card/80
+        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-border/10 bg-card/80
                    border border-border
                    hover:bg-card shadow-md"
         aria-label="다음 배너"

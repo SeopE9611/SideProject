@@ -150,7 +150,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
 
             <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-                <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
@@ -208,7 +208,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                   className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card h-10 sm:h-11 text-sm sm:text-base"
                   disabled={isBusy}
                 >
-                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
+                  {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
                 {isAdmin && (

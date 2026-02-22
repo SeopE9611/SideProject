@@ -201,7 +201,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="min-h-full bg-gradient-to-b from-background via-muted/40 to-muted/60 dark:from-background dark:via-muted/40 dark:to-background">
  <div className="relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary py-20">
- <div className="absolute inset-0 bg-black/20"></div>
+ <div className="absolute inset-0 bg-overlay/20"></div>
  <div className="absolute inset-0 opacity-10">
  <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
  <defs>

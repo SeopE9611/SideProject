@@ -100,7 +100,7 @@ export default function ClassesPage() {
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-            <Calendar className="h-6 w-6 text-white" />
+            <Calendar className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">클래스 관리</h1>
@@ -179,8 +179,8 @@ export default function ClassesPage() {
             </Button>
           </div>
         </CardHeader>
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 사용하지 않습니다. (아카데미 클래스 관리)</p>
+        <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+          <p className="text-primary-foreground text-2xl md:text-4xl font-semibold">이 기능은 사용하지 않습니다. (아카데미 클래스 관리)</p>
           <p className="text-lg text-muted-foreground">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
         </div>
         <CardContent>

@@ -35,7 +35,7 @@ export default function HotBoardPage() {
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 shadow-lg">
-                <Flame className="h-5 w-5 text-white" />
+                <Flame className="h-5 w-5 text-primary-foreground" />
               </div>
               <CardTitle className="text-lg md:text-xl">인기글 모아보기 기능을 준비 중입니다</CardTitle>
             </div>

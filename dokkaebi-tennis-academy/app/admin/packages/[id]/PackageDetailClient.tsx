@@ -543,7 +543,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
           {/* 연장 모달 */}
           {showExtensionForm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
               <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
                 <CardHeader>
                   <CardTitle>패키지 연장</CardTitle>
@@ -607,7 +607,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
           {/* 횟수 조절 모달 */}
           {editingSessions && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
               <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
                 <CardHeader>
                   <CardTitle>횟수 조절</CardTitle>

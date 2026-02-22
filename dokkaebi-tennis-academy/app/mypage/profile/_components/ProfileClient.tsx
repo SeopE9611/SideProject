@@ -289,7 +289,7 @@ export default function ProfileClient({ user }: Props) {
  />
 
  <div className="relative overflow-hidden bg-card text-foreground">
- <div className="absolute inset-0 bg-black/10"></div>
+ <div className="absolute inset-0 bg-overlay/10"></div>
  <div className="absolute inset-0">
  <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
  <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full " />
@@ -299,7 +299,7 @@ export default function ProfileClient({ user }: Props) {
  <div className="relative container mx-auto px-4 py-16">
  <div className="max-w-4xl mx-auto">
  <div className="flex items-center gap-6 mb-8">
- <Link href="/mypage" className="inline-flex items-center text-white/80 hover:text-white transition-colors font-medium">
+ <Link href="/mypage" className="inline-flex items-center text-foreground/80 hover:text-primary-foreground transition-colors font-medium">
  <ArrowLeft className="mr-2 h-5 w-5" />
  마이페이지로 돌아가기
  </Link>
@@ -366,7 +366,7 @@ export default function ProfileClient({ user }: Props) {
  </CardHeader>
  <CardContent className="p-8 space-y-8">
  <div className="flex items-center gap-6">
- <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
+ <Avatar className="h-24 w-24 border-4 border-border shadow-xl">
  <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
  <AvatarFallback className="text-2xl bg-accent text-accent-foreground">{profileData.name.charAt(0)}</AvatarFallback>
  </Avatar>

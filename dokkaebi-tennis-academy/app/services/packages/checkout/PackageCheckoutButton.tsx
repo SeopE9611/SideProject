@@ -293,7 +293,7 @@ export default function PackageCheckoutButton({
 
       {/* 제출 중 전체 오버레이 */}
       {isSubmitting && (
-        <div className="fixed inset-0 z-[60] bg-black/10 backdrop-blur-[2px] cursor-wait">
+        <div className="fixed inset-0 z-[60] bg-overlay/10 backdrop-blur-[2px] cursor-wait">
           <div className="absolute inset-0 grid place-items-center">
             <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
               <Loader2 className="h-5 w-5 animate-spin" />

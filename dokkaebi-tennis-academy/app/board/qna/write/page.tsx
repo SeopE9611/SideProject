@@ -411,7 +411,7 @@ export default function QnaWritePage() {
             </Button>
             <div className="flex items-center space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-                <MessageSquare className="h-6 w-6 text-white" />
+                <MessageSquare className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">문의하기</h1>
@@ -420,7 +420,7 @@ export default function QnaWritePage() {
             </div>
           </div>
 
-          <Card className="border-0 bg-card/80 dark:bg-card/80 shadow-xl backdrop-blur-sm">
+          <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
               <CardTitle className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-success" />
@@ -649,10 +649,10 @@ export default function QnaWritePage() {
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
                                   <div
                                     className="opacity-0 group-hover:opacity-100 transition-opacity duration-150
-                    rounded-full bg-black/50 p-1.5 backdrop-blur-[1px]"
+                    rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]"
                                   >
                                     {/* lucide-react 사용 시 */}
-                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-primary-foreground" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M21 21l-4.35-4.35" />
                                       <circle cx="11" cy="11" r="8" />
                                     </svg>
@@ -696,7 +696,7 @@ export default function QnaWritePage() {
             </CardFooter>
 
             <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
-              <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
+              <DialogContent className="sm:max-w-4xl p-0 bg-overlay/90 text-primary-foreground border-0">
                 {/* 접근성용 제목(시각적으로 숨김) */}
                 <DialogHeader className="sr-only">
                   <DialogTitle>이미지 확대 보기</DialogTitle>
@@ -735,7 +735,7 @@ export default function QnaWritePage() {
 
                 {/* 썸네일 네비게이션 */}
                 {viewerImages.length > 1 && (
-                  <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
+                  <div className="p-3 flex flex-wrap gap-2 justify-center bg-overlay/70">
                     {viewerImages.map((thumb, i) => (
                       <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                         <Image src={thumb || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
