@@ -41,7 +41,7 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center shadow">
-            <User className="h-6 w-6 text-white" />
+            <User className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">{u.name || '(이름없음)'}</h1>

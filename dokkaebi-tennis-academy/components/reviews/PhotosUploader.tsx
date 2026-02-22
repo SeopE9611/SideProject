@@ -161,7 +161,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
             <div key={`q-${q.id}`} className="relative rounded-md overflow-hidden border bg-background">
               <Image src={q.url} alt="uploading" width={160} height={160} className="object-cover w-full h-24" />
               <div className="absolute inset-0 bg-overlay/35 flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-white" aria-label="업로드 중" />
+                <Loader2 className="h-5 w-5 animate-spin text-foreground" aria-label="업로드 중" />
               </div>
             </div>
           ))}
@@ -170,7 +170,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
           {value.map((src, i) => (
             <div key={src + i} className="relative group rounded-md overflow-hidden border">
               <Image src={src} alt={`photo-${i}`} width={160} height={160} className="object-cover w-full h-24" loading="lazy" />
-              <button type="button" onClick={() => removeAt(i)} className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-white opacity-0 group-hover:opacity-100 transition-opacity" aria-label="삭제" title="삭제">
+              <button type="button" onClick={() => removeAt(i)} className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-label="삭제" title="삭제">
                 <X className="h-3 w-3" />
               </button>
             </div>

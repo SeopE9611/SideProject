@@ -27,7 +27,7 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
+      <DialogContent className="sm:max-w-4xl p-0 bg-overlay/90 text-foreground border-0">
         <DialogHeader>
           <DialogTitle className="sr-only">리뷰 사진 보기</DialogTitle>
         </DialogHeader>
@@ -48,7 +48,7 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
         </div>
 
         {photos.length > 1 && (
-          <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
+          <div className="p-3 flex flex-wrap gap-2 justify-center bg-overlay/70">
             {photos.map((src, i) => (
               <button key={i} type="button" onClick={() => setIdx(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                 <Image src={src || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />

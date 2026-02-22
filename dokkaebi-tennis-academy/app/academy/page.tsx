@@ -178,7 +178,7 @@ export default function AcademyPage() {
   return (
     <div className="relative">
       {/* ▶ 고정된 오버레이 */}
-      <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
+      <div className="fixed inset-0 bg-overlay/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
         <p className="text-foreground text-2xl md:text-4xl font-semibold">이 페이지는 사용하지 않습니다. (아카데미 페이지)</p>
         <p className="text-sm text-muted-foreground">다시 활성화되기 전까지 현재 이 페이지는 접근 제한 상태입니다.</p>
         <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl">
@@ -192,7 +192,7 @@ export default function AcademyPage() {
           {/* 배경 그라데이션 */}
           <div className="absolute inset-0 bg-background">
             <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1200&text=Tennis+Academy')] bg-cover bg-center opacity-20"></div>
-            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="absolute inset-0 bg-overlay/20"></div>
           </div>
 
           {/* 장식 요소 */}

@@ -111,7 +111,7 @@ export default function ReviewsClient() {
         <div className="text-center space-y-4 mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-background to-card flex items-center justify-center">
-              <Trophy className="h-6 w-6 text-white" />
+              <Trophy className="h-6 w-6 text-foreground" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-background to-card bg-clip-text text-transparent">고객 리뷰</h1>
           </div>

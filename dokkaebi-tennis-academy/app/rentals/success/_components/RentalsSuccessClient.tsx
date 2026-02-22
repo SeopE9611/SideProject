@@ -94,7 +94,7 @@ export default function RentalsSuccessClient({ data }: Props) {
         <SiteContainer variant="wide" className="relative py-16">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full mb-6">
-              <CheckCircle className="h-12 w-12 text-white" />
+              <CheckCircle className="h-12 w-12 text-foreground" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">대여 신청 접수 완료</h1>
             <p className="text-xl text-success mb-6">입금 확인 후 결제완료로 상태가 변경되며, 이후 출고가 진행됩니다.</p>

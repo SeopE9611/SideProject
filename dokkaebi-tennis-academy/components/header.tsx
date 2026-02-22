@@ -733,7 +733,7 @@ const Header = () => {
                 {/* 사용자 정보 카드 */}
                 <div className="p-4 rounded-xl bg-card border border-border">
                   <div className="flex items-start justify-between">
-                    {/* <Avatar className="h-10 w-10 border-2 border-white dark:border-border shadow-sm">
+                    {/* <Avatar className="h-10 w-10 border-2 border-border dark:border-border shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
                           <AvatarFallback
                             className="bg-card text-primary font-semibold"

@@ -1,5 +1,5 @@
 // 카드 섹션 래퍼: 헤더/내용/액션을 한결같은 스타일로 (v0 톤)
-// - ring-black/* 제거
+// - ring-border/* 제거
 // - 은은한 배경 + 얇은 테두리 + 작은 그림자
 'use client';
 import { cn } from '@/lib/utils';
