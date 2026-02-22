@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { showErrorToast } from '@/lib/toast';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { calcShippingFee } from '@/lib/shipping-fee';
@@ -231,13 +234,13 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       <div className="rounded-lg border p-4 space-y-3">
         <div className="font-semibold">배송 정보</div>
 
-        <input className="w-full rounded border p-2 text-sm" placeholder="수령인" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="w-full rounded border p-2 text-sm" placeholder="연락처" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input className="w-full rounded border p-2 text-sm" placeholder="우편번호" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-        <input className="w-full rounded border p-2 text-sm" placeholder="주소" value={address} onChange={(e) => setAddress(e.target.value)} />
-        <input className="w-full rounded border p-2 text-sm" placeholder="상세주소(선택)" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} />
-        <input className="w-full rounded border p-2 text-sm" placeholder="입금자명" value={depositor} onChange={(e) => setDepositor(e.target.value)} />
-        <input className="w-full rounded border p-2 text-sm" placeholder="배송 요청사항(선택)" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="수령인" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="연락처" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="우편번호" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="주소" value={address} onChange={(e) => setAddress(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="상세주소(선택)" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="입금자명" value={depositor} onChange={(e) => setDepositor(e.target.value)} />
+        <Input className="w-full text-sm" placeholder="배송 요청사항(선택)" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} />
       </div>
 
       <div className="rounded-lg border p-4 space-y-3">
@@ -245,11 +248,16 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
         <label className="block text-sm">
           은행 선택
-          <select className="mt-1 w-full rounded border p-2 text-sm" value={bank} onChange={(e) => setBank(e.target.value as any)}>
-            <option value="shinhan">신한</option>
-            <option value="kookmin">국민</option>
-            <option value="woori">우리</option>
-          </select>
+          <Select value={bank} onValueChange={(value) => setBank(value as Bank)}>
+            <SelectTrigger className="mt-1 w-full text-sm">
+              <SelectValue placeholder="은행 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="shinhan">신한</SelectItem>
+              <SelectItem value="kookmin">국민</SelectItem>
+              <SelectItem value="woori">우리</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
 
         <div className="text-sm">
@@ -261,9 +269,9 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
           주문/결제/개인정보 제공에 동의합니다.
         </label>
 
-        <button className="w-full rounded bg-black px-4 py-2 text-sm text-white disabled:bg-muted" disabled={!canSubmit || submitting} onClick={onSubmit}>
+        <Button className="w-full text-sm" variant="default" disabled={!canSubmit || submitting} onClick={onSubmit}>
           {submitting ? '처리 중...' : '스트링 선택으로 이동'}
-        </button>
+        </Button>
 
         {racket.status !== 'available' && <div className="text-sm text-destructive">현재 판매 가능한 라켓이 아닙니다. (status: {racket.status})</div>}
       </div>
