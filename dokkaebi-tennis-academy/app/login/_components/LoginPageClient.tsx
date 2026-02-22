@@ -672,7 +672,7 @@ export default function LoginPageClient() {
  const pwVal = (document.getElementById('password') as HTMLInputElement | null)?.value ?? '';
  setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
  }}
- className="pl-10 h-12 border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
+ className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
  />
  </div>
  {loginFieldErrors.email && (
@@ -700,7 +700,7 @@ export default function LoginPageClient() {
  const emailVal = (document.getElementById('email') as HTMLInputElement | null)?.value ?? '';
  setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
  }}
- className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-emerald-500 dark:focus:border-border"
+ className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
  />
  <Button
  type="button"
@@ -722,7 +722,7 @@ export default function LoginPageClient() {
 
  <div className="flex items-center justify-between">
  <label className="flex items-center gap-2 text-sm text-foreground">
- <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-border text-foreground focus:ring-emerald-500" />
+ <input type="checkbox" checked={saveEmail} onChange={(e) => setSaveEmail(e.target.checked)} className="rounded border-border text-foreground focus:ring-ring" />
  이메일 저장
  </label>
  <Link
