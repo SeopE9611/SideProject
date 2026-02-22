@@ -41,14 +41,14 @@ function normalizeBoardIdentifier(id: string) {
   }
 }
 
-function getStatusColor(status: string) {
+function getStatusVariant(status: string): 'success' | 'warning' | 'destructive' {
   switch (status) {
     case 'public':
-      return 'bg-success/10 text-success hover:bg-success/10';
+      return 'success';
     case 'hidden':
-      return 'bg-card text-muted-foreground hover:bg-card';
+      return 'warning';
     default:
-      return 'bg-warning/10 text-warning hover:bg-warning/10';
+      return 'destructive';
   }
 }
 
@@ -180,7 +180,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getBoardTypeColor(String(post.type ?? ''))}>{getBoardTypeName(String(post.type ?? ''))}</Badge>
-                  <Badge className={getStatusColor(postStatus)}>{getStatusName(postStatus)}</Badge>
+                  <Badge variant={getStatusVariant(postStatus)}>{getStatusName(postStatus)}</Badge>
                   {!!post.category && <Badge variant="outline">{post.category}</Badge>}
                   {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
                 </div>
