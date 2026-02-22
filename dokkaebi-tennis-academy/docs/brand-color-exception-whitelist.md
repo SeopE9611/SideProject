@@ -8,6 +8,10 @@
 - `app/login/_components/LoginPageClient.tsx`
 - `app/admin/users/_components/UsersClient.tsx`
 
+## 비-웹UI 예외 목록
+- non-web-ui 예외(이메일 HTML 렌더러 등)는 본 문서에서 관리하지 않습니다.
+- `docs/color-token-policy.md`의 [이메일 템플릿 예외 정책 (고정)](./color-token-policy.md#이메일-템플릿-예외-정책-고정) 섹션을 기준으로 관리합니다.
+
 ## 운영 규칙
 1. 화이트리스트 외 파일에서 `#hex` 또는 raw palette 클래스(`bg-blue-500`, `text-rose-600` 등)가 발견되면 자동 경고합니다.
 2. 일반 UI에서는 토큰(`bg-primary`, `text-foreground`, `border-border` 등)만 사용합니다.

@@ -41,7 +41,8 @@ rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app compo
   - 소셜 연동 상태 배지(카카오/네이버) 브랜드 식별 색상
   - 배지 렌더링 블록 상단에 브랜드 예외 주석 명시
 
-### 3) 비-UI 범위(참고)
+### 3) 비-웹UI 예외(참고)
+- non-web-ui 예외 목록은 `docs/brand-color-exception-whitelist.md`가 아니라 본 문서의 [이메일 템플릿 예외 정책 (고정)](#이메일-템플릿-예외-정책-고정) 섹션에서 관리한다.
 - `app/features/notifications/core/render.ts`: 이메일 HTML 렌더러로 분류하며 웹 UI 토큰 규칙 적용 대상에서 제외.
 
 ## 이메일 템플릿 예외 정책 (고정)
