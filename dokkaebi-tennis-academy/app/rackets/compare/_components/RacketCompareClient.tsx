@@ -208,8 +208,8 @@ export default function RacketCompareClient() {
           </div>
         ) : !canCompare ? (
           /* 비교 불가 상태 개선 */
-          <div className="rounded-xl bg-card dark:bg-card/80 ring-1 ring-ring dark:ring-ring overflow-hidden">
-            <div className="bg-muted dark:bg-muted px-4 py-3 flex items-center gap-2">
+          <div className="rounded-xl bg-card/80 ring-1 ring-ring dark:ring-ring overflow-hidden">
+            <div className="bg-muted px-4 py-3 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-primary dark:text-primary" />
               <span className="text-sm font-medium text-primary dark:text-primary">비교할 라켓이 부족합니다</span>
             </div>
@@ -266,7 +266,7 @@ export default function RacketCompareClient() {
               <span className="text-sm text-muted-foreground">각 열 상단의 X로 개별 제거 가능합니다.</span>
             </div>
 
-            <div className="overflow-x-auto rounded-xl bg-card dark:bg-card/80 ring-1 ring-black/5 dark:ring-white/10 shadow-sm">
+            <div className="overflow-x-auto rounded-xl bg-card/80 ring-1 ring-black/5 dark:ring-white/10 shadow-sm">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/30 dark:bg-muted/20">

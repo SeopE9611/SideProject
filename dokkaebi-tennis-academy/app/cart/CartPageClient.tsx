@@ -257,7 +257,7 @@ export default function CartPageClient() {
   };
 
   return (
-    <div className="min-h-full bg-background dark:bg-background">
+    <div className="min-h-full bg-background">
       {/* 장착 대상 스트링 정리 확인 다이얼로그 */}
       <AlertDialog
         open={cleanupDialogOpen}
@@ -353,7 +353,7 @@ export default function CartPageClient() {
                         </span>
                         선택한 상품 ({cartItems.length}개)
                       </CardTitle>
-                      <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">상품명을 눌러 상세로 이동할 수 있어요.</p>
+                      <p className="mt-2 text-sm text-muted-foreground">상품명을 눌러 상세로 이동할 수 있어요.</p>
                     </div>
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
@@ -362,7 +362,7 @@ export default function CartPageClient() {
                         {selectedIds.length === cartItems.length ? '전체 해제' : '전체 선택'}
                       </Button>
                       <div className="hidden bp-sm:block h-4 w-px bg-foreground/10 dark:bg-card/10" />
-                      <span className="text-muted-foreground dark:text-muted-foreground">선택 {selectedIds.length}개</span>
+                      <span className="text-muted-foreground">선택 {selectedIds.length}개</span>
                       <Button variant="ghost" size="sm" onClick={removeSelected} className="text-destructive hover:bg-destructive/15 dark:hover:bg-destructive/15">
                         선택 삭제
                       </Button>
@@ -410,8 +410,8 @@ export default function CartPageClient() {
                               <Link href={itemHref} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-foreground transition-colors hover:text-accent dark:text-foreground dark:hover:text-accent">
                                 {item.name}
                               </Link>
-                              <div className="mt-0.5 text-sm text-muted-foreground dark:text-muted-foreground">
-                                개당 <span className="tabular-nums font-medium text-foreground dark:text-foreground">{formatKRW(item.price)}원</span>
+                              <div className="mt-0.5 text-sm text-muted-foreground">
+                                개당 <span className="tabular-nums font-medium text-foreground">{formatKRW(item.price)}원</span>
                               </div>
                               {highlightCleanupTarget && (
                                 <>
@@ -425,7 +425,7 @@ export default function CartPageClient() {
                                     </span>
                                     <button
                                       type="button"
-                                      className="font-semibold underline underline-offset-2 text-foreground hover:text-foreground dark:text-foreground dark:hover:text-foreground"
+                                      className="font-semibold underline underline-offset-2 text-foreground hover:text-foreground dark:hover:text-foreground"
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -457,7 +457,7 @@ export default function CartPageClient() {
                                   </Link>
                                 )}
 
-                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-destructive' : 'text-muted-foreground dark:text-muted-foreground'}`}>현재 가용 수량: {maxStock}개</span>}
+                                {Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-destructive' : 'text-muted-foreground'}`}>현재 가용 수량: {maxStock}개</span>}
                               </div>
                             ) : (
                               /* 수량 스테퍼 (pill, 비활성 표시) */
@@ -508,14 +508,14 @@ export default function CartPageClient() {
                                     번들 수량/스트링 변경
                                   </Link>
                                 ) : (
-                                  Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-destructive' : 'text-muted-foreground dark:text-muted-foreground'}`}>현재 가용 수량: {maxStock}개</span>
+                                  Number.isFinite(maxStock) && <span className={`mt-1 text-[11px] ${item.quantity >= maxStock ? 'text-destructive' : 'text-muted-foreground'}`}>현재 가용 수량: {maxStock}개</span>
                                 )}
                               </div>
                             )}
 
                             <div className="order-2 ml-auto bp-sm:ml-0 text-right">
-                              <div className="text-xs text-muted-foreground dark:text-muted-foreground">합계</div>
-                              <div className="tabular-nums text-lg font-semibold text-foreground dark:text-foreground">{formatKRW(item.price * item.quantity)}원</div>
+                              <div className="text-xs text-muted-foreground">합계</div>
+                              <div className="tabular-nums text-lg font-semibold text-foreground">{formatKRW(item.price * item.quantity)}원</div>
                             </div>
 
                             {/* 삭제 버튼 (컨펌) */}
@@ -591,11 +591,11 @@ export default function CartPageClient() {
                   <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground dark:text-muted-foreground">상품 금액</span>
+                        <span className="text-muted-foreground">상품 금액</span>
                         <span className="tabular-nums text-lg font-semibold">{formatKRW(subtotal)}원</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground dark:text-muted-foreground">배송비</span>
+                        <span className="text-muted-foreground">배송비</span>
                         <span className={shippingFee === 0 ? 'font-semibold text-accent dark:text-accent' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
                       </div>
                       <Separator className="opacity-40" />
@@ -605,7 +605,7 @@ export default function CartPageClient() {
                       </div>
                     </div>
 
-                    <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border dark:border-border">
+                    <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border">
                       <div className="flex items-center gap-2 text-accent dark:text-accent mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 혜택</span>
@@ -679,8 +679,8 @@ export default function CartPageClient() {
                 <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-primary shadow-xl">
                   <PackageOpen className="h-12 w-12 text-primary-foreground" />
                 </div>
-                <h2 className="mb-4 text-3xl font-bold text-foreground dark:text-foreground">장바구니가 비어있습니다</h2>
-                <p className="mb-8 text-lg text-muted-foreground dark:text-muted-foreground">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
+                <h2 className="mb-4 text-3xl font-bold text-foreground">장바구니가 비어있습니다</h2>
+                <p className="mb-8 text-lg text-muted-foreground">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
                 <Button
                   className="transform bg-primary px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
                   size="lg"
@@ -707,7 +707,7 @@ export default function CartPageClient() {
           <div className="rounded-t-2xl bg-card/95 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] backdrop-blur-md dark:bg-card/95">
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground dark:text-muted-foreground">총 결제 금액</span>
+                <span className="text-sm text-muted-foreground">총 결제 금액</span>
                 <span className="tabular-nums text-lg font-bold text-accent dark:text-accent">{formatKRW(total)}원</span>
               </div>
               {blockServiceCheckout ? (

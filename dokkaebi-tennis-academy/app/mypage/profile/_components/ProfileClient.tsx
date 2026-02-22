@@ -280,7 +280,7 @@ export default function ProfileClient({ user }: Props) {
  };
 
  return (
- <div className="min-h-full bg-background dark:bg-background">
+ <div className="min-h-full bg-background">
  <div
  className="absolute inset-0 opacity-5 dark:opacity-10"
  style={{
@@ -323,7 +323,7 @@ export default function ProfileClient({ user }: Props) {
  <Tabs defaultValue="profile" className="space-y-8">
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardContent className="p-6">
- <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted dark:bg-muted">
+ <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted">
  <TabsTrigger value="profile" className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md">
  <User className="h-5 w-5" />
  <span className="text-xs font-medium">기본정보</span>
@@ -371,7 +371,7 @@ export default function ProfileClient({ user }: Props) {
  <AvatarFallback className="text-2xl bg-accent text-accent-foreground">{profileData.name.charAt(0)}</AvatarFallback>
  </Avatar>
  <div>
- <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-border dark:border-border hover:bg-primary dark:hover:bg-primary">
+ <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-border hover:bg-primary dark:hover:bg-primary">
  <Camera className="mr-2 h-4 w-4" />
  이미지 변경
  </Button>
@@ -389,7 +389,7 @@ export default function ProfileClient({ user }: Props) {
  id="name"
  value={profileData.name ?? ''}
  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  placeholder="이름을 입력해주세요"
  />
  {/* 소셜 가입/연동 제공자 표시 (표시용) */}
@@ -423,7 +423,7 @@ export default function ProfileClient({ user }: Props) {
  type="email"
  value={profileData.email ?? ''}
  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  placeholder="example@naver.com"
  />
  </div>
@@ -436,7 +436,7 @@ export default function ProfileClient({ user }: Props) {
  id="phone"
  value={profileData.phone ?? ''}
  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  placeholder="01012345678"
  />
  </div>
@@ -475,7 +475,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.currentPassword}
  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  />
  </div>
  <div className="space-y-2">
@@ -487,7 +487,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.newPassword}
  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  />
  <p className="text-sm text-muted-foreground">8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)</p>
  </div>
@@ -500,7 +500,7 @@ export default function ProfileClient({ user }: Props) {
  type="password"
  value={passwordData.confirmPassword}
  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  />
  </div>
 
@@ -534,8 +534,8 @@ export default function ProfileClient({ user }: Props) {
  우편번호
  </Label>
  <div className="flex gap-2">
- <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground cursor-default" placeholder="12345" />
- <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border dark:border-border text-accent dark:text-accent hover:bg-primary dark:hover:bg-primary" variant="outline">
+ <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted text-muted-foreground cursor-default" placeholder="12345" />
+ <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-accent dark:text-accent hover:bg-primary dark:hover:bg-primary" variant="outline">
  검색
  </Button>
  </div>
@@ -545,7 +545,7 @@ export default function ProfileClient({ user }: Props) {
  <Label htmlFor="address1" className="text-foreground">
  주소
  </Label>
- <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
+ <Input id="address1" value={profileData.address.address1} readOnly className="h-12 bg-muted text-muted-foreground cursor-default" placeholder="주소 검색 버튼을 클릭해주세요" />
  </div>
  <div className="space-y-2">
  <Label htmlFor="address2" className="text-foreground">
@@ -560,7 +560,7 @@ export default function ProfileClient({ user }: Props) {
  address: { ...profileData.address, address2: e.target.value },
  })
  }
- className="h-12 border-border dark:border-border focus:border-border dark:focus:border-border"
+ className="h-12 border-border focus:border-border dark:focus:border-border"
  placeholder="동, 호수 등 상세주소"
  />
  </div>
@@ -594,7 +594,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </CardHeader>
  <CardContent className="p-8 space-y-6">
- <div className="flex items-center justify-between p-4 bg-muted dark:bg-muted rounded-xl">
+ <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
  <div>
  <Label htmlFor="email-marketing" className="font-medium text-foreground">
  이메일 수신
@@ -613,7 +613,7 @@ export default function ProfileClient({ user }: Props) {
  />
  </div>
  <Separator />
- <div className="flex items-center justify-between p-4 bg-muted dark:bg-muted rounded-xl">
+ <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
  <div>
  <Label htmlFor="sms-marketing" className="font-medium text-foreground">
  SMS 수신
@@ -632,7 +632,7 @@ export default function ProfileClient({ user }: Props) {
  />
  </div>
  <Separator />
- <div className="flex items-center justify-between p-4 bg-muted dark:bg-muted rounded-xl">
+ <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
  <div>
  <Label htmlFor="push-marketing" className="font-medium text-foreground">
  앱 푸시 알림

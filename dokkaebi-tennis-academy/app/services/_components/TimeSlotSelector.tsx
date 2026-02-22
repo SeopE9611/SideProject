@@ -33,7 +33,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
   if (errorMessage) {
     return (
       <div className="space-y-2">
-        <div className="rounded-md border border-border dark:border-border bg-muted dark:bg-muted px-3 py-2 text-sm text-primary dark:text-primary">{errorMessage}</div>
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-primary dark:text-primary">{errorMessage}</div>
         {/* 필요하면 이 날짜에서는 선택 불가임을 한번 더 안내 */}
         <p className="text-xs text-muted-foreground">다른 날짜를 선택해주세요.</p>
       </div>
@@ -61,7 +61,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
                   type="button"
                   disabled
                   title={isReserved ? '이미 예약된 시간대입니다' : '지난 시간대입니다'}
-                  className={baseBtn + ' cursor-not-allowed bg-muted dark:bg-card text-muted-foreground dark:text-muted-foreground border-border dark:border-border'}
+                  className={baseBtn + ' cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border'}
                   aria-disabled
                 >
                   {time}
@@ -72,7 +72,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
             const selectedStyles =
               selected === time
                 ? ' bg-primary text-primary-foreground border-primary/70 shadow-sm'
-                : ' bg-card dark:bg-card text-foreground border-border dark:border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border';
+                : ' bg-card text-foreground border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border';
 
             return (
               <button key={time} type="button" className={baseBtn + selectedStyles} onClick={() => onSelect(time)} aria-pressed={selected === time}>
@@ -85,7 +85,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-2xl bg-card/60 dark:bg-card backdrop-blur-sm px-4 py-3 shadow-sm">
-              <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-border dark:border-border border-t-transparent" />
+              <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
               <p className="mt-2 text-xs text-muted-foreground text-center">시간대 불러오는 중…</p>
             </div>
           </div>

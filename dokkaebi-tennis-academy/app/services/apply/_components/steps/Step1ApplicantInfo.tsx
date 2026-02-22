@@ -240,7 +240,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
           <div
             className="
                 block cursor-pointer rounded-xl
-                border border-border dark:border-border
+                border border-border
                 bg-card/90 dark:bg-card
                 px-4 py-3 shadow-sm
                 hover:bg-background dark:hover:bg-card
@@ -297,7 +297,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
             <Label
               htmlFor="cm-self"
-              className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
              peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
@@ -314,7 +314,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
             <Label
               htmlFor="cm-visit"
-              className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
              peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
@@ -332,7 +332,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
             <Label
               htmlFor="cm-pickup"
-              className="block cursor-pointer rounded-xl border border-border dark:border-border bg-card dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
              peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
             >
@@ -378,13 +378,13 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
       {isUserLoading && (
         <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-ring dark:ring-ring grid place-content-center">
           <div className="flex items-center gap-3 text-foreground">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border dark:border-border border-t-transparent" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
             <span className="text-sm">회원 정보 불러오는 중…</span>
           </div>
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="bg-primary  to-card dark:from-background dark:to-card border border-border dark:border-border rounded-lg p-4">
+        <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning dark:text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">

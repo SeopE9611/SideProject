@@ -241,9 +241,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="space-y-6">
  <Card className="animate-pulse">
  <CardContent className="p-8">
- <div className="h-6 bg-muted dark:bg-muted rounded w-1/3 mb-4"></div>
- <div className="h-4 bg-muted dark:bg-muted rounded w-2/3 mb-2"></div>
- <div className="h-4 bg-muted dark:bg-muted rounded w-1/2"></div>
+ <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
+ <div className="h-4 bg-muted rounded w-2/3 mb-2"></div>
+ <div className="h-4 bg-muted rounded w-1/2"></div>
  </CardContent>
  </Card>
  </div>
@@ -267,7 +267,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  return (
  <Card className="border-0 bg-gradient-to-br from-muted/50 to-muted dark:from-background dark:to-muted">
  <CardContent className="p-8 text-center">
- <p className="text-muted-foreground dark:text-muted-foreground">존재하지 않는 대여 건입니다.</p>
+ <p className="text-muted-foreground">존재하지 않는 대여 건입니다.</p>
  </CardContent>
  </Card>
  );
@@ -308,7 +308,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  : null;
  return (
  <main className="space-y-8">
- <div className="bg-gradient-to-r from-accent/10 via-accent/10 to-destructive/10 dark:from-accent/10 dark:via-accent/10 dark:to-destructive/20 rounded-2xl p-8 border border-border dark:border-border/30 shadow-lg">
+ <div className="bg-gradient-to-r from-accent/10 via-accent/10 to-destructive/10 dark:from-accent/10 dark:via-accent/10 dark:to-destructive/20 rounded-2xl p-8 border border-border/30 shadow-lg">
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
  <div className="flex items-center space-x-4 mb-4 sm:mb-0">
  <div className="bg-card dark:bg-muted rounded-full p-3 shadow-md">
@@ -316,7 +316,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </div>
  <div>
  <div className="flex flex-wrap items-center gap-2 mt-1">
- <p className="text-muted-foreground dark:text-muted-foreground">대여번호: {data.id}</p>
+ <p className="text-muted-foreground">대여번호: {data.id}</p>
 
  {data.stringingApplicationId ? (
  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/15 dark:text-primary">신청서 연결됨</Badge>
@@ -369,9 +369,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Package className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">라켓 정보</span>
+ <span className="text-sm font-medium text-muted-foreground">라켓 정보</span>
  </div>
- <p className="text-lg font-semibold text-foreground dark:text-foreground">
+ <p className="text-lg font-semibold text-foreground">
  {racketBrandLabel(data.brand)} {data.model}
  </p>
  </div>
@@ -379,15 +379,15 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Clock className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">대여 기간</span>
+ <span className="text-sm font-medium text-muted-foreground">대여 기간</span>
  </div>
- <p className="text-lg font-semibold text-foreground dark:text-foreground">{data.days}일</p>
+ <p className="text-lg font-semibold text-foreground">{data.days}일</p>
  </div>
 
  <div className="bg-card/70 dark:bg-muted/60 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  {getStatusIcon(data.status)}
- <span className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">대여 상태</span>
+ <span className="text-sm font-medium text-muted-foreground">대여 상태</span>
  </div>
  <Badge className={`px-3 py-1 text-sm font-medium ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
  </div>
@@ -448,8 +448,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <Package className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">스트링 상품</p>
- <p className="font-semibold text-foreground dark:text-foreground">{stringPrice.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground">스트링 상품</p>
+ <p className="font-semibold text-foreground">{stringPrice.toLocaleString()}원</p>
  </div>
  </div>
  )}
@@ -459,16 +459,16 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <Wrench className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">교체 서비스비</p>
- <p className="font-semibold text-foreground dark:text-foreground">{stringingFee.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground">교체 서비스비</p>
+ <p className="font-semibold text-foreground">{stringingFee.toLocaleString()}원</p>
  </div>
  </div>
  )}
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <Briefcase className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">라켓</p>
- <p className="font-semibold text-foreground dark:text-foreground">
+ <p className="text-sm text-muted-foreground">라켓</p>
+ <p className="font-semibold text-foreground">
  {racketBrandLabel(data.brand)} {data.model}
  </p>
  </div>
@@ -477,14 +477,14 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <Clock className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">대여 기간</p>
- <p className="font-semibold text-foreground dark:text-foreground">{data.days}일</p>
+ <p className="text-sm text-muted-foreground">대여 기간</p>
+ <p className="font-semibold text-foreground">{data.days}일</p>
  </div>
  </div>
 
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <div className="flex-1">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">상태</p>
+ <p className="text-sm text-muted-foreground">상태</p>
  <Badge className={`mt-1 ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
  </div>
  </div>
@@ -492,8 +492,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <Calendar className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">반납 예정일</p>
- <p className="font-semibold text-foreground dark:text-foreground">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+ <p className="text-sm text-muted-foreground">반납 예정일</p>
+ <p className="font-semibold text-foreground">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
  </div>
  </div>
  </div>
@@ -512,23 +512,23 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <CreditCard className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">대여 수수료</p>
- <p className="font-semibold text-foreground dark:text-foreground">{fee.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground">대여 수수료</p>
+ <p className="font-semibold text-foreground">{fee.toLocaleString()}원</p>
  </div>
  </div>
 
  <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
  <Package className="h-4 w-4 text-muted-foreground" />
  <div className="flex-1">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">보증금</p>
- <p className="font-semibold text-foreground dark:text-foreground">{deposit.toLocaleString()}원</p>
+ <p className="text-sm text-muted-foreground">보증금</p>
+ <p className="font-semibold text-foreground">{deposit.toLocaleString()}원</p>
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-accent/10 rounded-lg border border-border dark:border-border/30">
+ <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-accent/10 rounded-lg border border-border/30">
  <TrendingUp className="h-4 w-4 text-accent" />
  <div className="flex-1">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">총 결제 금액</p>
+ <p className="text-sm text-muted-foreground">총 결제 금액</p>
  <p className="text-xl font-bold text-accent">{total.toLocaleString()}원</p>
  </div>
  </div>
@@ -551,8 +551,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Calendar className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-foreground dark:text-foreground">대여 시작</p>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.outAt ? formatDateTime(data.outAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground">대여 시작</p>
+ <p className="text-sm text-muted-foreground">{data.outAt ? formatDateTime(data.outAt) : '-'}</p>
  </div>
  </div>
 
@@ -562,7 +562,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Truck className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-foreground dark:text-foreground">출고 운송장 등록</p>
+ <p className="text-sm font-medium text-foreground">출고 운송장 등록</p>
  <p className="text-xs text-muted-foreground">{fmtDateOnly(data.shipping.outbound.shippedAt)}</p>
  <p className="text-sm mt-1">
  {getCourierLabel(data.shipping.outbound.courier)} ·{' '}
@@ -579,8 +579,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Clock className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-foreground dark:text-foreground">반납 예정</p>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground">반납 예정</p>
+ <p className="text-sm text-muted-foreground">{data.outAt && data.dueAt ? formatDate(data.dueAt) : '-'}</p>
  </div>
  </div>
 
@@ -591,7 +591,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Truck className="h-5 w-5 text-primary dark:text-primary" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-foreground dark:text-foreground">반납 운송장 등록</p>
+ <p className="text-sm font-medium text-foreground">반납 운송장 등록</p>
  <p className="text-xs text-muted-foreground">{fmtDateOnly(data.shipping.return.shippedAt)}</p>
  <p className="text-sm mt-1">
  {getCourierLabel(data.shipping.return.courier)} ·{' '}
@@ -608,8 +608,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <CheckCircle className="h-5 w-5 text-primary dark:text-primary" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-foreground dark:text-foreground">반납 완료</p>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.returnedAt ? formatDateTime(data.returnedAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground">반납 완료</p>
+ <p className="text-sm text-muted-foreground">{data.returnedAt ? formatDateTime(data.returnedAt) : '-'}</p>
  </div>
  </div>
 
@@ -618,8 +618,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <CreditCard className="h-5 w-5 text-accent dark:text-accent" />
  </div>
  <div className="flex-1">
- <p className="text-sm font-medium text-foreground dark:text-foreground">보증금 환불</p>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">{data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : '-'}</p>
+ <p className="text-sm font-medium text-foreground">보증금 환불</p>
+ <p className="text-sm text-muted-foreground">{data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : '-'}</p>
  </div>
  </div>
  </div>

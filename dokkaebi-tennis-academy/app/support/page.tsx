@@ -69,7 +69,7 @@ function FiveLineSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
+        <div key={i} className="border-b border-border last:border-0 pb-4 last:pb-0">
           <div className="space-y-2">
             <Skeleton className="h-5 w-3/4" />
             <div className="flex items-center space-x-4">
@@ -100,7 +100,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
           </div>
           <div className="flex items-center gap-2">
             {isAdmin && (
-              <Button asChild size="sm" variant="ghost" className="h-8 px-3 border-border dark:border-border">
+              <Button asChild size="sm" variant="ghost" className="h-8 px-3 border-border">
                 <Link href="/board/notice/write">
                   <Plus className="h-4 w-4 mr-1" />
                   공지 쓰기
@@ -126,7 +126,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
             <div className="py-8 text-center text-sm text-muted-foreground">등록된 공지가 없습니다.</div>
           ) : (
             items.map((notice) => (
-              <div key={notice._id} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
+              <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     {/* 제목 줄 */}
@@ -152,7 +152,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                     </div>
 
                     {/* 메타 정보 */}
-                    <div className="flex items-center space-x-4 text-xs text-muted-foreground dark:text-muted-foreground">
+                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                       <span>{fmt(notice.createdAt)}</span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
@@ -239,7 +239,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
               const canOpenSecret = !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
 
               const RowInner = (
-                <div className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
+                <div className="border-b border-border last:border-0 pb-4 last:pb-0">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       {/* 제목 줄 */}
@@ -267,7 +267,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground dark:text-muted-foreground">
+                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                         <span>{qna.authorName ?? '익명'}</span>
                         <span>{fmt(qna.createdAt)}</span>
                         <span className="flex items-center">
@@ -330,7 +330,7 @@ export default function SupportPage() {
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터</h1>
           </div>
-          <p className="text-sm md:text-base text-muted-foreground dark:text-muted-foreground max-w-xl mx-auto">공지사항과 문의 내역을 한 곳에서 확인하고, 궁금한 점을 남겨주세요.</p>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">공지사항과 문의 내역을 한 곳에서 확인하고, 궁금한 점을 남겨주세요.</p>
         </div>
 
         {/* 카드 2열 레이아웃 */}

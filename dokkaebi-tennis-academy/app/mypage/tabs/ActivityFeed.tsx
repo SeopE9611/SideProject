@@ -562,7 +562,7 @@ export default function ActivityFeed() {
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-muted dark:bg-muted p-2">
+            <div className="rounded-lg bg-muted p-2">
               <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary " />
             </div>
             <span className="text-xs bp-sm:text-sm font-medium text-primary ">액션 필요</span>
@@ -638,7 +638,7 @@ export default function ActivityFeed() {
             <div className="min-w-0 rounded-2xl bg-gradient-to-br from-destructive/10 to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-lg bg-muted dark:bg-muted p-2">
+                  <div className="rounded-lg bg-muted p-2">
                     <AlertCircle className="h-5 w-5 text-primary " />
                   </div>
                   <div className="min-w-0">

@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
                       이메일
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         id="email"
                         type="email"
@@ -78,18 +78,18 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                         disabled={isSubmitting}
-                        className="pl-10 h-12 border-border dark:border-border focus:border-border focus:ring-ring dark:focus:border-border bg-card/50 dark:bg-muted"
+                        className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border bg-card/50 dark:bg-muted"
                       />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-muted rounded-xl p-6 text-center border border-border dark:border-border">
+                <div className="bg-muted rounded-xl p-6 text-center border border-border">
                   <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-8 w-8 text-primary-foreground" />
                   </div>
                   <p className="text-sm font-semibold text-primary dark:text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
-                  <p className="text-xs text-muted-foreground dark:text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>
+                  <p className="text-xs text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>
                 </div>
               )}
             </CardContent>
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-border dark:border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent"
+                  className="w-full h-12 border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent"
                   onClick={() => {
                     setEmail('');
                     setIsSubmitted(false);

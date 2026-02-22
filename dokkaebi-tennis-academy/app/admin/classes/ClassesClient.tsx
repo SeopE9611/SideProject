@@ -104,17 +104,17 @@ export default function ClassesPage() {
           </div>
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">클래스 관리</h1>
-            <p className="mt-2 text-lg text-muted-foreground dark:text-muted-foreground">테니스 클래스를 효율적으로 관리하고 운영하세요</p>
+            <p className="mt-2 text-lg text-muted-foreground">테니스 클래스를 효율적으로 관리하고 운영하세요</p>
           </div>
         </div>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">전체 클래스</p>
+                <p className="text-sm font-medium text-muted-foreground">전체 클래스</p>
                 <p className="text-3xl font-bold text-foreground">{classes.length}</p>
               </div>
               <div className="bg-primary dark:bg-primary rounded-xl p-3">
@@ -124,11 +124,11 @@ export default function ClassesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">모집 중</p>
+                <p className="text-sm font-medium text-muted-foreground">모집 중</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'recruiting').length}</p>
               </div>
               <div className="bg-primary dark:bg-primary rounded-xl p-3">
@@ -138,11 +138,11 @@ export default function ClassesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">마감</p>
+                <p className="text-sm font-medium text-muted-foreground">마감</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'closed').length}</p>
               </div>
               <div className="bg-destructive dark:bg-destructive rounded-xl p-3">
@@ -152,22 +152,22 @@ export default function ClassesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">총 등록자</p>
+                <p className="text-sm font-medium text-muted-foreground">총 등록자</p>
                 <p className="text-3xl font-bold text-foreground">{classes.reduce((sum, c) => sum + c.enrolled, 0)}</p>
               </div>
-              <div className="bg-muted dark:bg-muted rounded-xl p-3">
-                <Users className="h-6 w-6 text-foreground dark:text-foreground" />
+              <div className="bg-muted rounded-xl p-3">
+                <Users className="h-6 w-6 text-foreground" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
+      <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold text-foreground">클래스 목록</CardTitle>
@@ -181,19 +181,19 @@ export default function ClassesPage() {
         </CardHeader>
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
           <p className="text-white text-2xl md:text-4xl font-semibold">이 기능은 사용하지 않습니다. (아카데미 클래스 관리)</p>
-          <p className="text-lg text-muted-foreground dark:text-muted-foreground">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
+          <p className="text-lg text-muted-foreground">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
         </div>
         <CardContent>
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex w-full max-w-sm items-center space-x-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground" />
-                <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-border dark:border-border focus:border-border focus:ring-ring" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder="클래스명 또는 강사명으로 검색" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-border focus:border-border focus:ring-ring" />
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] border-border dark:border-border">
+                <SelectTrigger className="w-[180px] border-border">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4" />
                     <SelectValue placeholder="상태 필터" />
@@ -212,7 +212,7 @@ export default function ClassesPage() {
             <div className="mb-4 flex items-center gap-2 rounded-lg bg-primary dark:bg-primary p-3">
               <span className="text-sm font-medium text-primary dark:text-primary">{selectedClasses.length}개의 클래스가 선택됨</span>
               <div className="ml-auto flex gap-2">
-                <Button variant="outline" size="sm" className="h-8 border-border dark:border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent">
+                <Button variant="outline" size="sm" className="h-8 border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent">
                   <Calendar className="mr-2 h-3.5 w-3.5" />
                   일정 변경
                 </Button>
@@ -224,7 +224,7 @@ export default function ClassesPage() {
             </div>
           )}
 
-          <div className="rounded-lg border border-border dark:border-border overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="bg-background dark:bg-card hover:bg-background dark:hover:bg-card">
@@ -258,13 +258,13 @@ export default function ClassesPage() {
                       <TableCell className="text-foreground">{cls.instructor}</TableCell>
                       <TableCell className="text-foreground">
                         <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                          <Clock className="h-4 w-4 text-muted-foreground" />
                           {cls.schedule}
                         </div>
                       </TableCell>
                       <TableCell className="text-foreground">
                         <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
                           {cls.location}
                         </div>
                       </TableCell>
@@ -326,7 +326,7 @@ export default function ClassesPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground dark:text-muted-foreground">
+                    <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                       검색 결과가 없습니다.
                     </TableCell>
                   </TableRow>
@@ -336,15 +336,15 @@ export default function ClassesPage() {
           </div>
 
           <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground dark:text-muted-foreground">총 {filteredClasses.length}개의 클래스</div>
+            <div className="text-sm text-muted-foreground">총 {filteredClasses.length}개의 클래스</div>
             <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" disabled className="border-border dark:border-border bg-transparent">
+              <Button variant="outline" size="sm" disabled className="border-border bg-transparent">
                 이전
               </Button>
-              <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-border dark:border-border bg-transparent">
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0 border-border bg-transparent">
                 1
               </Button>
-              <Button variant="outline" size="sm" disabled className="border-border dark:border-border bg-transparent">
+              <Button variant="outline" size="sm" disabled className="border-border bg-transparent">
                 다음
               </Button>
             </div>

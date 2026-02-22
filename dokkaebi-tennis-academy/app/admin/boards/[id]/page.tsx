@@ -160,10 +160,10 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
         </div>
 
         <div className="flex flex-col space-y-8">
-          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border dark:border-border shadow-lg">
+          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border shadow-lg">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
+                <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
@@ -176,7 +176,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
+            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getBoardTypeColor(String(post.type ?? ''))}>{getBoardTypeName(String(post.type ?? ''))}</Badge>
@@ -191,8 +191,8 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border dark:border-border">
-              <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border dark:border-border">
+            <Card className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
+              <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
                 <CardTitle className="text-primary dark:text-primary">게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">

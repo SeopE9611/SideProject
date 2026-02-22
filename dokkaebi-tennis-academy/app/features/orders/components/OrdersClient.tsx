@@ -335,7 +335,7 @@ export default function OrdersClient() {
   };
 
   // 공통 스타일 상수
-  const thClasses = 'px-4 py-2 text-center align-middle ' + 'border-b border-border dark:border-border ' + 'font-semibold text-foreground';
+  const thClasses = 'px-4 py-2 text-center align-middle ' + 'border-b border-border ' + 'font-semibold text-foreground';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
   // 배송정보 업데이트 네비게이션
@@ -430,7 +430,7 @@ export default function OrdersClient() {
         </div>
 
         {/* 필터 및 검색 카드 */}
-        <Card className="mb-5 rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-6 py-5">
+        <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
           <CardHeader className="pb-3">
             <CardTitle>필터 및 검색</CardTitle>
             <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
@@ -466,7 +466,7 @@ export default function OrdersClient() {
         </Card>
 
         {/* 주문 목록 테이블 */}
-        <Card className="rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-4 py-5">
+        <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               {data ? (
@@ -476,8 +476,8 @@ export default function OrdersClient() {
                 </>
               ) : (
                 <>
-                  <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-muted" />
-                  <Skeleton className="h-4 w-36 rounded bg-muted dark:bg-muted" />
+                  <Skeleton className="h-5 w-24 rounded bg-muted" />
+                  <Skeleton className="h-4 w-36 rounded bg-muted" />
                 </>
               )}
             </div>
@@ -556,7 +556,7 @@ export default function OrdersClient() {
                     const hasStringingAppInGroup = group.some((o) => o.__type === 'stringing_application');
 
                     const borderColors = [
-                      'border-border dark:border-border',
+                      'border-border',
                       'border-border',
                       'border-border',
                       'border-border',

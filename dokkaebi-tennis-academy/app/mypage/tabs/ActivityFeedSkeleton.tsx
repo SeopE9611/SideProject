@@ -40,9 +40,9 @@ export default function ActivityFeedSkeleton() {
               <div className="h-px flex-1 bg-muted/80 dark:bg-muted" />
             </div>
 
-            <div className="rounded-xl bp-sm:rounded-2xl bg-card dark:bg-card/50 border border-border p-4 bp-sm:p-6">
+            <div className="rounded-xl bp-sm:rounded-2xl bg-card/50 border border-border p-4 bp-sm:p-6">
               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
-                <div className="rounded-xl bg-muted dark:bg-muted h-14 w-14 bp-sm:h-16 bp-sm:w-16 shrink-0" />
+                <div className="rounded-xl bg-muted h-14 w-14 bp-sm:h-16 bp-sm:w-16 shrink-0" />
 
                 <div className="flex-1 space-y-3">
                   <div className="space-y-2">

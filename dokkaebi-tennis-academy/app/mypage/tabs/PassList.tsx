@@ -82,7 +82,7 @@ export default function PassList() {
                 </div>
                 <div className="flex items-center gap-2">
                   {statusBadge}
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground dark:text-muted-foreground">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     {dday === null ? '계산중' : dday >= 0 ? `D-${dday}` : `만료됨`}
                   </div>
@@ -94,14 +94,14 @@ export default function PassList() {
                 <div className="h-2 w-full rounded-full bg-muted/80 dark:bg-muted overflow-hidden">
                   <div className="h-2 bg-primary" style={{ width: `${remainPct}%` }} />
                 </div>
-                <div className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground">
+                <div className="mt-2 text-sm text-muted-foreground">
                   사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}
                 </div>
               </div>
 
               {/* 최근 사용 이력 */}
               {p.recentUsages?.length > 0 && (
-                <div className="mt-3 text-sm text-muted-foreground dark:text-muted-foreground">
+                <div className="mt-3 text-sm text-muted-foreground">
                   최근 사용{' '}
                   {p.recentUsages.slice(-3).map((u, idx) => (
                     <span key={idx} className="mr-2">

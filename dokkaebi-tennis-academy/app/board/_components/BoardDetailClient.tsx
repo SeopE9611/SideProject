@@ -859,7 +859,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="flex items-center gap-3">
  <div className="flex flex-col gap-0.5">
  {comment.status === 'deleted' ? (
- <span className="text-sm font-semibold text-muted-foreground dark:text-muted-foreground">{comment.nickname ?? '회원'}</span>
+ <span className="text-sm font-semibold text-muted-foreground">{comment.nickname ?? '회원'}</span>
  ) : (
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
@@ -902,7 +902,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  </DropdownMenu>
  )}
 
- <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+ <span className="text-xs text-muted-foreground">
  {new Date(comment.createdAt).toLocaleString('ko-KR', {
  year: '2-digit',
  month: '2-digit',
@@ -938,7 +938,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {!isCommentAuthor && (
  <button
  type="button"
- className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
+ className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
  onClick={() => openCommentReportDialog(comment)}
  >
  신고
@@ -950,7 +950,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {/* 본문 / 수정 모드 */}
  {isDeleted ? (
- <p className="text-sm italic text-muted-foreground dark:text-muted-foreground">삭제된 댓글입니다.</p>
+ <p className="text-sm italic text-muted-foreground">삭제된 댓글입니다.</p>
  ) : isEditing ? (
  <div className="space-y-2.5">
  <Textarea
@@ -1077,7 +1077,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {/* 상단 헤더 (브레드크럼 + 버튼) */}
  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
  <div>
- <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
+ <div className="mb-1 text-sm text-muted-foreground">
  <span className="font-medium text-success dark:text-success">게시판</span>
  <span className="mx-1">›</span>
  <Link href="${config.routePrefix}" className="text-muted-foreground underline-offset-2 hover:underline ">
@@ -1142,7 +1142,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="flex items-start gap-3">
  <div className="flex-1 space-y-2">
  <CardTitle className="text-base md:text-lg">
- {typeof item.postNo === 'number' && <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground dark:text-muted-foreground">{item.postNo}</span>}
+ {typeof item.postNo === 'number' && <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">{item.postNo}</span>}
 
  {/* 카테고리 뱃지 */}
  <span className={`mr-2 inline-flex items-center rounded-full ${getCategoryBadgeClass(config.categoryMap[item.category ?? '']?.badgePreset ?? config.defaultCategoryBadgePreset)}`}>{config.categoryMap[item.category ?? ''] ? getCategoryBadgeText(config.categoryMap[item.category ?? '']) : '분류 없음'}</span>
@@ -1154,7 +1154,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {item.title}
  </CardTitle>
 
- <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground dark:text-muted-foreground md:text-sm">
+ <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground md:text-sm">
  {/* 작성자 */}
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
@@ -1251,15 +1251,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  )}
 
  {/* 본문 */}
- <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground dark:text-foreground">{item.content}</div>
+ <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.content}</div>
 
  {/* 첨부파일 */}
  {attachments.length > 0 && (
  <div className="mt-8 space-y-3 border-t border-border pt-4 ">
  <div className="flex items-center gap-2">
  <FileText className="h-4 w-4 text-accent" />
- <span className="text-sm font-semibold text-foreground dark:text-foreground">첨부파일</span>
- <span className="text-xs text-muted-foreground dark:text-muted-foreground">{attachments.length}개</span>
+ <span className="text-sm font-semibold text-foreground">첨부파일</span>
+ <span className="text-xs text-muted-foreground">{attachments.length}개</span>
  </div>
 
  <div className="grid gap-3 sm:grid-cols-2">
@@ -1277,10 +1277,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <FileText className="h-4 w-4 text-accent" />
  </div>
  <div className="min-w-0 flex-1">
- <div className="truncate font-medium text-foreground dark:text-foreground" title={name}>
+ <div className="truncate font-medium text-foreground" title={name}>
  {name}
  </div>
- {size && <div className="text-[11px] text-muted-foreground dark:text-muted-foreground">{size}</div>}
+ {size && <div className="text-[11px] text-muted-foreground">{size}</div>}
  </div>
  </div>
 
@@ -1294,7 +1294,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  </div>
  )}
 
- <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-muted-foreground dark:text-muted-foreground">
+ <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-muted-foreground">
  <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
  <div className="flex flex-wrap items-center gap-2">
@@ -1324,7 +1324,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <DialogContent className="max-w-md">
  <DialogHeader>
  <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.</p>
+ <p className="text-sm text-muted-foreground">허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.</p>
  </DialogHeader>
 
  <Textarea placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)" value={reason} onChange={(e) => setReason(e.target.value)} className="h-32" disabled={isReporting} />
@@ -1422,7 +1422,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {!isLoading && !error && item && (
  <Card className="overflow-hidden border border-border bg-card shadow-sm ">
  <CardHeader className="border-b border-border bg-muted/50 px-6 py-4 ">
- <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground dark:text-foreground">
+ <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
  <MessageSquare className="h-5 w-5 text-muted-foreground " />
  <span>댓글</span>
  <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground dark:bg-muted dark:text-foreground">{totalComments}</span>
@@ -1451,8 +1451,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  </>
  ) : (
  <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border ">
- <MessageSquare className="h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">로그인 후 댓글을 작성할 수 있습니다.</p>
+ <MessageSquare className="h-5 w-5 text-muted-foreground" />
+ <p className="text-sm text-muted-foreground">로그인 후 댓글을 작성할 수 있습니다.</p>
  </div>
  )}
  </div>
@@ -1480,8 +1480,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {!isCommentsLoading && comments.length === 0 && (
  <div className="flex flex-col items-center justify-center py-16 text-center">
- <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground dark:text-muted-foreground" />
- <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">첫 댓글을 남겨보세요</p>
+ <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground" />
+ <p className="text-sm font-medium text-muted-foreground">첫 댓글을 남겨보세요</p>
  </div>
  )}
 
@@ -1536,7 +1536,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {!isCommentsLoading && totalCommentPages > 1 && (
  <div className="flex items-center justify-between rounded-lg border-t border-border bg-muted/50 px-4 py-3 ">
- <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">
+ <span className="text-xs font-medium text-muted-foreground">
  {commentPage} / {totalCommentPages}
  </span>
  <div className="flex gap-2">
@@ -1564,8 +1564,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  }}
  >
  <DialogContent className="max-w-5xl max-h-screen overflow-y-auto">
- <DialogHeader className="pb-4 border-b border-border dark:border-border">
- <DialogTitle className="text-lg font-semibold text-foreground dark:text-foreground">작성자 프로필</DialogTitle>
+ <DialogHeader className="pb-4 border-b border-border">
+ <DialogTitle className="text-lg font-semibold text-foreground">작성자 프로필</DialogTitle>
  {authorTarget?.nickname ? `${authorTarget.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}
  </DialogHeader>
 
@@ -1586,16 +1586,16 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <TabsContent value="community" className="mt-6 space-y-6">
  {/* 기본 정보 */}
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">기본 정보</h3>
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">기본 정보</h3>
  <div className="space-y-2 text-sm">
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">이름</span>
+ <span className="text-muted-foreground w-20">이름</span>
  <span className="text-sm font-medium">{authorTarget?.nickname ?? '회원'}</span>
  </div>
  {authorOverview?.firstActivityAt && (
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">첫 활동일</span>
- <span className="text-foreground dark:text-foreground">{new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</span>
+ <span className="text-muted-foreground w-20">첫 활동일</span>
+ <span className="text-foreground">{new Date(authorOverview.firstActivityAt).toLocaleDateString('ko-KR')}</span>
  </div>
  )}
  </div>
@@ -1604,15 +1604,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {/* 활동량 */}
  {authorOverview && (
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">커뮤니티 활동</h3>
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">커뮤니티 활동</h3>
  <div className="flex gap-6">
- <div className="flex-1 rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-background/40 p-4">
- <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">작성 글</div>
- <div className="text-2xl font-semibold text-foreground dark:text-foreground">{authorOverview.stats.posts}</div>
+ <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
+ <div className="text-xs text-muted-foreground mb-1">작성 글</div>
+ <div className="text-2xl font-semibold text-foreground">{authorOverview.stats.posts}</div>
  </div>
- <div className="flex-1 rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-background/40 p-4">
- <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">작성댓글</div>
- <div className="text-2xl font-semibold text-foreground dark:text-foreground">{authorOverview.stats.comments}</div>
+ <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
+ <div className="text-xs text-muted-foreground mb-1">작성댓글</div>
+ <div className="text-2xl font-semibold text-foreground">{authorOverview.stats.comments}</div>
  </div>
  </div>
  </div>
@@ -1621,68 +1621,68 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {/* 최근 작성 글 */}
  {authorOverview?.recentPosts?.length ? (
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">최근 작성 글</h3>
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">최근 작성 글</h3>
  <ul className="space-y-2">
  {authorOverview.recentPosts.map((p) => (
  <li key={p.id} className="flex items-center justify-between gap-3 text-sm hover:bg-muted/50 dark:hover:bg-background/40 rounded-md p-2 -mx-2 transition-colors">
- <Link href={`${config.routePrefix}/${p.id}`} className="truncate text-foreground dark:text-foreground hover:text-muted-foreground dark:hover:text-muted-foreground flex-1">
+ <Link href={`${config.routePrefix}/${p.id}`} className="truncate text-foreground hover:text-muted-foreground dark:hover:text-muted-foreground flex-1">
  {p.title || '(제목 없음)'}
  </Link>
- <span className="shrink-0 text-xs text-muted-foreground dark:text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
+ <span className="shrink-0 text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</span>
  </li>
  ))}
  </ul>
  </div>
  ) : (
- <p className="text-sm text-muted-foreground dark:text-muted-foreground text-center py-4">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
+ <p className="text-sm text-muted-foreground text-center py-4">아직 활동 기록이 없거나, 공개 게시글이 없습니다.</p>
  )}
  </TabsContent>
 
  {/* 테니스 탭 */}
  <TabsContent value="tennis" className="mt-6">
  {!authorOverview?.tennisProfile ? (
- <div className="text-sm text-muted-foreground dark:text-muted-foreground text-center py-8">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
+ <div className="text-sm text-muted-foreground text-center py-8">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
  ) : (
  <div className="space-y-6">
  {/* 기본 정보 */}
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">플레이어 정보</h3>
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">플레이어 정보</h3>
  <div className="grid grid-cols-3 gap-4">
- <div className="rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-background/40 p-3">
- <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">실력</div>
- <div className="text-sm font-medium text-foreground dark:text-foreground">{label(LEVEL_LABEL, authorOverview.tennisProfile.level)}</div>
+ <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
+ <div className="text-xs text-muted-foreground mb-1">실력</div>
+ <div className="text-sm font-medium text-foreground">{label(LEVEL_LABEL, authorOverview.tennisProfile.level)}</div>
  </div>
- <div className="rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-background/40 p-3">
- <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">사용 손</div>
- <div className="text-sm font-medium text-foreground dark:text-foreground">{label(HAND_LABEL, authorOverview.tennisProfile.hand)}</div>
+ <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
+ <div className="text-xs text-muted-foreground mb-1">사용 손</div>
+ <div className="text-sm font-medium text-foreground">{label(HAND_LABEL, authorOverview.tennisProfile.hand)}</div>
  </div>
- <div className="rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-background/40 p-3">
- <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">스타일</div>
- <div className="text-sm font-medium text-foreground dark:text-foreground">{label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}</div>
+ <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
+ <div className="text-xs text-muted-foreground mb-1">스타일</div>
+ <div className="text-sm font-medium text-foreground">{label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}</div>
  </div>
  </div>
  </div>
 
  {/* 라켓 */}
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">메인 라켓</h3>
- <div className="rounded-lg border border-border dark:border-border p-4">
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">메인 라켓</h3>
+ <div className="rounded-lg border border-border p-4">
  <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-16">브랜드</span>
- <span className="text-foreground dark:text-foreground font-medium">{v(authorOverview.tennisProfile.mainRacket?.brand)}</span>
+ <span className="text-muted-foreground w-16">브랜드</span>
+ <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainRacket?.brand)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-16">모델</span>
- <span className="text-foreground dark:text-foreground font-medium">{v(authorOverview.tennisProfile.mainRacket?.model)}</span>
+ <span className="text-muted-foreground w-16">모델</span>
+ <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainRacket?.model)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-16">무게</span>
- <span className="text-foreground dark:text-foreground">{v(authorOverview.tennisProfile.mainRacket?.weight)}</span>
+ <span className="text-muted-foreground w-16">무게</span>
+ <span className="text-foreground">{v(authorOverview.tennisProfile.mainRacket?.weight)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-16">밸런스</span>
- <span className="text-foreground dark:text-foreground">{v(authorOverview.tennisProfile.mainRacket?.balance)}</span>
+ <span className="text-muted-foreground w-16">밸런스</span>
+ <span className="text-foreground">{v(authorOverview.tennisProfile.mainRacket?.balance)}</span>
  </div>
  </div>
  </div>
@@ -1690,32 +1690,32 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {/* 스트링 */}
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">메인 스트링</h3>
- <div className="rounded-lg border border-border dark:border-border p-4">
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">메인 스트링</h3>
+ <div className="rounded-lg border border-border p-4">
  <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">브랜드</span>
- <span className="text-foreground dark:text-foreground font-medium">{v(authorOverview.tennisProfile.mainString?.brand)}</span>
+ <span className="text-muted-foreground w-20">브랜드</span>
+ <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainString?.brand)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">모델</span>
- <span className="text-foreground dark:text-foreground font-medium">{v(authorOverview.tennisProfile.mainString?.model)}</span>
+ <span className="text-muted-foreground w-20">모델</span>
+ <span className="text-foreground font-medium">{v(authorOverview.tennisProfile.mainString?.model)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">게이지</span>
- <span className="text-foreground dark:text-foreground">{v(authorOverview.tennisProfile.mainString?.gauge)}</span>
+ <span className="text-muted-foreground w-20">게이지</span>
+ <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.gauge)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">재질</span>
- <span className="text-foreground dark:text-foreground">{v(authorOverview.tennisProfile.mainString?.material)}</span>
+ <span className="text-muted-foreground w-20">재질</span>
+ <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.material)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">메인 텐션</span>
- <span className="text-foreground dark:text-foreground">{v(authorOverview.tennisProfile.mainString?.tensionMain)}</span>
+ <span className="text-muted-foreground w-20">메인 텐션</span>
+ <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.tensionMain)}</span>
  </div>
  <div className="flex items-center gap-2">
- <span className="text-muted-foreground dark:text-muted-foreground w-20">크로스 텐션</span>
- <span className="text-foreground dark:text-foreground">{v(authorOverview.tennisProfile.mainString?.tensionCross)}</span>
+ <span className="text-muted-foreground w-20">크로스 텐션</span>
+ <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.tensionCross)}</span>
  </div>
  </div>
  </div>
@@ -1723,16 +1723,16 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {/* 소개 */}
  <div className="space-y-3">
- <h3 className="text-sm font-semibold text-foreground dark:text-foreground pb-2 border-b border-border dark:border-border">소개</h3>
- <div className="rounded-lg border border-border dark:border-border bg-muted/50 dark:bg-background/40 p-4">
- <p className="text-sm text-muted-foreground dark:text-muted-foreground whitespace-pre-wrap leading-relaxed">{authorOverview.tennisProfile.note?.trim() ? authorOverview.tennisProfile.note : '소개를 입력하지 않았습니다.'}</p>
+ <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">소개</h3>
+ <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
+ <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{authorOverview.tennisProfile.note?.trim() ? authorOverview.tennisProfile.note : '소개를 입력하지 않았습니다.'}</p>
  </div>
  </div>
  </div>
  )}
  </TabsContent>
 
- <div className="flex items-center justify-between pt-6 mt-6 border-t border-border dark:border-border">
+ <div className="flex items-center justify-between pt-6 mt-6 border-t border-border">
  <Button variant="outline" size="sm" asChild disabled={!item} className="h-9 bg-transparent">
  <Link href={authorTarget?.userId ? `${config.routePrefix}?authorId=${authorTarget.userId}&authorName=${encodeURIComponent(authorTarget.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
  </Button>

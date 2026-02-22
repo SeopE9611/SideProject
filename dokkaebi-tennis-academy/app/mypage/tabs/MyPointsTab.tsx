@@ -131,7 +131,7 @@ export default function MyPointsTab() {
           </CardContent>
         </Card>
 
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card dark:bg-card">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
           <div className="absolute inset-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
@@ -149,7 +149,7 @@ export default function MyPointsTab() {
           </CardContent>
         </Card>
 
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card dark:bg-card bp-md:col-span-2 bp-lg:col-span-1">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card bp-md:col-span-2 bp-lg:col-span-1">
           <div className="absolute inset-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
@@ -173,7 +173,7 @@ export default function MyPointsTab() {
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-xl p-2.5 shadow-md">
-                <Calendar className="h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
+                <Calendar className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
                 <CardTitle className="text-lg bp-sm:text-xl">포인트 내역</CardTitle>

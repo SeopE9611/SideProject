@@ -31,7 +31,7 @@ function getIconProps(status: string) {
       return {
         Icon: Edit2,
         wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-foreground',
+        iconClasses: 'text-foreground',
       };
     case '교체완료':
     case '교체 완료':
@@ -53,13 +53,13 @@ function getIconProps(status: string) {
       return {
         Icon: User,
         wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-foreground',
+        iconClasses: 'text-foreground',
       };
     case '요청사항 수정':
       return {
         Icon: MessageSquare,
         wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
-        iconClasses: 'text-foreground dark:text-foreground',
+        iconClasses: 'text-foreground',
       };
     case '스트링 정보 수정':
       return {

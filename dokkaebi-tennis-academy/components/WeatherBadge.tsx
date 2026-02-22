@@ -44,7 +44,7 @@ export function WeatherBadge() {
           (최저 {min} / 최고 {max})
         </span>
       </div>
-      <div className="text-muted-foreground dark:text-muted-foreground text-[11px] sm:text-xs">
+      <div className="text-muted-foreground text-[11px] sm:text-xs">
         {description && `지금은 "${description}" 상태예요. `}
         {mood}
       </div>

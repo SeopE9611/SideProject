@@ -577,7 +577,7 @@ export default function UsersClient() {
       <BulkActionsSection>
       {/* 선택 액션바 */}
       {selectedUsers.length > 0 && (
-        <div className="mb-3 rounded-md bg-primary dark:bg-primary border border-border dark:border-border p-4">
+        <div className="mb-3 rounded-md bg-primary dark:bg-primary border border-border p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-primary dark:text-primary">{selectedUsers.length}명의 회원이 선택됨</span>
@@ -647,11 +647,11 @@ export default function UsersClient() {
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {canSuspend && canUnsuspend && (
                 <>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card dark:bg-card border border-border dark:border-border px-2 py-1 text-primary dark:text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary dark:text-primary">
                     <UserCheck className="h-3.5 w-3.5" />
                     활성화 가능 {selectedRows.filter((u) => !u.isDeleted && u.isSuspended).length}건
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card dark:bg-card border border-border dark:border-border px-2 py-1 text-primary dark:text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary dark:text-primary">
                     <UserX className="h-3.5 w-3.5" />
                     비활성화 가능 {selectedRows.filter((u) => !u.isDeleted && !u.isSuspended).length}건
                   </span>
@@ -660,7 +660,7 @@ export default function UsersClient() {
 
               {/* 삭제 선택 시: 경고 칩 */}
               {hasDeletedSelected && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted dark:bg-muted border border-border dark:border-border px-2 py-1 text-primary dark:text-primary">
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-1 text-primary dark:text-primary">
                   <AlertCircle className="h-3.5 w-3.5" />
                   삭제(탈퇴)된 회원은 복구할 수 없습니다. 재가입만 가능합니다.
                 </span>
@@ -680,7 +680,7 @@ export default function UsersClient() {
         </div>
 
         <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
-          <div className="relative rounded-2xl border border-border dark:border-border shadow-sm min-w-0">
+          <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
             <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
               {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
               <colgroup>

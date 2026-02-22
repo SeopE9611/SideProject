@@ -23,7 +23,7 @@ const fetcher = (url: string) => adminFetcher<any>(url, { cache: 'no-store' });
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-muted0/10 text-muted-foreground dark:bg-muted0/20',
+  pending: 'bg-muted/10 text-muted-foreground dark:bg-muted/20',
   paid: 'bg-primary text-accent dark:bg-primary',
   out: 'bg-muted text-foreground dark:bg-muted',
   returned: 'bg-success/10 text-success dark:bg-success/10',
@@ -290,7 +290,7 @@ export default function AdminRentalDetailClient() {
           <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border /30 shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-card dark:bg-card rounded-full p-3 shadow-md">
+                <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-accent" />
                 </div>
                 <div>

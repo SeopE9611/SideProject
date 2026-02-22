@@ -246,7 +246,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  return (
  <main className="w-full">
  <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6 bp-sm:space-y-8">
- <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border dark:border-border shadow-lg">
+ <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border shadow-lg">
  {/* 헤더: 제목과 액션 버튼 */}
  <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 bp-md:gap-6">
  {/* 제목 섹션 */}
@@ -255,8 +255,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <ShoppingCart className="h-8 w-8 text-accent" />
  </div>
  <div className="min-w-0">
- <h1 className="text-2xl bp-sm:text-3xl font-bold text-foreground dark:text-foreground">주문 상세정보</h1>
- <p className="text-muted-foreground dark:text-muted-foreground mt-1 break-all text-sm">주문번호: {orderId}</p>
+ <h1 className="text-2xl bp-sm:text-3xl font-bold text-foreground">주문 상세정보</h1>
+ <p className="text-muted-foreground mt-1 break-all text-sm">주문번호: {orderId}</p>
  </div>
  </div>
 
@@ -281,7 +281,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Calendar className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-foreground ">주문일시</span>
  </div>
- <p className="text-lg font-semibold text-foreground dark:text-foreground">{formatDate(orderDetail.date)}</p>
+ <p className="text-lg font-semibold text-foreground">{formatDate(orderDetail.date)}</p>
  </div>
 
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
@@ -289,7 +289,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CreditCard className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-foreground ">총 결제금액</span>
  </div>
- <p className="text-lg font-semibold text-foreground dark:text-foreground">{formatCurrency(orderDetail.total)}</p>
+ <p className="text-lg font-semibold text-foreground">{formatCurrency(orderDetail.total)}</p>
  </div>
 
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
@@ -323,7 +323,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {orderDetail.shippingInfo?.withStringService && (
  <>
  {totalSlots > 0 && remainingSlots > 0 ? (
- <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border border-border dark:border-border rounded-xl p-6 shadow-lg">
+ <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border border-border rounded-xl p-6 shadow-lg">
  <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
  <div className="flex items-start bp-sm:items-center space-x-3 min-w-0">
  <div className="bg-warning/10 dark:bg-warning/10 rounded-full p-2">
@@ -350,7 +350,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
  ) : totalSlots > 0 ? (
- <div className="bg-success/10 dark:bg-success/10 border border-border dark:border-border rounded-xl p-6 shadow-lg mt-4">
+ <div className="bg-success/10 dark:bg-success/10 border border-border rounded-xl p-6 shadow-lg mt-4">
  <div className="flex flex-col bp-md:flex-row bp-md:items-start bp-md:justify-between gap-4">
  <div className="flex items-start space-x-3">
  <div className="bg-success/10 dark:bg-success/10 rounded-full p-2 mt-1">
@@ -403,7 +403,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div id="reviews-cta" className="mt-4">
  {allReviewed ? (
- <div className="bg-primary dark:bg-primary border border-border dark:border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
+ <div className="bg-primary dark:bg-primary border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
  <div className="flex items-center gap-3">
  <CheckCircle className="h-6 w-6 text-primary" />
  <div>
@@ -418,7 +418,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Link>
  </div>
  ) : (
- <div className="bg-warning/10 dark:bg-warning/10 border border-border dark:border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
+ <div className="bg-warning/10 dark:bg-warning/10 border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
  <div className="flex items-center gap-3">
  <Clock className="h-6 w-6 text-warning" />
  <div>
@@ -478,34 +478,34 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <User className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">이름</p>
- <p className="font-semibold text-foreground dark:text-foreground">{orderDetail.customer.name ?? '이름 없음'}</p>
+ <p className="text-sm text-muted-foreground">이름</p>
+ <p className="font-semibold text-foreground">{orderDetail.customer.name ?? '이름 없음'}</p>
  </div>
  </div>
 
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Mail className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">이메일</p>
- <p className="font-semibold text-foreground dark:text-foreground">{orderDetail.customer.email ?? '이메일 없음'}</p>
+ <p className="text-sm text-muted-foreground">이메일</p>
+ <p className="font-semibold text-foreground">{orderDetail.customer.email ?? '이메일 없음'}</p>
  </div>
  </div>
 
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Phone className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">전화번호</p>
- <p className="font-semibold text-foreground dark:text-foreground">{orderDetail.customer.phone ?? '전화번호 없음'}</p>
+ <p className="text-sm text-muted-foreground">전화번호</p>
+ <p className="font-semibold text-foreground">{orderDetail.customer.phone ?? '전화번호 없음'}</p>
  </div>
  </div>
 
  <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">주소</p>
- <p className="font-semibold text-foreground dark:text-foreground">{orderDetail.customer.address ?? '주소 없음'}</p>
- {orderDetail.customer.addressDetail && <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-1">{orderDetail.customer.addressDetail}</p>}
- {orderDetail.customer.postalCode && <p className="text-sm text-muted-foreground dark:text-muted-foreground">우편번호: {orderDetail.customer.postalCode}</p>}
+ <p className="text-sm text-muted-foreground">주소</p>
+ <p className="font-semibold text-foreground">{orderDetail.customer.address ?? '주소 없음'}</p>
+ {orderDetail.customer.addressDetail && <p className="text-sm text-muted-foreground mt-1">{orderDetail.customer.addressDetail}</p>}
+ {orderDetail.customer.postalCode && <p className="text-sm text-muted-foreground">우편번호: {orderDetail.customer.postalCode}</p>}
  </div>
  </div>
  </div>
@@ -533,8 +533,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Truck className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">배송 방법</p>
- <p className="font-semibold text-foreground dark:text-foreground">
+ <p className="text-sm text-muted-foreground">배송 방법</p>
+ <p className="font-semibold text-foreground">
  {{
  delivery: '택배 배송',
  quick: '퀵 배송 (당일)',
@@ -547,8 +547,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <Calendar className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">예상 수령일</p>
- <p className="font-semibold text-foreground dark:text-foreground">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
+ <p className="text-sm text-muted-foreground">예상 수령일</p>
+ <p className="font-semibold text-foreground">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
  </div>
  </div>
 
@@ -556,8 +556,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  <>
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">택배사</p>
- <p className="font-semibold text-foreground dark:text-foreground">
+ <p className="text-sm text-muted-foreground">택배사</p>
+ <p className="font-semibold text-foreground">
  {{
  cj: 'CJ 대한통운',
  hanjin: '한진택배',
@@ -570,8 +570,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">운송장 번호</p>
- <p className="font-semibold text-foreground dark:text-foreground">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
+ <p className="text-sm text-muted-foreground">운송장 번호</p>
+ <p className="font-semibold text-foreground">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
  </div>
  </div>
  </>
@@ -592,7 +592,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="space-y-4">
  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 상태</p>
+ <p className="text-sm text-muted-foreground">결제 상태</p>
  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
  </div>
  </div>
@@ -601,9 +601,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border dark:border-border">
+ <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border">
  <div>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">결제 금액</p>
+ <p className="text-sm text-muted-foreground">결제 금액</p>
  <p className="text-xl font-bold text-accent dark:text-accent">{formatCurrency(orderDetail.total)}</p>
  </div>
  </div>
@@ -628,14 +628,14 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 상품명 + 수량 */}
  <div className="flex-1">
- <h4 className="font-semibold text-foreground dark:text-foreground">{item.name}</h4>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">수량: {item.quantity}개</p>
+ <h4 className="font-semibold text-foreground">{item.name}</h4>
+ <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
  </div>
 
  {/* 가격 및 소계 */}
  <div className="text-right">
- <p className="font-semibold text-foreground dark:text-foreground">{formatCurrency(item.price)}</p>
- <p className="text-sm text-muted-foreground dark:text-muted-foreground">소계: {formatCurrency(item.price * item.quantity)}</p>
+ <p className="font-semibold text-foreground">{formatCurrency(item.price)}</p>
+ <p className="text-sm text-muted-foreground">소계: {formatCurrency(item.price * item.quantity)}</p>
  <div className="mt-2">
  {canShowReviewCTA &&
  (reviewedMap[item.id] ? (
@@ -682,11 +682,11 @@ export default function OrderDetailClient({ orderId }: Props) {
  ) : (
  <CardContent className="p-4 bp-sm:p-6">
  {orderDetail.shippingInfo.deliveryRequest ? (
- <div className="bg-warning/10 dark:bg-warning/10 border border-border dark:border-border rounded-lg p-4">
+ <div className="bg-warning/10 dark:bg-warning/10 border border-border rounded-lg p-4">
  <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
  </div>
  ) : (
- <p className="text-muted-foreground dark:text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
+ <p className="text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
  )}
  </CardContent>
  )}

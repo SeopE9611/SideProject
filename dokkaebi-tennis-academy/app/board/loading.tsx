@@ -18,7 +18,7 @@ export default function BoardLoading() {
         {/* 통계 카드 스켈레톤 */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="border-0 bg-card dark:bg-card shadow-lg backdrop-blur-sm">
+            <Card key={i} className="border-0 bg-card shadow-lg backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
@@ -35,7 +35,7 @@ export default function BoardLoading() {
         {/* 메인 게시판 카드 스켈레톤 */}
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {[...Array(3)].map((_, i) => (
-            <Card key={i} className="border-0 bg-card dark:bg-card shadow-xl backdrop-blur-sm h-full">
+            <Card key={i} className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
               <CardHeader className="border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -48,7 +48,7 @@ export default function BoardLoading() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {[...Array(3)].map((_, j) => (
-                    <div key={j} className="border-b border-border dark:border-border last:border-0 pb-4 last:pb-0">
+                    <div key={j} className="border-b border-border last:border-0 pb-4 last:pb-0">
                       <div className="space-y-2">
                         <Skeleton className="h-5 w-full" />
                         <Skeleton className="h-4 w-3/4" />
@@ -66,7 +66,7 @@ export default function BoardLoading() {
         </div>
 
         {/* 추가 링크 섹션 스켈레톤 */}
-        <div className="bg-card dark:bg-card backdrop-blur-sm rounded-2xl shadow-xl p-8">
+        <div className="bg-card backdrop-blur-sm rounded-2xl shadow-xl p-8">
           <div className="text-center space-y-6">
             <Skeleton className="h-8 w-64 mx-auto" />
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -345,7 +345,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
                     {/* 버튼 영역 */}
                     {isFromCart ? (
-                      <Button className="mt-4 w-full bg-card hover:bg-card text-white font-medium rounded-xl py-5 group-hover:bg-primary group-hover:shadow-lg transition-all duration-300" onClick={() => handleSelectString(p)}>
+                      <Button variant="cardAction" className="mt-4 w-full font-medium rounded-xl py-5 transition-all duration-300" onClick={() => handleSelectString(p)}>
                         <span className="flex items-center justify-center gap-2">
                           이 스트링으로 변경
                           <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -356,7 +356,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                     ) : (
                       <div className="mt-4 grid grid-cols-1 gap-2">
                         <Button
-                          className="w-full bg-card hover:bg-card text-white font-medium rounded-xl py-5 group-hover:bg-primary group-hover:shadow-lg transition-all duration-300"
+                          variant="cardAction"
+                          className="w-full font-medium rounded-xl py-5 transition-all duration-300"
                           disabled={isSoldOut || isShort}
                           onClick={() => handleSelectString(p)}
                         >

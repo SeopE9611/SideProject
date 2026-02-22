@@ -386,7 +386,7 @@ export default function FreeBoardWriteClient() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 중고 거래 게시판 > 글쓰기 */}
-            <div className="mb-1 text-sm text-muted-foreground dark:text-muted-foreground">
+            <div className="mb-1 text-sm text-muted-foreground">
               <span className="font-medium text-success dark:text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/market" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
@@ -396,7 +396,7 @@ export default function FreeBoardWriteClient() {
               <span>글쓰기</span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">중고 거래 게시판 글쓰기</h1>
-            <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground md:text-base">회원들과 자유롭게 테니스 상품을 거래 해보세요.</p>
+            <p className="mt-1 text-sm text-muted-foreground md:text-base">회원들과 자유롭게 테니스 상품을 거래 해보세요.</p>
           </div>
 
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
@@ -421,7 +421,7 @@ export default function FreeBoardWriteClient() {
             </div>
             <div>
               <CardTitle className="text-base md:text-lg">중고 거래 게시판 글 작성</CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground md:text-sm">테니스 라켓, 스트링,장비 등 판매하고자 하는 상품을 작성해보세요.</p>
+              <p className="mt-1 text-xs text-muted-foreground md:text-sm">테니스 라켓, 스트링,장비 등 판매하고자 하는 상품을 작성해보세요.</p>
             </div>
           </CardHeader>
 
@@ -491,7 +491,7 @@ export default function FreeBoardWriteClient() {
                   maxLength={TITLE_MAX}
                   className={fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
                 />
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
                 {fieldErrors.title ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.title}</p> : null}
@@ -512,11 +512,11 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={CONTENT_MAX}
                 />
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
                 {fieldErrors.content ? <p className="text-xs text-destructive dark:text-destructive">{fieldErrors.content}</p> : null}
-                <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
+                <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
@@ -531,7 +531,7 @@ export default function FreeBoardWriteClient() {
 
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
+                    <p className="text-xs text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
                     <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
                   </TabsContent>
 
@@ -539,7 +539,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border dark:border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card dark:bg-card"
+                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -558,8 +558,8 @@ export default function FreeBoardWriteClient() {
                       }}
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground dark:text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
-                      <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
+                      <p className="text-sm text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
                         이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
                       </p>
                       <Button
@@ -581,26 +581,26 @@ export default function FreeBoardWriteClient() {
                     {/* 선택된 파일 카드 목록 */}
                     {selectedFiles.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card dark:bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
+                              className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>
-                                <span className="text-muted-foreground dark:text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                               </div>
 
                               <button
                                 type="button"
                                 onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card dark:bg-card border border-border dark:border-border text-muted-foreground hover:text-destructive"
+                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-destructive"
                               >
                                 <X className="h-3 w-3" />
                               </button>

@@ -415,7 +415,7 @@ export default function QnaWritePage() {
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">문의하기</h1>
-                <p className="text-lg text-muted-foreground dark:text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
+                <p className="text-lg text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
               </div>
             </div>
           </div>
@@ -456,7 +456,7 @@ export default function QnaWritePage() {
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (
-                  <div className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground flex items-center gap-2">
+                  <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
                     <Badge variant="secondary">프리필</Badge>
                     <span>
                       선택된 상품: <strong>{preProductName || preProductId}</strong>
@@ -470,7 +470,7 @@ export default function QnaWritePage() {
 
               {category === 'product' && !preProductId && (
                 <div ref={productWrapRef} className="space-y-4">
-                  <div className="text-sm text-muted-foreground dark:text-muted-foreground">
+                  <div className="text-sm text-muted-foreground">
                     <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
                   </div>
                   {fieldErrors.product && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.product}</p>}
@@ -587,7 +587,7 @@ export default function QnaWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive dark:border-destructive' : 'border-border dark:border-border'} rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive dark:border-destructive' : 'border-border'} rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -673,7 +673,7 @@ export default function QnaWritePage() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-muted dark:bg-muted/50 rounded-lg">
+              <div className="flex items-start space-x-3 p-4 bg-muted/50 rounded-lg">
                 <Checkbox id="private" checked={isPrivate} onCheckedChange={(checked) => setIsPrivate(checked as boolean)} className="mt-1" />
                 <div className="space-y-1">
                   <label htmlFor="private" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">

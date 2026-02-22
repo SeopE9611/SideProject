@@ -83,7 +83,7 @@ export default function AdminReviewMaintenancePanel() {
   const disabled = loading !== null;
 
   return (
-    <Card className="border-0 shadow-md bg-card dark:bg-card">
+    <Card className="border-0 shadow-md bg-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Wrench className="h-5 w-5" />

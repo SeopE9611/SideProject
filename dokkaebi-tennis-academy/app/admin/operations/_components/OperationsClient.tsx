@@ -325,7 +325,7 @@ export default function OperationsClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className="mb-5 rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-6 py-5">
+      <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
@@ -349,7 +349,7 @@ export default function OperationsClient() {
           </div>
 
           {/* 필터 컴포넌트들 */}
-          <div className="grid w-full gap-2 border-t border-border dark:border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
+          <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
             <Select
               value={kind}
               onValueChange={(v: any) => {
@@ -411,7 +411,7 @@ export default function OperationsClient() {
               variant="outline"
               size="sm"
               title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
-              className={cn('w-full bg-transparent', onlyWarn && 'border-border bg-muted text-primary hover:bg-muted dark:bg-muted dark:text-primary dark:border-border')}
+              className={cn('w-full bg-transparent', onlyWarn && 'border-border bg-muted text-primary hover:bg-muted dark:text-primary dark:border-border')}
               onClick={() => {
                 setOnlyWarn((v) => !v);
                 setPage(1);
@@ -496,17 +496,17 @@ export default function OperationsClient() {
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-border dark:border-border pt-3 mt-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-border pt-3 mt-1">
             <span className="font-medium text-foreground">범례</span>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>주문</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
-            <span className="text-muted-foreground dark:text-muted-foreground">|</span>
+            <span className="text-muted-foreground">|</span>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary text-primary dark:text-primary')}>통합(연결됨)</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground dark:text-muted-foreground')}>단독</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground')}>단독</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive')}>연결오류</Badge>
 
-            <span className="text-muted-foreground dark:text-muted-foreground">|</span>
+            <span className="text-muted-foreground">|</span>
             <span className="font-medium text-foreground">시나리오</span>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
@@ -517,7 +517,7 @@ export default function OperationsClient() {
       </Card>
 
       {/* 업무 목록 카드 */}
-      <Card className="rounded-xl border-border dark:border-border bg-card dark:bg-card shadow-md px-4 py-5">
+      <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             {data ? (
@@ -560,7 +560,7 @@ export default function OperationsClient() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent border-b border-border dark:border-border">
+                  <TableRow className="hover:bg-transparent border-b border-border">
                     <TableHead className={thClasses}>유형</TableHead>
                     <TableHead className={cn(thClasses, 'text-muted-foreground')}>ID</TableHead>
                     <TableHead className={thClasses}>고객</TableHead>
@@ -964,7 +964,7 @@ export default function OperationsClient() {
 
           {/* 페이지네이션 */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-border dark:border-border px-4 pt-4 mt-4">
+            <div className="flex items-center justify-between border-t border-border px-4 pt-4 mt-4">
               <p className="text-xs text-muted-foreground">
                 {page} / {totalPages} 페이지 (총 {total.toLocaleString('ko-KR')}건)
               </p>

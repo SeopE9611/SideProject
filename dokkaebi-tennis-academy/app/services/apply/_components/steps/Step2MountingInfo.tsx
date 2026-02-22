@@ -379,7 +379,7 @@ export default function Step2MountingInfo(props: Props) {
                 <span className="font-medium">이 주문에서 남은 교체 가능 횟수</span>
                 <span className="font-semibold">{orderRemainingSlots}회</span>
                 {typeof orderStringService?.totalSlots === 'number' && typeof orderStringService?.usedSlots === 'number' && (
-                  <span className="text-xs text-muted-foreground dark:text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     (총 {orderStringService.totalSlots} / 사용 {orderStringService.usedSlots})
                   </span>
                 )}
@@ -429,14 +429,14 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           )}
 
-          <div className="bg-primary from-muted to-background dark:from-background dark:to-background border border-border dark:border-border rounded-lg p-4">
+          <div className="bg-primary from-muted to-background dark:from-background dark:to-background border border-border rounded-lg p-4">
             <h3 className="font-semibold text-accent dark:text-accent mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2" />
               예상 장착 비용
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-card dark:bg-card rounded-lg border border-border bg-muted/70 dark:border-border">
-                <span className="text-sm text-muted-foreground dark:text-muted-foreground">기본 장착비</span>
+              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border bg-muted/70 dark:border-border">
+                <span className="text-sm text-muted-foreground">기본 장착비</span>
                 <span className="font-medium text-foreground dark:text-primary-foreground">
                   {formData.stringTypes.includes('custom') ? '15,000원' : order && lineCount > 0 ? price.toLocaleString('ko-KR') + '원' : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') + '원'}
                 </span>
@@ -464,7 +464,7 @@ export default function Step2MountingInfo(props: Props) {
                               <Input
                                 id="useQty-custom"
                                 type="number"
-                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border dark:border-border rounded-md focus:ring-ring"
+                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring"
                                 min={0}
                                 max={99}
                                 value={useQty}
@@ -493,7 +493,7 @@ export default function Step2MountingInfo(props: Props) {
                             <Input
                               id={`useQty-${id}`}
                               type="number"
-                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-border dark:border-border rounded-md focus:ring-ring ${
+                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring ${
                                 lockOrderUseQty ? 'cursor-not-allowed bg-muted text-muted-foreground dark:bg-card/40 dark:text-muted-foreground' : ''
                               }`}
                               min={0}
@@ -547,7 +547,7 @@ export default function Step2MountingInfo(props: Props) {
                               <Input
                                 id={`useQty-${id}`}
                                 type="number"
-                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border dark:border-border rounded-md focus:ring-ring"
+                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring"
                                 min={0}
                                 max={maxQty}
                                 value={useQty}
@@ -619,7 +619,7 @@ export default function Step2MountingInfo(props: Props) {
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
-                  <Ticket className="h-4 w-4 text-foreground dark:text-foreground" />
+                  <Ticket className="h-4 w-4 text-foreground" />
                 </div>
                 <div className="flex-1 text-[12px] leading-relaxed">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -638,11 +638,11 @@ export default function Step2MountingInfo(props: Props) {
 
                   {packagePreview?.has ? (
                     packageInsufficient ? (
-                      <p className="text-sm text-foreground dark:text-foreground">
+                      <p className="text-sm text-foreground">
                         현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>이고, 이번 신청에는 <span className="font-semibold">{requiredPassCount}회</span>가 필요하여 패키지가 자동 적용되지 않습니다.
                       </p>
                     ) : (
-                      <p className="text-sm text-foreground dark:text-foreground">
+                      <p className="text-sm text-foreground">
                         이번 신청에는 패키지로 <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다. 현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
                         이며, 결제 단계에서 사용 여부를 선택할 수 있습니다.
                       </p>
@@ -654,11 +654,11 @@ export default function Step2MountingInfo(props: Props) {
                   {packagePreview?.has && (
                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground dark:text-foreground">
                       <span>필요 {requiredPassCount}회</span>
-                      <span className="h-3 w-px bg-muted dark:bg-muted/80" />
+                      <span className="h-3 w-px bg-muted/80" />
                       <span>잔여 {packageRemaining}회</span>
                       {packagePreview.expiresAt && (
                         <>
-                          <span className="h-3 w-px bg-muted dark:bg-muted/80" />
+                          <span className="h-3 w-px bg-muted/80" />
                           <span>만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}</span>
                         </>
                       )}
@@ -673,8 +673,8 @@ export default function Step2MountingInfo(props: Props) {
         {lineCount > 0 && (
           <Card className="border-none bg-background from-muted/50 to-muted/30 dark:from-background dark:to-background shadow-sm">
             <CardHeader className="pb-4 space-y-1">
-              <CardTitle className="text-base font-semibold text-foreground dark:text-foreground">라켓별 세부 장착 정보</CardTitle>
-              <CardDescription className="text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
+              <CardTitle className="text-base font-semibold text-foreground">라켓별 세부 장착 정보</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground leading-relaxed">
                 위에서 선택한 <span className="font-semibold text-accent dark:text-accent">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
               </CardDescription>
             </CardHeader>
@@ -682,8 +682,8 @@ export default function Step2MountingInfo(props: Props) {
               <div className="rounded-xl border border-border bg-background/70 dark:border-border dark:bg-card/30 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-[220px]">
-                    <p className="text-sm font-semibold text-foreground dark:text-foreground">일괄 입력</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground dark:text-muted-foreground">같은 텐션/요청사항이면 한 번에 적용할 수 있어요.</p>
+                    <p className="text-sm font-semibold text-foreground">일괄 입력</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">같은 텐션/요청사항이면 한 번에 적용할 수 있어요.</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -703,7 +703,7 @@ export default function Step2MountingInfo(props: Props) {
                       value={bulkTensionMain}
                       onChange={(e) => setBulkTensionMain(e.target.value)}
                       placeholder="예: 24"
-                      className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                     />
                   </div>
 
@@ -713,7 +713,7 @@ export default function Step2MountingInfo(props: Props) {
                       value={bulkTensionCross}
                       onChange={(e) => setBulkTensionCross(e.target.value)}
                       placeholder="예: 23"
-                      className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                     />
                   </div>
 
@@ -723,17 +723,17 @@ export default function Step2MountingInfo(props: Props) {
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
                       rows={2}
-                      className="text-sm resize-none border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="text-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       placeholder="예: 전부 동일 텐션으로 부탁드립니다. / 오버그립 제거하지 말아주세요 등"
                     />
-                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.</p>
+                    <p className="text-[11px] text-muted-foreground">※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.</p>
                   </div>
                 </div>
               </div>
               {linesForSubmit.map((line, index) => (
-                <div key={line.id ?? index} className="group relative rounded-xl bg-card dark:bg-card/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+                <div key={line.id ?? index} className="group relative rounded-xl bg-card/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary from-background to-background dark:from-background dark:to-background border-b border-border dark:border-border/50">
+                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary from-background to-background dark:from-background dark:to-background border-b border-border/50">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background from-primary to-primary shadow-sm">
                         <span className="text-sm font-bold text-primary-foreground">{index + 1}</span>
@@ -741,7 +741,7 @@ export default function Step2MountingInfo(props: Props) {
                       <span className="text-sm font-medium text-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                     </div>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted dark:bg-primary">
-                      <div className="h-1.5 w-1.5 rounded-full bg-muted0 dark:bg-primary" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-muted dark:bg-primary" />
                       <span className="text-xs font-medium text-accent dark:text-accent truncate max-w-[200px]">{line.stringName}</span>
                     </div>
                   </div>
@@ -755,7 +755,7 @@ export default function Step2MountingInfo(props: Props) {
                           value={line.racketType ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'racketType', e.target.value)}
                           placeholder="예: 라켓1"
-                          className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                          className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -764,7 +764,7 @@ export default function Step2MountingInfo(props: Props) {
                           value={line.tensionMain ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)}
                           placeholder="예: 24"
-                          className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                          className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -773,7 +773,7 @@ export default function Step2MountingInfo(props: Props) {
                           value={line.tensionCross ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)}
                           placeholder="예: 23"
-                          className="h-9 text-sm border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                          className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                     </div>
@@ -785,7 +785,7 @@ export default function Step2MountingInfo(props: Props) {
                         value={line.note ?? ''}
                         onChange={(e) => handleLineFieldChange(index, 'note', e.target.value)}
                         rows={2}
-                        className="text-sm resize-none border-border dark:border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        className="text-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         placeholder="요청사항을 적어 두셔도 좋습니다."
                       />
                     </div>
@@ -812,11 +812,11 @@ export default function Step2MountingInfo(props: Props) {
                 className="focus:ring-2 focus:ring-ring transition-all duration-200"
               />
               {formData.preferredDate && formData.preferredTime && visitSlotCountUi > 0 && visitDurationMinutesUi && (
-                <div className="mt-3 text-xs md:text-[13px] text-foreground dark:text-foreground bg-background/80 dark:bg-card/40 border border-border dark:border-border rounded-lg px-3 py-2">
+                <div className="mt-3 text-xs md:text-[13px] text-foreground bg-background/80 dark:bg-card/40 border border-border rounded-lg px-3 py-2">
                   <p className="font-medium">
                     이번 방문 예상 소요 시간: {visitTimeRange ? `${visitTimeRange.start} ~ ${visitTimeRange.end}` : `약 ${visitDurationMinutesUi}분`} ({visitSlotCountUi}슬롯)
                   </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground dark:text-muted-foreground leading-relaxed">선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당 시간대에는 다른 예약이 불가능합니다.</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground leading-relaxed">선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당 시간대에는 다른 예약이 불가능합니다.</p>
                 </div>
               )}
             </div>

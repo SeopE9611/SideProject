@@ -376,8 +376,8 @@ export default function PackageOrdersClient() {
   // 공통 스타일 상수
   const thClasses =
     'sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle ' +
-    'bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:bg-card dark:supports-[backdrop-filter]:bg-card ' +
-    'border-b border-border dark:border-border text-foreground ' +
+    'bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card ' +
+    'border-b border-border text-foreground ' +
     'font-semibold text-[11px] leading-[1.05] box-border';
 
   const tdClasses = 'px-3 py-2 align-middle text-center text-[11px] leading-tight tabular-nums';
@@ -512,10 +512,10 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">총 매출</p>
-                    <div className="text-3xl font-bold text-foreground dark:text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
+                    <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
                   </div>
-                  <div className="bg-muted dark:bg-muted rounded-xl p-3">
-                    <CreditCard className="h-6 w-6 text-foreground dark:text-foreground" />
+                  <div className="bg-muted rounded-xl p-3">
+                    <CreditCard className="h-6 w-6 text-foreground" />
                   </div>
                 </div>
               </CardContent>
@@ -656,7 +656,7 @@ export default function PackageOrdersClient() {
               </div>
             </CardHeader>
             <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
-              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border dark:border-border shadow-sm max-h-[60vh] min-w-0">
+              <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border shadow-sm max-h-[60vh] min-w-0">
                 <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs " aria-busy={isValidating && packages.length === 0}>
                   <TableHeader className="sticky top-0 bg-background dark:bg-card shadow-sm">
                     <TableRow>
@@ -840,7 +840,7 @@ export default function PackageOrdersClient() {
                                         {baseName}
                                         {isGuest && <span className="ml-1 text-xs text-muted-foreground">(비회원)</span>}
                                       </span>
-                                      <span className="text-xs text-muted-foreground dark:text-muted-foreground max-w-[200px] truncate">{cEmail}</span>
+                                      <span className="text-xs text-muted-foreground max-w-[200px] truncate">{cEmail}</span>
                                     </div>
                                   );
                                 })()}
@@ -962,7 +962,7 @@ export default function PackageOrdersClient() {
                           {it}
                         </Button>
                       ) : (
-                        <span key={idx} className="px-2 text-muted-foreground dark:text-muted-foreground select-none">
+                        <span key={idx} className="px-2 text-muted-foreground select-none">
                           …
                         </span>
                       )

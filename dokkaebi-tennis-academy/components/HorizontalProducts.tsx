@@ -205,7 +205,7 @@ export default function HorizontalProducts({
         {p.images?.[0] ? (
           <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 bp-sm:p-3 bp-md:p-4" loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground dark:text-muted-foreground">{(p.brand ?? 'D').charAt(0)}</div>
+          <div className="flex items-center justify-center h-full text-3xl bp-sm:text-4xl bp-md:text-5xl font-bold text-muted-foreground">{(p.brand ?? 'D').charAt(0)}</div>
         )}
 
         {(typeof p.rentalEnabled === 'boolean' || p.condition) && (
@@ -217,14 +217,14 @@ export default function HorizontalProducts({
       </div>
 
       <div className="space-y-1.5 bp-sm:space-y-2 bp-md:space-y-2.5">
-        <div className="text-xs bp-sm:text-sm bp-md:text-base text-foreground dark:text-foreground font-medium">{p.brand}</div>
+        <div className="text-xs bp-sm:text-sm bp-md:text-base text-foreground font-medium">{p.brand}</div>
         <h3
-          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground dark:text-foreground 
+          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground 
           line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug"
         >
           {p.name}
         </h3>
-        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground dark:text-foreground pt-1 bp-sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
+        <div className="text-base bp-sm:text-lg bp-md:text-xl bp-lg:text-2xl font-bold text-foreground pt-1 bp-sm:pt-1.5">{Number(p.price).toLocaleString()}원</div>
       </div>
     </Link>
   );
@@ -274,11 +274,11 @@ export default function HorizontalProducts({
           className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-accent dark:bg-accent rounded-full mx-auto 
           flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
-          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-muted-foreground dark:text-muted-foreground" />
+          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-muted-foreground" />
         </div>
         <div className="space-y-1 bp-sm:space-y-1.5">
-          <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-foreground dark:text-foreground">더 많은 상품</h3>
-          <p className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground dark:text-muted-foreground">전체 보기</p>
+          <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-foreground">더 많은 상품</h3>
+          <p className="text-xs bp-sm:text-sm bp-md:text-base text-muted-foreground">전체 보기</p>
         </div>
       </div>
     </Link>
@@ -291,10 +291,10 @@ export default function HorizontalProducts({
       flex flex-col items-center justify-center text-center"
     >
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-accent dark:bg-accent flex items-center justify-center mb-3">
-        <Inbox className="h-6 w-6 text-muted-foreground dark:text-muted-foreground" />
+        <Inbox className="h-6 w-6 text-muted-foreground" />
       </div>
-      <div className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-foreground">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
-      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground">{emptyDescription ?? '곧 상품이 업데이트됩니다.'}</div>
+      <div className="text-sm bp-sm:text-base font-semibold text-foreground">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
+      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{emptyDescription ?? '곧 상품이 업데이트됩니다.'}</div>
     </div>
   );
 
@@ -307,8 +307,8 @@ export default function HorizontalProducts({
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive dark:bg-destructive flex items-center justify-center mb-3">
         <AlertTriangle className="h-6 w-6 text-destructive dark:text-destructive" />
       </div>
-      <div className="text-sm bp-sm:text-base font-semibold text-foreground dark:text-foreground">{errorTitle ?? '불러오지 못했어요'}</div>
-      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground dark:text-muted-foreground">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>
+      <div className="text-sm bp-sm:text-base font-semibold text-foreground">{errorTitle ?? '불러오지 못했어요'}</div>
+      <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>
       {onRetry && (
         <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
           <RefreshCcw className="mr-2 h-4 w-4" />
@@ -324,8 +324,8 @@ export default function HorizontalProducts({
       <div className="relative z-10">
         {showHeader && (
           <div className="text-center mb-6 bp-sm:mb-8 bp-md:mb-12 bp-lg:mb-16">
-            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl bp-lg:text-5xl font-bold text-foreground dark:text-foreground mb-1.5 bp-sm:mb-2">{title}</h2>
-            {subtitle && <p className="text-xs bp-sm:text-sm bp-md:text-base bp-lg:text-xl text-muted-foreground dark:text-muted-foreground">{subtitle}</p>}
+            <h2 className="text-2xl bp-sm:text-3xl bp-md:text-4xl bp-lg:text-5xl font-bold text-foreground mb-1.5 bp-sm:mb-2">{title}</h2>
+            {subtitle && <p className="text-xs bp-sm:text-sm bp-md:text-base bp-lg:text-xl text-muted-foreground">{subtitle}</p>}
           </div>
         )}
 
@@ -418,7 +418,7 @@ export default function HorizontalProducts({
                 </Button>
               </div>
 
-              <p className="text-xs text-muted-foreground dark:text-muted-foreground hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
+              <p className="text-xs text-muted-foreground hidden bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
             </div>
           )}
         </div>
