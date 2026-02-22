@@ -2032,7 +2032,7 @@ export default function StringServiceApplyPage() {
               {/* Content */}
               <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">신청서만 작성</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">이미 라켓·스트링이 있다면 바로 작성해요</p>
-              <p className="mt-1 text-xs text-primary dark:text-primary">금액·결제정보 자동 반영 없음</p>
+              <p className="mt-1 text-xs text-primary">금액·결제정보 자동 반영 없음</p>
 
               {/* Arrow indicator */}
               <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">

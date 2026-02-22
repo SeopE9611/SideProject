@@ -452,7 +452,7 @@ export default function QnaWritePage() {
                     <SelectItem value="member">회원</SelectItem>
                   </SelectContent>
                 </Select>
-                {fieldErrors.category && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.category}</p>}
+                {fieldErrors.category && <p className="text-sm text-destructive">{fieldErrors.category}</p>}
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (
@@ -473,7 +473,7 @@ export default function QnaWritePage() {
                   <div className="text-sm text-muted-foreground">
                     <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체 상품에서 선택하세요.
                   </div>
-                  {fieldErrors.product && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.product}</p>}
+                  {fieldErrors.product && <p className="text-sm text-destructive">{fieldErrors.product}</p>}
 
                   {/* 탭처럼 보이는 간단한 토글 */}
                   <div className="grid md:grid-cols-2 gap-4">
@@ -481,7 +481,7 @@ export default function QnaWritePage() {
                     <div className="rounded-lg border border-border p-4">
                       <div className="font-semibold mb-3">내 구매상품</div>
                       {!me && <div className="mb-2 text-xs text-muted-foreground">로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.</div>}
-                      {me && ordersError && <div className="mb-2 text-sm text-destructive dark:text-destructive">구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.</div>}
+                      {me && ordersError && <div className="mb-2 text-sm text-destructive">구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.</div>}
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {me && myProducts.length === 0 && <div className="text-sm text-muted-foreground">구매 이력이 없습니다.</div>}
                         {myProducts.map((p) => (
@@ -559,7 +559,7 @@ export default function QnaWritePage() {
                   placeholder="문의 제목을 작성해주세요(4자이상)"
                   className="h-12 bg-card dark:bg-muted text-base"
                 />
-                {fieldErrors.title && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.title}</p>}
+                {fieldErrors.title && <p className="text-sm text-destructive">{fieldErrors.title}</p>}
               </div>
 
               <div className="space-y-3">
@@ -577,7 +577,7 @@ export default function QnaWritePage() {
                   placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
                   className="min-h-[200px] bg-card dark:bg-muted text-base resize-none"
                 />
-                {fieldErrors.content && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.content}</p>}
+                {fieldErrors.content && <p className="text-sm text-destructive">{fieldErrors.content}</p>}
                 <p className="text-sm text-muted-foreground">상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.</p>
               </div>
 
@@ -587,7 +587,7 @@ export default function QnaWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive dark:border-destructive' : 'border-border'} rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive' : 'border-border'} rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -612,7 +612,7 @@ export default function QnaWritePage() {
                       파일 선택
                     </Button>
                   </div>
-                  {fieldErrors.images && <p className="text-sm text-destructive dark:text-destructive">{fieldErrors.images}</p>}
+                  {fieldErrors.images && <p className="text-sm text-destructive">{fieldErrors.images}</p>}
 
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (

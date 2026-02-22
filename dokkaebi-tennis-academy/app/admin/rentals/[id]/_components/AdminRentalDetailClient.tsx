@@ -406,10 +406,10 @@ export default function AdminRentalDetailClient() {
 
           {/* 연결 문서(공용 카드) */}
           {linkedDocs.length > 0 && (
-            <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring" />
+            <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-ring" />
           )}
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden mb-8">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden mb-8">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>대여 상태를 변경하거나 보증금 환불을 처리할 수 있습니다.</CardDescription>
@@ -503,7 +503,7 @@ export default function AdminRentalDetailClient() {
               eventMeta={pendingDialogConfig.eventMeta}
             />
           )}
-          <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+          <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
               <CardTitle>고객 정보</CardTitle>
             </CardHeader>
@@ -523,7 +523,7 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+            <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <Package className="h-5 w-5 text-destructive" />
@@ -560,7 +560,7 @@ export default function AdminRentalDetailClient() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+            <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-accent" />
@@ -654,7 +654,7 @@ export default function AdminRentalDetailClient() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
@@ -721,7 +721,7 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-accent" />

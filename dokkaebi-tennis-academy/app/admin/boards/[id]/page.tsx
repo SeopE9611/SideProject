@@ -153,7 +153,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
       <div className="container py-8 px-6">
         <div className="mb-6">
-          <Link href="/admin/boards" className="inline-flex items-center text-primary hover:text-primary dark:text-primary dark:hover:text-primary hover:underline">
+          <Link href="/admin/boards" className="inline-flex items-center text-primary hover:text-primary dark:hover:text-primary hover:underline">
             <ArrowLeft className="mr-2 h-4 w-4" />
             게시판 목록으로 돌아가기
           </Link>
@@ -193,7 +193,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
 
             <Card className="shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card border border-border">
               <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
-                <CardTitle className="text-primary dark:text-primary">게시물 정보</CardTitle>
+                <CardTitle className="text-primary">게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
                 <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
@@ -214,14 +214,14 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                   <Eye className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">조회수</p>
-                    <p className="text-sm text-primary dark:text-primary font-semibold">{Number(post.views ?? 0)}</p>
+                    <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
                   <MessageSquare className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">댓글</p>
-                    <p className="text-sm text-primary dark:text-primary font-semibold">{Number(post.commentsCount ?? 0)}개</p>
+                    <p className="text-sm text-primary font-semibold">{Number(post.commentsCount ?? 0)}개</p>
                   </div>
                 </div>
               </CardContent>

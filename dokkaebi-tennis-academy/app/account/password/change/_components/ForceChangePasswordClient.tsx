@@ -207,7 +207,7 @@ export default function ForceChangePasswordClient() {
                     required
                     className={fieldErrors.newPassword ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
                   />
-                  <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.newPassword ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.newPassword ?? ''}</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-medium">
@@ -225,7 +225,7 @@ export default function ForceChangePasswordClient() {
                     required
                     className={fieldErrors.confirm ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
                   />
-                  <p className="min-h-[18px] text-sm text-destructive dark:text-destructive">{fieldErrors.confirm ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.confirm ?? ''}</p>
                 </div>
                 <Button type="submit" disabled={loading} variant="default" className="w-full font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
                   {loading ? '변경 중…' : '비밀번호 변경'}

@@ -505,7 +505,7 @@ export default function RacketFinderClient() {
               >
                 <Checkbox checked={draft.strict} onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))} />
                 <div className="flex-1">
-                  <div className={cn('text-sm font-medium', draft.strict && 'text-primary dark:text-primary')}>정확도 모드</div>
+                  <div className={cn('text-sm font-medium', draft.strict && 'text-primary')}>정확도 모드</div>
                   <div className="text-xs text-muted-foreground">스펙 누락 상품 제외</div>
                 </div>
                 {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}

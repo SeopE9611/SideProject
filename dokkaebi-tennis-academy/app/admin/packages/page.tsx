@@ -486,8 +486,8 @@ export default function PackageOrdersClient() {
                     <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
                     <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
                   </div>
-                  <div className="bg-primary dark:bg-primary rounded-xl p-3">
-                    <Package className="h-6 w-6 text-primary dark:text-primary" />
+                  <div className="bg-primary rounded-xl p-3">
+                    <Package className="h-6 w-6 text-primary" />
                   </div>
                 </div>
               </CardContent>
@@ -498,10 +498,10 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
-                    <div className="text-3xl font-bold text-success dark:text-success">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
+                    <div className="text-3xl font-bold text-success">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
                   </div>
                   <div className="bg-success/10 dark:bg-success/10 rounded-xl p-3">
-                    <Calendar className="h-6 w-6 text-success dark:text-success" />
+                    <Calendar className="h-6 w-6 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -526,10 +526,10 @@ export default function PackageOrdersClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
-                    <div className="text-3xl font-bold text-warning dark:text-warning">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
+                    <div className="text-3xl font-bold text-warning">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
                   </div>
                   <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-3">
-                    <Calendar className="h-6 w-6 text-warning dark:text-warning" />
+                    <Calendar className="h-6 w-6 text-warning" />
                   </div>
                 </div>
               </CardContent>

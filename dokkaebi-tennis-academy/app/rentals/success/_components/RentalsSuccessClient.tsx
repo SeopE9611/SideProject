@@ -128,7 +128,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <div>
                       <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary">상태 {data.racket?.condition}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 dark:bg-primary/20 text-primary">상태 {data.racket?.condition}</span>
                         <span className="text-sm text-muted-foreground">대여 기간: {data.period}일</span>
                       </div>
                     </div>
@@ -240,15 +240,15 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
                     <Truck className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-primary dark:text-primary mb-1">배송 안내</h4>
-                      <p className="text-sm text-primary dark:text-primary">결제 완료 후 배송이 시작됩니다.</p>
+                      <h4 className="font-semibold text-primary mb-1">배송 안내</h4>
+                      <p className="text-sm text-primary">결제 완료 후 배송이 시작됩니다.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
                     <Clock className="h-5 w-5 text-success mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-success dark:text-success mb-1">대여 기간</h4>
-                      <p className="text-sm text-success dark:text-success">대여 기간은 {data.period}일입니다. 반납 기한을 꼭 지켜주세요.</p>
+                      <h4 className="font-semibold text-success mb-1">대여 기간</h4>
+                      <p className="text-sm text-success">대여 기간은 {data.period}일입니다. 반납 기한을 꼭 지켜주세요.</p>
                     </div>
                   </div>
                 </div>
@@ -263,8 +263,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
                     <Phone className="h-5 w-5 text-warning mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-warning dark:text-warning mb-1">고객 지원</h4>
-                      <p className="text-sm text-warning dark:text-warning">대여 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
+                      <h4 className="font-semibold text-warning mb-1">고객 지원</h4>
+                      <p className="text-sm text-warning">대여 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
                     </div>
                   </div>
                 </div>

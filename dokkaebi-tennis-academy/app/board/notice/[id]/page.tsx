@@ -152,7 +152,7 @@ export default function NoticeDetailPage() {
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
               <div className="mb-2 text-sm text-muted-foreground">
-                <span className="font-medium text-success dark:text-success">고객센터</span>
+                <span className="font-medium text-success">고객센터</span>
                 <span className="mx-1">›</span>
                 <span>공지사항</span>
               </div>
@@ -364,8 +364,8 @@ export default function NoticeDetailPage() {
                                 className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className="flex-shrink-0 w-10 h-10 bg-primary dark:bg-primary rounded-lg flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-primary dark:text-primary" />
+                                  <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                                    <FileText className="h-5 w-5 text-primary" />
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <div className="font-medium text-foreground truncate">{name}</div>

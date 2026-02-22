@@ -45,7 +45,7 @@ export default function PassList() {
           <CardDescription>보유 중인 교체 서비스 패키지 목록</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-destructive dark:text-destructive">이용권 정보를 불러오는 중 오류가 발생했습니다.</p>
+          <p className="text-destructive">이용권 정보를 불러오는 중 오류가 발생했습니다.</p>
           <Button onClick={() => mutate()} variant="outline" className="mt-3">
             다시 시도
           </Button>

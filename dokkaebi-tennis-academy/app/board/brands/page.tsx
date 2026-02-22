@@ -18,7 +18,7 @@ export default function BrandBoardPage() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="mb-1 text-sm text-muted-foreground">
-              <span className="font-medium text-success dark:text-success">게시판</span>
+              <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>브랜드별 게시판</span>
             </div>

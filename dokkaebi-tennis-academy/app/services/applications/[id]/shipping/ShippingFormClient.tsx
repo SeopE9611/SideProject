@@ -92,7 +92,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
             <div className="flex flex-col items-center gap-6 text-center">
               <div className="relative">
                 <div className="w-16 h-16 bg-background from-background  dark:from-background dark:to-card rounded-full flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 text-primary dark:text-primary animate-spin" />
+                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -115,7 +115,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
                 <AlertTriangle className="w-8 h-8 text-primary dark:text-destructive" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-destructive dark:text-destructive">신청 정보를 불러올 수 없습니다</h3>
+                <h3 className="text-lg font-semibold text-destructive">신청 정보를 불러올 수 없습니다</h3>
                 <p className="text-sm text-primary dark:text-destructive">잠시 후 다시 시도해 주세요.</p>
               </div>
               <Button variant="outline" onClick={() => router.back()} className="mt-4">
@@ -146,7 +146,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-primary dark:text-primary" />
+                <AlertTriangle className="w-8 h-8 text-primary" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold text-foreground">자가발송 신청이 아닙니다</h3>
@@ -179,7 +179,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-primary dark:text-primary" />
+                <AlertTriangle className="w-8 h-8 text-primary" />
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold text-foreground">이미 종료된 신청서입니다</h3>
@@ -331,8 +331,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   <Clock className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-primary dark:text-primary">아직 발송 전이신가요?</h3>
-                  <p className="text-sm text-primary dark:text-primary leading-relaxed">
+                  <h3 className="font-semibold text-primary">아직 발송 전이신가요?</h3>
+                  <p className="text-sm text-primary leading-relaxed">
                     발송 후 이 페이지에서 운송장(택배사/송장번호)을 등록하셔도 됩니다.
                     <br />
                     발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
@@ -358,7 +358,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="courier" className="text-base font-semibold text-foreground flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-primary dark:text-primary" />
+                    <Truck className="w-4 h-4 text-primary" />
                     택배사
                     <span className="text-destructive">*</span>
                   </Label>

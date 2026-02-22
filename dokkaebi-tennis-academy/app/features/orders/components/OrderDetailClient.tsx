@@ -526,7 +526,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 주문 상태 및 요약 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden mb-8"
  >
@@ -612,7 +612,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="grid gap-6 md:grid-cols-2">
  {/* 고객 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden"
  >
@@ -711,7 +711,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 배송 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden"
  >
@@ -732,7 +732,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Truck className="h-4 w-4 text-accent" />
  <div>
  <p className="text-sm text-accent/80 dark:text-accent/80">주문 시 선택한 수령 방식</p>
- <p className="font-semibold text-accent dark:text-accent">
+ <p className="font-semibold text-accent">
  {{
  delivery: '택배 배송',
  quick: '퀵 배송 (당일)',
@@ -756,7 +756,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Button>
  </div>
 
- <p className="text-xs text-accent dark:text-accent/80">주문(상품) 쪽 운송장/배송정보는 혼선을 방지하기 위해 사용하지 않습니다.</p>
+ <p className="text-xs text-accent/80">주문(상품) 쪽 운송장/배송정보는 혼선을 방지하기 위해 사용하지 않습니다.</p>
  </div>
  </div>
  </div>
@@ -831,7 +831,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 결제 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden"
  >
@@ -895,7 +895,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  >
  <div>
  <p className="text-sm text-muted-foreground">결제 금액</p>
- <p className="text-xl font-bold text-accent dark:text-accent">{formatCurrency(orderDetail.total)}</p>
+ <p className="text-xl font-bold text-accent">{formatCurrency(orderDetail.total)}</p>
  </div>
  </div>
  </div>
@@ -913,7 +913,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 주문 항목 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden"
  >
@@ -944,7 +944,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 배송 요청사항 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden"
  >
@@ -992,7 +992,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 처리 이력 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
+ className="border-0 shadow-xl ring-1 ring-ring
  bg-gradient-to-br from-background to-background
  overflow-hidden"
  >

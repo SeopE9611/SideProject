@@ -524,7 +524,7 @@ export default function OrdersClient() {
               <TableBody>
                 {error ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center text-destructive dark:text-destructive">
+                    <TableCell colSpan={10} className="text-center text-destructive">
                       주문 데이터를 불러오는 중 오류가 발생했습니다.
                     </TableCell>
                   </TableRow>

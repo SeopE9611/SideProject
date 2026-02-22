@@ -738,7 +738,7 @@ export default function NoticeWritePage() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-primary dark:bg-primary rounded-lg border border-border">
+              <div className="flex items-start space-x-3 p-4 bg-primary rounded-lg border border-border">
                 <Checkbox id="pinned" checked={isPinned} onCheckedChange={(checked) => setIsPinned(checked as boolean)} className="mt-1" />
                 <div className="space-y-1">
                   <label htmlFor="pinned" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center">

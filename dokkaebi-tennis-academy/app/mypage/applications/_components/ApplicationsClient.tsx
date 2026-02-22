@@ -287,7 +287,7 @@ export default function ApplicationsClient() {
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
           <CardContent className="p-12 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
-              <FileText className="h-10 w-10 text-success dark:text-success" />
+              <FileText className="h-10 w-10 text-success" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">신청 내역이 없습니다</h3>
             <p className="mb-6 text-muted-foreground">아직 신청하신 서비스가 없습니다.</p>
@@ -352,9 +352,9 @@ export default function ApplicationsClient() {
                       }`}
                     >
                       {isStringService ? (
-                        <LayoutGrid className={`h-6 w-6  ${isStringService ? 'text-warning dark:text-warning' : 'text-success dark:text-success'}`} />
+                        <LayoutGrid className={`h-6 w-6  ${isStringService ? 'text-warning' : 'text-success'}`} />
                       ) : (
-                        <GraduationCap className="h-6 w-6 text-success dark:text-success" />
+                        <GraduationCap className="h-6 w-6 text-success" />
                       )}
                     </div>
                     <div>

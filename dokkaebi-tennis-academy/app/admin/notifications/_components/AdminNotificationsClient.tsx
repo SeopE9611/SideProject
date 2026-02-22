@@ -232,7 +232,7 @@ export default function AdminNotificationsClient() {
                 <p className="mt-2 text-3xl font-bold">{stats.queued}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <Clock className="h-6 w-6 text-primary dark:text-primary" />
+                <Clock className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -246,7 +246,7 @@ export default function AdminNotificationsClient() {
                 <p className="mt-2 text-3xl font-bold">{stats.failed}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive">
-                <XCircle className="h-6 w-6 text-destructive dark:text-destructive" />
+                <XCircle className="h-6 w-6 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -260,7 +260,7 @@ export default function AdminNotificationsClient() {
                 <p className="mt-2 text-3xl font-bold">{stats.sent}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-                <CheckCircle2 className="h-6 w-6 text-primary dark:text-primary" />
+                <CheckCircle2 className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -354,9 +354,9 @@ export default function AdminNotificationsClient() {
                         <div
                           className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                            it.status === 'sent' && 'bg-primary/10 text-primary dark:text-primary',
-                            it.status === 'queued' && 'bg-muted text-primary dark:text-primary',
-                            it.status === 'failed' && 'bg-destructive text-destructive dark:text-destructive'
+                            it.status === 'sent' && 'bg-primary/10 text-primary',
+                            it.status === 'queued' && 'bg-muted text-primary',
+                            it.status === 'failed' && 'bg-destructive text-destructive'
                           )}
                         >
                           {getStatusIcon(it.status)}

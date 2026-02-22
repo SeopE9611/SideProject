@@ -303,7 +303,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">전체 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.total ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-primary dark:bg-primary">
+              <div className="rounded-md p-2 bg-primary">
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">5점 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-primary dark:bg-primary">
+              <div className="rounded-md p-2 bg-primary">
                 <Award className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -414,7 +414,7 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 리스트 카드 */}
-      <div className="rounded-lg ring-1 ring-ring dark:ring-ring bg-card shadow-sm">
+      <div className="rounded-lg ring-1 ring-ring bg-card shadow-sm">
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
           {/* 헤더 라벨 */}
           <div
@@ -457,7 +457,7 @@ export default function AdminReviewListClient() {
                     'transition-colors cursor-pointer',
                     'even:bg-background hover:bg-primary',
                     'dark:even:bg-card dark:hover:bg-primary',
-                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-primary dark:bg-primary' : '',
+                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-primary' : '',
                   ].join(' ')}
                 >
                   {/* 체크박스 */}
@@ -538,7 +538,7 @@ export default function AdminReviewListClient() {
 
                   {/* 타입 */}
                   <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
-                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-ring dark:ring-ring shrink-0'}>
+                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-ring shrink-0'}>
                       {typeLabel(r.type)}
                     </Badge>
                   </div>
@@ -595,16 +595,16 @@ export default function AdminReviewListClient() {
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
           <div
             className="w-full border-t border-border
-  bg-primary dark:bg-primary backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg"
+  bg-primary backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg"
           >
-            <span className="inline-flex items-center gap-2 text-primary dark:text-primary">
+            <span className="inline-flex items-center gap-2 text-primary">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
               <span
                 className="inline-flex items-center rounded-full bg-card
-      ring-1 ring-ring dark:ring-ring
-      text-primary dark:text-primary font-semibold text-xs px-2 py-0.5"
+      ring-1 ring-ring
+      text-primary font-semibold text-xs px-2 py-0.5"
               >
                 {selected.length}개 선택됨
               </span>

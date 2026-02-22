@@ -43,7 +43,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-card bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-primary dark:text-primary max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
+            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-primary max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
           </div>
         </SiteContainer>
       </div>

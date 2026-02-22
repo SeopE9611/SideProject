@@ -17,9 +17,9 @@ interface UsersKpiCardsProps {
 
 const KPI_ITEMS: Array<{ key: keyof UsersKpiValues; label: string; valueClassName: string }> = [
   { key: 'total', label: '전체 회원', valueClassName: 'text-foreground' },
-  { key: 'active', label: '활성 회원', valueClassName: 'text-primary dark:text-primary' },
-  { key: 'suspended', label: '비활성 회원', valueClassName: 'text-primary dark:text-primary' },
-  { key: 'deleted', label: '삭제됨(탈퇴)', valueClassName: 'text-destructive dark:text-destructive' },
+  { key: 'active', label: '활성 회원', valueClassName: 'text-primary' },
+  { key: 'suspended', label: '비활성 회원', valueClassName: 'text-primary' },
+  { key: 'deleted', label: '삭제됨(탈퇴)', valueClassName: 'text-destructive' },
   { key: 'admins', label: '관리자 수', valueClassName: 'text-foreground' },
 ];
 

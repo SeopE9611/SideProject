@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
 
       <div className="relative w-full max-w-md">
         <div className="mb-6">
-          <Link href="/login" className="inline-flex items-center text-sm text-primary dark:text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium">
+          <Link href="/login" className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium">
             <ArrowLeft className="mr-2 h-4 w-4" />
             로그인으로 돌아가기
           </Link>
@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
                   <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-8 w-8 text-primary-foreground" />
                   </div>
-                  <p className="text-sm font-semibold text-primary dark:text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
+                  <p className="text-sm font-semibold text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
                   <p className="text-xs text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>
                 </div>
               )}
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent"
+                  className="w-full h-12 border-border text-primary hover:bg-primary dark:hover:bg-primary bg-transparent"
                   onClick={() => {
                     setEmail('');
                     setIsSubmitted(false);

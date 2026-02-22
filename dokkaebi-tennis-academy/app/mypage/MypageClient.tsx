@@ -199,7 +199,7 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3">
                       <div className="bg-muted rounded-2xl p-3 ring-1 ring-ring/20">
-                        <User className="h-6 w-6 text-primary dark:text-primary" />
+                        <User className="h-6 w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-lg truncate">{user.name}</CardTitle>
@@ -337,7 +337,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className="bg-muted border-b border-border p-4 bp-sm:p-6">
                       <div className="flex items-center gap-3">
                         <div className={pageTone.iconSurface}>
-                          <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary dark:text-primary" />
+                          <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">주문 내역</CardTitle>
@@ -357,7 +357,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className={pageTone.sectionHeader}>
                       <div className="flex items-center gap-3">
                         <div className={pageTone.iconSurface}>
-                          <CalendarCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary dark:text-primary" />
+                          <CalendarCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">신청 내역</CardTitle>
@@ -499,7 +499,7 @@ export default function MypageClient({ user }: Props) {
                     <CardHeader className={pageTone.sectionHeader}>
                       <div className="flex items-center gap-3">
                         <div className={pageTone.iconSurface}>
-                          <ReceiptCent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary dark:text-primary" />
+                          <ReceiptCent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">적립 포인트</CardTitle>

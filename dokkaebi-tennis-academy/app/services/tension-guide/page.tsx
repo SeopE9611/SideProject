@@ -372,7 +372,7 @@ export default function TensionGuidePage() {
                         />
                       </div>
                       <div className="flex justify-between text-xs mt-2">
-                        <span className="text-primary dark:text-primary">파워</span>
+                        <span className="text-primary">파워</span>
                         <span className="text-muted-foreground">컨트롤</span>
                       </div>
                     </div>
@@ -474,7 +474,7 @@ export default function TensionGuidePage() {
                       <div className="flex flex-wrap gap-1.5 bp-sm:gap-2 mb-3 bp-md:mb-4">
                         {player.characteristics.map((char, i) => (
                           <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-muted rounded-full text-[10px] bp-sm:text-xs text-muted-foreground">
-                            <CheckCircle2 className="h-3 w-3 text-primary dark:text-primary" />
+                            <CheckCircle2 className="h-3 w-3 text-primary" />
                             {char}
                           </span>
                         ))}
@@ -519,7 +519,7 @@ export default function TensionGuidePage() {
 
                     <div className="grid grid-cols-2 gap-3 bp-md:gap-4">
                       <div>
-                        <h4 className="text-xs bp-md:text-sm font-semibold text-primary dark:text-primary mb-2 flex items-center gap-1">
+                        <h4 className="text-xs bp-md:text-sm font-semibold text-primary mb-2 flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4" /> 장점
                         </h4>
                         <ul className="space-y-1">
@@ -584,7 +584,7 @@ export default function TensionGuidePage() {
                     <div className="space-y-3 bp-md:space-y-4">
                       <div className="flex items-center gap-2 bp-sm:gap-3">
                         <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-primary/15 dark:bg-primary/15 rounded-xl flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary dark:text-primary rotate-180" />
+                          <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                         </div>
                         <div>
                           <h4 className="font-semibold text-sm bp-md:text-base text-foreground">낮은 텐션 (20-24kg)</h4>
@@ -593,15 +593,15 @@ export default function TensionGuidePage() {
                       </div>
                       <ul className="space-y-1.5 bp-md:space-y-2">
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary dark:text-primary mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                           스트링 베드가 더 많이 휘어져 볼에 더 많은 에너지를 전달합니다
                         </li>
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary dark:text-primary mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                           스윗스팟이 넓어져 미스히트 시에도 괜찮은 샷이 나옵니다
                         </li>
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary dark:text-primary mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                           팔과 어깨에 가해지는 충격이 줄어들어 부상 위험이 감소합니다
                         </li>
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
@@ -624,15 +624,15 @@ export default function TensionGuidePage() {
                       </div>
                       <ul className="space-y-1.5 bp-md:space-y-2">
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary dark:text-primary mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                           스트링 베드가 단단해져 정밀한 샷 컨트롤이 가능합니다
                         </li>
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary dark:text-primary mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                           스핀 생성이 용이하고 볼의 궤적을 예측하기 쉽습니다
                         </li>
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary dark:text-primary mt-0.5 flex-shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                           강한 스윙 스피드를 가진 선수에게 적합합니다
                         </li>
                         <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
@@ -760,7 +760,7 @@ export default function TensionGuidePage() {
         </Tabs>
 
         {/* CTA 섹션 */}
-        <Card className="bg-primary dark:bg-primary/90 border-0 overflow-hidden">
+        <Card className="bg-primary/90 border-0 overflow-hidden">
           <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
@@ -776,7 +776,7 @@ export default function TensionGuidePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-primary dark:bg-primary/90 border-0 overflow-hidden">
+        <Card className="bg-primary/90 border-0 overflow-hidden">
           <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">

@@ -301,7 +301,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-2xl font-bold text-foreground">{total}</p>
                   </div>
                   <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
-                    <MessageSquare className="h-5 w-5 text-success dark:text-success" />
+                    <MessageSquare className="h-5 w-5 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -315,7 +315,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-2xl font-bold text-foreground">{answeredCount}</p>
                   </div>
                   <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
-                    <CheckCircle className="h-5 w-5 text-success dark:text-success" />
+                    <CheckCircle className="h-5 w-5 text-success" />
                   </div>
                 </div>
               </CardContent>
@@ -329,7 +329,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
                   </div>
                   <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-2">
-                    <Clock className="h-5 w-5 text-warning dark:text-warning" />
+                    <Clock className="h-5 w-5 text-warning" />
                   </div>
                 </div>
               </CardContent>

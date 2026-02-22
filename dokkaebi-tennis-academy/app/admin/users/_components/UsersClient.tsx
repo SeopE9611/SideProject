@@ -577,10 +577,10 @@ export default function UsersClient() {
       <BulkActionsSection>
       {/* 선택 액션바 */}
       {selectedUsers.length > 0 && (
-        <div className="mb-3 rounded-md bg-primary dark:bg-primary border border-border p-4">
+        <div className="mb-3 rounded-md bg-primary border border-border p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-primary dark:text-primary">{selectedUsers.length}명의 회원이 선택됨</span>
+              <span className="text-sm font-medium text-primary">{selectedUsers.length}명의 회원이 선택됨</span>
             </div>
 
             <div className="flex flex-wrap gap-2 sm:ml-auto">
@@ -647,11 +647,11 @@ export default function UsersClient() {
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {canSuspend && canUnsuspend && (
                 <>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary dark:text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary">
                     <UserCheck className="h-3.5 w-3.5" />
                     활성화 가능 {selectedRows.filter((u) => !u.isDeleted && u.isSuspended).length}건
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary dark:text-primary">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary">
                     <UserX className="h-3.5 w-3.5" />
                     비활성화 가능 {selectedRows.filter((u) => !u.isDeleted && !u.isSuspended).length}건
                   </span>
@@ -660,7 +660,7 @@ export default function UsersClient() {
 
               {/* 삭제 선택 시: 경고 칩 */}
               {hasDeletedSelected && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-1 text-primary dark:text-primary">
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-1 text-primary">
                   <AlertCircle className="h-3.5 w-3.5" />
                   삭제(탈퇴)된 회원은 복구할 수 없습니다. 재가입만 가능합니다.
                 </span>
@@ -894,9 +894,9 @@ export default function UsersClient() {
 
       <DialogsSection>
       <div className="mt-6">
-        <Card className="border-destructive dark:border-destructive bg-destructive dark:bg-destructive">
+        <Card className="border-destructive bg-destructive">
           <CardHeader className="pb-2">
-            <CardTitle className="text-destructive dark:text-destructive text-sm">탈퇴 회원 정리 (Danger zone)</CardTitle>
+            <CardTitle className="text-destructive text-sm">탈퇴 회원 정리 (Danger zone)</CardTitle>
             <CardDescription className="text-xs">7일 경과 탈퇴 계정은 정리, 1년 경과 탈퇴 계정은 완전 삭제합니다. 실행 전 미리보기 목록을 확인하세요.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">

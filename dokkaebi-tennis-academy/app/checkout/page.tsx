@@ -791,7 +791,7 @@ export default function CheckoutPage() {
               </p>
             </div>
             {/* 주문 상품 */}
-            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+            <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-muted border-b border-border p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Package className="h-5 w-5 text-accent" />
@@ -803,7 +803,7 @@ export default function CheckoutPage() {
                 {isBundleCheckout && bundleQty !== null && (
                   <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
                     <p className="font-semibold">번들 수량: {bundleQty}개</p>
-                    <p className="mt-1 text-xs text-muted-foreground dark:text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       라켓/스트링 수량은 동일하게 묶여 있으며, 수량 변경은 <span className="font-medium">스트링 선택 단계</span>에서만 가능합니다.
                     </p>
                     {bundleRacketId && (
@@ -824,7 +824,7 @@ export default function CheckoutPage() {
  gap-3 bp-sm:gap-4
  p-3 bp-sm:p-4
  bg-muted/50
- rounded-lg border border-border dark:border-border
+ rounded-lg border border-border
  "
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -841,8 +841,8 @@ export default function CheckoutPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-foreground dark:text-foreground line-clamp-2">{item.name}</h3>
-                          <p className="text-sm text-muted-foreground dark:text-muted-foreground">수량: {item.quantity}개</p>
+                          <h3 className="font-semibold text-foreground line-clamp-2">{item.name}</h3>
+                          <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
                         </div>
                       </div>
 
@@ -857,7 +857,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 수령 방식 및 장착 서비스 카드 */}
-            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+            <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-muted border-b border-border p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Truck className="h-5 w-5 text-accent" />
@@ -902,11 +902,11 @@ export default function CheckoutPage() {
                         }
                       }}
                     />
-                    <Label htmlFor="withStringService" className="font-medium text-foreground dark:text-foreground">
+                    <Label htmlFor="withStringService" className="font-medium text-foreground">
                       {withStringServiceLabel}
                     </Label>
                   </div>
-                  <p className="text-sm text-foreground dark:text-foreground ml-6">{serviceHelpText}</p>
+                  <p className="text-sm text-foreground ml-6">{serviceHelpText}</p>
                   {lockServiceMode && (
                     <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span>
@@ -920,7 +920,7 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   {isBundleCheckout && (
-                    <p className="text-sm text-foreground dark:text-foreground ml-6 mt-1">
+                    <p className="text-sm text-foreground ml-6 mt-1">
                       번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{' '}
                       <span className="font-semibold">스트링 선택 단계</span>에서만 가능합니다.
                     </p>
@@ -954,7 +954,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 배송 정보 */}
-            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+            <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-card p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <MapPin className="h-5 w-5 text-foreground" />
@@ -1021,13 +1021,13 @@ export default function CheckoutPage() {
                         우편번호 찾기
                       </Button>
                     </div>
-                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-muted dark:bg-muted cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-destructive/30')} />
+                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-muted cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-destructive/30')} />
                     <div className="min-h-[16px]">{fieldErrors.postalCode && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="address-main">기본 주소</Label>
-                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-muted dark:bg-muted cursor-not-allowed border-2', fieldErrors.postalCode && 'border-destructive/30')} />
+                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-muted cursor-not-allowed border-2', fieldErrors.postalCode && 'border-destructive/30')} />
                   </div>
 
                   <div className="space-y-2">
@@ -1057,14 +1057,14 @@ export default function CheckoutPage() {
                         이 배송지 정보를 저장
                       </label>
                     </div>
-                    {!user && <p className="text-xs text-muted-foreground dark:text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                    {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* 결제 정보 */}
-            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+            <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-card p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <CreditCard className="h-5 w-5 text-foreground" />
@@ -1144,7 +1144,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* 주문자 동의 */}
-            <Card className="bg-card dark:bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border dark:border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
+            <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-card p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <Shield className="h-5 w-5 text-destructive" />
@@ -1166,7 +1166,7 @@ export default function CheckoutPage() {
                           setAgreeRefund(newValue);
                         }}
                       />
-                      <label htmlFor="agree-all" className="font-semibold text-lg text-foreground dark:text-foreground">
+                      <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
                         전체 동의
                       </label>
                     </div>
@@ -1230,23 +1230,23 @@ export default function CheckoutPage() {
                 <CardContent className="p-4 bp-sm:p-6 space-y-4 bp-sm:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground dark:text-muted-foreground">상품 금액</span>
+                      <span className="text-muted-foreground">상품 금액</span>
                       <span className="font-semibold text-lg">{subtotal.toLocaleString()}원</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground dark:text-muted-foreground">배송비</span>
+                      <span className="text-muted-foreground">배송비</span>
                       <span className="font-semibold text-foreground">
-                        <span className="ml-2 text-xs font-normal text-muted-foreground dark:text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">(30,000원 이상 구매 시 무료배송) </span>
                         {shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}
                       </span>
                     </div>
                     {/* 교체 서비스비 */}
                     {withStringService && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground dark:text-muted-foreground">교체 서비스비</span>
+                        <span className="text-muted-foreground">교체 서비스비</span>
 
                         {!isMountingFeeReady ? (
-                          <div className="h-6 w-24 rounded-md bg-muted dark:bg-muted relative overflow-hidden">
+                          <div className="h-6 w-24 rounded-md bg-muted relative overflow-hidden">
                             <div className="absolute inset-0 animate-shimmer bg-foreground/10" />
                           </div>
                         ) : serviceFee > 0 ? (
@@ -1260,7 +1260,7 @@ export default function CheckoutPage() {
                     {/* 포인트 사용(로그인 유저만) */}
                     <div className="mt-2 bg-background p-3 bp-sm:p-4 rounded-lg border border-border">
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground dark:text-muted-foreground">사용 가능 포인트</span>
+                        <span className="text-muted-foreground">사용 가능 포인트</span>
                         <span className="font-semibold">{user ? `${pointsAvailable.toLocaleString()}P` : '로그인 필요'}</span>
                       </div>
 
@@ -1327,7 +1327,7 @@ export default function CheckoutPage() {
                     </div>
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground dark:text-muted-foreground">포인트 사용(예정)</span>
+                        <span className="text-muted-foreground">포인트 사용(예정)</span>
                         <span className="font-semibold text-destructive">-{appliedPoints.toLocaleString()}원</span>
                       </div>
                     )}
@@ -1338,7 +1338,7 @@ export default function CheckoutPage() {
                     </div>
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center text-lg font-bold">
-                        <span className="text-muted-foreground dark:text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
+                        <span className="text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
                         <span className="text-foreground">{payableTotal.toLocaleString()}원</span>
                       </div>
                     )}

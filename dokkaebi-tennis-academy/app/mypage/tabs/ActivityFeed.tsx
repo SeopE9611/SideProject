@@ -502,7 +502,7 @@ export default function ActivityFeed() {
       <div className="rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-8 bp-sm:p-12 text-center fade-in">
         <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-destructive mx-auto mb-4" />
         <p className="text-base bp-sm:text-lg font-medium text-destructive ">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
-        <p className="text-sm text-destructive dark:text-destructive mt-2">잠시 후 다시 시도해주세요.</p>
+        <p className="text-sm text-destructive mt-2">잠시 후 다시 시도해주세요.</p>
       </div>
     );
   }
@@ -542,7 +542,7 @@ export default function ActivityFeed() {
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-primary dark:bg-primary p-2">
+            <div className="rounded-lg bg-primary p-2">
               <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent " />
             </div>
             <span className="text-xs bp-sm:text-sm font-medium text-accent ">진행중</span>
@@ -553,11 +553,11 @@ export default function ActivityFeed() {
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-success/10 dark:bg-success/10 p-2">
-              <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success dark:text-success" />
+              <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" />
             </div>
             <span className="text-xs bp-sm:text-sm font-medium text-success ">완료</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-success dark:text-success">{counts.done}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-success">{counts.done}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -764,7 +764,7 @@ export default function ActivityFeed() {
             <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-lg bg-primary dark:bg-primary p-2">
+                  <div className="rounded-lg bg-primary p-2">
                     <TrendingUp className="h-5 w-5 text-accent " />
                   </div>
                   <div className="min-w-0">

@@ -117,8 +117,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground">전체 클래스</p>
                 <p className="text-3xl font-bold text-foreground">{classes.length}</p>
               </div>
-              <div className="bg-primary dark:bg-primary rounded-xl p-3">
-                <Calendar className="h-6 w-6 text-primary dark:text-primary" />
+              <div className="bg-primary rounded-xl p-3">
+                <Calendar className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -131,8 +131,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground">모집 중</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'recruiting').length}</p>
               </div>
-              <div className="bg-primary dark:bg-primary rounded-xl p-3">
-                <Users className="h-6 w-6 text-primary dark:text-primary" />
+              <div className="bg-primary rounded-xl p-3">
+                <Users className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
@@ -145,8 +145,8 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground">마감</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'closed').length}</p>
               </div>
-              <div className="bg-destructive dark:bg-destructive rounded-xl p-3">
-                <Clock className="h-6 w-6 text-destructive dark:text-destructive" />
+              <div className="bg-destructive rounded-xl p-3">
+                <Clock className="h-6 w-6 text-destructive" />
               </div>
             </div>
           </CardContent>
@@ -209,10 +209,10 @@ export default function ClassesPage() {
           </div>
 
           {selectedClasses.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg bg-primary dark:bg-primary p-3">
-              <span className="text-sm font-medium text-primary dark:text-primary">{selectedClasses.length}개의 클래스가 선택됨</span>
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-primary p-3">
+              <span className="text-sm font-medium text-primary">{selectedClasses.length}개의 클래스가 선택됨</span>
               <div className="ml-auto flex gap-2">
-                <Button variant="outline" size="sm" className="h-8 border-border text-primary dark:text-primary hover:bg-primary dark:hover:bg-primary bg-transparent">
+                <Button variant="outline" size="sm" className="h-8 border-border text-primary hover:bg-primary dark:hover:bg-primary bg-transparent">
                   <Calendar className="mr-2 h-3.5 w-3.5" />
                   일정 변경
                 </Button>
@@ -288,8 +288,8 @@ export default function ClassesPage() {
                           variant={cls.status === 'recruiting' ? 'default' : 'secondary'}
                           className={
                             cls.status === 'recruiting'
-                              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary hover:bg-primary/20 dark:hover:bg-primary/30'
-                              : 'bg-destructive dark:bg-destructive text-destructive dark:text-destructive hover:bg-destructive dark:hover:bg-destructive'
+                              ? 'bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30'
+                              : 'bg-destructive text-destructive hover:bg-destructive dark:hover:bg-destructive'
                           }
                         >
                           {cls.status === 'recruiting' ? '모집 중' : '마감'}

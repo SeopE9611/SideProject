@@ -367,7 +367,7 @@ export default function FreeBoardEditClient({ id }: Props) {
           <div>
             {/* 브레드크럼: 게시판 > 장비 사용기 > 글 수정 */}
             <div className="mb-1 text-sm text-muted-foreground">
-              <span className="font-medium text-success dark:text-success">게시판</span>
+              <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link href="/board/gear" onClick={onLeaveLinkClick} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
                 장비 사용기 게시판
