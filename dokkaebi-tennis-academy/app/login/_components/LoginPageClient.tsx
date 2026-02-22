@@ -615,7 +615,7 @@ export default function LoginPageClient() {
  <div className="relative w-full max-w-6xl">
  <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
  <div className="bg-primary p-6 text-primary-foreground relative overflow-hidden">
- <div className="absolute inset-0 bg-black/10"></div>
+ <div className="absolute inset-0 bg-foreground/10"></div>
  <div className="relative text-center">
  {/* <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div> */}
  <h1 className="text-2xl bp-sm:text-3xl font-black">도깨비 테니스</h1>
@@ -1118,11 +1118,13 @@ export default function LoginPageClient() {
  <Button
  type="submit"
  className={
- // 브랜드 예외: 소셜 회원가입 완료 버튼은 제휴사(Naver/Kakao) 브랜드 색상을 유지합니다.
  isSocialOauthRegister
- ? oauthProvider === 'naver'
+ ? (
+ // 브랜드 예외: 소셜 회원가입 완료 버튼 분기에서만 제휴사(Naver/Kakao) 브랜드 색상을 유지합니다.
+ oauthProvider === 'naver'
  ? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'
  : 'w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] font-semibold shadow-lg'
+ )
  : 'w-full h-12 bg-primary hover:bg-accent text-primary-foreground font-semibold shadow-lg'
  }
  disabled={submitting}
