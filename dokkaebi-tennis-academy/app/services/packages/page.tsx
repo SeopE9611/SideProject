@@ -369,7 +369,7 @@ export default function StringPackagesPage() {
       <section id="packages" ref={packagesSectionRef} className="py-20 bg-background   dark:from-background dark:to-card scroll-mt-24">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent text-primary dark:bg-primary/20 dark:text-primary">
+            <Badge className="mb-4 bg-accent text-accent-foreground dark:bg-primary/20 dark:text-primary-foreground">
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
@@ -494,7 +494,7 @@ export default function StringPackagesPage() {
       <section className="py-20 bg-background   dark:from-background dark:to-card">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent text-primary dark:bg-primary/20 dark:text-primary">
+            <Badge className="mb-4 bg-accent text-accent-foreground dark:bg-primary/20 dark:text-primary-foreground">
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>

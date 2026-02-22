@@ -453,7 +453,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="flex-1">
  <div className="flex items-center gap-2">
  <span className="font-semibold text-primary">교체 패키지가 자동 적용되었습니다.</span>
- <Badge className="bg-primary/10 text-primary border border-border">입금 불필요</Badge>
+ <Badge className="bg-primary/10 text-primary-foreground border border-border">입금 불필요</Badge>
  </div>
 
  <p className="mt-1 text-sm text-foreground">

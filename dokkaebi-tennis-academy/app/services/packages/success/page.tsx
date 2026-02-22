@@ -206,7 +206,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="flex-1">
  <div className="flex items-center gap-2 mb-2">
  <h3 className="text-2xl font-bold">{packageInfo.title}</h3>
- {packageInfo.id.includes('30') && <Badge className="bg-primary/15 text-primary">인기</Badge>}
+ {packageInfo.id.includes('30') && <Badge className="bg-primary/15 text-primary-foreground">인기</Badge>}
  </div>
  <p className="text-muted-foreground ">구매하신 스트링 교체 패키지입니다.</p>
  </div>

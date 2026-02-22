@@ -94,8 +94,8 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-accent dark:bg-primary px-4 py-2 rounded-full mb-6">
-            <Wrench className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">장착 서비스 요금</span>
+            <Wrench className="h-5 w-5 text-accent-foreground dark:text-primary-foreground" />
+            <span className="text-sm font-semibold text-accent-foreground dark:text-primary-foreground">장착 서비스 요금</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">장착 비용 안내</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">투명하고 합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다</p>
