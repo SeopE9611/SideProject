@@ -418,12 +418,12 @@ export default function OrderDetailClient({ orderId }: Props) {
  return (
  <div
  className="min-h-screen bg-gradient-to-br from-background via-background to-background
- dark:bg-gradient-to-br dark:from-background dark:via-background dark:to-background"
+ dark:bg-gradient-to-br"
  >
  <div className="container py-10 space-y-8">
  <div className="mx-auto max-w-4xl">
  {/* 개선된 관리자 헤더 */}
- <div className="bg-gradient-to-r from-muted via-background to-muted dark:from-background dark:via-background dark:to-background rounded-2xl p-8 border border-border shadow-lg mb-8">
+ <div className="bg-gradient-to-r from-muted via-background to-muted rounded-2xl p-8 border border-border shadow-lg mb-8">
  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
  <div className="flex items-center space-x-4">
  <div className="bg-card rounded-full p-3 shadow-md">
@@ -528,9 +528,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden mb-8"
+ overflow-hidden mb-8"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <div className="flex items-center justify-between">
  <CardTitle>주문 상태 관리</CardTitle>
  <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground')}>{localStatus}</Badge>
@@ -614,9 +614,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden"
+ overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
  <User className="h-5 w-5 text-foreground" />
@@ -713,9 +713,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden"
+ overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center">
  <Truck className="mr-2 h-5 w-5 text-accent" />
  배송 정보
@@ -833,9 +833,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden"
+ overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
  <CreditCard className="h-5 w-5 text-accent" />
@@ -890,7 +890,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div
  className="flex items-center space-x-3 p-3 bg-gradient-to-r from-muted to-background
- dark:from-background dark:to-background rounded-lg
+ rounded-lg
  border border-border"
  >
  <div>
@@ -915,9 +915,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden"
+ overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center">
  <ShoppingCart className="mr-2 h-5 w-5 text-foreground" />
  주문 항목
@@ -946,9 +946,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden"
+ overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b pb-3">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <span>배송 요청사항</span>
  {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -973,7 +973,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardContent className="p-6">
  {orderDetail.shippingInfo.deliveryRequest ? (
  <div className="bg-muted border border-border rounded-lg p-4">
- <p className="text-muted-foreground dark:text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
+ <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
  </div>
  ) : (
  <p className="text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
@@ -994,9 +994,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card
  className="border-0 shadow-xl ring-1 ring-ring dark:ring-ring
  bg-gradient-to-br from-background to-background
- dark:from-background dark:to-background overflow-hidden"
+ overflow-hidden"
  >
- <CardHeader className="bg-gradient-to-r from-background to-background dark:from-background dark:to-background border-b">
+ <CardHeader className="bg-gradient-to-r from-background to-background border-b">
  <CardTitle className="flex items-center space-x-2">
  <Calendar className="h-5 w-5 text-accent" />
  <span>주문 이력</span>
