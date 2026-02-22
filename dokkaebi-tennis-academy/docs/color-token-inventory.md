@@ -55,15 +55,15 @@
 - `app/products/components/ProductCard.tsx` (1 lines)
   - L270: `<div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">`
 - `app/products/page.tsx` (2 lines)
-  - L24: `<div className="absolute inset-0 bg-black/10 dark:bg-black/30" />`
+  - L24: `<div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />`
   - L44: `<div className="text-center text-white">`
 - `app/rentals/[id]/checkout/loading.tsx` (1 lines)
-  - L5: `<div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>`
+  - L5: `<div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>`
 - `app/rentals/success/_components/RentalsSuccessClient.tsx` (2 lines)
-  - L93: `<div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>`
+  - L93: `<div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>`
   - L97: `<CheckCircle className="h-12 w-12 text-white" />`
 - `app/rentals/success/loading.tsx` (1 lines)
-  - L5: `<div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>`
+  - L5: `<div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>`
 - `app/reviews/_components/ReviewCard.tsx` (2 lines)
   - L288: `<span className="text-white font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>`
   - L333: `{idx === 3 && item.photos.length > 4 && <div className="absolute inset-0 bg-black/60 text-white text-[10px] font-bold flex items-center justify-center">+{item.photos.length - 3}</div>}`
