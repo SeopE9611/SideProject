@@ -62,8 +62,8 @@ export default function LocationsPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-accent dark:bg-primary px-4 py-2 rounded-full mb-6">
-            <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">오프라인 매장 찾기</span>
+            <MapPin className="h-5 w-5 text-accent-foreground dark:text-primary-foreground" />
+            <span className="text-sm font-semibold text-accent-foreground dark:text-primary-foreground">오프라인 매장 찾기</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">매장 위치 안내</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
@@ -125,7 +125,7 @@ export default function LocationsPage() {
                   </div>
 
                   <div className="bg-accent dark:bg-primary p-3 rounded-lg">
-                    <p className="text-sm font-medium text-primary">{location.specialNote}</p>
+                    <p className="text-sm font-medium text-accent-foreground dark:text-primary-foreground">{location.specialNote}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-1">
