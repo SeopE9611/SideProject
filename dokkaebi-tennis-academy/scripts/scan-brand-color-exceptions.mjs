@@ -10,6 +10,7 @@ const BRAND_EXCEPTION_WHITELIST = new Set([
   'app/login/_components/SocialAuthButtons.tsx',
   'app/login/_components/LoginPageClient.tsx',
   'app/admin/users/_components/UsersClient.tsx',
+  'app/features/notifications/core/render.ts',
 ]);
 
 const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{3,8}\b/g;

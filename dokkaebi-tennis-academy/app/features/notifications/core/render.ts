@@ -3,16 +3,14 @@ import { ApplicationCtx, EventType, UserCtx } from '@/app/features/notifications
 /* ========= Theme ========= */
 const THEME = {
   brand: '도깨비 테니스',
-  text: 'rgb(26, 28, 26)',
-  sub: 'rgb(74, 84, 74)',
-  line: 'rgb(215, 227, 215)',
-  bgSoft: 'rgb(243, 248, 243)',
-  badgeBg: 'rgb(233, 246, 236)',
-  badgeText: 'rgb(36, 130, 50)',
-  btnBg: 'rgb(43, 168, 74)',
-  btnText: 'rgb(26, 28, 26)',
-  shellBg: 'rgb(252, 255, 252)',
-  footerText: 'rgb(136, 136, 136)',
+  text: '#1A1C1A',
+  sub: '#4A544A',
+  line: '#D7E3D7',
+  bgSoft: '#F3F8F3',
+  badgeBg: '#E9F6EC',
+  badgeText: '#248232',
+  btnBg: '#2BA84A',
+  btnText: '#1A1C1A',
 } as const;
 
 /* ========= Utils ========= */
@@ -124,7 +122,7 @@ function summaryTable(rows: [string, string][]) {
     )
     .join('');
   return `
-  <table role="presentation" style="border-collapse:collapse;width:100%;background:${THEME.shellBg};border:1px solid ${THEME.line};border-radius:10px;overflow:hidden;">
+  <table role="presentation" style="border-collapse:collapse;width:100%;background:#FCFFFC;border:1px solid ${THEME.line};border-radius:10px;overflow:hidden;">
     ${tr}
   </table>`;
 }
@@ -142,7 +140,7 @@ function buttons(ctas?: { label: string; url: string }[]) {
 function footer(note?: string) {
   return `
   ${note ? `<div style="margin-top:18px;padding-top:10px;border-top:1px solid ${THEME.line};color:${THEME.sub};font-size:12px;line-height:1.6;">${note}</div>` : ''}
-  <div style="margin-top:14px;color:${THEME.footerText};font-size:12px;">
+  <div style="margin-top:14px;color:#888;font-size:12px;">
     ⓒ ${THEME.brand} · 문의 010-0000-0000 · 영업시간 10:00–19:00
   </div>`;
 }
@@ -150,7 +148,7 @@ function wrapEmail({ title, badge, preheader, rows, ctas, note }: { title: strin
   const pre = preheader ? `<span style="display:none;visibility:hidden;opacity:0;color:transparent;height:0;width:0;">${preheader}</span>` : '';
   return `
   ${pre}
-  <div style="max-width:680px;margin:0 auto;background:${THEME.shellBg};border:1px solid ${THEME.line};border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans KR',sans-serif;">
+  <div style="max-width:680px;margin:0 auto;background:#FCFFFC;border:1px solid ${THEME.line};border-radius:12px;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans KR',sans-serif;">
     ${headerHTML(title, badge)}
     <div style="padding:18px 20px;">
       ${summaryTable(rows)}
