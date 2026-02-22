@@ -972,7 +972,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  type="button"
  size="sm"
  disabled={isCommentSubmitting}
- className="h-8 bg-primary px-4 text-xs hover:bg-primary/90 dark:bg-muted dark:text-foreground dark:hover:bg-muted"
+ className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
  onClick={() => {
  const content = editInputRef.current?.value ?? '';
  // 빈 내용 방어
@@ -1052,7 +1052,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  >
  취소
  </Button>
- <Button type="submit" size="sm" disabled={isReplySubmitting} className="h-8 bg-primary px-4 text-xs hover:bg-primary/90 dark:bg-muted dark:text-foreground dark:hover:bg-muted">
+ <Button type="submit" size="sm" disabled={isReplySubmitting} className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90">
  {isReplySubmitting ? '작성 중...' : '등록'}
  </Button>
  </div>
@@ -1425,7 +1425,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
  <MessageSquare className="h-5 w-5 text-muted-foreground " />
  <span>댓글</span>
- <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground dark:bg-muted dark:text-foreground">{totalComments}</span>
+ <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground">{totalComments}</span>
  </CardTitle>
  </CardHeader>
 
@@ -1443,7 +1443,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  />
  {commentError && <p className="text-xs text-destructive">{commentError}</p>}
  <div className="flex justify-end">
- <Button type="button" size="sm" className="h-9 bg-primary px-5 text-sm hover:bg-primary/90 dark:bg-muted dark:text-foreground dark:hover:bg-muted" disabled={isCommentSubmitting} onClick={handleSubmitComment}>
+ <Button type="button" size="sm" className="h-9 bg-primary px-5 text-sm text-primary-foreground hover:bg-primary/90" disabled={isCommentSubmitting} onClick={handleSubmitComment}>
  {isCommentSubmitting && <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-border border-t-transparent dark:border-border dark:border-t-transparent" />}
  <span>등록</span>
  </Button>

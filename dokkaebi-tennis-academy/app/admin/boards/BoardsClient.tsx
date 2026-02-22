@@ -218,8 +218,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-                <FileText className="h-6 w-6 text-primary-foreground" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <FileText className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">전체 게시글</p>
@@ -232,8 +232,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-                <Eye className="h-6 w-6 text-primary-foreground" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Eye className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">공개 게시글</p>
@@ -246,8 +246,8 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive">
-                <AlertTriangle className="h-6 w-6 text-destructive-foreground" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+                <AlertTriangle className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">대기 중 신고</p>

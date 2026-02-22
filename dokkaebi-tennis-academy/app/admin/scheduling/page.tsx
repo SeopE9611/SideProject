@@ -226,7 +226,7 @@ export default function StringingSettingsPage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-3">
-              <div className="rounded-2xl bg-primary p-3 shadow-lg">
+              <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-lg">
                 <Settings2 className="h-7 w-7 text-primary-foreground" />
               </div>
               <div>
@@ -239,7 +239,7 @@ export default function StringingSettingsPage() {
           <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex items-start gap-4 p-6">
               <div className="rounded-xl bg-muted p-2.5 shadow-sm">
-                <Info className="h-5 w-5 text-primary" />
+                <Info className="h-5 w-5" />
               </div>
               <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
                 <p className="font-semibold text-foreground mb-2">운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.</p>
@@ -283,8 +283,8 @@ export default function StringingSettingsPage() {
             <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                  <div className="rounded-xl bg-primary p-2">
-                    <Clock className="h-5 w-5 text-primary" />
+                  <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                    <Clock className="h-5 w-5" />
                   </div>
                   기본 슬롯 설정
                 </CardTitle>
@@ -367,7 +367,7 @@ export default function StringingSettingsPage() {
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                   <div className="rounded-xl bg-muted p-2">
-                    <CalendarDays className="h-5 w-5 text-primary" />
+                    <CalendarDays className="h-5 w-5" />
                   </div>
                   영업 요일 · 휴무일
                 </CardTitle>
@@ -386,7 +386,7 @@ export default function StringingSettingsPage() {
                           className={
                             on
                               ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90 border-0 font-medium'
-                              : 'bg-card text-muted-foreground hover:bg-accent border-border'
+                              : 'bg-card text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground border-border'
                           }
                           onClick={() => setBusinessDays((prev) => (prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort()))}
                         >
@@ -420,7 +420,7 @@ export default function StringingSettingsPage() {
                   {sortedHolidays.length > 0 ? (
                     <ul className="mt-4 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                       {sortedHolidays.map((h) => (
-                        <li key={h} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent transition-colors">
+                        <li key={h} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors">
                           <span className="font-medium text-foreground">{h}</span>
                           <Button type="button" variant="ghost" size="sm" className="hover:bg-destructive text-destructive hover:text-destructive" onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}>
                             <Trash2 className="h-4 w-4" />
@@ -440,7 +440,7 @@ export default function StringingSettingsPage() {
             <CardHeader className="border-b border-border bg-card pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                 <div className="rounded-xl bg-muted p-2">
-                  <Users className="h-5 w-5 text-primary" />
+                  <Users className="h-5 w-5" />
                 </div>
                 예외일 (특별 운영/휴무)
               </CardTitle>
@@ -520,7 +520,7 @@ export default function StringingSettingsPage() {
                   >
                     <Pencil className="mr-2 h-4 w-4" /> 예외일 추가/수정
                   </Button>
-                  <Button type="button" variant="outline" className="border-border hover:bg-accent bg-transparent" onClick={() => setExInput({ date: '' })}>
+                  <Button type="button" variant="outline" className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent" onClick={() => setExInput({ date: '' })}>
                     입력 초기화
                   </Button>
                 </div>
@@ -529,7 +529,7 @@ export default function StringingSettingsPage() {
               {sortedExceptions.length > 0 ? (
                 <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                   {sortedExceptions.map((ex) => (
-                    <li key={ex.date} className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-accent transition-colors">
+                    <li key={ex.date} className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors">
                       <div className="flex-1">
                         <div className="font-semibold text-foreground mb-1">{ex.date}</div>
                         {ex.closed ? (
@@ -577,7 +577,7 @@ export default function StringingSettingsPage() {
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? '저장 중…' : '저장'}
               </Button>
-              <Button variant="outline" onClick={resetToDefaults} className="border-border hover:bg-accent bg-transparent">
+              <Button variant="outline" onClick={resetToDefaults} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground bg-transparent">
                 기본값으로
               </Button>
             </CardFooter>

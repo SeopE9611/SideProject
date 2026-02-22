@@ -12,7 +12,7 @@ export function InfoItem({ icon, label, value, onCopy, mono = false, className }
       </div>
       <div className={cn('flex-1 text-sm', mono && 'tabular-nums')}>{value}</div>
       {onCopy && (
-        <button onClick={onCopy} className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent dark:hover:bg-accent" title="복사">
+        <button onClick={onCopy} className="inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground" title="복사">
           <Copy className="h-3.5 w-3.5" />
         </button>
       )}

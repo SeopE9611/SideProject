@@ -741,7 +741,7 @@ export default function LoginPageClient() {
 
  <Button
  type="submit"
- className="w-full h-12 bg-primary hover:bg-accent text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+ className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
  disabled={loginLoading}
  data-cy="login-submit"
  >
@@ -1125,7 +1125,7 @@ export default function LoginPageClient() {
  ? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'
  : 'w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] font-semibold shadow-lg'
  )
- : 'w-full h-12 bg-primary hover:bg-accent text-primary-foreground font-semibold shadow-lg'
+ : 'w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg'
  }
  disabled={submitting}
  >

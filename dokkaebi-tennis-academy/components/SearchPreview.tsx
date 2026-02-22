@@ -90,7 +90,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  href={href}
  className="
  flex items-center gap-4 px-4 py-3
- hover:bg-accent/50
+ hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground
  transition-all group
  "
  onClick={() => {

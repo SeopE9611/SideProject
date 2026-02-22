@@ -151,7 +151,7 @@ export default function AdminRacketsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary">라켓 목록</CardTitle>
-                <CardDescription className="text-primary">
+                <CardDescription className="text-muted-foreground">
                   {filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 라켓이 없습니다.'}
                 </CardDescription>
               </div>
@@ -159,7 +159,7 @@ export default function AdminRacketsClient() {
                 asChild
                 className={[
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
-                  'bg-primary hover:bg-primary text-primary-foreground',
+                  'bg-primary hover:bg-primary/90 text-primary-foreground',
                   'border border-border/10 shadow-sm hover:shadow',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'ring-offset-2 ring-offset-background dark:ring-offset-background',
@@ -224,7 +224,7 @@ export default function AdminRacketsClient() {
                       setStatusFilter('all');
                       setConditionFilter('all');
                     }}
-                    className="w-full border-border hover:bg-primary dark:border-border dark:hover:bg-card"
+                    className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border dark:hover:bg-card"
                   >
                     필터 초기화
                   </Button>
@@ -258,7 +258,7 @@ export default function AdminRacketsClient() {
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">
                   <Table>
-                    <TableHeader className="sticky top-0 z-10 backdrop-blur bg-primary supports-[backdrop-filter]:bg-primary dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-border">
+                    <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted/50 supports-[backdrop-filter]:bg-muted/50 dark:bg-muted/50 dark:supports-[backdrop-filter]:bg-muted/50 border-b border-border">
                       <TableRow className="border-b border-border">
                         <TableHead className="text-left text-primary">라켓 정보</TableHead>
                         <TableHead className="text-right text-primary">가격</TableHead>
@@ -271,7 +271,7 @@ export default function AdminRacketsClient() {
                     </TableHeader>
                     <TableBody>
                       {filteredItems.map((item) => (
-                        <TableRow key={item.id} className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary dark:hover:bg-card even:bg-primary dark:even:bg-card transition-colors">
+                        <TableRow key={item.id} className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:hover:bg-card even:bg-muted/30 dark:even:bg-card transition-colors">
                           <TableCell className="py-4">
                             <div className="flex items-center gap-3">
                               {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
@@ -299,7 +299,7 @@ export default function AdminRacketsClient() {
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0 hover:bg-primary">
+                                <Button variant="ghost" size="sm" className="p-0 hover:bg-primary/10 dark:hover:bg-primary/20">
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>

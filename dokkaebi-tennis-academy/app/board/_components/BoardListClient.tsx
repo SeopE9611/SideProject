@@ -353,7 +353,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             'px-3 py-1.5 text-xs sm:text-[13px]',
                             'transition-colors',
                             'border-r border-border last:border-r-0',
-                            sort === opt.value ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                            sort === opt.value ? 'bg-primary text-primary-foreground' : 'bg-transparent text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground',
                           ].join(' ')}
                         >
                           {opt.label}
@@ -378,7 +378,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           'transition-colors',
                           active
                             ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-background text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                            : 'border-border bg-background text-muted-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground',
                         ].join(' ')}
                       >
                         {cat.label}
@@ -448,7 +448,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   {/* 데이터 행들 */}
                   <div className="divide-y divide-border">
                     {items.map((post) => (
-                      <Link key={post.id} href={`${config.routePrefix}/${post.postNo ?? post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-accent/40">
+                      <Link key={post.id} href={`${config.routePrefix}/${post.postNo ?? post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
                         {/* 번호 */}
                         <div className="text-center text-xs tabular-nums text-muted-foreground/80">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
 
@@ -563,7 +563,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     <Link
                       key={post.id}
                       href={`${config.routePrefix}/${post.postNo ?? post.id}`}
-                      className="block rounded-lg border border-border bg-background/90 px-3 py-2 shadow-sm hover:border-primary/40 hover:bg-accent/40"
+                      className="block rounded-lg border border-border bg-background/90 px-3 py-2 shadow-sm hover:border-primary/40 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground"
                     >
                       {/* 1줄: 번호 + 분류 뱃지 */}
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">

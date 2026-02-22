@@ -245,7 +245,7 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 실패 상태인 알림 수">실패</p>
                 <p className="mt-2 text-3xl font-bold">{stats.failed}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
                 <XCircle className="h-6 w-6 text-destructive" />
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수">발송 완료</p>
                 <p className="mt-2 text-3xl font-bold">{stats.sent}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <CheckCircle2 className="h-6 w-6 text-primary" />
               </div>
             </div>
