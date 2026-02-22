@@ -280,16 +280,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border">
-          <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             기본 정보
           </TabsTrigger>
-          <TabsTrigger value="specs" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger value="specs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             상세 스펙
           </TabsTrigger>
-          <TabsTrigger value="rental" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger value="rental" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             대여 설정
           </TabsTrigger>
-          <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             이미지
           </TabsTrigger>
         </TabsList>

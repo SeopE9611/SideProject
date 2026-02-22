@@ -1037,7 +1037,7 @@ export default function ActivityFeed() {
           <Button onClick={() => setSize(size + 1)} disabled={isValidating} size="lg" className="rounded-xl px-8 bp-sm:px-12">
             {isValidating ? (
               <>
-                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                <div className="h-4 w-4 border-2 border-white/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
                 불러오는 중...
               </>
             ) : (

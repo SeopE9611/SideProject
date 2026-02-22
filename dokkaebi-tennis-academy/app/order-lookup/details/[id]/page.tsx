@@ -160,7 +160,7 @@ export default function OrderDetailPage() {
               <CardContent className="flex justify-center items-center py-16">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-primary from-background 0 rounded-full mb-6">
-                    <div className="w-8 h-8 border-4 border-border/30 border-t-white rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-2">주문 정보 로딩 중</h3>
                   <p className="text-muted-foreground">잠시만 기다려주세요...</p>

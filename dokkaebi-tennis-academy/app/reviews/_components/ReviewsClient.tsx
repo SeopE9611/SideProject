@@ -126,13 +126,13 @@ export default function ReviewsClient() {
               {/* Tabs with tennis court styling */}
               <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
                 <TabsList className="bg-muted rounded-full p-1">
-                  <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     전체
                   </TabsTrigger>
-                  <TabsTrigger value="product" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <TabsTrigger value="product" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     상품
                   </TabsTrigger>
-                  <TabsTrigger value="service" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <TabsTrigger value="service" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     서비스
                   </TabsTrigger>
                 </TabsList>

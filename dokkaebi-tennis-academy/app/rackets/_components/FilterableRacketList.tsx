@@ -474,10 +474,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   variant={rentOnly ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setRentOnly((v) => !v)}
-                  className={cn(
-                    'h-9 px-3',
-                    rentOnly ? 'bg-primary hover:bg-primary text-white border-border dark:bg-primary dark:hover:bg-primary dark:border-border' : 'border-border hover:bg-primary dark:hover:bg-primary',
-                  )}
+                  className={cn('h-9 px-3', rentOnly ? 'border-border' : 'border-border hover:bg-primary dark:hover:bg-primary')}
                   aria-pressed={rentOnly}
                   aria-label="대여 가능 라켓만 보기 토글"
                 >

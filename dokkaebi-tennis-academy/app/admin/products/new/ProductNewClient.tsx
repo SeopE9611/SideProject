@@ -464,16 +464,16 @@ export default function NewStringPage() {
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-primary dark:bg-primary border border-border">
-                <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <TabsTrigger value="basic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   기본 정보
                 </TabsTrigger>
-                <TabsTrigger value="features" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <TabsTrigger value="features" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   성능 및 특성
                 </TabsTrigger>
-                <TabsTrigger value="inventory" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <TabsTrigger value="inventory" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   재고 관리
                 </TabsTrigger>
-                <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                <TabsTrigger value="images" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   이미지
                 </TabsTrigger>
               </TabsList>
