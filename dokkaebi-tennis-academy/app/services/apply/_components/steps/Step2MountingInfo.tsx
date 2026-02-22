@@ -741,7 +741,7 @@ export default function Step2MountingInfo(props: Props) {
                       <span className="text-sm font-medium text-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                     </div>
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted dark:bg-primary">
-                      <div className="h-1.5 w-1.5 rounded-full bg-muted0 dark:bg-primary" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-muted dark:bg-primary" />
                       <span className="text-xs font-medium text-accent dark:text-accent truncate max-w-[200px]">{line.stringName}</span>
                     </div>
                   </div>

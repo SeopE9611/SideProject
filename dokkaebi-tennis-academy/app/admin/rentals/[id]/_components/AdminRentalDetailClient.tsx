@@ -23,7 +23,7 @@ const fetcher = (url: string) => adminFetcher<any>(url, { cache: 'no-store' });
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-muted0/10 text-muted-foreground dark:bg-muted0/20',
+  pending: 'bg-muted/10 text-muted-foreground dark:bg-muted/20',
   paid: 'bg-primary text-accent dark:bg-primary',
   out: 'bg-muted text-foreground dark:bg-muted',
   returned: 'bg-success/10 text-success dark:bg-success/10',
