@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const TARGET_DIRS = process.argv.slice(2);
-const scanDirs = TARGET_DIRS.length > 0 ? TARGET_DIRS : ['app', 'components'];
+const scanDirs = TARGET_DIRS.length > 0 ? TARGET_DIRS : ['app', 'components', 'lib'];
 const exts = new Set(['.ts', '.tsx', '.js', '.jsx', '.mdx']);
 const palettes = [
   'slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'
