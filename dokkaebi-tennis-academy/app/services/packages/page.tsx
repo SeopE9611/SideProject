@@ -323,7 +323,7 @@ export default function StringPackagesPage() {
               프리미엄 스트링 패키지
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 bg-primary  via-muted  bg-clip-text text-transparent">스트링 교체 패키지</h1>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-foreground">스트링 교체 패키지</h1>
 
             <p className="text-base sm:text-xl md:text-2xl mb-8 text-primary leading-relaxed">
               정기적인 스트링 교체로 최상의 경기력을 유지하세요
@@ -373,7 +373,7 @@ export default function StringPackagesPage() {
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-card bg-clip-text text-transparent">스트링 교체 패키지</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 교체 패키지</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               플레이 빈도와 필요에 맞는 패키지를 선택하세요.
               <br />
@@ -390,9 +390,9 @@ export default function StringPackagesPage() {
                 }`}
                 onClick={() => setSelectedPackage(pkg.id)}
               >
-                {pkg.popular && <div className="absolute top-0 right-0 bg-primary from-background  text-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
+                {pkg.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
 
-                {pkg.discount && <div className="absolute top-0 left-0 bg-primary from-background  text-foreground px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
+                {pkg.discount && <div className="absolute top-0 left-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-br-lg">{pkg.discount}% 할인</div>}
 
                 <div className={`h-2 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}></div>
 
@@ -433,14 +433,14 @@ export default function StringPackagesPage() {
                     </ul>
                   </div>
 
-                  <div className={`rounded-xl p-4 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>
-                    <h4 className="font-semibold mb-3 flex items-center">
-                      <Gift className="w-4 h-4 mr-2 text-warning" />
+                  <div className="rounded-xl border border-border bg-muted p-4 text-foreground">
+                    <h4 className="mb-3 flex items-center font-semibold text-foreground">
+                      <Gift className="mr-2 h-4 w-4 text-primary" />
                       혜택
                     </h4>
-                    <div className="space-y-1">
+                    <div className="space-y-1 text-sm text-muted-foreground">
                       {pkg.benefits.map((benefit, idx) => (
-                        <div key={idx} className="text-sm font-medium text-foreground">
+                        <div key={idx}>
                           • {benefit}
                         </div>
                       ))}
@@ -498,7 +498,7 @@ export default function StringPackagesPage() {
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-primary  to-card bg-clip-text text-transparent">패키지 이용 안내</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">패키지 이용 안내</h2>
           </div>
 
           <div className="max-w-4xl mx-auto">

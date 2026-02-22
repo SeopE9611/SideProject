@@ -21,6 +21,6 @@ export const getPackageVariantByIndex = (index: number): PackageVariant => {
 export const PACKAGE_VARIANT_TONE_CLASS: Record<PackageVariant, string> = {
   primary: 'bg-primary text-primary-foreground',
   accent: 'bg-accent text-accent-foreground',
-  muted: 'bg-muted text-muted-foreground',
+  muted: 'bg-muted text-foreground',
   success: 'bg-success text-success-foreground',
 };

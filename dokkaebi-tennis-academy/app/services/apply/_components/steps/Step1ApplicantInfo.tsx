@@ -245,7 +245,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
                 px-4 py-3 shadow-sm
                 hover:bg-background dark:hover:bg-card
                 transition text-sm
-                peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
+                peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
               "
           >
             <div className="font-semibold mb-1 text-foreground">자가 발송 안내</div>
@@ -298,12 +298,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <Label
               htmlFor="cm-self"
               className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
+             peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
-                <Box className="h-4 w-4" />
-                <span className="font-medium">자가 발송</span>
+                <Box className="h-4 w-4 text-primary" />
+                <span className="font-medium text-foreground">자가 발송</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">편의점/우체국 등</p>
             </Label>
@@ -315,12 +315,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <Label
               htmlFor="cm-visit"
               className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
+             peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
-                <Store className="h-4 w-4" />
-                <span className="font-medium">매장 방문 접수</span>
+                <Store className="h-4 w-4 text-primary" />
+                <span className="font-medium text-foreground">매장 방문 접수</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">방문 가능 시간대만 선택</p>
             </Label>
@@ -333,12 +333,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <Label
               htmlFor="cm-pickup"
               className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-accent dark:peer-data-[state=checked]:bg-primary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring dark:peer-data-[state=checked]:ring-ring
+             peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
              peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
             >
               <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4" />
-                <span className="font-medium">택배 기사 방문 수거</span>
+                <Truck className="h-4 w-4 text-primary" />
+                <span className="font-medium text-foreground">택배 기사 방문 수거</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">선택 시 +3,000원 (후정산)</p>
             </Label>
@@ -384,12 +384,12 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-4">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
               <p className="font-medium text-warning mb-1">📢 안내사항</p>
-              <p className="text-warning leading-relaxed">
+              <p className="text-foreground leading-relaxed">
                 신청자 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청자 정보는 변경되지 않습니다.</span>
                 <br />
                 변경이 필요한 경우, <span className="text-warning font-semibold">추가 요청사항</span>에 기재해주세요.

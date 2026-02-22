@@ -8,11 +8,11 @@ export const badgeBase = 'inline-flex items-center gap-1 font-normal';
 export const badgeBaseOutlined = `${badgeBase} border`;
 
 const SEMANTIC_BADGE = {
-  success: 'bg-primary/15 text-accent dark:text-primary border border-border',
-  warning: 'bg-warning/15 text-warning border border-border',
-  info: 'bg-secondary text-foreground border border-border',
-  neutral: 'bg-muted text-muted-foreground border border-border',
-  destructive: 'bg-destructive/15 text-destructive border border-border',
+  success: 'bg-success/15 text-success border border-success/30',
+  warning: 'bg-warning/15 text-warning border border-warning/30',
+  info: 'bg-primary/10 text-primary border border-primary/20',
+  neutral: 'bg-muted text-foreground border border-border',
+  destructive: 'bg-destructive/15 text-destructive border border-destructive/30',
 } as const;
 
 export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
@@ -76,7 +76,7 @@ export function getUserStatusBadge(isDeleted: boolean) {
 }
 
 export const orderStatusColors: Record<string, string> = {
-  대기중: SEMANTIC_BADGE.neutral,
+  대기중: SEMANTIC_BADGE.warning,
   처리중: SEMANTIC_BADGE.info,
   결제완료: SEMANTIC_BADGE.success,
   배송중: SEMANTIC_BADGE.info,
@@ -88,7 +88,7 @@ export const orderStatusColors: Record<string, string> = {
 
 export const paymentStatusColors: Record<string, string> = {
   결제완료: SEMANTIC_BADGE.success,
-  결제대기: SEMANTIC_BADGE.neutral,
+  결제대기: SEMANTIC_BADGE.warning,
   결제실패: SEMANTIC_BADGE.destructive,
   결제취소: SEMANTIC_BADGE.destructive,
   환불: SEMANTIC_BADGE.destructive,
