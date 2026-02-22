@@ -167,7 +167,7 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 
 
 ## 차단 기준 (CI Fail Rules)
-- `npm run check:color-policy`는 아래 조건 중 하나라도 충족하면 즉시 `exit 1`로 실패한다.
+- `npm run check:color-policy`는 인자 없이 실행 시 `scan:brand-color-exceptions`와 `scan:color-classes`(기본 스캔 범위: `app`, `components`, `lib`)를 순서대로 실행하며, 아래 조건 중 하나라도 충족하면 즉시 `exit 1`로 실패한다.
   - `scan:brand-color-exceptions`: 브랜드 예외 화이트리스트 외 파일에서 `#hex` 또는 raw palette class(`text-blue-500`, `bg-red-100` 등) 발견
   - `scan:color-classes`: 금지 조합 `text-foreground dark:text-muted-foreground` 발견
   - `scan:color-classes`: raw palette class(`slate|gray|...|rose` + `bg|text|border|ring|from|to|via`) 발견
@@ -189,10 +189,10 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `style={{ color: ... }}`, `style={{ background: ... }}`, `style={{ borderColor: ... }}` 형태의 인라인 색상 지정
 - 브랜드 예외 사유 주석 없이 제휴사 색상(카카오/네이버/구글 등) 사용
 
-## 추가 재스캔 결과 (app/components)
+## 추가 재스캔 결과 (app/components/lib)
 - 실행 명령
   - `rg -n "#[0-9A-Fa-f]{3,6}|style=\{\{[^}]*\b(color|background|border)\b" app components lib`
-  - `rg -n "text-blue-|text-emerald-|text-amber-|text-red-|text-slate-|text-gray-|bg-white|bg-blue-|bg-emerald-|bg-amber-|bg-red-|bg-slate-|bg-gray-|border-blue-|border-emerald-|border-amber-|border-red-|border-slate-|border-gray-" app components`
+  - `rg -n "text-blue-|text-emerald-|text-amber-|text-red-|text-slate-|text-gray-|bg-white|bg-blue-|bg-emerald-|bg-amber-|bg-red-|bg-slate-|bg-gray-|border-blue-|border-emerald-|border-amber-|border-red-|border-slate-|border-gray-" app components lib`
 - raw 팔레트 잔존 파일 목록: 없음 (0건)
 
 
