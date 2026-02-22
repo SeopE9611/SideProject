@@ -23,6 +23,9 @@ const forbiddenGradientNeutralRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:white|blac
 const forbiddenRingOffsetPaletteRegex = new RegExp(`(?:[\\w-]+:)*ring-offset-(?:${paletteAlternation})-(?:\\d{2,3})`, 'g');
 const forbiddenShadowPaletteRegex = new RegExp(`(?:[\\w-]+:)*shadow-(?:${paletteAlternation})-(?:\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
 const forbiddenDirectionalBorderPaletteRegex = new RegExp(`(?:[\\w-]+:)*border-(?:t|b|l|r|x|y)-(?:${paletteAlternation})-(?:\\d{2,3})`, 'g');
+const classNameBlockRegex = /className\s*=\s*(?:"([^"]*)"|\{`([\s\S]*?)`\})/g;
+const lowContrastPrimaryRegex = /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
+const lowContrastGradientRegex = /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
 
 // 허용 예외는 명시적으로 분리 관리한다.
 const BRAND_EXCEPTION_WHITELIST = new Set([
@@ -77,6 +80,7 @@ const files = scanDirs.flatMap((d) => walk(d));
 const grouped = new Map();
 let total = 0;
 const violations = [];
+const warnings = [];
 const exceptionMatches = [];
 const matchedFiles = new Set();
 const exceptionFiles = new Set();
@@ -141,6 +145,29 @@ for (const file of files) {
     });
   }
 
+  for (const match of text.matchAll(classNameBlockRegex)) {
+    const block = (match[1] ?? match[2] ?? '').replace(/\s+/g, ' ').trim();
+    if (!block) continue;
+
+    if (lowContrastPrimaryRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'low-contrast-class-combo',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (lowContrastGradientRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'low-contrast-gradient-combo',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+  }
+
   if (found.length === 0) continue;
 
   matchedFiles.add(file);
@@ -190,6 +217,18 @@ if (exceptionMatches.length > 0) {
   console.warn('ℹ️ 허용 예외 매치');
   for (const entry of exceptionMatches.sort((a, b) => a.file.localeCompare(b.file))) {
     console.warn(`- ${entry.file} (${entry.exceptionType}, ${entry.found.length} hits)`);
+  }
+  console.warn('');
+}
+
+
+if (warnings.length > 0) {
+  console.warn('⚠️ 저대비 조합 감지 (WARN)');
+  for (const entry of warnings.slice(0, 50)) {
+    console.warn(`- ${entry.file} [${entry.type}] L${entry.line}: ${entry.token}`);
+  }
+  if (warnings.length > 50) {
+    console.warn(`- ...and ${warnings.length - 50} more warnings`);
   }
   console.warn('');
 }

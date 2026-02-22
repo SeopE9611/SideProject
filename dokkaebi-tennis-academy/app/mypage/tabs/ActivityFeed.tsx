@@ -225,7 +225,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className: 'bg-primary text-accent dark:bg-primary ',
+        className: 'border border-primary/20 bg-primary/10 text-primary text-xs font-semibold',
       });
     }
   }

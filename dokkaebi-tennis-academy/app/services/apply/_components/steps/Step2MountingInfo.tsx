@@ -287,11 +287,11 @@ export default function Step2MountingInfo(props: Props) {
               스트링 종류 <span className="text-destructive">*</span>
             </Label>
             <div className="mt-2 space-y-2">
-              <div className="bg-primary from-background to-background dark:from-background dark:to-background border border-destructive/30 dark:border-destructive/30 rounded-lg p-4">
+              <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
                 <div className="flex items-start space-x-3">
                   <Zap className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-destructive">
-                    <p className="font-medium mb-1">⚠️ 중요 안내</p>
+                  <div className="text-sm text-foreground">
+                    <p className="font-medium mb-1 text-warning">⚠️ 중요 안내</p>
                     {rentalId ? (
                       <>
                         <p>• 대여 신청에서 선택한 스트링/교체 옵션 기준으로 신청이 진행됩니다.</p>
@@ -429,22 +429,22 @@ export default function Step2MountingInfo(props: Props) {
             </div>
           )}
 
-          <div className="bg-primary from-muted to-background dark:from-background dark:to-background border border-border rounded-lg p-4">
-            <h3 className="font-semibold text-accent mb-4 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2" />
+          <div className="rounded-lg border border-border bg-card p-4">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center">
+              <DollarSign className="h-5 w-5 mr-2 text-primary" />
               예상 장착 비용
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border bg-muted/70 dark:border-border">
                 <span className="text-sm text-muted-foreground">기본 장착비</span>
-                <span className="font-medium text-foreground dark:text-primary-foreground">
+                <span className="font-semibold text-foreground">
                   {formData.stringTypes.includes('custom') ? '15,000원' : order && lineCount > 0 ? price.toLocaleString('ko-KR') + '원' : (priceView.base * Math.max(lineCount, 1)).toLocaleString('ko-KR') + '원'}
                 </span>
               </div>
 
               {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
               {orderId && order && lineCount > 0 && (
-                <div className="mt-3 space-y-2 text-xs text-accent/90 dark:text-accent/90">
+                <div className="mt-3 space-y-2 text-xs text-muted-foreground">
                   <p>
                     이번 신청에서 장착할 라켓 수: <span className="font-semibold">{lineCount}자루</span>
                   </p>
@@ -522,7 +522,7 @@ export default function Step2MountingInfo(props: Props) {
 
               {/* (대여/PDP) 비-주문 기반 진입 시 스트링 사용 개수 입력(구매 UX와 동일한 리스트 형태) */}
               {canShowQty && lineCount > 0 && (
-                <div className="mt-3 space-y-2 text-xs text-accent/90 dark:text-accent/90">
+                <div className="mt-3 space-y-2 text-xs text-muted-foreground">
                   <p>
                     이번 신청에서 장착할 라켓 수: <span className="font-semibold text-foreground">{lineCount}자루</span>
                   </p>
