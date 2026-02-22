@@ -27,6 +27,11 @@ const classNameBlockRegex = /className\s*=\s*(?:"([^"]*)"|\{`([\s\S]*?)`\})/g;
 const lowContrastPrimaryRegex = /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
 const lowContrastGradientRegex = /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
 
+const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
+const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
+const invalidAccentZeroTokenRegex = /(?:[\w-]+:)*(?:bg|text)-accent0\b/g;
+const splitOpacityTokenRegex = /(?:[\w-]+:)*bg-primary\s+\d+\/\d+/g;
+
 // 허용 예외는 명시적으로 분리 관리한다.
 const BRAND_EXCEPTION_WHITELIST = new Set([
   'app/login/_components/SocialAuthButtons.tsx',
@@ -140,6 +145,39 @@ for (const file of files) {
   for (const match of text.matchAll(forbiddenDirectionalBorderPaletteRegex)) {
     found.push({
       type: 'forbidden-directional-border-palette-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+
+  for (const match of text.matchAll(brokenSplitBgTokenRegex)) {
+    found.push({
+      type: 'broken-split-bg-token-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(brokenSplitGradientTokenRegex)) {
+    found.push({
+      type: 'broken-split-gradient-token-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(invalidAccentZeroTokenRegex)) {
+    found.push({
+      type: 'invalid-accent-zero-token-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(splitOpacityTokenRegex)) {
+    found.push({
+      type: 'split-opacity-token-class',
       token: match[0],
       line: getLine(text, match.index ?? 0),
     });

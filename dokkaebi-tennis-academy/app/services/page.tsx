@@ -184,9 +184,9 @@ export default function ServicesPage() {
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm dark:bg-card/95 overflow-hidden">
-              <div className="bg-primary p-8 text-center text-primary-foreground">
+              <div className="bg-card border-b border-primary/20 p-8 text-center text-foreground">
                 <h2 className="text-4xl font-bold mb-4">예약 안내</h2>
-                <p className="text-xl text-primary-foreground/90">
+                <p className="text-xl text-muted-foreground">
                   스트링 장착 서비스는 예약제로 운영됩니다.
                   <br />
                   아래 방법을 통해 편리하게 예약해 주세요.
@@ -196,7 +196,7 @@ export default function ServicesPage() {
               <CardContent className="p-5 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 bp-md:gap-8 mb-6 bp-md:mb-8">
                   <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
+                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
@@ -206,7 +206,7 @@ export default function ServicesPage() {
                   </div>
 
                   <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto mb-4">
+                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
@@ -457,16 +457,16 @@ export default function ServicesPage() {
               <Card
                 key={item.service}
                 className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
-                  item.popular ? 'bg-primary text-primary-foreground scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95'
+                  item.popular ? 'bg-card text-foreground border border-primary/20 scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95'
                 }`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-destructive/100 text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-card/20' : 'bg-primary text-primary-foreground'}`}>{item.icon}</div>
-                  <CardTitle className={`text-lg font-bold ${item.popular ? 'text-primary-foreground' : ''}`}>{item.service}</CardTitle>
-                  <div className={`text-3xl font-bold ${item.popular ? 'text-primary-foreground' : 'text-foreground'}`}>{item.price.toLocaleString()}원</div>
-                  <div className={`text-sm ${item.popular ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>소요시간: {item.duration}</div>
+                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'}`}>{item.icon}</div>
+                  <CardTitle className={`text-lg font-bold ${item.popular ? 'text-foreground' : ''}`}>{item.service}</CardTitle>
+                  <div className={`text-3xl font-bold ${item.popular ? 'text-foreground' : 'text-foreground'}`}>{item.price.toLocaleString()}원</div>
+                  <div className={`text-sm ${item.popular ? 'text-muted-foreground' : 'text-muted-foreground'}`}>소요시간: {item.duration}</div>
                 </CardHeader>
 
                 <CardContent>
@@ -515,7 +515,7 @@ export default function ServicesPage() {
                 <div key={service.title} className="border border-border rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-primary-foreground mr-3">{service.icon}</div>
+                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
                     {service.free ? <Badge className="bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
@@ -547,13 +547,13 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
-                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/40 transform translate-x-4 z-0"></div>}
+                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 transform translate-x-4 z-0"></div>}
 
                 <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card">
                   <CardContent className="p-5 bp-md:p-8">
                     <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold shadow-lg">{step.step}</div>
+                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{step.description}</p>

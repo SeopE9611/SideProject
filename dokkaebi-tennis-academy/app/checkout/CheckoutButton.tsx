@@ -414,7 +414,7 @@ export default function CheckoutButton({
     <>
       <Button
         onClick={handleSubmit}
-        className="w-full h-14 text-lg font-semibold bg-primary   hover:from-background hover:to-card disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300"
+        className="w-full h-14 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300"
         size="lg"
         disabled={disabled || isSubmitting}
       >

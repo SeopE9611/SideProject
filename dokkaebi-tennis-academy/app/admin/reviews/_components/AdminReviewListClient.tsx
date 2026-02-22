@@ -274,7 +274,7 @@ export default function AdminReviewListClient() {
       return { date: '-', time: '-' };
     }
   }
-  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary/10 text-primary hover:bg-primary');
+  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary/10 text-primary hover:bg-primary/20');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
   const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';
@@ -303,7 +303,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">전체 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.total ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-primary">
+              <div className="rounded-md p-2 bg-primary/10 border border-primary/20">
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">5점 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-primary">
+              <div className="rounded-md p-2 bg-primary/10 border border-primary/20">
                 <Award className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -455,8 +455,8 @@ export default function AdminReviewListClient() {
                     'items-center gap-y-2 gap-x-3 px-3',
                     compact ? 'py-2' : 'py-3',
                     'transition-colors cursor-pointer',
-                    'even:bg-background hover:bg-primary',
-                    'dark:even:bg-card dark:hover:bg-primary',
+                    'even:bg-background hover:bg-primary/10',
+                    'dark:even:bg-card dark:hover:bg-primary/20',
                     isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-primary' : '',
                   ].join(' ')}
                 >
@@ -614,8 +614,8 @@ export default function AdminReviewListClient() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelected([])}
-                className="h-8 px-3 border-border text-primary hover:bg-primary
-             dark:border-border dark:text-primary dark:hover:bg-primary"
+                className="h-8 px-3 border-border text-primary hover:bg-primary/10
+             dark:border-border dark:text-primary dark:hover:bg-primary/20"
               >
                 해제
               </Button>

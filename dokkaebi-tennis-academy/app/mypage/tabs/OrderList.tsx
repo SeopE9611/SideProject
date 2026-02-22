@@ -337,7 +337,7 @@ export default function OrderList() {
                 </div>
 
                 <div className="hidden bp-sm:flex items-center gap-3">
-                  <Button size="sm" variant="outline" asChild className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent">
                     <Link href={detailHref} className="inline-flex items-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
@@ -354,7 +354,7 @@ export default function OrderList() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary bg-transparent"
+                              className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent"
                               disabled={!isDelivered || isConfirmed || confirmingOrderId === order.id}
                               onClick={() => handleConfirmPurchase(order.id)}
                             >
@@ -380,7 +380,7 @@ export default function OrderList() {
                     {order.shippingInfo?.withStringService ? (
                       // 신청서 ID가 있으면 무조건 "신청서 보기"
                       order.stringingApplicationId ? (
-                        <Button size="sm" variant="outline" className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary bg-transparent" asChild>
+                        <Button size="sm" variant="outline" className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent" asChild>
                           {/* 성공페이지(/services/success) 대신 "마이페이지 신청내역 상세"로 보내는게 더 자연스러움 */}
                           <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex items-center gap-1">
                             신청서 보기
@@ -427,14 +427,14 @@ export default function OrderList() {
 
                 {/* Mobile(<bp-sm): 핵심 1~2개만 노출 + 나머지는 더보기 */}
                 <div className="grid bp-sm:hidden grid-cols-12 items-center gap-2">
-                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-border hover:border-border hover:bg-primary bg-transparent`}>
+                  <Button size="sm" variant="outline" asChild className={`${showMobileSecondCTA ? 'col-span-5' : 'col-span-10'} w-full whitespace-nowrap border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent`}>
                     <Link href={detailHref} className="inline-flex w-full items-center justify-center gap-1">
                       상세보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
                   {order.stringingApplicationId ? (
-                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-border dark:hover:bg-primary bg-transparent">
+                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-border dark:hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
                       <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
                         신청서 보기
                         <ArrowRight className="h-3 w-3" />
@@ -555,7 +555,7 @@ export default function OrderList() {
       {/* '더 보기' 버튼 */}
       <div className="flex justify-center pt-4">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20/10 dark:hover:bg-primary/20 bg-transparent">
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : items.length ? (

@@ -449,7 +449,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  if (!selectedPackage) {
  return (
- <div className="min-h-screen bg-background from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent flex items-center justify-center">
+ <div className="min-h-screen bg-background flex items-center justify-center">
  <Card className="max-w-md mx-auto">
  <CardContent className="p-8 text-center">
  <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -474,9 +474,9 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  const discountAmount = hasDiscount ? selectedPackage.originalPrice! - selectedPackage.price : 0;
 
  return (
- <div className="min-h-full bg-background from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent">
+ <div className="min-h-full bg-background">
  {/* Hero Section */}
- <div className="relative overflow-hidden bg-primary    text-foreground">
+ <div className="relative overflow-hidden bg-muted text-foreground">
  <div className="absolute inset-0 bg-overlay/20"></div>
  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
  <div className="relative container py-16">
@@ -513,7 +513,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="lg:col-span-2 space-y-6">
  {/* 선택된 패키지 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary 0/10 via-primary 0/10 p-6">
+ <div className="bg-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-accent" />
  선택된 패키지
@@ -537,7 +537,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="flex-1">
  <div className="flex items-center gap-2 mb-2">
  <h3 className="text-2xl font-bold">{selectedPackage.title}</h3>
- {selectedPackage.popular && <Badge className="bg-primary from-primary  text-foreground">인기</Badge>}
+ {selectedPackage.popular && <Badge className="bg-primary/10 text-primary">인기</Badge>}
  </div>
  <p className="text-muted-foreground ">{selectedPackage.description}</p>
  </div>
@@ -598,7 +598,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  {/* 신청자 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary 0/10 via-primary 0/10 p-6">
+ <div className="bg-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
  <UserIcon className="h-5 w-5 text-primary" />
  신청자 정보

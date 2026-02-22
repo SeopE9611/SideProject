@@ -208,7 +208,7 @@ export default function OrderLookupResultsPage() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="min-h-full bg-background from-background  ">
+      <div className="min-h-full bg-background">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-primary   ">
           <div className="absolute inset-0 bg-overlay/10"></div>
@@ -228,7 +228,7 @@ export default function OrderLookupResultsPage() {
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex justify-center items-center py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary from-background 0 rounded-full mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
                     <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-2">주문 정보 조회 중</h3>
@@ -245,7 +245,7 @@ export default function OrderLookupResultsPage() {
   // 에러 상태
   if (error) {
     return (
-      <div className="min-h-full bg-background from-background  ">
+      <div className="min-h-full bg-background">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-primary   ">
           <div className="absolute inset-0 bg-overlay/10"></div>
@@ -286,7 +286,7 @@ export default function OrderLookupResultsPage() {
                       </div>
                     </div>
                   )}
-                  <Button onClick={handleGoBack} className="bg-primary   hover:from-background hover:to-card">
+                  <Button onClick={handleGoBack} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     주문 조회 페이지로 돌아가기
                   </Button>
@@ -300,7 +300,7 @@ export default function OrderLookupResultsPage() {
   }
 
   return (
-    <div className="min-h-full bg-background from-background  ">
+    <div className="min-h-full bg-background">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-primary   ">
         <div className="absolute inset-0 bg-overlay/10"></div>
@@ -329,7 +329,7 @@ export default function OrderLookupResultsPage() {
 
           <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm mb-8">
             <CardHeader className="text-center pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary from-background 0 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold bg-primary   bg-clip-text text-transparent">주문 내역</CardTitle>
@@ -347,7 +347,7 @@ export default function OrderLookupResultsPage() {
                         {/* Order Header */}
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
                           <div className="flex items-center mb-4 lg:mb-0">
-                            <div className="flex-shrink-0 w-12 h-12 bg-primary from-background 0 rounded-full flex items-center justify-center mr-4">
+                            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
                               <span className="text-foreground font-bold">#{index + 1}</span>
                             </div>
                             <div>
@@ -389,7 +389,7 @@ export default function OrderLookupResultsPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 p-3 bg-primary from-background  rounded-lg border border-border">
+                          <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                             <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                             <div className="min-w-0">
                               <p className="text-xs text-primary mb-1">결제금액</p>
@@ -400,7 +400,7 @@ export default function OrderLookupResultsPage() {
 
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 justify-end">
-                          <Button variant="outline" className="flex items-center gap-2 border-border text-primary hover:bg-primary hover:border-border bg-transparent" onClick={() => handleViewDetails(order.id)}>
+                          <Button variant="outline" className="flex items-center gap-2 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-border bg-transparent" onClick={() => handleViewDetails(order.id)}>
                             <Package className="w-4 h-4" />
                             상세보기
                             <ChevronRight className="ml-1 h-4 w-4" />
@@ -410,7 +410,7 @@ export default function OrderLookupResultsPage() {
                             <>
                               {!order.isStringServiceApplied ? (
                                 <Button
-                                  className="bg-primary 0 0 hover:from-background hover:to-card text-foreground font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                                   onClick={() => router.push(`/services/apply?orderId=${order.id}`)}
                                 >
                                   <ShoppingBag className="w-4 h-4 mr-2" />
@@ -449,7 +449,7 @@ export default function OrderLookupResultsPage() {
                     <br />
                     주문 시 입력한 정보를 다시 확인해주세요.
                   </p>
-                  <Button onClick={handleGoBack} className="bg-primary   hover:from-background hover:to-card">
+                  <Button onClick={handleGoBack} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     주문 조회 페이지로 돌아가기
                   </Button>

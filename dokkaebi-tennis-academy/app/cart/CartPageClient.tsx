@@ -297,7 +297,7 @@ export default function CartPageClient() {
         </AlertDialogContent>
       </AlertDialog>
       {/* 헤더 */}
-      <div className="relative overflow-hidden bg-primary text-primary-foreground">
+      <div className="relative overflow-hidden bg-muted text-foreground">
         <div className="absolute inset-0 bg-foreground/10" />
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full text-foreground" viewBox="0 0 400 200" fill="none">
@@ -553,7 +553,7 @@ export default function CartPageClient() {
 
                 <CardFooter className="rounded-b-lg bg-muted/50 dark:bg-background">
                   <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
-                    <Button variant="outline" className="group border-0 shadow-sm hover:bg-muted dark:hover:bg-primary" asChild>
+                    <Button variant="outline" className="group border-0 shadow-sm hover:bg-muted dark:hover:bg-primary/20" asChild>
                       <Link href="/products" className="flex items-center gap-2">
                         <ArrowRight className="h-4 w-4 -rotate-180 transition-transform group-hover:-translate-x-1" />
                         쇼핑 계속하기
@@ -561,7 +561,7 @@ export default function CartPageClient() {
                     </Button>
                     <Button
                       variant="destructive"
-                      className="bg-background shadow-lg hover:bg-primary"
+                      className="bg-background shadow-lg hover:bg-primary/10 dark:hover:bg-primary/20"
                       onClick={() => {
                         if (confirm('장바구니의 모든 상품을 비울까요?')) clearCart();
                       }}
@@ -580,7 +580,7 @@ export default function CartPageClient() {
             <div className="bp-lg:col-span-1">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
                 <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-primary p-4 bp-sm:p-6 text-primary-foreground">
+                  <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
                     <CardTitle className="flex items-center gap-3 text-xl">
                       <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />

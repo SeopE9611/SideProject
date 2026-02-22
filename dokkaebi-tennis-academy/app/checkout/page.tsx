@@ -1219,7 +1219,7 @@ export default function CheckoutPage() {
           <div className="bp-lg:col-span-1">
             <div className="bp-lg:sticky bp-lg:top-20">
               <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
-                <div className="bg-primary p-4 bp-sm:p-6 text-primary-foreground">
+                <div className="bg-card p-4 bp-sm:p-6 text-foreground border border-primary/20">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
                       <CreditCard className="h-5 w-5" />
