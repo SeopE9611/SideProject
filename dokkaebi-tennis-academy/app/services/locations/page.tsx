@@ -48,14 +48,14 @@ export default function LocationsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-background">
       {/* Tennis court line pattern background */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-tennis-court-pattern" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-accent dark:bg-primary px-4 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-6">
             <MapPin className="h-5 w-5 text-accent-foreground dark:text-primary-foreground" />
             <span className="text-sm font-semibold text-accent-foreground dark:text-primary-foreground">오프라인 매장 찾기</span>
           </div>
@@ -118,7 +118,7 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-accent dark:bg-primary p-3 rounded-lg">
+                  <div className="bg-primary/10 dark:bg-primary/20 p-3 rounded-lg border border-primary/20">
                     <p className="text-sm font-medium text-accent-foreground dark:text-primary-foreground">{location.specialNote}</p>
                   </div>
 
@@ -145,7 +145,7 @@ export default function LocationsPage() {
             {reservationSteps.map((step, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-primary text-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
+                  <div className="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
                   <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
                   <p className="text-sm text-muted-foreground">{step.description}</p>
                 </CardContent>
@@ -154,7 +154,7 @@ export default function LocationsPage() {
           </div>
         </div> */}
 
-        {/* <Card className="bg-primary  to-card dark:from-background dark:to-card border-border">
+        {/* <Card className="bg-muted/40 dark:bg-muted/30 border-border">
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>

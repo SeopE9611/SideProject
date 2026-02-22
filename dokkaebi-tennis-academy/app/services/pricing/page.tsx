@@ -86,14 +86,14 @@ export default function PricingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-background">
       {/* Tennis court line pattern background */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-tennis-court-pattern" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-accent dark:bg-primary px-4 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-6">
             <Wrench className="h-5 w-5 text-accent-foreground dark:text-primary-foreground" />
             <span className="text-sm font-semibold text-accent-foreground dark:text-primary-foreground">장착 서비스 요금</span>
           </div>
@@ -194,7 +194,7 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <Card className="bg-primary  to-card dark:from-background dark:to-card border-border">
+        <Card className="bg-muted/40 dark:bg-muted/30 border-border">
           <CardContent className="p-8 text-center">
             <Zap className="h-12 w-12 text-primary mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-foreground mb-4">지금 예약하고 최고의 서비스를 경험하세요</h3>

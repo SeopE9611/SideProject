@@ -50,7 +50,7 @@ export default function SideMenu() {
     const isActive = isActiveHref(href);
     return cn(
       "group relative z-0 block rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
-      "hover:bg-accent",
+      "hover:bg-primary/10 dark:hover:bg-primary/20",
       "hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring dark:hover:ring-ring hover:z-10 active:scale-[0.99]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
@@ -87,7 +87,7 @@ export default function SideMenu() {
           <AccordionItem value="strings" className="border-none">
             <AccordionTrigger
               value="strings"
-              className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
             >
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -126,7 +126,7 @@ export default function SideMenu() {
                     <AccordionTrigger
                       value="strings-service"
                       className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                        hover:bg-accent"
+                        hover:bg-primary/10 dark:hover:bg-primary/20"
                     >
                       장착 서비스 안내
                     </AccordionTrigger>
@@ -157,7 +157,7 @@ export default function SideMenu() {
                       <AccordionTrigger
                         value="strings-brand"
                         className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                          hover:bg-accent"
+                          hover:bg-primary/10 dark:hover:bg-primary/20"
                       >
                         브랜드
                       </AccordionTrigger>
@@ -191,7 +191,7 @@ export default function SideMenu() {
           <AccordionItem value="boards" className="border-none">
             <AccordionTrigger
               value="boards"
-              className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
             >
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -220,7 +220,7 @@ export default function SideMenu() {
           <AccordionItem value="packages" className="border-none">
             <AccordionTrigger
               value="packages"
-              className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
             >
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -252,7 +252,7 @@ export default function SideMenu() {
           <AccordionItem value="rackets" className="border-none">
             <AccordionTrigger
               value="rackets"
-              className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
             >
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -299,7 +299,7 @@ export default function SideMenu() {
           <AccordionItem value="support" className="border-none">
             <AccordionTrigger
               value="support"
-              className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+              className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
             >
               <span className="inline-flex items-center gap-2.5 text-base font-bold">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">

@@ -1935,7 +1935,7 @@ export default function StringServiceApplyPage() {
 
   if (shouldShowEntryChooser)
     return (
-      <div className="min-h-full bg-card bp-lg:bg-background bp-lg:from-background bp-lg:via-muted bp-lg: bp-lg:dark:from-background bp-lg:dark:via-muted bp-lg:dark:to-card">
+      <div className="min-h-full bg-card bp-lg:bg-background">
         {/* Hero Section */}
         <ApplyHero />
 
@@ -2109,7 +2109,7 @@ export default function StringServiceApplyPage() {
     );
 
   return (
-    <div className="min-h-full bg-card bp-lg:bg-background bp-lg:from-background bp-lg:via-muted bp-lg: bp-lg:dark:from-background bp-lg:dark:via-muted bp-lg:dark:to-card">
+    <div className="min-h-full bg-card bp-lg:bg-background">
       {/* Hero Section */}
       <ApplyHero />
 

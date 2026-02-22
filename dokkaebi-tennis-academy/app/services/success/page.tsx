@@ -446,7 +446,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="rounded-xl p-6 border-2 border-border/70 bg-gradient-to-r from-muted to-card">
  <div className="flex items-start gap-4">
- <div className="h-10 w-10 shrink-0 rounded-full bg-primary text-foreground grid place-content-center shadow-sm">
+ <div className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground grid place-content-center shadow-sm">
  <Ticket className="h-5 w-5" />
  </div>
 
