@@ -803,7 +803,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         </div>
 
         {/* 상태 카드 */}
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden mb-8">
+        <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden mb-8">
           <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
             <div className="flex items-center justify-between">
               <CardTitle>신청 상태</CardTitle>
@@ -876,7 +876,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -955,7 +955,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 결제 정보 */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-accent" /> 결제 정보
@@ -1080,7 +1080,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 스트링 정보 */}
-          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border flex flex-col items-center py-4">
               <ShoppingCart className="w-6 h-6 text-foreground" />
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
@@ -1225,7 +1225,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 요청사항 카드 */}
-          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent overflow-hidden">
+          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
               <CardTitle className="flex items-center justify-between">
                 <span>요청사항</span>

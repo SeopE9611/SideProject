@@ -304,7 +304,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-white to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card to-card dark:from-background dark:via-muted dark:to-card">
         <div className="container py-6">
           {/* 헤더 카드 */}
           <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-border dark:bg-card dark:border-border">

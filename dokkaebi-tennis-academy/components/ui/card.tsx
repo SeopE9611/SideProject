@@ -11,7 +11,7 @@ const cardVariants = cva('rounded-lg bg-card text-card-foreground shadow-sm', {
       ghost: '',
       // 배경 강조가 필요한 섹션 카드
       muted: 'border bg-muted text-foreground',
-      elevatedGradient: 'border-0 shadow-xl bg-gradient-to-br from-white to-card dark:from-background dark:to-card overflow-hidden',
+      elevatedGradient: 'border-0 shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden',
     },
   },
   defaultVariants: {

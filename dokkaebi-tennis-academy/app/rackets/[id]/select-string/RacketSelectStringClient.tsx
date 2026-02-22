@@ -212,7 +212,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       <SiteContainer variant="wide" className="py-16">
         <div className="flex items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-slate-900" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-foreground" />
             <p className="text-sm text-muted-foreground">스트링을 불러오는 중...</p>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-white">
+    <div className="min-h-screen bg-gradient-to-b from-background to-card">
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-foreground">스트링 선택</h1>
@@ -386,7 +386,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
             <Button onClick={loadMore} disabled={isFetchingMore} className="px-8 py-6 rounded-xl font-medium bg-card border-2 border-border text-foreground hover:border-border hover:bg-muted disabled:opacity-50 transition-all duration-300">
               {isFetchingMore ? (
                 <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-slate-600" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />
                   불러오는 중...
                 </span>
               ) : (
