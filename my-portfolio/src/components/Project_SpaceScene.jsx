@@ -8,6 +8,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+import { badgeVariant, buttonVariants, linkVariant, modalPanelVariant } from './ui/variants';
 
 // 간단한 난수 생성 함수
 const rand = (min, max) => Math.random() * (max - min) + min;
@@ -19,14 +20,10 @@ const SpaceScene = () => {
   const [hoverModalData, setHoverModalData] = useState(null);
   // "자세히 보기" 버튼 클릭 시 열리는 전체 모달 데이터
   const [fullModalProject, setFullModalProject] = useState(null);
-  // 모달 영역에 마우스가 있는지 여부 (모달 유지 조건)
-  const [isHoveringModal, setIsHoveringModal] = useState(false);
   // 현재 잠금된 위성을 저장 (paused 상태, 해당 위성은 공전 업데이트를 중단)
   const pausedSatelliteRef = useRef(null);
   // full 모달 상태를 추적하는 ref (full 모달이 열려 있으면 새로운 hover 업데이트를 무시)
   const fullModalProjectRef = useRef(null);
-  // 모달 제거 타이머를 저장하는 ref
-  const removalTimeoutRef = useRef(null);
 
   // full 모달 상태가 바뀔 때마다 ref에 업데이트 (full 모달이 열려 있으면 new hover 업데이트를 무시)
   useEffect(() => {
@@ -34,9 +31,10 @@ const SpaceScene = () => {
   }, [fullModalProject]);
 
   useEffect(() => {
+    const mountNode = mountRef.current;
     // 캔버스 크기 설정
-    const width = mountRef.current.clientWidth;
-    const height = mountRef.current.clientHeight;
+    const width = mountNode.clientWidth;
+    const height = mountNode.clientHeight;
 
     // ====== 씬 및 배경 설정 ======
     const scene = new THREE.Scene();
@@ -59,7 +57,7 @@ const SpaceScene = () => {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     // 렌더러의 캔버스를 mountRef에 추가
-    mountRef.current.appendChild(renderer.domElement);
+    mountNode.appendChild(renderer.domElement);
 
     // ====== OrbitControls 설정 ======
     // 카메라 조작을 위한 컨트롤, 여기서는 damping만 활성화하고 줌/팬은 비활성화
@@ -262,8 +260,8 @@ const SpaceScene = () => {
     // 정리: 컴포넌트 언마운트 시 이벤트 리스너와 렌더러 제거
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
-      if (mountRef.current && renderer.domElement.parentNode) {
-        mountRef.current.removeChild(renderer.domElement);
+      if (mountNode && renderer.domElement.parentNode) {
+        mountNode.removeChild(renderer.domElement);
       }
     };
   }, []); // 씬과 애니메이션 루프는 한 번만 초기화
@@ -271,11 +269,11 @@ const SpaceScene = () => {
   return (
     <>
       {/* Three.js 캔버스가 들어갈 영역 */}
-      <div ref={mountRef} style={{ width: '100%', height: '100vh', background: '#000' }} />
+      <div ref={mountRef} className="w-full h-screen bg-background" />
 
       {/* 위성 hover 시 표시되는 모달 (프로젝트 정보, "자세히 보기" 버튼 및 "닫기" 버튼 포함) */}
       {hoverModalData && (
-        <div className="absolute bg-[rgba(0,0,0,0.8)] text-white p-2.5 rounded z-[200] pointer-events-auto min-w-[200px] group" style={{ top: hoverModalData.y - 60, left: hoverModalData.x - 50 }}>
+        <div className="absolute bg-card text-foreground border border-token p-2.5 rounded z-[200] pointer-events-auto min-w-[200px] group shadow-lg" style={{ top: hoverModalData.y - 60, left: hoverModalData.x - 50 }}>
           {/* 제목 영역: 제목은 왼쪽, 닫기 버튼은 오른쪽 상단에 배치 */}
           <div className="flex justify-between items-center">
             <h4 className="mt-[5px] py-[5px] px-[10px]">{`프로젝트 제목: ${hoverModalData.projectData.title}`}</h4>
@@ -285,7 +283,7 @@ const SpaceScene = () => {
                 setHoverModalData(null);
                 pausedSatelliteRef.current = null;
               }}
-              className="transparent text-white border border-white  cursor-pointer text-sm px-2"
+              className="btn-token btn-outline !px-2 !py-1 text-sm"
             >
               X
             </button>
@@ -294,7 +292,7 @@ const SpaceScene = () => {
           <p style={{ padding: '5px 10px' }}>{hoverModalData.projectData.description_sub}</p>
           {/* "자세히 보기" 버튼을 클릭하면 full 모달이 열림 */}
           <div className="py-2 w-full text-center">
-            <button onClick={() => setFullModalProject(hoverModalData.projectData)} className=" text-white border border-white px-4 py-2 rounded transition duration-300 text-end">
+            <button onClick={() => setFullModalProject(hoverModalData.projectData)} className={`${buttonVariants.outline} text-end`}>
               자세히 보기
             </button>
           </div>
@@ -305,14 +303,14 @@ const SpaceScene = () => {
       {fullModalProject &&
         ReactDOM.createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-overlay transition-opacity duration-300"
             onClick={() => {
               setFullModalProject(null);
               pausedSatelliteRef.current = null;
               setHoverModalData(null);
             }}
           >
-            <div className="bg-white dark:bg-black/80 p-6 rounded shadow-lg relative max-w-4xl w-full mx-4 flex flex-col md:flex-row gap-4 text-black dark:text-white" onClick={(e) => e.stopPropagation()}>
+            <div className={`${modalPanelVariant} relative max-w-4xl w-full mx-4 flex flex-col md:flex-row gap-4`} onClick={(e) => e.stopPropagation()}>
               {/* 왼쪽: 프로젝트 이미지 */}
               <div className="md:w-1/2">
                 <img src={fullModalProject.image} alt={fullModalProject.title} className="w-full h-auto object-cover rounded" />
@@ -325,17 +323,17 @@ const SpaceScene = () => {
                   <p className="mb-4">{fullModalProject.description}</p>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {fullModalProject.tags.map((tag) => (
-                      <span key={tag} className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full">
+                      <span key={tag} className={badgeVariant}>
                         {tag}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <a href={fullModalProject.liveLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
+                  <a href={fullModalProject.liveLink} target="_blank" rel="noopener noreferrer" className={linkVariant}>
                     <ExternalLink size={16} /> 배포 사이트
                   </a>
-                  <a href={fullModalProject.githubLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline">
+                  <a href={fullModalProject.githubLink} target="_blank" rel="noopener noreferrer" className={linkVariant}>
                     <Github size={16} /> GitHub
                   </a>
                 </div>
@@ -346,7 +344,7 @@ const SpaceScene = () => {
                   pausedSatelliteRef.current = null;
                   setHoverModalData(null);
                 }}
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                className="absolute top-2 right-2 text-muted hover:text-foreground"
               >
                 닫기
               </button>

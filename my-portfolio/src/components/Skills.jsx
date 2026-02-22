@@ -1,4 +1,5 @@
 import useScrollReveal from '../hooks/useScrollReveal';
+import { cardVariant } from './ui/variants';
 
 const Skills = () => {
   const revealRef = useScrollReveal(0.2);
@@ -39,13 +40,13 @@ const Skills = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">기술 스택</h2>
-          <div className="w-20 h-1 bg-blue-600 dark:bg-blue-400 mx-auto mb-8"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300">부트캠프와 유튜브 독학을 통해 습득한 기술들입니다.</p>
+          <div className="w-20 h-1 section-divider mx-auto mb-8"></div>
+          <p className="text-lg text-muted">부트캠프와 유튜브 독학을 통해 습득한 기술들입니다.</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {skillCategories.map((category) => (
-            <div key={category.title} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <div key={category.title} className={cardVariant}>
               <h3 className="text-xl font-semibold mb-4">{category.title}</h3>
               <div className="space-y-4">
                 {category.skills.map((skill) => (
@@ -54,8 +55,8 @@ const Skills = () => {
                       <span>{skill.name}</span>
                       <span>{skill.level}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                      <div className="bg-blue-600 dark:bg-blue-400 h-2.5 rounded-full" style={{ width: `${skill.level}%` }}></div>
+                    <div className="w-full bg-muted-surface rounded-full h-2.5">
+                      <div className="bg-primary h-2.5 rounded-full" style={{ width: `${skill.level}%` }}></div>
                     </div>
                   </div>
                 ))}
