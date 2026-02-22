@@ -108,7 +108,7 @@ export default function ReviewsClient() {
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-background to-card flex items-center justify-center">
               <Trophy className="h-6 w-6 text-foreground" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-background to-card bg-clip-text text-transparent">고객 리뷰</h1>
+            <h1 className="text-3xl font-bold text-foreground">고객 리뷰</h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
         </div>
