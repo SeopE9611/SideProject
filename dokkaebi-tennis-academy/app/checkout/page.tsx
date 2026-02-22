@@ -143,6 +143,33 @@ export default function CheckoutPage() {
   const isBundleCheckout = mode === 'buynow' && withServiceParam === '1' && orderItems.length >= 2;
   const bundleQty = isBundleCheckout ? (orderItems.find((it) => it.kind === 'racket')?.quantity ?? orderItems[0]?.quantity ?? 1) : null;
 
+  /**
+   * "교체 서비스 포함 결제" 진입 모드 잠금
+   * - withService=1로 들어온 경우는 사용자가 "서비스 포함"을 명시적으로 선택한 흐름이므로
+   * - 번들(라켓+스트링) 주문은 원래부터 장착 서비스가 고정이라 isBundleCheckout로 잠긴다.
+   * - 번들이 아닌 경우(= 스트링만 구매 + 보유 라켓 교체 신청)는 UX상 "모드 선택"처럼 보이게
+   *   체크박스를 잠그고, 별도 링크로만 '상품만 결제' 전환을 제공하는 편이 혼란이 적음
+   */
+  const lockServiceMode = withServiceParam === '1' && !isBundleCheckout;
+
+  /**
+   * '상품만 결제'로 전환 (서비스 모드 해제)
+   * - 초기 withService=1 자동 적용(useEffect)이 다시 켜지지 않도록 플래그를 확정하고,
+   * - URL에서 withService를 제거해 뒤로/새로고침에서도 "상품만 결제" 상태를 유지한다.
+   */
+  const switchToProductOnly = () => {
+    // 1) UI 상태: 서비스 OFF
+    setWithStringService(false);
+
+    // 2) URL 기반 초기 자동 적용(useEffect)이 다시 켜지지 않도록 확정
+    initFlagsRef.current.withServiceApplied = true;
+
+    // 3) URL에서 withService 제거(새로고침/뒤로가기에도 유지)
+    const url = new URL(window.location.href);
+    url.searchParams.delete('withService');
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -800,9 +827,9 @@ export default function CheckoutPage() {
                     <Checkbox
                       id="withStringService"
                       checked={withStringService}
-                      disabled={isBundleCheckout}
+                      disabled={isBundleCheckout || lockServiceMode}
                       onCheckedChange={(checked) => {
-                        if (isBundleCheckout) return;
+                        if (isBundleCheckout || lockServiceMode) return;
                         const next = !!checked;
                         setWithStringService(next);
 
@@ -819,6 +846,18 @@ export default function CheckoutPage() {
                     </Label>
                   </div>
                   <p className="text-sm text-foreground dark:text-foreground ml-6">{serviceHelpText}</p>
+                  {lockServiceMode && (
+                    <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        현재 <span className="font-semibold text-foreground">교체 서비스 포함 결제</span> 모드로 진입했어요. 결제 완료 후 신청서 페이지로 자동 이동합니다.
+                      </span>
+
+                      {/* '상품만 결제'로 바꾸고 싶을 때의 명시적 전환 버튼 */}
+                      <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={switchToProductOnly}>
+                        상품만 결제할래요
+                      </button>
+                    </div>
+                  )}
                   {isBundleCheckout && (
                     <p className="text-sm text-foreground dark:text-foreground ml-6 mt-1">
                       번들 주문은 장착 서비스 포함이 <span className="font-semibold">고정</span>이며, 번들 수량은 <span className="font-semibold">{bundleQty}개</span>로 <span className="font-semibold">고정</span>됩니다. 수량 변경은{' '}
