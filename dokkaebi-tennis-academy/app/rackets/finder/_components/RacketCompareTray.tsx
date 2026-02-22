@@ -34,7 +34,7 @@ export default function RacketCompareTray() {
 
       <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50">
         <div className="mx-auto w-full px-3 pb-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px]">
-          <div className="rounded-xl bg-background/95 shadow-xl backdrop-blur-md ring-1 ring-primary/10 dark:ring-white/10">
+          <div className="rounded-xl bg-background/95 shadow-xl backdrop-blur-md ring-1 ring-primary/10 ring-border/10">
             <div className="p-3 bp-sm:p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export default function RacketCompareTray() {
 
                   if (!it) {
                     return (
-                      <div key={idx} className={cn('flex h-16 bp-sm:h-18 items-center justify-center rounded-lg', 'bg-muted/30 dark:bg-muted/20', 'ring-1 ring-dashed ring-muted-foreground/20', 'text-xs text-muted-foreground/60')}>
+                      <div key={idx} className={cn('flex h-16 bp-sm:h-18 items-center justify-center rounded-lg', 'bg-muted/30', 'ring-1 ring-dashed ring-muted-foreground/20', 'text-xs text-muted-foreground/60')}>
                         <Plus className="mr-1 h-3 w-3" />
                         비어 있음
                       </div>
@@ -89,7 +89,7 @@ export default function RacketCompareTray() {
                         'hover:ring-primary/40 hover:shadow-sm',
                       )}
                     >
-                      <div className="relative h-11 w-11 bp-sm:h-12 bp-sm:w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 dark:bg-muted/30 ring-1 ring-black/5 dark:ring-white/10">
+                      <div className="relative h-11 w-11 bp-sm:h-12 bp-sm:w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 ring-1 ring-border/10">
                         {it.image ? (
                           <Image src={it.image || '/placeholder.svg'} alt={title} fill className="object-cover" unoptimized />
                         ) : (

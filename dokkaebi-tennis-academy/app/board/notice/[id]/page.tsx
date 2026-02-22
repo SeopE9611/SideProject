@@ -216,7 +216,7 @@ export default function NoticeDetailPage() {
 
                       <div className="flex items-start gap-3 mb-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg flex-shrink-0 mt-1">
-                          <Bell className="h-5 w-5 text-white" />
+                          <Bell className="h-5 w-5 text-primary-foreground" />
                         </div>
                         <h1 className="text-3xl font-bold text-foreground leading-tight">{notice.title}</h1>
                       </div>
@@ -304,8 +304,8 @@ export default function NoticeDetailPage() {
                                   alt={(imageAtts[0] as any)?.name || 'image-1'}
                                   className="w-full h-auto max-h-[70vh] object-contain bg-gradient-to-br from-background to-card dark:from-background dark:to-card"
                                 />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                                  <ExternalLink className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/10 transition-colors duration-300 flex items-center justify-center">
+                                  <ExternalLink className="h-8 w-8 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 </div>
                               </div>
                             </button>
@@ -324,8 +324,8 @@ export default function NoticeDetailPage() {
                                     aria-label={`${name} 이미지 보기`}
                                   >
                                     <img src={url || '/placeholder.svg'} alt={name} className="w-full h-40 object-cover" />
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                                      <ExternalLink className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
+                                      <ExternalLink className="h-6 w-6 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </div>
                                   </button>
                                 </div>
@@ -400,12 +400,12 @@ export default function NoticeDetailPage() {
             </CardContent>
 
             {lightbox.open && (
-              <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setLightbox({ open: false, src: '', alt: '' })} role="dialog" aria-modal="true">
+              <div className="fixed inset-0 z-50 bg-overlay/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setLightbox({ open: false, src: '', alt: '' })} role="dialog" aria-modal="true">
                 <div className="relative max-h-[90vh] max-w-[90vw]">
                   <img src={lightbox.src || '/placeholder.svg'} alt={lightbox.alt} className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl" />
                   <button
                     onClick={() => setLightbox({ open: false, src: '', alt: '' })}
-                    className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors duration-200"
+                    className="absolute top-4 right-4 w-10 h-10 bg-overlay/50 hover:bg-overlay/70 text-primary-foreground rounded-full flex items-center justify-center transition-colors duration-200"
                     aria-label="닫기"
                   >
                     ×

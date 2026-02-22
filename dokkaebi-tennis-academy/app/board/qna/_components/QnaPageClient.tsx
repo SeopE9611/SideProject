@@ -282,7 +282,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
 
             <div className="flex items-center space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-                <MessageSquare className="h-6 w-6 text-white" />
+                <MessageSquare className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
@@ -469,7 +469,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card"
                   disabled={isBusy}
                 >
-                  {isBusy && <div className="h-4 w-4 border-2 border-white/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
+                  {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
               </div>

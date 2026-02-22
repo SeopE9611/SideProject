@@ -288,7 +288,7 @@ export default function ProductsClient() {
                   'bg-muted hover:bg-primary text-primary-foreground',
                   'dark:bg-muted dark:hover:bg-muted',
                   // 경계/그림자: 지나치지 않게만
-                  'border border-white/10 dark:border-white/10 shadow-sm hover:shadow',
+                  'border border-border/10 dark:border-border/10 shadow-sm hover:shadow',
                   // 포커스 접근성
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',

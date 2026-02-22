@@ -477,7 +477,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="min-h-full bg-background from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent">
  {/* Hero Section */}
  <div className="relative overflow-hidden bg-primary    text-foreground">
- <div className="absolute inset-0 bg-black/20"></div>
+ <div className="absolute inset-0 bg-overlay/20"></div>
  <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
  <div className="relative container py-16">
  <div className="flex items-center gap-4 mb-4">

@@ -480,7 +480,7 @@ export default function NoticeWritePage() {
             </Button>
             <div className="flex items-center space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-                <Bell className="h-6 w-6 text-white" />
+                <Bell className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
@@ -715,9 +715,9 @@ export default function NoticeWritePage() {
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
                                   <div
                                     className="opacity-0 group-hover:opacity-100 transition-opacity duration-150
-                          rounded-full bg-black/50 p-1.5 backdrop-blur-[1px]"
+                          rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]"
                                   >
-                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-primary-foreground" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M21 21l-4.35-4.35" />
                                       <circle cx="11" cy="11" r="8" />
                                     </svg>
@@ -767,7 +767,7 @@ export default function NoticeWritePage() {
             </CardFooter>
 
             <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
-              <DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">
+              <DialogContent className="sm:max-w-4xl p-0 bg-overlay/90 text-primary-foreground border-0">
                 <DialogHeader className="sr-only">
                   <DialogTitle>이미지 확대 보기</DialogTitle>
                 </DialogHeader>
@@ -802,7 +802,7 @@ export default function NoticeWritePage() {
                 </div>
 
                 {viewerImages.length > 1 && (
-                  <div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">
+                  <div className="p-3 flex flex-wrap gap-2 justify-center bg-overlay/70">
                     {viewerImages.map((thumb, i) => (
                       <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                         <NextImage src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />

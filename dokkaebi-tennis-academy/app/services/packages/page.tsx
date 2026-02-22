@@ -313,7 +313,7 @@ export default function StringPackagesPage() {
               <rect width="100%" height="100%" fill="url(#stringPattern)" />
             </svg>
           </div>
-          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="absolute inset-0 bg-overlay/20"></div>
         </div>
 
         <SiteContainer variant="wide" className="relative z-10 text-center text-foreground">

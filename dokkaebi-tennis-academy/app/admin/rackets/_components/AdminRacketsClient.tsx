@@ -160,7 +160,7 @@ export default function AdminRacketsClient() {
                 className={[
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
                   'bg-primary hover:bg-primary text-primary-foreground',
-                  'border border-white/10 shadow-sm hover:shadow',
+                  'border border-border/10 shadow-sm hover:shadow',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
                   'transition-colors',

@@ -379,7 +379,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               {/* 헤더 영역 */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-black/5">
+                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-border/5">
                     {it.cover ? (
                       <Image src={it.cover} alt={it.title} fill sizes="48px" className="object-cover" />
                     ) : (
@@ -449,7 +449,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 {it.photos?.length ? (
                   <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-2">
                     {it.photos.slice(0, 8).map((src, idx) => (
-                      <div key={idx} className="relative aspect-square rounded-md overflow-hidden ring-1 ring-black/5">
+                      <div key={idx} className="relative aspect-square rounded-md overflow-hidden ring-1 ring-border/5">
                         <Image src={src} alt={`리뷰 이미지 ${idx + 1}`} fill sizes="120px" className="object-cover" />
                       </div>
                     ))}

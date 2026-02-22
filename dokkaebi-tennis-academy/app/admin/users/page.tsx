@@ -9,7 +9,7 @@ export default async function AdminUsersPage() {
         {/* 타이틀 */}
         <div className="flex items-center gap-3 mb-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-            <UsersIcon className="h-6 w-6 text-white" />
+            <UsersIcon className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">회원 관리</h1>

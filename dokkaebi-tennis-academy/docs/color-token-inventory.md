@@ -1,0 +1,91 @@
+# Color Utility Inventory (`(text|bg|border|ring)-(white|black)`)
+
+- Total matches: **51**
+- Files with matches: **25**
+
+## Token counts
+- `text-white`: 15
+- `bg-black/10`: 11
+- `bg-black/20`: 5
+- `bg-black/40`: 3
+- `bg-black/0`: 2
+- `bg-black/60`: 2
+- `bg-black/90`: 2
+- `ring-black/10`: 2
+- `bg-black/30`: 1
+- `bg-black/5`: 1
+- `bg-black/70`: 1
+- `bg-black/80`: 1
+- `border-white`: 1
+- `border-white/20`: 1
+- `ring-black`: 1
+- `ring-white/10`: 1
+- `text-white/90`: 1
+
+## File inventory
+- `app/academy/page.tsx` (2 lines)
+  - L181: `<div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">`
+  - L195: `<div className="absolute inset-0 bg-black/20"></div>`
+- `app/auth/page.tsx` (1 lines)
+  - L41: `<div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />`
+- `app/checkout/CheckoutButton.tsx` (1 lines)
+  - L436: `<div className="fixed inset-0 z-[60] bg-black/10 backdrop-blur-[2px] cursor-wait">`
+- `app/features/users/components/UserDetailClient.tsx` (1 lines)
+  - L44: `<User className="h-6 w-6 text-white" />`
+- `app/forgot-password/page.tsx` (1 lines)
+  - L53: `<div className="absolute inset-0 bg-black/10"></div>`
+- `app/login/_components/LoginPageClient.tsx` (2 lines)
+  - L618: `<div className="absolute inset-0 bg-black/10"></div>`
+  - L1124: `? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'`
+- `app/login/_components/SocialAuthButtons.tsx` (1 lines)
+  - L32: `className="w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold text-[15px] flex items-center justify-center gap-3 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"`
+- `app/order-lookup/details/[id]/page.tsx` (3 lines)
+  - L145: `<div className="absolute inset-0 bg-black/10"></div>`
+  - L182: `<div className="absolute inset-0 bg-black/10"></div>`
+  - L225: `<div className="absolute inset-0 bg-black/10"></div>`
+- `app/order-lookup/page.tsx` (1 lines)
+  - L184: `<div className="absolute inset-0 bg-black/10"></div>`
+- `app/order-lookup/results/page.tsx` (3 lines)
+  - L214: `<div className="absolute inset-0 bg-black/10"></div>`
+  - L251: `<div className="absolute inset-0 bg-black/10"></div>`
+  - L306: `<div className="absolute inset-0 bg-black/10"></div>`
+- `app/page.tsx` (2 lines)
+  - L328: `'group relative block h-24 bp-sm:h-28 bp-md:h-32 bp-lg:h-32 overflow-hidden rounded-xl border border-border transition-all hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring focus:ring-black/10 dark:focus:ring-white/10';`
+  - L341: `<div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />`
+- `app/products/components/ProductCard.tsx` (1 lines)
+  - L270: `<div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">`
+- `app/products/page.tsx` (2 lines)
+  - L24: `<div className="absolute inset-0 bg-black/10 dark:bg-black/30" />`
+  - L44: `<div className="text-center text-white">`
+- `app/rentals/[id]/checkout/loading.tsx` (1 lines)
+  - L5: `<div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>`
+- `app/rentals/success/_components/RentalsSuccessClient.tsx` (2 lines)
+  - L93: `<div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>`
+  - L97: `<CheckCircle className="h-12 w-12 text-white" />`
+- `app/rentals/success/loading.tsx` (1 lines)
+  - L5: `<div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>`
+- `app/reviews/_components/ReviewCard.tsx` (2 lines)
+  - L288: `<span className="text-white font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>`
+  - L333: `{idx === 3 && item.photos.length > 4 && <div className="absolute inset-0 bg-black/60 text-white text-[10px] font-bold flex items-center justify-center">+{item.photos.length - 3}</div>}`
+- `app/reviews/_components/ReviewPhotoDialog.tsx` (2 lines)
+  - L30: `<DialogContent className="sm:max-w-4xl p-0 bg-black/90 text-white border-0">`
+  - L51: `<div className="p-3 flex flex-wrap gap-2 justify-center bg-black/70">`
+- `app/reviews/_components/ReviewsClient.tsx` (1 lines)
+  - L114: `<Trophy className="h-6 w-6 text-white" />`
+- `app/reviews/write/page.tsx` (4 lines)
+  - L638: `<div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary to-accent text-white p-6 shadow-xl overflow-hidden">`
+  - L651: `<p className="text-white/90 text-sm leading-relaxed">{subtitle}</p>`
+  - L655: `<div className="mt-4 inline-flex items-center rounded-full bg-card/20 backdrop-blur-sm px-3 py-1.5 text-sm font-medium border border-white/20">`
+  - L886: `className="rounded-xl shadow-sm bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-white font-semibold px-8 order-1 sm:order-3"`
+- `app/support/page.tsx` (1 lines)
+  - L329: `<MessagesSquare className="h-6 w-6 text-white" />`
+- `components/admin/Section.tsx` (1 lines)
+  - L2: `// - ring-black/* 제거`
+- `components/header.tsx` (1 lines)
+  - L736: `{/* <Avatar className="h-10 w-10 border-2 border-white dark:border-border shadow-sm">`
+- `components/reviews/PhotosReorderGrid.tsx` (2 lines)
+  - L45: `className={`relative aspect-square rounded-md overflow-hidden ring-1 ring-black/10 ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-move'}`}`
+  - L50: `<span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-white">{idx + 1}</span>`
+- `components/reviews/PhotosUploader.tsx` (2 lines)
+  - L164: `<Loader2 className="h-5 w-5 animate-spin text-white" aria-label="업로드 중" />`
+  - L173: `<button type="button" onClick={() => removeAt(i)} className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-white opacity-0 group-hover:opacity-100 transition-opacity" aria-label="삭제" title="삭제">`

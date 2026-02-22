@@ -492,12 +492,12 @@ export default function UserDetailClient({ id }: { id: string }) {
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Avatar className="size-12 shadow-sm ring-2 ring-white dark:ring-ring">
+                  <Avatar className="size-12 shadow-sm ring-2 ring-border">
                     <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
                   </Avatar>
                   <span
                     className={cn(
-                      'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-white dark:ring-ring',
+                      'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-border',
                       statusKey(user) === 'active' && 'bg-primary',
                       statusKey(user) === 'suspended' && 'bg-muted',
                       statusKey(user) === 'deleted' && 'bg-destructive/10',

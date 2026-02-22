@@ -654,7 +654,7 @@ export default function BoardPage() {
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-              <MessageSquare className="h-6 w-6 text-white" />
+              <MessageSquare className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">게시판</h1>
           </div>

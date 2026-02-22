@@ -107,8 +107,8 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <Edit className="h-8 w-8 text-white" />
-                <h1 className="text-3xl font-bold text-white">라켓 수정</h1>
+                <Edit className="h-8 w-8 text-primary-foreground" />
+                <h1 className="text-3xl font-bold text-primary-foreground">라켓 수정</h1>
                 <StockChip id={data.id} total={data.quantity ?? 1} />
               </div>
               <p className="text-primary">

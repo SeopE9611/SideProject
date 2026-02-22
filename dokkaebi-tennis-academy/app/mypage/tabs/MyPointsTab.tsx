@@ -101,7 +101,7 @@ export default function MyPointsTab() {
     <div className="space-y-6">
       <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-background to-card dark:from-background dark:to-card text-foreground">
-          <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors duration-300" />
+          <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
           <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
           <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
 

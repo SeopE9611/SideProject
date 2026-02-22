@@ -139,7 +139,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
-            <MessageSquare className="h-6 w-6 text-white" />
+            <MessageSquare className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">리뷰 상세 보기</h1>
@@ -241,10 +241,10 @@ export default function ReviewDetailClient({ reviewId }: Props) {
         </CardContent>
 
         <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-border">
-          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-destructive hover:bg-destructive text-white">
+          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-destructive hover:bg-destructive text-primary-foreground">
             {isDeleting ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border border-t-transparent"></div>
                 삭제 중...
               </>
             ) : (
