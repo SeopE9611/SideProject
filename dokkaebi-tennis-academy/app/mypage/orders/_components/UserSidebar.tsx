@@ -105,7 +105,7 @@ export function UserSidebar() {
               <div
                 className={cn(
                   'flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 shadow-sm',
-                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-card'
+                  isActive ? `bg-gradient-to-r ${gradient} text-white shadow-lg` : 'bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-muted'
                 )}
               >
                 <Icon className="w-4 h-4" />
