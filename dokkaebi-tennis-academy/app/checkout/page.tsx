@@ -165,7 +165,7 @@ export default function CheckoutPage() {
    * - lockServiceMode / isBundleCheckout에서 체크박스는 비활성화(=고정) 상태라
    *   라벨도 "선택" 뉘앙스가 아니라 "고정" 뉘앙스로 맞춤
    */
-  const withStringServiceLabel = isBundleCheckout ? '장착 서비스 포함 (번들 고정)' : lockServiceMode ? '교체 서비스 포함 결제 (고정)' : '스트링 장착 서비스도 함께 신청할게요';
+  const withStringServiceLabel = isBundleCheckout ? '장착 서비스 포함 · 번들' : lockServiceMode ? '교체 서비스 포함 · 자동 신청' : '교체 서비스도 같이 신청';
 
   /**
    * 스텝퍼 Step1 문구
