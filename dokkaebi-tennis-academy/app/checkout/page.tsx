@@ -65,6 +65,14 @@ export default function CheckoutPage() {
   // 1) URL 파라미터로 최초 진입 제어
   const withServiceParam = sp.get('withService'); // '1' | '0' | null
 
+  /**
+   * 진입 시점 '서비스 포함 모드' 잠금 상태
+   * - useSearchParams()는 history.replaceState만으로는 값이 갱신되지 않을 수 있으므로
+   * - 따라서 최초 진입(withService=1) 여부를 state로 보관해,
+   *   사용자가 '상품만 결제'로 전환했을 때 잠금을 확실히 해제할 수 있게 한다.
+   */
+  const [entryServiceLock, setEntryServiceLock] = useState(withServiceParam === '1');
+
   // PDP에서 넘어온 장착비(1자루 기준 공임)
   // const mountingFeeParam = sp.get('mountingFee');
   // const pdpMountingFee = mountingFeeParam && mountingFeeParam.trim() !== '' ? Number(mountingFeeParam) : NaN;
@@ -150,8 +158,7 @@ export default function CheckoutPage() {
    * - 번들이 아닌 경우(= 스트링만 구매 + 보유 라켓 교체 신청)는 UX상 "모드 선택"처럼 보이게
    *   체크박스를 잠그고, 별도 링크로만 '상품만 결제' 전환을 제공하는 편이 혼란이 적음
    */
-  const lockServiceMode = withServiceParam === '1' && !isBundleCheckout;
-
+  const lockServiceMode = entryServiceLock && !isBundleCheckout;
   /**
    * '상품만 결제'로 전환 (서비스 모드 해제)
    * - 초기 withService=1 자동 적용(useEffect)이 다시 켜지지 않도록 플래그를 확정하고,
@@ -160,6 +167,8 @@ export default function CheckoutPage() {
   const switchToProductOnly = () => {
     // 1) UI 상태: 서비스 OFF
     setWithStringService(false);
+    // 1-1) '서비스 포함 모드 잠금'도 해제(체크박스 다시 조작 가능)
+    setEntryServiceLock(false);
 
     // 2) URL 기반 초기 자동 적용(useEffect)이 다시 켜지지 않도록 확정
     initFlagsRef.current.withServiceApplied = true;
@@ -700,6 +709,43 @@ export default function CheckoutPage() {
               <p className="text-muted-foreground">고객님의 배송/수령/결제정보를 확인 후 주문을 완료하세요</p>
             </div>
           </div>
+          {/**
+           *  서비스 신청 흐름용
+           * - 목적: '교체 서비스 포함 결제'가 단순 체크박스가 아니라 '흐름'임을 시각적으로 전달
+           * - 안전성: UI만 추가(상태/결제 로직에 영향 없음)
+           * - 노출 조건:
+           *   1) lockServiceMode: 작업의뢰/교체 포함 결제로 진입한 경우(모드 잠금)
+           *   2) withStringService: 사용자가 서비스 포함을 선택한 경우
+           */}
+          {(lockServiceMode || withStringService) && (
+            <nav aria-label="장착 서비스 진행 단계" className="mt-4">
+              <ol className="flex flex-wrap items-center gap-2 text-xs bp-sm:text-sm text-muted-foreground">
+                {/* 1) 스트링 선택: 이미 완료된 단계 */}
+                <li className="flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">1</span>
+                  <span className="font-medium text-foreground">스트링 선택</span>
+                </li>
+
+                <li className="text-muted-foreground">→</li>
+
+                {/* 2) 결제: 현재 페이지(현재 단계) */}
+                <li className="flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-foreground text-xs font-semibold">2</span>
+                  <span className="font-medium text-foreground">결제</span>
+                </li>
+
+                <li className="text-muted-foreground">→</li>
+
+                {/* 3) 신청서 자동 이동: 결제 완료 후 success 페이지에서 자동 이동 */}
+                <li className="flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground text-xs font-semibold">3</span>
+                  <span className="font-medium">신청서 자동 이동</span>
+                </li>
+              </ol>
+
+              <p className="mt-2 text-xs text-muted-foreground">결제가 완료되면 신청서 작성 페이지로 자동 이동해요.</p>
+            </nav>
+          )}
 
           {/* <div className="flex items-center gap-6 text-sm">
  <div className="flex items-center gap-2 text-sm">
