@@ -26,6 +26,9 @@ const forbiddenDirectionalBorderPaletteRegex = new RegExp(`(?:[\\w-]+:)*border-(
 const classNameBlockRegex = /className\s*=\s*(?:"([^"]*)"|\{`([\s\S]*?)`\})/g;
 const lowContrastPrimaryRegex = /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
 const lowContrastGradientRegex = /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
+const gradientStopRegex = /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-[\w/[\]-]+(?:\s|$)/;
+const gradientBaseRegex = /(?:[\w-]+:)*(?:bg-gradient-to-(?:t|tr|r|br|b|bl|l|tl)|bg-radial|bg-conic)/;
+const hoverAccentRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:\s|$)/;
 
 const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
@@ -187,6 +190,14 @@ for (const file of files) {
     const block = (match[1] ?? match[2] ?? '').replace(/\s+/g, ' ').trim();
     if (!block) continue;
 
+    if (gradientStopRegex.test(block) && !gradientBaseRegex.test(block)) {
+      found.push({
+        type: 'gradient-stop-without-base',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
     if (lowContrastPrimaryRegex.test(block)) {
       warnings.push({
         file,
@@ -200,6 +211,15 @@ for (const file of files) {
       warnings.push({
         file,
         type: 'low-contrast-gradient-combo',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (hoverAccentRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'hover-accent-usage',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

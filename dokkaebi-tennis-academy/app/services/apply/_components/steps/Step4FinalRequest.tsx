@@ -33,7 +33,7 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
 
       {/* 안내 배너: 주문/회원 기반일 때 */}
       {(orderId || isMember) && (
-        <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-4">
+        <div className="bg-muted/40 dark:bg-muted/30 border border-border rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">

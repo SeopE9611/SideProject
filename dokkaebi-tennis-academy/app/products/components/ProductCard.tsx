@@ -195,7 +195,7 @@ const ProductCard = React.memo(
                     {Object.entries(product.features)
                       .slice(0, 3)
                       .map(([k, v]) => (
-                        <span key={k} className="px-2 py-1 rounded-md bg-primary text-foreground">
+                        <span key={k} className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
                           {keyMap[k as keyof typeof keyMap] || k}: {v}/5
                         </span>
                       ))}

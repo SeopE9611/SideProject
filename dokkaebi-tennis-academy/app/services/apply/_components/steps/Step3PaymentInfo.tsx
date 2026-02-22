@@ -25,7 +25,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary from-background  mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
           <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
@@ -38,11 +38,11 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
           className={
             packageInsufficient
               ? 'mt-6 rounded-2xl border border-border bg-destructive dark:border-destructive dark:bg-destructive p-5'
-              : 'mt-6 rounded-2xl border border-border bg-primary from-background  dark:border-border dark:from-background dark:to-card p-5'
+              : 'mt-6 rounded-2xl border border-border bg-muted/40 dark:bg-muted/30 p-5'
           }
         >
           <div className="flex items-start gap-4">
-            <div className={packageInsufficient ? 'h-10 w-10 shrink-0 rounded-full bg-destructive text-foreground grid place-content-center shadow-sm' : 'h-10 w-10 shrink-0 rounded-full bg-primary text-foreground grid place-content-center shadow-sm'}>
+            <div className={packageInsufficient ? 'h-10 w-10 shrink-0 rounded-full bg-destructive text-foreground grid place-content-center shadow-sm' : 'h-10 w-10 shrink-0 rounded-full bg-primary/10 text-primary grid place-content-center shadow-sm'}>
               <Ticket className="h-5 w-5" />
             </div>
 
@@ -172,7 +172,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
           </div>
 
           {formData.shippingBank && (bankLabelMap as any)[formData.shippingBank] ? (
-            <div className="bg-primary  to-card dark:from-background dark:to-card border border-border rounded-lg p-6">
+            <div className="bg-muted/40 dark:bg-muted/30 border border-border rounded-lg p-6">
               <h3 className="font-semibold text-primary mb-4 flex items-center">
                 <CreditCard className="h-5 w-5 mr-2" />
                 계좌 정보

@@ -14,9 +14,9 @@ const buttonVariants = cva(
         accent:
           "bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-active",
         neutral:
-          "bg-card text-foreground border border-border hover:bg-accent hover:text-accent-foreground",
+          "bg-card text-foreground border border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground",
         muted:
-          "bg-muted text-foreground border border-border hover:bg-accent hover:text-accent-foreground",
+          "bg-muted text-foreground border border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground",
         cardAction:
           "bg-card text-foreground border border-border hover:bg-card group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg",
         destructive:
@@ -24,10 +24,10 @@ const buttonVariants = cva(
         danger:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground",
         secondary:
           "bg-secondary text-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

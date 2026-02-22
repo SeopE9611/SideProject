@@ -71,7 +71,7 @@ function MobileBrandGrid({
             key={b.name}
             variant="outline"
             className="relative z-0 h-9 justify-center rounded-lg border-border text-sm
-              hover:bg-accent
+              hover:bg-primary/10 dark:hover:bg-primary/20
               transition-all duration-200 bg-transparent
               hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99]
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -444,7 +444,7 @@ const Header = () => {
               <AccordionItem value="strings" className="border-none">
                 <AccordionTrigger
                   value="strings"
-                  className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -460,7 +460,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                            text-muted-foreground hover:text-foreground hover:bg-accent transition-all
+                            text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all
                             relative z-0
                             hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10
                             active:scale-[0.99]
@@ -476,7 +476,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-            text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+            text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
                     onClick={() => {
                       setOpen(false);
                       router.push("/services/apply");
@@ -498,7 +498,7 @@ const Header = () => {
                         <AccordionTrigger
                           value="strings-service"
                           className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                            hover:bg-accent"
+                            hover:bg-primary/10 dark:hover:bg-primary/20"
                         >
                           장착 서비스 안내
                         </AccordionTrigger>
@@ -513,7 +513,7 @@ const Header = () => {
                                 variant="ghost"
                                 className="w-full justify-between rounded-md px-3 py-1.5 text-[13px]
               text-muted-foreground hover:text-foreground
-              hover:bg-accent
+              hover:bg-primary/10 dark:hover:bg-primary/20
                transition-all"
                                 onClick={() => {
                                   setOpen(false);
@@ -535,7 +535,7 @@ const Header = () => {
                         <AccordionTrigger
                           value="strings-brand"
                           className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                            hover:bg-accent"
+                            hover:bg-primary/10 dark:hover:bg-primary/20"
                         >
                           브랜드
                         </AccordionTrigger>
@@ -563,7 +563,7 @@ const Header = () => {
               <AccordionItem value="boards" className="border-none">
                 <AccordionTrigger
                   value="boards"
-                  className="py-3 px-3 rounded-lg hover:bg-accent 
+                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 
                            hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
@@ -582,7 +582,7 @@ const Header = () => {
                       key={it.name}
                       variant="ghost"
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                              text-muted-foreground hover:text-foreground hover:bg-accent transition-all
+                              text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all
  "
                       onClick={() => {
                         setOpen(false);
@@ -600,7 +600,7 @@ const Header = () => {
               <AccordionItem value="packages" className="border-none">
                 <AccordionTrigger
                   value="packages"
-                  className="py-3 px-3 rounded-lg hover:bg-accent 
+                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 
                            hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
@@ -619,7 +619,7 @@ const Header = () => {
                       key={it.name}
                       variant="ghost"
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                              text-muted-foreground hover:text-foreground hover:bg-accent transition-all
+                              text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all
  "
                       onClick={() => {
                         setOpen(false);
@@ -653,7 +653,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-                            text-muted-foreground hover:text-foreground hover:bg-accent transition-all
+                            text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all
 "
                     onClick={() => {
                       setOpen(false);
@@ -674,7 +674,7 @@ const Header = () => {
                         key={b.href}
                         variant="ghost"
                         className="w-full justify-between rounded-md px-3 py-1.5 text-[13px] 
-                                text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                                text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all"
                         onClick={() => {
                           setOpen(false);
                           router.push(b.href);
@@ -692,7 +692,7 @@ const Header = () => {
               <AccordionItem value="support" className="border-none">
                 <AccordionTrigger
                   value="support"
-                  className="py-3 px-3 rounded-lg hover:bg-accent hover:no-underline transition-all group"
+                  className="py-3 px-3 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 hover:no-underline transition-all group"
                 >
                   <span className="inline-flex items-center gap-2.5 text-base font-bold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-card text-primary">
@@ -710,7 +710,7 @@ const Header = () => {
                       key={it.name}
                       variant="ghost"
                       className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium 
-            text-muted-foreground hover:text-foreground hover:bg-accent transition-all
+            text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all
  "
                       onClick={() => {
                         setOpen(false);
@@ -811,7 +811,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-accent"
+                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
                     onClick={() => {
                       setOpen(false);
                       router.push("/mypage");
@@ -825,7 +825,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-accent"
+                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
                     onClick={() => {
                       setOpen(false);
                       router.push("/messages");
@@ -844,7 +844,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-accent"
+                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
                     onClick={() => {
                       setOpen(false);
                       router.push("/cart");
@@ -938,7 +938,7 @@ const Header = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full hover:bg-accent p-2 focus-visible:ring-2 ring-ring"
+                  className="rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring"
                   aria-label="메뉴 열기"
                 >
                   <Menu className="h-5 w-5" />
@@ -964,7 +964,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative rounded-full hover:bg-accent p-2 focus-visible:ring-2 ring-ring"
+                    className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 focus-visible:ring-2 ring-ring"
                     aria-label="장바구니"
                   >
                     <ShoppingCart className="h-5 w-5" />
@@ -1003,7 +1003,7 @@ const Header = () => {
                       key={item.name}
                       href={item.href}
                       className={`inline-flex shrink-0 items-center h-9 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-                      ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-accent"}`}
+                      ${active ? "bg-primary text-primary-foreground font-semibold" : "text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20"}`}
                       aria-current={active ? "page" : undefined}
                       aria-label={`${item.name} 페이지로 이동`}
                     >
@@ -1023,7 +1023,7 @@ const Header = () => {
                       <button
                         type="button"
                         className="inline-flex shrink-0 items-center h-9 gap-1 px-2.5 rounded-lg text-sm leading-none transition whitespace-nowrap
-                      text-foreground hover:text-foreground hover:bg-accent
+                      text-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         aria-label="더보기 메뉴"
                       >
@@ -1109,7 +1109,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="bp-lg:hidden rounded-full hover:bg-accent p-2 transition-all duration-300 focus-visible:ring-2 ring-ring"
+                    className="bp-lg:hidden rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring"
                     aria-label="메뉴 열기"
                   >
                     <Menu className="h-5 w-5" />
@@ -1119,7 +1119,7 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative rounded-full hover:bg-accent p-2 transition-all duration-300 focus-visible:ring-2 ring-ring"
+                    className="relative rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 p-2 transition-all duration-300 focus-visible:ring-2 ring-ring"
                     aria-label="장바구니"
                   >
                     <ShoppingCart className="h-5 w-5" />

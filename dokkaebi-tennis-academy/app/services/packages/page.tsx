@@ -297,10 +297,10 @@ export default function StringPackagesPage() {
    return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
   }
   return (
-    <div className="min-h-screen bg-background from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-background  via-muted ">
+        <div className="absolute inset-0 bg-muted/30 dark:bg-muted/20 ">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none">
               <defs>
@@ -366,7 +366,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Package Cards Section */}
-      <section id="packages" ref={packagesSectionRef} className="py-20 bg-background   dark:from-background dark:to-card scroll-mt-24">
+      <section id="packages" ref={packagesSectionRef} className="py-20 bg-background scroll-mt-24">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent text-accent-foreground dark:bg-primary/20 dark:text-primary-foreground">
@@ -461,7 +461,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Additional Benefits Section */}
-      <section className="py-20 bg-background  via-muted to-card relative overflow-hidden">
+      <section className="py-20 bg-muted/30 dark:bg-muted/20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]"></div>
         </div>
@@ -491,7 +491,7 @@ export default function StringPackagesPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-background   dark:from-background dark:to-card">
+      <section className="py-20 bg-background">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent text-accent-foreground dark:bg-primary/20 dark:text-primary-foreground">

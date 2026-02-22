@@ -91,7 +91,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
               <div className="relative">
-                <div className="w-16 h-16 bg-background from-background  dark:from-background dark:to-card rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 bg-muted/40 dark:bg-muted/30 rounded-full flex items-center justify-center">
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 </div>
               </div>
