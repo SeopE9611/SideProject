@@ -13,7 +13,7 @@ type Props = {
   seconds?: number;
 };
 
-export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 8 }: Props) {
+export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 5 }: Props) {
   const router = useRouter();
   const [remain, setRemain] = useState(seconds);
   const [cancelled, setCancelled] = useState(false);

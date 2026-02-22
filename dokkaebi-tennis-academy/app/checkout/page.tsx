@@ -159,6 +159,21 @@ export default function CheckoutPage() {
    *   체크박스를 잠그고, 별도 링크로만 '상품만 결제' 전환을 제공하는 편이 혼란이 적음
    */
   const lockServiceMode = entryServiceLock && !isBundleCheckout;
+
+  /**
+   *  체크박스 라벨 문구를 "상태"에 맞게 조정
+   * - lockServiceMode / isBundleCheckout에서 체크박스는 비활성화(=고정) 상태라
+   *   라벨도 "선택" 뉘앙스가 아니라 "고정" 뉘앙스로 맞춤
+   */
+  const withStringServiceLabel = isBundleCheckout ? '장착 서비스 포함 (번들 고정)' : lockServiceMode ? '교체 서비스 포함 결제 (고정)' : '스트링 장착 서비스도 함께 신청할게요';
+
+  /**
+   * 스텝퍼 Step1 문구
+   * - buynow: PDP에서 특정 스트링을 골라 바로 결제(=선택 완료)
+   * - 그 외: 장바구니 기반 구성 후 결제(=구성 완료)
+   */
+  const stepperStep1Label = mode === 'buynow' ? '스트링 선택' : '장바구니 구성';
+
   /**
    * '상품만 결제'로 전환 (서비스 모드 해제)
    * - 초기 withService=1 자동 적용(useEffect)이 다시 켜지지 않도록 플래그를 확정하고,
@@ -723,7 +738,7 @@ export default function CheckoutPage() {
                 {/* 1) 스트링 선택: 이미 완료된 단계 */}
                 <li className="flex items-center gap-2">
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold">1</span>
-                  <span className="font-medium text-foreground">스트링 선택</span>
+                  <span className="font-medium text-foreground">{stepperStep1Label}</span>
                 </li>
 
                 <li className="text-muted-foreground">→</li>
@@ -888,7 +903,7 @@ export default function CheckoutPage() {
                       }}
                     />
                     <Label htmlFor="withStringService" className="font-medium text-foreground dark:text-foreground">
-                      스트링 장착 서비스도 함께 신청할게요
+                      {withStringServiceLabel}
                     </Label>
                   </div>
                   <p className="text-sm text-foreground dark:text-foreground ml-6">{serviceHelpText}</p>
