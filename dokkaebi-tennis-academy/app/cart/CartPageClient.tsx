@@ -300,13 +300,13 @@ export default function CartPageClient() {
       <div className="relative overflow-hidden bg-primary text-primary-foreground">
         <div className="absolute inset-0 bg-foreground/10" />
         <div className="absolute inset-0 opacity-20">
-          <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
+          <svg className="w-full h-full text-foreground" viewBox="0 0 400 200" fill="none">
             <defs>
               <pattern id="court-lines" x="0" y="0" width="400" height="200" patternUnits="userSpaceOnUse">
-                <rect width="400" height="200" fill="none" stroke="white" strokeWidth="2" />
-                <line x1="200" y1="0" x2="200" y2="200" stroke="white" strokeWidth="2" />
-                <rect x="50" y="50" width="300" height="100" fill="none" stroke="white" strokeWidth="1" />
-                <line x1="50" y1="100" x2="350" y2="100" stroke="white" strokeWidth="1" />
+                <rect width="400" height="200" fill="none" stroke="currentColor" strokeWidth="2" />
+                <line x1="200" y1="0" x2="200" y2="200" stroke="currentColor" strokeWidth="2" />
+                <rect x="50" y="50" width="300" height="100" fill="none" stroke="currentColor" strokeWidth="1" />
+                <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#court-lines)" />

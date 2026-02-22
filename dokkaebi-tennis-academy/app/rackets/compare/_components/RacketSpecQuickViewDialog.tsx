@@ -166,7 +166,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                 {racket.image ? (
                   <>
                     <Image src={racket.image || '/placeholder.svg'} alt={`${brandText} ${racket.model}`} fill className={cn('object-cover transition-transform duration-500', 'group-hover:scale-105')} unoptimized />
-                    <div className={cn('absolute inset-0 bg-gradient-to-t from-black/20 to-transparent', 'opacity-0 transition-opacity duration-300', 'group-hover:opacity-100')} />
+                    <div className={cn('absolute inset-0 bg-gradient-to-t from-overlay/20 to-transparent', 'opacity-0 transition-opacity duration-300', 'group-hover:opacity-100')} />
                   </>
                 ) : (
                   <span className="text-xs text-muted-foreground">No Image</span>

@@ -203,13 +203,13 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="relative overflow-hidden bg-gradient-to-r from-primary via-primary to-primary py-20">
  <div className="absolute inset-0 bg-overlay/20"></div>
  <div className="absolute inset-0 opacity-10">
- <svg className="w-full h-full" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+ <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
  <defs>
  <pattern id="successCourtLines" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
- <rect width="400" height="300" fill="none" stroke="white" strokeWidth="2" />
- <line x1="200" y1="0" x2="200" y2="300" stroke="white" strokeWidth="2" />
- <line x1="0" y1="150" x2="400" y2="150" stroke="white" strokeWidth="2" />
- <rect x="50" y="75" width="300" height="150" fill="none" stroke="white" strokeWidth="1" />
+ <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
+ <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="2" />
+ <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="2" />
+ <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
  </pattern>
  </defs>
  <rect width="100%" height="100%" fill="url(#successCourtLines)" />

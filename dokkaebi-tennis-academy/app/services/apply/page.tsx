@@ -1953,7 +1953,7 @@ export default function StringServiceApplyPage() {
             <button
               type="button"
               onClick={() => router.push('/products?from=apply')}
-              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950"
+              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-borderhover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ringfocus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-backgroundfocus-visible:ring-offset-background"
             >
               {/* Recommended Badge */}
               <div className="absolute -top-2.5 left-5">
@@ -1961,7 +1961,7 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Icon */}
-              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background dark:bg-card flex items-center justify-center mb-4 group-hover:bg-muted dark:group-hover:bg-card transition-colors">
+              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-backgroundbg-card flex items-center justify-center mb-4 group-hover:bg-mutedgroup-hover:bg-card transition-colors">
                 <Grid2X2 className="h-8 w-8" />
               </div>
 
@@ -1970,7 +1970,7 @@ export default function StringServiceApplyPage() {
               <p className="text-sm text-muted-foreground leading-relaxed">스트링 결제 후 신청서가 자동으로 연결돼요</p>
 
               {/* Arrow indicator */}
-              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">
+              <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foregroundgroup-hover:text-foreground transition-colors">
                 <span>스트링 보러가기</span>
                 <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -1979,14 +1979,14 @@ export default function StringServiceApplyPage() {
             </button>
 
             {/* Option 2: 라켓 고르고 신청 */}
-            <div className="relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50">
+            <div className="relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-borderhover:border-border transition-all duration-200 hover:shadow-lg">
               {/* Recommended Badge */}
               <div className="absolute -top-2.5 left-5">
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-card text-foreground">추천</span>
               </div>
 
               {/* Icon */}
-              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background dark:bg-card flex items-center justify-center mb-4">
+              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-backgroundbg-card flex items-center justify-center mb-4">
                 <MdSportsTennis className="h-9 w-9" />
               </div>
 
@@ -1999,14 +1999,14 @@ export default function StringServiceApplyPage() {
                 <button
                   type="button"
                   onClick={() => router.push('/rackets?from=apply')}
-                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background dark:bg-card text-foreground hover:bg-muted dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
+                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-backgroundbg-card text-foreground hover:bg-mutedhover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ringfocus-visible:ring-ring"
                 >
                   라켓 구매
                 </button>
                 <button
                   type="button"
                   onClick={() => router.push('/rackets?from=apply&rentOnly=1')}
-                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background dark:bg-card text-foreground hover:bg-muted dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
+                  className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-backgroundbg-card text-foreground hover:bg-mutedhover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ringfocus-visible:ring-ring"
                 >
                   라켓 대여
                 </button>
@@ -2017,15 +2017,15 @@ export default function StringServiceApplyPage() {
             <button
               type="button"
               onClick={() => router.push('/services/apply?mode=single')}
-              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border dark:hover:border-border transition-all duration-200 hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-slate-50 dark:focus-visible:ring-offset-slate-950"
+              className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-borderhover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ringfocus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-backgroundfocus-visible:ring-offset-background"
             >
               {/* Badge */}
               <div className="absolute -top-2.5 left-5">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-muted dark:bg-card text-muted-foreground">직접입력</span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-mutedbg-card text-muted-foreground">직접입력</span>
               </div>
 
               {/* Icon */}
-              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-background dark:bg-card flex items-center justify-center mb-4 group-hover:bg-muted dark:group-hover:bg-card transition-colors">
+              <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 rounded-xl bg-backgroundbg-card flex items-center justify-center mb-4 group-hover:bg-mutedgroup-hover:bg-card transition-colors">
                 <File className="h-9 w-9" />
               </div>
 
@@ -2035,7 +2035,7 @@ export default function StringServiceApplyPage() {
               <p className="mt-1 text-xs text-primary">금액·결제정보 자동 반영 없음</p>
 
               {/* Arrow indicator */}
-              <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground dark:group-hover:text-foreground transition-colors">
+              <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foregroundgroup-hover:text-foreground transition-colors">
                 <span>단독 신청하기</span>
                 <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -2046,7 +2046,7 @@ export default function StringServiceApplyPage() {
 
           {/* Info Banner */}
           <div className="mt-6 bp-sm:mt-8 max-w-5xl mx-auto">
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-background dark:bg-card border border-border">
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-backgroundbg-card border border-border">
               <svg className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
@@ -2063,7 +2063,7 @@ export default function StringServiceApplyPage() {
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background dark:bg-card px-4 text-sm text-muted-foreground">또는</span>
+                <span className="bg-backgroundbg-card px-4 text-sm text-muted-foreground">또는</span>
               </div>
             </div>
           </div>
@@ -2089,14 +2089,14 @@ export default function StringServiceApplyPage() {
                   <button
                     type="button"
                     onClick={() => router.push('/mypage?tab=orders')}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
+                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-backgroundhover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ringfocus-visible:ring-ring"
                   >
                     주문 내역
                   </button>
                   <button
                     type="button"
                     onClick={() => router.push('/mypage?tab=rentals')}
-                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background dark:hover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:focus-visible:ring-ring"
+                    className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-backgroundhover:bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ringfocus-visible:ring-ring"
                   >
                     대여 내역
                   </button>

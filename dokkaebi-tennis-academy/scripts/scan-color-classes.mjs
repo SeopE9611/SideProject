@@ -19,6 +19,10 @@ const forbiddenClassComboRegex = /text-foreground\s+dark:text-muted-foreground/g
 
 // 최소 추가 패턴 (중립 하드코딩 클래스)
 const hardcodedNeutralRegex = /(?:[\w-]+:)*(?:text-(?:white|black)|bg-(?:white|black)\/\d{1,3}|border-white\/\d{1,3}|ring-black\/\d{1,3}|dark:ring-white\/\d{1,3})/g;
+const forbiddenGradientNeutralRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:white|black)(?:\/\d{1,3})?/g;
+const forbiddenRingOffsetPaletteRegex = new RegExp(`(?:[\\w-]+:)*ring-offset-(?:${paletteAlternation})-(?:\\d{2,3})`, 'g');
+const forbiddenShadowPaletteRegex = new RegExp(`(?:[\\w-]+:)*shadow-(?:${paletteAlternation})-(?:\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
+const forbiddenDirectionalBorderPaletteRegex = new RegExp(`(?:[\\w-]+:)*border-(?:t|b|l|r|x|y)-(?:${paletteAlternation})-(?:\\d{2,3})`, 'g');
 
 // 허용 예외는 명시적으로 분리 관리한다.
 const BRAND_EXCEPTION_WHITELIST = new Set([
@@ -100,6 +104,38 @@ for (const file of files) {
   for (const match of text.matchAll(hardcodedNeutralRegex)) {
     found.push({
       type: 'hardcoded-neutral-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(forbiddenGradientNeutralRegex)) {
+    found.push({
+      type: 'forbidden-gradient-neutral-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(forbiddenRingOffsetPaletteRegex)) {
+    found.push({
+      type: 'forbidden-ring-offset-palette-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(forbiddenShadowPaletteRegex)) {
+    found.push({
+      type: 'forbidden-shadow-palette-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(forbiddenDirectionalBorderPaletteRegex)) {
+    found.push({
+      type: 'forbidden-directional-border-palette-class',
       token: match[0],
       line: getLine(text, match.index ?? 0),
     });

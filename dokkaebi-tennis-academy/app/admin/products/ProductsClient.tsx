@@ -216,7 +216,7 @@ export default function ProductsClient() {
   };
 
   return (
-    <div className={['min-h-screen', 'bg-gradient-to-b from-primary via-white to-accent', 'dark:bg-gradient-to-b dark:from-primary dark:via-primary dark:to-accent'].join(' ')}>
+    <div className={['min-h-screen', 'bg-gradient-to-b from-primary via-card to-accent', 'dark:bg-gradient-to-b dark:from-primary dark:via-primary dark:to-accent'].join(' ')}>
       <div className="container py-8 px-6">
         {commonErrorMessage && <div className="text-center text-destructive">{commonErrorMessage}</div>}
         <div className="mb-2">
@@ -258,7 +258,7 @@ export default function ProductsClient() {
               bgColor: 'bg-muted',
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent border border-border">
+            <Card key={i} className="shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent border border-border">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -272,7 +272,7 @@ export default function ProductsClient() {
           ))}
         </section>
 
-        <Card className="shadow-xl bg-gradient-to-br from-white to-accent dark:from-primary dark:to-accent border border-border flex-1 min-h-0 flex flex-col">
+        <Card className="shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent border border-border flex-1 min-h-0 flex flex-col">
           <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
@@ -291,7 +291,7 @@ export default function ProductsClient() {
                   'border border-border/10 dark:border-border/10 shadow-sm hover:shadow',
                   // 포커스 접근성
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  'ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-900',
+                  'ring-offset-2 ring-offset-background dark:ring-offset-background',
                   // 전환
                   'transition-colors',
                 ].join(' ')}

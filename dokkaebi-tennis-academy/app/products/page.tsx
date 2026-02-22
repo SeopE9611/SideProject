@@ -23,13 +23,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-10 bp-sm:py-12 bp-md:py-24">
         <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
         <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-full h-full text-foreground" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="court-lines" patternUnits="userSpaceOnUse" width="200" height="100">
                 <rect width="200" height="100" fill="transparent" />
-                <line x1="0" y1="50" x2="200" y2="50" stroke="white" strokeWidth="2" opacity="0.3" />
-                <line x1="100" y1="0" x2="100" y2="100" stroke="white" strokeWidth="2" opacity="0.3" />
-                <rect x="25" y="25" width="150" height="50" fill="none" stroke="white" strokeWidth="1" opacity="0.2" />
+                <line x1="0" y1="50" x2="200" y2="50" stroke="currentColor" strokeWidth="2" opacity="0.3" />
+                <line x1="100" y1="0" x2="100" y2="100" stroke="currentColor" strokeWidth="2" opacity="0.3" />
+                <rect x="25" y="25" width="150" height="50" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.2" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#court-lines)" />
@@ -42,7 +42,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-white to-card bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
+            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 bg-gradient-to-r from-card to-card bg-clip-text text-transparent leading-tight">테니스 스트링</h1>
             <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-primary max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스 스트링으로 플레이를 한 단계 업그레이드하세요</p>
           </div>
         </SiteContainer>

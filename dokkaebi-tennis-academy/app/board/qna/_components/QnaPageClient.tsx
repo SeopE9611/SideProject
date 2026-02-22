@@ -357,7 +357,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-success" />
                 <span>Q&A 목록</span>
-                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-gray-700 rounded-full animate-spin" />}
+                {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
               </div>
 
               <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">

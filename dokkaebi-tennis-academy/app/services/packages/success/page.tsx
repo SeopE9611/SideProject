@@ -122,12 +122,12 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="relative overflow-hidden bg-primary text-primary-foreground">
  <div className="absolute inset-0 bg-overlay/20"></div>
  <div className="absolute inset-0 opacity-20">
- <svg className="w-full h-full" viewBox="0 0 400 300" fill="none">
+ <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none">
  <defs>
  <pattern id="stringPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
- <rect width="40" height="40" fill="none" stroke="white" strokeWidth="1" opacity="0.3" />
- <line x1="0" y1="20" x2="40" y2="20" stroke="white" strokeWidth="1" opacity="0.5" />
- <line x1="20" y1="0" x2="20" y2="40" stroke="white" strokeWidth="1" opacity="0.5" />
+ <rect width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
+ <line x1="0" y1="20" x2="40" y2="20" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+ <line x1="20" y1="0" x2="20" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.5" />
  </pattern>
  </defs>
  <rect width="100%" height="100%" fill="url(#stringPattern)" />

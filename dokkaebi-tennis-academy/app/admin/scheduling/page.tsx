@@ -207,7 +207,7 @@ export default function StringingSettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8">
-        {/* was: bg-gradient-to-br from-background via-white to-card */}
+        {/* was: bg-gradient-to-br from-background via-card to-card */}
         <div className="mx-auto max-w-7xl">
           <div className="mb-8 h-10 w-72 animate-pulse rounded-lg bg-muted" />
           <div className="grid gap-6 lg:grid-cols-2">
@@ -222,7 +222,7 @@ export default function StringingSettingsPage() {
   return (
     <TooltipProvider delayDuration={120}>
       <div className="min-h-screen bg-background p-8">
-        {/* was: bg-gradient-to-br from-background via-white to-card */}
+        {/* was: bg-gradient-to-br from-background via-card to-card */}
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-3">

@@ -332,7 +332,7 @@ export default function Home() {
                       {b.img ? (
                         <>
                           <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/0" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-overlay/55 via-overlay/15 to-transparent" />
                         </>
                       ) : (
                         <div className="absolute inset-0 bg-card" />
