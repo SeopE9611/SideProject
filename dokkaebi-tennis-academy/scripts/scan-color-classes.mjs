@@ -41,6 +41,7 @@ const bgAccentSolidRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent(?!\/)(?:\s|$)/;
 const largePaddingRegex = /(?:^|\s)(?:[\w-]+:)*p-(?:3|4|5|6|7|8|9|10|11|12)(?:\s|$)/;
 const accentTintSurfaceRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent\/(?:10|15)(?:\s|$)/;
 const buttonLikeRegex = /(?:^|\s)(?:[\w-]+:)*(?:btn|button|variant="(?:destructive|default|secondary|outline|ghost|link)"|size="(?:sm|lg|icon)"|inline-flex)(?:\s|$)/i;
+const sliderRangeRegex = /(?:^|\s)(?:[\w-]+:)*slider-range(?:\s|$)/;
 
 const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
@@ -401,6 +402,15 @@ for (const file of files) {
       });
     }
 
+    if (/\bbg-primary(?!\/)\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block) && !sliderRangeRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'large-surface-solid-bg-primary',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
     if (accentTintSurfaceRegex.test(block) && largePaddingRegex.test(block)) {
       warnings.push({
         file,
@@ -410,7 +420,7 @@ for (const file of files) {
       });
     }
 
-    if (file === 'components/ui/radio-group.tsx' && /\bbg-accent(?!\/)\b/.test(block)) {
+    if (file === 'components/ui/radio-group.tsx' && /\bbg-accent(?:\/\d{1,3})?\b/.test(block)) {
       warnings.push({
         file,
         type: 'radio-group-solid-bg-accent-regression',

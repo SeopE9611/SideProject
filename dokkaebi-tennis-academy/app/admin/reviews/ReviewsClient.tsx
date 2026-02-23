@@ -175,7 +175,7 @@ export default function ReviewsClient() {
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
-            <Star className="h-6 w-6 text-primary-foreground" />
+            <Star className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">리뷰 관리</h1>
@@ -193,8 +193,8 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">전체 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{totalReviews}</p>
               </div>
-              <div className="bg-primary rounded-xl p-3">
-                <MessageSquare className="h-6 w-6 text-primary" />
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+                <MessageSquare className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -221,8 +221,8 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">5점 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{fiveStarReviews}</p>
               </div>
-              <div className="bg-primary rounded-xl p-3">
-                <Award className="h-6 w-6 text-primary" />
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+                <Award className="h-6 w-6" />
               </div>
             </div>
           </CardContent>

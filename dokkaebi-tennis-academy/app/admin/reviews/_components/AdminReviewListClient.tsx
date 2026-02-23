@@ -594,10 +594,9 @@ export default function AdminReviewListClient() {
         {/* 선택 액션 바 */}
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
           <div
-            className="w-full border-t border-border
-  bg-primary backdrop-blur-sm px-4 py-2 flex items-center justify-between rounded-b-lg"
+            className="w-full border-t border-border bg-primary/10 dark:bg-primary/15 px-4 py-2 flex items-center justify-between rounded-b-lg text-foreground"
           >
-            <span className="inline-flex items-center gap-2 text-primary">
+            <span className="inline-flex items-center gap-2">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
