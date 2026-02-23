@@ -20,9 +20,9 @@ export default function MaskedBlock({ children, label = '비공개된 리뷰입�
         <div className="p-3">
           {children ?? (
             <div className="space-y-2 opacity-70">
-              <div className="h-3 w-11/12 rounded bg-accent" />
-              <div className="h-3 w-10/12 rounded bg-accent" />
-              <div className="h-3 w-9/12 rounded bg-accent" />
+              <div className="h-3 w-11/12 rounded bg-muted/60 dark:bg-card/60" />
+              <div className="h-3 w-10/12 rounded bg-muted/60 dark:bg-card/60" />
+              <div className="h-3 w-9/12 rounded bg-muted/60 dark:bg-card/60" />
             </div>
           )}
         </div>

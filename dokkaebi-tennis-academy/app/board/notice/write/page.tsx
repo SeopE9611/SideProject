@@ -757,7 +757,7 @@ export default function NoticeWritePage() {
                 </Link>
               </Button>
               <div className="flex space-x-3">
-                <Button variant="outline" size="lg" className="px-6 border-border text-primary hover:bg-primary bg-transparent">
+                <Button variant="outline" size="lg" className="px-6 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
                   임시저장
                 </Button>
                 <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-background to-card hover:from-background hover:to-card disabled:opacity-60">

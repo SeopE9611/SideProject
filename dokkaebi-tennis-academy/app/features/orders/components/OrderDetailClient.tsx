@@ -461,7 +461,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Pencil className="mr-1 h-4 w-4" />
  {isEditMode ? '편집 취소' : '편집 모드'}
  </Button>
- <Button onClick={handleShippingUpdate} className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary">
+ <Button onClick={handleShippingUpdate} className="bg-primary hover:bg-primary/90 text-primary-foreground">
  <Truck className="mr-2 h-4 w-4" />
  {isShippingManagedByApplication ? '신청서 배송 정보 관리' : '배송 정보 업데이트'}
  </Button>
@@ -723,16 +723,16 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
  <CardContent className="p-6">
  {isShippingManagedByApplication && linkedStringingAppId ? (
- <div className="rounded-lg border border-border bg-muted p-4 text-sm text-accent dark:border-border dark:bg-primary dark:text-accent">
+ <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground dark:bg-primary/15">
  <div className="flex items-start gap-2">
  <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="space-y-2">
  <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p>
  <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
- <Truck className="h-4 w-4 text-accent" />
+ <Truck className="h-4 w-4 text-primary" />
  <div>
- <p className="text-sm text-accent/80 dark:text-accent/80">주문 시 선택한 수령 방식</p>
- <p className="font-semibold text-accent">
+ <p className="text-sm text-muted-foreground">주문 시 선택한 수령 방식</p>
+ <p className="font-semibold text-primary">
  {{
  delivery: '택배 배송',
  quick: '퀵 배송 (당일)',
@@ -748,7 +748,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <Button
  size="sm"
- className="bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-primary-foreground"
+ className="bg-primary hover:bg-primary/90 text-primary-foreground"
  onClick={() => router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`)}
  >
  <Truck className="mr-2 h-4 w-4" />
@@ -756,7 +756,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Button>
  </div>
 
- <p className="text-xs text-accent/80">주문(상품) 쪽 운송장/배송정보는 혼선을 방지하기 위해 사용하지 않습니다.</p>
+ <p className="text-xs text-muted-foreground">주문(상품) 쪽 운송장/배송정보는 혼선을 방지하기 위해 사용하지 않습니다.</p>
  </div>
  </div>
  </div>

@@ -267,7 +267,7 @@ export default function ReviewsClient() {
 
         <CardContent>
           {selectedReviews.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg bg-destructive p-3">
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-foreground dark:bg-destructive/15">
               <span className="text-sm font-medium text-destructive">선택된 {selectedReviews.length}개 리뷰</span>
               <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="ml-auto h-8">
                 <Trash2 className="mr-2 h-4 w-4" />

@@ -17,33 +17,33 @@ function getIconProps(status: string) {
     case '접수 완료':
       return {
         Icon: ClipboardCheck,
-        wrapperClasses: 'border-border bg-warning/10 ' + 'dark:border-border dark:bg-warning/10',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-warning',
       };
 
     case '검토 중':
       return {
         Icon: Search,
-        wrapperClasses: 'border-border bg-primary ' + 'dark:border-border dark:bg-primary',
+        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
         iconClasses: 'text-primary',
       };
     case '작업 중':
       return {
         Icon: Edit2,
-        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case '교체완료':
     case '교체 완료':
       return {
         Icon: CheckCircle,
-        wrapperClasses: 'border-border bg-success/10 ' + 'dark:border-border dark:bg-success/10',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-success',
       };
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-destructive bg-destructive ' + 'dark:border-destructive dark:bg-destructive',
+        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
         iconClasses: 'text-destructive',
       };
 
@@ -52,25 +52,25 @@ function getIconProps(status: string) {
     case '고객정보수정':
       return {
         Icon: User,
-        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case '요청사항 수정':
       return {
         Icon: MessageSquare,
-        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case '스트링 정보 수정':
       return {
         Icon: Edit2,
-        wrapperClasses: 'border-border bg-primary ' + 'dark:border-border dark:bg-primary',
+        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
         iconClasses: 'text-primary',
       };
     case '결제 금액 자동 업데이트':
       return {
         Icon: DollarSign,
-        wrapperClasses: 'border-border bg-success/10 ' + 'dark:border-border dark:bg-success/10',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-success',
       };
 
@@ -79,7 +79,7 @@ function getIconProps(status: string) {
     case '자가발송 운송장 수정':
       return {
         Icon: Truck,
-        wrapperClasses: 'border-border bg-success/10 ' + 'dark:border-border dark:bg-success/10',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-success',
       };
 
@@ -88,7 +88,7 @@ function getIconProps(status: string) {
     case '매장 발송 운송장 수정':
       return {
         Icon: Package,
-        wrapperClasses: 'border-border bg-primary ' + 'dark:border-border dark:bg-primary',
+        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
         iconClasses: 'text-primary',
       };
     // 매장 발송 정보(방식/예정일/운송장 통합 로그)
@@ -96,7 +96,7 @@ function getIconProps(status: string) {
     case '매장 발송 정보 수정':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
 
@@ -104,7 +104,7 @@ function getIconProps(status: string) {
     default:
       return {
         Icon: Clock,
-        wrapperClasses: 'border-border bg-muted ' + 'dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
   }

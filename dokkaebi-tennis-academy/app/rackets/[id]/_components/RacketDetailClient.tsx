@@ -289,7 +289,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </Button>
                     </div>
 
-                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-destructive bg-destructive/10 border border-border rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
+                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
                   </div>
 
                   {/* 배송 정보 */}
@@ -506,7 +506,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 비교하기
               </button>
             </div>
-            {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <p className="mt-3 text-sm text-destructive bg-destructive rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>}
+            {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <p className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>}
           </div>
         </div>
       </div>

@@ -24,7 +24,7 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-muted/10 text-muted-foreground dark:bg-muted/20',
-  paid: 'bg-primary text-accent dark:bg-primary',
+  paid: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
   out: 'bg-muted text-foreground dark:bg-muted',
   returned: 'bg-success/10 text-success dark:bg-success/10',
   canceled: 'bg-destructive/10 text-destructive dark:bg-destructive/15',

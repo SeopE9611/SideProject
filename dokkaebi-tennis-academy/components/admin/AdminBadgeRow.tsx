@@ -52,7 +52,7 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
             badgeSizeSm,
             'whitespace-nowrap',
             // overflow 표시는 중립 톤(너무 튀지 않게)
-            'bg-accent text-foreground dark:bg-background/40 dark:text-foreground',
+            'bg-muted text-foreground dark:bg-card',
           )}
         >
           +{hidden.length}

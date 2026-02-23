@@ -893,7 +893,7 @@ const Header = () => {
               </>
             ) : (
               <Button
-                className="w-full justify-center rounded-xl h-11 bg-primary hover:bg-primary text-primary-foreground shadow-md transition-all duration-200"
+                className="w-full justify-center rounded-xl h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all duration-200"
                 onClick={() => {
                   setOpen(false);
                   const redirectTo =

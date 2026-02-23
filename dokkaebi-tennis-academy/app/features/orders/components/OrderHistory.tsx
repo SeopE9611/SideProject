@@ -18,49 +18,49 @@ function getIconProps(status: string) {
     case '대기중':
       return {
         Icon: Clock,
-        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-card',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case '결제완료':
       return {
         Icon: CreditCard,
-        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case '배송중':
       return {
         Icon: Truck,
-        wrapperClasses: 'border-border bg-primary dark:border-border dark:bg-primary',
-        iconClasses: 'text-primary',
+        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
+        iconClasses: 'text-foreground',
       };
     case '배송완료':
       return {
         Icon: PackageCheck,
-        wrapperClasses: 'border-border bg-success/10 dark:border-border dark:bg-success/10',
-        iconClasses: 'text-success',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
+        iconClasses: 'text-foreground',
       };
     case '환불':
       return {
         Icon: RotateCcw,
-        wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
+        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
         iconClasses: 'text-destructive',
       };
     case '취소':
       return {
         Icon: XCircle,
-        wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
+        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
         iconClasses: 'text-destructive',
       };
     case '배송정보변경':
       return {
         Icon: Pencil,
-        wrapperClasses: 'border-border bg-warning/10 dark:border-border dark:bg-warning/10',
-        iconClasses: 'text-warning',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
+        iconClasses: 'text-foreground',
       };
     default:
       return {
         Icon: Package,
-        wrapperClasses: 'border-primary/50 bg-primary/10 dark:border-primary/40 dark:bg-primary/15',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-primary',
       };
   }

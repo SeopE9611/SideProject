@@ -227,10 +227,10 @@ export default function PackageOrdersClient() {
   if (error) {
     return (
       <div className="container py-6">
-          <Card className="border-destructive bg-destructive">
+          <Card className="border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground">
             <CardHeader>
               <CardTitle className="text-destructive">목록을 불러오지 못했습니다.</CardTitle>
-              <CardDescription>{commonErrorMessage}</CardDescription>
+              <CardDescription className="text-muted-foreground">{commonErrorMessage}</CardDescription>
             </CardHeader>
             <CardContent>
               <Button onClick={() => mutate()} variant="destructive">

@@ -297,10 +297,10 @@ export default function AdminDashboardClient() {
           <p className="text-sm text-muted-foreground">긴급 대응이 필요한 항목</p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-destructive bg-destructive dark:border-destructive dark:bg-destructive">
+          <Card className="border-destructive/40 bg-destructive/10 dark:border-destructive/40 dark:bg-destructive/15">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <div className="rounded-full bg-destructive p-1.5 dark:bg-destructive">
+                <div className="rounded-full bg-destructive/10 p-1.5 dark:bg-destructive/15">
                   <AlertTriangle className="h-4 w-4 text-destructive" />
                 </div>
                 긴급 처리

@@ -129,7 +129,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive">
+                  <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive/90">
                     삭제
                   </AlertDialogAction>
                 </AlertDialogFooter>

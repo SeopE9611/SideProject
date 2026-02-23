@@ -272,8 +272,8 @@ export default function OrderLookupResultsPage() {
                   <p className="text-primary mb-8 max-w-md">{error}</p>
                   {fieldErrors && (
                     <div className="w-full max-w-md mb-8 text-left">
-                      <div className="rounded-lg border border-border bg-destructive p-4">
-                        <p className="text-sm font-semibold text-accent-foreground mb-2">입력값 오류 상세</p>
+                      <div className="rounded-lg border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 p-4 text-foreground">
+                        <p className="text-sm font-semibold text-destructive mb-2">입력값 오류 상세</p>
                         <ul className="list-disc pl-5 space-y-1">
                           {Object.entries(fieldErrors).map(([field, msgs]) =>
                             (msgs ?? []).map((msg, i) => (

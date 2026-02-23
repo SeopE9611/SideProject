@@ -40,50 +40,50 @@ function getActionMeta(action: HistoryItem['action']) {
       return {
         label: '결제 확인',
         Icon: CreditCard,
-        wrapperClasses: 'border-border bg-primary dark:border-border dark:bg-primary',
+        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
         iconClasses: 'text-primary',
       };
     case 'out':
       return {
         label: '대여 시작',
         Icon: Play,
-        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case 'returned':
       return {
         label: '반납 완료',
         Icon: RotateCcw,
-        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case 'cancel-request':
       return {
         label: '취소 요청',
         Icon: Clock,
-        wrapperClasses: 'border-border bg-muted dark:border-border dark:bg-muted',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-primary',
       };
     case 'cancel-approved':
       return {
         label: '취소 승인',
         Icon: XCircle,
-        wrapperClasses: 'border-destructive bg-destructive dark:border-destructive dark:bg-destructive',
+        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
         iconClasses: 'text-destructive',
       };
     case 'cancel-rejected':
       return {
         label: '취소 거절',
         Icon: XCircle,
-        wrapperClasses: 'border-border bg-background dark:border-border dark:bg-card',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
     case 'cancel-withdrawn':
       return {
         label: '취소 철회',
         Icon: Undo2,
-        wrapperClasses: 'border-border bg-warning/10 dark:border-border dark:bg-warning/10',
-        iconClasses: 'text-warning',
+        wrapperClasses: 'border border-border bg-muted dark:bg-card',
+        iconClasses: 'text-foreground',
       };
   }
 }
