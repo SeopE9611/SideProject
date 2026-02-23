@@ -317,7 +317,7 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-6">
-        {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive">{commonErrorMessage}</div>}
+        {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>

@@ -489,7 +489,7 @@ export default function NoticeWritePage() {
             </div>
           </div>
           {editId && detailError && (
-            <div className="rounded-md border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
           )}
           {editId && conflictError && (
             <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
@@ -563,7 +563,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="urgent">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-destructive text-destructive border-destructive">
+                        <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15">
                           긴급
                         </Badge>
                         <span>긴급 공지사항</span>

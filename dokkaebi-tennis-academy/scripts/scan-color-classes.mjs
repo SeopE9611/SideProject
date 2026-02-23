@@ -29,6 +29,9 @@ const lowContrastGradientRegex = /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s
 const gradientStopRegex = /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-[\w/[\]-]+(?:\s|$)/;
 const gradientBaseRegex = /(?:[\w-]+:)*(?:bg-gradient-to-(?:t|tr|r|br|b|bl|l|tl)|bg-radial|bg-conic)/;
 const hoverAccentRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:\s|$)/;
+const solidDestructiveWithTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*bg-destructive(?!\/)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive(?:\s|$)/;
+const primaryTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-primary\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-primary-foreground(?:\s|$)/;
+const warningTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-warning\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-warning-foreground(?:\s|$)/;
 
 const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
@@ -220,6 +223,30 @@ for (const file of files) {
       warnings.push({
         file,
         type: 'hover-accent-usage',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (solidDestructiveWithTextDestructiveRegex.test(block)) {
+      found.push({
+        type: 'solid-destructive-with-text-destructive',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (primaryTintWithForegroundRegex.test(block)) {
+      found.push({
+        type: 'primary-tint-with-primary-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (warningTintWithForegroundRegex.test(block)) {
+      found.push({
+        type: 'warning-tint-with-warning-foreground',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

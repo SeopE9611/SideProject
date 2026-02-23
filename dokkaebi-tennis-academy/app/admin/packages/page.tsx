@@ -436,7 +436,7 @@ export default function PackageOrdersClient() {
   function statusBadgeClass(tone: 'destructive' | 'muted' | 'warning' | 'success') {
     switch (tone) {
       case 'destructive':
-        return 'bg-destructive text-destructive border border-destructive';
+        return 'bg-destructive/10 text-destructive border border-destructive/30 dark:bg-destructive/15';
       case 'muted':
         return 'bg-background text-foreground border border-border';
       case 'warning':

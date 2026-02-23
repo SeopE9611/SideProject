@@ -20,7 +20,7 @@ export const packageStatusColors: Record<PassStatus | '대기', string> = {
   비활성: 'bg-muted text-primary border-border',
   활성: 'bg-success/10 text-success border-border',
   만료: 'bg-background text-foreground border-border',
-  취소: 'bg-destructive text-destructive border-destructive',
+  취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
   대기: 'bg-background text-foreground border-border',
 };
 
@@ -42,7 +42,7 @@ export const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 export const paymentStatusColors: Record<PaymentStatus, string> = {
   결제완료: 'bg-primary/10 text-primary border-border',
   결제대기: 'bg-warning/10 text-warning border-border',
-  결제취소: 'bg-destructive text-destructive border-destructive',
+  결제취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
 };
 
 export const packageTypeColors: Record<PackageType, string> = {

@@ -31,6 +31,6 @@ export const showInfoToast = (message: string) =>
       className: 'text-warning',
       size: 20,
     }),
-    className: 'border-warning/35 bg-warning/10 text-warning-foreground dark:border-warning/45 dark:bg-warning/20 dark:text-warning-foreground',
+    className: 'border-warning/35 bg-warning/10 text-warning dark:border-warning/45 dark:bg-warning/20 dark:text-warning',
     duration: 2500,
   });

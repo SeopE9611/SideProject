@@ -11,7 +11,7 @@ export default function ErrorBox({ message, status, fallbackMessage = '데이터
   const primary = (message && message.trim()) || guide || fallbackMessage;
 
   return (
-    <div className="rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive dark:border-destructive dark:bg-destructive">
+    <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
       <p>{primary}</p>
       {guide && guide !== primary && <p className="mt-1 text-xs text-destructive">안내: {guide}</p>}
     </div>

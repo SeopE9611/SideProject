@@ -106,7 +106,7 @@ function StatusBadge({ status }: { status?: string }) {
   const s = status ?? 'unknown';
   const cls =
     s === 'failed'
-      ? 'bg-destructive text-destructive border-destructive'
+      ? 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15'
       : s === 'sent'
       ? 'bg-success/10 text-success border-border'
       : s === 'queued'

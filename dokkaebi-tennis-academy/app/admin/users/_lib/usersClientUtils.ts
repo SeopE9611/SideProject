@@ -33,7 +33,7 @@ export const roleColors: Record<'admin' | 'user', string> = {
 export const STATUS = {
   active: 'bg-primary/10 text-primary border-border',
   suspended: 'bg-muted text-primary border-border',
-  deleted: 'bg-destructive text-destructive border-destructive',
+  deleted: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
 } as const;
 
 export type UserStatusKey = keyof typeof STATUS;

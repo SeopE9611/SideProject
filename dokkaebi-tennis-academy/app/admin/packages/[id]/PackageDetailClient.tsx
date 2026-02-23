@@ -32,14 +32,14 @@ const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
   활성: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
   만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/10 dark:text-destructive dark:border-border',
   일시정지: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
-  취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
+  취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
   대기: 'bg-background text-foreground border-border dark:bg-card dark:text-muted-foreground dark:border-border',
 };
 
 const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
   결제완료: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
   결제대기: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
-  결제취소: 'bg-destructive text-destructive border-destructive dark:bg-destructive dark:text-destructive dark:border-destructive',
+  결제취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
 };
 
 const toDateSafe = (v: string | Date | null | undefined) => {

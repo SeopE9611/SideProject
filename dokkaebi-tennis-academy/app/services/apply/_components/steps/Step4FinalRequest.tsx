@@ -37,11 +37,11 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
-              <p className="font-medium text-warning mb-1">📢 안내사항</p>
-              <p className="text-warning leading-relaxed">
+              <p className="mb-1 font-medium text-warning">📢 안내사항</p>
+              <p className="leading-relaxed text-foreground">
                 신청자/배송 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로 작성됩니다. 회원정보를 수정하셨더라도 <span className="font-semibold">신청서 정보는 자동으로 바뀌지 않습니다.</span>
                 <br />
-                변경이 필요하면 아래 <span className="font-semibold">추가 요청사항</span>에 꼭 남겨주세요.
+                변경이 필요하면 아래 <span className="font-semibold text-warning">추가 요청사항</span>에 꼭 남겨주세요.
               </p>
             </div>
           </div>
@@ -54,10 +54,10 @@ export default function Step4FinalRequest({ formData, setFormData, handleInputCh
           <Badge
             className={
               packageInsufficient
-                ? 'bg-accent text-destructive dark:bg-destructive dark:text-destructive border border-border/80'
+                ? 'border border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15'
                 : usingPackage
-                  ? 'bg-accent text-primary dark:bg-primary dark:text-muted-foreground border border-border/80'
-                  : 'bg-background text-foreground dark:bg-card dark:text-muted-foreground border border-border'
+                  ? 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20'
+                  : 'border border-border bg-muted text-foreground dark:bg-card'
             }
           >
             {packageInsufficient ? '패키지 적용 불가' : usingPackage ? '패키지 적용' : '일반 결제'}
