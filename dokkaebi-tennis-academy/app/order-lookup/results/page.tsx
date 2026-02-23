@@ -55,13 +55,13 @@ const getStatusIcon = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case '배송완료':
-      return 'bg-accent text-accent-foreground border-border';
+      return 'bg-muted text-foreground border-border';
     case '배송중':
-      return 'bg-accent text-primary border-border';
+      return 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20';
     case '배송준비중':
       return 'bg-muted text-primary border-border';
     case '주문취소':
-      return 'bg-accent text-accent-foreground border-border';
+      return 'bg-muted text-foreground border-border';
     default:
       return 'bg-muted text-foreground border-border';
   }
@@ -210,7 +210,7 @@ export default function OrderLookupResultsPage() {
     return (
       <div className="min-h-full bg-background">
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-primary   ">
+        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
           <div className="relative container mx-auto px-4 py-16">
             <div className="text-center text-foreground">
@@ -247,7 +247,7 @@ export default function OrderLookupResultsPage() {
     return (
       <div className="min-h-full bg-background">
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-primary   ">
+        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
           <div className="relative container mx-auto px-4 py-16">
             <div className="text-center text-foreground">
@@ -265,7 +265,7 @@ export default function OrderLookupResultsPage() {
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-accent rounded-full mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-6">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
@@ -302,7 +302,7 @@ export default function OrderLookupResultsPage() {
   return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-primary   ">
+      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-16">
           <div className="text-center text-foreground">
@@ -332,7 +332,7 @@ export default function OrderLookupResultsPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold bg-primary   bg-clip-text text-transparent">주문 내역</CardTitle>
+              <CardTitle className="text-2xl font-bold text-foreground"><span className="text-primary">주문</span> 내역</CardTitle>
               <CardDescription className="text-base">{displayName}님의 주문 내역입니다</CardDescription>
             </CardHeader>
 

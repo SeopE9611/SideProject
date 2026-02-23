@@ -457,7 +457,7 @@ export default function AdminReviewListClient() {
                     'transition-colors cursor-pointer',
                     'even:bg-background hover:bg-primary/10',
                     'dark:even:bg-card dark:hover:bg-primary/20',
-                    isSel ? 'shadow-[inset_2px_0_0_0_theme(colors.emerald.500)] bg-primary' : '',
+                    isSel ? 'border-l-4 border-primary bg-primary/10' : '',
                   ].join(' ')}
                 >
                   {/* 체크박스 */}

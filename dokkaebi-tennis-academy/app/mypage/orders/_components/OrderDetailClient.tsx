@@ -403,12 +403,12 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div id="reviews-cta" className="mt-4">
  {allReviewed ? (
- <div className="bg-primary border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
- <div className="flex items-center gap-3">
- <CheckCircle className="h-6 w-6 text-primary" />
+ <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/10 p-6 shadow-sm">
+ <div className="flex items-center gap-3 text-primary">
+ <CheckCircle className="h-6 w-6" />
  <div>
- <p className="font-semibold text-primary">이 주문은 리뷰를 작성하였습니다.</p>
- <p className="text-sm text-primary">내가 작성한 리뷰를 확인할 수 있어요.</p>
+ <p className="font-semibold text-foreground">이 주문은 리뷰를 작성하였습니다.</p>
+ <p className="text-sm text-foreground">내가 작성한 리뷰를 확인할 수 있어요.</p>
  </div>
  </div>
  <Link className="w-full bp-sm:w-auto" href="/mypage?tab=reviews">
