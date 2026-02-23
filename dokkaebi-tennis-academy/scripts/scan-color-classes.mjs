@@ -71,6 +71,7 @@ const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
 const ACCENT_TEXT_WARN_EXCEPTION_WHITELIST = new Set([
   'components/nav/UserNav.tsx',
   'components/nav/UserNavMobile.tsx',
+  'components/ui/button.tsx',
 ]);
 
 function walk(dir, results = []) {

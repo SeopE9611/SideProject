@@ -424,7 +424,7 @@ export default function AdminDashboardClient() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-sm bg-accent" />
-                <span className="text-xs font-medium text-accent">교체 서비스</span>
+                <span className="text-xs font-medium text-primary">교체 서비스</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-sm bg-muted-foreground/60" />

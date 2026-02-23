@@ -19,7 +19,7 @@ export default function HomeMarketPreview() {
     <section className="mt-8 bp-sm:mt-10 bp-md:mt-12">
       <div className="mb-4 bp-sm:mb-5 flex items-center justify-between">
         <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">중고 거래 최신글</h2>
-        <Link className="text-sm bp-sm:text-base text-muted-foreground hover:text-accent transition-colors" href="/board/market">
+        <Link className="text-sm bp-sm:text-base text-muted-foreground hover:text-primary transition-colors" href="/board/market">
           더보기
         </Link>
       </div>

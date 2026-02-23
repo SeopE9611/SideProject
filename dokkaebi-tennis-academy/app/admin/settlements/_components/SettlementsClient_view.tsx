@@ -352,7 +352,7 @@ export default function SettlementsClient() {
             value={totalRevenue ?? 0}
             storageKey="settlements.kpi.compact.revenue"
             formatCompact={formatKRWCard}
-            icon={<DollarSign className="h-6 w-6 text-accent " />}
+            icon={<DollarSign className="h-6 w-6 text-primary " />}
             isLoading={isLoading}
             hint={true}
             skeletonWidthClass="w-28"
@@ -376,7 +376,7 @@ export default function SettlementsClient() {
             value={totalNet ?? 0}
             storageKey="settlements.kpi.compact.net"
             formatCompact={formatKRWCard}
-            icon={<Activity className="h-6 w-6 text-accent" />}
+            icon={<Activity className="h-6 w-6 text-primary" />}
             isLoading={isLoading}
             hint={true}
             skeletonWidthClass="w-28"
