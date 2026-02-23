@@ -73,12 +73,12 @@ export default function AcademyPage() {
       button: 'bg-primary text-primary-foreground hover:bg-primary/90',
     },
     accent: {
-      bar: 'bg-accent',
-      icon: 'bg-accent text-accent-foreground',
-      dot: 'bg-accent',
-      price: 'text-accent-foreground',
-      stat: 'text-accent-foreground',
-      button: 'bg-accent text-accent-foreground hover:bg-primary/90',
+      bar: 'bg-primary/20',
+      icon: 'bg-primary/10 text-primary dark:bg-primary/20',
+      dot: 'bg-primary',
+      price: 'text-primary',
+      stat: 'text-primary',
+      button: 'bg-primary text-primary-foreground hover:bg-primary/90',
     },
     muted: {
       bar: 'bg-muted',
@@ -196,13 +196,13 @@ export default function AcademyPage() {
           </div>
 
           {/* 장식 요소 */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-24 h-24 bg-accent/30 rounded-full blur-lg  "></div>
+          <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg  "></div>
           <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-muted/60 dark:bg-card/60 rounded-full blur-md animate-pulse delay-1000"></div>
 
           <div className="container relative z-10 text-center text-foreground">
             <div className="max-w-4xl mx-auto">
-              <Badge className="mb-6 bg-accent text-accent-foreground border-border backdrop-blur-sm">
+              <Badge className="mb-6 bg-primary/10 text-primary dark:bg-primary/20 border-border backdrop-blur-sm">
                 <Award className="w-4 h-4 mr-2" />
                 테니스 교육 전문 기관
               </Badge>
@@ -212,7 +212,7 @@ export default function AcademyPage() {
               <p className="text-xl md:text-2xl mb-8 text-muted-foreground leading-relaxed">
                 누구나 즐길 수 있는 체계적인 테니스 프로그램
                 <br />
-                <span className="text-accent-foreground font-semibold">당신의 테니스 실력을 한 단계 업그레이드하세요</span>
+                <span className="text-primary font-semibold">당신의 테니스 실력을 한 단계 업그레이드하세요</span>
               </p>
 
               {/* 통계 정보 */}
@@ -264,7 +264,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background" id="programs">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-accent text-accent-foreground">
+              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
                 <Trophy className="w-4 h-4 mr-2" />
                 맞춤형 교육 프로그램
               </Badge>
@@ -285,7 +285,7 @@ export default function AcademyPage() {
                   }`}
                 >
                   {program.isPopular && (
-                    <div className="absolute top-0 right-0 bg-accent text-accent-foreground px-4 py-2 text-sm font-bold rounded-bl-xl">
+                    <div className="absolute top-0 right-0 bg-primary/10 text-primary dark:bg-primary/20 px-4 py-2 text-sm font-bold rounded-bl-xl">
                       <Star className="w-4 h-4 inline mr-1" />
                       인기 프로그램
                     </div>
@@ -362,7 +362,7 @@ export default function AcademyPage() {
 
           <div className="container relative z-10">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-accent text-accent-foreground border-border">
+              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20 border-border">
                 <Users className="w-4 h-4 mr-2" />
                 전문 코칭진
               </Badge>
@@ -380,7 +380,7 @@ export default function AcademyPage() {
                   <div className="relative overflow-hidden">
                     <Image src={coach.image || '/placeholder.svg'} alt={coach.name} width={400} height={400} className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110" />
                     <div className="absolute top-4 right-4 bg-card backdrop-blur-sm border border-border rounded-full px-3 py-1 flex items-center">
-                      <Star className="w-4 h-4 text-accent-foreground mr-1" />
+                      <Star className="w-4 h-4 text-primary mr-1" />
                       <span className="text-sm font-bold">{coach.rating}</span>
                     </div>
                   </div>
@@ -437,7 +437,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-accent text-accent-foreground">
+              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
                 <Award className="w-4 h-4 mr-2" />
                 최신 시설 완비
               </Badge>
@@ -480,7 +480,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-accent text-accent-foreground">
+              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
                 <Star className="w-4 h-4 mr-2" />
                 수강생 만족도 96%
               </Badge>
@@ -531,8 +531,8 @@ export default function AcademyPage() {
         {/* 수강 신청 안내 섹션 */}
         <section className="py-20 bg-background relative overflow-hidden" id="apply">
           {/* 배경 장식 */}
-          <div className="absolute top-10 left-10 w-32 h-32 bg-accent/20 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-24 h-24 bg-accent/30 rounded-full blur-lg  "></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg  "></div>
 
           <div className="container relative z-10">
             <div className="max-w-4xl mx-auto">
@@ -562,7 +562,7 @@ export default function AcademyPage() {
                     </div>
 
                     <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                      <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-accent-foreground mx-auto mb-4">
+                      <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                         <Mail className="h-8 w-8" />
                       </div>
                       <h3 className="text-lg font-bold mb-2">이메일 문의</h3>
@@ -609,7 +609,7 @@ export default function AcademyPage() {
                         </div>
                       </div>
                       <div className="flex items-center">
-                        <Users className="w-5 h-5 text-accent-foreground mr-3 flex-shrink-0" />
+                        <Users className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
                         <div>
                           <p className="font-medium">개인 맞춤 상담</p>
                           <p className="text-sm text-muted-foreground">레벨 테스트 및 상담</p>

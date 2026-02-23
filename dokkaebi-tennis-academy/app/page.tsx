@@ -385,7 +385,7 @@ export default function Home() {
           </div>
           <div className="grid gap-3 bp-sm:gap-4 bp-md:gap-5 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
             <Link href="/services/apply" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -395,7 +395,7 @@ export default function Home() {
             </Link>
 
             <Link href="/services/tension-guide" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -405,7 +405,7 @@ export default function Home() {
             </Link>
 
             <Link href="/board/market" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
                 <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -415,7 +415,7 @@ export default function Home() {
             </Link>
 
             <Link href="/board" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
                 <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
               <div className="text-center">
@@ -444,7 +444,7 @@ export default function Home() {
                 <div
                   className="
                 flex h-12 w-12 items-center justify-center rounded-xl
-                bg-accent text-accent-foreground
+                bg-primary/10 text-primary dark:bg-primary/20
               "
                 >
                   <Search className="h-6 w-6" />
@@ -492,7 +492,7 @@ export default function Home() {
             </div>
             <div className="mb-6 bp-sm:mb-8 grid gap-4 bp-sm:gap-6 grid-cols-2 bp-lg:grid-cols-4">
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                   <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 1</div>
@@ -500,7 +500,7 @@ export default function Home() {
                 <p className="text-[10px] bp-sm:text-xs text-muted-foreground">라켓/스트링/옵션 선택</p>
               </div>
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                   <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 2</div>
@@ -509,7 +509,7 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                   <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 3</div>
@@ -518,7 +518,7 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col items-center text-center">
-                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                   <BadgeCheck className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 4</div>
@@ -551,7 +551,7 @@ export default function Home() {
                   className={`
                   shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                   transition-all duration-300 whitespace-nowrap
-                  ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
+                  ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                 `}
                 >
                   전체
@@ -563,7 +563,7 @@ export default function Home() {
                     className={`
                     shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                     transition-all duration-300 whitespace-nowrap
-                    ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
+                    ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                   `}
                   >
                     {b.label}
@@ -607,7 +607,7 @@ export default function Home() {
                   className={`
                   shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
                   transition-all duration-300 whitespace-nowrap
-                  ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
+                  ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                 `}
                 >
                   전체
@@ -619,7 +619,7 @@ export default function Home() {
                     className={`
                     shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
                     transition-all duration-300 whitespace-nowrap
-                    ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'bg-accent text-accent-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
+                    ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
                   `}
                   >
                     {b.label}

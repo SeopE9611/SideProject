@@ -178,7 +178,7 @@ export default function ServicesPage() {
 
         {/* 장식 요소 */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-accent/20 rounded-full blur-lg  "></div>
+        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 rounded-full blur-lg  "></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md animate-pulse delay-1000"></div>
 
         <div className="container relative z-10">
@@ -332,7 +332,7 @@ export default function ServicesPage() {
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40" id="string-types">
         <div className="container">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">
+            <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
               <Star className="w-4 h-4 mr-2" />
               프리미엄 스트링 컬렉션
             </Badge>
@@ -498,8 +498,8 @@ export default function ServicesPage() {
                 <p className="text-primary-foreground/90 text-sm">30일 이내 5,000원 할인</p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-accent/100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Trophy className="w-8 h-8 text-primary-foreground" />
+                <div className="w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trophy className="w-8 h-8 text-primary" />
                 </div>
                 <h4 className="font-bold text-primary-foreground mb-2">패키지 할인</h4>
                 <p className="text-primary-foreground/90 text-sm">3개 이상 라켓당 2,000원 할인</p>
@@ -518,7 +518,7 @@ export default function ServicesPage() {
                       <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
-                    {service.free ? <Badge className="bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
+                    {service.free ? <Badge className="bg-primary/10 text-primary dark:bg-primary/20">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
                   </div>
                   <p className="text-sm text-muted-foreground">{service.description}</p>
                 </div>
@@ -532,7 +532,7 @@ export default function ServicesPage() {
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
         <div className="container">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground">
+            <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
               <Shield className="w-4 h-4 mr-2" />
               전문적인 프로세스
             </Badge>

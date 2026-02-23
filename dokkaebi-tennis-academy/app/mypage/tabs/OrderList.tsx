@@ -555,7 +555,7 @@ export default function OrderList() {
       {/* '더 보기' 버튼 */}
       <div className="flex justify-center pt-4">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20/10 dark:hover:bg-primary/20 bg-transparent">
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
             {isValidating ? '불러오는 중…' : '더 보기'}
           </Button>
         ) : items.length ? (

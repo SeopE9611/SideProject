@@ -167,7 +167,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <span>빠른 처리</span>
  </div>
  <div className="flex items-center gap-2">
- <Star className="h-4 w-4 text-accent-foreground" />
+ <Star className="h-4 w-4 text-primary" />
  <span>프리미엄 서비스</span>
  </div>
  </div> */}
@@ -178,7 +178,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
               <div className="mt-8 max-w-2xl mx-auto">
                 <div className="rounded-xl border border-border bg-card/10 p-6 text-center backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="rounded-full bg-accent p-2 text-foreground">
+                    <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
                       <Package className="h-6 w-6" />
                     </div>
                     <h3 className="text-xl font-bold text-primary-foreground">스트링 장착 서비스 포함</h3>
@@ -187,7 +187,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   <p className="mb-4 text-primary-foreground/80">
                     {order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
                   </p>
-                  <Button className="bg-accent text-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
+                  <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
                     {/* 신청서로 곧바로 이동 (자동 생성 전제) */}
                     <Link href={appHref} className="flex items-center gap-2">
                       장착 서비스 신청서 작성하기

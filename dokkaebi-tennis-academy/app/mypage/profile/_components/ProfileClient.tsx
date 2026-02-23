@@ -350,7 +350,7 @@ export default function ProfileClient({ user }: Props) {
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
- <div className="bg-accent text-accent-foreground rounded-2xl p-3 shadow-lg">
+ <div className="bg-primary/10 text-primary dark:bg-primary/20 rounded-2xl p-3 shadow-lg">
  <User className="h-6 w-6 text-accent" />
  </div>
  <div>
@@ -363,7 +363,7 @@ export default function ProfileClient({ user }: Props) {
  <div className="flex items-center gap-6">
  <Avatar className="h-24 w-24 border-4 border-border shadow-xl">
  <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
- <AvatarFallback className="text-2xl bg-accent text-accent-foreground">{profileData.name.charAt(0)}</AvatarFallback>
+ <AvatarFallback className="text-2xl bg-primary/10 text-primary dark:bg-primary/20">{profileData.name.charAt(0)}</AvatarFallback>
  </Avatar>
  <div>
  <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20">
@@ -579,8 +579,8 @@ export default function ProfileClient({ user }: Props) {
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
- <div className="bg-accent text-accent-foreground rounded-2xl p-3 shadow-lg">
- <Bell className="h-6 w-6 text-accent-foreground" />
+ <div className="bg-primary/10 text-primary dark:bg-primary/20 rounded-2xl p-3 shadow-lg">
+ <Bell className="h-6 w-6 text-primary" />
  </div>
  <div>
  <CardTitle className="text-xl">마케팅 수신 동의</CardTitle>
