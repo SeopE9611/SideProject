@@ -42,7 +42,7 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
             <Heart className="h-5 w-5 text-foreground" />
             {title}
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={clear} className="border-border bg-transparent hover:bg-primary">
+          <Button size="sm" variant="outline" onClick={clear} className="border-border bg-transparent hover:bg-primary/10 dark:hover:bg-primary/20">
             <Trash2 className="h-4 w-4 mr-2" />
             위시리스트 비우기
           </Button>
@@ -74,7 +74,7 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-9 w-9 border-border bg-transparent p-0 hover:bg-primary"
+                  className="h-9 w-9 border-border bg-transparent p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
                   onClick={() => {
                     add({ id: it.id, name: it.name, price: it.price, quantity: 1, image: it.image, stock: it.stock });
                     showSuccessToast('장바구니에 담았습니다.');
@@ -89,7 +89,7 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-9 w-9 p-0 text-muted-foreground hover:bg-destructive hover:text-destructive"
+                  className="h-9 w-9 p-0 text-muted-foreground hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive"
                   onClick={() => handleRemove(it.id)}
                   disabled={removingId === it.id}
                   aria-label="위시리스트에서 삭제"

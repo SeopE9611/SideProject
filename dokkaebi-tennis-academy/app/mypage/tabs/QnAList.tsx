@@ -128,7 +128,7 @@ export default function QnAList() {
                 <span>{qna.date}</span>
               </div>
 
-              <Button size="sm" variant="outline" asChild className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:border-border dark:hover:bg-primary transition-colors bg-transparent">
+              <Button size="sm" variant="outline" asChild className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 transition-colors bg-transparent">
                 <Link href={`/board/qna/${qna.id}`} className="inline-flex items-center gap-1">
                   상세보기
                   <ArrowRight className="h-3 w-3" />

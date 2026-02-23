@@ -524,7 +524,7 @@ export default function ApplicationsClient() {
                                     size="sm"
                                     disabled={!canConfirm}
                                     onClick={() => handleConfirmService(app.id)}
-                                    className="border-border hover:border-border hover:bg-primary dark:border-border dark:hover:bg-primary transition-colors"
+                                    className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:bg-primary/20 transition-colors"
                                   >
                                     <CheckCircle className="mr-1 h-4 w-4" />
                                     {label}

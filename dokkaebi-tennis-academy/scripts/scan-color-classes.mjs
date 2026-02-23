@@ -32,6 +32,10 @@ const hoverAccentRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:
 const solidDestructiveWithTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*bg-destructive(?!\/)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive(?:\s|$)/;
 const primaryTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-primary\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-primary-foreground(?:\s|$)/;
 const warningTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-warning\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-warning-foreground(?:\s|$)/;
+const solidHoverDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\/)(?:\s|$)/;
+const hoverTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
+const solidHoverPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
+const outlineGhostNeutralMutedRegex = /(?:^|\s)(?:[\w-]+:)*(?:variant="(?:outline|ghost|neutral|muted)"|outline|ghost|neutral|muted|badge|chip)(?:\s|$)/i;
 
 const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
@@ -247,6 +251,24 @@ for (const file of files) {
     if (warningTintWithForegroundRegex.test(block)) {
       found.push({
         type: 'warning-tint-with-warning-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (solidHoverDestructiveRegex.test(block) && hoverTextDestructiveRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'solid-hover-destructive-with-hover-text-destructive',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (solidHoverPrimaryRegex.test(block) && outlineGhostNeutralMutedRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'solid-hover-primary-on-outline-ghost-badge',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

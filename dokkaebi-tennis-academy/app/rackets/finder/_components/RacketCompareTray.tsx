@@ -110,7 +110,7 @@ export default function RacketCompareTray() {
                           'bg-destructive/90 text-destructive-foreground',
                           'shadow-sm transition-all duration-200',
                           'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100',
-                          'hover:bg-destructive',
+                          'hover:bg-destructive/90',
                         )}
                         aria-label={`${title} 제거`}
                       >

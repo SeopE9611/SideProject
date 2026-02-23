@@ -366,7 +366,7 @@ export default function ProfileClient({ user }: Props) {
  <AvatarFallback className="text-2xl bg-accent text-accent-foreground">{profileData.name.charAt(0)}</AvatarFallback>
  </Avatar>
  <div>
- <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-border hover:bg-primary dark:hover:bg-primary">
+ <Button variant="outline" size="sm" onClick={() => showInfoToast('해당 기능은 준비 중입니다.')} className="mb-2 border-border hover:bg-primary/10 dark:hover:bg-primary/20">
  <Camera className="mr-2 h-4 w-4" />
  이미지 변경
  </Button>
@@ -530,7 +530,7 @@ export default function ProfileClient({ user }: Props) {
  </Label>
  <div className="flex gap-2">
  <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted text-muted-foreground cursor-default" placeholder="12345" />
- <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-accent hover:bg-primary dark:hover:bg-primary" variant="outline">
+ <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-accent hover:bg-primary/10 dark:hover:bg-primary/20" variant="outline">
  검색
  </Button>
  </div>

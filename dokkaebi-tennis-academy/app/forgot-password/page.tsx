@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-12 border-border text-primary hover:bg-primary dark:hover:bg-primary bg-transparent"
+                  className="w-full h-12 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
                   onClick={() => {
                     setEmail('');
                     setIsSubmitted(false);

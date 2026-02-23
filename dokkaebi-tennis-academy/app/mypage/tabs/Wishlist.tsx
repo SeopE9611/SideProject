@@ -76,7 +76,7 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-destructive hover:bg-destructive dark:border-destructive dark:hover:bg-destructive bg-transparent"
+                  className="border-destructive hover:bg-destructive/10 dark:border-destructive dark:hover:bg-destructive/15 bg-transparent"
                   onClick={() => {
                     remove(it.id);
                     // 현재 페이지에서 바로 사라지도록, 노출 개수 보정
@@ -94,7 +94,7 @@ export default function Wishlist() {
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-border hover:bg-primary dark:hover:bg-primary bg-transparent">
+          <Button variant="outline" onClick={() => setVisible((v) => v + LIMIT)} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
             더 보기
           </Button>
         ) : (
