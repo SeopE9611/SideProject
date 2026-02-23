@@ -85,9 +85,9 @@ const getStatusIcon = (status: string) => {
  case 'returned':
  return <CheckCircle className="h-5 w-5 text-primary" />;
  case 'out':
- return <Clock className="h-5 w-5 text-accent" />;
+ return <Clock className="h-5 w-5 text-primary" />;
  case 'paid':
- return <Package className="h-5 w-5 text-accent" />;
+ return <Package className="h-5 w-5 text-primary" />;
  case 'canceled':
  return <XCircle className="h-5 w-5 text-destructive" />;
  default:
@@ -100,9 +100,9 @@ const getStatusBadgeColor = (status: string) => {
  case 'returned':
  return 'bg-primary/15 text-primary dark:bg-primary/20 dark:text-primary';
  case 'out':
- return 'bg-accent/10 text-accent dark:bg-accent/15 dark:text-accent';
+ return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
  case 'paid':
- return 'bg-accent/10 text-foreground dark:bg-accent/15 dark:text-foreground';
+ return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
  case 'canceled':
  return 'bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-destructive';
  default:
@@ -312,7 +312,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
  <div className="flex items-center space-x-4 mb-4 sm:mb-0">
  <div className="bg-card dark:bg-muted rounded-full p-3 shadow-md">
- <Briefcase className="h-8 w-8 text-accent" />
+ <Briefcase className="h-8 w-8 text-primary" />
  </div>
  <div>
  <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -437,7 +437,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
  <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
  <CardTitle className="flex items-center space-x-2">
- <Package className="h-5 w-5 text-accent" />
+ <Package className="h-5 w-5 text-primary" />
  <span>대여 정보</span>
  </CardTitle>
  </CardHeader>
@@ -503,7 +503,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
  <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
  <CardTitle className="flex items-center space-x-2">
- <CreditCard className="h-5 w-5 text-accent" />
+ <CreditCard className="h-5 w-5 text-primary" />
  <span>결제 정보</span>
  </CardTitle>
  </CardHeader>
@@ -525,11 +525,11 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </div>
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-accent/10 rounded-lg border border-border/30">
- <TrendingUp className="h-4 w-4 text-accent" />
+ <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 rounded-lg border border-border/30">
+ <TrendingUp className="h-4 w-4 text-primary" />
  <div className="flex-1">
  <p className="text-sm text-muted-foreground">총 결제 금액</p>
- <p className="text-xl font-bold text-accent">{total.toLocaleString()}원</p>
+ <p className="text-xl font-bold text-primary">{total.toLocaleString()}원</p>
  </div>
  </div>
  </div>
@@ -540,15 +540,15 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
  <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
  <CardTitle className="flex items-center space-x-2">
- <Calendar className="h-5 w-5 text-accent" />
+ <Calendar className="h-5 w-5 text-primary" />
  <span>대여 타임라인</span>
  </CardTitle>
  </CardHeader>
  <CardContent className="p-6">
  <div className="space-y-4">
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15">
- <Calendar className="h-5 w-5 text-accent" />
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+ <Calendar className="h-5 w-5 text-primary" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">대여 시작</p>
@@ -558,8 +558,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
  {data?.shipping?.outbound?.trackingNumber && (
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15">
- <Truck className="h-5 w-5 text-accent" />
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+ <Truck className="h-5 w-5 text-primary" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">출고 운송장 등록</p>
@@ -575,8 +575,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  )}
 
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15">
- <Clock className="h-5 w-5 text-accent" />
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+ <Clock className="h-5 w-5 text-primary" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">반납 예정</p>
@@ -614,8 +614,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </div>
 
  <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
- <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 dark:bg-accent/20">
- <CreditCard className="h-5 w-5 text-accent" />
+ <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+ <CreditCard className="h-5 w-5 text-primary" />
  </div>
  <div className="flex-1">
  <p className="text-sm font-medium text-foreground">보증금 환불</p>

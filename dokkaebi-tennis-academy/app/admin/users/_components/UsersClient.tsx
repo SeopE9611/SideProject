@@ -894,10 +894,10 @@ export default function UsersClient() {
 
       <DialogsSection>
       <div className="mt-6">
-        <Card className="border-destructive bg-destructive">
+        <Card className="border-destructive/30 bg-destructive/10 dark:bg-destructive/15">
           <CardHeader className="pb-2">
             <CardTitle className="text-destructive text-sm">탈퇴 회원 정리 (Danger zone)</CardTitle>
-            <CardDescription className="text-xs">7일 경과 탈퇴 계정은 정리, 1년 경과 탈퇴 계정은 완전 삭제합니다. 실행 전 미리보기 목록을 확인하세요.</CardDescription>
+            <CardDescription className="text-xs text-muted-foreground">7일 경과 탈퇴 계정은 정리, 1년 경과 탈퇴 계정은 완전 삭제합니다. 실행 전 미리보기 목록을 확인하세요.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {/* 탈퇴 회원 자동 삭제 실행 (7일 경과) */}

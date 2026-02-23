@@ -45,7 +45,7 @@ export default function TensionGuidePage() {
       characteristics: ['균형잡힌 플레이', '적당한 컨트롤', '다양한 샷 구사', '스핀 생성 용이'],
       recommended: '균형 잡힌 플레이를 원하시면 26kg이 적합합니다',
       color: 'from-accent to-primary',
-      bgColor: 'bg-accent/10 dark:bg-accent/15',
+      bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
     },
     {
@@ -58,7 +58,7 @@ export default function TensionGuidePage() {
       characteristics: ['정밀한 컨트롤', '강한 스핀', '빠른 스윙 활용', '일관된 타구감'],
       recommended: '빠른 스윙을 가지신 분은 28kg을 권장합니다',
       color: 'from-accent to-primary',
-      bgColor: 'bg-accent/10 dark:bg-accent/15',
+      bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
     },
     {
@@ -213,7 +213,7 @@ export default function TensionGuidePage() {
       <div className="relative overflow-hidden bg-muted/50 dark:bg-background/50">
         <div className="relative mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 pt-8 bp-sm:pt-10 bp-md:pt-12 pb-10 bp-md:pb-16">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-accent/10 dark:bg-accent/15 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
+            <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
               <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent" />
               <span className="text-xs bp-sm:text-sm font-semibold text-muted-foreground dark:text-accent">전문가 텐션 가이드</span>
             </div>
@@ -290,7 +290,7 @@ export default function TensionGuidePage() {
                             key={st.id}
                             onClick={() => setStringType(st.id as StringType)}
                             className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${
-                              stringType === st.id ? 'bg-accent/10 dark:bg-accent/15 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
+                              stringType === st.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
                             }`}
                           >
                             <div className="flex items-center gap-2 mb-1">
@@ -312,7 +312,7 @@ export default function TensionGuidePage() {
                             key={option.id}
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${
-                              playStyle === option.id ? 'bg-accent/10 dark:bg-accent/15 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
+                              playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
                             }`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-muted-foreground dark:text-accent' : 'text-foreground'}`}>{option.label}</div>
@@ -331,7 +331,7 @@ export default function TensionGuidePage() {
                             key={option.id}
                             onClick={() => setSwingSpeed(option.id as SwingSpeed)}
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${
-                              swingSpeed === option.id ? 'bg-accent/10 dark:bg-accent/15 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
+                              swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
                             }`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-muted-foreground dark:text-accent' : 'text-foreground'}`}>{option.label}</div>
@@ -546,7 +546,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
 
-                    <div className="bg-accent/10 dark:bg-accent/15 p-3 bp-md:p-4 rounded-xl">
+                    <div className="bg-primary/10 dark:bg-primary/20 p-3 bp-md:p-4 rounded-xl">
                       <div className="flex items-start gap-2">
                         <Info className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-accent mt-0.5 flex-shrink-0" />
                         <div>
@@ -647,7 +647,7 @@ export default function TensionGuidePage() {
 
               {/* 텐션 관리 팁 */}
               <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-                <Card className="bg-accent/10 dark:bg-accent/10 border-border">
+                <Card className="bg-primary/10 dark:bg-primary/20 border-border">
                   <CardHeader className="pb-2 bp-md:pb-3">
                     <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
                       <Gauge className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -658,20 +658,20 @@ export default function TensionGuidePage() {
                     <p className="text-xs bp-md:text-sm text-foreground">스트링은 장착 후 지속적으로 텐션이 감소합니다.</p>
                     <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground dark:text-accent">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />첫 24시간: 10-15% 손실
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />첫 24시간: 10-15% 손실
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />첫 주: 추가 5-10% 손실
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />첫 주: 추가 5-10% 손실
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
                         이후: 점진적 안정화
                       </li>
                     </ul>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-accent/10 dark:bg-accent/10 border-border">
+                <Card className="bg-primary/10 dark:bg-primary/20 border-border">
                   <CardHeader className="pb-2 bp-md:pb-3">
                     <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
                       <Shield className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
@@ -682,15 +682,15 @@ export default function TensionGuidePage() {
                     <p className="text-xs bp-md:text-sm text-foreground">올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.</p>
                     <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
                         직사광선 피하기
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
                         극단적 온도 피하기
                       </li>
                       <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-accent/70 rounded-full flex-shrink-0" />
+                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />
                         라켓 커버 사용
                       </li>
                     </ul>

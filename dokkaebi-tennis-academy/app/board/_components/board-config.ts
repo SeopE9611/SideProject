@@ -24,7 +24,7 @@ export type BoardTypeConfig = {
 const badgePresetClassMap: Record<CategoryBadgePreset, string> = {
   neutral: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-muted text-muted-foreground',
   highlight: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-primary/10 text-primary',
-  status: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-accent/15 text-accent-foreground',
+  status: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md border border-primary/20 bg-primary/10 text-primary',
 };
 
 const defaultCategoryBadgePreset: CategoryBadgePreset = 'neutral';
