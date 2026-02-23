@@ -95,8 +95,8 @@ function DetailSkeleton() {
  <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm ">
  <CardHeader className="space-y-4">
  <div className="flex items-center gap-3">
- <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
- <MessageSquare className="h-5 w-5 text-primary-foreground" />
+ <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
+ <MessageSquare className="h-5 w-5" />
  </div>
  <div className="flex-1 space-y-2">
  <Skeleton className="h-5 w-3/4" />

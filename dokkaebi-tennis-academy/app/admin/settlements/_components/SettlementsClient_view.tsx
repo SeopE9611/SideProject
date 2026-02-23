@@ -320,8 +320,8 @@ export default function SettlementsClient() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
-              <ChartBar className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
+              <ChartBar className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground ">정산 관리</h1>

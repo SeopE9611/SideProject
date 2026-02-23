@@ -690,7 +690,7 @@ export default function QnaWritePage() {
                   취소
                 </Link>
               </Button>
-              <Button size="lg" className="px-8 bg-gradient-to-r from-background to-card hover:from-background hover:to-card disabled:opacity-60" onClick={handleSubmit} disabled={submitting}>
+              <Button size="lg" className="px-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? '등록 중…' : '문의 등록하기'}
               </Button>
             </CardFooter>

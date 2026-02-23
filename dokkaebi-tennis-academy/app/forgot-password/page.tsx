@@ -49,14 +49,14 @@ export default function ForgotPasswordPage() {
         </div>
 
         <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="bg-primary p-6 text-primary-foreground relative">
+          <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative">
             <div className="absolute inset-0 bg-overlay/10"></div>
             <div className="relative text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="h-8 w-8 text-primary-foreground" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                <Shield className="h-8 w-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl font-bold text-primary-foreground">비밀번호 찾기</CardTitle>
-              <CardDescription className="text-primary-foreground/80 mt-2">가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.</CardDescription>
+              <CardTitle className="text-2xl font-bold text-foreground">비밀번호 찾기</CardTitle>
+              <CardDescription className="text-muted-foreground mt-2">가입하신 이메일을 입력해주세요. 비밀번호 재설정 링크를 보내드립니다.</CardDescription>
             </div>
           </div>
 
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
               ) : (
                 <div className="bg-muted rounded-xl p-6 text-center border border-border">
                   <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                    <CheckCircle className="h-8 w-8 text-primary-foreground" />
+                    <CheckCircle className="h-8 w-8 text-primary" />
                   </div>
                   <p className="text-sm font-semibold text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
                   <p className="text-xs text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>

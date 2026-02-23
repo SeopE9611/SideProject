@@ -411,6 +411,15 @@ for (const file of files) {
       });
     }
 
+    if (/\bbg-primary(?!\/)\b/.test(block) && /\btext-primary-foreground\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block) && !sliderRangeRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'large-surface-solid-bg-primary-with-primary-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
     if (accentTintSurfaceRegex.test(block) && largePaddingRegex.test(block)) {
       warnings.push({
         file,
