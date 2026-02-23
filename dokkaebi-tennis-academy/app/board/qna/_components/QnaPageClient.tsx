@@ -270,7 +270,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col space-y-6">
           <div className="flex items-center space-x-4">
@@ -281,7 +281,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             </Button>
 
             <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
                 <MessageSquare className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
@@ -352,7 +352,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
         </div>
 
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+          <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-success" />
@@ -360,7 +360,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
               </div>
 
-              <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
+              <Button asChild className="bg-muted/30">
                 <Link href="/board/qna/write">
                   <Plus className="h-4 w-4 mr-2" />
                   문의하기
@@ -466,7 +466,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     setField(inputField);
                     pushUrl({ page: nextPage, category, answerFilter, keyword: inputKeyword, field: inputField });
                   }}
-                  className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card"
+                  className="bg-muted/30"
                   disabled={isBusy}
                 >
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
@@ -497,7 +497,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     닫기
                   </Button>
                   {!viewerId && secretBlock.item?._id && (
-                    <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
+                    <Button asChild className="bg-muted/30">
                       <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
                     </Button>
                   )}

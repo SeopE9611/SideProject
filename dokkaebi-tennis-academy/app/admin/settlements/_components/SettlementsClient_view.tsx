@@ -324,8 +324,8 @@ export default function SettlementsClient() {
               <ChartBar className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground ">정산 관리</h1>
-              <p className="mt-1 sm:mt-2 text-sm sm:text-lg text-muted-foreground ">월별 정산 스냅샷 및 실시간 집계를 관리하고 분석하세요</p>
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">정산 관리</h1>
+              <p className="mt-1 sm:mt-2 text-sm sm:text-lg text-muted-foreground">월별 정산 스냅샷 및 실시간 집계를 관리하고 분석하세요</p>
             </div>
           </div>
         </div>
@@ -336,8 +336,8 @@ export default function SettlementsClient() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground ">전체 정산 월</p>
-                  <p className="text-3xl font-bold text-foreground ">{isLoading ? <span className="inline-block h-9 w-16 rounded bg-muted/70 animate-pulse" /> : totalSettlements}</p>
+                  <p className="text-sm font-medium text-muted-foreground">전체 정산 월</p>
+                  <p className="text-3xl font-bold text-foreground">{isLoading ? <span className="inline-block h-9 w-16 rounded bg-muted/70 animate-pulse" /> : totalSettlements}</p>
                 </div>
                 <div className="bg-muted rounded-xl p-3 border border-border">
                   <Calendar className="h-6 w-6 text-primary" />
@@ -352,7 +352,7 @@ export default function SettlementsClient() {
             value={totalRevenue ?? 0}
             storageKey="settlements.kpi.compact.revenue"
             formatCompact={formatKRWCard}
-            icon={<DollarSign className="h-6 w-6 text-primary " />}
+            icon={<DollarSign className="h-6 w-6 text-primary" />}
             isLoading={isLoading}
             hint={true}
             skeletonWidthClass="w-28"
@@ -387,9 +387,7 @@ export default function SettlementsClient() {
           <div className="px-4 sm:px-6 flex gap-1 min-w-max">
             <button
               onClick={() => setTab('snapshot')}
-              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${
-                tab === 'snapshot' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
-              }`}
+              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${ tab === 'snapshot' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground' }`}
             >
               스냅샷 관리
               {tab === 'snapshot' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
@@ -405,9 +403,7 @@ export default function SettlementsClient() {
                 }
               }}
               disabled={doing.live}
-              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${
-                tab === 'live' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'
-              }`}
+              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${ tab === 'live' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground' }`}
             >
               실시간 조회
               {tab === 'live' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
@@ -422,7 +418,7 @@ export default function SettlementsClient() {
               <CardContent className="p-4 sm:p-6">
                 <div className="flex flex-col gap-4">
                   <div className="w-full">
-                    <label className="block text-sm font-semibold mb-2 text-foreground ">대상 월 (YYYYMM)</label>
+                    <label className="block text-sm font-semibold mb-2 text-foreground">대상 월 (YYYYMM)</label>
                     <input
                       value={yyyymm}
                       onChange={(e) => setYyyymm(e.target.value.replace(/[^0-9]/g, ''))}
@@ -590,7 +586,7 @@ export default function SettlementsClient() {
                         <Package className="w-12 h-12 text-primary" />
                       </div>
                       <p className="text-lg font-semibold text-foreground mb-2">데이터가 없습니다</p>
-                      <p className="text-sm text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
+                      <p className="text-sm text-muted-foreground">위에서 월을 선택하여 스냅샷을 생성하세요</p>
                     </div>
                   ) : (
                     <div className="divide-y divide-border">
@@ -635,13 +631,13 @@ export default function SettlementsClient() {
 
                             <div className="flex items-center justify-center">
                               {statusMap[String(row.yyyymm)] === 'checking' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-muted text-foreground dark:bg-card font-medium border border-border ">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-muted text-foreground dark:bg-card font-medium border border-border">
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   검증 중
                                 </span>
                               )}
                               {statusMap[String(row.yyyymm)] === 'ok' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border ">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   최신
                                 </span>
@@ -652,14 +648,14 @@ export default function SettlementsClient() {
                                   갱신 필요
                                 </span>
                               )}
-                              {!statusMap[String(row.yyyymm)] && <span className="text-xs text-muted-foreground ">-</span>}
+                              {!statusMap[String(row.yyyymm)] && <span className="text-xs text-muted-foreground">-</span>}
                             </div>
 
                             <div className="relative flex items-center justify-center">
                               <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
                                   <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted dark:hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring" aria-label="작업 메뉴 열기">
-                                    <MoreHorizontal className="w-4 h-4 text-muted-foreground " />
+                                    <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
                                   </button>
                                 </DropdownMenuTrigger>
 
@@ -785,21 +781,21 @@ export default function SettlementsClient() {
                                   </div>
                                   <div className="grid grid-cols-7 gap-4 p-4 border-b border-border hover:bg-muted/50 dark:hover:bg-card/50 transition-colors">
                                     <div className="text-xs text-muted-foreground font-semibold">스냅샷</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}</div>
-                                    <div className="text-right tabular-nums text-sm font-bold text-foreground ">{diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.snap.orders}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.snap.applications}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.snap.packages}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}</div>
+                                    <div className="text-right tabular-nums text-sm font-bold text-foreground">{diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.snap.orders}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.snap.applications}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.snap.packages}</div>
                                   </div>
                                   <div className="grid grid-cols-7 gap-4 p-4 hover:bg-muted/50 dark:hover:bg-card/50 transition-colors">
                                     <div className="text-xs text-muted-foreground font-semibold">실시간</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}</div>
-                                    <div className="text-right tabular-nums text-sm font-bold text-foreground ">{diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.live.orders}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.live.applications}</div>
-                                    <div className="text-right tabular-nums text-sm text-foreground ">{diffMap[String(row.yyyymm)]!.live.packages}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}</div>
+                                    <div className="text-right tabular-nums text-sm font-bold text-foreground">{diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.live.orders}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.live.applications}</div>
+                                    <div className="text-right tabular-nums text-sm text-foreground">{diffMap[String(row.yyyymm)]!.live.packages}</div>
                                   </div>
                                 </div>
 
@@ -859,7 +855,7 @@ export default function SettlementsClient() {
                 {!isLoading && data && data.length > 0 && (
                   <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-lg">
                     <input type="checkbox" checked={selectedSnapshots.size === data.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer" aria-label="전체 선택" />
-                    <span className="text-sm font-medium text-foreground ">전체 선택</span>
+                    <span className="text-sm font-medium text-foreground">전체 선택</span>
                   </div>
                 )}
 
@@ -871,7 +867,7 @@ export default function SettlementsClient() {
                       <Package className="w-8 h-8 text-primary" />
                     </div>
                     <p className="text-sm font-semibold text-foreground mb-1">데이터가 없습니다</p>
-                    <p className="text-xs text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
+                    <p className="text-xs text-muted-foreground">위에서 월을 선택하여 스냅샷을 생성하세요</p>
                   </div>
                 ) : (
                   (sortedData() ?? []).map((row) => (
@@ -900,7 +896,7 @@ export default function SettlementsClient() {
                         <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
                             <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted dark:hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring" aria-label="작업 메뉴 열기">
-                              <MoreHorizontal className="w-4 h-4 text-muted-foreground " />
+                              <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
                             </button>
                           </DropdownMenuTrigger>
 
@@ -984,34 +980,34 @@ export default function SettlementsClient() {
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-muted-foreground ">매출</div>
-                        <div className="text-right tabular-nums text-foreground ">{(row.totals?.paid || 0).toLocaleString()}</div>
+                        <div className="text-muted-foreground">매출</div>
+                        <div className="text-right tabular-nums text-foreground">{(row.totals?.paid || 0).toLocaleString()}</div>
 
-                        <div className="text-muted-foreground ">환불</div>
-                        <div className="text-right tabular-nums text-foreground ">{(row.totals?.refund || 0).toLocaleString()}</div>
+                        <div className="text-muted-foreground">환불</div>
+                        <div className="text-right tabular-nums text-foreground">{(row.totals?.refund || 0).toLocaleString()}</div>
 
-                        <div className="text-muted-foreground ">순익</div>
+                        <div className="text-muted-foreground">순익</div>
                         <div className="text-right tabular-nums font-semibold text-primary">{(row.totals?.net || 0).toLocaleString()}</div>
 
-                        <div className="text-muted-foreground ">주문수</div>
-                        <div className="text-right tabular-nums text-foreground ">{row.breakdown?.orders || 0}</div>
+                        <div className="text-muted-foreground">주문수</div>
+                        <div className="text-right tabular-nums text-foreground">{row.breakdown?.orders || 0}</div>
 
-                        <div className="text-muted-foreground ">신청수</div>
-                        <div className="text-right tabular-nums text-foreground ">{row.breakdown?.applications || 0}</div>
+                        <div className="text-muted-foreground">신청수</div>
+                        <div className="text-right tabular-nums text-foreground">{row.breakdown?.applications || 0}</div>
 
-                        <div className="text-muted-foreground ">패키지수</div>
-                        <div className="text-right tabular-nums text-foreground ">{row.breakdown?.packages || 0}</div>
+                        <div className="text-muted-foreground">패키지수</div>
+                        <div className="text-right tabular-nums text-foreground">{row.breakdown?.packages || 0}</div>
                       </div>
 
-                      <div className="mt-3 pt-3 border-t border-border ">
+                      <div className="mt-3 pt-3 border-t border-border">
                         {statusMap[String(row.yyyymm)] === 'checking' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-muted text-foreground dark:bg-card font-medium border border-border ">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-muted text-foreground dark:bg-card font-medium border border-border">
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             검증 중
                           </span>
                         )}
                         {statusMap[String(row.yyyymm)] === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border ">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             최신
                           </span>
@@ -1022,7 +1018,7 @@ export default function SettlementsClient() {
                             갱신 필요
                           </span>
                         )}
-                        {!statusMap[String(row.yyyymm)] && <span className="text-xs text-muted-foreground ">-</span>}
+                        {!statusMap[String(row.yyyymm)] && <span className="text-xs text-muted-foreground">-</span>}
                       </div>
 
                       {openMap[String(row.yyyymm)] && statusMap[String(row.yyyymm)] === 'stale' && diffMap[String(row.yyyymm)] && (
@@ -1040,33 +1036,33 @@ export default function SettlementsClient() {
                           <div className="p-3 space-y-2">
                             <div className="text-xs font-semibold text-destructive mb-2">스냅샷</div>
                             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                              <div className="text-muted-foreground ">매출</div>
+                              <div className="text-muted-foreground">매출</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}</div>
-                              <div className="text-muted-foreground ">환불</div>
+                              <div className="text-muted-foreground">환불</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}</div>
-                              <div className="text-muted-foreground ">순익</div>
+                              <div className="text-muted-foreground">순익</div>
                               <div className="text-right tabular-nums font-semibold">{diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}</div>
-                              <div className="text-muted-foreground ">주문수</div>
+                              <div className="text-muted-foreground">주문수</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.orders}</div>
-                              <div className="text-muted-foreground ">신청수</div>
+                              <div className="text-muted-foreground">신청수</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.applications}</div>
-                              <div className="text-muted-foreground ">패키지수</div>
+                              <div className="text-muted-foreground">패키지수</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.snap.packages}</div>
                             </div>
 
                             <div className="text-xs font-semibold text-destructive mb-2">실시간</div>
                             <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                              <div className="text-muted-foreground ">매출</div>
+                              <div className="text-muted-foreground">매출</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}</div>
-                              <div className="text-muted-foreground ">환불</div>
+                              <div className="text-muted-foreground">환불</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}</div>
-                              <div className="text-muted-foreground ">순익</div>
+                              <div className="text-muted-foreground">순익</div>
                               <div className="text-right tabular-nums font-semibold">{diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}</div>
-                              <div className="text-muted-foreground ">주문수</div>
+                              <div className="text-muted-foreground">주문수</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.live.orders}</div>
-                              <div className="text-muted-foreground ">신청수</div>
+                              <div className="text-muted-foreground">신청수</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.live.applications}</div>
-                              <div className="text-muted-foreground ">패키지수</div>
+                              <div className="text-muted-foreground">패키지수</div>
                               <div className="text-right tabular-nums">{diffMap[String(row.yyyymm)]!.live.packages}</div>
                             </div>
 
@@ -1118,7 +1114,7 @@ export default function SettlementsClient() {
                 <div className="flex flex-col gap-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold mb-2 text-foreground ">시작일</label>
+                      <label className="block text-sm font-semibold mb-2 text-foreground">시작일</label>
                       <input
                         type="date"
                         value={from}
@@ -1127,7 +1123,7 @@ export default function SettlementsClient() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold mb-2 text-foreground ">종료일</label>
+                      <label className="block text-sm font-semibold mb-2 text-foreground">종료일</label>
                       <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full border-2 border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-ring focus:border-transparent bg-card transition-all" />
                     </div>
                     {invalidRange && <p className="text-sm text-destructive mt-1">시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.</p>}{' '}
@@ -1265,23 +1261,23 @@ export default function SettlementsClient() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="text-muted-foreground ">매출</div>
-                      <div className="text-right tabular-nums text-foreground ">{(live.totals?.paid || 0).toLocaleString()}</div>
+                      <div className="text-muted-foreground">매출</div>
+                      <div className="text-right tabular-nums text-foreground">{(live.totals?.paid || 0).toLocaleString()}</div>
 
-                      <div className="text-muted-foreground ">환불</div>
-                      <div className="text-right tabular-nums text-foreground ">{(live.totals?.refund || 0).toLocaleString()}</div>
+                      <div className="text-muted-foreground">환불</div>
+                      <div className="text-right tabular-nums text-foreground">{(live.totals?.refund || 0).toLocaleString()}</div>
 
-                      <div className="text-muted-foreground ">순익</div>
+                      <div className="text-muted-foreground">순익</div>
                       <div className="text-right tabular-nums font-bold text-primary">{(live.totals?.net || 0).toLocaleString()}</div>
 
-                      <div className="text-muted-foreground ">주문수</div>
-                      <div className="text-right tabular-nums text-foreground ">{live.breakdown?.orders || 0}</div>
+                      <div className="text-muted-foreground">주문수</div>
+                      <div className="text-right tabular-nums text-foreground">{live.breakdown?.orders || 0}</div>
 
-                      <div className="text-muted-foreground ">신청수</div>
-                      <div className="text-right tabular-nums text-foreground ">{live.breakdown?.applications || 0}</div>
+                      <div className="text-muted-foreground">신청수</div>
+                      <div className="text-right tabular-nums text-foreground">{live.breakdown?.applications || 0}</div>
 
-                      <div className="text-muted-foreground ">패키지수</div>
-                      <div className="text-right tabular-nums text-foreground ">{live.breakdown?.packages || 0}</div>
+                      <div className="text-muted-foreground">패키지수</div>
+                      <div className="text-right tabular-nums text-foreground">{live.breakdown?.packages || 0}</div>
                     </div>
                   </div>
                 </div>

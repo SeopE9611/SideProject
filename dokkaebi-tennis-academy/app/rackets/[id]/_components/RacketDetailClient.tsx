@@ -116,7 +116,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   };
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
+    <div className="min-h-full bg-muted/30">
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-muted text-foreground py-8 border border-primary/20 rounded-2xl">
         <div className="absolute inset-0 bg-overlay/20"></div>
@@ -130,7 +130,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 <line x1="50" y1="0" x2="50" y2="50" stroke="currentColor" strokeWidth="1" opacity="0.3" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#detail-court-lines)" />
+            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
           </svg>
         </div>
         <SiteContainer variant="wide" className="relative z-10">
@@ -330,7 +330,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         <Card className="mt-8 border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 h-16 bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-t-lg">
+              <TabsList className="w-full grid grid-cols-2 h-16 bg-muted/30 rounded-t-lg">
                 <TabsTrigger
                   value="description"
                   className="text-base font-medium h-full data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-card dark:data-[state=active]:text-primary"
@@ -446,7 +446,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {racketBrandLabel(racket.brand)} {racket.model}
                 </div>
                 <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-lg font-bold text-foreground ">{racket.price?.toLocaleString()}원</span>
+                  <span className="text-lg font-bold text-foreground">{racket.price?.toLocaleString()}원</span>
                 </div>
               </div>
             </div>
@@ -457,9 +457,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                 disabled={!canBuy}
                 title={!canBuy ? (racketId === '' ? '상품 ID가 없어 구매 경로를 만들 수 없습니다.' : isAllRented ? '현재 전량 대여중입니다.' : '판매가 종료된 상품입니다.') : undefined}
-                className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${
-                  canBuy ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'
-                }`}
+                className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${ canBuy ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed' }`}
               >
                 <ShoppingCart className="h-4 w-4" />
                 {soldOut ? '품절(구매 불가)' : '구매하기'}
@@ -486,9 +484,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={toggleCompare}
                 disabled={!racketId}
                 title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${
-                  isCompared ? 'border-border bg-primary/10 text-primary' : 'border-border bg-card text-foreground'
-                } ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${ isCompared ? 'border-border bg-primary/10 text-primary' : 'border-border bg-card text-foreground' } ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <Scale className="h-4 w-4" />
                 {isCompared ? `비교 선택됨 (${compareCount}/4)` : `비교 담기 (${compareCount}/4)`}
@@ -499,9 +495,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={() => router.push('/rackets/compare')}
                 disabled={compareCount < 2}
                 title={compareCount < 2 ? '비교는 최소 2개부터 가능합니다.' : undefined}
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${
-                  compareCount < 2 ? 'border-border bg-muted text-muted-foreground cursor-not-allowed' : 'border-border bg-card text-foreground'
-                }`}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${ compareCount < 2 ? 'border-border bg-muted text-muted-foreground cursor-not-allowed' : 'border-border bg-card text-foreground' }`}
               >
                 비교하기
               </button>

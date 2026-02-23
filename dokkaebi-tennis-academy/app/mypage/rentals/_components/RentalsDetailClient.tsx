@@ -252,7 +252,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
   if (err) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-destructive/10 to-destructive/10 dark:from-destructive/20 dark:to-destructive/20">
+      <Card className="border-0 bg-muted/30">
         <CardContent className="p-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/15 dark:bg-destructive/20">
             <AlertCircle className="h-8 w-8 text-destructive" />
@@ -265,7 +265,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
   if (!data) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-muted/50 to-muted dark:from-background dark:to-muted">
+      <Card className="border-0 bg-muted/30">
         <CardContent className="p-8 text-center">
           <p className="text-muted-foreground">존재하지 않는 대여 건입니다.</p>
         </CardContent>
@@ -308,7 +308,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     : null;
   return (
     <main className="space-y-8">
-      <div className="bg-gradient-to-r from-accent/10 via-accent/10 to-destructive/10 dark:from-accent/10 dark:via-accent/10 dark:to-destructive/20 rounded-2xl p-8 border border-border/30 shadow-lg">
+      <div className="bg-muted/30 rounded-2xl p-8 border border-border/30 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="flex items-center space-x-4 mb-4 sm:mb-0">
             <div className="bg-card dark:bg-muted rounded-full p-3 shadow-md">
@@ -398,11 +398,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
       {/* 대여 취소 상태 안내 배너 */}
       {cancelBanner && (
         <div
-          className={`mb-4 flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${
-            cancelBanner.status === 'requested'
-              ? 'border-border bg-muted/50 text-muted-foreground dark:border-border dark:bg-muted/40 dark:text-foreground'
-              : 'border-border bg-muted/50 text-foreground dark:border-border dark:bg-background/40 dark:text-foreground'
-          }`}
+          className={`mb-4 flex items-center justify-between rounded-lg border px-4 py-3 text-sm ${ cancelBanner.status === 'requested' ? 'border-border bg-muted/50 text-muted-foreground dark:border-border dark:bg-muted/40 dark:text-foreground' : 'border-border bg-muted/50 text-foreground dark:border-border dark:bg-background/40 dark:text-foreground' }`}
         >
           <div>
             <p className="font-medium">{cancelBanner.title}</p>
@@ -419,11 +415,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
       {banner && (
         <div
-          className={`rounded-xl border p-6 ${
-            banner.tone === 'success'
-              ? 'bg-primary/10 border-border/35 text-primary dark:bg-primary/20 dark:border-border/45 dark:text-primary'
-              : 'bg-muted/10 border-border/35 text-foreground dark:bg-muted/20 dark:border-border/45 dark:text-foreground'
-          }`}
+          className={`rounded-xl border p-6 ${ banner.tone === 'success' ? 'bg-primary/10 border-border/35 text-primary dark:bg-primary/20 dark:border-border/45 dark:text-primary' : 'bg-muted/10 border-border/35 text-foreground dark:bg-muted/20 dark:border-border/45 dark:text-foreground' }`}
         >
           <div className="flex items-center gap-3">
             {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-primary" /> : <AlertCircle className="h-6 w-6 text-primary" />}
@@ -436,8 +428,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
       )}
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
+        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5 text-primary" />
               <span>대여 정보</span>
@@ -502,8 +494,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
+        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-primary" />
               <span>결제 정보</span>
@@ -527,7 +519,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 rounded-lg border border-border/30">
+              <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border/30">
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">총 결제 금액</p>
@@ -539,8 +531,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
         </Card>
       </div>
 
-      <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/50 overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-muted/50 to-muted dark:from-card dark:to-muted border-b">
+      <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b">
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5 text-primary" />
             <span>대여 타임라인</span>

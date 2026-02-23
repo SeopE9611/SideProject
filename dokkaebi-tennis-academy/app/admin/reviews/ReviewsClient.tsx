@@ -174,7 +174,7 @@ export default function ReviewsClient() {
       {/* 페이지 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
             <Star className="h-6 w-6 text-primary" />
           </div>
           <div>

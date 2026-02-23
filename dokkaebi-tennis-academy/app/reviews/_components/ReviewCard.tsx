@@ -344,9 +344,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
             variant={voted ? 'default' : 'secondary'}
             onClick={onHelpful}
             disabled={pending}
-            className={`rounded-full px-4 py-2 font-medium transition-all ${
-              voted ? 'shadow-md' : ''
-            }`}
+            className={`rounded-full px-4 py-2 font-medium transition-all ${ voted ? 'shadow-md' : '' }`}
             aria-pressed={voted}
             aria-label={`도움돼요 ${count ? `(${count})` : ''}`}
           >

@@ -300,7 +300,7 @@ export default function StringPackagesPage() {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-muted/30 dark:bg-muted/20 ">
+        <div className="absolute inset-0 bg-muted/30 dark:bg-muted/20">
           <div className="absolute inset-0 opacity-20">
             <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none">
               <defs>
@@ -310,7 +310,7 @@ export default function StringPackagesPage() {
                   <line x1="20" y1="0" x2="20" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.5" />
                 </pattern>
               </defs>
-              <rect width="100%" height="100%" fill="url(#stringPattern)" />
+              <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
             </svg>
           </div>
           <div className="absolute inset-0 bg-overlay/20"></div>
@@ -385,9 +385,7 @@ export default function StringPackagesPage() {
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
-                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring' : ''} ${
-                  selectedPackage === pkg.id ? 'ring-4 ring-ring' : ''
-                }`}
+                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring' : ''} ${ selectedPackage === pkg.id ? 'ring-4 ring-ring' : '' }`}
                 onClick={() => setSelectedPackage(pkg.id)}
               >
                 {pkg.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}

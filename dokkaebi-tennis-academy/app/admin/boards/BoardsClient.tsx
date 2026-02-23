@@ -538,9 +538,7 @@ export default function BoardsClient() {
                       return (
                         <Card
                           key={r.id}
-                          className={`group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200 ${
-                            isPending ? 'border-warning/50 bg-warning/10' : ''
-                          }`}
+                          className={`group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200 ${ isPending ? 'border-warning/50 bg-warning/10' : '' }`}
                         >
                           <CardContent className="p-5">
                             <div className="space-y-4">

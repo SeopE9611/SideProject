@@ -400,7 +400,7 @@ export default function QnaWritePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center space-x-4">
@@ -410,7 +410,7 @@ export default function QnaWritePage() {
               </Link>
             </Button>
             <div className="flex items-center space-x-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
                 <MessageSquare className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
@@ -421,7 +421,7 @@ export default function QnaWritePage() {
           </div>
 
           <Card className="border-0 bg-card/80 shadow-xl backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+            <CardHeader className="bg-muted/30 border-b">
               <CardTitle className="flex items-center space-x-2">
                 <MessageSquare className="h-5 w-5 text-success" />
                 <span>새 문의 작성</span>
@@ -648,8 +648,7 @@ export default function QnaWritePage() {
                               {isImage && previewUrl && (
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
                                   <div
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-150
-                    rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]"
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]"
                                   >
                                     {/* lucide-react 사용 시 */}
                                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-primary-foreground" fill="none" stroke="currentColor" strokeWidth="2">

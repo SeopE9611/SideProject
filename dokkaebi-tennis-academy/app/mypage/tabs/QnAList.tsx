@@ -73,9 +73,9 @@ export default function QnAList() {
   // 빈 상태
   if (!isValidating && qnas.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
+      <Card className="relative overflow-hidden border-0 bg-muted/30">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
             <MessageCircleQuestion className="h-10 w-10 text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
@@ -96,14 +96,14 @@ export default function QnAList() {
     <div className="space-y-6">
       {qnas.map((qna) => (
         <Card key={qna.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+          <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">
                   <MessageCircleQuestion className="h-6 w-6 text-primary" />
                 </div>
                 <div>

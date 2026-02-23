@@ -170,7 +170,7 @@ export default function ServicesPage() {
                   <rect x="100" y="100" width="200" height="100" fill="none" stroke="currentColor" strokeWidth="1" />
                 </pattern>
               </defs>
-              <rect width="100%" height="100%" fill="url(#courtLines)" />
+              <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
             </svg>
           </div>
           <div className="absolute inset-0 bg-background/40"></div>
@@ -178,7 +178,7 @@ export default function ServicesPage() {
 
         {/* 장식 요소 */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 rounded-full blur-lg  "></div>
+        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 rounded-full blur-lg"></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md animate-pulse delay-1000"></div>
 
         <div className="container relative z-10">
@@ -321,7 +321,7 @@ export default function ServicesPage() {
         </div> */}
 
         {/* 스크롤 인디케이터 */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2  ">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <div className="w-6 h-10 border-2 border-border/50 rounded-full flex justify-center">
             <div className="w-1 h-3 bg-card/70 rounded-full mt-2 animate-pulse"></div>
           </div>
@@ -434,7 +434,7 @@ export default function ServicesPage() {
                 <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#courtPattern)" />
+            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
           </svg>
         </div>
 
@@ -456,9 +456,7 @@ export default function ServicesPage() {
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}
-                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${
-                  item.popular ? 'bg-card text-foreground border border-primary/20 scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95'
-                }`}
+                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${ item.popular ? 'bg-card text-foreground border border-primary/20 scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95' }`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-destructive/100 text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
@@ -568,7 +566,7 @@ export default function ServicesPage() {
       {/* 예약 안내 섹션 */}
       {/* <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="booking">
         <div className="absolute top-10 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-24 h-24 bg-muted rounded-full blur-lg  "></div>
+        <div className="absolute bottom-10 right-10 w-24 h-24 bg-muted rounded-full blur-lg"></div>
       </section> */}
 
       {/* 고객 후기 섹션 */}

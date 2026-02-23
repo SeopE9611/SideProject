@@ -255,7 +255,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <MessageComposeDialog
         open={composeOpen}
         onOpenChange={(v) => {

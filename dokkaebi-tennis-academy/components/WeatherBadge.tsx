@@ -31,12 +31,7 @@ export function WeatherBadge() {
 
   return (
     <div
-      className="
-        flex flex-col sm:flex-row sm:items-center gap-1
-        border rounded-lg px-4 py-2 text-xs sm:text-sm
-        bg-gradient-to-r from-background to-card
-        dark:from-background dark:to-card
-      "
+      className="flex flex-col sm:flex-row sm:items-center gap-1 border rounded-lg px-4 py-2 text-xs sm:text-sm bg-muted/30"
     >
       <div className="font-medium">
         {mainTemp}{' '}

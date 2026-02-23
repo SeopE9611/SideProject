@@ -41,9 +41,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
           {!collapsed && <div className="text-sm font-semibold tracking-tight text-foreground">도깨비 테니스</div>}
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-md
-                       border border-border bg-card text-muted-foreground hover:bg-background
-                       dark:border-border dark:bg-card dark:text-muted-foreground"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background dark:border-border dark:bg-card dark:text-muted-foreground"
             aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

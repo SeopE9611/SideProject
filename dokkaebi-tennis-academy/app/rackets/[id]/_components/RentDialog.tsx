@@ -81,11 +81,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
                   <button
                     key={d}
                     onClick={() => setPeriod(d as 7 | 15 | 30)}
-                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${
-                      period === d
-                        ? 'bg-primary/10 border-primary/30 text-foreground'
-                        : 'border-border hover:border-border dark:hover:border-border text-foreground'
-                    }`}
+                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${ period === d ? 'bg-primary/10 border-primary/30 text-foreground' : 'border-border hover:border-border dark:hover:border-border text-foreground' }`}
                   >
                     {d}일
                   </button>
@@ -93,7 +89,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-background to-muted dark:from-background dark:to-card p-4 rounded-lg border border-border space-y-2">
+            <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">대여 수수료</span>
                 <span className="font-bold text-foreground">{fee.toLocaleString()}원</span>

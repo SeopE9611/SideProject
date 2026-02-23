@@ -172,7 +172,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
         <CardContent className="space-y-8">
           {/* 평점 */}
-          <div className="text-center py-6 bg-gradient-to-r from-background to-card rounded-xl">
+          <div className="text-center py-6 bg-muted/30 rounded-xl">
             <h3 className="text-lg font-semibold text-foreground mb-3">고객 평점</h3>
             {renderRating(review.rating)}
           </div>
@@ -234,7 +234,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           {/* 내용 */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">리뷰 내용</h3>
-            <div className="p-6 bg-gradient-to-r from-background to-card rounded-xl border-l-4 border-border">
+            <div className="p-6 bg-muted/30 rounded-xl border-l-4 border-border">
               <p className="text-foreground leading-relaxed whitespace-pre-line text-lg">"{review.content}"</p>
             </div>
           </div>

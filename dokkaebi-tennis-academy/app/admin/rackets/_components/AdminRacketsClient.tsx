@@ -91,7 +91,7 @@ export default function AdminRacketsClient() {
   }, [filteredItems]);
 
   return (
-    <div className={['min-h-screen', 'bg-gradient-to-b from-background via-card to-card', 'dark:bg-gradient-to-b dark:from-background dark:via-muted dark:to-card'].join(' ')}>
+    <div className={['min-h-screen', 'bg-background'].join(' ')}>
       <div className="container py-8 px-6">
         <div className="mb-6">
           <div className="flex items-center space-x-3 mb-4">
@@ -132,7 +132,7 @@ export default function AdminRacketsClient() {
               bgColor: 'bg-destructive/10',
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
+            <Card key={i} className="shadow-xl bg-muted/30 border border-border">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -146,8 +146,8 @@ export default function AdminRacketsClient() {
           ))}
         </section>
 
-        <Card className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border flex-1 min-h-0 flex flex-col">
-          <CardHeader className="bg-gradient-to-r from-background to-card  border-b border-border pb-4 shrink-0">
+        <Card className="shadow-xl bg-muted/30 border border-border flex-1 min-h-0 flex flex-col">
+          <CardHeader className="bg-muted/30 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary">라켓 목록</CardTitle>

@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
-      <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card text-foreground">
+    <div className="min-h-full bg-muted/30">
+      <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>
         <div className="relative container py-16">
           <div className="text-center">

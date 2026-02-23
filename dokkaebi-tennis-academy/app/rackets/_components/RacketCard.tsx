@@ -121,7 +121,7 @@ const RacketCard = React.memo(
               <div className="flex flex-col bp-lg:flex-row bp-lg:justify-between bp-lg:items-start mb-3 bp-sm:mb-4 gap-3 bp-sm:gap-4">
                 <div className="flex-1">
                   <div className="text-sm bp-sm:text-base text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
-                  <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3 ">{racket.model}</h3>
+                  <h3 className="text-lg bp-sm:text-xl bp-md:text-2xl font-bold mb-2 bp-sm:mb-3">{racket.model}</h3>
                   <div className="flex flex-wrap items-center gap-2 mb-2 bp-sm:mb-3">
                     <StatusBadge kind="condition" state={racket.condition} />
                     <RacketAvailBadge id={racket.id} />
@@ -194,7 +194,7 @@ const RacketCard = React.memo(
     // grid view
     return (
       <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card/90 dark:bg-card/90 backdrop-blur-sm border border-border hover:border-border dark:hover:border-border group relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
           <Image
@@ -220,7 +220,7 @@ const RacketCard = React.memo(
         </div>
         <CardContent className="p-3 bp-sm:p-6">
           <div className="text-xs bp-sm:text-base text-muted-foreground mb-2 font-medium">{brandLabel}</div>
-          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors ">{racket.model}</CardTitle>
+          <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-3 line-clamp-2 group-hover:text-primary dark:group-hover:text-primary transition-colors">{racket.model}</CardTitle>
 
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <StatusBadge kind="condition" state={racket.condition} />

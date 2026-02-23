@@ -14,7 +14,7 @@ export function SkeletonProductCard() {
         </div>
       </div>
 
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-foreground/10 to-transparent animate-[shimmer_1.5s_infinite]" />
+      <div className="absolute inset-0 pointer-events-none bg-muted/30 animate-[shimmer_1.5s_infinite]" />
       <style>{`
         @keyframes shimmer {
           0% { background-position: -100% 0; }

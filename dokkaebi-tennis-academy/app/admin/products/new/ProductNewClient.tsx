@@ -480,8 +480,8 @@ export default function NewStringPage() {
 
               {/* 기본 정보 탭 */}
               <TabsContent value="basic" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
-                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
+                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                  <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">기본 정보</CardTitle>
                     <CardDescription className="text-muted-foreground">스트링의 기본 정보를 입력하세요.</CardDescription>
                   </CardHeader>
@@ -614,12 +614,10 @@ export default function NewStringPage() {
                 {basicInfo.material === 'hybrid' && (
                   <Card
                     variant="ghost"
-                    className="mt-6 shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card
-                border border-border"
+                    className="mt-6 shadow-xl bg-muted/30 border border-border"
                   >
                     <CardHeader
-                      className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card
-                           border-b border-border"
+                      className="bg-muted/30 border-b border-border"
                     >
                       <CardTitle className="text-primary">하이브리드 구성</CardTitle>
                       <CardDescription className="text-muted-foreground">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
@@ -753,8 +751,8 @@ export default function NewStringPage() {
                 )}
 
                 {/* 가격 정보 카드 */}
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
-                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
+                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                  <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">가격 정보</CardTitle>
                     <CardDescription className="text-muted-foreground">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
                   </CardHeader>
@@ -827,8 +825,8 @@ export default function NewStringPage() {
 
               {/* 성능 및 특성 탭 */}
               <TabsContent value="features" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
-                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
+                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                  <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">성능 및 특성</CardTitle>
                     <CardDescription className="text-muted-foreground">스트링의 성능과 특성을 설정하세요.</CardDescription>
                   </CardHeader>
@@ -845,9 +843,7 @@ export default function NewStringPage() {
                         step={1}
                         value={[features.power]}
                         onValueChange={(value) => setFeatures({ ...features, power: value[0] })}
-                        className="w-full h-4 data-[orientation=horizontal]:bg-muted/50
-             [&>[data-slider-track]]:bg-muted
-             [&>[data-slider-range]]:bg-primary"
+                        className="w-full h-4 data-[orientation=horizontal]:bg-muted/50 [&>[data-slider-track]]:bg-muted [&>[data-slider-range]]:bg-primary"
                       />
 
                       <div className="flex justify-between text-xs text-muted-foreground">
@@ -956,8 +952,8 @@ export default function NewStringPage() {
 
               {/* 재고 관리 탭 */}
               <TabsContent value="inventory" className="space-y-4">
-                <Card variant="ghost" className=" shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
-                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
+                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                  <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">재고 관리</CardTitle>
                     <CardDescription className="text-muted-foreground">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
                   </CardHeader>
@@ -1084,8 +1080,8 @@ export default function NewStringPage() {
 
               {/* 이미지 탭 */}
               <TabsContent value="images" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
-                  <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
+                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                  <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">스트링 이미지</CardTitle>
                     <CardDescription className="text-muted-foreground">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
                   </CardHeader>

@@ -358,7 +358,7 @@ export default function UserDetailClient({ id }: { id: string }) {
           aria-hidden
           className={[
             'pointer-events-none absolute inset-0 -z-10',
-            'bg-[radial-gradient(1000px_600px_at_-10%_-10%,hsl(var(--primary)/.06),transparent_60%),',
+            'bg-muted/30',
             'radial-gradient(800px_500px_at_110%_20%,hsl(var(--muted)/.35),transparent_55%)]',
             "before:content-[''] before:absolute before:inset-0 before:[background:radial-gradient(circle_1px,hsl(var(--border)/.12)_1px,transparent_1.5px)]",
             'before:[background-size:18px_18px]',
@@ -367,8 +367,7 @@ export default function UserDetailClient({ id }: { id: string }) {
         <TooltipProvider>
           {/* 상단 스티키 액션바 */}
           <div
-            className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border
-             bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card"
+            className="sticky top-14 md:top-[64px] z-50 -mx-2 px-2 pt-2 pb-3 border-b border-border bg-card/80 dark:bg-card backdrop-blur supports-[backdrop-filter]:bg-card supports-[backdrop-filter]:dark:bg-card"
           >
             <div className="mx-auto max-w-5xl flex items-center justify-between gap-2">
               {/* 좌측: 뒤로 */}
@@ -487,7 +486,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
           {/* 히어로 헤더 */}
           <div
-            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-gradient-to-br from-card via-muted to-card dark:from-background dark:via-transparent dark:to-card', 'border-border')}
+            className={cn('mb-6 rounded-2xl border overflow-hidden shadow-sm', 'bg-card dark:bg-card/40', 'border-border')}
           >
             <div className="flex items-start justify-between gap-4 px-5 py-4">
               <div className="flex items-center gap-4">

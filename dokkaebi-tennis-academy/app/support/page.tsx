@@ -92,7 +92,7 @@ function ErrorBox({ message = '데이터를 불러오는 중 오류가 발생했
 function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+      <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-primary" />
@@ -177,7 +177,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
 
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+      <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-success" />
@@ -220,7 +220,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                 닫기
               </Button>
               {!viewerId && secretBlock.item?._id && (
-                <Button asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
+                <Button asChild className="bg-muted/30">
                   <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
                 </Button>
               )}
@@ -320,12 +320,12 @@ export default function SupportPage() {
   const viewerId = me?.id ?? null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 헤더 */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
               <MessagesSquare className="h-6 w-6 text-foreground" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터</h1>

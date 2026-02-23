@@ -146,7 +146,7 @@ export default function NoticeDetailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 flex items-center justify-between gap-3">
@@ -173,7 +173,7 @@ export default function NoticeDetailPage() {
           </div>
 
           <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-            <CardHeader className="border-b border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
+            <CardHeader className="border-b border-border bg-muted/30">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
@@ -215,7 +215,7 @@ export default function NoticeDetailPage() {
                       </div>
 
                       <div className="flex items-start gap-3 mb-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg flex-shrink-0 mt-1">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/30 shadow-lg flex-shrink-0 mt-1">
                           <Bell className="h-5 w-5 text-primary-foreground" />
                         </div>
                         <h1 className="text-3xl font-bold text-foreground leading-tight">{notice.title}</h1>
@@ -302,7 +302,7 @@ export default function NoticeDetailPage() {
                                 <img
                                   src={(typeof imageAtts[0] === 'string' ? imageAtts[0] : imageAtts[0].url) as string}
                                   alt={(imageAtts[0] as any)?.name || 'image-1'}
-                                  className="w-full h-auto max-h-[70vh] object-contain bg-gradient-to-br from-background to-card dark:from-background dark:to-card"
+                                  className="w-full h-auto max-h-[70vh] object-contain bg-muted/30"
                                 />
                                 <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/10 transition-colors duration-300 flex items-center justify-center">
                                   <ExternalLink className="h-8 w-8 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -381,7 +381,7 @@ export default function NoticeDetailPage() {
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" asChild className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card">
+                                  <Button size="sm" asChild className="bg-muted/30">
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드
@@ -414,7 +414,7 @@ export default function NoticeDetailPage() {
               </div>
             )}
 
-            <CardFooter className="border-t border-border bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6">
+            <CardFooter className="border-t border-border bg-muted/30 p-6">
               <div className="w-full flex justify-center">
                 <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:hover:bg-card">
                   <Link href="/board/notice">

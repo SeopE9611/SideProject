@@ -52,7 +52,7 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-card">
+    <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
         {/* Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
@@ -63,14 +63,14 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
         {/* Selected Racket Summary (구매 select-string과 동일 골격) */}
         <div className="max-w-3xl mx-auto space-y-4">
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-background to-card rounded-full blur-3xl opacity-50 -z-0" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-muted/30 rounded-full blur-3xl opacity-50 -z-0" />
 
             <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
                 {racket.image ? (
                   <img src={racket.image || '/placeholder.svg'} alt={title} className="w-20 h-20 bp-md:w-24 bp-md:h-24 object-cover rounded-xl shadow-md ring-2 ring-border/60" />
                 ) : (
-                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-gradient-to-br from-muted to-card flex items-center justify-center shadow-md">
+                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-muted/30 flex items-center justify-center shadow-md">
                     <ShoppingCart className="w-10 h-10 text-muted-foreground" />
                   </div>
                 )}
@@ -119,7 +119,7 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
                 <div key={id} className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                   <div className="p-5 flex flex-col h-full">
                     {/* String Image */}
-                    <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-muted/60 to-card aspect-square flex items-center justify-center">
+                    <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
                       {stringImage ? <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 없음</div>}
                     </div>
 

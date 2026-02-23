@@ -319,7 +319,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   // 에러 카드
   if (error) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+      <Card className="border-0 bg-muted/30">
         <CardContent className="p-8 text-center">오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</CardContent>
       </Card>
     );
@@ -371,7 +371,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       {itemsToRender.length ? (
         itemsToRender.map((it) => (
           <Card key={it._id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+            <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
@@ -472,9 +472,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </Card>
         ))
       ) : (
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
+        <Card className="relative overflow-hidden border-0 bg-muted/30">
           <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
               <Star className="h-10 w-10 text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">작성한 리뷰가 없습니다</h3>

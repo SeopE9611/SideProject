@@ -128,7 +128,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
 
       <DialogContent className={cn('w-[calc(100%-24px)] p-0 overflow-hidden bg-card shadow-2xl', 'max-w-[920px] bp-md:max-w-[1040px] bp-lg:max-w-[1120px]', 'bp-sm:w-[calc(100%-48px)]')}>
         <div className="relative">
-          <div className={cn('absolute inset-x-0 top-0 h-1', 'bg-gradient-to-r from-primary/80 via-primary to-primary/80')} />
+          <div className={cn('absolute inset-x-0 top-0 h-1', 'bg-primary/40')} />
           <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">
             <DialogTitle className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
               <span className="text-base font-bold text-foreground bp-sm:text-lg">{racket.model}</span>
@@ -156,7 +156,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
               <div
                 className={cn(
                   'group relative h-[180px] w-[180px] overflow-hidden bp-sm:h-[200px] bp-sm:w-[200px] bp-md:h-[240px] bp-md:w-[240px]',
-                  'rounded-xl bg-gradient-to-br from-muted/50 to-muted',
+                  'rounded-xl bg-muted/50',
                   'ring-1 ring-muted-foreground/10',
                   'transition-all duration-300',
                   'hover:ring-primary/30 hover:shadow-lg',
@@ -166,7 +166,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                 {racket.image ? (
                   <>
                     <Image src={racket.image || '/placeholder.svg'} alt={`${brandText} ${racket.model}`} fill className={cn('object-cover transition-transform duration-500', 'group-hover:scale-105')} unoptimized />
-                    <div className={cn('absolute inset-0 bg-gradient-to-t from-overlay/20 to-transparent', 'opacity-0 transition-opacity duration-300', 'group-hover:opacity-100')} />
+                    <div className={cn('absolute inset-0 bg-overlay/20', 'opacity-0 transition-opacity duration-300', 'group-hover:opacity-100')} />
                   </>
                 ) : (
                   <span className="text-xs text-muted-foreground">No Image</span>

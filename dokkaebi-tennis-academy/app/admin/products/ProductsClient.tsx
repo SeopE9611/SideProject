@@ -316,10 +316,7 @@ export default function ProductsClient() {
                       placeholder="스트링명, 브랜드, SKU로 검색"
                       value={searchTerm}
                       onChange={(e) => handleSearchChange(e.target.value)}
-                      className="pl-8 h-9 text-xs
-             border-border focus:border-border
-             dark:border-border dark:focus:border-border
-             bg-card"
+                      className="pl-8 h-9 text-xs border-border focus:border-border dark:border-border dark:focus:border-border bg-card"
                     />
                     {searchTerm && (
                       <Button variant="ghost" size="sm" className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 hover:bg-muted dark:hover:bg-muted" onClick={() => handleSearchChange('')}>
@@ -338,16 +335,14 @@ export default function ProductsClient() {
                     variant="outline"
                     size="sm"
                     onClick={resetFilters}
-                    className="w-full border-border hover:bg-muted
-             dark:border-border dark:hover:bg-card"
+                    className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card"
                   >
                     필터 초기화
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full bg-transparent border-border hover:bg-muted
-             dark:border-border dark:hover:bg-card"
+                    className="w-full bg-transparent border-border hover:bg-muted dark:border-border dark:hover:bg-card"
                     onClick={() => setSort(null)}
                   >
                     정렬 초기화
@@ -361,10 +356,7 @@ export default function ProductsClient() {
               <div className="overflow-auto rounded-lg border border-border">
                 <Table className="table-fixed [&_tr]:border-0">
                   <TableHeader
-                    className="sticky top-0 z-10 backdrop-blur
-             bg-muted supports-[backdrop-filter]:bg-muted
-             dark:bg-card dark:supports-[backdrop-filter]:bg-card
-             border-b border-border"
+                    className="sticky top-0 z-10 backdrop-blur bg-muted supports-[backdrop-filter]:bg-muted dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-border"
                   >
                     <TableRow className="border-b border-border">
                       <TableHead className="w-[32%] text-left text-foreground">
@@ -427,11 +419,7 @@ export default function ProductsClient() {
                         return (
                           <TableRow
                             key={s._id}
-                            className="h-14 border-b border-border last:border-b-0
-             dark:border-border
-             hover:bg-muted dark:hover:bg-card
-             even:bg-muted dark:even:bg-card
-             transition-colors"
+                            className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
                           >
                             <TableCell className="text-left align-middle py-3">
                               <Link href={`/products/${s._id}`} className="hover:text-foreground dark:hover:text-foreground">
@@ -445,8 +433,7 @@ export default function ProductsClient() {
                             <TableCell className="text-center align-middle">
                               <Badge
                                 variant="secondary"
-                                className="px-2 py-0.5 rounded-full border bg-muted text-foreground border-border
-             dark:bg-muted dark:text-foreground dark:border-border"
+                                className="px-2 py-0.5 rounded-full border bg-muted text-foreground border-border dark:bg-muted dark:text-foreground dark:border-border"
                               >
                                 {brandLabel(s.brand)}
                               </Badge>

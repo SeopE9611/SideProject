@@ -637,7 +637,7 @@ export default function LoginPageClient() {
  <TabsContent value="login" className="p-6">
  <div className="space-y-6">
  <div className="text-center">
- <h2 className="text-2xl font-bold text-foreground ">로그인</h2>
+ <h2 className="text-2xl font-bold text-foreground">로그인</h2>
  <p className="text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
  </div>
 
@@ -794,7 +794,7 @@ export default function LoginPageClient() {
  <TabsContent value="register" className="p-6">
  <div className="space-y-6">
  <div className="text-center">
- <h2 className="text-2xl font-bold text-foreground ">회원가입</h2>
+ <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
  <p className="text-foreground mt-2">도깨비 테니스의 회원이 되어보세요</p>
  </div>
 

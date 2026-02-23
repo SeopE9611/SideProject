@@ -19,8 +19,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const from = pickFirst(sp.from);
 
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
-      <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-10 bp-sm:py-12 bp-md:py-24">
+    <div className="min-h-full bg-muted/30">
+      <div className="relative overflow-hidden bg-muted/30 py-10 bp-sm:py-12 bp-md:py-24">
         <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
         <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
           <svg className="w-full h-full text-foreground" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,7 +32,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <rect x="25" y="25" width="150" height="50" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.2" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#court-lines)" />
+            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
           </svg>
         </div>
 

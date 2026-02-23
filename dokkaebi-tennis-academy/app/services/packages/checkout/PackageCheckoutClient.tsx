@@ -539,7 +539,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <h3 className="text-2xl font-bold">{selectedPackage.title}</h3>
  {selectedPackage.popular && <Badge className="bg-primary/10 text-primary">인기</Badge>}
  </div>
- <p className="text-muted-foreground ">{selectedPackage.description}</p>
+ <p className="text-muted-foreground">{selectedPackage.description}</p>
  </div>
  </div>
 
@@ -568,9 +568,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  {selectedPackage.features.map((feature, idx) => (
  <div key={idx} className="flex items-start text-sm">
  <div
- className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${
-PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
- }`}
+ className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant] }`}
  ></div>
  <span>{feature}</span>
  </div>
@@ -585,7 +583,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </h4>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
  {selectedPackage.benefits.map((benefit, idx) => (
- <div key={idx} className="text-sm font-medium text-foreground ">
+ <div key={idx} className="text-sm font-medium text-foreground">
  • {benefit}
  </div>
  ))}

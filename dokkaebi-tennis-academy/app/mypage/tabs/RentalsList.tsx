@@ -130,7 +130,7 @@ export default function RentalsList() {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
@@ -145,17 +145,16 @@ export default function RentalsList() {
       {flat.map((r: any) => (
         <Card
           key={r.id}
-          className={`group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1
-            ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring' : ''}`}
+          className={`group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring' : ''}`}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+          <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
                   <Briefcase className="h-6 w-6 text-foreground" />
                 </div>
                 <div>

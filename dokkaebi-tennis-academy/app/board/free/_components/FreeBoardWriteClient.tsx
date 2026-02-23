@@ -356,7 +356,7 @@ export default function FreeBoardWriteClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -391,7 +391,7 @@ export default function FreeBoardWriteClient() {
 
         {/* 글쓰기 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
-          <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
+          <CardHeader className="flex flex-row items-center gap-3 border-b bg-muted/30">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
               <MessageSquare className="h-5 w-5" />
             </div>

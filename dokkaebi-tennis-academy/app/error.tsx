@@ -16,11 +16,11 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
-    <div className="min-h-[60vh] bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-[60vh] bg-muted/30">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
           <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-card/90 dark:bg-card">
-            <div className="h-1.5 w-full bg-gradient-to-r from-background via-muted to-card" />
+            <div className="h-1.5 w-full bg-muted/30" />
 
             <CardContent className="p-8">
               <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground grid place-content-center shadow-lg mb-6">

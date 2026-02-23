@@ -284,7 +284,7 @@ export default function AdminReviewListClient() {
       {/* 헤더 */}
       <div className="mb-2">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
             <Star className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
@@ -365,11 +365,7 @@ export default function AdminReviewListClient() {
 
       {/* 검색/필터 + 전체선택 */}
       <div
-        className="sticky top-0 z-10 -mt-2 mb-2
-  bg-card backdrop-blur
-  supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card
-  border border-border
-  rounded-md px-3 py-2  flex flex-wrap items-center justify-between gap-3"
+        className="sticky top-0 z-10 -mt-2 mb-2 bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card border border-border rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3"
       >
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -418,10 +414,7 @@ export default function AdminReviewListClient() {
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
           {/* 헤더 라벨 */}
           <div
-            className={`sticky top-0 z-[1] hidden lg:grid ${GRID}
-  items-center gap-x-3 bg-card
-  border-b border-border
-  px-3 py-3 text-[13px] text-muted-foreground`}
+            className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}
           >
             <div className="opacity-70">선택</div>
             <div>작성자</div>
@@ -519,10 +512,7 @@ export default function AdminReviewListClient() {
                       {renderStars(r.rating)}
                       <span className="text-[13px] text-foreground">{r.rating}/5</span>
                       <span
-                        className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none
-  bg-card
-  text-foreground
-  border-border"
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border"
                       >
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
@@ -601,9 +591,7 @@ export default function AdminReviewListClient() {
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
               <span
-                className="inline-flex items-center rounded-full bg-card
-      ring-1 ring-ring
-      text-primary font-semibold text-xs px-2 py-0.5"
+                className="inline-flex items-center rounded-full bg-card ring-1 ring-ring text-primary font-semibold text-xs px-2 py-0.5"
               >
                 {selected.length}개 선택됨
               </span>
@@ -613,8 +601,7 @@ export default function AdminReviewListClient() {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelected([])}
-                className="h-8 px-3 border-border text-primary hover:bg-primary/10
-             dark:border-border dark:text-primary dark:hover:bg-primary/20"
+                className="h-8 px-3 border-border text-primary hover:bg-primary/10 dark:border-border dark:text-primary dark:hover:bg-primary/20"
               >
                 해제
               </Button>
@@ -642,8 +629,7 @@ export default function AdminReviewListClient() {
       {/* 상세 모달 */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
         <DialogContent
-          className="sm:max-w-2xl border-0 ring-0 outline-none shadow-2xl
-             bg-card"
+          className="sm:max-w-2xl border-0 ring-0 outline-none shadow-2xl bg-card"
         >
           <DialogHeader>
             <DialogTitle>리뷰 상세</DialogTitle>

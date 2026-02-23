@@ -32,7 +32,7 @@ const Footer = () => {
 
   return (
     <footer className="w-full bg-card border-t border-border relative overflow-hidden mt-8 bp-sm:mt-12">
-      <div className="absolute inset-0 pointer-events-none opacity-5 bg-[radial-gradient(circle_at_20%_20%,hsl(var(--accent)/0.28),transparent_40%),radial-gradient(circle_at_80%_0%,hsl(var(--primary)/0.22),transparent_35%),radial-gradient(circle_at_0%_80%,hsl(var(--accent)/0.18),transparent_35%)]" />
+      <div className="absolute inset-0 pointer-events-none opacity-5 bg-muted/30" />
       <div className="bp-lg:pl-64 bp-lg:pr-8 xl:pl-72 xl:pr-12 2xl:pr-16 py-6 bp-sm:py-8">
         <SiteContainer className="bp-lg:mx-0">
           <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4 gap-5 bp-sm:gap-8 mb-6 bp-sm:mb-8">
@@ -40,7 +40,7 @@ const Footer = () => {
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-5 group">
                 <div>
-                  <div className="font-black text-lg bp-sm:text-xl bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">도깨비 테니스</div>
+                  <div className="font-black text-lg bp-sm:text-xl bg-muted/30 text-primary">도깨비 테니스</div>
                   <div className="text-xs text-muted-foreground font-semibold tracking-wider">DOKKAEBI TENNIS</div>
                 </div>
               </Link>

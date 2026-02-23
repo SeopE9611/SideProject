@@ -1,7 +1,7 @@
 export default function RacketDetailLoading() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-muted">
-      <div className="relative bg-gradient-to-r from-background via-muted to-card h-32 animate-pulse" />
+    <div className="min-h-screen bg-muted/30">
+      <div className="relative bg-muted/30 h-32 animate-pulse" />
       <div className="container py-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
           <div className="lg:col-span-3">

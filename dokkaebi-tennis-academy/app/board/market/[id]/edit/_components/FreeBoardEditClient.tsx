@@ -332,7 +332,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+      <div className="min-h-screen bg-muted/30">
         <div className="container mx-auto px-4 py-8 space-y-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Skeleton className="h-4 w-16" />
@@ -361,7 +361,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const isNotFound = data && !data.ok && data.error === 'not_found';
   if (error || isNotFound) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+      <div className="min-h-screen bg-muted/30">
         <div className="container mx-auto px-4 py-8">
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
             <CardContent className="space-y-4 p-6">
@@ -381,7 +381,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 실제 수정 폼 ----------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

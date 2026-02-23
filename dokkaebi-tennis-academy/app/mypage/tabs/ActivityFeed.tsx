@@ -499,9 +499,9 @@ export default function ActivityFeed() {
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-8 bp-sm:p-12 text-center fade-in">
+      <div className="rounded-2xl bg-muted/30 p-8 bp-sm:p-12 text-center fade-in">
         <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-destructive mx-auto mb-4" />
-        <p className="text-base bp-sm:text-lg font-medium text-destructive ">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
+        <p className="text-base bp-sm:text-lg font-medium text-destructive">전체 활동을 불러오는 중 오류가 발생했습니다.</p>
         <p className="text-sm text-destructive mt-2">잠시 후 다시 시도해주세요.</p>
       </div>
     );
@@ -530,44 +530,44 @@ export default function ActivityFeed() {
   return (
     <div className="space-y-5 bp-sm:space-y-6 bp-lg:space-y-8 fade-in">
       <div className="grid grid-cols-2 bp-md:grid-cols-4 gap-3 bp-sm:gap-4">
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-muted   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-border  p-2">
-              <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground " />
+            <div className="rounded-lg bg-border p-2">
+              <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-muted-foreground ">전체</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-muted-foreground">전체</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-foreground ">{counts.all}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-foreground">{counts.all}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
-              <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary " />
+              <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-primary ">진행중</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-primary">진행중</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-primary ">{counts.active}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">{counts.active}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-success/10 dark:bg-success/10 p-2">
               <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-success ">완료</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-success">완료</span>
           </div>
           <div className="text-2xl bp-sm:text-3xl font-bold text-success">{counts.done}</div>
         </div>
 
-        <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
+        <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
             <div className="rounded-lg bg-muted p-2">
-              <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary " />
+              <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-primary ">액션 필요</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-primary">액션 필요</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-primary ">{counts.action}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">{counts.action}</div>
         </div>
       </div>
 
@@ -575,7 +575,7 @@ export default function ActivityFeed() {
         <div className="flex flex-col bp-sm:flex-row gap-3 bp-sm:gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명, 상태, 종류로 검색..." className="pl-10 h-11 bp-sm:h-12 rounded-xl border-border bg-card " />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="상품명, 상태, 종류로 검색..." className="pl-10 h-11 bp-sm:h-12 rounded-xl border-border bg-card" />
             {q.trim() && (
               <Button size="sm" variant="ghost" onClick={() => setQ('')} className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted dark:hover:bg-secondary">
                 <X className="h-4 w-4" />
@@ -586,8 +586,8 @@ export default function ActivityFeed() {
 
         <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground " />
-            <span className="text-sm font-medium text-foreground ">상태:</span>
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">상태:</span>
           </div>
           <Button size="sm" variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')} className="rounded-lg h-9">
             전체
@@ -599,7 +599,7 @@ export default function ActivityFeed() {
             완료
           </Button>
           <div className="h-4 w-px bg-border dark:bg-card mx-1" />
-          <span className="text-sm font-medium text-foreground ">종류:</span>
+          <span className="text-sm font-medium text-foreground">종류:</span>
           <Button size="sm" variant={kindFilter === 'all' ? 'default' : 'outline'} onClick={() => setKindFilter('all')} className="rounded-lg h-9">
             전체
           </Button>
@@ -635,11 +635,11 @@ export default function ActivityFeed() {
       {(actionTop.length > 0 || activeTop.length > 0) && (
         <div className="grid grid-cols-1 gap-4 bp-lg:grid-cols-2 min-w-0">
           {actionTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-destructive/10 to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
+            <div className="min-w-0 rounded-2xl bg-muted/30 p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-muted p-2">
-                    <AlertCircle className="h-5 w-5 text-primary " />
+                    <AlertCircle className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">해야 할 일</h3>
@@ -673,10 +673,10 @@ export default function ActivityFeed() {
                   const canShowShipping = Boolean(app?.needsInboundTracking ?? true);
 
                   return (
-                    <div key={`action:${g.key}`} className="rounded-xl bg-card  p-4 border border-border/50 activity-card-hover">
+                    <div key={`action:${g.key}`} className="rounded-xl bg-card p-4 border border-border/50 activity-card-hover">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className="rounded-lg bg-muted  p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
+                          <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
@@ -687,9 +687,9 @@ export default function ActivityFeed() {
                                   교체 {app.status}
                                 </Badge>
                               )}
-                              <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
+                              <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
                             </div>
-                            <h4 className="font-semibold text-foreground  text-sm bp-sm:text-base truncate">{title}</h4>
+                            <h4 className="font-semibold text-foreground text-sm bp-sm:text-base truncate">{title}</h4>
                           </div>
                         </div>
                       </div>
@@ -761,11 +761,11 @@ export default function ActivityFeed() {
           )}
 
           {activeTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
+            <div className="min-w-0 rounded-2xl bg-muted/30 p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
-                    <TrendingUp className="h-5 w-5 text-primary " />
+                    <TrendingUp className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0">
                     <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">진행중</h3>
@@ -794,9 +794,9 @@ export default function ActivityFeed() {
                   const app = g.application;
 
                   return (
-                    <div key={`active:${g.key}`} className="rounded-xl bg-card  p-4 border border-border/50 activity-card-hover">
+                    <div key={`active:${g.key}`} className="rounded-xl bg-card p-4 border border-border/50 activity-card-hover">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="rounded-lg bg-muted  p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
+                        <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
@@ -807,9 +807,9 @@ export default function ActivityFeed() {
                                 교체 {app.status}
                               </Badge>
                             )}
-                            <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
                           </div>
-                          <h4 className="font-semibold text-foreground  text-sm bp-sm:text-base truncate">{title}</h4>
+                          <h4 className="font-semibold text-foreground text-sm bp-sm:text-base truncate">{title}</h4>
                         </div>
                       </div>
 
@@ -845,10 +845,10 @@ export default function ActivityFeed() {
 
       <div className="space-y-4">
         {visible.length === 0 ? (
-          <div className="rounded-2xl bg-muted  p-12 bp-sm:p-16 text-center">
+          <div className="rounded-2xl bg-muted p-12 bp-sm:p-16 text-center">
             <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg bp-sm:text-xl font-semibold text-foreground  mb-2">표시할 활동이 없습니다</h3>
-            <p className="text-sm text-muted-foreground ">필터를 조정하거나 검색어를 변경해보세요.</p>
+            <h3 className="text-lg bp-sm:text-xl font-semibold text-foreground mb-2">표시할 활동이 없습니다</h3>
+            <p className="text-sm text-muted-foreground">필터를 조정하거나 검색어를 변경해보세요.</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -858,12 +858,12 @@ export default function ActivityFeed() {
               return (
                 <div key={dayKey} className="space-y-4 slide-up" style={{ animationDelay: `${dayIndex * 50}ms` }}>
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-muted  to-transparent" />
-                    <div className="rounded-full bg-muted px-4 py-2 border border-border ">
-                      <span className="text-sm font-semibold text-foreground ">{formatDayHeader(dayKey)}</span>
+                    <div className="h-px flex-1 bg-muted/30" />
+                    <div className="rounded-full bg-muted px-4 py-2 border border-border">
+                      <span className="text-sm font-semibold text-foreground">{formatDayHeader(dayKey)}</span>
                       <span className="text-xs text-muted-foreground ml-2">{dayItems.length}건</span>
                     </div>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-muted  to-transparent" />
+                    <div className="h-px flex-1 bg-muted/30" />
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 bp-sm:gap-4 min-w-0">
@@ -888,15 +888,15 @@ export default function ActivityFeed() {
                       );
 
                       return (
-                        <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card  border border-border p-4 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
+                        <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card border border-border p-4 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
                           <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
-                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
+                            <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-muted/30 dark:bg-card/40 p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
 
                             <div className="flex-1 min-w-0 space-y-3">
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <span className="inline-flex bp-sm:hidden rounded-lg bg-muted  p-2 shrink-0">{kindIcon(g.kind)}</span>
+                                    <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">{kindIcon(g.kind)}</span>
 
                                     <Badge variant="outline" className={cn('text-xs rounded-md font-medium', statusBadgeClass(g))}>
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
@@ -907,17 +907,17 @@ export default function ActivityFeed() {
                                       </Badge>
                                     )}
 
-                                    <span className="text-xs text-muted-foreground ">{formatDate(date)}</span>
+                                    <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
 
                                     {hasAction && (
-                                      <Badge variant="outline" className="text-xs rounded-md bg-muted text-primary border-border  ">
+                                      <Badge variant="outline" className="text-xs rounded-md bg-muted text-primary border-border">
                                         액션 필요
                                       </Badge>
                                     )}
                                   </div>
 
-                                  <h3 className="text-base bp-sm:text-lg font-bold text-foreground  mb-1 truncate">{title}</h3>
-                                  <p className="text-sm text-muted-foreground ">{kindLabel(g.kind)}</p>
+                                  <h3 className="text-base bp-sm:text-lg font-bold text-foreground mb-1 truncate">{title}</h3>
+                                  <p className="text-sm text-muted-foreground">{kindLabel(g.kind)}</p>
                                 </div>
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
@@ -1052,7 +1052,7 @@ export default function ActivityFeed() {
 
       {total > 0 && flat.length > 0 && (
         <div className="text-center pt-4">
-          <p className="text-sm text-muted-foreground ">
+          <p className="text-sm text-muted-foreground">
             전체 {total}건 중 {flat.length}건 로딩됨
           </p>
         </div>

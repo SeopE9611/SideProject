@@ -24,6 +24,11 @@ const forbiddenRingOffsetPaletteRegex = new RegExp(`(?:[\\w-]+:)*ring-offset-(?:
 const forbiddenShadowPaletteRegex = new RegExp(`(?:[\\w-]+:)*shadow-(?:${paletteAlternation})-(?:\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
 const forbiddenDirectionalBorderPaletteRegex = new RegExp(`(?:[\\w-]+:)*border-(?:t|b|l|r|x|y)-(?:${paletteAlternation})-(?:\\d{2,3})`, 'g');
 const classNameBlockRegex = /className\s*=\s*(?:"([^"]*)"|\{`([\s\S]*?)`\})/g;
+const zeroGradientBaseRegex = /\bbg-gradient-to-/;
+const zeroGradientStopRegex = /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-/;
+const zeroGradientTextRegex = /\bbg-clip-text\b|\btext-transparent\b/;
+const zeroGradientArbitraryRegex = /\bbg-\[(?:radial|linear|conic)-gradient/;
+const zeroGradientSvgRegex = /<linearGradient|<radialGradient|fill="url\(#/g;
 const lowContrastPrimaryRegex = /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
 const lowContrastGradientRegex = /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
 const gradientStopRegex = /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-[\w/[\]-]+(?:\s|$)/;
@@ -285,6 +290,38 @@ for (const file of files) {
       });
     }
 
+    if (zeroGradientBaseRegex.test(block)) {
+      found.push({
+        type: 'zero-gradient-policy-bg-gradient',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (zeroGradientStopRegex.test(block)) {
+      found.push({
+        type: 'zero-gradient-policy-gradient-stop',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (zeroGradientTextRegex.test(block)) {
+      found.push({
+        type: 'zero-gradient-policy-text-gradient',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (zeroGradientArbitraryRegex.test(block)) {
+      found.push({
+        type: 'zero-gradient-policy-arbitrary-gradient',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
     if (lowContrastPrimaryRegex.test(block)) {
       warnings.push({
         file,
@@ -465,6 +502,14 @@ for (const file of files) {
         line: getLine(text, match.index ?? 0),
       });
     }
+  }
+
+  for (const match of text.matchAll(zeroGradientSvgRegex)) {
+    found.push({
+      type: 'zero-gradient-policy-svg-gradient',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
   }
 
   if (found.length === 0) continue;

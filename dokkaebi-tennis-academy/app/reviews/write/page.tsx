@@ -626,7 +626,7 @@ export default function ReviewWritePage() {
               <line x1="600" y1="100" x2="600" y2="500" stroke="currentColor" strokeWidth="1" />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#court-bg)" />
+          <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
         </svg>
       </div>
 
@@ -755,9 +755,7 @@ export default function ReviewWritePage() {
                       <Label className="text-sm font-semibold text-foreground mb-3 block">대상 신청서</Label>
 
                       <select
-                        className="w-full h-12 rounded-xl border border-border bg-card dark:bg-muted px-4
-                 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200
-                 text-left whitespace-normal leading-relaxed"
+                        className="w-full h-12 rounded-xl border border-border bg-card dark:bg-muted px-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200 text-left whitespace-normal leading-relaxed"
                         value={selectedAppId ?? ''}
                         onChange={(e) => {
                           const nextId = e.target.value || null;

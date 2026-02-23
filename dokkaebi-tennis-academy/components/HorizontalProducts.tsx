@@ -197,9 +197,7 @@ export default function HorizontalProducts({
     <Link
       key={p._id}
       href={p.href ?? `/products/${p._id}`}
-      className="group block h-full
-        bg-card dark:bg-background rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-        transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
+      className="group block h-full bg-card dark:bg-background rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     >
       <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg overflow-hidden bg-muted/50 dark:bg-card">
         {p.images?.[0] ? (
@@ -219,8 +217,7 @@ export default function HorizontalProducts({
       <div className="space-y-1.5 bp-sm:space-y-2 bp-md:space-y-2.5">
         <div className="text-xs bp-sm:text-sm bp-md:text-base text-foreground font-medium">{p.brand}</div>
         <h3
-          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground 
-          line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug"
+          className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-semibold text-foreground line-clamp-2 min-h-[2.5rem] bp-sm:min-h-[3rem] bp-md:min-h-[3.5rem] leading-snug"
         >
           {p.name}
         </h3>
@@ -231,13 +228,10 @@ export default function HorizontalProducts({
 
   const PlaceholderCard = () => (
     <div
-      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-background dark:bg-card/50 
-      flex flex-col items-center justify-center"
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-background dark:bg-card/50 flex flex-col items-center justify-center"
     >
       <div
-        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card 
-        flex items-center justify-center"
+        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card flex items-center justify-center"
       >
         <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-primary/10" />
       </div>
@@ -250,8 +244,7 @@ export default function HorizontalProducts({
 
   const SkeletonCard = () => (
     <div
-      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-card dark:bg-background animate-pulse"
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card dark:bg-background animate-pulse"
     >
       <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-muted/60 dark:bg-card/60" />
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
@@ -265,14 +258,11 @@ export default function HorizontalProducts({
   const MoreCard = () => (
     <Link
       href={moreHref}
-      className="group h-full bg-background dark:bg-card rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-        hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground
-        transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
+      className="group h-full bg-background dark:bg-card rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-all duration-300 flex items-center justify-center hover:scale-[1.02] hover:shadow-lg"
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div
-          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-primary/10 rounded-full mx-auto 
-          flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-primary/10 rounded-full mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
           <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-primary" />
         </div>
@@ -286,9 +276,7 @@ export default function HorizontalProducts({
 
   const EmptyCard = () => (
     <div
-      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-background dark:bg-card/50
-      flex flex-col items-center justify-center text-center"
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-background dark:bg-card/50 flex flex-col items-center justify-center text-center"
     >
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
         <Inbox className="h-6 w-6 text-primary" />
@@ -300,9 +288,7 @@ export default function HorizontalProducts({
 
   const ErrorCard = () => (
     <div
-      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground
-      flex flex-col items-center justify-center text-center"
+      className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground flex flex-col items-center justify-center text-center"
     >
       <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive/10 dark:bg-destructive/15 flex items-center justify-center mb-3">
         <AlertTriangle className="h-6 w-6 text-destructive" />
@@ -390,12 +376,7 @@ export default function HorizontalProducts({
                   size="sm"
                   aria-label="이전 상품 보기"
                   disabled={!canPrev}
-                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 
-                    bg-card dark:bg-background 
-                    border-0 shadow-md
-                    hover:shadow-xl hover:scale-105
-                    disabled:opacity-30 disabled:cursor-not-allowed
-                    transition-all duration-300"
+                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 bg-card dark:bg-background border-0 shadow-md hover:shadow-xl hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300"
                   onClick={() => scrollByPage('left')}
                 >
                   <ChevronLeft className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />
@@ -406,12 +387,7 @@ export default function HorizontalProducts({
                   size="sm"
                   aria-label="다음 상품 보기"
                   disabled={!canNext}
-                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 
-                    bg-card dark:bg-background 
-                    border-0 shadow-md
-                    hover:shadow-xl hover:scale-105
-                    disabled:opacity-30 disabled:cursor-not-allowed
-                    transition-all duration-300"
+                  className="rounded-full w-9 h-9 bp-sm:w-10 bp-sm:h-10 bp-md:w-12 bp-md:h-12 p-0 bg-card dark:bg-background border-0 shadow-md hover:shadow-xl hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300"
                   onClick={() => scrollByPage('right')}
                 >
                   <ChevronRight className="h-4 w-4 bp-sm:h-4 bp-sm:w-4 bp-md:h-5 bp-md:w-5" />

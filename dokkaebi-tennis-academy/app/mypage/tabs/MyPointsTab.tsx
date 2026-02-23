@@ -100,7 +100,7 @@ export default function MyPointsTab() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-background to-card dark:from-background dark:to-card text-foreground">
+        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-muted/30 text-foreground">
           <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
           <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
           <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
@@ -132,11 +132,11 @@ export default function MyPointsTab() {
         </Card>
 
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
-          <div className="absolute inset-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card group-hover:opacity-80 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-muted/30 group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-lg p-2 shadow-md">
+              <div className="bg-muted/30 rounded-lg p-2 shadow-md">
                 <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
               </div>
               <TrendingUp className="h-4 w-4 text-primary opacity-50" />
@@ -150,11 +150,11 @@ export default function MyPointsTab() {
         </Card>
 
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card bp-md:col-span-2 bp-lg:col-span-1">
-          <div className="absolute inset-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card group-hover:opacity-80 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-muted/30 group-hover:opacity-80 transition-opacity duration-300" />
 
           <CardContent className="relative p-4 bp-sm:p-5">
             <div className="flex items-start justify-between mb-3">
-              <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-lg p-2 shadow-md">
+              <div className="bg-muted/30 rounded-lg p-2 shadow-md">
                 <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-destructive" />
               </div>
               <TrendingDown className="h-4 w-4 text-destructive opacity-50" />
@@ -169,10 +169,10 @@ export default function MyPointsTab() {
       </div>
 
       <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-background to-muted dark:from-background/50 dark:to-muted/50 border-b p-5 bp-sm:p-6">
+        <CardHeader className="bg-muted/30 border-b p-5 bp-sm:p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-background to-card dark:from-background dark:to-card rounded-xl p-2.5 shadow-md">
+              <div className="bg-muted/30 rounded-xl p-2.5 shadow-md">
                 <Calendar className="h-5 w-5 text-muted-foreground" />
               </div>
               <div>
@@ -209,9 +209,7 @@ export default function MyPointsTab() {
                   <div className="flex items-start justify-between gap-3 bp-sm:gap-4">
                     <div className="flex items-start gap-3 bp-sm:gap-4 flex-1 min-w-0">
                       <div
-                        className={`shrink-0 rounded-xl p-2 bp-sm:p-2.5 shadow-sm ${
-                          it.amount >= 0 ? 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card' : 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card'
-                        }`}
+                        className="shrink-0 rounded-xl p-2 bp-sm:p-2.5 shadow-sm bg-muted/30"
                       >
                         {it.amount >= 0 ? <ArrowUpRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" /> : <ArrowDownRight className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-destructive" />}
                       </div>
