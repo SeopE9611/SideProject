@@ -216,7 +216,7 @@ export default function ProductsClient() {
   };
 
   return (
-    <div className={['min-h-screen', 'bg-gradient-to-b from-primary via-card to-accent', 'dark:bg-gradient-to-b dark:from-primary dark:via-primary dark:to-accent'].join(' ')}>
+    <div className={['min-h-screen', 'bg-muted/30'].join(' ')}>
       <div className="container py-8 px-6">
         {commonErrorMessage && <div className="text-center text-destructive">{commonErrorMessage}</div>}
         <div className="mb-2">
@@ -258,7 +258,7 @@ export default function ProductsClient() {
               bgColor: 'bg-muted',
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent border border-border">
+            <Card key={i} className="shadow-xl bg-card border border-border">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -272,8 +272,8 @@ export default function ProductsClient() {
           ))}
         </section>
 
-        <Card className="shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent border border-border flex-1 min-h-0 flex flex-col">
-          <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border pb-4 shrink-0">
+        <Card className="shadow-xl bg-card border border-border flex-1 min-h-0 flex flex-col">
+          <CardHeader className="bg-muted/50 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
@@ -285,9 +285,8 @@ export default function ProductsClient() {
                   // 사이즈/레이아웃
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
                   // 색상(라이트/다크 모두 자연스러운 플랫)
-                  'bg-muted hover:bg-primary text-primary-foreground',
-                  'dark:bg-muted dark:hover:bg-muted',
-                  // 경계/그림자: 지나치지 않게만
+                  'bg-primary text-primary-foreground hover:bg-primary/90',
+                                    // 경계/그림자: 지나치지 않게만
                   'border border-border/10 dark:border-border/10 shadow-sm hover:shadow',
                   // 포커스 접근성
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',

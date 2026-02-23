@@ -636,7 +636,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     <div className="container py-10 space-y-8">
       <div className="mx-auto max-w-4xl">
         {/* 헤더 */}
-        <div className="bg-gradient-to-r from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent rounded-2xl p-8 border border-border/30 shadow-lg mb-8">
+        <div className="bg-primary/10 rounded-2xl p-8 border border-primary/20 shadow-lg mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
@@ -803,8 +803,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         </div>
 
         {/* 상태 카드 */}
-        <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden mb-8">
-          <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
+        <Card className="border border-border shadow-xl bg-card overflow-hidden mb-8">
+          <CardHeader className="bg-muted/50 border-b border-border pb-3">
             <div className="flex items-center justify-between">
               <CardTitle>신청 상태</CardTitle>
               <ApplicationStatusBadge status={data.status} />
@@ -876,8 +876,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
+          <Card className="border border-border shadow-xl bg-card overflow-hidden">
+            <CardHeader className="bg-muted/50 border-b border-border pb-3">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <User className="h-5 w-5 text-accent" />
@@ -955,8 +955,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 결제 정보 */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="border border-border shadow-xl bg-card overflow-hidden">
+            <CardHeader className="bg-muted/50 border-b border-border flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-accent" /> 결제 정보
               </CardTitle>
@@ -1058,7 +1058,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent rounded-lg border border-border/30">
+                  <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                     <div>
                       <p className="text-sm text-muted-foreground ">결제 금액</p>
                       <p className="text-xl font-bold text-accent dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
@@ -1078,8 +1078,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 스트링 정보 */}
-          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border flex flex-col items-center py-4">
+          <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
+            <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
               <ShoppingCart className="w-6 h-6 text-foreground" />
               <CardTitle className="mt-2 text-lg font-semibold">신청 스트링 정보</CardTitle>
             </CardHeader>
@@ -1223,8 +1223,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
 
           {/* 요청사항 카드 */}
-          <Card className="md:col-span-2 border-0 shadow-xl bg-gradient-to-br from-card to-accent dark:from-primary dark:to-accent overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b pb-3">
+          <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
+            <CardHeader className="bg-muted/50 border-b border-border pb-3">
               <CardTitle className="flex items-center justify-between">
                 <span>요청사항</span>
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -1264,7 +1264,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         <div className="mt-8 space-y-6">
           {isAdmin && (
             <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
-              <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b border-border flex flex-col items-center py-4">
+              <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
                 <Truck className="h-5 w-5 text-foreground" />
                 <CardTitle className="mt-2 text-lg font-semibold">운송장 정보</CardTitle>
               </CardHeader>

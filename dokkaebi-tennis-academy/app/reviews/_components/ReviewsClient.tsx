@@ -219,7 +219,7 @@ export default function ReviewsClient() {
                   onClick={() => setSize(size + 1)}
                   disabled={isValidating}
                   variant="outline"
-                  className="rounded-full px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border hover:bg-primary dark:hover:bg-muted"
+                  className="rounded-full px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
                 >
                   {isValidating ? (
                     <>

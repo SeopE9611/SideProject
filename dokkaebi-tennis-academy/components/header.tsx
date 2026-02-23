@@ -969,7 +969,7 @@ const Header = () => {
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 text-[10px] h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
                         {cartBadge}
                       </span>
                     )}
@@ -1124,7 +1124,7 @@ const Header = () => {
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold">
+                      <span className="absolute -top-1 -right-1 text-[10px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
                         {cartBadge}
                       </span>
                     )}

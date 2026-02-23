@@ -151,7 +151,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <span>패키지 활성화 대기</span>
  </div>
  <div className="flex items-center gap-2">
- <Star className="h-4 w-4 text-accent-foreground" />
+ <Star className="h-4 w-4 text-primary" />
  <span>프리미엄 서비스</span>
  </div>
  </div>
@@ -162,7 +162,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
  <div className="p-2 bg-warning/15 rounded-full">
- <Package className="h-6 w-6 text-accent-foreground" />
+ <Package className="h-6 w-6 text-primary" />
  </div>
  <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
  </div>

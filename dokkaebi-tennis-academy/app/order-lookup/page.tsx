@@ -306,7 +306,7 @@ export default function OrderLookupPage() {
                       <Clock className="w-5 h-5 text-primary mt-0.5" />
                     </div>
                     <div className="text-sm">
-                      <p className="font-medium text-accent-foreground mb-1">조회 가능한 주문</p>
+                      <p className="font-medium text-foreground mb-1">조회 가능한 주문</p>
                       <p className="text-primary">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
                     </div>
                   </div>
