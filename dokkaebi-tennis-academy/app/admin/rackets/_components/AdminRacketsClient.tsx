@@ -137,7 +137,7 @@ export default function AdminRacketsClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-primary animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" /> : c.value}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
@@ -237,7 +237,7 @@ export default function AdminRacketsClient() {
                 <div className="overflow-auto rounded-lg border border-border">
                   <div className="space-y-4 p-8">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="h-16 bg-primary rounded animate-pulse" />
+                      <div key={i} className="h-16 rounded bg-muted animate-pulse" />
                     ))}
                   </div>
                 </div>

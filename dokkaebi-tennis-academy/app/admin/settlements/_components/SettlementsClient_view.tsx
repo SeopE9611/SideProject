@@ -568,7 +568,7 @@ export default function SettlementsClient() {
                   </div>
 
                   {isLoading ? (
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className="divide-y divide-border">
                       {[...Array(5)].map((_, i) => (
                         <div key={i} className="grid gap-3 p-5 animate-pulse" style={{ gridTemplateColumns: '56px 90px 110px 110px 110px 90px 90px 90px 90px 56px' }}>
                           <div className="h-5 bg-muted rounded" />
@@ -593,7 +593,7 @@ export default function SettlementsClient() {
                       <p className="text-sm text-muted-foreground ">위에서 월을 선택하여 스냅샷을 생성하세요</p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                    <div className="divide-y divide-border">
                       {(sortedData() ?? []).map((row, idx: number) => (
                         <div key={row.yyyymm}>
                           <div

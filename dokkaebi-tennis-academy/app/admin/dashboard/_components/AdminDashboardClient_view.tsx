@@ -771,8 +771,8 @@ export default function AdminDashboardClient() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">포인트 7일</CardTitle>
-                <div className="rounded-lg bg-primary p-2 dark:bg-primary">
-                  <Activity className="h-4 w-4 text-primary" />
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
+                  <Activity className="h-4 w-4" />
                 </div>
               </div>
             </CardHeader>
@@ -795,8 +795,8 @@ export default function AdminDashboardClient() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">커뮤니티</CardTitle>
-                <div className="rounded-lg bg-primary p-2 dark:bg-primary">
-                  <ClipboardList className="h-4 w-4 text-primary" />
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
+                  <ClipboardList className="h-4 w-4" />
                 </div>
               </div>
             </CardHeader>

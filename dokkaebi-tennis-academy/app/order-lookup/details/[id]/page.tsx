@@ -67,13 +67,13 @@ const getStatusIcon = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case '배송완료':
-      return 'bg-accent text-accent-foreground border-border';
+      return 'bg-muted text-foreground border-border';
     case '배송중':
-      return 'bg-accent text-primary border-border';
+      return 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20';
     case '배송준비중':
       return 'bg-muted text-primary border-border';
     case '주문취소':
-      return 'bg-accent text-accent-foreground border-border';
+      return 'bg-muted text-foreground border-border';
     default:
       return 'bg-muted text-foreground border-border';
   }
@@ -141,14 +141,14 @@ export default function OrderDetailPage() {
     return (
       <div className="min-h-full bg-background">
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-primary   ">
+        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
           <div className="relative container mx-auto px-4 py-16">
             <div className="text-center text-foreground">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
                 <Package className="w-8 h-8 animate-pulse" />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4"><span className="text-primary">주문</span> 상세 정보</h1>
               <p className="text-xl text-muted-foreground">주문 정보를 불러오는 중입니다...</p>
             </div>
           </div>
@@ -178,7 +178,7 @@ export default function OrderDetailPage() {
     return (
       <div className="min-h-full bg-background">
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-primary   ">
+        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
           <div className="relative container mx-auto px-4 py-16">
             <div className="text-center text-foreground">
@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-accent rounded-full mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-6">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
@@ -221,14 +221,14 @@ export default function OrderDetailPage() {
   return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-primary   ">
+      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-16">
           <div className="text-center text-foreground">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
               <Package className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 상세 정보</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4"><span className="text-primary">주문</span> 상세 정보</h1>
             <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>
             <div className="mt-4">
               <span className={`inline-flex items-center gap-2 text-lg px-4 py-2 rounded-full border-2 font-semibold ${getStatusColor(order.status)} bg-card/20 backdrop-blur-sm border-border/30 text-foreground`}>
@@ -252,7 +252,7 @@ export default function OrderDetailPage() {
 
           {/* String Service Alert */}
           {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
-            <Card className="mb-8 border-2 border-border bg-primary  ">
+            <Card className="mb-8 border-2 border-border bg-card">
               <CardContent className="p-6">
                 {!order.isStringServiceApplied ? (
                   <div className="flex items-start gap-4">
@@ -270,12 +270,12 @@ export default function OrderDetailPage() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-foreground" />
+                    <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-full border border-success/30 bg-success/10 text-success dark:bg-success/15">
+                      <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-accent-foreground mb-1">스트링 장착 서비스 신청 완료</h3>
-                      <p className="text-primary">이 주문의 스트링 장착 서비스 신청이 완료되었습니다.</p>
+                      <h3 className="mb-1 font-semibold text-foreground">스트링 장착 서비스 신청 완료</h3>
+                      <p className="text-foreground">이 주문의 스트링 장착 서비스 신청이 완료되었습니다.</p>
                     </div>
                   </div>
                 )}
@@ -361,7 +361,7 @@ export default function OrderDetailPage() {
                         <p className="font-semibold">{order.shippingInfo.address}</p>
                       </div>
                       {order.trackingNumber && (
-                        <div className="flex items-center gap-3 p-3 bg-accent rounded-lg border border-border">
+                        <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
                             <p className="text-sm text-primary mb-1">운송장 번호</p>
@@ -451,7 +451,7 @@ export default function OrderDetailPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 bg-accent rounded-lg border border-border">
+                      <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-sm font-medium text-primary">배송 보장</p>

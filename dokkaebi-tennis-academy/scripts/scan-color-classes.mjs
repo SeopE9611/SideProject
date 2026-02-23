@@ -41,6 +41,8 @@ const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|car
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
 const invalidAccentZeroTokenRegex = /(?:[\w-]+:)*(?:bg|text)-accent0\b/g;
 const splitOpacityTokenRegex = /(?:[\w-]+:)*bg-primary\s+\d+\/\d+/g;
+const themeColorsClassRegex = /className\s*=\s*(?:"[^"]*theme\(colors\.[^"]*"|\{`[\s\S]*?theme\(colors\.[\s\S]*?`\})/g;
+const forbiddenDividePaletteRegex = /(?:[\w-]+:)*divide-(?:gray|slate|zinc|neutral|stone)-(?:\d{2,3})(?:\/\d{1,3})?/g;
 
 // 허용 예외는 명시적으로 분리 관리한다.
 const BRAND_EXCEPTION_WHITELIST = new Set([
@@ -161,6 +163,24 @@ for (const file of files) {
   }
 
 
+  for (const match of text.matchAll(forbiddenDividePaletteRegex)) {
+    found.push({
+      type: 'forbidden-divide-palette-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(themeColorsClassRegex)) {
+    found.push({
+      type: 'theme-colors-in-classname',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+
+
   for (const match of text.matchAll(brokenSplitBgTokenRegex)) {
     found.push({
       type: 'broken-split-bg-token-class',
@@ -269,6 +289,16 @@ for (const file of files) {
       warnings.push({
         file,
         type: 'solid-hover-primary-on-outline-ghost-badge',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+
+    if (/\banimate-pulse\b/.test(block) && /\bbg-primary(?:\/\d{1,3})?\b/.test(block)) {
+      warnings.push({
+        file,
+        type: 'animate-pulse-with-bg-primary',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

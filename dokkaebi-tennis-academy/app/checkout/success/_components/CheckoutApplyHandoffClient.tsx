@@ -36,8 +36,8 @@ export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 5 
         <Card className="border-border/60 shadow-sm">
           <CardHeader className="text-center pb-4">
             <div className="mb-6 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent dark:bg-success/10">
-                <CheckCircle2 className="h-8 w-8 text-primary dark:text-success" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-success/30 bg-success/10 text-success dark:bg-success/15">
+                <CheckCircle2 className="h-8 w-8" />
               </div>
             </div>
             <CardTitle className="text-3xl font-semibold tracking-tight">주문 완료</CardTitle>
@@ -57,13 +57,13 @@ export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 5 
             </div>
 
             {!cancelled ? (
-              <div className="flex items-start gap-3 rounded-lg bg-accent p-4 dark:bg-primary">
+              <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/10 p-4 text-primary dark:bg-primary/20">
                 <div className="flex h-5 w-5 items-center justify-center">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className="text-base font-medium text-primary">자동 이동 중</p>
-                  <p className="text-base text-primary">
+                  <p className="text-base font-medium text-foreground">자동 이동 중</p>
+                  <p className="text-base text-foreground">
                     <span className="font-semibold">{remain}초</span> 후 신청서 페이지로 이동합니다
                   </p>
                 </div>

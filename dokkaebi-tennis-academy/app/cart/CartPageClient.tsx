@@ -326,7 +326,7 @@ export default function CartPageClient() {
           {cartItems.length > 0 && (
             <div className="flex items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                <div className="h-2 w-2 animate-pulse rounded-full bg-muted" />
                 <span>총 {cartItems.length}개 상품</span>
               </div>
               <div className="flex items-center gap-2">

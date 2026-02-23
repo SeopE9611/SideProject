@@ -358,9 +358,9 @@ export default function UserDetailClient({ id }: { id: string }) {
           aria-hidden
           className={[
             'pointer-events-none absolute inset-0 -z-10',
-            'bg-[radial-gradient(1000px_600px_at_-10%_-10%,theme(colors.emerald.50/.6),transparent_60%),',
-            'radial-gradient(800px_500px_at_110%_20%,theme(colors.sky.50/.45),transparent_55%)]',
-            "before:content-[''] before:absolute before:inset-0 before:[background:radial-gradient(circle_1px,theme(colors.slate.400/.12)_1px,transparent_1.5px)]",
+            'bg-[radial-gradient(1000px_600px_at_-10%_-10%,hsl(var(--primary)/.06),transparent_60%),',
+            'radial-gradient(800px_500px_at_110%_20%,hsl(var(--muted)/.35),transparent_55%)]',
+            "before:content-[''] before:absolute before:inset-0 before:[background:radial-gradient(circle_1px,hsl(var(--border)/.12)_1px,transparent_1.5px)]",
             'before:[background-size:18px_18px]',
           ].join(' ')}
         />
@@ -915,7 +915,7 @@ function MiniList<T>({ items, render, empty }: { items: T[]; render: (item: T) =
     return <div className="text-sm text-muted-foreground">{empty}</div>;
   }
   return (
-    <ul className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
+    <ul className="divide-y divide-border">
       {items.map((it, idx) => (
         <li key={idx} className="py-2">
           {render(it)}

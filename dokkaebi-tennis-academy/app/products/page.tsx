@@ -38,7 +38,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
 
         <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
         <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
-        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-primary rounded-full blur-lg animate-pulse" />
+        <div className="hidden bp-md:block absolute top-1/2 left-1/4 w-12 h-12 bg-muted/60 dark:bg-card/60 rounded-full blur-lg animate-pulse" />
 
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">

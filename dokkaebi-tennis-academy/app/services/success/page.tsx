@@ -237,7 +237,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="mt-10 max-w-2xl mx-auto px-4">
  <div className="bg-gradient-to-r from-muted to-card backdrop-blur-sm border border-border rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
- <div className="p-2 bg-primary rounded-full">
+ <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
  <Package className="h-6 w-6 text-accent" />
  </div>
  <h3 className="text-xl font-bold text-accent">운송장 등록 안내</h3>
@@ -273,7 +273,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </CardDescription>
  </div>
  <div className="text-right">
- <div className="inline-flex items-center px-4 py-2 bg-accent text-accent-foreground rounded-full text-sm font-medium">
+ <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary dark:bg-primary/20">
  <CheckCircle className="h-4 w-4 mr-2" />
  접수 완료
  </div>
@@ -360,7 +360,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-sm text-muted-foreground mb-1">대여 라켓</p>
  <p className="font-semibold text-foreground">{rental.brand ? `${racketBrandLabel(rental.brand)} ${rental.model ?? ''}` : '라켓 정보 없음'}</p>
  <div className="mt-2 flex items-center gap-2">
- <Badge className="bg-accent text-accent-foreground dark:bg-primary dark:text-primary-foreground">대여 {Number(rental.days ?? 0)}일</Badge>
+ <Badge className="border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">대여 {Number(rental.days ?? 0)}일</Badge>
  </div>
  </div>
 
@@ -446,7 +446,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="rounded-xl p-6 border-2 border-border/70 bg-gradient-to-r from-muted to-card">
  <div className="flex items-start gap-4">
- <div className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground grid place-content-center shadow-sm">
+ <div className="grid h-10 w-10 shrink-0 place-content-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm dark:bg-primary/20">
  <Ticket className="h-5 w-5" />
  </div>
 

@@ -180,7 +180,7 @@ export default function OrderLookupPage() {
   return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-primary   ">
+      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="relative container mx-auto px-4 py-16">
           <div className="text-center text-foreground">
@@ -208,7 +208,7 @@ export default function OrderLookupPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold bg-primary   bg-clip-text text-transparent">주문 정보 입력</CardTitle>
+              <CardTitle className="text-2xl font-bold text-foreground">주문 정보 입력</CardTitle>
               <CardDescription className="text-base text-muted-foreground">주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다</CardDescription>
             </CardHeader>
 
@@ -346,7 +346,7 @@ export default function OrderLookupPage() {
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
             <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-accent rounded-full mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-4">
                 <Shield className="w-6 h-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">안전한 조회</h3>

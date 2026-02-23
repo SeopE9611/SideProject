@@ -36,8 +36,8 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-primary rounded-xl p-3">
-                <Package className="h-6 w-6 text-primary" />
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+                <Package className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -51,8 +51,8 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-primary rounded-xl p-3">
-                <CheckCircle className="h-6 w-6 text-primary" />
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+                <CheckCircle className="h-6 w-6" />
               </div>
             </div>
           </CardContent>
@@ -66,7 +66,7 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-warning/10 rounded-xl p-3">
+              <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-warning dark:bg-warning/15">
                 <AlertTriangle className="h-6 w-6 text-warning" />
               </div>
             </div>
@@ -81,7 +81,7 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="bg-destructive/10 rounded-xl p-3">
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive dark:bg-destructive/15">
                 <XCircle className="h-6 w-6 text-destructive" />
               </div>
             </div>
