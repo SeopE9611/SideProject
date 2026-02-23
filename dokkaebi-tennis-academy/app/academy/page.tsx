@@ -197,7 +197,7 @@ export default function AcademyPage() {
 
           {/* 장식 요소 */}
           <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg  "></div>
+          <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg"></div>
           <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-muted/60 dark:bg-card/60 rounded-full blur-md animate-pulse delay-1000"></div>
 
           <div className="container relative z-10 text-center text-foreground">
@@ -253,7 +253,7 @@ export default function AcademyPage() {
           </div>
 
           {/* 스크롤 인디케이터 */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2  ">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <div className="w-6 h-10 border-2 border-border rounded-full flex justify-center">
               <div className="w-1 h-3 bg-muted-foreground rounded-full mt-2 animate-pulse"></div>
             </div>
@@ -280,9 +280,7 @@ export default function AcademyPage() {
               {programs.map((program) => (
                 <Card
                   key={program.id}
-                  className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card border border-border ${
-                    program.isPopular ? 'ring-2 ring-primary scale-105' : ''
-                  }`}
+                  className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card border border-border ${ program.isPopular ? 'ring-2 ring-primary scale-105' : '' }`}
                 >
                   {program.isPopular && (
                     <div className="absolute top-0 right-0 bg-primary/10 text-primary dark:bg-primary/20 px-4 py-2 text-sm font-bold rounded-bl-xl">
@@ -333,7 +331,7 @@ export default function AcademyPage() {
                     <div className="bg-muted rounded-xl p-4">
                       <div className="text-center">
                         <div className="font-medium text-muted-foreground">수강료</div>
-                        <div className={`text-lg font-bold ${variantStyles[program.variant].bar} bg-clip-text text-transparent`}>{program.price}</div>
+                        <div className={`text-lg font-bold ${variantStyles[program.variant].bar} text-primary`}>{program.price}</div>
                         <div className="text-sm text-muted-foreground mt-1">{program.duration}</div>
                       </div>
                     </div>
@@ -454,7 +452,7 @@ export default function AcademyPage() {
                 <Card key={index} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
                   <div className="relative overflow-hidden">
                     <Image src={facility.image || '/placeholder.svg'} alt={facility.name} width={400} height={300} className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-overlay/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </div>
 
                   <CardContent className="p-6">
@@ -532,7 +530,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background relative overflow-hidden" id="apply">
           {/* 배경 장식 */}
           <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg  "></div>
+          <div className="absolute bottom-10 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg"></div>
 
           <div className="container relative z-10">
             <div className="max-w-4xl mx-auto">

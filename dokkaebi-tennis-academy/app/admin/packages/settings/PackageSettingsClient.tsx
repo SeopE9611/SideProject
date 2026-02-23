@@ -186,10 +186,10 @@ export default function PackageSettingsClient() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card">
+      <div className="min-h-screen bg-muted/30">
         <div className="container py-6">
           {/* 헤더 */}
-          <div className="bg-gradient-to-r from-background via-muted to-card rounded-2xl p-8 border border-border shadow-lg mb-8">
+          <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
@@ -243,7 +243,7 @@ export default function PackageSettingsClient() {
                     .sort((a, b) => a.sortOrder - b.sortOrder)
                     .map((pkg) => (
                       <Card key={pkg.id} className="border-0 bg-card shadow-lg backdrop-blur-sm">
-                        <CardHeader className="bg-gradient-to-r from-background to-card border-b">
+                        <CardHeader className="bg-muted/30 border-b">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <Package className="h-5 w-5 text-primary" />
@@ -390,7 +390,7 @@ export default function PackageSettingsClient() {
             {/* 일반 설정 */}
             <TabsContent value="general">
               <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
-                <CardHeader className="bg-gradient-to-r from-background to-card border-b">
+                <CardHeader className="bg-muted/30 border-b">
                   <CardTitle className="flex items-center space-x-2">
                     <Settings className="h-5 w-5 text-success" />
                     <span>일반 설정</span>

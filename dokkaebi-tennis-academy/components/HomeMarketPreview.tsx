@@ -56,7 +56,7 @@ export default function HomeMarketPreview() {
           items.map((p, idx) => (
             <li key={p.id ?? `${p.createdAt}-${idx}`}>
               <Link className="group flex items-start justify-between gap-3 bp-sm:gap-4 rounded-lg px-4 bp-sm:px-5 py-3 bp-sm:py-4 transition-colors hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground" href={`/board/market/${p.id}`}>
-                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-foreground/80 group-hover:text-foreground ">{p.title}</span>
+                <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-foreground/80 group-hover:text-foreground">{p.title}</span>
                 <span className="shrink-0 text-xs bp-sm:text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
               </Link>
             </li>

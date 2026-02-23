@@ -11,7 +11,7 @@ const cardVariants = cva('rounded-lg bg-card text-card-foreground shadow-sm', {
       ghost: '',
       // 배경 강조가 필요한 섹션 카드
       muted: 'border bg-muted text-foreground',
-      elevatedGradient: 'border-0 shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden',
+      elevatedGradient: 'border border-border bg-card shadow-xl overflow-hidden',
     },
   },
   defaultVariants: {
@@ -28,7 +28,7 @@ const cardHeaderVariants = cva('flex flex-col space-y-1.5 p-6', {
   variants: {
     variant: {
       default: '',
-      sectionGradient: 'bg-gradient-to-r from-background to-card border-b',
+      sectionGradient: 'bg-muted/50 dark:bg-card/40 border-b border-border',
     },
   },
   defaultVariants: {

@@ -92,7 +92,7 @@ const fmtDateTime = (v: string | Date) =>
 
 function DetailSkeleton() {
  return (
- <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm ">
+ <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
  <CardHeader className="space-y-4">
  <div className="flex items-center gap-3">
  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
@@ -849,11 +849,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  return (
  <div
- className={`group relative rounded-xl transition-all ${
- isReply
- ? 'ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border '
- : 'border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border'
- }`}
+ className={`group relative rounded-xl transition-all ${ isReply ? 'ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border ' : 'border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border' }`}
  >
  <div className="mb-3 flex items-start justify-between gap-3">
  <div className="flex items-center gap-3">
@@ -988,7 +984,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  </div>
  </div>
  ) : (
- <p className="text-sm leading-relaxed text-muted-foreground ">{comment.content}</p>
+ <p className="text-sm leading-relaxed text-muted-foreground">{comment.content}</p>
  )}
 
  {!isEditing && !isReply && !isDeleted && (
@@ -1006,7 +1002,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {replyingToId === comment.id && (
  <form
- className="mt-3 space-y-2.5 rounded-lg border border-border bg-muted/50 p-4 dark:border-border "
+ className="mt-3 space-y-2.5 rounded-lg border border-border bg-muted/50 p-4 dark:border-border"
  onSubmit={(e) => {
  e.preventDefault();
  const content = replyInputRef.current?.value || '';
@@ -1063,7 +1059,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  };
 
  return (
- <div className="min-h-screen bg-gradient-to-br from-accent/10 via-accent/10 to-primary/10 dark:from-background dark:via-muted dark:to-muted">
+ <div className="min-h-screen bg-muted/30">
  <MessageComposeDialog
  open={composeOpen}
  onOpenChange={(v) => {
@@ -1080,7 +1076,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="mb-1 text-sm text-muted-foreground">
  <span className="font-medium text-success">게시판</span>
  <span className="mx-1">›</span>
- <Link href="${config.routePrefix}" className="text-muted-foreground underline-offset-2 hover:underline ">
+ <Link href="${config.routePrefix}" className="text-muted-foreground underline-offset-2 hover:underline">
  중고 거래 게시판
  </Link>
  <span className="mx-1">›</span>
@@ -1117,7 +1113,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {isLoading && <DetailSkeleton />}
 
  {!isLoading && error && (
- <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm ">
+ <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
  <CardContent className="p-6 space-y-4">
  <ErrorBox
  message={isNotFound ? '해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.' : detailError.message}
@@ -1137,8 +1133,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  )}
 
  {!isLoading && !error && item && (
- <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm ">
- <CardHeader className="space-y-3 border-b bg-gradient-to-r from-accent/10 to-primary/20 dark:from-accent/15 dark:to-primary/15">
+ <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
+ <CardHeader className="space-y-3 border-b bg-muted/30">
  <div className="flex items-start gap-3">
  <div className="flex-1 space-y-2">
  <CardTitle className="text-base md:text-lg">
@@ -1255,7 +1251,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
  {/* 첨부파일 */}
  {attachments.length > 0 && (
- <div className="mt-8 space-y-3 border-t border-border pt-4 ">
+ <div className="mt-8 space-y-3 border-t border-border pt-4">
  <div className="flex items-center gap-2">
  <FileText className="h-4 w-4 text-primary" />
  <span className="text-sm font-semibold text-foreground">첨부파일</span>
@@ -1271,7 +1267,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  if (!url) return null;
 
  return (
- <div key={`${url}-${index}`} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border ">
+ <div key={`${url}-${index}`} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border">
  <div className="flex min-w-0 flex-1 items-center gap-3">
  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 dark:bg-primary/20">
  <FileText className="h-4 w-4 text-primary" />
@@ -1420,10 +1416,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  )}
  {/* ================== 댓글 카드 시작 ================== */}
  {!isLoading && !error && item && (
- <Card className="overflow-hidden border border-border bg-card shadow-sm ">
- <CardHeader className="border-b border-border bg-muted/50 px-6 py-4 ">
+ <Card className="overflow-hidden border border-border bg-card shadow-sm">
+ <CardHeader className="border-b border-border bg-muted/50 px-6 py-4">
  <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
- <MessageSquare className="h-5 w-5 text-muted-foreground " />
+ <MessageSquare className="h-5 w-5 text-muted-foreground" />
  <span>댓글</span>
  <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground">{totalComments}</span>
  </CardTitle>
@@ -1450,21 +1446,21 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  </div>
  </>
  ) : (
- <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border ">
+ <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border">
  <MessageSquare className="h-5 w-5 text-muted-foreground" />
  <p className="text-sm text-muted-foreground">로그인 후 댓글을 작성할 수 있습니다.</p>
  </div>
  )}
  </div>
 
- <div className="h-px bg-muted " />
+ <div className="h-px bg-muted" />
 
  {/* 댓글 리스트 영역 */}
  <div className="space-y-3">
  {isCommentsLoading && (
  <div className="space-y-3">
  {Array.from({ length: 3 }).map((_, i) => (
- <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-5 ">
+ <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-5">
  <div className="flex items-center gap-3">
  <Skeleton className="h-9 w-9 rounded-full" />
  <div className="space-y-2">
@@ -1535,7 +1531,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  )}
 
  {!isCommentsLoading && totalCommentPages > 1 && (
- <div className="flex items-center justify-between rounded-lg border-t border-border bg-muted/50 px-4 py-3 ">
+ <div className="flex items-center justify-between rounded-lg border-t border-border bg-muted/50 px-4 py-3">
  <span className="text-xs font-medium text-muted-foreground">
  {commentPage} / {totalCommentPages}
  </span>

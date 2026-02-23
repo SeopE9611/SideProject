@@ -221,7 +221,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-card">
+    <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h1 className="text-2xl bp-md:text-4xl font-bold tracking-tight text-foreground">스트링 선택</h1>
@@ -237,13 +237,13 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
         <div className="max-w-3xl mx-auto">
           <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-background to-card rounded-full blur-3xl opacity-50 -z-0" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-muted/30 rounded-full blur-3xl opacity-50 -z-0" />
             <div className="relative z-10 p-4 bp-md:p-6 flex gap-4 bp-md:gap-6 items-center">
               <div className="flex-shrink-0">
                 {racket.image ? (
                   <img src={racket.image || '/placeholder.svg'} alt={racket.name} className="w-20 h-20 bp-md:w-24 bp-md:h-24 object-cover rounded-xl shadow-md ring-2 ring-ring" />
                 ) : (
-                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-gradient-to-br from-background to-card flex items-center justify-center shadow-md">
+                  <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 rounded-xl bg-muted/30 flex items-center justify-center shadow-md">
                     <ShoppingCart className="w-10 h-10 text-muted-foreground" />
                   </div>
                 )}
@@ -310,7 +310,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                   ].join(' ')}
                 >
                   <div className="p-5 flex flex-col h-full">
-                    <div className="mb-4 rounded-xl overflow-hidden bg-gradient-to-br from-background to-muted aspect-square flex items-center justify-center">
+                    <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
                       {stringImage ? (
                         <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                       ) : (

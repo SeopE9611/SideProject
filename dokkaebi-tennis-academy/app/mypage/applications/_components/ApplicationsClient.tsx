@@ -284,9 +284,9 @@ export default function ApplicationsClient() {
   return (
     <div className="space-y-6">
       {applications.length === 0 ? (
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
+        <Card className="relative overflow-hidden border-0 bg-muted/30">
           <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
               <FileText className="h-10 w-10 text-success" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">신청 내역이 없습니다</h3>
@@ -339,7 +339,7 @@ export default function ApplicationsClient() {
           const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
           return (
             <Card key={app.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+              <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
                 <div className="h-full w-full bg-card rounded-lg" />
               </div>
 
@@ -347,12 +347,10 @@ export default function ApplicationsClient() {
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                        isStringService ? 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card' : 'bg-gradient-to-br from-background to-card dark:from-background dark:to-card'
-                      }`}
+                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30"
                     >
                       {isStringService ? (
-                        <LayoutGrid className={`h-6 w-6  ${isStringService ? 'text-warning' : 'text-success'}`} />
+                        <LayoutGrid className={`h-6 w-6 ${isStringService ? 'text-warning' : 'text-success'}`} />
                       ) : (
                         <GraduationCap className="h-6 w-6 text-success" />
                       )}
@@ -370,8 +368,7 @@ export default function ApplicationsClient() {
                           <Link href={`/mypage?tab=orders&orderId=${orderId}`}>
                             <Badge
                               variant="outline"
-                              className="border-border bg-muted/80 text-[11px] font-medium text-foreground
-          dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-card"
+                              className="border-border bg-muted/80 text-[11px] font-medium text-foreground dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-card"
                             >
                               원 주문 상세 보기
                             </Badge>
@@ -408,8 +405,7 @@ export default function ApplicationsClient() {
                       return (
                         <Badge
                           variant="outline"
-                          className="ml-1 border-border bg-muted text-[11px] font-medium text-primary
-        dark:border-border dark:bg-muted dark:text-primary"
+                          className="ml-1 border-border bg-muted text-[11px] font-medium text-primary dark:border-border dark:bg-muted dark:text-primary"
                         >
                           취소 요청됨
                         </Badge>

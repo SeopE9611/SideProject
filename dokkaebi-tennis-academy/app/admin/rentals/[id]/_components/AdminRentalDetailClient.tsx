@@ -284,18 +284,18 @@ export default function AdminRentalDetailClient() {
     : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-card dark:bg-gradient-to-br dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
       <div className="container py-10">
         <div className="mx-auto max-w-4xl space-y-8">
-          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border/30 shadow-lg mb-8">
+          <div className="bg-muted/30 rounded-2xl p-8 border border-border/30 shadow-lg mb-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-foreground ">대여 관리</h1>
-                  <p className="mt-1 text-muted-foreground ">대여 ID: {data.id}</p>
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground">대여 관리</h1>
+                  <p className="mt-1 text-muted-foreground">대여 ID: {data.id}</p>
                 </div>
               </div>
               <div className="sm:ml-auto flex flex-wrap items-center justify-end gap-2">
@@ -321,23 +321,23 @@ export default function AdminRentalDetailClient() {
               <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground ">대여 시작</span>
+                  <span className="text-sm font-medium text-foreground">대여 시작</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground ">{data.outAt ? formatDate(data.outAt) : '-'}</p>
+                <p className="text-lg font-semibold text-foreground">{data.outAt ? formatDate(data.outAt) : '-'}</p>
               </div>
 
               <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground ">총 결제금액</span>
+                  <span className="text-sm font-medium text-foreground">총 결제금액</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground ">{won(data.amount?.total)}</p>
+                <p className="text-lg font-semibold text-foreground">{won(data.amount?.total)}</p>
               </div>
 
               <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground ">대여 상태</span>
+                  <span className="text-sm font-medium text-foreground">대여 상태</span>
                 </div>
                 <Badge className={cn(badgeBase, badgeSizeSm, rentalStatusColors[data.status])}>{rentalStatusLabels[data.status] || data.status}</Badge>
               </div>
@@ -345,9 +345,9 @@ export default function AdminRentalDetailClient() {
               <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground ">대여 기간</span>
+                  <span className="text-sm font-medium text-foreground">대여 기간</span>
                 </div>
-                <p className="text-lg font-semibold text-foreground ">{data.days}일</p>
+                <p className="text-lg font-semibold text-foreground">{data.days}일</p>
               </div>
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
@@ -409,8 +409,8 @@ export default function AdminRentalDetailClient() {
             <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-ring" />
           )}
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden mb-8">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8">
+            <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>대여 상태를 변경하거나 보증금 환불을 처리할 수 있습니다.</CardDescription>
             </CardHeader>
@@ -503,8 +503,8 @@ export default function AdminRentalDetailClient() {
               eventMeta={pendingDialogConfig.eventMeta}
             />
           )}
-          <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+          <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>고객 정보</CardTitle>
             </CardHeader>
             <CardContent className="p-6 text-sm space-y-3">
@@ -523,8 +523,8 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+            <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+              <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <Package className="h-5 w-5 text-destructive" />
                   <span>라켓 정보</span>
@@ -540,28 +540,28 @@ export default function AdminRentalDetailClient() {
          */}
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground ">브랜드</p>
-                      <p className="font-semibold text-foreground ">{racketBrandLabel(data.brand)}</p>
+                      <p className="text-sm text-muted-foreground">브랜드</p>
+                      <p className="font-semibold text-foreground">{racketBrandLabel(data.brand)}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground ">모델</p>
-                      <p className="font-semibold text-foreground ">{data.model}</p>
+                      <p className="text-sm text-muted-foreground">모델</p>
+                      <p className="font-semibold text-foreground">{data.model}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground ">대여 기간</p>
-                      <p className="font-semibold text-foreground ">{data.days}일</p>
+                      <p className="text-sm text-muted-foreground">대여 기간</p>
+                      <p className="font-semibold text-foreground">{data.days}일</p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+            <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+              <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-primary" />
                   <span>결제 정보</span>
@@ -578,14 +578,14 @@ export default function AdminRentalDetailClient() {
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground ">대여 수수료</p>
-                      <p className="font-semibold text-foreground ">{won(data.amount?.fee)}</p>
+                      <p className="text-sm text-muted-foreground">대여 수수료</p>
+                      <p className="font-semibold text-foreground">{won(data.amount?.fee)}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
-                      <p className="text-sm text-muted-foreground ">보증금</p>
-                      <p className="font-semibold text-foreground ">{won(data.amount?.deposit)}</p>
+                      <p className="text-sm text-muted-foreground">보증금</p>
+                      <p className="font-semibold text-foreground">{won(data.amount?.deposit)}</p>
                     </div>
                   </div>
                   {/* 스트링 상품 금액: 있을 때만 표시 */}
@@ -593,8 +593,8 @@ export default function AdminRentalDetailClient() {
                     <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground ">스트링 상품</p>
-                        <p className="font-semibold text-foreground ">{won(data.amount?.stringPrice ?? 0)}</p>
+                        <p className="text-sm text-muted-foreground">스트링 상품</p>
+                        <p className="font-semibold text-foreground">{won(data.amount?.stringPrice ?? 0)}</p>
                       </div>
                     </div>
                   )}
@@ -604,14 +604,14 @@ export default function AdminRentalDetailClient() {
                     <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-muted-foreground ">교체 서비스비</p>
-                        <p className="font-semibold text-foreground ">{won(data.amount?.stringingFee ?? 0)}</p>
+                        <p className="text-sm text-muted-foreground">교체 서비스비</p>
+                        <p className="font-semibold text-foreground">{won(data.amount?.stringingFee ?? 0)}</p>
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border/50">
+                  <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border/50">
                     <div>
-                      <p className="text-sm text-muted-foreground ">총 결제 금액</p>
+                      <p className="text-sm text-muted-foreground">총 결제 금액</p>
                       <p className="text-xl font-bold text-primary dark:text-foreground">{won(data.amount?.total)}</p>
                     </div>
                   </div>
@@ -654,8 +654,8 @@ export default function AdminRentalDetailClient() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
                 운송장 정보
@@ -721,8 +721,8 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span>대여 타임라인</span>
@@ -733,29 +733,29 @@ export default function AdminRentalDetailClient() {
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground ">대여 시작</p>
-                    <p className="font-semibold text-foreground ">{data.outAt ? formatDate(data.outAt) : '-'}</p>
+                    <p className="text-sm text-muted-foreground">대여 시작</p>
+                    <p className="font-semibold text-foreground">{data.outAt ? formatDate(data.outAt) : '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground ">반납 예정</p>
-                    <p className="font-semibold text-foreground ">{data.dueAt ? formatDate(data.dueAt) : '-'}</p>
+                    <p className="text-sm text-muted-foreground">반납 예정</p>
+                    <p className="font-semibold text-foreground">{data.dueAt ? formatDate(data.dueAt) : '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground ">반납 완료</p>
-                    <p className="font-semibold text-foreground ">{data.returnedAt ? formatDate(data.returnedAt) : '-'}</p>
+                    <p className="text-sm text-muted-foreground">반납 완료</p>
+                    <p className="font-semibold text-foreground">{data.returnedAt ? formatDate(data.returnedAt) : '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <CreditCard className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground ">보증금 환불</p>
-                    <p className="font-semibold text-foreground ">{data.depositRefundedAt ? formatDate(data.depositRefundedAt) : '-'}</p>
+                    <p className="text-sm text-muted-foreground">보증금 환불</p>
+                    <p className="font-semibold text-foreground">{data.depositRefundedAt ? formatDate(data.depositRefundedAt) : '-'}</p>
                   </div>
                 </div>
               </div>

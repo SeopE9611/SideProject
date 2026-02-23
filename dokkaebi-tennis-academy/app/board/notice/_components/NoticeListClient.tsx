@@ -137,7 +137,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
   }).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12 space-y-6 sm:space-y-8">
         <div className="flex flex-col space-y-4 sm:space-y-6">
           <div className="flex items-center space-x-3 sm:space-x-4">
@@ -149,7 +149,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
             </Button>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
                 <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-primary-foreground" />
               </div>
               <div>
@@ -161,7 +161,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
         </div>
 
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b p-5 sm:p-6 md:p-8">
+          <CardHeader className="bg-muted/30 border-b p-5 sm:p-6 md:p-8">
             <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -205,14 +205,14 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                     setField(inputField);
                   }}
                   size="sm"
-                  className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card h-10 sm:h-11 text-sm sm:text-base"
+                  className="bg-muted/30 h-10 sm:h-11 text-sm sm:text-base"
                   disabled={isBusy}
                 >
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
                 {isAdmin && (
-                  <Button asChild size="sm" className="bg-gradient-to-r from-background to-card hover:from-background hover:to-card h-10 sm:h-11 text-sm sm:text-base">
+                  <Button asChild size="sm" className="bg-muted/30 h-10 sm:h-11 text-sm sm:text-base">
                     <Link href="/board/notice/write">
                       <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                       작성하기

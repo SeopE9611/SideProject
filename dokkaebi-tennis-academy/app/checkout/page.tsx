@@ -819,13 +819,7 @@ export default function CheckoutPage() {
                   {orderItems.map((item) => (
                     <div
                       key={item.id}
-                      className="
- flex flex-col bp-sm:flex-row bp-sm:items-center
- gap-3 bp-sm:gap-4
- p-3 bp-sm:p-4
- bg-muted/50
- rounded-lg border border-border
- "
+                      className="flex flex-col bp-sm:flex-row bp-sm:items-center gap-3 bp-sm:gap-4 p-3 bp-sm:p-4 bg-muted/50 rounded-lg border border-border"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="relative shrink-0">

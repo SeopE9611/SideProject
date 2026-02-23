@@ -325,7 +325,7 @@ const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+      <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bell className="h-5 w-5 text-primary" />
@@ -426,7 +426,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
 function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+      <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5 text-success" />
@@ -505,7 +505,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
 function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoading?: boolean; error?: any }) {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+      <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Star className="h-5 w-5 text-foreground" />
@@ -543,7 +543,7 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
                       <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getReviewTypeColor(review.type)}`}>
                         {review.type === 'product' ? '상품' : review.type === 'service' ? '서비스' : '기타'}
                       </Badge>
-                      <Link href="/reviews" className="font-semibold text-foreground hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate ">
+                      <Link href="/reviews" className="font-semibold text-foreground hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate">
                         {reviewExcerpt(review)}
                       </Link>
                     </div>
@@ -569,7 +569,7 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
 function CommunityIntroCard() {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b">
+      <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <MessageSquare className="h-5 w-5 text-foreground" />
@@ -648,12 +648,12 @@ export default function BoardPage() {
   const gearPosts = Array.isArray(gData?.items) ? (gData.items as CommunityListItem[]) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 섹션 */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
               <MessageSquare className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">게시판</h1>
@@ -673,7 +673,7 @@ export default function BoardPage() {
             kind="free"
             title="자유게시판"
             icon={<MessageSquare className="h-5 w-5 text-foreground" />}
-            headerClassName="bg-gradient-to-r from-background to-card dark:from-background dark:to-card"
+            headerClassName="bg-muted/50 dark:bg-card/40 border-b border-border"
             listHref="/board/free"
             writeHref="/board/free/write"
             items={freePosts}
@@ -686,7 +686,7 @@ export default function BoardPage() {
             kind="market"
             title="중고거래"
             icon={<ShoppingBag className="h-5 w-5 text-primary" />}
-            headerClassName="bg-gradient-to-r from-background to-card dark:from-background dark:to-card"
+            headerClassName="bg-muted/50 dark:bg-card/40 border-b border-border"
             listHref="/board/market"
             writeHref="/board/market/write"
             items={marketPosts}
@@ -699,7 +699,7 @@ export default function BoardPage() {
             kind="gear"
             title="장비 사용기"
             icon={<Dumbbell className="h-5 w-5 text-primary" />}
-            headerClassName="bg-gradient-to-r from-background to-card dark:from-background dark:to-card"
+            headerClassName="bg-muted/50 dark:bg-card/40 border-b border-border"
             listHref="/board/gear"
             writeHref="/board/gear/write"
             items={gearPosts}

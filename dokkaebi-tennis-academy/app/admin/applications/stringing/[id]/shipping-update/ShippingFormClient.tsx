@@ -77,7 +77,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-8 px-4">
+    <div className="min-h-screen bg-muted/30 py-8 px-4">
       <div className="container mx-auto max-w-2xl">
         <div className="text-center mb-8">
           <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">

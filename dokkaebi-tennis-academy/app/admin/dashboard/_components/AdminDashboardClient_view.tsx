@@ -2,7 +2,7 @@
 
 /** Responsibility: 관리자 대시보드 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
-import { useId, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { Activity, AlertTriangle, Bell, Boxes, ClipboardList, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from 'lucide-react';
@@ -33,7 +33,6 @@ const fetcher = async (url: string) => {
 // ----------------------------- 그래프(가벼운 SVG) -----------------------------
 
 function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: number }>; height?: number }) {
-  const gradientId = useId();
   const width = 220;
   const padding = 6;
 
@@ -64,14 +63,7 @@ function SparkLine({ data, height = 56 }: { data: Array<{ date: string; value: n
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="text-primary">
-      <defs>
-        <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="currentColor" stopOpacity="0.05" />
-        </linearGradient>
-      </defs>
-
-      <path d={areaD} fill={`url(#${gradientId})`} />
+      <path d={areaD} fill="currentColor" fillOpacity="0.12" />
       <path d={d} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );

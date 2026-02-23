@@ -20,9 +20,9 @@ export default function UserSection({ user }: Props) {
   if (!user || loading) return null;
 
   return (
-    <div className="border-0 p-6 rounded-2xl shadow-xl bg-gradient-to-r from-background to-card dark:from-background dark:to-card backdrop-blur-sm">
+    <div className="border-0 p-6 rounded-2xl shadow-xl bg-muted/30 backdrop-blur-sm">
       <div className="flex items-center gap-4 mb-4">
-        <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-2xl p-3 shadow-lg">
+        <div className="bg-muted/30 rounded-2xl p-3 shadow-lg">
           <User className="h-6 w-6 text-primary" />
         </div>
         <div>

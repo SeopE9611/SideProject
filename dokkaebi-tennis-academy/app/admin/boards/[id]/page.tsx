@@ -125,7 +125,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
       notFound();
     }
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+      <div className="min-h-screen bg-muted/30">
         <div className="container py-8 px-6">
           <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
         </div>
@@ -150,7 +150,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
   const safeContent = await sanitizeHtml(String(post.content ?? ''));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container py-8 px-6">
         <div className="mb-6">
           <Link href="/admin/boards" className="inline-flex items-center text-primary hover:text-primary dark:hover:text-primary hover:underline">
@@ -160,7 +160,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
         </div>
 
         <div className="flex flex-col space-y-8">
-          <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border shadow-lg">
+          <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
@@ -176,7 +176,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-2 shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
+            <Card className="md:col-span-2 shadow-xl bg-muted/30 border border-border">
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getBoardTypeColor(String(post.type ?? ''))}>{getBoardTypeName(String(post.type ?? ''))}</Badge>
@@ -191,8 +191,8 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl bg-gradient-to-br from-card to-card dark:from-background dark:to-card border border-border">
-              <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b border-border">
+            <Card className="shadow-xl bg-muted/30 border border-border">
+              <CardHeader className="bg-muted/30 border-b border-border">
                 <CardTitle className="text-primary">게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">

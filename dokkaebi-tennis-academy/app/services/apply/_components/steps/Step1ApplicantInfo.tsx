@@ -238,15 +238,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
         {/* {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
           <div
-            className="
-                block cursor-pointer rounded-xl
-                border border-border
-                bg-card/90 dark:bg-card
-                px-4 py-3 shadow-sm
-                hover:bg-background dark:hover:bg-card
-                transition text-sm
-                peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
-              "
+            className="block cursor-pointer rounded-xl border border-border bg-card/90 dark:bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition text-sm peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring"
           >
             <div className="font-semibold mb-1 text-foreground">자가 발송 안내</div>
             <p className="mb-3 text-foreground">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
@@ -297,9 +289,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
             <Label
               htmlFor="cm-self"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
-             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
                 <Box className="h-4 w-4 text-primary" />
@@ -314,9 +304,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
             <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
             <Label
               htmlFor="cm-visit"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
-             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2">
                 <Store className="h-4 w-4 text-primary" />
@@ -332,9 +320,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
 
             <Label
               htmlFor="cm-pickup"
-              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition
-             peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring
-             peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
+              className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition peer-data-[state=checked]:border-primary/30 peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring peer-disabled:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:hover:bg-card dark:peer-disabled:hover:bg-card"
             >
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-primary" />

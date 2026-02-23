@@ -31,7 +31,7 @@ export default function TensionGuidePage() {
       description: '편안한 플레이와 부상 방지를 위한 낮은 텐션',
       characteristics: ['파워 증가', '편안한 느낌', '부상 위험 감소', '넓은 스윗스팟'],
       recommended: '처음 시작하시는 분들께는 24kg을 권장합니다',
-      color: 'from-accent to-primary',
+      color: 'bg-primary/10',
       bgColor: 'bg-primary/10 dark:bg-primary/15',
       borderColor: 'border-border',
     },
@@ -44,7 +44,7 @@ export default function TensionGuidePage() {
       description: '컨트롤과 파워의 균형을 맞춘 중간 텐션',
       characteristics: ['균형잡힌 플레이', '적당한 컨트롤', '다양한 샷 구사', '스핀 생성 용이'],
       recommended: '균형 잡힌 플레이를 원하시면 26kg이 적합합니다',
-      color: 'from-accent to-primary',
+      color: 'bg-primary/10',
       bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
     },
@@ -57,7 +57,7 @@ export default function TensionGuidePage() {
       description: '정밀한 컨트롤과 스핀을 위한 높은 텐션',
       characteristics: ['정밀한 컨트롤', '강한 스핀', '빠른 스윙 활용', '일관된 타구감'],
       recommended: '빠른 스윙을 가지신 분은 28kg을 권장합니다',
-      color: 'from-accent to-primary',
+      color: 'bg-primary/10',
       bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
     },
@@ -70,7 +70,7 @@ export default function TensionGuidePage() {
       description: '최고 수준의 컨트롤과 정확성을 위한 고텐션',
       characteristics: ['최고 컨트롤', '정확한 플레이스먼트', '프로 수준 스핀', '정교한 터치'],
       recommended: '프로 수준의 파워가 있다면 30kg 이상을 고려하세요',
-      color: 'from-accent to-primary',
+      color: 'bg-primary/10',
       bgColor: 'bg-muted/50 dark:bg-muted/40',
       borderColor: 'border-border',
     },
@@ -88,7 +88,7 @@ export default function TensionGuidePage() {
       cons: ['팔에 무리 가능', '파워 감소', '정기적 교체 필요'],
       adjustment: '일반 텐션보다 2-3kg 낮게 시작하세요',
       bestFor: '스핀 위주 플레이어, 스트링이 자주 끊어지는 분',
-      color: 'from-muted to-muted',
+      color: 'bg-muted/40',
     },
     {
       id: 'multi',
@@ -101,7 +101,7 @@ export default function TensionGuidePage() {
       cons: ['내구성 낮음', '텐션 손실 빠름', '가격이 높음'],
       adjustment: '표준 텐션을 그대로 적용하세요',
       bestFor: '팔꿈치 문제가 있는 분, 편안한 느낌을 원하는 분',
-      color: 'from-accent to-primary',
+      color: 'bg-primary/10',
     },
     {
       id: 'hybrid',
@@ -114,7 +114,7 @@ export default function TensionGuidePage() {
       cons: ['설정이 복잡', '일관성 떨어질 수 있음'],
       adjustment: '메인을 크로스보다 2kg 높게 설정하세요',
       bestFor: '자신만의 세팅을 원하는 분, 다양한 실험을 좋아하는 분',
-      color: 'from-accent/100 to-destructive/100',
+      color: 'bg-destructive/20',
     },
     {
       id: 'natural',
@@ -127,7 +127,7 @@ export default function TensionGuidePage() {
       cons: ['높은 가격', '습기에 약함', '관리 필요'],
       adjustment: '표준 텐션보다 1-2kg 낮게 시작하세요',
       bestFor: '최고의 퍼포먼스를 원하는 분, 프로 선수',
-      color: 'from-accent to-primary',
+      color: 'bg-primary/10',
     },
   ];
 
@@ -289,9 +289,7 @@ export default function TensionGuidePage() {
                           <button
                             key={st.id}
                             onClick={() => setStringType(st.id as StringType)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${
-                              stringType === st.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
-                            }`}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${ stringType === st.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <st.icon className={`h-4 w-4 ${stringType === st.id ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -311,9 +309,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${
-                              playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
-                            }`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${ playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-muted-foreground dark:text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
@@ -330,9 +326,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setSwingSpeed(option.id as SwingSpeed)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${
-                              swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
-                            }`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${ swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-muted-foreground dark:text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
@@ -365,7 +359,7 @@ export default function TensionGuidePage() {
                         <span>20kg</span>
                         <span>32kg</span>
                       </div>
-                      <div className="relative h-3 bp-sm:h-4 bg-gradient-to-r from-accent via-accent to-primary rounded-full shadow-inner">
+                      <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                         <div
                           className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card dark:bg-background ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
                           style={{ left: `calc(${((calculatedTension - 20) / 12) * 100}% - 12px)` }}
@@ -481,7 +475,7 @@ export default function TensionGuidePage() {
                       </div>
 
                       {isSelected && (
-                        <div className="mt-3 bp-md:mt-4 pt-3 bp-md:pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
+                        <div className="mt-3 bp-md:mt-4 pt-3 bp-md:pt-4 border-t border-border animate-in fade-in slide-in-">
                           <div className="flex items-start gap-2 bg-muted/50 dark:bg-muted/40 p-3 rounded-lg">
                             <Lightbulb className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                             <p className="text-xs bp-md:text-sm text-foreground">{player.recommended}</p>
@@ -571,7 +565,7 @@ export default function TensionGuidePage() {
             <div className="grid gap-4 bp-md:gap-6">
               {/* 텐션 이해하기 */}
               <Card className="overflow-hidden border bg-card">
-                <div className="h-1 bg-gradient-to-r from-accent via-accent to-primary" />
+                <div className="h-1 bg-muted/30" />
                 <CardHeader className="pb-3 bp-md:pb-4">
                   <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-card-foreground">
                     <BarChart3 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />

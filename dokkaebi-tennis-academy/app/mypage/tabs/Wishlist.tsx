@@ -24,9 +24,9 @@ export default function Wishlist() {
 
   if (items.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 ">
+      <Card className="relative overflow-hidden border-0">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <Heart className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>

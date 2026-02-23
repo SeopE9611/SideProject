@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function BrandBoardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between gap-3">
@@ -33,7 +33,7 @@ export default function BrandBoardPage() {
 
         {/* 준비중 안내 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-muted/30">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted shadow-lg">
                 <Grid2X2 className="h-5 w-5 text-primary-foreground" />

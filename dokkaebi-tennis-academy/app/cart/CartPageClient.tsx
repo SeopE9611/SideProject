@@ -309,7 +309,7 @@ export default function CartPageClient() {
                 <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#court-lines)" />
+            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
           </svg>
         </div>
         <SiteContainer variant="wide" className="relative py-10 bp-sm:py-12 bp-md:py-14">

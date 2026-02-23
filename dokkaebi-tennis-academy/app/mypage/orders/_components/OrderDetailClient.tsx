@@ -246,7 +246,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  return (
  <main className="w-full">
  <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6 bp-sm:space-y-8">
- <div className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card rounded-2xl p-8 border border-border shadow-lg">
+ <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg">
  {/* 헤더: 제목과 액션 버튼 */}
  <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 bp-md:gap-6">
  {/* 제목 섹션 */}
@@ -279,7 +279,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Calendar className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-foreground ">주문일시</span>
+ <span className="text-sm font-medium text-foreground">주문일시</span>
  </div>
  <p className="text-lg font-semibold text-foreground">{formatDate(orderDetail.date)}</p>
  </div>
@@ -287,7 +287,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <CreditCard className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-foreground ">총 결제금액</span>
+ <span className="text-sm font-medium text-foreground">총 결제금액</span>
  </div>
  <p className="text-lg font-semibold text-foreground">{formatCurrency(orderDetail.total)}</p>
  </div>
@@ -295,7 +295,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
- <span className="text-sm font-medium text-foreground ">주문 상태</span>
+ <span className="text-sm font-medium text-foreground">주문 상태</span>
  </div>
  <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} />
  </div>
@@ -323,7 +323,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {orderDetail.shippingInfo?.withStringService && (
  <>
  {totalSlots > 0 && remainingSlots > 0 ? (
- <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border border-border rounded-xl p-6 shadow-lg">
+ <div className="bg-muted/30 border border-border rounded-xl p-6 shadow-lg">
  <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
  <div className="flex items-start bp-sm:items-center space-x-3 min-w-0">
  <div className="bg-warning/10 dark:bg-warning/10 rounded-full p-2">
@@ -512,7 +512,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  )}
  {isEditMode && canUserEdit && !editingCustomer && (
- <CardFooter className="pt-3 flex justify-center bg-muted/50 ">
+ <CardFooter className="pt-3 flex justify-center bg-muted/50">
  <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-primary/10 dark:hover:bg-primary/20 border-border">
  고객정보 수정
  </Button>
@@ -601,7 +601,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
  </div>
 
- <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border">
+ <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
  <div>
  <p className="text-sm text-muted-foreground">결제 금액</p>
  <p className="text-xl font-bold text-primary">{formatCurrency(orderDetail.total)}</p>
@@ -691,7 +691,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  )}
  {isEditMode && canUserEdit && !editingRequest && (
- <CardFooter className="flex justify-center bg-muted/50 ">
+ <CardFooter className="flex justify-center bg-muted/50">
  <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-warning/10 border-border">
  요청사항 수정
  </Button>

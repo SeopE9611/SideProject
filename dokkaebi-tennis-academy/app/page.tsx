@@ -332,7 +332,7 @@ export default function Home() {
                       {b.img ? (
                         <>
                           <img src={b.img} alt={b.alt ?? title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-overlay/55 via-overlay/15 to-transparent" />
+                          <div className="absolute inset-0 bg-muted/30" />
                         </>
                       ) : (
                         <div className="absolute inset-0 bg-card" />
@@ -431,21 +431,11 @@ export default function Home() {
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
             <div
-              className="
-            rounded-2xl border border-border
-            bg-card
-            p-5 bp-sm:p-6
-            flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between
-            gap-4
-            transition-all hover:shadow-lg
-          "
+              className="rounded-2xl border border-border bg-card p-5 bp-sm:p-6 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 transition-all hover:shadow-lg"
             >
               <div className="flex items-start gap-4">
                 <div
-                  className="
-                flex h-12 w-12 items-center justify-center rounded-xl
-                bg-primary/10 text-primary dark:bg-primary/20
-              "
+                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20"
                 >
                   <Search className="h-6 w-6" />
                 </div>
@@ -456,14 +446,7 @@ export default function Home() {
               </div>
 
               <div
-                className="
-              shrink-0 inline-flex items-center justify-center
-              rounded-lg px-4 py-2
-              text-xs bp-sm:text-sm font-semibold
-              bg-muted text-foreground
-              transition-colors
-              group-hover:bg-primary/10 group-hover:text-foreground dark:group-hover:bg-primary/20
-            "
+                className="shrink-0 inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs bp-sm:text-sm font-semibold bg-muted text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-foreground dark:group-hover:bg-primary/20"
               >
                 바로가기
               </div>
@@ -548,11 +531,7 @@ export default function Home() {
               <div className="flex items-center gap-1.5 bp-sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveStringBrand('all')}
-                  className={`
-                  shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
-                  transition-all duration-300 whitespace-nowrap
-                  ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
-                `}
+                  className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}`}
                 >
                   전체
                 </button>
@@ -560,11 +539,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveStringBrand(b.value as StringBrandKey)}
-                    className={`
-                    shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
-                    transition-all duration-300 whitespace-nowrap
-                    ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
-                  `}
+                    className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeStringBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}`}
                   >
                     {b.label}
                   </button>
@@ -604,11 +579,7 @@ export default function Home() {
               <div className="flex items-center gap-1.5 bp-sm:gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 <button
                   onClick={() => setActiveBrand('all')}
-                  className={`
-                  shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold
-                  transition-all duration-300 whitespace-nowrap
-                  ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
-                `}
+                  className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === 'all' ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}`}
                 >
                   전체
                 </button>
@@ -616,11 +587,7 @@ export default function Home() {
                   <button
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
-                    className={`
-                    shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold 
-                    transition-all duration-300 whitespace-nowrap
-                    ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}
-                  `}
+                    className={`shrink-0 px-4 bp-sm:px-5 bp-md:px-6 py-2 bp-sm:py-2.5 rounded-full text-xs bp-sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap ${activeBrand === b.value ? 'bg-primary text-primary-foreground shadow-md' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground'}`}
                   >
                     {b.label}
                   </button>

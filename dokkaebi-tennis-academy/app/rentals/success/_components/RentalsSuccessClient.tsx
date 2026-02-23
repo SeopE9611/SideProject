@@ -87,9 +87,9 @@ export default function RentalsSuccessClient({ data }: Props) {
   const refundHolder = data.refundAccount?.holder || (typeof window !== 'undefined' && sessionStorage.getItem('rentals-refund-holder')) || '';
   const refundBankInfo = refundBankKey ? (bankLabelMap as any)[refundBankKey] : null;
   return (
-    <div className="min-h-full bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-full bg-muted/30">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card text-foreground">
+      <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>
         <SiteContainer variant="wide" className="relative py-16">
           <div className="text-center">
@@ -108,7 +108,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
           {/* 대여 정보 카드 */}
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-background via-muted to-card p-6">
+            <div className="bg-muted/30 p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Package className="h-6 w-6 text-primary" />
                 대여 정보
@@ -123,7 +123,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
-                <div className="p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border">
+                <div className="p-4 bg-muted/30 rounded-lg border border-border">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
@@ -161,7 +161,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 )}
                 <Separator />
-                <div className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card p-6 rounded-xl border border-border">
+                <div className="bg-muted/30 p-6 rounded-xl border border-border">
                   <div className="flex justify-between items-center text-2xl font-bold">
                     <span className="text-foreground">총 결제 금액</span>
                     <span className="text-primary">{total.toLocaleString()}원</span>
@@ -171,7 +171,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
                 {/* 무통장 안내 카드 */}
                 <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-gradient-to-r from-background to-card p-6">
+                  <div className="bg-muted/30 p-6">
                     <CardTitle className="flex items-center gap-3 text-2xl">
                       <CreditCard className="h-6 w-6 text-primary" />
                       무통장 입금 안내
@@ -204,10 +204,10 @@ export default function RentalsSuccessClient({ data }: Props) {
               </div>
             </CardContent>
 
-            <CardFooter className="bg-gradient-to-r from-background via-muted to-card dark:from-background dark:via-muted dark:to-card p-6">
+            <CardFooter className="bg-muted/30 p-6">
               <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <Button
-                  className="flex-1 h-12 bg-gradient-to-r from-background via-muted to-card hover:from-background hover:via-muted hover:to-card shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
+                  className="flex-1 h-12 bg-muted/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
                   asChild
                 >
                   <Link href="/mypage?tab=rentals" className="flex items-center gap-2">
@@ -216,7 +216,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button className="flex-1 h-12 bg-gradient-to-r from-background to-card hover:from-background hover:to-card shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
+                <Button className="flex-1 h-12 bg-muted/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
                   <Link href="/rackets" className="flex items-center gap-2">
                     다른 라켓 보기
                     <ArrowRight className="h-4 w-4" />
@@ -228,7 +228,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
           {/* 안내사항 */}
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-background via-muted to-card">
+            <CardHeader className="bg-muted/30">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-foreground" />
                 대여 안내사항
@@ -237,14 +237,14 @@ export default function RentalsSuccessClient({ data }: Props) {
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
                     <Truck className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-primary mb-1">배송 안내</h4>
                       <p className="text-sm text-primary">결제 완료 후 배송이 시작됩니다.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
                     <Clock className="h-5 w-5 text-success mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-success mb-1">대여 기간</h4>
@@ -253,14 +253,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
                     <Shield className="h-5 w-5 text-foreground mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-foreground mb-1">보증금 환불</h4>
                       <p className="text-sm text-foreground">반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
                     <Phone className="h-5 w-5 text-warning mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-warning mb-1">고객 지원</h4>
@@ -273,7 +273,7 @@ export default function RentalsSuccessClient({ data }: Props) {
           </Card>
 
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-background to-card p-6">
+            <div className="bg-muted/30 p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Undo2 className="h-6 w-6 text-primary" />
                 보증금 환급 계좌

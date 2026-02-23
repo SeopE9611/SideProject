@@ -30,12 +30,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
           {slides.map((s, i) => {
             const body = (
               <div
-                className="relative
-  h-[200px]              /* ≤575 */
-  bp-sm:h-[240px]        /* 576~767 */
-  bp-md-only:h-[340px]   /* 768~1199 */
-  bp-lg:h-[520px]        /* ≥1200 */
-  w-full flex-[0_0_100%] select-none"
+                className="relative h-[200px] /* ≤575 */ bp-sm:h-[240px] /* 576~767 */ bp-md-only:h-[340px] /* 768~1199 */ bp-lg:h-[520px] /* ≥1200 */ w-full flex-[0_0_100%] select-none"
               >
                 {/* 원본 비율 유지 + 잘림 방지(cover → contain)
                     - grid place-items-center: 중앙 정렬
@@ -44,12 +39,11 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                   <img src={s.img} alt={s.alt ?? `slide-${i + 1}`} className="max-w-full max-h-full object-contain" loading="eager" decoding="async" />
                 </div>
                 {/* 상단 그라데이션/얇은 라인으로 품질감 */}
-                <div className="absolute inset-0 bg-gradient-to-t from-overlay/15 via-overlay/5 to-transparent" />
+                <div className="absolute inset-0 bg-muted/30" />
                 {s.caption && (
                   <div className="absolute bottom-4 left-4 bp-sm:bottom-6 bp-sm:left-6 bp-md:bottom-8 bp-md:left-10">
                     <span
-                      className="inline-block rounded-full bg-overlay/50 text-primary-foreground
-                                       text-xs bp-md:text-sm px-3 py-1 backdrop-blur"
+                      className="inline-block rounded-full bg-overlay/50 text-primary-foreground text-xs bp-md:text-sm px-3 py-1 backdrop-blur"
                     >
                       {s.caption}
                     </span>
@@ -70,18 +64,14 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
       {/* 좌우 네비게이션 */}
       <button
         onClick={scrollPrev}
-        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-border/10 bg-card/80
-                   border border-border
-                   hover:bg-card shadow-md"
+        className="absolute left-4 bp-md:left-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-border/10 bg-card/80 border border-border hover:bg-card shadow-md"
         aria-label="이전 배너"
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-border/10 bg-card/80
-                   border border-border
-                   hover:bg-card shadow-md"
+        className="absolute right-4 bp-md:right-5 top-1/2 -translate-y-1/2 z-10 grid place-items-center h-10 w-10 rounded-full focus:outline-none focus:ring focus:ring-border/10 bg-card/80 border border-border hover:bg-card shadow-md"
         aria-label="다음 배너"
       >
         <ChevronRight className="h-5 w-5" />

@@ -117,7 +117,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  const perSessionPrice = packageInfo.sessions > 0 && packageInfo.price > 0 ? Math.round(packageInfo.price / packageInfo.sessions) : 0;
 
  return (
- <div className="min-h-full bg-gradient-to-b from-background via-muted/40 to-muted/60 dark:from-background dark:via-muted/40 dark:to-background">
+ <div className="min-h-full bg-muted/30">
  {/* Hero Section */}
  <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
  <div className="absolute inset-0 bg-overlay/20"></div>
@@ -130,7 +130,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <line x1="20" y1="0" x2="20" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.5" />
  </pattern>
  </defs>
- <rect width="100%" height="100%" fill="url(#stringPattern)" />
+ <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
  </svg>
  </div>
  <div className="relative container py-16">
@@ -208,7 +208,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <h3 className="text-2xl font-bold">{packageInfo.title}</h3>
  {packageInfo.id.includes('30') && <Badge className="bg-primary/15 text-primary border border-primary/20 dark:bg-primary/20">인기</Badge>}
  </div>
- <p className="text-muted-foreground ">구매하신 스트링 교체 패키지입니다.</p>
+ <p className="text-muted-foreground">구매하신 스트링 교체 패키지입니다.</p>
  </div>
  </div>
 

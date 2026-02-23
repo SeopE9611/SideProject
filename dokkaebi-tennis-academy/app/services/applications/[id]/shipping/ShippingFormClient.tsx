@@ -316,7 +316,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
             <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center shadow-lg">
               <Truck className="w-7 h-7 text-foreground" />
             </div>
-            <div className="w-12 h-px bg-gradient-to-l from-transparent to-card"></div>
+            <div className="w-12 h-px bg-muted/30"></div>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">{isEdit ? '자가발송 운송장 수정' : '자가발송 운송장 입력'}</h1>
           <p className="text-muted-foreground leading-relaxed">{isEdit ? '이미 등록된 운송장 정보를 수정할 수 있습니다.' : '라켓을 발송하신 뒤, 택배사와 송장번호를 입력해 주세요.'}</p>
@@ -352,7 +352,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   <Package className="w-5 h-5" />
                   <span className="font-semibold">배송 정보</span>
                 </div>
-                <div className="flex-1 h-px bg-gradient-to-l from-transparent to-card dark:to-card"></div>
+                <div className="flex-1 h-px bg-muted/30"></div>
               </div>
 
               <div className="space-y-6">

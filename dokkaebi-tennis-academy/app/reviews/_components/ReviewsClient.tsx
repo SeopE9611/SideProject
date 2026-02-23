@@ -97,7 +97,7 @@ export default function ReviewsClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card relative">
+    <div className="min-h-screen bg-muted/30 relative">
       {/* Tennis court background pattern */}
       <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.01] bg-tennis-court-pattern-review" />
 
@@ -105,7 +105,7 @@ export default function ReviewsClient() {
         {/* Header with tennis theme */}
         <div className="text-center space-y-4 mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-background to-card flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center">
               <Trophy className="h-6 w-6 text-foreground" />
             </div>
             <h1 className="text-3xl font-bold text-foreground">고객 리뷰</h1>
@@ -115,7 +115,7 @@ export default function ReviewsClient() {
 
         {/* Control panel with tennis court styling */}
         <Card className="border-0 bg-card/80 dark:bg-card backdrop-blur-sm shadow-lg rounded-3xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-background via-muted to-card" />
+          <div className="h-1 bg-muted/30" />
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center gap-4">
               {/* Tabs with tennis court styling */}
@@ -202,7 +202,7 @@ export default function ReviewsClient() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center">
                   <MessageSquareText className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">

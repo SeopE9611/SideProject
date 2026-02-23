@@ -149,8 +149,8 @@ export default function AdminRentalHistory({ id }: Props) {
   const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
-    <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-gradient-to-b from-background to-card dark:from-background dark:to-card">
-      <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
+    <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-muted/30">
+      <CardHeader className="bg-muted/30 border-b pb-3">
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-foreground" />
           <span>처리 이력</span>

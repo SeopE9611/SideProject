@@ -458,16 +458,12 @@ export default function PackageOrdersClient() {
 
   return (
     <div
-        className="
-          min-h-screen
-          bg-gradient-to-br from-background via-muted to-card
-          dark:bg-gradient-to-br dark:from-background dark:via-muted dark:to-card
-        "
+        className="min-h-screen bg-muted/30 dark:bg-muted/30"
       >
         <div className="container py-6">
           {/* 제목 및 설명 */}
           <div className="flex items-center space-x-3 mb-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-background to-card shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
               <Package className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
@@ -657,7 +653,7 @@ export default function PackageOrdersClient() {
             </CardHeader>
             <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
               <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border shadow-sm max-h-[60vh] min-w-0">
-                <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs " aria-busy={isValidating && packages.length === 0}>
+                <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs" aria-busy={isValidating && packages.length === 0}>
                   <TableHeader className="sticky top-0 bg-background dark:bg-card shadow-sm">
                     <TableRow>
                       <TableHead className={cn(thClasses, 'w-[120px]')}>패키지 ID</TableHead>

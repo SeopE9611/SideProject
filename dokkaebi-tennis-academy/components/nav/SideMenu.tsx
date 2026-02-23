@@ -125,8 +125,7 @@ export default function SideMenu() {
                   >
                     <AccordionTrigger
                       value="strings-service"
-                      className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                        hover:bg-primary/10 dark:hover:bg-primary/20"
+                      className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20"
                     >
                       장착 서비스 안내
                     </AccordionTrigger>
@@ -156,8 +155,7 @@ export default function SideMenu() {
                     >
                       <AccordionTrigger
                         value="strings-brand"
-                        className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg
-                          hover:bg-primary/10 dark:hover:bg-primary/20"
+                        className="px-3 py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20"
                       >
                         브랜드
                       </AccordionTrigger>

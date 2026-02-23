@@ -151,7 +151,7 @@ export default function QnaDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-muted/50 dark:from-background dark:via-muted/20 dark:to-background">
+    <div className="min-h-screen bg-muted/30">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="mb-6 flex items-center justify-between gap-3">

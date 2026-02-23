@@ -65,11 +65,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
 
           <div className="flex items-center gap-1 min-w-0">
             <span
-              className="
-          text-sm min-w-0 grow
-          max-w-[140px] sm:max-w-[180px] md:max-w-[220px]
-          whitespace-nowrap overflow-hidden text-ellipsis
-        "
+              className="text-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"
               title={`${user.name} 님`}
             >
               {user.name} 님
@@ -77,12 +73,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
 
             {isAdmin && (
               <span
-                className="
-            shrink-0 whitespace-nowrap
-            text-[11px] font-semibold
-            px-1.5 py-[2px] rounded
-            bg-accent/15 text-accent
-          "
+                className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1.5 py-[2px] rounded bg-accent/15 text-accent"
               >
                 관리자
               </span>

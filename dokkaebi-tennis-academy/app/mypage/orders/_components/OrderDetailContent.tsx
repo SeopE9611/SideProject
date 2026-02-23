@@ -101,7 +101,7 @@
 
 //             <div className="grid gap-6 md:grid-cols-3">
 //               {/* 주문 상태 및 요약 */}
-//               <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md ">
+//               <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
 //                 <CardHeader className="pb-3">
 //                   <div className="flex items-center justify-between">
 //                     <CardTitle>주문 상태</CardTitle>
@@ -109,7 +109,7 @@
 //                   </div>
 //                   <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
 //                 </CardHeader>
-//                 <CardFooter className=" pt-4">
+//                 <CardFooter className="pt-4">
 //                   <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between"></div>
 //                   {['대기중', '결제완료'].includes(orderDetail.status) && <CancelOrderDialog orderId={orderDetail._id.toString()} />}
 //                 </CardFooter>

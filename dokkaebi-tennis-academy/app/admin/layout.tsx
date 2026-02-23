@@ -72,8 +72,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
-      <div className="relative overflow-hidden bg-gradient-to-r from-background via-muted to-card text-foreground">
+    <div className="flex min-h-full flex-col bg-muted/30">
+      <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/10"></div>
         <div className="absolute inset-0 opacity-20">
           <svg className="w-full h-full text-foreground" viewBox="0 0 400 200" fill="none">
@@ -85,7 +85,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#court-lines)" />
+            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
           </svg>
         </div>
         <div className="relative container py-16">

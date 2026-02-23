@@ -15,11 +15,11 @@ export default function SettingsPage() {
   useUnsavedChangesGuard(vm.isDirtyAny && !vm.isSubmittingAny);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
+    <div className="min-h-screen bg-muted/30">
       <div className="container py-10">
         <div className="mx-auto max-w-6xl space-y-6">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-background to-card px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-muted/30 px-4 py-1.5 mb-4">
               <Shield className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">관리자 설정</span>
             </div>

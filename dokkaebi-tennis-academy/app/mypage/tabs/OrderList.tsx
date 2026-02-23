@@ -215,7 +215,7 @@ export default function OrderList() {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <ShoppingBag className="h-10 w-10 text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
@@ -252,7 +252,7 @@ export default function OrderList() {
 
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background via-muted to-card opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+            <div className="pointer-events-none absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
@@ -260,7 +260,7 @@ export default function OrderList() {
               {/* Header */}
               <div className="flex items-start justify-between gap-3 mb-6">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
                     <ShoppingBag className="h-6 w-6 text-primary" />
                   </div>
                   <div className="min-w-0">

@@ -34,7 +34,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
 
     // (UX) throw로 터뜨리지 말고, 페이지 내에서 오류를 안내합니다.
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-8 px-4">
+      <div className="min-h-screen bg-muted/30 py-8 px-4">
         <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-8">
             <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
@@ -91,7 +91,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   const pageDesc = isRegistered ? '배송 방법과 예상 수령일을 수정할 수 있습니다.' : '배송 방법과 예상 수령일을 등록할 수 있습니다.';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card py-8 px-4">
+    <div className="min-h-screen bg-muted/30 py-8 px-4">
       <div className="container mx-auto max-w-2xl">
         {/* 헤더 */}
         <div className="text-center mb-8">
