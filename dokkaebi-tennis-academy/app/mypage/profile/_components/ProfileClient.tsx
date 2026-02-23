@@ -306,7 +306,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  <div>
  <h1 className="text-4xl md:text-5xl font-black mb-2 text-foreground">회원정보 수정</h1>
- <p className="text-xl text-accent">개인정보를 안전하게 관리하세요</p>
+ <p className="text-xl text-primary">개인정보를 안전하게 관리하세요</p>
  </div>
  </div>
  </div>
@@ -333,7 +333,7 @@ export default function ProfileClient({ user }: Props) {
  </TabsTrigger>
  <TabsTrigger
  value="tennis-profile"
- className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground dark:text-foreground data-[state=active]:bg-card data-[state=active]:text-accent data-[state=active]:shadow-md"
+ className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground dark:text-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
  >
  <MdSportsTennis className="h-5 w-5" />
  <span className="text-xs font-medium">테니스 프로필</span>
@@ -351,7 +351,7 @@ export default function ProfileClient({ user }: Props) {
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
  <div className="bg-primary/10 text-primary dark:bg-primary/20 rounded-2xl p-3 shadow-lg">
- <User className="h-6 w-6 text-accent" />
+ <User className="h-6 w-6 text-primary" />
  </div>
  <div>
  <CardTitle className="text-xl">기본정보</CardTitle>
@@ -530,7 +530,7 @@ export default function ProfileClient({ user }: Props) {
  </Label>
  <div className="flex gap-2">
  <Input id="postalCode" value={profileData.address.postalCode} readOnly className="h-12 bg-muted text-muted-foreground cursor-default" placeholder="12345" />
- <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-accent hover:bg-primary/10 dark:hover:bg-primary/20" variant="outline">
+ <Button type="button" onClick={handleAddressSearch} className="h-12 px-6 bg-transparent border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20" variant="outline">
  검색
  </Button>
  </div>

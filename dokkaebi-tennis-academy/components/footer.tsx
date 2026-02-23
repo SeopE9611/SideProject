@@ -53,7 +53,7 @@ const Footer = () => {
               <ul className="space-y-2">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent transition-colors duration-300">
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
                       {link.name}
                     </Link>
                   </li>
@@ -67,7 +67,7 @@ const Footer = () => {
               <ul className="space-y-2">
                 {customerService.map((link) => (
                   <li key={link.name}>
-                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-accent transition-colors duration-300">
+                    <Link href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
                       {link.name}
                     </Link>
                   </li>
@@ -79,7 +79,7 @@ const Footer = () => {
               <h3 className="text-base bp-sm:text-lg font-bold mb-3 bp-sm:mb-4 text-foreground">연락처</h3>
               <div className="space-y-3">
                 <div className="flex items-start gap-2.5">
-                  <Phone className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                  <Phone className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <span className="text-sm font-semibold text-foreground block">0507-1392-3493</span>
                     <p className="text-xs text-muted-foreground">영업 시간 내 상담 가능</p>
@@ -87,12 +87,12 @@ const Footer = () => {
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  <Mail className="h-4 w-4 text-accent shrink-0" />
+                  <Mail className="h-4 w-4 text-primary shrink-0" />
                   <span className="text-xs bp-sm:text-sm text-foreground break-all">korgis5813@naver.com</span>
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <MapPin className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                  <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div>
                     <span className="text-sm text-foreground block">서울 동작구 노량진로 22 B1</span>
                     <p className="text-xs text-muted-foreground mt-0.5">우편번호: 06938</p>
@@ -100,7 +100,7 @@ const Footer = () => {
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <Clock className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                  <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <div className="text-sm space-y-0.5">
                     <div className="text-foreground">평일 10:00 - 22:00</div>
                     <div className="text-xs text-muted-foreground">토요일 09:00 - 18:00</div>

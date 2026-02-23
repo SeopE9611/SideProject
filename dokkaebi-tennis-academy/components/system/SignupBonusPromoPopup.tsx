@@ -95,13 +95,13 @@ export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) 
         setOpen(true);
       }}
     >
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden [&>button]:z-20 [&>button]:bg-background/20 [&>button]:hover:bg-background/30 [&>button]:text-primary-foreground" onEscapeKeyDown={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden [&>button]:z-20 [&>button]:bg-background/20 [&>button]:hover:bg-background/30 [&>button]:text-foreground" onEscapeKeyDown={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()}>
         {/* 상단 비주얼 영역 */}
-        <div className="bg-primary px-6 py-12 text-primary-foreground relative overflow-hidden">
+        <div className="relative overflow-hidden border-b border-primary/20 bg-primary/10 px-6 py-12 text-foreground dark:bg-primary/15">
           <div className="relative z-10 pr-32">
             <div className="text-sm font-semibold opacity-90">가입 이벤트</div>
             <div className="mt-2 text-2xl font-black">회원가입 시 {promo.amount.toLocaleString('ko-KR')}P 지급</div>
-            <div className="mt-2 text-primary text-sm">{periodText ? `기간: ${periodText}` : '지금 가입하면 자동으로 지급됩니다.'}</div>
+            <div className="mt-2 text-sm text-muted-foreground">{periodText ? `기간: ${periodText}` : '지금 가입하면 자동으로 지급됩니다.'}</div>
           </div>
           <img src="/funny.png" alt="프로모션" className="absolute right-2 top-1/2 -translate-y-1/2 h-40 w-auto opacity-95" />
         </div>

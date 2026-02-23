@@ -226,26 +226,26 @@ export default function ServicesPage() {
 
                 <div className="bg-muted rounded-xl border border-border p-6 text-foreground">
                   <h3 className="text-xl font-bold mb-4 text-center">
-                    <CheckCircle className="w-5 h-5 inline mr-2 text-accent" />
+                    <CheckCircle className="w-5 h-5 inline mr-2 text-primary" />
                     알아두세요
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="flex items-start">
-                      <Clock className="w-5 h-5 text-accent mt-1 mr-3 flex-shrink-0" />
+                      <Clock className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">예약 시간</p>
                         <p className="text-sm text-muted-foreground">방문 접수 시 완료 10분 전 도착 권장</p>
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <Shield className="w-5 h-5 text-accent mt-1 mr-3 flex-shrink-0" />
+                      <Shield className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">소요 시간</p>
                         <p className="text-sm text-muted-foreground">30분~1시간</p>
                       </div>
                     </div>
                     <div className="flex items-start">
-                      <Zap className="w-5 h-5 text-accent mt-1 mr-3 flex-shrink-0" />
+                      <Zap className="w-5 h-5 text-primary mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">100% 예약제</p>
                         <p className="text-sm text-muted-foreground">사전 예약 필수</p>
@@ -290,15 +290,15 @@ export default function ServicesPage() {
 
             <div className="flex flex-wrap justify-center gap-6 mb-10">
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Shield className="w-5 h-5 text-accent" />
+                <Shield className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">정품 보장</span>
               </div>
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Clock className="w-5 h-5 text-accent" />
+                <Clock className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">당일 완료</span>
               </div>
               <div className="flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2">
-                <Users className="w-5 h-5 text-accent" />
+                <Users className="w-5 h-5 text-primary" />
                 <span className="text-sm font-medium">전문가 상담</span>
               </div>
             </div>
@@ -375,7 +375,7 @@ export default function ServicesPage() {
                   {/* 주요 특징 */}
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-2 text-accent" />
+                      <CheckCircle className="w-4 h-4 mr-2 text-primary" />
                       주요 특징
                     </h4>
                     <ul className="space-y-2">
@@ -391,13 +391,13 @@ export default function ServicesPage() {
                   {/* 추천 대상 */}
                   <div>
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <Users className="w-4 h-4 mr-2 text-accent" />
+                      <Users className="w-4 h-4 mr-2 text-primary" />
                       추천 대상
                     </h4>
                     <ul className="space-y-2">
                       {type.recommended.slice(0, 2).map((rec, idx) => (
                         <li key={idx} className="flex items-start text-sm">
-                          <ArrowRight className="w-3 h-3 mt-1 mr-2 text-accent flex-shrink-0" />
+                          <ArrowRight className="w-3 h-3 mt-1 mr-2 text-primary flex-shrink-0" />
                           <span>{rec}</span>
                         </li>
                       ))}

@@ -319,7 +319,7 @@ export default function CartPageClient() {
             </div>
             <div>
               <h1 className="mb-2 text-2xl bp-sm:text-3xl bp-md:text-4xl font-black">장바구니</h1>
-              <p className="text-accent">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
+              <p className="text-primary">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
             </div>
           </div>
 
@@ -349,7 +349,7 @@ export default function CartPageClient() {
                     <div>
                       <CardTitle className="flex items-center gap-3">
                         <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
-                          <ShoppingBag className="h-5 w-5 text-accent" />
+                          <ShoppingBag className="h-5 w-5 text-primary" />
                         </span>
                         선택한 상품 ({cartItems.length}개)
                       </CardTitle>
@@ -407,7 +407,7 @@ export default function CartPageClient() {
                               <Image src={item.image || '/placeholder.svg?height=72&width=72'} alt={item.name} width={72} height={72} loading="lazy" className="aspect-square rounded-lg object-cover" />
                             </Link>
                             <div className="min-w-0 flex-1">
-                              <Link href={itemHref} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-foreground transition-colors hover:text-accent dark:text-foreground dark:hover:text-accent">
+                              <Link href={itemHref} className="block line-clamp-2 bp-sm:line-clamp-1 font-medium text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary">
                                 {item.name}
                               </Link>
                               <div className="mt-0.5 text-sm text-muted-foreground">
@@ -452,7 +452,7 @@ export default function CartPageClient() {
 
                                 {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
                                 {bundleEditHref && (
-                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-accent hover:underline dark:text-accent">
+                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-primary hover:underline dark:text-primary">
                                     번들 수량/스트링 변경
                                   </Link>
                                 )}
@@ -504,7 +504,7 @@ export default function CartPageClient() {
                                 </div>
 
                                 {lockStepper && bundleEditHref ? (
-                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-accent hover:underline dark:text-accent">
+                                  <Link href={bundleEditHref} className="mt-1 text-[11px] font-medium text-primary hover:underline dark:text-primary">
                                     번들 수량/스트링 변경
                                   </Link>
                                 ) : (
@@ -596,21 +596,21 @@ export default function CartPageClient() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">배송비</span>
-                        <span className={shippingFee === 0 ? 'font-semibold text-accent' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
+                        <span className={shippingFee === 0 ? 'font-semibold text-primary' : 'font-semibold'}>{shippingFee > 0 ? `${formatKRW(shippingFee)}원` : '무료'}</span>
                       </div>
                       <Separator className="opacity-40" />
                       <div className="flex items-center justify-between text-xl font-bold">
                         <span>총 결제 금액</span>
-                        <span className="tabular-nums text-accent">{formatKRW(total)}원</span>
+                        <span className="tabular-nums text-primary">{formatKRW(total)}원</span>
                       </div>
                     </div>
 
                     <div className="bg-muted dark:bg-background p-4 rounded-xl border border-border">
-                      <div className="flex items-center gap-2 text-accent mb-2">
+                      <div className="flex items-center gap-2 text-primary mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 혜택</span>
                       </div>
-                      <p className="text-sm text-accent">
+                      <p className="text-sm text-primary">
                         30,000원 이상 구매 시 무료배송
                         {subtotal < 30000 && <span className="block mt-1 font-semibold">{(30000 - subtotal).toLocaleString()}원 더 구매하면 무료배송!</span>}
                       </p>
@@ -708,7 +708,7 @@ export default function CartPageClient() {
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">총 결제 금액</span>
-                <span className="tabular-nums text-lg font-bold text-accent">{formatKRW(total)}원</span>
+                <span className="tabular-nums text-lg font-bold text-primary">{formatKRW(total)}원</span>
               </div>
               {blockServiceCheckout ? (
                 <div className="space-y-2">

@@ -486,7 +486,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
  <div>
  <h1 className="text-4xl font-bold mb-2">패키지 주문/결제</h1>
- <p className="text-accent">선택하신 패키지로 프리미엄 서비스를 시작하세요</p>
+ <p className="text-primary">선택하신 패키지로 프리미엄 서비스를 시작하세요</p>
  </div>
  </div>
 
@@ -496,7 +496,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <span>SSL 보안 결제</span>
  </div>
  <div className="flex items-center gap-2">
- <Calendar className="h-4 w-4 text-accent" />
+ <Calendar className="h-4 w-4 text-primary" />
  <span>최대 12개월 유효</span>
  </div>
  <div className="flex items-center gap-2">
@@ -515,7 +515,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
  <div className="bg-primary/10 p-6">
  <CardTitle className="flex items-center gap-3">
- <Package className="h-5 w-5 text-accent" />
+ <Package className="h-5 w-5 text-primary" />
  선택된 패키지
  </CardTitle>
  <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
@@ -545,7 +545,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-accent">{selectedPackage.sessions}회</div>
+ <div className="text-2xl font-bold text-primary">{selectedPackage.sessions}회</div>
  <div className="text-sm text-muted-foreground">스트링 교체</div>
  </div>
  <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
@@ -610,7 +610,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
  <div className="space-y-2">
  <Label htmlFor="applicant-name" className="flex items-center gap-2">
- <UserIcon className="h-4 w-4 text-accent" />
+ <UserIcon className="h-4 w-4 text-primary" />
  신청자 이름
  </Label>
  <Input
@@ -665,7 +665,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
  <div className="flex items-center space-x-2">
  <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!user} />
- <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-accent'}`}>
+ <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-primary'}`}>
  이 정보를 저장
  </label>
  </div>
@@ -699,7 +699,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  <Label htmlFor="방문이용" className="flex-1 cursor-pointer font-medium">
  매장 방문 (도깨비 테니스 아카데미 방문)
  </Label>
- <Building2 className="h-5 w-5 text-accent" />
+ <Building2 className="h-5 w-5 text-primary" />
  </div>
 
  {/* 출장 서비스 – 비활성화 */}
@@ -819,10 +819,10 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
  <div className="flex items-center gap-2 mb-3">
- <Shield className="h-5 w-5 text-accent" />
- <p className="font-semibold text-accent">무통장입금 안내</p>
+ <Shield className="h-5 w-5 text-primary" />
+ <p className="font-semibold text-primary">무통장입금 안내</p>
  </div>
- <ul className="space-y-2 text-sm text-accent">
+ <ul className="space-y-2 text-sm text-primary">
  <li className="flex items-center gap-2">
  <CheckCircle className="h-4 w-4" />
  주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
@@ -902,7 +902,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  {item.label}
  </label>
  </div>
- <Button variant="link" size="sm" className="h-auto p-0 text-accent hover:text-accent">
+ <Button variant="link" size="sm" className="h-auto p-0 text-primary hover:text-primary">
  보기
  </Button>
  </div>
@@ -950,7 +950,7 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
 
  <div className="flex justify-between items-center text-xl font-bold">
  <span>총 결제 금액</span>
- <span className="text-accent">{selectedPackage.price.toLocaleString()}원</span>
+ <span className="text-primary">{selectedPackage.price.toLocaleString()}원</span>
  </div>
  </div>
 
@@ -968,11 +968,11 @@ PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]
  </div>
 
  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
- <div className="flex items-center gap-2 text-accent mb-2">
+ <div className="flex items-center gap-2 text-primary mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">패키지 안내</span>
  </div>
- <div className="text-sm text-accent space-y-1">
+ <div className="text-sm text-primary space-y-1">
  <p>• 입금 확인 후 패키지가 활성화됩니다.</p>
  <p>• 예약은 전화 또는 온라인으로 가능합니다.</p>
  <p>• 유효기간 내에 모든 횟수를 이용해주세요.</p>

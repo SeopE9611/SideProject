@@ -880,7 +880,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <CardHeader className="bg-muted/50 border-b border-border pb-3">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <User className="h-5 w-5 text-accent" />
+                  <User className="h-5 w-5 text-primary" />
                   <span>고객 정보</span>
                 </div>
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -958,7 +958,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           <Card className="border border-border shadow-xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-accent" /> 결제 정보
+                <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
               </CardTitle>
               <div className="flex items-center space-x-2">
                 <Badge variant="outline" className={paymentStatusColors[['접수완료', '작업 중', '교체완료'].includes(data?.status || '') ? '결제완료' : '결제대기']}>
@@ -1048,7 +1048,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                                 timeStyle: 'short',
                               })}
                             </span>
-                            <span className="text-[11px] font-medium text-accent ">
+                            <span className="text-[11px] font-medium text-primary ">
                               {c.count ?? 1}회 사용
                               {c.reverted && <span className="ml-1 text-[10px] text-destructive">(복원됨)</span>}
                             </span>
@@ -1061,7 +1061,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
                     <div>
                       <p className="text-sm text-muted-foreground ">결제 금액</p>
-                      <p className="text-xl font-bold text-accent dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
+                      <p className="text-xl font-bold text-primary dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
                     </div>
                   </div>
                 </div>
@@ -1091,7 +1091,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground">라켓 {racketCount}자루</span>
                 </div>
 
-                <div className="text-xs sm:text-sm font-semibold text-accent ">총 장착비 {totalPrice.toLocaleString()}원</div>
+                <div className="text-xs sm:text-sm font-semibold text-primary ">총 장착비 {totalPrice.toLocaleString()}원</div>
               </div>
             </div>
 
@@ -1326,7 +1326,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
               <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
                 <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-accent " />
+                  <Clock className="h-5 w-5 text-primary " />
                   <span>신청 타임라인</span>
                 </CardTitle>
                 <CardDescription>신청 접수부터 운송장 등록까지의 주요 진행 상태입니다.</CardDescription>
@@ -1336,7 +1336,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {/* 신청 접수 */}
                   <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <Clock className="h-5 w-5 text-accent " />
+                      <Clock className="h-5 w-5 text-primary " />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground ">신청 접수</p>
@@ -1368,7 +1368,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {invoice?.trackingNumber && (
                     <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        <Truck className="h-5 w-5 text-accent dark:text-foreground" />
+                        <Truck className="h-5 w-5 text-primary dark:text-foreground" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground ">매장 발송</p>

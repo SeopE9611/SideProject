@@ -469,7 +469,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
  <div className="bg-muted border-b border-border p-6">
  <CardTitle className="flex items-center gap-3">
- <Package className="h-5 w-5 text-accent" />
+ <Package className="h-5 w-5 text-primary" />
  대여 상품
  </CardTitle>
  <CardDescription className="mt-2">선택하신 라켓 정보입니다.</CardDescription>
@@ -501,7 +501,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
  <div className="bg-muted border-b border-border p-6">
  <CardTitle className="flex items-center gap-3">
- <Truck className="h-5 w-5 text-accent" />
+ <Truck className="h-5 w-5 text-primary" />
  라켓 수령 방식
  </CardTitle>
  <CardDescription className="mt-2">라켓을 어떻게 수령하실지 선택해주세요.</CardDescription>
@@ -515,7 +515,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  택배 수령 (자택 또는 지정 장소로 배송)
  <div className="text-xs text-muted-foreground mt-1">결제 완료 후 택배 발송으로 진행됩니다.</div>
  </Label>
- <Truck className="h-5 w-5 text-accent" />
+ <Truck className="h-5 w-5 text-primary" />
  </div>
 
  <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
@@ -524,7 +524,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
  <div className="text-xs text-muted-foreground mt-1">스트링 교체 신청 시 신청서에서 "방문 시간" 선택 흐름으로 이어집니다.</div>
  </Label>
- <Building2 className="h-5 w-5 text-accent" />
+ <Building2 className="h-5 w-5 text-primary" />
  </div>
  </RadioGroup>
 
@@ -578,21 +578,21 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
  <div className="space-y-2">
  <Label htmlFor="name" className="flex items-center gap-2">
- <UserIcon className="h-4 w-4 text-accent" />
+ <UserIcon className="h-4 w-4 text-primary" />
  수령인 이름
  </Label>
  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="수령인 이름을 입력하세요" className="border-2 focus:border-border transition-colors" />
  </div>
  <div className="space-y-2">
  <Label htmlFor="email" className="flex items-center gap-2">
- <Mail className="h-4 w-4 text-accent" />
+ <Mail className="h-4 w-4 text-primary" />
  이메일
  </Label>
  <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="예: user@example.com" className="border-2 focus:border-border transition-colors" />
  </div>
  <div className="space-y-2 bp-sm:col-span-2">
  <Label htmlFor="phone" className="flex items-center gap-2">
- <Phone className="h-4 w-4 text-accent" />
+ <Phone className="h-4 w-4 text-primary" />
  연락처
  </Label>
  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-primary transition-colors" />
@@ -679,7 +679,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
  <div className="bg-muted p-4 rounded-lg border border-border">
  <div className="flex items-center gap-2 mb-3">
- <Shield className="h-5 w-5 text-accent" />
+ <Shield className="h-5 w-5 text-primary" />
  <p className="font-semibold text-foreground">무통장입금 안내</p>
  </div>
  <ul className="space-y-2 text-sm text-foreground">

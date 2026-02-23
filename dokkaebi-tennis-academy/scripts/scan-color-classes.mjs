@@ -40,6 +40,7 @@ const textAccentForegroundRegex = /(?:^|\s)(?:[\w-]+:)*text-accent-foreground(?:
 const bgAccentSolidRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent(?!\/)(?:\s|$)/;
 const largePaddingRegex = /(?:^|\s)(?:[\w-]+:)*p-(?:3|4|5|6|7|8|9|10|11|12)(?:\s|$)/;
 const accentTintSurfaceRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent\/(?:10|15)(?:\s|$)/;
+const textAccentUsageRegex = /(?:^|\s)(?:[\w-]+:)*(?:text-accent|dark:text-accent)(?:\s|$)/;
 const buttonLikeRegex = /(?:^|\s)(?:[\w-]+:)*(?:btn|button|variant="(?:destructive|default|secondary|outline|ghost|link)"|size="(?:sm|lg|icon)"|inline-flex)(?:\s|$)/i;
 const sliderRangeRegex = /(?:^|\s)(?:[\w-]+:)*slider-range(?:\s|$)/;
 
@@ -65,6 +66,11 @@ const BRAND_EXCEPTION_WHITELIST = new Set([
 
 const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
   'app/features/notifications/core/render.ts',
+]);
+
+const ACCENT_TEXT_WARN_EXCEPTION_WHITELIST = new Set([
+  'components/nav/UserNav.tsx',
+  'components/nav/UserNavMobile.tsx',
 ]);
 
 function walk(dir, results = []) {
@@ -424,6 +430,15 @@ for (const file of files) {
       warnings.push({
         file,
         type: 'large-surface-accent-tint',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (textAccentUsageRegex.test(block) && !ACCENT_TEXT_WARN_EXCEPTION_WHITELIST.has(file)) {
+      warnings.push({
+        file,
+        type: 'text-accent-usage',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

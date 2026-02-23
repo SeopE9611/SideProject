@@ -101,11 +101,11 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  {item.image ? <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl shadow" /> : <div className="w-14 h-14 bg-muted rounded-xl" />}
 
  <div className="flex flex-col gap-1">
- <div className="text-base font-semibold text-foreground group-hover:text-accent">{item.name}</div>
+ <div className="text-base font-semibold text-foreground group-hover:text-primary">{item.name}</div>
  <div className="flex items-center gap-2 text-xs text-muted-foreground ">
  {/* 타입 뱃지: 라켓 / 스트링 구분 */}
  <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] text-foreground">{item.type === 'racket' ? '중고 라켓' : '스트링'}</span>
- {typeof item.price === 'number' && item.price > 0 && <span className="text-accent">{item.price.toLocaleString()}원</span>}
+ {typeof item.price === 'number' && item.price > 0 && <span className="text-primary">{item.price.toLocaleString()}원</span>}
  </div>
  </div>
  </Link>
@@ -115,7 +115,7 @@ export default function SearchPreview({ placeholder = '상품 검색...', classN
  <div className="flex flex-col items-center justify-center py-7 px-4 text-muted-foreground text-base min-h-[120px]">
  <SearchX className="w-10 h-10 text-muted-foreground mb-2" />
  <div>
- <span className="font-semibold text-accent">“{query}”</span>
+ <span className="font-semibold text-primary">“{query}”</span>
  <span>에 대한 검색 결과가 없습니다.</span>
  </div>
  </div>

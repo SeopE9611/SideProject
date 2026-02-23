@@ -68,7 +68,7 @@ export default function PassList() {
             <div key={p.id} className="bg-card p-3 shadow-sm ring-1 ring-border/70 dark:ring-border/70">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-primary text-primary-foreground">
+                  <div className="rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
                     <Ticket className="h-5 w-5" />
                   </div>
                   <div>
