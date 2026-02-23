@@ -89,7 +89,7 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
   if (kind === 'free') {
     switch (c) {
       case 'general':
-        return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
+        return 'bg-background text-foreground dark:bg-card dark:text-foreground';
       case 'info':
         return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
       case 'qna':
@@ -131,7 +131,7 @@ function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
     case 'grip':
       return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'accessory':
-      return 'bg-background text-foreground dark:bg-card dark:text-muted-foreground';
+      return 'bg-background text-foreground dark:bg-card dark:text-foreground';
     case 'ball':
       return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'other':

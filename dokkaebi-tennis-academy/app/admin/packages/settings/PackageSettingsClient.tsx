@@ -255,7 +255,7 @@ export default function PackageSettingsClient() {
                               <Button variant="ghost" size="sm" onClick={() => setEditingPackage(editingPackage === pkg.id ? null : pkg.id)}>
                                 <Edit3 className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => setPendingDeletePackageId(pkg.id)} className="text-destructive hover:text-destructive hover:bg-destructive">
+                              <Button variant="ghost" size="sm" onClick={() => setPendingDeletePackageId(pkg.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>

@@ -262,11 +262,11 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 액션 버튼 섹션 */}
  <div className="flex flex-col bp-md:flex-row gap-2 shrink-0">
- <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary">
+ <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20">
  <ArrowLeft className="mr-2 h-4 w-4" />
  주문 목록으로 돌아가기
  </Button>
- <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode((m) => !m)} disabled={!canUserEdit} className={cn(isEditMode ? '' : 'bg-card/70 backdrop-blur-sm border-border hover:bg-primary')}>
+ <Button variant={isEditMode ? 'destructive' : 'outline'} size="sm" onClick={() => setIsEditMode((m) => !m)} disabled={!canUserEdit} className={cn(isEditMode ? '' : 'bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20')}>
  <Pencil className="mr-1 h-4 w-4" />
  {isEditMode ? '편집 종료' : '편집 모드'}
  </Button>
@@ -412,7 +412,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
  <Link className="w-full bp-sm:w-auto" href="/mypage?tab=reviews">
- <Button variant="outline" className="border-border hover:bg-primary dark:hover:bg-primary">
+ <Button variant="outline" className="border-border hover:bg-primary/10 dark:hover:bg-primary/20">
  리뷰 관리로 이동
  </Button>
  </Link>
@@ -513,7 +513,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  )}
  {isEditMode && canUserEdit && !editingCustomer && (
  <CardFooter className="pt-3 flex justify-center bg-muted/50 ">
- <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-primary border-border">
+ <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-primary/10 dark:hover:bg-primary/20 border-border">
  고객정보 수정
  </Button>
  </CardFooter>

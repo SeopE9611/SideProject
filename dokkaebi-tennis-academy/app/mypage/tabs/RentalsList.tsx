@@ -228,7 +228,7 @@ export default function RentalsList() {
 
                 {/* 대여 기반 교체 신청서가 있으면: 신청서 상세로 바로 이동 */}
                 {r.stringingApplicationId ? (
-                  <Button size="sm" variant="outline" asChild className="hover:border-border dark:hover:bg-primary bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
                     <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex items-center gap-1">
                       신청서 보기
                       <ArrowRight className="h-3 w-3" />
@@ -277,7 +277,7 @@ export default function RentalsList() {
 
                 {/* 신청서 보기: 있을 때만 노출 */}
                 {r.stringingApplicationId ? (
-                  <Button size="sm" variant="outline" asChild className="col-span-6 w-full hover:border-border dark:hover:bg-primary bg-transparent">
+                  <Button size="sm" variant="outline" asChild className="col-span-6 w-full hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
                     <Link href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
                       신청서 보기
                       <ArrowRight className="h-3 w-3" />

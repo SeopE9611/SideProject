@@ -489,7 +489,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={cn('h-8 w-9 p-0', viewMode === 'grid' ? 'bg-primary hover:bg-primary/10 dark:hover:bg-primary/20' : 'hover:bg-primary/10 dark:hover:bg-primary/20')}
+                  className="h-8 w-9 p-0"
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
@@ -498,7 +498,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={cn('h-8 w-9 p-0', viewMode === 'list' ? 'bg-primary hover:bg-primary/10 dark:hover:bg-primary/20' : 'hover:bg-primary/10 dark:hover:bg-primary/20')}
+                  className="h-8 w-9 p-0"
                 >
                   <List className="w-4 h-4" />
                 </Button>
@@ -527,7 +527,7 @@ export default function FilterableRacketList({ initialBrand = null, initialCondi
           ) : error ? (
             <div className="text-center py-16">
               <p className="text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
-              <Button onClick={() => mutate()} className="bg-primary hover:bg-primary/10 dark:hover:bg-primary/20">
+              <Button onClick={() => mutate()} >
                 다시 시도
               </Button>
             </div>

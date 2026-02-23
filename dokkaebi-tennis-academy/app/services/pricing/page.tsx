@@ -94,8 +94,8 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-6">
-            <Wrench className="h-5 w-5 text-accent-foreground dark:text-primary-foreground" />
-            <span className="text-sm font-semibold text-accent-foreground dark:text-primary-foreground">장착 서비스 요금</span>
+            <Wrench className="h-5 w-5 text-primary" />
+            <span className="text-sm font-semibold text-primary">장착 서비스 요금</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">장착 비용 안내</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">투명하고 합리적인 가격으로 최고의 스트링 장착 서비스를 제공합니다</p>
@@ -109,7 +109,7 @@ export default function PricingPage() {
               <Card key={index} className={`relative hover:shadow-lg transition-all duration-300 ${service.popular ? 'ring-2 ring-ring' : ''}`}>
                 {service.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary hover:bg-primary">
+                    <Badge className="bg-primary/10 hover:bg-primary/15 dark:hover:bg-primary/25">
                       <Star className="h-3 w-3 mr-1" />
                       인기
                     </Badge>

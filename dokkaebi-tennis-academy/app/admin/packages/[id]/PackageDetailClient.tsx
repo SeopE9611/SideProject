@@ -33,7 +33,7 @@ const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
   만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/10 dark:text-destructive dark:border-border',
   일시정지: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
   취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
-  대기: 'bg-background text-foreground border-border dark:bg-card dark:text-muted-foreground dark:border-border',
+  대기: 'bg-background text-foreground border-border dark:bg-card dark:text-foreground dark:border-border',
 };
 
 const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
@@ -449,7 +449,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
               {isEditMode && (
                 <CardFooter className="flex justify-center gap-2 bg-background dark:bg-card">
-                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-border hover:bg-primary dark:hover:bg-primary">
+                  <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20">
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장
                   </Button>
