@@ -111,7 +111,7 @@ export default function RentalsList() {
     return (
       <Card className="border-0 bg-card">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15">
             <Briefcase className="h-8 w-8" />
           </div>
           <p className="font-semibold text-destructive">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
@@ -128,13 +128,13 @@ export default function RentalsList() {
 
   if (!isValidating && flat.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background to-muted dark:from-background dark:to-muted">
+      <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
-          <p className="text-foreground">아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!</p>
+          <p className="text-muted-foreground">아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!</p>
         </CardContent>
       </Card>
     );
