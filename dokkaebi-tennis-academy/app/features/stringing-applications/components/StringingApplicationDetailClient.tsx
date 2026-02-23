@@ -1,30 +1,30 @@
 'use client';
 
-import useSWR from 'swr';
-import { useEffect, useRef, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, MapPin, User, CreditCard, Calendar, XCircle, ArrowLeft, LinkIcon, ShoppingCart, Target, Pencil, Settings, Edit3, Truck, CheckCircle2, Clock, Ticket } from 'lucide-react';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { ApplicationStatusSelect } from '@/app/features/stringing-applications/components/ApplicationStatusSelect';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
-import { badgeBase, badgeSizeSm, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
-import { useStringingStore } from '@/app/store/stringingStore';
 import CustomerEditForm from '@/app/features/stringing-applications/components/CustomerEditForm';
 import PaymentEditForm from '@/app/features/stringing-applications/components/PaymentEditForm';
-import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
-import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
-import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PaymentMethodDetail from '@/app/features/stringing-applications/components/PaymentMethodDetail';
+import RequirementsEditForm from '@/app/features/stringing-applications/components/RequirementsEditForm';
+import StringInfoEditForm from '@/app/features/stringing-applications/components/StringInfoEditForm';
+import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
+import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
+import { useStringingStore } from '@/app/store/stringingStore';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { badgeBase, badgeSizeSm, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import useSWR from 'swr';
 
 interface Props {
   id: string;
@@ -990,9 +990,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   </div>
                   {/* 패키지 사용 정보 요약 */}
                   {data.packageInfo && (
-                    <div
-                      className={data.packageInfo.applied ? 'p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted' : 'p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40'}
-                    >
+                    <div className={data.packageInfo.applied ? 'p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted' : 'p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40'}>
                       <div className="flex items-start gap-2">
                         <div className="mt-0.5">
                           <Ticket className="h-4 w-4 text-foreground" />
@@ -1325,8 +1323,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
           {/* 신청 타임라인: 마이페이지 전용 */}
           {!isAdmin && (
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent overflow-hidden mb-8">
-              <CardHeader className="bg-gradient-to-r from-primary to-accent dark:from-primary dark:to-accent border-b">
+            <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
+              <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
                 <CardTitle className="flex items-center space-x-2">
                   <Clock className="h-5 w-5 text-accent " />
                   <span>신청 타임라인</span>

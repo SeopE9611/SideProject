@@ -1,11 +1,12 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useMemo, useState } from 'react';
 
 /**
  * 패키지 "현재 상태" 직접 변경 셀렉트
@@ -74,20 +75,15 @@ export default function PackageCurrentStatusSelect({ orderId, passStatus, paymen
   async function submit(next: CurrentStatusUI, reason: string) {
     try {
       setSaving(true);
-      const res = await fetch(`/api/package-orders/${orderId}`, {
+      await adminMutator(`/api/admin/package-orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ status: uiToPayment[next], reason }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error || '상태 변경에 실패했습니다.');
-      }
       showSuccessToast('상태가 변경되었습니다.');
       onUpdated?.();
     } catch (e: any) {
-      showErrorToast(e?.message || '상태 변경 중 오류가 발생했습니다.');
+      showErrorToast(getAdminErrorMessage(e));
       setSelected(initialUI ?? '');
     } finally {
       setSaving(false);

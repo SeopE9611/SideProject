@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarDays, Clock3, Truck, Store, Package, Box, BadgeDollarSign, ReceiptText, Ticket } from 'lucide-react';
+import { BadgeDollarSign, Box, CalendarDays, Clock3, Package, ReceiptText, Store, Ticket, Truck } from 'lucide-react';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -47,6 +47,9 @@ export default function PriceSummaryCard({
 
   const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
   const methodText = collectionMethod === 'courier_pickup' ? '기사 방문(+3,000원)' : collectionMethod === 'visit' ? '매장 방문' : '자가 발송';
+
+  const pickupLabel = collectionMethod === 'courier_pickup' ? '수거비(택배 기사 방문)' : '수거비';
+  const pickupHint = collectionMethod === 'courier_pickup' ? '후정산' : collectionMethod === 'visit' ? '매장 방문: 없음' : collectionMethod === 'self_ship' ? '자가 발송: 없음' : '—';
 
   return (
     <Card className="overflow-hidden border border-border shadow-sm">
@@ -94,7 +97,7 @@ export default function PriceSummaryCard({
               <BadgeDollarSign className="h-4 w-4 text-muted-foreground" />
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">교체비</p>
-                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 장착비만' : stringIncluded ? '스트링 상품 선택: 스트링 포함' : '스트링 상품 선택: 별도 구매 필요'}</p>
+                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 교체비만' : stringIncluded ? '스트링 상품: 주문/대여로 확보됨' : '스트링 상품: 별도 구매 필요'}</p>
               </div>
             </div>
 
@@ -150,8 +153,8 @@ export default function PriceSummaryCard({
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4 text-muted-foreground" />
               <div className="space-y-0.5">
-                <p className="text-sm font-medium">수거비(택배 기사 방문)</p>
-                <p className="text-xs text-muted-foreground">후정산</p>
+                <p className="text-sm font-medium">{pickupLabel}</p>
+                <p className="text-xs text-muted-foreground">{pickupHint}</p>
               </div>
             </div>
             <p className="text-sm">{pickupFee > 0 ? `+ ${won(pickupFee)}` : '—'}</p>

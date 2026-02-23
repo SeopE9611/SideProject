@@ -1,16 +1,16 @@
 'use client';
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ClipboardList, DollarSign, Ticket, Zap } from 'lucide-react';
+import React from 'react';
 
-import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
-import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import StringCheckboxes from '@/app/services/_components/StringCheckboxes';
+import TimeSlotSelector from '@/app/services/_components/TimeSlotSelector';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -312,8 +312,21 @@ export default function Step2MountingInfo(props: Props) {
                       </>
                     ) : (
                       <>
-                        <p>• 스트링을 구매하시고 난 후 신청서를 작성하셔야 구매한 스트링 종류가 나옵니다.</p>
-                        <p>• 고객님께서 보유하고 계신 스트링으로 단일 신청서를 작성하시려는 경우 "직접 입력하기" 를 클릭하여 신청해주세요.</p>
+                        {orderId ? (
+                          <>
+                            <p>• 이 주문에서 구매한 스트링 목록이 아래에 자동으로 표시됩니다.</p>
+                            <p>
+                              • 여러 자루를 신청하려면, 주문에서 스트링을 필요한 수량만큼 구매해 주세요. <span className="font-semibold">(스트링 1개 = 교체 1회 = 라켓 1자루)</span>
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p>• 스트링 상품을 구매하신 후 신청서를 작성하시면, 구매한 스트링 목록이 자동으로 표시됩니다.</p>
+                            <p>
+                              • 보유 스트링으로 신청하려면 아래에서 <span className="font-semibold">“직접 입력하기”</span>를 선택해 주세요.
+                            </p>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
@@ -386,12 +399,25 @@ export default function Step2MountingInfo(props: Props) {
               </div>
 
               {isOrderSlotBlocked && <p className="mt-1 text-xs text-destructive">이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해 주세요.</p>}
+
+              {(isOrderSlotBlocked || lineCount >= orderRemainingSlots) && (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  * 이 신청서는 <span className="font-medium">현재 주문 기준</span>으로만 진행됩니다. 추가 구매는 새 주문으로 진행되며, 이 신청서에는 자동으로 반영되지 않습니다.
+                </p>
+              )}
             </div>
           )}
           {orderId && (
             <p className="mb-2 text-xs text-muted-foreground">
-              이번 신청서는 <span className="font-semibold">여러 자루 라켓</span>을 한 번에 접수할 수 있습니다. 장착을 원하는 스트링 상품만 체크해 주세요. 선택한 개수만큼 라켓 장착이 진행되며, 장착비는{' '}
-              <span className="font-semibold">1자루 기준 금액 × 선택한 스트링 개수</span>로 계산됩니다.
+              이번 신청서는 <span className="font-semibold">보유 라켓</span>도 포함해 <span className="font-semibold">여러 자루</span>를 한 번에 접수할 수 있습니다. 아래에서 사용할 스트링을 선택해 주세요.
+              <span className="font-semibold">(스트링 1개 = 교체 1회 = 라켓 1자루)</span>
+              {typeof orderRemainingSlots === 'number' ? (
+                <>
+                  이 주문에서 남은 교체 가능 횟수는 <span className="font-semibold">{orderRemainingSlots}회</span>입니다.
+                </>
+              ) : null}
+              <br />
+              교체비는 <span className="font-semibold">1자루 기준 금액 × 신청 자루 수</span>로 계산됩니다.
             </p>
           )}
 
@@ -481,29 +507,43 @@ export default function Step2MountingInfo(props: Props) {
                       const orderQty = item.quantity ?? 1;
                       const useQty = lockOrderUseQty ? orderQty : (formData.stringUseCounts[id] ?? orderQty);
 
+                      let maxAllowed = orderQty;
+                      let isLimitedByRemaining = false;
+                      if (!lockOrderUseQty && typeof orderRemainingSlots === 'number') {
+                        const otherTotal = Object.entries(formData?.stringUseCounts ?? {})
+                          .filter(([key]) => key !== id)
+                          .reduce((sum, [, v]) => sum + (typeof v === 'number' ? v : 0), 0);
+                        const remainForThis = Math.max(orderRemainingSlots - otherTotal, 0);
+                        maxAllowed = Math.min(orderQty, remainForThis);
+                        isLimitedByRemaining = maxAllowed < orderQty;
+                      }
+
                       return (
                         <div key={id} className="flex items-center justify-between gap-2">
                           <span className="truncate">
                             • {item.name} <span className="text-[11px] text-accent/80 dark:text-accent/80">(구매 {orderQty}개 중)</span>
                           </span>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
                             <Label htmlFor={`useQty-${id}`} className="sr-only">
                               사용할 개수
                             </Label>
                             <Input
                               id={`useQty-${id}`}
                               type="number"
-                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring ${
-                                lockOrderUseQty ? 'cursor-not-allowed bg-muted text-muted-foreground dark:bg-card/40 dark:text-muted-foreground' : ''
-                              }`}
+                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring ${lockOrderUseQty ? 'cursor-not-allowed bg-muted text-muted-foreground dark:bg-card/40 dark:text-muted-foreground' : ''}`}
                               min={0}
-                              max={orderQty}
+                              max={typeof orderRemainingSlots === 'number' && !lockOrderUseQty ? maxAllowed : orderQty}
                               value={useQty}
                               disabled={lockOrderUseQty}
                               readOnly={lockOrderUseQty}
                               title={lockOrderUseQty ? '번들(라켓+스트링) 주문은 주문 수량과 자동 동기화됩니다.' : undefined}
                               onChange={lockOrderUseQty ? undefined : (e) => handleUseQtyChange(id, Number(e.target.value) || 0)}
                             />
+                            {typeof orderRemainingSlots === 'number' && !lockOrderUseQty && (
+                              <Badge variant="outline" className="h-7 px-2 text-[10px] leading-none" title={isLimitedByRemaining ? '남은 교체 가능 횟수 기준으로 제한됩니다.' : '주문 수량 기준입니다.'}>
+                                최대 {maxAllowed}개
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       );
@@ -512,10 +552,18 @@ export default function Step2MountingInfo(props: Props) {
                   {lockOrderUseQty && <p className="text-[11px] text-muted-foreground">* 번들(라켓+스트링) 주문은 주문 수량과 자동 동기화되며, 여기서 변경할 수 없습니다.</p>}
 
                   <p>
-                    이번 신청으로 추가 납부할 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>
+                    이번 신청 교체비 합계: <span className="font-semibold text-foreground">{price.toLocaleString('ko-KR')}원</span>
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
+                </div>
+              )}
+              {/* 주문 기반 진입: 입금 안내*/}
+              {orderId && order && lineCount > 0 && (
+                <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-[11px] text-muted-foreground">
+                  <p>
+                    최종 결제 금액은 우측 요금 요약의 <span className="font-semibold">“이번 주문 총 결제 금액”</span>을 기준으로 합니다.
+                  </p>
+                  <p className="mt-1">
+                    * 기사 방문 수거비가 있는 경우(=택배 기사 방문 선택 시) <span className="font-semibold">후정산</span>이며, 입금 금액에는 포함되지 않습니다.
                   </p>
                 </div>
               )}
@@ -576,27 +624,14 @@ export default function Step2MountingInfo(props: Props) {
                     const stringPrice = isCombinedPdpMode ? (Number.isFinite(pdpStringPrice) && pdpStringPrice > 0 ? pdpStringPrice : Number(selectedOrderItem.price ?? 0)) : Number(selectedOrderItem.price ?? 0);
 
                     // 합계: 통합모드면 라켓 포함
-                    const total = (isCombinedPdpMode ? Number(racketPrice ?? 0) : 0) + stringPrice + Number(priceView.base ?? 0);
-
-                    return isCombinedPdpMode ? (
-                      <>
-                        <p>
-                          라켓 {won(Number(racketPrice ?? 0))} + 스트링 {won(stringPrice)} + 교체비 {won(Number(priceView.base ?? 0))} = 총 {won(total)} <span className="text-muted-foreground">(주문 기준 총액)</span>
-                        </p>
-                        <p>
-                          결제 성공 페이지를 건너뛴 경우, <span className="font-semibold">위 합계가 이번 주문의 총 입금 금액</span>입니다.
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p>
-                          스트링 상품 가격(이미 결제) {won(Number(selectedOrderItem.price ?? 0))} + 교체비 {won(Number(priceView.base ?? 0))} = 총 {won(Number(selectedOrderItem.price ?? 0) + Number(priceView.base ?? 0))}{' '}
-                          <span className="text-muted-foreground">(참고용)</span>
-                        </p>
-                        <p>
-                          스트링 상품 금액은 주문 결제 시 이미 지불하셨다면, 이번 신청에서는 <span className="font-semibold">교체비만 입금</span>하시면 됩니다.
-                        </p>
-                      </>
+                    const racket = isCombinedPdpMode ? Number(racketPrice ?? 0) : 0;
+                    const service = Number(priceView.base ?? 0);
+                    const total = racket + stringPrice + service;
+                    return (
+                      <p>
+                        {isCombinedPdpMode ? <>라켓 {won(racket)} + </> : null}
+                        스트링 {won(stringPrice)} + 교체비 {won(service)} = 총 {won(total)} <span className="text-muted-foreground">(참고용)</span>
+                      </p>
                     );
                   })()}
                 </div>
@@ -699,22 +734,12 @@ export default function Step2MountingInfo(props: Props) {
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium text-foreground">공통 메인 텐션(kg)</Label>
-                    <Input
-                      value={bulkTensionMain}
-                      onChange={(e) => setBulkTensionMain(e.target.value)}
-                      placeholder="예: 24"
-                      className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
-                    />
+                    <Input value={bulkTensionMain} onChange={(e) => setBulkTensionMain(e.target.value)} placeholder="예: 24" className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring" />
                   </div>
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium text-foreground">공통 크로스 텐션(kg)</Label>
-                    <Input
-                      value={bulkTensionCross}
-                      onChange={(e) => setBulkTensionCross(e.target.value)}
-                      placeholder="예: 23"
-                      className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
-                    />
+                    <Input value={bulkTensionCross} onChange={(e) => setBulkTensionCross(e.target.value)} placeholder="예: 23" className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring" />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-3">
@@ -802,15 +827,7 @@ export default function Step2MountingInfo(props: Props) {
               <Label htmlFor="preferredDate" className="text-sm font-medium">
                 장착 희망일 <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="preferredDate"
-                name="preferredDate"
-                type="date"
-                value={formData.preferredDate}
-                onChange={handleInputChange}
-                min={new Date().toISOString().split('T')[0]}
-                className="focus:ring-2 focus:ring-ring transition-all duration-200"
-              />
+              <Input id="preferredDate" name="preferredDate" type="date" value={formData.preferredDate} onChange={handleInputChange} min={new Date().toISOString().split('T')[0]} className="focus:ring-2 focus:ring-ring transition-all duration-200" />
               {formData.preferredDate && formData.preferredTime && visitSlotCountUi > 0 && visitDurationMinutesUi && (
                 <div className="mt-3 text-xs md:text-[13px] text-foreground bg-background/80 dark:bg-card/40 border border-border rounded-lg px-3 py-2">
                   <p className="font-medium">

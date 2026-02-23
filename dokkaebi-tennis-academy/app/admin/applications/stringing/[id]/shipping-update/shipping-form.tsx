@@ -1,16 +1,17 @@
 'use client';
 
-import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Loader2, Truck, Package, MapPin } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface ShippingFormProps {
   applicationId: string;
@@ -61,12 +62,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
     const curCourier = curMethod === 'delivery' ? courier : '';
     const curTracking = curMethod === 'delivery' ? trackingNumber : '';
 
-    return (
-      baseline.shippingMethod !== curMethod ||
-      baseline.estimatedDelivery !== estimatedDelivery ||
-      baseline.courier !== curCourier ||
-      baseline.trackingNumber !== curTracking
-    );
+    return baseline.shippingMethod !== curMethod || baseline.estimatedDelivery !== estimatedDelivery || baseline.courier !== curCourier || baseline.trackingNumber !== curTracking;
   }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber]);
 
   // 저장 중에는 confirm을 띄우지 않도록(UX)
@@ -114,12 +110,9 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`/api/admin/applications/stringing/${applicationId}/shipping`, {
+      await adminMutator(`/api/admin/applications/stringing/${applicationId}/shipping`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shippingInfo: {
             shippingMethod: shippingMethod,
@@ -132,23 +125,13 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
         }),
       });
 
-      if (!res.ok) {
-        // 서버가 message를 내려주는 경우를 우선 사용
-        const body = await res.json().catch(() => null);
-        showErrorToast(body?.message ?? '배송 정보 업데이트에 실패했습니다.');
-        return;
-      }
-
       showSuccessToast('배송 정보가 업데이트되었습니다');
 
       router.refresh();
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      onSuccess?.();
       router.push(`/admin/applications/stringing/${applicationId}`);
     } catch (error) {
-      showErrorToast('배송 정보 업데이트 중 문제가 발생했습니다. 다시 시도해주세요');
+      showErrorToast(getAdminErrorMessage(error));
       console.error('배송 정보 업데이트 오류:', error);
     } finally {
       setIsSubmitting(false);
