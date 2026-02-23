@@ -313,7 +313,7 @@ export default function OrderDetailPage() {
                       {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                           <div className="space-y-2">
-                            <p className="font-semibold text-accent-foreground">{order.paymentInfo.method}</p>
+                            <p className="font-semibold text-foreground">{order.paymentInfo.method}</p>
                             <p className="font-semibold text-primary">{bankLabelMap[order.paymentInfo.bank].label}</p>
                             <p className="font-mono text-primary">{bankLabelMap[order.paymentInfo.bank].account}</p>
                             <p className="text-sm text-primary">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</p>
@@ -446,7 +446,7 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 p-3 bg-primary rounded-lg border border-border">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-accent-foreground">안전한 결제</p>
+                          <p className="text-sm font-medium text-foreground">안전한 결제</p>
                           <p className="text-xs text-primary">SSL 보안 결제 시스템</p>
                         </div>
                       </div>

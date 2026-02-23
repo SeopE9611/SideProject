@@ -36,6 +36,9 @@ const solidHoverDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\
 const hoverTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
 const solidHoverPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
 const outlineGhostNeutralMutedRegex = /(?:^|\s)(?:[\w-]+:)*(?:variant="(?:outline|ghost|neutral|muted)"|outline|ghost|neutral|muted|badge|chip)(?:\s|$)/i;
+const textAccentForegroundRegex = /(?:^|\s)(?:[\w-]+:)*text-accent-foreground(?:\s|$)/;
+const bgAccentSolidRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent(?!\/)(?:\s|$)/;
+const largePaddingRegex = /(?:^|\s)(?:[\w-]+:)*p-(?:3|4|5|6|7|8|9|10|11|12)(?:\s|$)/;
 
 const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
@@ -336,6 +339,24 @@ for (const file of files) {
       warnings.push({
         file,
         type: 'solid-hover-primary-on-outline-ghost-badge',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (textAccentForegroundRegex.test(block) && !bgAccentSolidRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'text-accent-foreground-without-bg-accent',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (bgAccentSolidRegex.test(block) && largePaddingRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'large-block-solid-bg-accent',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

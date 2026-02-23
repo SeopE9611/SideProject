@@ -385,8 +385,8 @@ export default function Home() {
           </div>
           <div className="grid gap-3 bp-sm:gap-4 bp-md:gap-5 grid-cols-2 bp-md-only:grid-cols-4 bp-lg:grid-cols-4">
             <Link href="/services/apply" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
-                <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary">
+                <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary-foreground" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
@@ -395,8 +395,8 @@ export default function Home() {
             </Link>
 
             <Link href="/services/tension-guide" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
-                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary">
+                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary-foreground" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">장착/텐션 가이드</h3>
@@ -405,8 +405,8 @@ export default function Home() {
             </Link>
 
             <Link href="/board/market" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
-                <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary">
+                <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary-foreground" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">중고 거래</h3>
@@ -415,8 +415,8 @@ export default function Home() {
             </Link>
 
             <Link href="/board" className="group flex h-full flex-col items-center gap-2 bp-sm:gap-3 rounded-xl bg-card p-4 bp-sm:p-5 bp-md:p-6 transition-all hover:scale-105 hover:shadow-lg border border-border">
-              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary">
-                <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 transition-colors group-hover:bg-primary">
+                <MessageSquareText className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary-foreground" />
               </div>
               <div className="text-center">
                 <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">커뮤니티</h3>
@@ -493,7 +493,7 @@ export default function Home() {
             <div className="mb-6 bp-sm:mb-8 grid gap-4 bp-sm:gap-6 grid-cols-2 bp-lg:grid-cols-4">
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                  <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary-foreground" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 1</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">신청서 작성</h3>
@@ -510,7 +510,7 @@ export default function Home() {
 
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2 bp-sm:mb-3 flex h-10 w-10 bp-sm:h-12 bp-sm:w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
-                  <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+                  <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary-foreground" />
                 </div>
                 <div className="mb-0.5 bp-sm:mb-1 text-[10px] bp-sm:text-xs font-semibold text-muted-foreground">STEP 3</div>
                 <h3 className="mb-0.5 bp-sm:mb-1 text-sm bp-sm:text-base font-semibold text-foreground">작업 진행</h3>

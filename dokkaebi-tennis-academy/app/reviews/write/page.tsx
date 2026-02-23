@@ -610,7 +610,7 @@ export default function ReviewWritePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent">
+    <div className="min-h-screen bg-muted/30">
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08] pointer-events-none">
         <svg width="100%" height="100%" viewBox="0 0 800 600" className="absolute inset-0 w-full h-full">
           <defs>
@@ -635,7 +635,7 @@ export default function ReviewWritePage() {
           {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
           <div className="space-y-6">
             {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary to-accent text-primary-foreground p-6 shadow-xl overflow-hidden">
+            <div className="relative rounded-2xl bg-primary/10 border border-primary/20 text-foreground p-6 shadow-xl overflow-hidden">
               {/* 코트 라인 장식 */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
@@ -727,11 +727,11 @@ export default function ReviewWritePage() {
           {/* 오른쪽: 작성 폼 (코트의 오른쪽 서비스 박스) */}
           <div className="relative">
             {/* 중앙선 장식 */}
-            <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary to-accent dark:from-primary dark:via-primary dark:to-accent opacity-60"></div>
+            <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-primary/40 opacity-60"></div>
 
             <div className="rounded-2xl bg-card dark:bg-muted shadow-xl ring-1 ring-ring overflow-hidden">
               {/* 폼 헤더 */}
-              <div className="bg-gradient-to-r from-primary to-accent  px-6 py-4 border-b border-border">
+              <div className="bg-muted/50 px-6 py-4 border-b border-border">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-foreground">리뷰 작성</h2>
                 </div>
@@ -819,7 +819,7 @@ export default function ReviewWritePage() {
                     </div>
                   )}
                   {/* 별점 섹션 */}
-                  <div className="text-center py-6 bg-gradient-to-r from-primary to-accent  rounded-xl">
+                  <div className="text-center py-6 bg-primary/10 border border-primary/20 rounded-xl">
                     <label className="block text-sm font-semibold text-foreground mb-4">만족도를 별점으로 평가해주세요</label>
                     <Stars value={rating} onChange={setRating} disabled={state !== 'ok'} />
                     <div className="mt-2 text-sm text-foreground">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>
@@ -883,7 +883,7 @@ export default function ReviewWritePage() {
                     type="submit"
                     disabled={locked || isUploading}
                     aria-disabled={locked || isUploading}
-                    className="rounded-xl shadow-sm bg-gradient-to-r from-primary to-accent hover:from-primary hover:to-accent text-primary-foreground font-semibold px-8 order-1 sm:order-3"
+                    className="rounded-xl shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 order-1 sm:order-3"
                   >
                     {isUploading ? '이미지 업로드 중...' : '후기 등록하기'}
                   </Button>

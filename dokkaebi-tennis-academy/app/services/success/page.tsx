@@ -485,7 +485,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </span>
  <span className="tabular-nums">{remainPct}%</span>
  </div>
- <div className="h-2 w-full bg-accent rounded-full overflow-hidden">
+ <div className="h-2 w-full bg-primary/20 rounded-full overflow-hidden">
  <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
  </div>
  <div className="mt-1 text-xs text-muted-foreground">
@@ -718,7 +718,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </CardHeader>
  <CardContent>
  <div className="space-y-4">
- <div className="flex items-center p-3 bg-accent dark:bg-card rounded-lg">
+ <div className="flex items-center p-3 bg-primary/10 border border-primary/20 dark:bg-primary/20 rounded-lg">
  <Shield className="h-6 w-6 text-accent mr-3" />
  <div>
  <p className="font-semibold text-foreground ">정품 보장</p>
@@ -732,7 +732,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <p className="text-sm text-muted-foreground">빠르고 정확한 장착 서비스</p>
  </div>
  </div>
- <div className="flex items-center p-3 bg-accent dark:bg-card rounded-lg">
+ <div className="flex items-center p-3 bg-primary/10 border border-primary/20 dark:bg-primary/20 rounded-lg">
  <Award className="h-6 w-6 text-foreground mr-3" />
  <div>
  <p className="font-semibold text-foreground ">전문가 상담</p>

@@ -500,7 +500,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <span>최대 12개월 유효</span>
  </div>
  <div className="flex items-center gap-2">
- <Star className="h-4 w-4 text-accent-foreground" />
+ <Star className="h-4 w-4 text-primary" />
  <span>전문가 서비스</span>
  </div>
  </div>
