@@ -738,7 +738,7 @@ export default function NoticeWritePage() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3 p-4 bg-primary rounded-lg border border-border">
+              <div className="flex items-start space-x-3 p-4 rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20">
                 <Checkbox id="pinned" checked={isPinned} onCheckedChange={(checked) => setIsPinned(checked as boolean)} className="mt-1" />
                 <div className="space-y-1">
                   <label htmlFor="pinned" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center">
@@ -760,7 +760,7 @@ export default function NoticeWritePage() {
                 <Button variant="outline" size="lg" className="px-6 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
                   임시저장
                 </Button>
-                <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-gradient-to-r from-background to-card hover:from-background hover:to-card disabled:opacity-60">
+                <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
                   {submitting ? (editId ? '수정 중…' : '등록 중…') : editId ? '공지사항 수정' : '공지사항 등록'}
                 </Button>
               </div>

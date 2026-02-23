@@ -614,7 +614,7 @@ export default function LoginPageClient() {
 
  <div className="relative w-full max-w-6xl">
  <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
- <div className="bg-primary p-6 text-primary-foreground relative overflow-hidden">
+ <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative overflow-hidden">
  <div className="absolute inset-0 bg-foreground/10"></div>
  <div className="relative text-center">
  {/* <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div> */}

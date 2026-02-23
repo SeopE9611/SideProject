@@ -443,11 +443,11 @@ export default function OrderDetailPage() {
 
                     {/* Benefits */}
                     <div className="mt-6 space-y-3">
-                      <div className="flex items-center gap-3 p-3 bg-primary rounded-lg border border-border">
+                      <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
                           <p className="text-sm font-medium text-foreground">안전한 결제</p>
-                          <p className="text-xs text-primary">SSL 보안 결제 시스템</p>
+                          <p className="text-xs text-muted-foreground">SSL 보안 결제 시스템</p>
                         </div>
                       </div>
 

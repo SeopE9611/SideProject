@@ -816,7 +816,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
  <div className="bp-lg:col-span-1">
  <div className="bp-lg:sticky bp-lg:top-20">
  <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
- <div className="bg-primary p-6 text-primary-foreground">
+ <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground">
  <CardTitle className="flex items-center gap-3 text-xl">
  <div className="p-2 bg-card/20 rounded-full">
  <CreditCard className="h-5 w-5" />

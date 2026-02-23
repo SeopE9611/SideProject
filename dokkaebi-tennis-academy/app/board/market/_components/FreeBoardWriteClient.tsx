@@ -416,8 +416,8 @@ export default function FreeBoardWriteClient() {
         {/* 글쓰기 카드 */}
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
           <CardHeader className="flex flex-row items-center gap-3 border-b bg-gradient-to-r from-background to-card dark:from-background dark:to-card">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
-              <MessageSquare className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
+              <MessageSquare className="h-5 w-5" />
             </div>
             <div>
               <CardTitle className="text-base md:text-lg">중고 거래 게시판 글 작성</CardTitle>
