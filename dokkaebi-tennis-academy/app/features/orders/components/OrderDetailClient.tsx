@@ -427,7 +427,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
  <div className="flex items-center space-x-4">
  <div className="bg-card rounded-full p-3 shadow-md">
- <Settings className="h-8 w-8 text-accent" />
+ <Settings className="h-8 w-8 text-primary" />
  </div>
  <div>
  <h1 className="text-3xl font-bold tracking-tight text-foreground">주문 관리</h1>
@@ -717,7 +717,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  >
  <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center">
- <Truck className="mr-2 h-5 w-5 text-accent" />
+ <Truck className="mr-2 h-5 w-5 text-primary" />
  배송 정보
  </CardTitle>
  </CardHeader>
@@ -838,7 +838,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardHeader className="bg-gradient-to-r from-background to-background border-b pb-3">
  <CardTitle className="flex items-center justify-between">
  <div className="flex items-center space-x-2">
- <CreditCard className="h-5 w-5 text-accent" />
+ <CreditCard className="h-5 w-5 text-primary" />
  <span>결제 정보</span>
  </div>
  {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -895,7 +895,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  >
  <div>
  <p className="text-sm text-muted-foreground">결제 금액</p>
- <p className="text-xl font-bold text-accent">{formatCurrency(orderDetail.total)}</p>
+ <p className="text-xl font-bold text-primary">{formatCurrency(orderDetail.total)}</p>
  </div>
  </div>
  </div>
@@ -998,7 +998,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  >
  <CardHeader className="bg-gradient-to-r from-background to-background border-b">
  <CardTitle className="flex items-center space-x-2">
- <Calendar className="h-5 w-5 text-accent" />
+ <Calendar className="h-5 w-5 text-primary" />
  <span>주문 이력</span>
  </CardTitle>
  </CardHeader>

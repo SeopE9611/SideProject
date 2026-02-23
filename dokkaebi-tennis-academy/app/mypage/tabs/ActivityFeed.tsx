@@ -542,12 +542,12 @@ export default function ActivityFeed() {
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card   p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-primary p-2">
-              <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent " />
+            <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
+              <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary " />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-accent ">진행중</span>
+            <span className="text-xs bp-sm:text-sm font-medium text-primary ">진행중</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-accent ">{counts.active}</div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-primary ">{counts.active}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-gradient-to-br from-background to-card dark:from-background dark:to-card p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -764,12 +764,12 @@ export default function ActivityFeed() {
             <div className="min-w-0 rounded-2xl bg-gradient-to-br from-secondary to-muted dark:from-background dark:via-muted dark:to-card p-5 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-lg bg-primary p-2">
-                    <TrendingUp className="h-5 w-5 text-accent " />
+                  <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
+                    <TrendingUp className="h-5 w-5 text-primary " />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base bp-sm:text-lg font-bold text-accent truncate">진행중</h3>
-                    <p className="text-xs text-accent truncate">{activeTop.length}건의 활동</p>
+                    <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">진행중</h3>
+                    <p className="text-xs text-primary truncate">{activeTop.length}건의 활동</p>
                   </div>
                 </div>
                 <Button

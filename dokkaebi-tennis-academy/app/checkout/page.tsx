@@ -768,7 +768,7 @@ export default function CheckoutPage() {
  <span>SSL 보안 결제</span>
  </div>
  <div className="flex items-center gap-2 text-sm">
- <Truck className="h-4 w-4 text-accent" />
+ <Truck className="h-4 w-4 text-primary" />
  <span>빠른 배송</span>
  </div>
  <div className="flex items-center gap-2 text-sm">
@@ -794,7 +794,7 @@ export default function CheckoutPage() {
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-muted border-b border-border p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <Package className="h-5 w-5 text-accent" />
+                  <Package className="h-5 w-5 text-primary" />
                   주문 상품
                 </CardTitle>
                 <CardDescription className="mt-2">장바구니에서 선택한 상품 목록입니다.</CardDescription>
@@ -848,7 +848,7 @@ export default function CheckoutPage() {
 
                       <div className="flex items-center justify-between bp-sm:flex-col bp-sm:items-end bp-sm:justify-center bp-sm:text-right">
                         <div className="text-xs bp-sm:text-sm text-muted-foreground">단가: {item.price.toLocaleString()}원</div>
-                        <div className="font-bold text-base bp-sm:text-lg text-accent">{(item.price * item.quantity).toLocaleString()}원</div>
+                        <div className="font-bold text-base bp-sm:text-lg text-primary">{(item.price * item.quantity).toLocaleString()}원</div>
                       </div>
                     </div>
                   ))}
@@ -860,7 +860,7 @@ export default function CheckoutPage() {
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-muted border-b border-border p-4 bp-sm:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
-                  <Truck className="h-5 w-5 text-accent" />
+                  <Truck className="h-5 w-5 text-primary" />
                   상품 접수 예약 방식
                 </CardTitle>
                 <CardDescription className="mt-2">상품을 어떻게 예약하실지 선택해주세요.</CardDescription>
@@ -872,14 +872,14 @@ export default function CheckoutPage() {
                     <Label htmlFor="택배수령" className="flex-1 cursor-pointer font-medium">
                       택배 발송/수령 (자택 또는 지정 장소로 배송)
                     </Label>
-                    <Truck className="h-5 w-5 text-accent" />
+                    <Truck className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                     <RadioGroupItem value="방문수령" id="방문수령" />
                     <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
                       오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
                     </Label>
-                    <Building2 className="h-5 w-5 text-accent" />
+                    <Building2 className="h-5 w-5 text-primary" />
                   </div>
                 </RadioGroup>
 
@@ -967,7 +967,7 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm">
-                        <UserIcon className="h-4 w-4 text-accent" />
+                        <UserIcon className="h-4 w-4 text-primary" />
                         수령인 이름
                       </Label>
                       <Input
@@ -981,7 +981,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">
-                        <Mail className="h-4 w-4 text-accent" />
+                        <Mail className="h-4 w-4 text-primary" />
                         이메일
                       </Label>
                       <Input
@@ -996,7 +996,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm">
-                        <Phone className="h-4 w-4 text-accent" />
+                        <Phone className="h-4 w-4 text-primary" />
                         연락처
                       </Label>
                       <Input
@@ -1121,7 +1121,7 @@ export default function CheckoutPage() {
 
                   <div className="bg-muted p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-2 mb-3">
-                      <Shield className="h-5 w-5 text-accent" />
+                      <Shield className="h-5 w-5 text-primary" />
                       <p className="font-semibold text-foreground">무통장입금 안내</p>
                     </div>
                     <ul className="space-y-2 text-sm text-foreground">

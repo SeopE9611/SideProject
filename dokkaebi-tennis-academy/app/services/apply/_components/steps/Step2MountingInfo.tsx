@@ -338,7 +338,7 @@ export default function Step2MountingInfo(props: Props) {
           {(isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom' && (
             <div className="mb-4 rounded-lg border border-border bg-muted/70 p-3">
               {isLoadingPdpProduct ? (
-                <div className="text-xs text-accent">선택한 스트링 정보를 불러오는 중입니다...</div>
+                <div className="text-xs text-primary">선택한 스트링 정보를 불러오는 중입니다...</div>
               ) : (
                 <>
                   <div className="flex items-center gap-3">
@@ -351,7 +351,7 @@ export default function Step2MountingInfo(props: Props) {
                     <div className="flex flex-col">
                       {/* 상단 라벨 + 포함/미포함 배지(대여 비-주문에서만) */}
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-accent">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
+                        <span className="text-xs font-semibold text-primary">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
 
                         {isRentalNonOrder && (
                           <Badge variant={isLockedIdSelected ? 'secondary' : 'destructive'} className="h-5 px-2 text-[11px]">
@@ -521,7 +521,7 @@ export default function Step2MountingInfo(props: Props) {
                       return (
                         <div key={id} className="flex items-center justify-between gap-2">
                           <span className="truncate">
-                            • {item.name} <span className="text-[11px] text-accent/80 dark:text-accent/80">(구매 {orderQty}개 중)</span>
+                            • {item.name} <span className="text-[11px] text-primary/80 dark:text-primary/80">(구매 {orderQty}개 중)</span>
                           </span>
                           <div className="flex items-center gap-2">
                             <Label htmlFor={`useQty-${id}`} className="sr-only">
@@ -586,7 +586,7 @@ export default function Step2MountingInfo(props: Props) {
                         return (
                           <div key={id} className="flex items-center justify-between gap-2">
                             <span className="truncate">
-                              • {name} {typeof maxNonOrderQty === 'number' ? <span className="text-[11px] text-accent/80 dark:text-accent/80">(가용 {maxNonOrderQty}개 중)</span> : null}
+                              • {name} {typeof maxNonOrderQty === 'number' ? <span className="text-[11px] text-primary/80 dark:text-primary/80">(가용 {maxNonOrderQty}개 중)</span> : null}
                             </span>
                             <div className="flex items-center gap-1">
                               <Label htmlFor={`useQty-${id}`} className="sr-only">
@@ -710,7 +710,7 @@ export default function Step2MountingInfo(props: Props) {
             <CardHeader className="pb-4 space-y-1">
               <CardTitle className="text-base font-semibold text-foreground">라켓별 세부 장착 정보</CardTitle>
               <CardDescription className="text-sm text-muted-foreground leading-relaxed">
-                위에서 선택한 <span className="font-semibold text-accent">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
+                위에서 선택한 <span className="font-semibold text-primary">"사용 개수"</span> 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -761,13 +761,13 @@ export default function Step2MountingInfo(props: Props) {
                   <div className="flex items-center justify-between gap-3 px-4 py-3 bg-muted/40 dark:bg-muted/30 border-b border-border/50">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shadow-sm">
-                        <span className="text-sm font-bold text-primary-foreground">{index + 1}</span>
+                        <span className="text-sm font-bold text-primary">{index + 1}</span>
                       </div>
                       <span className="text-sm font-medium text-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted dark:bg-primary">
-                      <div className="h-1.5 w-1.5 rounded-full bg-muted dark:bg-primary" />
-                      <span className="text-xs font-medium text-accent truncate max-w-[200px]">{line.stringName}</span>
+                    <div className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 dark:bg-primary/20">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary/70" />
+                      <span className="text-xs font-medium text-primary truncate max-w-[200px]">{line.stringName}</span>
                     </div>
                   </div>
 

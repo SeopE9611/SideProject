@@ -252,7 +252,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {/* 제목 섹션 */}
  <div className="flex items-center space-x-4 min-w-0 flex-1">
  <div className="bg-card rounded-full p-3 shadow-md shrink-0">
- <ShoppingCart className="h-8 w-8 text-accent" />
+ <ShoppingCart className="h-8 w-8 text-primary" />
  </div>
  <div className="min-w-0">
  <h1 className="text-2xl bp-sm:text-3xl font-bold text-foreground">주문 상세정보</h1>
@@ -447,7 +447,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Card variant="elevatedGradient">
  <CardHeader variant="sectionGradient">
  <CardTitle className="flex items-center space-x-2">
- <User className="h-5 w-5 text-accent" />
+ <User className="h-5 w-5 text-primary" />
  <span>내 정보</span>
  </CardTitle>
  </CardHeader>
@@ -604,7 +604,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border">
  <div>
  <p className="text-sm text-muted-foreground">결제 금액</p>
- <p className="text-xl font-bold text-accent">{formatCurrency(orderDetail.total)}</p>
+ <p className="text-xl font-bold text-primary">{formatCurrency(orderDetail.total)}</p>
  </div>
  </div>
  </div>

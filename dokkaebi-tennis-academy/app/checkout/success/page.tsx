@@ -146,16 +146,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
       <div className="min-h-full bg-background text-foreground">
         {/* Hero Section */}
-        <div className="relative overflow-hidden bg-primary text-primary-foreground">
+        <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
           <div className="absolute inset-0 bg-background/10"></div>
           <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
           <SiteContainer variant="wide" className="relative py-16">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full mb-6 ">
+              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
                 <CheckCircle className="h-12 w-12 text-foreground" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
-              <p className="mb-6 text-xl text-primary-foreground/80">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+              <p className="mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
 
               {/* <div className="flex flex-wrap justify-center gap-6 text-sm">
  <div className="flex items-center gap-2">
@@ -181,10 +181,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
                       <Package className="h-6 w-6" />
                     </div>
-                    <h3 className="text-xl font-bold text-primary-foreground">스트링 장착 서비스 포함</h3>
+                    <h3 className="text-xl font-bold text-foreground">스트링 장착 서비스 포함</h3>
                   </div>
                   {/* 문구 분기: 방문/택배 */}
-                  <p className="mb-4 text-primary-foreground/80">
+                  <p className="mb-4 text-muted-foreground">
                     {order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
                   </p>
                   <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
