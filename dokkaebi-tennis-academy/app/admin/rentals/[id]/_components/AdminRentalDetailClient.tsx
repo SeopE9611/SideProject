@@ -291,7 +291,7 @@ export default function AdminRentalDetailClient() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
-                  <Settings className="h-8 w-8 text-accent" />
+                  <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight text-foreground ">대여 관리</h1>
@@ -563,7 +563,7 @@ export default function AdminRentalDetailClient() {
             <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
                 <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="h-5 w-5 text-accent" />
+                  <CreditCard className="h-5 w-5 text-primary" />
                   <span>결제 정보</span>
                 </CardTitle>
                 <div className="ml-auto">
@@ -612,7 +612,7 @@ export default function AdminRentalDetailClient() {
                   <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-background to-card dark:from-background dark:to-card rounded-lg border border-border/50">
                     <div>
                       <p className="text-sm text-muted-foreground ">총 결제 금액</p>
-                      <p className="text-xl font-bold text-accent dark:text-foreground">{won(data.amount?.total)}</p>
+                      <p className="text-xl font-bold text-primary dark:text-foreground">{won(data.amount?.total)}</p>
                     </div>
                   </div>
                   <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
@@ -664,7 +664,7 @@ export default function AdminRentalDetailClient() {
                 {
                   {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">운송장 없음</span>,
-                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-accent text-xs">출고 운송장</span>,
+                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-primary text-xs">출고 운송장</span>,
                     'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">반납 운송장</span>,
                     'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
@@ -724,7 +724,7 @@ export default function AdminRentalDetailClient() {
           <Card className="border-0 shadow-xl ring-1 ring-ring bg-gradient-to-br from-card to-card dark:from-background dark:to-card overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-background to-card dark:from-background dark:to-card border-b pb-3">
               <CardTitle className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-accent" />
+                <Calendar className="h-5 w-5 text-primary" />
                 <span>대여 타임라인</span>
               </CardTitle>
             </CardHeader>

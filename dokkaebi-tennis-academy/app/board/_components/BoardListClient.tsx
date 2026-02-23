@@ -466,7 +466,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           <span className="line-clamp-1 text-foreground">{post.title}</span>
 
                           {/* 댓글 수 뱃지 */}
-                          {post.commentsCount ? <span className="text-xs text-accent">[{post.commentsCount}]</span> : null}
+                          {post.commentsCount ? <span className="text-xs text-primary">[{post.commentsCount}]</span> : null}
 
                           {/* 이미지 첨부 아이콘 */}
                           {post.images && post.images.length > 0 && <ImageIcon className="h-4 w-4 shrink-0 ml-1 text-primary" aria-label="이미지 첨부 있음" />}

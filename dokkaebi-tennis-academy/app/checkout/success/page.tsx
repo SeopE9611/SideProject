@@ -163,7 +163,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
  <span>안전한 결제 완료</span>
  </div>
  <div className="flex items-center gap-2">
- <Clock className="h-4 w-4 text-accent" />
+ <Clock className="h-4 w-4 text-primary" />
  <span>빠른 처리</span>
  </div>
  <div className="flex items-center gap-2">

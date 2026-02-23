@@ -1257,7 +1257,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  {attachments.length > 0 && (
  <div className="mt-8 space-y-3 border-t border-border pt-4 ">
  <div className="flex items-center gap-2">
- <FileText className="h-4 w-4 text-accent" />
+ <FileText className="h-4 w-4 text-primary" />
  <span className="text-sm font-semibold text-foreground">첨부파일</span>
  <span className="text-xs text-muted-foreground">{attachments.length}개</span>
  </div>
@@ -1273,8 +1273,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  return (
  <div key={`${url}-${index}`} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border ">
  <div className="flex min-w-0 flex-1 items-center gap-3">
- <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 dark:bg-accent/15">
- <FileText className="h-4 w-4 text-accent" />
+ <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 dark:bg-primary/20">
+ <FileText className="h-4 w-4 text-primary" />
  </div>
  <div className="min-w-0 flex-1">
  <div className="truncate font-medium text-foreground" title={name}>
