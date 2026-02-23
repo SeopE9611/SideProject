@@ -15,7 +15,7 @@ const keywords = ['bg', 'text', 'border', 'ring', 'from', 'to', 'via'];
 const paletteAlternation = palettes.join('|');
 const keywordAlternation = keywords.join('|');
 const rawPaletteRegex = new RegExp(`(?:[\\w-]+:)*(?:${keywordAlternation})-(?:${paletteAlternation})-(?:\\d{2,3})(?:\\/\\d{1,3})?`, 'g');
-const forbiddenClassComboRegex = /text-foreground\s+dark:text-muted-foreground/g;
+const invertedLabelTextRegex = /(?:^|\s)(?:[\w-]+:)*text-foreground(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*dark:text-muted-foreground(?:\s|$)/;
 
 // 최소 추가 패턴 (중립 하드코딩 클래스)
 const hardcodedNeutralRegex = /(?:[\w-]+:)*(?:text-(?:white|black)|bg-(?:white|black)\/\d{1,3}|border-white\/\d{1,3}|ring-black\/\d{1,3}|dark:ring-white\/\d{1,3})/g;
@@ -37,6 +37,8 @@ const hoverAccentRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:
 const solidDestructiveWithTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*bg-destructive(?!\/)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive(?:\s|$)/;
 const primaryTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-primary\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-primary-foreground(?:\s|$)/;
 const warningTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-warning\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-warning-foreground(?:\s|$)/;
+const destructiveTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-destructive\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive-foreground(?:\s|$)/;
+const successTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-success\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-success-foreground(?:\s|$)/;
 const solidHoverDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\/)(?:\s|$)/;
 const hoverTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
 const solidHoverPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
@@ -129,15 +131,6 @@ const exceptionFiles = new Set();
 for (const file of files) {
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
   const found = [];
-
-  for (const match of text.matchAll(forbiddenClassComboRegex)) {
-    found.push({
-      type: 'forbidden-combo',
-      token: match[0],
-      line: getLine(text, match.index ?? 0),
-    });
-  }
-
   for (const match of text.matchAll(rawPaletteRegex)) {
     found.push({
       type: 'raw-palette-class',
@@ -368,6 +361,58 @@ for (const file of files) {
     if (warningTintWithForegroundRegex.test(block)) {
       found.push({
         type: 'warning-tint-with-warning-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (destructiveTintWithForegroundRegex.test(block)) {
+      found.push({
+        type: 'destructive-tint-with-destructive-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (successTintWithForegroundRegex.test(block)) {
+      found.push({
+        type: 'success-tint-with-success-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (/\bbg-muted\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
+      warnings.push({
+        file,
+        type: 'semantic-inversion-bg-muted-dark-bg-primary',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (/\bbg-card\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
+      warnings.push({
+        file,
+        type: 'semantic-inversion-bg-card-dark-bg-primary',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (/\bbg-muted\b/.test(block) && /\bdark:bg-destructive\b/.test(block)) {
+      warnings.push({
+        file,
+        type: 'semantic-inversion-bg-muted-dark-bg-destructive',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (invertedLabelTextRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'semantic-inversion-text-foreground-dark-text-muted-foreground',
         token: block,
         line: getLine(text, match.index ?? 0),
       });
