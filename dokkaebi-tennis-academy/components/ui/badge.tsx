@@ -16,8 +16,8 @@ const badgeVariants = cva('inline-flex items-center whitespace-nowrap rounded-fu
       warning: 'border-warning/30 bg-warning/15 text-warning',
       danger: 'border-transparent bg-destructive/15 text-destructive',
       outline: 'text-foreground',
-      product: 'border-primary/20 bg-primary/10 text-primary dark:bg-primary/20',
-      service: 'bg-secondary text-brand-text border-border',
+      product: 'border-primary/20 bg-primary/10 text-primary',
+      service: 'border-primary/20 bg-primary/10 text-primary',
     },
   },
   defaultVariants: {

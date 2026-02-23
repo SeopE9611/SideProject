@@ -12,11 +12,11 @@ import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { opsKindBadgeTone, opsKindLabel, type OpsBadgeTone, type OpsKind } from '@/lib/admin-ops-taxonomy';
 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
-  success: 'bg-primary/10 text-primary',
-  warning: 'bg-muted/10 text-primary',
-  destructive: 'bg-destructive/10 text-destructive',
+  success: 'bg-success/10 text-success border-success/30',
+  warning: 'bg-warning/10 text-warning border-warning/30',
+  destructive: 'bg-destructive/10 text-destructive border-destructive/30',
   muted: 'bg-muted text-muted-foreground',
-  info: 'bg-info/10 text-info',
+  info: 'bg-primary/10 text-primary border-primary/20',
 };
 
 function opsBadgeToneClass(tone: OpsBadgeTone) {

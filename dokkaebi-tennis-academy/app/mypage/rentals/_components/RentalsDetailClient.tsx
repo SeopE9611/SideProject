@@ -83,11 +83,11 @@ const getTrackHref = (code?: string, no?: string) => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case 'returned':
-      return <CheckCircle className="h-5 w-5 text-primary" />;
+      return <CheckCircle className="h-5 w-5 text-success" />;
     case 'out':
       return <Clock className="h-5 w-5 text-primary" />;
     case 'paid':
-      return <Package className="h-5 w-5 text-primary" />;
+      return <Package className="h-5 w-5 text-success" />;
     case 'canceled':
       return <XCircle className="h-5 w-5 text-destructive" />;
     default:
@@ -98,11 +98,11 @@ const getStatusIcon = (status: string) => {
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
     case 'returned':
-      return 'bg-primary/15 text-primary dark:bg-primary/20 dark:text-primary';
+      return 'bg-success/10 text-success dark:bg-success/20 dark:text-success';
     case 'out':
       return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
     case 'paid':
-      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
+      return 'bg-success/10 text-success dark:bg-success/20 dark:text-success';
     case 'canceled':
       return 'bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-destructive';
     default:
@@ -415,10 +415,10 @@ export default function RentalsDetailClient({ id }: { id: string }) {
 
       {banner && (
         <div
-          className={`rounded-xl border p-6 ${ banner.tone === 'success' ? 'bg-primary/10 border-border/35 text-primary dark:bg-primary/20 dark:border-border/45 dark:text-primary' : 'bg-muted/10 border-border/35 text-foreground dark:bg-muted/20 dark:border-border/45 dark:text-foreground' }`}
+          className={`rounded-xl border p-6 ${ banner.tone === 'success' ? 'bg-success/10 border-success/30 text-success dark:bg-success/20 dark:border-success/40 dark:text-success' : 'bg-muted/10 border-border/35 text-foreground dark:bg-muted/20 dark:border-border/45 dark:text-foreground' }`}
         >
           <div className="flex items-center gap-3">
-            {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-primary" /> : <AlertCircle className="h-6 w-6 text-primary" />}
+            {banner.tone === 'success' ? <CheckCircle className="h-6 w-6 text-success" /> : <AlertCircle className="h-6 w-6 text-primary" />}
             <div>
               <p className="font-semibold text-lg">{banner.title}</p>
               {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}

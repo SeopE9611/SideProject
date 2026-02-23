@@ -23,7 +23,7 @@ export function opsKindBadgeTone(kind: OpsKind): OpsBadgeTone {
 }
 
 const orderStatusColors: Record<string, OpsBadgeTone> = {
-  대기중: 'muted',
+  대기중: 'warning',
   처리중: 'info',
   결제완료: 'success',
   배송중: 'info',
@@ -34,9 +34,9 @@ const orderStatusColors: Record<string, OpsBadgeTone> = {
 };
 
 const applicationStatusColors: Record<string, OpsBadgeTone> = {
-  접수완료: 'info',
-  '검토 중': 'muted',
-  '작업 중': 'warning',
+  접수완료: 'success',
+  '검토 중': 'warning',
+  '작업 중': 'info',
   교체완료: 'success',
   취소: 'destructive',
 };
@@ -46,7 +46,7 @@ const applicationStatusColors: Record<string, OpsBadgeTone> = {
  * - OperationsClient는 label(한글)을 기준으로 색상을 매핑.
  */
 const rentalStatusColors: Record<string, OpsBadgeTone> = {
-  대기중: 'muted',
+  대기중: 'warning',
   결제완료: 'info',
   대여중: 'warning',
   반납완료: 'success',

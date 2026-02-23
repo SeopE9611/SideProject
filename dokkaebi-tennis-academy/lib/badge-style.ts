@@ -8,11 +8,11 @@ export const badgeBase = 'inline-flex items-center gap-1 font-normal';
 export const badgeBaseOutlined = `${badgeBase} border`;
 
 const SEMANTIC_BADGE = {
-  success: 'bg-success/15 text-success border border-success/30',
-  warning: 'bg-warning/15 text-warning border border-warning/30',
+  success: 'bg-success/10 text-success border border-success/30',
+  warning: 'bg-warning/10 text-warning border border-warning/30',
   info: 'bg-primary/10 text-primary border border-primary/20',
   neutral: 'bg-card text-foreground border border-border',
-  destructive: 'bg-destructive/15 text-destructive border border-destructive/30',
+  destructive: 'bg-destructive/10 text-destructive border border-destructive/30',
 } as const;
 
 export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
@@ -96,8 +96,8 @@ export const paymentStatusColors: Record<string, string> = {
 
 export const orderTypeColors: Record<string, string> = {
   상품: SEMANTIC_BADGE.info,
-  서비스: SEMANTIC_BADGE.neutral,
-  클래스: SEMANTIC_BADGE.neutral,
+  서비스: SEMANTIC_BADGE.info,
+  클래스: SEMANTIC_BADGE.info,
 };
 
 export const shippingStatusColors: Record<string, string> = {
@@ -176,8 +176,8 @@ export function getTrackingBadge(order: Order) {
 }
 
 export const applicationStatusColors = {
-  접수완료: SEMANTIC_BADGE.info,
-  '검토 중': SEMANTIC_BADGE.neutral,
+  접수완료: SEMANTIC_BADGE.success,
+  '검토 중': SEMANTIC_BADGE.warning,
   '작업 중': SEMANTIC_BADGE.info,
   교체완료: SEMANTIC_BADGE.success,
   취소: SEMANTIC_BADGE.destructive,
@@ -213,7 +213,7 @@ export const noticePinColor = SEMANTIC_BADGE.info;
 export type ReviewType = 'product' | 'service' | 'etc';
 export const reviewTypeColors: Record<ReviewType, string> = {
   product: SEMANTIC_BADGE.info,
-  service: SEMANTIC_BADGE.neutral,
+  service: SEMANTIC_BADGE.info,
   etc: SEMANTIC_BADGE.neutral,
 };
 export function getReviewTypeColor(t?: string | null) {
