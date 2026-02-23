@@ -344,7 +344,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         <div className="container mx-auto px-4 py-8">
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
             <CardContent className="space-y-4 p-6">
-              <div className="rounded-md border border-destructive bg-destructive px-4 py-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/board/gear">목록으로</Link>
@@ -538,7 +538,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               </div>
 
               {/* 에러 메시지 */}
-              {errorMsg && <div className="rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">{errorMsg}</div>}
+              {errorMsg && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">{errorMsg}</div>}
 
               {conflictOpen && (
                 <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">

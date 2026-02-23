@@ -330,7 +330,7 @@ export default function AdminNotificationsClient() {
           </div>
 
           {error ? (
-            <div className="flex items-center gap-2 rounded-lg border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
+            <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
               <AlertCircle className="h-4 w-4" />
               {getErrorMessage(error, '조회 실패')}
             </div>
@@ -356,7 +356,7 @@ export default function AdminNotificationsClient() {
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
                             it.status === 'sent' && 'bg-primary/10 text-primary',
                             it.status === 'queued' && 'bg-muted text-primary',
-                            it.status === 'failed' && 'bg-destructive text-destructive'
+                            it.status === 'failed' && 'bg-destructive/10 text-destructive dark:bg-destructive/15'
                           )}
                         >
                           {getStatusIcon(it.status)}
@@ -410,7 +410,7 @@ export default function AdminNotificationsClient() {
                           </div>
 
                           {it.error && (
-                            <div className="rounded-md border border-destructive bg-destructive p-2 text-xs text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
+                            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive dark:border-destructive/40 dark:bg-destructive/15">
                               <span className="font-medium">오류:</span> {it.error}
                             </div>
                           )}

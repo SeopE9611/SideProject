@@ -27,7 +27,7 @@ const rentalStatusColors: Record<string, string> = {
   paid: 'bg-primary text-accent dark:bg-primary',
   out: 'bg-muted text-foreground dark:bg-muted',
   returned: 'bg-success/10 text-success dark:bg-success/10',
-  canceled: 'bg-destructive text-destructive dark:bg-destructive',
+  canceled: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
 };
 
 const rentalStatusLabels: Record<string, string> = {

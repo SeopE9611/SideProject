@@ -289,7 +289,7 @@ export default function ClassesPage() {
                           className={
                             cls.status === 'recruiting'
                               ? 'bg-primary/10 dark:bg-primary/20 text-primary hover:bg-primary/20 dark:hover:bg-primary/30'
-                              : 'bg-destructive text-destructive hover:bg-destructive dark:hover:bg-destructive'
+                              : 'bg-destructive/10 text-destructive hover:bg-destructive/15 dark:bg-destructive/15 dark:hover:bg-destructive/20'
                           }
                         >
                           {cls.status === 'recruiting' ? '모집 중' : '마감'}

@@ -37,21 +37,21 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
         <div
           className={
             packageInsufficient
-              ? 'mt-6 rounded-2xl border border-border bg-destructive dark:border-destructive dark:bg-destructive p-5'
-              : 'mt-6 rounded-2xl border border-border bg-muted/40 dark:bg-muted/30 p-5'
+              ? 'mt-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-5 dark:border-destructive/40 dark:bg-destructive/15'
+              : 'mt-6 rounded-2xl border border-border bg-muted/40 p-5 dark:bg-muted/30'
           }
         >
           <div className="flex items-start gap-4">
-            <div className={packageInsufficient ? 'h-10 w-10 shrink-0 rounded-full bg-destructive text-foreground grid place-content-center shadow-sm' : 'h-10 w-10 shrink-0 rounded-full bg-primary/10 text-primary grid place-content-center shadow-sm'}>
+            <div className={packageInsufficient ? 'grid h-10 w-10 shrink-0 place-content-center rounded-full bg-destructive/10 text-destructive shadow-sm dark:bg-destructive/15' : 'grid h-10 w-10 shrink-0 place-content-center rounded-full bg-primary/10 text-primary shadow-sm dark:bg-primary/20'}>
               <Ticket className="h-5 w-5" />
             </div>
 
             <div className="flex-1">
               {/* 헤더: 제목 + 상태 배지 */}
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className={packageInsufficient ? 'text-sm font-semibold text-accent-foreground dark:text-destructive' : 'text-sm font-semibold text-primary dark:text-muted-foreground'}>패키지 자동 적용</h3>
+                <h3 className={packageInsufficient ? 'text-sm font-semibold text-foreground' : 'text-sm font-semibold text-primary'}>패키지 자동 적용</h3>
                 <Badge
-                  className={packageInsufficient ? 'bg-accent text-destructive dark:bg-destructive dark:text-destructive border border-border/80' : 'bg-accent text-primary dark:bg-primary dark:text-muted-foreground border border-border/80'}
+                  className={packageInsufficient ? 'border border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20'}
                 >
                   {packageInsufficient ? '적용 불가' : usingPackage ? '사용 중' : '사용 가능'}
                 </Badge>
@@ -59,11 +59,11 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
 
               {/* 본문 설명 */}
               {packageInsufficient ? (
-                <p className="mt-2 text-sm text-accent-foreground dark:text-destructive leading-relaxed">
+                <p className="mt-2 text-sm leading-relaxed text-foreground">
                   현재 패키지 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
-                  로, 이번 교체에 필요한 횟수(<span className="font-semibold">{requiredPassCount}회</span>)보다 적어 자동 적용되지 않습니다.
+                  로, 이번 교체에 필요한 횟수(<span className="font-semibold text-destructive">{requiredPassCount}회</span>)보다 적어 자동 적용되지 않습니다.
                   <br />
-                  이번 신청은 일반 교체비 결제로 진행됩니다.
+                  이번 신청은 <span className="font-semibold text-destructive">일반 교체비 결제</span>로 진행됩니다.
                 </p>
               ) : usingPackage ? (
                 <p className="mt-2 text-sm text-foreground leading-relaxed">

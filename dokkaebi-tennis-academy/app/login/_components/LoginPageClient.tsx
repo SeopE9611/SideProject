@@ -650,7 +650,7 @@ export default function LoginPageClient() {
  data-cy="login-form"
  >
  {/* {loginFormError && (
- <div className="flex items-start gap-2 rounded-lg border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
+ <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="whitespace-pre-line">{loginFormError}</div>
  </div>
@@ -800,7 +800,7 @@ export default function LoginPageClient() {
 
  <form onSubmit={handleRegister} className="space-y-6">
  {/* {registerFormError && (
- <div className="flex items-start gap-2 rounded-lg border border-destructive bg-destructive p-3 text-sm text-destructive dark:border-destructive dark:bg-destructive dark:text-destructive">
+ <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="whitespace-pre-line">{registerFormError}</div>
  </div>

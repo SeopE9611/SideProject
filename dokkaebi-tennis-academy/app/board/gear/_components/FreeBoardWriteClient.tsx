@@ -485,7 +485,7 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 에러 메시지 */}
-              {/* {errorMsg && <div className="rounded-md border border-destructive bg-destructive px-3 py-2 text-sm text-destructive dark:border-destructive dark:bg-destructive">{errorMsg}</div>} */}
+              {/* {errorMsg && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">{errorMsg}</div>} */}
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">

@@ -19,8 +19,8 @@ const PAYMENT_STATUS_OPTIONS = ['결제대기', '결제완료', '결제취소'] 
 const badgeClass: Record<string, string> = {
   결제완료: 'bg-primary/10 text-primary border border-border rounded-md px-2 py-1 text-xs font-medium',
   결제대기: 'bg-warning/10 text-warning border border-border rounded-md px-2 py-1 text-xs font-medium',
-  결제취소: 'bg-destructive text-destructive border border-destructive rounded-md px-2 py-1 text-xs font-medium',
-  취소: 'bg-destructive text-destructive border border-destructive rounded-md px-2 py-1 text-xs font-medium',
+  결제취소: 'bg-destructive/10 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-xs font-medium dark:bg-destructive/15',
+  취소: 'bg-destructive/10 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-xs font-medium dark:bg-destructive/15',
 };
 
 export default function PackagePaymentStatusSelect({ orderId, currentStatus, onUpdated, disabled }: Props) {

@@ -45,7 +45,7 @@ const getStatusBadgeColor = (status: string) => {
     case 'paid':
       return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
     case 'canceled':
-      return 'bg-destructive text-destructive dark:bg-destructive dark:text-destructive';
+      return 'bg-destructive/10 text-destructive dark:bg-destructive/15';
     default:
       return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
   }

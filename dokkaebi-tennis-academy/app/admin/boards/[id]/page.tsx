@@ -127,7 +127,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted to-card dark:from-background dark:via-muted dark:to-card">
         <div className="container py-8 px-6">
-          <p className="rounded-lg border border-destructive bg-destructive px-4 py-3 text-destructive">게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
+          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
         </div>
       </div>
     );
