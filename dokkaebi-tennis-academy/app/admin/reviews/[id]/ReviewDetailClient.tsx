@@ -241,7 +241,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
         </CardContent>
 
         <CardFooter className="flex justify-end space-x-3 pt-6 border-t border-border">
-          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-destructive hover:bg-destructive text-primary-foreground">
+          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
             {isDeleting ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-border border-t-transparent"></div>

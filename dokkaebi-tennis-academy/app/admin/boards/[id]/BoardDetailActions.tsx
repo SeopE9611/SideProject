@@ -68,7 +68,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
       </Button>
 
       {currentStatus !== 'public' && currentStatus !== 'published' ? (
-        <Button disabled={pendingAction !== null} onClick={() => runStatusChange('public')} className="bg-primary hover:bg-primary text-primary-foreground">
+        <Button disabled={pendingAction !== null} onClick={() => runStatusChange('public')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <Eye className="mr-2 h-4 w-4" />
           {pendingAction === 'publish' ? '공개 처리 중...' : '공개'}
         </Button>

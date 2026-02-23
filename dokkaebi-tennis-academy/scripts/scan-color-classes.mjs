@@ -303,6 +303,36 @@ for (const file of files) {
         line: getLine(text, match.index ?? 0),
       });
     }
+
+    if (/\banimate-pulse\b/.test(block) && /\bbg-accent(?!\/)\b/.test(block)) {
+      warnings.push({
+        file,
+        type: 'animate-pulse-with-bg-accent',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (/\bbg-destructive(?!\/)\b/.test(block) && !/\btext-destructive-foreground\b/.test(block)) {
+      warnings.push({
+        file,
+        type: 'solid-bg-destructive-without-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    const hasSolidPrimary = /\bbg-primary(?!\/)\b/.test(block);
+    const hasPrimaryForeground = /\btext-primary-foreground\b/.test(block);
+    const isDotIndicator = /(?:^|\s)(?:w-1|h-1)(?:\s|$)/.test(block);
+    if (hasSolidPrimary && !hasPrimaryForeground && !isDotIndicator) {
+      warnings.push({
+        file,
+        type: 'solid-bg-primary-without-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
   }
 
   if (found.length === 0) continue;

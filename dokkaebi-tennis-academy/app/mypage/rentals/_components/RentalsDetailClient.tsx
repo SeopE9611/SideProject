@@ -356,7 +356,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
  </Link>
  ) : canApplyStringService ? (
  <Link href={applyHref}>
- <Button className="gap-2 bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200">
+ <Button className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200">
  <Wrench className="h-4 w-4" />
  교체 신청하기
  </Button>

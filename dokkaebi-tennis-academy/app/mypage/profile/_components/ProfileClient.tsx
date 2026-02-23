@@ -655,10 +655,10 @@ export default function ProfileClient({ user }: Props) {
  </CardContent>
  </Card>
 
- <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border-destructive">
- <CardHeader className="bg-destructive/10 border-b border-destructive/30">
+ <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm border border-destructive/30">
+ <CardHeader className="bg-destructive/10 dark:bg-destructive/15 border-b border-destructive/30">
  <div className="flex items-center gap-3">
- <div className="bg-destructive/10 text-destructive rounded-2xl p-3 shadow-lg">
+ <div className="bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-2xl p-3 shadow-lg">
  <AlertTriangle className="h-6 w-6 text-destructive" />
  </div>
  <div>
@@ -697,10 +697,10 @@ export default function ProfileClient({ user }: Props) {
  />
  ) : (
  <div className="text-center">
- <div className="bg-destructive border border-destructive rounded-xl p-6 mb-6">
+ <div className="bg-destructive/10 dark:bg-destructive/15 border border-destructive/30 rounded-xl p-6 mb-6">
  <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
  <h3 className="text-lg font-semibold text-destructive mb-2">정말로 탈퇴하시겠습니까?</h3>
- <p className="text-sm text-destructive">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
+ <p className="text-sm text-muted-foreground">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
  </div>
  <Button
  variant="destructive"

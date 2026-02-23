@@ -201,7 +201,7 @@ export default function HorizontalProducts({
         bg-card dark:bg-background rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
         transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
     >
-      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg overflow-hidden bg-accent dark:bg-card">
+      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg overflow-hidden bg-muted/50 dark:bg-card">
         {p.images?.[0] ? (
           <img src={p.images[0] || '/placeholder.svg'} alt={p.name} className="w-full h-full object-contain p-2 bp-sm:p-3 bp-md:p-4" loading="lazy" />
         ) : (
@@ -236,10 +236,10 @@ export default function HorizontalProducts({
       flex flex-col items-center justify-center"
     >
       <div
-        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-accent 
+        className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card 
         flex items-center justify-center"
       >
-        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-accent" />
+        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-primary/10" />
       </div>
       <div className="text-center space-y-1.5">
         <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
@@ -253,11 +253,11 @@ export default function HorizontalProducts({
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
       bg-card dark:bg-background animate-pulse"
     >
-      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-accent dark:bg-card" />
+      <div className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square rounded-lg bg-muted/60 dark:bg-card/60" />
       <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
-        <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-accent dark:bg-card" />
-        <div className="h-4 bp-sm:h-5 bp-md:h-6 w-32 bp-sm:w-40 bp-md:w-48 rounded bg-accent dark:bg-card" />
-        <div className="h-5 bp-sm:h-6 bp-md:h-7 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-accent dark:bg-card" />
+        <div className="h-3 bp-sm:h-4 bp-md:h-5 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-muted/60 dark:bg-card/60" />
+        <div className="h-4 bp-sm:h-5 bp-md:h-6 w-32 bp-sm:w-40 bp-md:w-48 rounded bg-muted/60 dark:bg-card/60" />
+        <div className="h-5 bp-sm:h-6 bp-md:h-7 w-20 bp-sm:w-24 bp-md:w-28 rounded bg-muted/60 dark:bg-card/60" />
       </div>
     </div>
   );
@@ -271,10 +271,10 @@ export default function HorizontalProducts({
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div
-          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-accent rounded-full mx-auto 
+          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-primary/10 rounded-full mx-auto 
           flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
         >
-          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-muted-foreground" />
+          <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-primary" />
         </div>
         <div className="space-y-1 bp-sm:space-y-1.5">
           <h3 className="text-sm bp-sm:text-base bp-md:text-lg bp-lg:text-xl font-bold text-foreground">더 많은 상품</h3>
@@ -290,8 +290,8 @@ export default function HorizontalProducts({
       bg-background dark:bg-card/50
       flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-accent flex items-center justify-center mb-3">
-        <Inbox className="h-6 w-6 text-muted-foreground" />
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
+        <Inbox className="h-6 w-6 text-primary" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{emptyTitle ?? '등록된 상품이 없습니다'}</div>
       <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{emptyDescription ?? '곧 상품이 업데이트됩니다.'}</div>
@@ -301,13 +301,13 @@ export default function HorizontalProducts({
   const ErrorCard = () => (
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7
-      bg-destructive
+      border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground
       flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive flex items-center justify-center mb-3">
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-destructive/10 dark:bg-destructive/15 flex items-center justify-center mb-3">
         <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
-      <div className="text-sm bp-sm:text-base font-semibold text-foreground">{errorTitle ?? '불러오지 못했어요'}</div>
+      <div className="text-sm bp-sm:text-base font-semibold text-destructive">{errorTitle ?? '불러오지 못했어요'}</div>
       <div className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">{errorDescription ?? '네트워크 상태를 확인 후 다시 시도해 주세요.'}</div>
       {onRetry && (
         <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
