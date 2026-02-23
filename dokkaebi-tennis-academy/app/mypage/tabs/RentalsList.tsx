@@ -109,12 +109,13 @@ export default function RentalsList() {
 
   if (error) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+      <Card className="border-0 bg-card">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive">
-            <Briefcase className="h-8 w-8 text-destructive" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
+            <Briefcase className="h-8 w-8" />
           </div>
-          <p className="text-destructive">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="font-semibold text-destructive">대여 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="mt-1 text-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
         </CardContent>
       </Card>
     );

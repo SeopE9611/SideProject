@@ -313,12 +313,12 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
       {/* 실패 원인 */}
       {vm?.error && (
-        <Card className="border-destructive">
+        <Card className="border-destructive/30">
           <CardHeader>
             <CardTitle className="text-base text-destructive">실패 원인</CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <pre className="whitespace-pre-wrap break-words rounded-md bg-destructive p-3 border border-destructive">{vm.error}</pre>
+            <pre className="whitespace-pre-wrap break-words rounded-md border border-destructive/30 bg-destructive/10 p-3 text-foreground dark:bg-destructive/15">{vm.error}</pre>
           </CardContent>
         </Card>
       )}

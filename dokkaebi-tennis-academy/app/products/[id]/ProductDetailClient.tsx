@@ -700,7 +700,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                     {typeof product?.mountingFee === 'number' && (
                       <div className="text-xs sm:text-sm text-muted-foreground">
-                        <span className="inline-flex items-center rounded-md bg-accent/10 dark:bg-accent/10 border border-border px-2 py-1 text-xs">
+                        <span className="inline-flex items-center rounded-md bg-primary/10 dark:bg-primary/20 border border-border px-2 py-1 text-xs">
                           장착 서비스: {product.mountingFee > 0 ? `+${product.mountingFee.toLocaleString()}원` : '무료'}
                         </span>
                       </div>
@@ -869,14 +869,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   { name: '내구성', icon: Shield, key: 'durability', koKey: '내구성' },
                   { name: '편안함', icon: Heart, key: 'comfort', koKey: '편안함' },
                 ].map((spec, index) => (
-                  <div key={index} className="p-2.5 sm:p-3 bg-accent/10 dark:bg-accent/10 rounded-lg">
+                  <div key={index} className="p-2.5 sm:p-3 bg-primary/10 dark:bg-primary/20 rounded-lg">
                     <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                       <spec.icon className="h-3 w-3 sm:h-4 sm:w-4 text-accent" />
                       <span className="text-xs sm:text-sm font-medium text-muted-foreground">{spec.name}</span>
                     </div>
                     <div className="flex gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <div key={i} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-primary dark:bg-accent/70' : 'bg-muted'}`} />
+                        <div key={i} className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${i < featureValue(spec.key, spec.koKey) ? 'bg-primary dark:bg-primary/70' : 'bg-muted'}`} />
                       ))}
                     </div>
                   </div>
@@ -889,7 +889,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <Card className="mt-8 sm:mt-12 border-0 shadow-lg sm:shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-0.5 sm:gap-1 bg-gradient-to-r from-accent/10 via-accent/10 to-primary/10 dark:from-accent/10 dark:via-accent/10 dark:to-primary/10 rounded-t-lg p-0.5 sm:p-1">
+              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-0.5 sm:gap-1 bg-gradient-to-r from-primary/10 via-primary/10 to-primary/20 dark:from-primary/20 dark:via-primary/20 dark:to-primary/30 rounded-t-lg p-0.5 sm:p-1">
                 <TabsTrigger
                   value="description"
                   className="min-w-0 h-11 sm:h-12 md:h-16 px-2 text-xs sm:text-sm md:text-base font-medium truncate data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-accent dark:data-[state=active]:bg-muted dark:data-[state=active]:text-accent"
@@ -934,7 +934,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
-                  <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-4 sm:p-6 rounded-lg">
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-4 sm:p-6 rounded-lg">
                     <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
                       {product.description || '이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다.'}
                     </p>
@@ -955,7 +955,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {Object.entries(toDisplaySpec())
                       .filter(([, value]) => value)
                       .map(([key, value]) => (
-                        <div key={key} className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border">
+                        <div key={key} className="bg-gradient-to-r from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-3 sm:p-4 rounded-lg border border-border">
                           <div className="flex items-center justify-between">
                             <span className="font-semibold text-accent text-sm sm:text-base">{key}</span>
                             <span className="text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
@@ -977,7 +977,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
-                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border">
+                            <div className="bg-gradient-to-r from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-3 sm:p-4 rounded-lg border border-border">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">메인(Mains)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hMainBrand ?? ''} {hMain?.name ?? ''}
@@ -989,7 +989,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </div>
 
                             {/* 크로스 */}
-                            <div className="bg-gradient-to-r from-accent/10 to-primary/10 dark:from-accent/10 dark:to-primary/10 p-3 sm:p-4 rounded-lg border border-border">
+                            <div className="bg-gradient-to-r from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-3 sm:p-4 rounded-lg border border-border">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">크로스(Crosses)</div>
                               <div className="font-medium text-sm sm:text-base">
                                 {hCrossBrand ?? ''} {hCross?.name ?? ''}
@@ -1533,7 +1533,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   type="button"
                   onClick={handleBuyNow}
                   disabled={loading || stock <= 0 || quantity > stock}
-                  className="flex-1 h-12 rounded-lg bg-primary hover:bg-primary/90 active:bg-primary/80 disabled:bg-muted dark:disabled:bg-muted text-primary-foreground font-semibold text-sm transition-colors shadow-sm disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 h-12 rounded-lg bg-primary hover:bg-primary/90 active:bg-primary/80 disabled:bg-muted dark:disabled:bg-muted disabled:hover:bg-muted text-primary-foreground disabled:text-muted-foreground font-semibold text-sm transition-colors shadow-sm disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <CreditCard className="h-4 w-4" />
                   즉시 구매하기

@@ -193,12 +193,13 @@ export default function OrderList() {
   // 에러 처리
   if (error) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-background to-card dark:from-background dark:to-card">
+      <Card className="border-0 bg-card">
         <CardContent className="p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive">
-            <Package className="h-8 w-8 text-destructive" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
+            <Package className="h-8 w-8" />
           </div>
-          <p className="text-destructive">주문 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="font-semibold text-destructive">주문 내역을 불러오는 중 오류가 발생했습니다.</p>
+          <p className="mt-1 text-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
         </CardContent>
       </Card>
     );
@@ -212,7 +213,7 @@ export default function OrderList() {
   //  주문이 없을 경우
   if (!isValidating && items.length === 0) {
     return (
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br">
+      <Card className="relative overflow-hidden border-0 bg-muted/30">
         <CardContent className="p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-background to-card dark:from-background dark:to-card shadow-lg">
             <ShoppingBag className="h-10 w-10 text-primary" />
