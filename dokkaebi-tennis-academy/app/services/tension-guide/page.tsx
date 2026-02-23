@@ -213,7 +213,7 @@ export default function TensionGuidePage() {
       <div className="relative overflow-hidden bg-muted/50 dark:bg-background/50">
         <div className="relative mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 pt-8 bp-sm:pt-10 bp-md:pt-12 pb-10 bp-md:pb-16">
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-accent/10 dark:bg-accent/15/50 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
+            <div className="inline-flex items-center gap-2 bg-accent/10 dark:bg-accent/15 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
               <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-accent" />
               <span className="text-xs bp-sm:text-sm font-semibold text-muted-foreground dark:text-accent">전문가 텐션 가이드</span>
             </div>
@@ -290,7 +290,7 @@ export default function TensionGuidePage() {
                             key={st.id}
                             onClick={() => setStringType(st.id as StringType)}
                             className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${
-                              stringType === st.id ? 'bg-accent/10 dark:bg-accent/15/50 ring-2 ring-ring500 shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
+                              stringType === st.id ? 'bg-accent/10 dark:bg-accent/15 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
                             }`}
                           >
                             <div className="flex items-center gap-2 mb-1">
@@ -312,7 +312,7 @@ export default function TensionGuidePage() {
                             key={option.id}
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${
-                              playStyle === option.id ? 'bg-accent/10 dark:bg-accent/15/50 ring-2 ring-ring500 shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
+                              playStyle === option.id ? 'bg-accent/10 dark:bg-accent/15 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
                             }`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-muted-foreground dark:text-accent' : 'text-foreground'}`}>{option.label}</div>
@@ -331,7 +331,7 @@ export default function TensionGuidePage() {
                             key={option.id}
                             onClick={() => setSwingSpeed(option.id as SwingSpeed)}
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${
-                              swingSpeed === option.id ? 'bg-accent/10 dark:bg-accent/15/50 ring-2 ring-ring500 shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
+                              swingSpeed === option.id ? 'bg-accent/10 dark:bg-accent/15 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'
                             }`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-muted-foreground dark:text-accent' : 'text-foreground'}`}>{option.label}</div>
@@ -432,7 +432,7 @@ export default function TensionGuidePage() {
                 return (
                   <Card
                     key={index}
-                    className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? 'ring-2 ring-ring500 shadow-lg' : 'hover:shadow-md'}`}
+                    className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? 'ring-2 ring-ring shadow-lg' : 'hover:shadow-md'}`}
                     onClick={() => setSelectedLevel(isSelected ? null : index)}
                   >
                     <CardHeader className="pb-3 bp-md:pb-4">
@@ -546,7 +546,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
 
-                    <div className="bg-accent/10 dark:bg-accent/15/30 p-3 bp-md:p-4 rounded-xl">
+                    <div className="bg-accent/10 dark:bg-accent/15 p-3 bp-md:p-4 rounded-xl">
                       <div className="flex items-start gap-2">
                         <Info className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-accent mt-0.5 flex-shrink-0" />
                         <div>

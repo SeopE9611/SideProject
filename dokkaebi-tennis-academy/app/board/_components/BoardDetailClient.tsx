@@ -920,14 +920,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <>
  <button
  type="button"
- className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-muted"
+ className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
  onClick={() => startEditComment(comment.id)}
  >
  수정
  </button>
  <button
  type="button"
- className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20/50 dark:hover:text-destructive"
+ className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
  onClick={() => handleDeleteComment(comment.id)}
  >
  삭제
@@ -995,7 +995,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  <div className="mt-3">
  <button
  type="button"
- className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-muted"
+ className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
  onClick={() => handleStartReply(comment.id, comment.nickname ?? '회원')}
  >
  <MessageSquare className="h-3.5 w-3.5" />
@@ -1273,7 +1273,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  return (
  <div key={`${url}-${index}`} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border ">
  <div className="flex min-w-0 flex-1 items-center gap-3">
- <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 dark:bg-accent/15/30">
+ <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-accent/10 dark:bg-accent/15">
  <FileText className="h-4 w-4 text-accent" />
  </div>
  <div className="min-w-0 flex-1">

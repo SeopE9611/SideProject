@@ -111,12 +111,12 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
         <Card className="border-border dark:border-destructive shadow-lg">
           <CardContent className="p-12">
             <div className="flex flex-col items-center gap-6 text-center">
-              <div className="w-16 h-16 border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-8 h-8 text-destructive" />
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-destructive">신청 정보를 불러올 수 없습니다</h3>
-                <p className="text-sm text-destructive">잠시 후 다시 시도해 주세요.</p>
+                <p className="text-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
               </div>
               <Button variant="outline" onClick={() => router.back()} className="mt-4">
                 <ArrowLeft className="w-4 h-4 mr-2" />

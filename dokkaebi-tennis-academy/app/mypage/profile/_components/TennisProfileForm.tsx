@@ -310,8 +310,8 @@ export default function TennisProfileForm() {
     <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
       <CardHeader className="bg-muted border-b">
         <div className="flex items-center gap-3">
-          <div className="bg-accent text-accent-foreground rounded-2xl p-3 shadow-lg">
-            <MdSportsTennis className="h-5 w-5 text-accent-foreground" />
+          <div className="bg-primary/10 text-primary dark:bg-primary/20 rounded-2xl p-3 shadow-lg">
+            <MdSportsTennis className="h-5 w-5 text-primary" />
           </div>
           <div>
             <CardTitle className="text-xl">테니스 프로필</CardTitle>

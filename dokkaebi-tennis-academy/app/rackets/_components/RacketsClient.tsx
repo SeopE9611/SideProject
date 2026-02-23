@@ -71,7 +71,7 @@ export default function RacketsClient() {
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-lg bg-muted/80/60 dark:bg-muted/50 animate-pulse" />
+            <div key={i} className="h-56 rounded-lg bg-muted/60 dark:bg-muted/50 animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (

@@ -44,6 +44,12 @@ const splitOpacityTokenRegex = /(?:[\w-]+:)*bg-primary\s+\d+\/\d+/g;
 const themeColorsClassRegex = /className\s*=\s*(?:"[^"]*theme\(colors\.[^"]*"|\{`[\s\S]*?theme\(colors\.[\s\S]*?`\})/g;
 const forbiddenDividePaletteRegex = /(?:[\w-]+:)*divide-(?:gray|slate|zinc|neutral|stone)-(?:\d{2,3})(?:\/\d{1,3})?/g;
 
+const doubleOpacityBgRegex = /(?:[\w-]+:)*bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const doubleOpacityHoverBgRegex = /(?:[\w-]+:)*hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const doubleOpacityDarkBgRegex = /(?:[\w-]+:)*dark:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const doubleOpacityDarkHoverBgRegex = /(?:[\w-]+:)*dark:hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const ringRing500Regex = /(?:[\w-]+:)*ring-ring500\b/g;
+
 // 허용 예외는 명시적으로 분리 관리한다.
 const BRAND_EXCEPTION_WHITELIST = new Set([
   'app/login/_components/SocialAuthButtons.tsx',
@@ -208,6 +214,47 @@ for (const file of files) {
   for (const match of text.matchAll(splitOpacityTokenRegex)) {
     found.push({
       type: 'split-opacity-token-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+
+  for (const match of text.matchAll(doubleOpacityBgRegex)) {
+    found.push({
+      type: 'double-opacity-bg-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(doubleOpacityHoverBgRegex)) {
+    found.push({
+      type: 'double-opacity-hover-bg-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(doubleOpacityDarkBgRegex)) {
+    found.push({
+      type: 'double-opacity-dark-bg-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(doubleOpacityDarkHoverBgRegex)) {
+    found.push({
+      type: 'double-opacity-dark-hover-bg-class',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(ringRing500Regex)) {
+    found.push({
+      type: 'ring-ring500-class',
       token: match[0],
       line: getLine(text, match.index ?? 0),
     });
