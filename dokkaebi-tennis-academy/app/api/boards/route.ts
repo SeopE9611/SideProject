@@ -1,27 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
-import { z } from 'zod';
+import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
+import { API_VERSION } from '@/lib/board.repository';
+import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
+import { getBoardList } from '@/lib/boards.queries';
+import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { verifyCommunityCsrf } from '@/lib/community/security';
+import { logInfo, reqMeta, startTimer } from '@/lib/logger';
+import { getDb } from '@/lib/mongodb';
+import { sanitizeHtml } from '@/lib/sanitize';
+import type { AccessTokenPayload, BoardCreateMongoDoc, BoardCreateResponseDto, BoardListResponseDto, CommunityListResponseDto, CommunityPostListItemDto, CommunityPostMongoDoc } from '@/lib/types/api/board-community';
 import type { BoardType, QnaCategory } from '@/lib/types/board';
 import { ObjectId } from 'mongodb';
-import { sanitizeHtml } from '@/lib/sanitize';
-import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { verifyCommunityCsrf } from '@/lib/community/security';
-import { getBoardList } from '@/lib/boards.queries';
-import { API_VERSION } from '@/lib/board.repository';
-import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
-import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
-import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
-import type {
-  AccessTokenPayload,
-  BoardCreateMongoDoc,
-  BoardCreateResponseDto,
-  BoardListResponseDto,
-  CommunityListResponseDto,
-  CommunityPostListItemDto,
-  CommunityPostMongoDoc,
-} from '@/lib/types/api/board-community';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
 const COMMUNITY_KIND_VALUES = ['free', 'market', 'gear', 'brand'] as const;
 type CommunityKindParam = (typeof COMMUNITY_KIND_VALUES)[number];
@@ -177,6 +169,7 @@ const createSchema = z.object({
   productRef: productRefSchema,
   isSecret: z.boolean().optional(),
   isPinned: z.boolean().optional(), // notice에서만 사용
+  images: z.array(z.string().url()).max(10).optional(),
   attachments: z
     .array(
       z.object({
@@ -266,7 +259,12 @@ export async function GET(req: NextRequest) {
     });
 
     const total = await col.countDocuments(filter);
-    const docs = await col.find(filter).sort(getCommunitySortOption(sort)).skip((page - 1) * limit).limit(limit).toArray();
+    const docs = await col
+      .find(filter)
+      .sort(getCommunitySortOption(sort))
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .toArray();
     const items: CommunityPostListItemDto[] = (docs as CommunityPostMongoDoc[]).map((d) => ({
       id: String(d._id),
       type: d.type,
@@ -354,22 +352,18 @@ export async function GET(req: NextRequest) {
 
   const response: BoardListResponseDto = { ok: true, version: API_VERSION, items: maskedItems, total, page, limit };
 
-  return NextResponse.json(
-    response,
-    {
-      headers: {
-        // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
-        'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
-        'CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
-        'Vercel-CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
-      },
+  return NextResponse.json(response, {
+    headers: {
+      // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
+      'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+      'CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+      'Vercel-CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
     },
-  );
+  });
 }
 
 /* ---------------------------------- POST --------------------------------- */
 export async function POST(req: NextRequest) {
-
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -410,14 +404,17 @@ export async function POST(req: NextRequest) {
   if (body.type === 'free' || body.type === 'market' || body.type === 'gear') {
     const db = await getDb();
     const now = new Date();
+    const safeImages = Array.isArray(body.images) ? body.images.filter((u) => isAllowedHttpUrl(u)) : [];
+    const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
+
     const doc: Omit<CommunityPostMongoDoc, '_id'> = {
       type: body.type,
       title: body.title,
       content: body.content,
       category: body.category ?? 'general',
       brand: null,
-      images: [],
-      attachments: body.attachments ?? [],
+      images: safeImages,
+      attachments: safeAttachments,
       userId: new ObjectId(String(payload.sub)),
       nickname: payload?.name ?? payload?.nickname ?? payload?.email?.split('@')?.[0] ?? '회원',
       status: 'public',
