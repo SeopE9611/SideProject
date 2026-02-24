@@ -1084,7 +1084,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                       <p className="text-sm text-muted-foreground">재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.</p>
                     </div>
 
-                    <Separator className="bg-primary" />
+                    <Separator className="bg-border" />
 
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-primary">판매 옵션</h3>
