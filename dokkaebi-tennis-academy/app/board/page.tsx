@@ -1,15 +1,15 @@
 'use client';
-import useSWR from 'swr';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Bell, Star, ArrowRight, Plus, Eye, ShoppingBag, Dumbbell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowRight, Bell, Dumbbell, Eye, MessageSquare, Plus, ShoppingBag, Star } from 'lucide-react';
+import useSWR from 'swr';
 
-import Link from 'next/link';
-import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, getReviewTypeColor, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { ReactNode } from 'react';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { Skeleton } from '@/components/ui/skeleton';
+import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getNoticeCategoryColor, getQnaCategoryColor, getReviewTypeColor, noticePinColor } from '@/lib/badge-style';
+import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 type BoardKind = 'free' | 'market' | 'gear';
 
@@ -611,7 +611,7 @@ function CommunityIntroCard() {
           </Button>
         </div>
 
-        <div className="pt-1">
+        {/* <div className="pt-1">
           <div className="grid gap-2 sm:grid-cols-2">
             <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
               <Link href="/board/hot">
@@ -627,7 +627,7 @@ function CommunityIntroCard() {
               </Link>
             </Button>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );
