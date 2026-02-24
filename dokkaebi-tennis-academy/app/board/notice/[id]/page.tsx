@@ -277,7 +277,7 @@ export default function NoticeDetailPage() {
                       <Separator className="my-8" />
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <ImageIcon className="h-5 w-5 text-primary" />
+                          <ImageIcon className="h-5 w-5" />
                           <h2 className="text-xl font-semibold text-foreground">이미지</h2>
                           <Badge variant="secondary" className="ml-2">
                             {imageAtts.length}개
@@ -342,7 +342,7 @@ export default function NoticeDetailPage() {
                       <Separator className="my-8" />
                       <section className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-primary" />
+                          <FileText className="h-5 w-5" />
                           <h2 className="text-xl font-semibold text-foreground">첨부파일</h2>
                           <Badge variant="secondary" className="ml-2">
                             {fileAtts.length}개
@@ -364,8 +364,8 @@ export default function NoticeDetailPage() {
                                 className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-primary" />
+                                  <div className="flex-shrink-0 w-10 h-10 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                                    <FileText className="h-5 w-5" />
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <div className="font-medium text-foreground truncate">{name}</div>

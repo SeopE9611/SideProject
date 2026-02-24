@@ -85,8 +85,8 @@ export default function ForgotPasswordPage() {
                 </div>
               ) : (
                 <div className="bg-muted rounded-xl p-6 text-center border border-border">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                    <CheckCircle className="h-8 w-8 text-primary" />
+                  <div className="w-16 h-16 mx-auto mb-4 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full flex items-center justify-center shadow-lg">
+                    <CheckCircle className="h-8 w-8" />
                   </div>
                   <p className="text-sm font-semibold text-primary mb-2">{email}로 비밀번호 재설정 링크를 발송했습니다.</p>
                   <p className="text-xs text-muted-foreground">이메일이 도착하지 않았다면 스팸함을 확인해주세요.</p>

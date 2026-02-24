@@ -62,6 +62,7 @@ const invalidAccentZeroTokenRegex = /(?:[\w-]+:)*(?:bg|text)-accent0\b/g;
 const splitOpacityTokenRegex = /(?:[\w-]+:)*bg-primary\s+\d+\/\d+/g;
 const themeColorsClassRegex = /className\s*=\s*(?:"[^"]*theme\(colors\.[^"]*"|\{`[\s\S]*?theme\(colors\.[\s\S]*?`\})/g;
 const forbiddenDividePaletteRegex = /(?:[\w-]+:)*divide-(?:gray|slate|zinc|neutral|stone)-(?:\d{2,3})(?:\/\d{1,3})?/g;
+const arbitraryHexClassRegex = /(?:^|\s)(?:[\w-]+:)*(?:bg|text|border|ring|fill|stroke)-\[#(?:[0-9A-Fa-f]{3,8})\](?:\s|$)/g;
 
 const doubleOpacityBgRegex = /(?:[\w-]+:)*bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
 const doubleOpacityHoverBgRegex = /(?:[\w-]+:)*hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
@@ -70,11 +71,7 @@ const doubleOpacityDarkHoverBgRegex = /(?:[\w-]+:)*dark:hover:bg-[\w[\]-]+\/\d{1
 const ringRing500Regex = /(?:[\w-]+:)*ring-ring500\b/g;
 
 // 허용 예외는 명시적으로 분리 관리한다.
-const BRAND_EXCEPTION_WHITELIST = new Set([
-  'app/login/_components/SocialAuthButtons.tsx',
-  'app/login/_components/LoginPageClient.tsx',
-  'app/admin/users/_components/UsersClient.tsx',
-]);
+const BRAND_EXCEPTION_WHITELIST = new Set([]);
 
 const NON_WEB_UI_EXCEPTION_WHITELIST = new Set([
   'app/features/notifications/core/render.ts',
@@ -116,6 +113,22 @@ function classify(file) {
 
 function getLine(text, index) {
   return text.slice(0, index).split('\n').length;
+}
+
+
+function getBaseTextToken(block, token) {
+  const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(?:^|\\s)${escaped}(?:\\s|$)`);
+  return regex.test(block);
+}
+
+function getStaticTextTokens(block, prefix) {
+  return block
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .filter((token) => token.startsWith(prefix))
+    .filter((token) => !token.includes(':'));
 }
 
 function getExceptionType(file) {
@@ -336,12 +349,24 @@ for (const file of files) {
       });
     }
 
-    if (lowContrastPrimaryRegex.test(block)) {
+    const isPrimaryTintStandard = /\bbg-primary\/(?:10|15|20)\b/.test(block) && /\btext-primary\b(?!-foreground)/.test(block);
+    const isDestructiveTintStandard = /\bbg-destructive\/(?:10|15|20)\b/.test(block) && /\btext-destructive\b(?!-foreground)/.test(block);
+    const isWarningTintStandard = /\bbg-warning\/(?:10|15|20)\b/.test(block) && /\btext-warning\b(?!-foreground)/.test(block);
+
+    if (lowContrastPrimaryRegex.test(block) && !(isPrimaryTintStandard || isDestructiveTintStandard || isWarningTintStandard)) {
       warnings.push({
         file,
         type: 'low-contrast-class-combo',
         token: block,
         line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    for (const hexMatch of block.matchAll(arbitraryHexClassRegex)) {
+      found.push({
+        type: 'className-hex-arbitrary-color',
+        token: hexMatch[0].trim(),
+        line: getLine(text, (match.index ?? 0) + (hexMatch.index ?? 0)),
       });
     }
 
@@ -455,7 +480,9 @@ for (const file of files) {
       });
     }
 
-    if (invertedLabelTextRegex.test(block)) {
+    const baseTextTokens = getStaticTextTokens(block, 'text-');
+    const baseDarkTextTokens = getStaticTextTokens(block, 'dark:text-');
+    if (baseTextTokens.includes('text-foreground') && baseDarkTextTokens.includes('dark:text-muted-foreground') && getBaseTextToken(block, 'text-foreground') && getBaseTextToken(block, 'dark:text-muted-foreground')) {
       warnings.push({
         file,
         type: 'semantic-inversion-text-foreground-dark-text-muted-foreground',
@@ -463,6 +490,7 @@ for (const file of files) {
         line: getLine(text, match.index ?? 0),
       });
     }
+
 
     if (solidHoverDestructiveRegex.test(block) && hoverTextDestructiveRegex.test(block)) {
       warnings.push({
