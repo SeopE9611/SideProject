@@ -359,9 +359,7 @@ export default function UserDetailClient({ id }: { id: string }) {
           className={[
             'pointer-events-none absolute inset-0 -z-10',
             'bg-muted/30',
-            'radial-gradient(800px_500px_at_110%_20%,hsl(var(--muted)/.35),transparent_55%)]',
-            "before:content-[''] before:absolute before:inset-0 before:[background:radial-gradient(circle_1px,hsl(var(--border)/.12)_1px,transparent_1.5px)]",
-            'before:[background-size:18px_18px]',
+            "before:content-[''] before:absolute before:inset-0 before:bg-border/10 before:opacity-30",
           ].join(' ')}
         />
         <TooltipProvider>

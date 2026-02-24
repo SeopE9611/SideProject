@@ -460,9 +460,7 @@ export default function StringPackagesPage() {
 
       {/* Additional Benefits Section */}
       <section className="py-20 bg-muted/30 dark:bg-muted/20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]"></div>
-        </div>
+        <div className="absolute inset-0 opacity-10 bg-border/10" />
 
         <SiteContainer variant="wide" className="relative z-10">
           <div className="text-center mb-16">
