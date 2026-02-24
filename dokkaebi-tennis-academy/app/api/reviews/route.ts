@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
-import { grantPoints } from '@/lib/points.service';
+import { racketBrandLabel } from '@/lib/constants';
+import { getDb } from '@/lib/mongodb';
 import { REVIEW_REWARD_POINTS } from '@/lib/points.policy';
+import { grantPoints } from '@/lib/points.service';
+import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 type DbAny = any;
 
@@ -331,8 +332,28 @@ export async function GET(req: Request) {
     _id: 1,
     type: { $cond: [{ $ifNull: ['$productId', false] }, 'product', 'service'] },
     productId: 1,
-    productName: '$product.name',
-    productImage: { $arrayElemAt: ['$product.images', 0] },
+    // products / used_rackets 구분(라켓 리뷰 fallback용)
+    productKind: {
+      $cond: [{ $ifNull: ['$product._id', false] }, 'product', { $cond: [{ $ifNull: ['$racket._id', false] }, 'racket', null] }],
+    },
+
+    // products 우선 → 없으면 used_rackets(라켓) fallback
+    productName: {
+      $ifNull: [
+        { $ifNull: ['$product.name', '$product.title'] },
+        {
+          $cond: [{ $and: [{ $ne: ['$racket.model', null] }, { $ne: ['$racket.model', ''] }] }, { $trim: { input: { $concat: [{ $ifNull: ['$racket.brand', ''] }, ' ', { $ifNull: ['$racket.model', ''] }] } } }, null],
+        },
+      ],
+    },
+    productImage: {
+      $ifNull: [{ $ifNull: ['$product.thumbnail', { $arrayElemAt: ['$product.images', 0] }] }, { $ifNull: ['$racket.thumbnail', { $arrayElemAt: ['$racket.images', 0] }] }],
+    },
+
+    // 라켓명/이미지 보정용(응답 직전에 브랜드 라벨 적용)
+    __racketBrand: '$racket.brand',
+    __racketModel: '$racket.model',
+    __racketImages: '$racket.images',
     service: 1,
     serviceApplicationId: 1,
     serviceTitle: 1,
@@ -366,15 +387,33 @@ export async function GET(req: Request) {
     { $sort: sortSpec },
     { $limit: limit + 1 },
     {
+      $addFields: {
+        // productId(ObjectId/string) 혼용 대비: join용 ObjectId 정규화
+        productIdObj: {
+          $cond: [{ $eq: [{ $type: '$productId' }, 'objectId'] }, '$productId', { $convert: { input: '$productId', to: 'objectId', onError: null, onNull: null } }],
+        },
+      },
+    },
+    {
       $lookup: {
         from: 'products',
-        localField: 'productId',
+        localField: 'productIdObj',
         foreignField: '_id',
         as: 'product',
-        pipeline: [{ $project: { name: 1, images: 1 } }],
+        pipeline: [{ $project: { name: 1, title: 1, thumbnail: 1, images: 1 } }],
       },
     },
     { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: 'used_rackets',
+        localField: 'productIdObj',
+        foreignField: '_id',
+        as: 'racket',
+        pipeline: [{ $project: { brand: 1, model: 1, thumbnail: 1, images: 1 } }],
+      },
+    },
+    { $unwind: { path: '$racket', preserveNullAndEmptyArrays: true } },
     ...(needServiceJoin
       ? [
           // 서비스(스트링 교체) 리뷰면 신청서에서 "교체한 스트링 상품명"을 가져와서 제목을 만들어줌
@@ -520,6 +559,32 @@ export async function GET(req: Request) {
     rows.length = limit;
     const payload = sort === 'helpful' ? { id: String(last._id), helpfulCount: last.helpfulCount ?? 0 } : sort === 'rating' ? { id: String(last._id), rating: last.rating ?? 0 } : { id: String(last._id), createdAt: last.createdAt };
     nextCursor = Buffer.from(JSON.stringify(payload), 'utf-8').toString('base64');
+  }
+  
+  // 응답 직전에 라켓 브랜드 라벨 보정
+  for (const row of rows as any[]) {
+    const kind = row?.productKind;
+    const brandRaw = row?.__racketBrand;
+    const modelRaw = row?.__racketModel;
+
+    if (kind === 'racket' && (brandRaw || modelRaw)) {
+      const brandStr = String(brandRaw ?? '').trim();
+      const modelStr = String(modelRaw ?? '').trim();
+
+      const computed = `${racketBrandLabel(brandStr)} ${modelStr}`.trim();
+      const raw = `${brandStr} ${modelStr}`.trim();
+
+      const curName = typeof row?.productName === 'string' ? row.productName.trim() : '';
+      if (!curName || curName === raw) row.productName = computed || curName || '라켓';
+
+      if (!row.productImage && Array.isArray(row?.__racketImages) && row.__racketImages.length) {
+        row.productImage = row.__racketImages[0];
+      }
+    }
+
+    delete row.__racketBrand;
+    delete row.__racketModel;
+    delete row.__racketImages;
   }
 
   return NextResponse.json({ items: rows, nextCursor });
