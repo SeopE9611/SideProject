@@ -26,8 +26,8 @@ export default function Wishlist() {
     return (
       <Card className="relative overflow-hidden border-0">
         <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
-            <Heart className="h-10 w-10 text-foreground" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+            <Heart className="h-10 w-10" />
           </div>
           <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">마음에 드는 상품을 위시리스트에 추가해보세요!</p>

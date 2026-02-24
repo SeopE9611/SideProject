@@ -284,8 +284,8 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
 
         {/* Author info with tennis styling */}
         <div className="flex items-center gap-2 text-xs">
-          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
+          <div className="w-6 h-6 rounded-full border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
+            <span className="font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
           </div>
           <span className="font-medium text-muted-foreground">{displayName}</span>
         </div>

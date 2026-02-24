@@ -350,8 +350,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               <TabsContent value="description" className="p-8">
                 <div className="prose max-w-none">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                      <FileText className="h-6 w-6 text-primary-foreground" />
+                    <div className="w-12 h-12 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
+                      <FileText className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
@@ -367,8 +367,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               <TabsContent value="specifications" className="p-8">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                      <Settings className="h-6 w-6 text-primary-foreground" />
+                    <div className="w-12 h-12 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
+                      <Settings className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">상세 스펙</h3>
                   </div>
