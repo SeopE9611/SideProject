@@ -6,6 +6,7 @@ const ROOT = process.cwd();
 const TARGET_DIRS = process.argv.slice(2);
 const scanDirs = TARGET_DIRS.length > 0 ? TARGET_DIRS : ['app', 'components', 'lib'];
 const exts = new Set(['.ts', '.tsx', '.js', '.jsx', '.mdx']);
+const svgExts = new Set(['.svg']);
 const palettes = [
   'slate','gray','zinc','neutral','stone','red','orange','amber','yellow','lime','green','emerald','teal','cyan','sky','blue','indigo','violet','purple','fuchsia','pink','rose'
 ];
@@ -100,6 +101,22 @@ function walk(dir, results = []) {
   return results;
 }
 
+function walkByExt(dir, allowedExts, results = []) {
+  const absDir = path.join(ROOT, dir);
+  if (!fs.existsSync(absDir)) return results;
+  for (const ent of fs.readdirSync(absDir, { withFileTypes: true })) {
+    if (ent.name === 'node_modules' || ent.name === '.next' || ent.name === '.git') continue;
+    const abs = path.join(absDir, ent.name);
+    const rel = path.relative(ROOT, abs).replaceAll('\\', '/');
+    if (ent.isDirectory()) {
+      walkByExt(rel, allowedExts, results);
+    } else if (allowedExts.has(path.extname(ent.name))) {
+      results.push(rel);
+    }
+  }
+  return results;
+}
+
 function classify(file) {
   const normalized = file.replaceAll('\\', '/');
   if (normalized.startsWith('app/board/')) return 'app/board';
@@ -143,6 +160,7 @@ function getExceptionType(file) {
 }
 
 const files = scanDirs.flatMap((d) => walk(d));
+const publicSvgFiles = walkByExt('public', svgExts);
 const grouped = new Map();
 let total = 0;
 const violations = [];
@@ -699,9 +717,45 @@ for (const file of files) {
   violations.push({ file, found });
 }
 
+for (const file of publicSvgFiles) {
+  const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  const found = [];
+
+  for (const match of text.matchAll(zeroGradientSvgRegex)) {
+    found.push({
+      type: 'zero-gradient-policy-svg-gradient',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  if (found.length === 0) continue;
+
+  matchedFiles.add(file);
+  total += found.length;
+
+  const group = classify(file);
+  if (!grouped.has(group)) grouped.set(group, []);
+  const counts = new Map();
+  for (const issue of found) {
+    const key = `${issue.type}:${issue.token}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  grouped.get(group).push({ file, counts });
+
+  const exceptionType = getExceptionType(file);
+  if (exceptionType) {
+    exceptionFiles.add(file);
+    exceptionMatches.push({ file, found, exceptionType });
+    continue;
+  }
+
+  violations.push({ file, found });
+}
+
 const sortedGroups = [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 console.log('# color-class scan');
-console.log(`- scanned files: ${files.length}`);
+console.log(`- scanned files: ${files.length + publicSvgFiles.length}`);
 console.log(`- total matches: ${total}`);
 console.log(`- matched files: ${matchedFiles.size}`);
 console.log(`- exception files: ${exceptionFiles.size}`);

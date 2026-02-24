@@ -374,14 +374,14 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <CreditCard className="h-5 w-5 text-primary mt-0.5" />
  <div>
  <h4 className="font-semibold text-primary mb-1">입금 안내</h4>
- <p className="text-sm text-primary">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화됩니다.</p>
+ <p className="text-sm text-muted-foreground">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화됩니다.</p>
  </div>
  </div>
  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
  <Calendar className="h-5 w-5 text-primary mt-0.5" />
  <div>
  <h4 className="font-semibold text-primary mb-1">예약 안내</h4>
- <p className="text-sm text-primary">패키지 활성화 후 전화 또는 온라인으로 서비스 예약이 가능합니다.</p>
+ <p className="text-sm text-muted-foreground">패키지 활성화 후 전화 또는 온라인으로 서비스 예약이 가능합니다.</p>
  </div>
  </div>
  </div>
