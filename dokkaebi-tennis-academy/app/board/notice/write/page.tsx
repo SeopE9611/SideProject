@@ -1,23 +1,24 @@
 'use client';
 
-import Link from 'next/link';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabase';
-import NextImage from 'next/image';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, ArrowLeft, Bell, Upload, X, Pin } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import useSWR, { mutate } from 'swr';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { supabase } from '@/lib/supabase';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Pin, Upload, X } from 'lucide-react';
+import NextImage from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import useSWR, { mutate } from 'swr';
 
 const NOTICE_LABEL_BY_CODE: Record<string, string> = {
   general: '일반',
@@ -401,13 +402,12 @@ export default function NoticeWritePage() {
       const url = editId ? `/api/boards/${editId}` : '/api/boards';
       const method = editId ? 'PATCH' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await communityFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           ...(editId && clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
         },
-        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -692,11 +692,7 @@ export default function NoticeWritePage() {
                               ) : (
                                 <div className="h-28 flex flex-col items-center justify-center gap-1 px-2 text-center">
                                   <div className="text-[11px] font-medium truncate max-w-[90%]">{file.name}</div>
-                                  <a
-                                    href={url ?? '#'}
-                                    download={file.name}
-                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-muted text-foreground hover:bg-muted/80 transition"
-                                  >
+                                  <a href={url ?? '#'} download={file.name} className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-muted text-foreground hover:bg-muted/80 transition">
                                     다운로드
                                   </a>
                                 </div>
@@ -713,9 +709,7 @@ export default function NoticeWritePage() {
                               {/* 이미지 전용 심플 오버레이 아이콘 */}
                               {isImage && url && (
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
-                                  <div
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]"
-                                  >
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]">
                                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-primary-foreground" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M21 21l-4.35-4.35" />
                                       <circle cx="11" cy="11" r="8" />
@@ -776,20 +770,10 @@ export default function NoticeWritePage() {
 
                   {viewerImages.length > 1 && (
                     <>
-                      <button
-                        type="button"
-                        onClick={prevViewer}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card"
-                        aria-label="이전"
-                      >
+                      <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card" aria-label="이전">
                         <ChevronLeft className="h-5 w-5" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={nextViewer}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card"
-                        aria-label="다음"
-                      >
+                      <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card" aria-label="다음">
                         <ChevronRight className="h-5 w-5" />
                       </button>
                     </>

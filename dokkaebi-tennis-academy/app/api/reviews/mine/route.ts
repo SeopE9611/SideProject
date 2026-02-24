@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { getDb } from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   const jar = await cookies();
@@ -67,6 +67,18 @@ export async function GET(req: Request) {
         },
       },
       { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+
+      // 라켓 메타(used_rackets)조회 fallback
+      {
+        $lookup: {
+          from: 'used_rackets',
+          localField: 'productId',
+          foreignField: '_id',
+          as: 'racket',
+          pipeline: [{ $project: { name: 1, title: 1, thumbnail: 1, images: 1 } }],
+        },
+      },
+      { $unwind: { path: '$racket', preserveNullAndEmptyArrays: true } },
 
       // 서비스(스트링) 메타: 신청서에서 교체한 스트링 상품명 가져오기
       // - serviceApplicationId가 ObjectId/문자열 둘 다 올 수 있어 방어적으로 ObjectId로 정규화
@@ -171,10 +183,22 @@ export async function GET(req: Request) {
           target: {
             type: { $cond: [{ $ifNull: ['$productId', false] }, 'product', 'service'] },
             name: {
-              $cond: [{ $ifNull: ['$productId', false] }, { $ifNull: ['$product.name', '$product.title'] }, { $ifNull: ['$serviceTitle', '서비스 리뷰'] }],
+              $cond: [
+                { $ifNull: ['$productId', false] },
+                {
+                  $ifNull: [{ $ifNull: ['$product.name', '$product.title'] }, { $ifNull: ['$racket.name', '$racket.title'] }],
+                },
+                { $ifNull: ['$serviceTitle', '서비스 리뷰'] },
+              ],
             },
             image: {
-              $cond: [{ $ifNull: ['$productId', false] }, { $ifNull: ['$product.thumbnail', { $arrayElemAt: ['$product.images', 0] }] }, null],
+              $cond: [
+                { $ifNull: ['$productId', false] },
+                {
+                  $ifNull: [{ $ifNull: ['$product.thumbnail', { $arrayElemAt: ['$product.images', 0] }] }, { $ifNull: ['$racket.thumbnail', { $arrayElemAt: ['$racket.images', 0] }] }],
+                },
+                null,
+              ],
             },
           },
         },

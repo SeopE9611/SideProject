@@ -1,15 +1,15 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MessageCircleQuestion, Calendar, ArrowRight, CheckCircle, Clock } from 'lucide-react';
 
 type Qna = {
-  id: number;
+  id: string;
   title: string;
   date: string;
   status: string;

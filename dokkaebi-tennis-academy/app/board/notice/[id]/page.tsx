@@ -10,6 +10,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getNoticeCategoryColor, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 
 export default function NoticeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -105,7 +106,7 @@ export default function NoticeDetailPage() {
     if (!notice?._id) return;
     if (!confirm('정말 이 공지를 삭제하시겠습니까?')) return;
 
-    const res = await fetch(`/api/boards/${notice._id}`, { method: 'DELETE', credentials: 'include' });
+    const res = await communityFetch(`/api/boards/${notice._id}`, { method: 'DELETE' });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || json.ok === false) {
       showErrorToast(json.error ?? '삭제에 실패했습니다.');

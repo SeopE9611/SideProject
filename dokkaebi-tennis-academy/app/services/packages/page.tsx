@@ -2,22 +2,17 @@
 
 import type React from 'react';
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Package, Star, CheckCircle, Clock, Shield, Award, Zap, Target, Users, ArrowRight, Gift, Percent, Calendar, Phone, MessageSquare } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { type PackageVariant, PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { FullPageSpinner } from '@/components/system/PageLoading';
-import {
-  type PackageVariant,
-  PACKAGE_VARIANT_TONE_CLASS,
-  getPackageVariantByIndex,
-  toPackageVariant,
-} from '@/app/services/packages/_lib/packageVariant';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { ArrowRight, Award, Calendar, CheckCircle, Clock, Gift, MessageSquare, Package, Percent, Phone, Shield, Star, Target, Users, Zap } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 interface PackageOption {
   id: string;
@@ -294,7 +289,7 @@ export default function StringPackagesPage() {
   }, [searchParams]);
 
   if (isLoading && packages.length === 0) {
-   return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
+    return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
   }
   return (
     <div className="min-h-screen bg-background">
@@ -385,7 +380,7 @@ export default function StringPackagesPage() {
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
-                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring' : ''} ${ selectedPackage === pkg.id ? 'ring-4 ring-ring' : '' }`}
+                className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${pkg.popular ? 'ring-4 ring-ring' : ''} ${selectedPackage === pkg.id ? 'ring-4 ring-ring' : ''}`}
                 onClick={() => setSelectedPackage(pkg.id)}
               >
                 {pkg.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-4 py-2 text-sm font-bold rounded-bl-lg">인기</div>}
@@ -395,9 +390,7 @@ export default function StringPackagesPage() {
                 <div className={`h-2 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>
-                    {pkg.icon}
-                  </div>
+                  <div className={`mx-auto mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>{pkg.icon}</div>
                   <CardTitle className="text-2xl font-bold mb-2">{pkg.title}</CardTitle>
                   <CardDescription className="text-base mb-4">{pkg.description}</CardDescription>
 
@@ -438,9 +431,7 @@ export default function StringPackagesPage() {
                     </h4>
                     <div className="space-y-1 text-sm text-muted-foreground">
                       {pkg.benefits.map((benefit, idx) => (
-                        <div key={idx}>
-                          • {benefit}
-                        </div>
+                        <div key={idx}>• {benefit}</div>
                       ))}
                     </div>
                   </div>
@@ -475,9 +466,7 @@ export default function StringPackagesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {additionalBenefits.map((benefit, index) => (
               <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[benefit.variant]}`}>
-                  {benefit.icon}
-                </div>
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[benefit.variant]}`}>{benefit.icon}</div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>
                 <p className="text-primary text-center leading-relaxed">{benefit.description}</p>
               </div>

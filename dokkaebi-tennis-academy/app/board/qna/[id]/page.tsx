@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
 import type { BoardPost } from '@/lib/types/board';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 
 type QnaItem = BoardPost & { type: 'qna' };
 
@@ -29,7 +30,7 @@ export default function QnaDetailPage() {
   // fetcher가 에러를 던지지 않으면(SWR error 미발생) 화면이 "그냥 비어 보이는" 문제발생.
   // -> res.ok / json.ok 를 확인하고, 실패면 throw 해서 error UI가 확실히 뜨게 만듬.
   const boardFetcher = async (url: string) => {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await communityFetch(url, { credentials: 'include' });
     const json = await res.json().catch(() => null);
 
     const okFalse = isRecord(json) && json['ok'] === false;
@@ -64,7 +65,7 @@ export default function QnaDetailPage() {
     viewedIdRef.current = String(id);
 
     (async () => {
-     const res = await fetch(`/api/boards/${id}/view`, { method: 'POST', credentials: 'include' });
+     const res = await communityFetch(`/api/boards/${id}/view`, { method: 'POST', credentials: 'include' });
       const json = await res.json().catch(() => null);
       if (res.ok && json?.ok === true && typeof json.viewCount === 'number') {
         mutate((prev: any) => (prev?.item ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } } : prev), false);
@@ -141,7 +142,7 @@ export default function QnaDetailPage() {
   async function handleDelete() {
     if (!qna?._id) return;
     if (!confirm('정말 삭제할까요?')) return;
-    const res = await fetch(`/api/boards/${qna._id}`, { method: 'DELETE', credentials: 'include' });
+    const res = await communityFetch(`/api/boards/${qna._id}`, { method: 'DELETE', credentials: 'include' });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json?.ok) {
       alert('삭제 실패');
@@ -368,7 +369,7 @@ export default function QnaDetailPage() {
                 <div className="flex justify-end">
                   <Button
                     onClick={async () => {
-                      const res = await fetch(`/api/boards/${qna._id}/answer`, {
+                      const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         credentials: 'include',
@@ -422,7 +423,7 @@ export default function QnaDetailPage() {
                           variant="destructive"
                           onClick={async () => {
                             if (!confirm('답변을 삭제할까요?')) return;
-                            const res = await fetch(`/api/boards/${qna._id}/answer`, {
+                            const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
                               method: 'DELETE',
                               credentials: 'include',
                             });
@@ -470,7 +471,7 @@ export default function QnaDetailPage() {
                       </Button>
                       <Button
                         onClick={async () => {
-                          const res = await fetch(`/api/boards/${qna._id}/answer`, {
+                          const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
                             method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
                             credentials: 'include',

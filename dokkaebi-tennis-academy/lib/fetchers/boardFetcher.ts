@@ -8,6 +8,53 @@ export const BOARD_STATUS_GUIDE: Record<number, string> = {
 
 const DEFAULT_ERROR_MESSAGE = '요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
 
+// ===== Community/Boards CSRF (Double Submit Cookie) =====
+const COMMUNITY_CSRF_COOKIE = 'communityCsrfToken';
+const COMMUNITY_CSRF_HEADER = 'x-community-csrf-token';
+
+function shouldAttachCommunityCsrf(url: string) {
+  return url.startsWith('/api/boards') || url.startsWith('/api/community');
+}
+
+function isMutatingMethod(method?: string) {
+  const m = (method ?? 'GET').toUpperCase();
+  return m !== 'GET' && m !== 'HEAD' && m !== 'OPTIONS';
+}
+
+function readCookie(name: string): string {
+  // boardFetcher가 서버에서 호출될 가능성도 있으니 안전가드
+  if (typeof document === 'undefined') return '';
+  const cookies = document.cookie ? document.cookie.split('; ') : [];
+  for (const kv of cookies) {
+    const idx = kv.indexOf('=');
+    if (idx < 0) continue;
+    const k = decodeURIComponent(kv.slice(0, idx));
+    if (k !== name) continue;
+    return decodeURIComponent(kv.slice(idx + 1));
+  }
+  return '';
+}
+
+function writeCookie(name: string, value: string, maxAgeSec = 60 * 60 * 24 * 30) {
+  if (typeof document === 'undefined') return;
+  const secure = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSec}; SameSite=Lax${secure}`;
+}
+
+function generateToken(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}-${Math.random().toString(16).slice(2)}`;
+}
+
+function ensureCommunityCsrfToken(): string {
+  const existing = readCookie(COMMUNITY_CSRF_COOKIE);
+  if (existing) return existing;
+
+  const token = generateToken();
+  writeCookie(COMMUNITY_CSRF_COOKIE, token);
+  return token;
+}
+
 type ApiErrorPayload = {
   ok?: boolean;
   status?: number;
@@ -64,10 +111,19 @@ async function readPayload(response: Response): Promise<unknown> {
   }
 }
 
-export async function boardFetcher<T>(url: string, init?: RequestInit): Promise<T> {
+export async function boardFetcher<T>(url: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers ?? undefined);
+
+  // /api/boards, /api/community + mutating 메서드만 CSRF 헤더 자동 주입
+  if (shouldAttachCommunityCsrf(url) && isMutatingMethod(init.method)) {
+    const token = ensureCommunityCsrfToken();
+    if (token) headers.set(COMMUNITY_CSRF_HEADER, token);
+  }
+
   const response = await fetch(url, {
-    credentials: 'include',
     ...init,
+    headers,
+    credentials: init.credentials ?? 'include',
   });
 
   const payload = await readPayload(response);

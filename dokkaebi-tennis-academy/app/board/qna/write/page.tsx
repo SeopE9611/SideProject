@@ -1,23 +1,24 @@
 'use client';
 
-import Link from 'next/link';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { useRouter, useSearchParams } from 'next/navigation';
-import useSWR from 'swr';
-import { supabase } from '@/lib/supabase';
-import Image from 'next/image';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, ArrowLeft, MessageSquare, Upload, X, Search } from 'lucide-react';
-import { showErrorToast } from '@/lib/toast';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { supabase } from '@/lib/supabase';
+import { showErrorToast } from '@/lib/toast';
+import { ArrowLeft, ChevronLeft, ChevronRight, MessageSquare, Search, Upload, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import useSWR from 'swr';
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -123,7 +124,7 @@ export default function QnaWritePage() {
   type MeRes = { role?: string };
 
   async function fetcherAllow401<T>(url: string): Promise<T | null> {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await communityFetch(url, { credentials: 'include' });
     const data = (await res.json().catch(() => null)) as any;
 
     // 비로그인(401)은 '에러'가 아니라 '로그인 안 됨' 상태로 취급
@@ -138,7 +139,7 @@ export default function QnaWritePage() {
   }
 
   async function fetcher<T>(url: string): Promise<T> {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await communityFetch(url, { credentials: 'include' });
     const data = (await res.json().catch(() => null)) as any;
 
     if (!res.ok) {
@@ -379,10 +380,9 @@ export default function QnaWritePage() {
         ...(preProductId ? { productRef: { productId: preProductId, name: preProductName, image: null } } : category === 'product' && product?.id ? { productRef: { productId: product.id, name: product.name, image: product.image ?? null } } : {}),
       } as const;
 
-      const res = await fetch('/api/boards', {
+      const res = await communityFetch('/api/boards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify(payload),
       });
       const json = await res.json().catch(() => ({}));
@@ -647,9 +647,7 @@ export default function QnaWritePage() {
                               {/* 확대 안내 오버레이 (이미지일 때만) */}
                               {isImage && previewUrl && (
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
-                                  <div
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]"
-                                  >
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]">
                                     {/* lucide-react 사용 시 */}
                                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-primary-foreground" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M21 21l-4.35-4.35" />

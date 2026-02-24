@@ -2,32 +2,26 @@
 
 import type React from 'react';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
-import { Label } from '@/components/ui/label';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
-import NextImage from 'next/image';
-import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
 import LoginGate from '@/components/system/LoginGate';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import NextImage from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 /* ---- 별점 ---- */
 function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
   return (
     <div className={`flex justify-center gap-1 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          aria-label={`${n}점`}
-          className={`text-3xl transition-all duration-200 ${value >= n ? 'text-warning scale-110' : 'text-foreground'} hover:scale-125 hover:text-warning`}
-          onClick={() => onChange?.(n)}
-        >
+        <button key={n} type="button" aria-label={`${n}점`} className={`text-3xl transition-all duration-200 ${value >= n ? 'text-warning scale-110' : 'text-foreground'} hover:scale-125 hover:text-warning`} onClick={() => onChange?.(n)}>
           ★
         </button>
       ))}
@@ -40,6 +34,13 @@ type OrderReviewItem = {
   name: string;
   image: string | null;
   reviewed: boolean;
+};
+
+type MiniMeta = {
+  name: string;
+  image: string | null;
+  kind: 'product' | 'racket';
+  href: string;
 };
 
 type EligState = 'loading' | 'ok' | 'notPurchased' | 'already' | 'unauthorized' | 'invalid' | 'error';
@@ -259,7 +260,7 @@ export default function ReviewWritePage() {
 
   // 주문 아이템/현재 상품 메타
   const [orderItems, setOrderItems] = useState<OrderReviewItem[] | null>(null);
-  const [currentMeta, setCurrentMeta] = useState<{ name: string; image: string | null } | null>(null);
+  const [currentMeta, setCurrentMeta] = useState<MiniMeta | null>(null);
 
   // orderId-only 진입 시 추천 productId 받기
   useEffect(() => {
@@ -492,7 +493,12 @@ export default function ReviewWritePage() {
           const r = await fetch(`/api/products/${resolvedProductId}/mini`, { cache: 'no-store' });
           const d = await r.json();
           if (!aborted && d?.ok) {
-            setCurrentMeta({ name: d.name, image: d.image });
+            setCurrentMeta({
+              name: d.name,
+              image: d.image,
+              kind: d.kind ?? 'product',
+              href: d.href ?? `/products/${resolvedProductId}`,
+            });
           }
         } catch {}
       })();
@@ -506,7 +512,23 @@ export default function ReviewWritePage() {
   useEffect(() => {
     if (!resolvedProductId || !orderItems?.length) return;
     const found = orderItems.find((it) => it.productId === resolvedProductId);
-    if (found) setCurrentMeta({ name: found.name, image: found.image });
+    if (!found) return;
+
+    // 기존 kind/href 유지 + name/image만 주문 스냅샷으로 덮어쓰기
+    setCurrentMeta((prev) => {
+      // prev가 이미 있으면 kind/href 보존
+      if (prev) {
+        return { ...prev, name: found.name, image: found.image };
+      }
+
+      // prev가 없으면 최소값으로 생성(여긴 사실상 거의 안 탐)
+      return {
+        name: found.name,
+        image: found.image,
+        kind: 'product',
+        href: `/products/${resolvedProductId}`,
+      };
+    });
   }, [orderItems, resolvedProductId]);
 
   //상품 전환
@@ -541,7 +563,7 @@ export default function ReviewWritePage() {
   // 제품 상세/서비스 소개로 이동 (라벨 명확화)
   const goPrimary = () => {
     if (mode === 'product' && resolvedProductId) {
-      router.replace(`/products/${resolvedProductId}`);
+      router.replace(currentMeta?.href ?? `/products/${resolvedProductId}`);
     } else if (mode === 'service') {
       router.replace('/services');
     } else {
@@ -577,7 +599,9 @@ export default function ReviewWritePage() {
       if (r.ok) {
         showSuccessToast('후기가 등록되었습니다.');
         if (mode === 'product' && resolvedProductId) {
-          router.replace(`/products/${resolvedProductId}#reviews`);
+          const href = currentMeta?.href ?? `/products/${resolvedProductId}`;
+          const next = currentMeta?.kind === 'product' ? `${href}#reviews` : href;
+          router.replace(next);
         } else {
           router.replace('/reviews?tab=service');
         }
@@ -665,11 +689,7 @@ export default function ReviewWritePage() {
               <div className="rounded-xl bg-card dark:bg-muted p-5 shadow-lg ring-1 ring-ring">
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-ring shrink-0">
-                    {currentMeta.image ? (
-                      <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" />
-                    ) : (
-                      <div className="h-full w-full grid place-items-center bg-muted text-foreground">IMG</div>
-                    )}
+                    {currentMeta.image ? <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-muted text-foreground">IMG</div>}
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-foreground truncate">{currentMeta.name}</h3>
@@ -694,11 +714,7 @@ export default function ReviewWritePage() {
                   {orderItems.map((it) => {
                     const isCurrent = it.productId === resolvedProductId;
                     const statusText = it.reviewed ? '완료' : isCurrent ? '작성중' : '미작성';
-                    const statusClass = it.reviewed
-                      ? 'bg-muted text-foreground'
-                      : isCurrent
-                        ? 'bg-muted text-foreground'
-                        : 'bg-muted text-foreground';
+                    const statusClass = it.reviewed ? 'bg-muted text-foreground' : isCurrent ? 'bg-muted text-foreground' : 'bg-muted text-foreground';
 
                     return (
                       <div key={it.productId} className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}>
@@ -856,7 +872,15 @@ export default function ReviewWritePage() {
                           구매/이용 이력이 확인되어야 작성할 수 있어요.
                           <button
                             type="button"
-                            onClick={() => confirmLeaveIfDirty(() => (mode === 'product' && resolvedProductId ? router.replace(`/products/${resolvedProductId}`) : router.replace('/services')))}
+                            onClick={() =>
+                              confirmLeaveIfDirty(() => {
+                                if (mode === 'product' && resolvedProductId) {
+                                  router.replace(currentMeta?.href ?? `/products/${resolvedProductId}`);
+                                  return;
+                                }
+                                router.replace('/services');
+                              })
+                            }
                             className="underline underline-offset-2 hover:opacity-80 font-medium"
                           >
                             관련 페이지로 이동
