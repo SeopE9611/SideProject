@@ -8,7 +8,11 @@ import MaskedBlock from '@/components/reviews/MaskedBlock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { racketBrandLabel } from '@/lib/constants';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowLeft, Calendar, Check, ChevronLeft, ChevronRight, FileText, Pencil, Scale, Settings, Shield, ShoppingCart, Star, Truck } from 'lucide-react';
@@ -17,6 +21,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
+
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
+
+import { Eye, EyeOff, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 
 interface RacketDetailClientProps {
   racket: any;
@@ -32,8 +41,22 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const rentSectionRef = useRef<HTMLDivElement>(null);
   const [autoOpen, setAutoOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
+  type DetailTab = 'description' | 'specifications' | 'reviews';
 
+  const initialTab = (searchParams.get('tab') as DetailTab) || 'description';
+  const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
+
+  useEffect(() => {
+    const tab = (searchParams.get('tab') as DetailTab) || 'description';
+    setActiveTab(tab);
+  }, [searchParams]);
+
+  const updateTabInUrl = (tab: DetailTab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
   const soldOut = stock.available <= 0;
 
   // 라켓 ID 정규화
@@ -68,8 +91,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
-  const { data: adminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${racketId}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
-  const { data: myReview } = useSWR(user ? `/api/reviews/self?productId=${racketId}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${racketId}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: myReview, mutate: mutateMyReview } = useSWR(user ? `/api/reviews/self?productId=${racketId}` : null, fetcher, { revalidateOnFocus: false });
+
+  const isMine = (rv: any) => !!rv?.ownedByMe || (!!(myReview as any)?._id && String(rv?._id) === String((myReview as any)._id));
 
   // 서버가 내려준 racket.reviews는 숨김 리뷰를 마스킹
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -114,6 +139,96 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
     return next;
   }, [baseReviews, myReview, isAdmin, adminReviews]);
+
+  // 인라인 수정 다이얼로그 상태/핸들러
+  const [editOpen, setEditOpen] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string; photos: string[] }>({
+    rating: '',
+    content: '',
+    photos: [],
+  });
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [busyReviewId, setBusyReviewId] = useState<string | null>(null);
+
+  // 이미지 뷰어(확대) 전용 상태
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
+  // 썸네일 클릭 → 뷰어 열기
+  const openViewer = (images: string[], index = 0) => {
+    if (!Array.isArray(images) || images.length === 0) return;
+    setViewerImages(images);
+    setViewerIndex(index);
+    setViewerOpen(true);
+  };
+  const closeViewer = () => setViewerOpen(false);
+  const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
+  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
+
+  const openEdit = (review: any) => {
+    setEditing(review);
+    setEditForm({
+      rating: typeof review.rating === 'number' ? review.rating : '',
+      content: review.content ?? '',
+      photos: Array.isArray(review.photos) ? review.photos : [],
+    });
+    setEditOpen(true);
+  };
+
+  const closeEdit = () => {
+    setEditOpen(false);
+    setEditing(null);
+  };
+
+  const submitEdit = async () => {
+    if (!editing?._id) return;
+    setBusyReviewId(String(editing._id));
+    const { rating, content } = editForm;
+
+    // 낙관적 업데이트
+    if (isMine(editing)) {
+      mutateMyReview?.((prev: any) => {
+        if (!prev?._id || String(prev._id) !== String(editing._id)) return prev;
+        return { ...prev, rating: rating === '' ? prev.rating : Number(rating), content, photos: editForm.photos, ownedByMe: true, masked: false };
+      }, false);
+    } else if (isAdmin) {
+      mutateAdminReviews?.((prev: any[] | undefined) => {
+        if (!Array.isArray(prev)) return prev;
+        return prev.map((r) => (String(r._id) === String(editing._id) ? { ...r, rating: rating === '' ? r.rating : Number(rating), content, photos: editForm.photos, masked: false } : r));
+      }, false);
+    }
+
+    try {
+      const res = await fetch(`/api/reviews/${editing._id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: rating === '' ? undefined : Number(rating), content, photos: editForm.photos }),
+      });
+      if (!res.ok) throw new Error('수정 실패');
+
+      // 재검증
+      if (isMine(editing)) await mutateMyReview?.();
+      else if (isAdmin) await mutateAdminReviews?.();
+
+      // 탭 유지 + 서버컴포넌트 리프레시
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('tab', 'reviews');
+      router.replace(`?${params.toString()}`, { scroll: false });
+      router.refresh();
+
+      showSuccessToast('리뷰를 수정했어요.');
+      closeEdit();
+    } catch (err: any) {
+      if (isMine(editing)) await mutateMyReview?.();
+      else if (isAdmin) await mutateAdminReviews?.();
+      showErrorToast(err?.message || '리뷰 수정에 실패했습니다.');
+    } finally {
+      setBusyReviewId(null);
+    }
+  };
 
   // 대여중 수량(상세는 count를 굳이 안 받아도 quantity-available로 복원 가능)
   const rentedCount = Math.max(0, stock.quantity - stock.available);
@@ -418,7 +533,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         {/* 스펙 카드 */}
         <Card className="mt-8 border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
           <CardContent className="p-0">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+            <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
               <TabsList className="w-full grid grid-cols-3 h-16 bg-muted/30 rounded-t-lg">
                 <TabsTrigger
                   value="description"
@@ -526,6 +641,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </div>
                       <h3 className="text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
+
                     <Button asChild variant="outline" className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg">
                       <Link href={`/reviews/write?productId=${racketId}`}>
                         <Pencil className="h-4 w-4 mr-2" />
@@ -537,30 +653,174 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   {mergedReviews.length > 0 ? (
                     <div className="space-y-4">
                       {mergedReviews.map((review: any, index: number) => (
-                        <Card key={String(review?._id ?? index)} className="border-0 shadow-lg bg-muted/30">
-                          <CardContent className="p-6 space-y-3">
+                        <Card key={String(review?._id ?? index)} className="border border-border shadow-sm bg-card">
+                          <CardContent className="p-5 space-y-3">
                             <div className="flex items-start justify-between gap-4">
-                              <div className="min-w-0">
-                                <div className="font-bold text-foreground truncate">{review?.status === 'hidden' ? (review?.ownedByMe ? `${review?.user ?? '내 리뷰'} (비공개)` : '비공개 리뷰') : (review?.user ?? '익명')}</div>
-                                {review?.date ? <div className="text-xs text-muted-foreground mt-0.5">{review.date}</div> : null}
+                              <div className="flex items-start gap-3 min-w-0">
+                                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-foreground shrink-0">{(review?.user ?? '익명').slice(0, 1)}</div>
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <div className="font-bold text-foreground truncate">{review?.status === 'hidden' ? (review?.ownedByMe ? `${review?.user ?? '내 리뷰'} (비공개)` : '비공개 리뷰') : (review?.user ?? '익명')}</div>
+
+                                    {review?.status === 'hidden' && (
+                                      <Badge variant="outline" className="text-xs">
+                                        비공개
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                  {review?.date ? <div className="text-xs text-muted-foreground mt-0.5">{review.date}</div> : null}
+
+                                  <div className="flex items-center gap-0.5 mt-1">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star key={i} className={`h-4 w-4 ${i < Number(review?.rating ?? 0) ? 'text-primary fill-primary' : 'text-muted-foreground/40'}`} />
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
 
-                              <div className="flex items-center gap-0.5 shrink-0">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                  <Star key={i} className={`h-4 w-4 ${i < Number(review?.rating ?? 0) ? 'text-primary fill-primary' : 'text-muted-foreground/40'}`} />
-                                ))}
+                              {/* 우측 상단 3점 메뉴 */}
+                              <div className="shrink-0">
+                                {(isAdmin || isMine(review)) && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+
+                                    <DropdownMenuContent align="end" className="w-44">
+                                      {/* 비공개/공개 토글: 내 리뷰 or 관리자 */}
+                                      <DropdownMenuItem
+                                        onClick={async () => {
+                                          if (!review?._id) return;
+
+                                          const nextStatus = review?.status === 'hidden' ? 'visible' : 'hidden';
+                                          setBusyReviewId(String(review._id));
+
+                                          // 낙관적 업데이트
+                                          if (isMine(review)) {
+                                            mutateMyReview?.((prev: any) => {
+                                              if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+                                              return { ...prev, status: nextStatus };
+                                            }, false);
+                                          } else if (isAdmin) {
+                                            mutateAdminReviews?.((prev: any[] | undefined) => {
+                                              if (!Array.isArray(prev)) return prev;
+                                              return prev.map((r) => (String(r._id) === String(review._id) ? { ...r, status: nextStatus } : r));
+                                            }, false);
+                                          }
+
+                                          try {
+                                            const res = await fetch(`/api/reviews/${review._id}`, {
+                                              method: 'PATCH',
+                                              credentials: 'include',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({ status: nextStatus }),
+                                            });
+                                            if (!res.ok) throw new Error('상태 변경 실패');
+
+                                            // 탭 유지 + 서버 리프레시
+                                            const params = new URLSearchParams(searchParams.toString());
+                                            params.set('tab', 'reviews');
+                                            router.replace(`?${params.toString()}`, { scroll: false });
+                                            router.refresh();
+
+                                            showSuccessToast(nextStatus === 'hidden' ? '비공개로 전환했어요.' : '공개로 전환했어요.');
+                                          } catch (err: any) {
+                                            // 롤백(재검증)
+                                            if (isMine(review)) await mutateMyReview?.();
+                                            else if (isAdmin) await mutateAdminReviews?.();
+                                            showErrorToast(err?.message || '상태 변경에 실패했습니다.');
+                                          } finally {
+                                            setBusyReviewId(null);
+                                          }
+                                        }}
+                                      >
+                                        {review?.status === 'hidden' ? (
+                                          <>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            공개로 전환
+                                          </>
+                                        ) : (
+                                          <>
+                                            <EyeOff className="mr-2 h-4 w-4" />
+                                            비공개로 전환
+                                          </>
+                                        )}
+                                      </DropdownMenuItem>
+
+                                      {/* 수정: 내 리뷰 or 관리자 */}
+                                      <DropdownMenuItem onClick={() => openEdit(review)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        수정하기
+                                      </DropdownMenuItem>
+
+                                      {/* 삭제: 관리자만 */}
+                                      {isAdmin && (
+                                        <>
+                                          <DropdownMenuSeparator />
+                                          <DropdownMenuItem
+                                            className="text-destructive focus:text-destructive"
+                                            onClick={async () => {
+                                              if (!review?._id) return;
+                                              if (!confirm('정말 삭제할까요?')) return;
+
+                                              setBusyReviewId(String(review._id));
+                                              try {
+                                                const res = await fetch(`/api/reviews/${review._id}`, {
+                                                  method: 'DELETE',
+                                                  credentials: 'include',
+                                                });
+                                                if (!res.ok) throw new Error('삭제 실패');
+
+                                                // 재검증 + 탭 유지
+                                                await mutateAdminReviews?.();
+                                                const params = new URLSearchParams(searchParams.toString());
+                                                params.set('tab', 'reviews');
+                                                router.replace(`?${params.toString()}`, { scroll: false });
+                                                router.refresh();
+
+                                                showSuccessToast('리뷰를 삭제했어요.');
+                                              } catch (err: any) {
+                                                showErrorToast(err?.message || '리뷰 삭제에 실패했습니다.');
+                                              } finally {
+                                                setBusyReviewId(null);
+                                              }
+                                            }}
+                                          >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            삭제하기
+                                          </DropdownMenuItem>
+                                        </>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
                             </div>
 
                             {review?.masked ? <MaskedBlock /> : <p className="text-sm text-foreground whitespace-pre-line">{review?.content || ''}</p>}
 
+                            {/* 이미지 썸네일 → 뷰어 */}
                             {Array.isArray(review?.photos) && review.photos.length > 0 ? (
-                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                                {review.photos.slice(0, 8).map((src: string, i: number) => (
-                                  <button key={i} type="button" onClick={() => window.open(src, '_blank', 'noopener,noreferrer')} className="relative aspect-square overflow-hidden rounded-md border border-border bg-muted" title="새 창으로 보기">
+                              <div className="flex gap-2 overflow-x-auto pb-1">
+                                {review.photos.slice(0, 4).map((src: string, i: number) => (
+                                  <button key={i} type="button" onClick={() => openViewer(review.photos, i)} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted" title="확대 보기">
                                     <Image src={src} alt={`리뷰 이미지 ${i + 1}`} fill className="object-cover" />
+                                    {/* 4장 넘어가면 +N 표시 */}
+                                    {i === 3 && review.photos.length > 4 ? <div className="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-sm font-semibold">+{review.photos.length - 4}</div> : null}
                                   </button>
                                 ))}
+                              </div>
+                            ) : null}
+
+                            {/* 작업 중 오버레이 */}
+                            {busyReviewId && String(busyReviewId) === String(review?._id) ? (
+                              <div className="pt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                처리 중...
                               </div>
                             ) : null}
                           </CardContent>
@@ -576,6 +836,95 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           </CardContent>
         </Card>
       </SiteContainer>
+
+      {/* 리뷰 이미지 뷰어 */}
+      <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>리뷰 이미지</DialogTitle>
+          </DialogHeader>
+
+          {viewerImages.length > 0 ? (
+            <div className="space-y-3">
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted">
+                <Image src={viewerImages[viewerIndex]} alt={`리뷰 이미지 ${viewerIndex + 1}`} fill className="object-contain" />
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <Button variant="outline" onClick={prevViewer} disabled={viewerImages.length <= 1}>
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  이전
+                </Button>
+
+                <div className="text-sm text-muted-foreground">
+                  {viewerIndex + 1} / {viewerImages.length}
+                </div>
+
+                <Button variant="outline" onClick={nextViewer} disabled={viewerImages.length <= 1}>
+                  다음
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* 리뷰 수정 다이얼로그 */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>리뷰 수정</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            {/* 별점 */}
+            <div className="space-y-2">
+              <Label>별점</Label>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, i) => {
+                  const score = i + 1;
+                  const active = (hoverRating ?? (editForm.rating === '' ? 0 : Number(editForm.rating))) >= score;
+                  return (
+                    <button key={i} type="button" className="p-1" onMouseEnter={() => setHoverRating(score)} onMouseLeave={() => setHoverRating(null)} onClick={() => setEditForm((p) => ({ ...p, rating: score }))} aria-label={`별점 ${score}점`}>
+                      <Star className={`h-5 w-5 ${active ? 'text-primary fill-primary' : 'text-muted-foreground/40'}`} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 내용 */}
+            <div className="space-y-2">
+              <Label>내용</Label>
+              <Textarea value={editForm.content} onChange={(e) => setEditForm((p) => ({ ...p, content: e.target.value }))} rows={6} placeholder="리뷰 내용을 입력하세요." />
+            </div>
+
+            {/* 이미지 업로드 */}
+            <div className="space-y-2">
+              <Label>사진</Label>
+              <PhotosUploader value={editForm.photos} onChange={(photos) => setEditForm((p) => ({ ...p, photos }))} />
+              <PhotosReorderGrid value={editForm.photos} onChange={(photos) => setEditForm((p) => ({ ...p, photos }))} />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={closeEdit} disabled={!!busyReviewId}>
+                취소
+              </Button>
+              <Button onClick={submitEdit} disabled={!!busyReviewId}>
+                {busyReviewId ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    저장 중...
+                  </>
+                ) : (
+                  '저장'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 모바일 전용 하단 Sticky */}
       <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-border/60">

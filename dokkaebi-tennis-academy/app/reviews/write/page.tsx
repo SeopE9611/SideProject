@@ -258,6 +258,11 @@ export default function ReviewWritePage() {
   const [apps, setApps] = useState<AppLite[]>([]);
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
 
+  // 전체 신청서(비활성 포함) + 토글 + 이미 리뷰 작성한 신청서 맵
+  const [allApps, setAllApps] = useState<AppLite[]>([]);
+  const [showAllApps, setShowAllApps] = useState(false);
+  const [reviewedMap, setReviewedMap] = useState<Record<string, true>>({});
+
   // 주문 아이템/현재 상품 메타
   const [orderItems, setOrderItems] = useState<OrderReviewItem[] | null>(null);
   const [currentMeta, setCurrentMeta] = useState<MiniMeta | null>(null);
@@ -380,15 +385,15 @@ export default function ReviewWritePage() {
         status: a.status,
         racketType: getRacketSummary(a) || null,
         stringItems: a?.stringDetails?.stringItems ?? [],
-
         preferredDate: a?.stringDetails?.preferredDate ?? null,
         preferredTime: a?.stringDetails?.preferredTime ?? null,
-
         desiredDateTime: a?.desiredDateTime ?? a?.stringDetails?.desiredDateTime ?? null,
-
         createdAt: a?.createdAt ?? null,
         requirements: a?.stringDetails?.requirements ?? null,
       }));
+
+      // 전체 목록 세팅(토글용)
+      setAllApps(formattedAll);
 
       // UX 정책: 드롭다운에는 “작성 가능한 신청서”만 노출
       // - 서버 eligibility 로직 기준과 동일하게:
@@ -398,25 +403,38 @@ export default function ReviewWritePage() {
 
       // 이미 작성한 서비스 리뷰(serviceApplicationId) 제외
       // - /api/reviews/mine 은 최대 50개까지 조회 가능
-      // - 서비스 리뷰 수가 매우 많아지면(>50) 추가 페이지네이션이 필요하지만,
-      //   일반적으로 서비스 리뷰가 50개를 넘기는 케이스는 드뭅니다.
       try {
         const mine = await fetch('/api/reviews/mine?limit=50', {
           credentials: 'include',
           cache: 'no-store',
         });
+
         if (mine.ok) {
           const mineJson = (await mine.json()) as any;
-          const reviewedIds = new Set(
-            (mineJson?.items ?? [])
-              .map((it: any) => it?.serviceApplicationId)
-              .filter(Boolean)
-              .map((v: any) => String(v)),
+          const reviewedIdsArr: string[] = (mineJson?.items ?? [])
+            .map((it: any) => it?.serviceApplicationId)
+            .filter(Boolean)
+            .map((v: any) => String(v));
+
+          const nextReviewedMap = reviewedIdsArr.reduce<Record<string, true>>(
+            (acc, id: string) => {
+              acc[id] = true;
+              return acc;
+            },
+            {} as Record<string, true>,
           );
+
+          setReviewedMap(nextReviewedMap);
+
+          const reviewedIds = new Set(reviewedIdsArr);
           eligibleApps = eligibleApps.filter((x) => !reviewedIds.has(String(x._id)));
+        } else {
+          // mine API 실패 시 맵 초기화(찌꺼기 방지)
+          setReviewedMap({});
         }
       } catch {
         // 네트워크/권한 이슈가 있어도 최소한 status 필터는 유지
+        setReviewedMap({});
       }
 
       setApps(eligibleApps);
@@ -474,8 +492,14 @@ export default function ReviewWritePage() {
     };
   }, [mode, selectedAppId, allowGuestCheckout, authChecked, blockedByLoginGate]);
 
-  // 선택된 AppLite 계산
-  const selectedApp = useMemo(() => apps.find((a) => a._id === selectedAppId) || null, [apps, selectedAppId]);
+  // 토글 기준으로 보여줄 목록
+  const shownApps = useMemo(() => (showAllApps ? allApps : apps), [showAllApps, allApps, apps]);
+
+  // 선택된 AppLite 계산 (전체 목록 우선)
+  const selectedApp = useMemo(() => {
+    if (!selectedAppId) return null;
+    return allApps.find((a) => a._id === selectedAppId) ?? apps.find((a) => a._id === selectedAppId) ?? null;
+  }, [allApps, apps, selectedAppId]);
 
   // 잠금: 서비스 모드에서는 신청서가 선택되어 있어야 언락
   const locked = state !== 'ok' || (mode === 'service' && !selectedAppId);
@@ -803,110 +827,130 @@ export default function ReviewWritePage() {
               </div>
 
               <form onSubmit={onSubmit} className="p-6 space-y-8">
-                {/* 입력 블럭 잠금 오버레이 */}
+                {/* 서비스 모드: 대상 신청서 선택 ( selector는 항상 조작 가능하게 오버레이 밖으로 분리) */}
+                {mode === 'service' && (
+                  <div className="mb-8">
+                    <div className="flex items-end justify-between gap-3">
+                      <div className="min-w-0">
+                        <Label className="text-sm font-semibold text-foreground mb-1 block">대상 신청서</Label>
+                        <div className="text-xs text-foreground/80">{showAllApps ? '전체 신청서(비활성 포함)를 표시합니다.' : '작성 가능한 신청서만 표시합니다.'}</div>
+                      </div>
+
+                      <button type="button" onClick={() => setShowAllApps((v) => !v)} className="shrink-0 text-xs underline underline-offset-2 hover:opacity-80 text-foreground">
+                        {showAllApps ? '작성 가능한 신청서만 보기' : '전체 신청서 보기'}
+                      </button>
+                    </div>
+
+                    <select
+                      className="mt-3 w-full h-12 rounded-xl border border-border bg-card dark:bg-muted px-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200 text-left whitespace-normal leading-relaxed"
+                      value={selectedAppId ?? ''}
+                      onChange={(e) => {
+                        const nextId = e.target.value || null;
+                        if (nextId === selectedAppId) return;
+                        confirmLeaveIfDirty(() => {
+                          // 대상 신청서가 바뀌면 “작성 중인 내용”은 의미가 달라지므로 초기화
+                          resetForm();
+                          setSelectedAppId(nextId);
+                        });
+                      }}
+                      disabled={!shownApps.length}
+                    >
+                      {shownApps.length === 0 && <option value="">{showAllApps ? '신청서가 없습니다' : allApps.length > 0 ? '작성 가능한 신청서가 없습니다 (전체 보기로 확인)' : '작성 가능한 신청서가 없습니다'}</option>}
+
+                      {shownApps.map((a) => {
+                        const isEligible = a.status === '교체완료' && !reviewedMap[a._id];
+                        const reason = reviewedMap[a._id] ? '이미 리뷰 작성됨' : a.status !== '교체완료' ? `상태: ${a.status ?? '미정'}` : '';
+
+                        // 전체 보기(showAllApps)에서는 비활성 항목도 노출하되 선택/작성은 막음
+                        const optDisabled = showAllApps ? !isEligible : false;
+                        const optLabel = reason ? `${a.label} (${reason})` : a.label;
+
+                        return (
+                          <option key={a._id} value={a._id} disabled={optDisabled}>
+                            {optLabel}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {/* 선택된 신청서 요약 카드 */}
+                    {selectedApp && (
+                      <div className="mt-3 rounded-xl border border-border bg-muted p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium text-foreground">{selectedApp.createdAt ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}` : ''}</div>
+                          {selectedApp.status && <ApplicationStatusBadge status={selectedApp.status} />}
+                        </div>
+
+                        <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                          <div>
+                            <dt className="text-foreground">예약일자</dt>
+                            <dd className="text-foreground">{formatYMD(selectedApp.preferredDate) || '-'}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-foreground">예약시간</dt>
+                            <dd className="text-foreground">{formatHM(selectedApp.preferredTime) || '-'}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-foreground">라켓</dt>
+                            <dd className="text-foreground">{selectedApp.racketType || '-'}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-foreground">스트링</dt>
+                            <dd className="text-foreground truncate">{(selectedApp.stringItems || []).map((s) => s.name).join(', ') || '-'}</dd>
+                          </div>
+                        </dl>
+
+                        {/* 요청사항 블록 */}
+                        {selectedApp.requirements && (
+                          <div className="mt-3 rounded-lg border border-border bg-card/60 dark:bg-muted p-3">
+                            <div className="text-xs text-foreground mb-1">요청사항</div>
+                            <p className="text-sm text-foreground whitespace-pre-line break-words">{selectedApp.requirements}</p>
+                          </div>
+                        )}
+
+                        <div className="mt-2 text-xs text-foreground">신청번호 {selectedApp._id}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 입력 블럭(별점/본문/사진) - 오버레이는 여기만 */}
                 <div className="relative">
-                  {state !== 'ok' && (
+                  {locked && (
                     <div className="absolute inset-0 z-10 rounded-xl bg-card/80 dark:bg-muted backdrop-blur-sm flex items-center justify-center">
-                      <div className="text-center">
+                      <div className="text-center px-4">
                         <div className="w-8 h-8 border-2 border-border border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                        <div className="text-sm text-foreground">{state === 'loading' ? '검증 중...' : '작성할 수 없는 상태입니다.'}</div>
+                        <div className="text-sm text-foreground">{state === 'loading' ? '검증 중...' : mode === 'service' && !selectedAppId ? '대상 신청서를 선택해 주세요.' : '작성할 수 없는 상태입니다.'}</div>
                       </div>
                     </div>
                   )}
 
-                  {/* 서비스 모드: 대상 신청서 선택 */}
-                  {mode === 'service' && (
-                    <div className="mb-8">
-                      <Label className="text-sm font-semibold text-foreground mb-3 block">대상 신청서</Label>
-
-                      <select
-                        className="w-full h-12 rounded-xl border border-border bg-card dark:bg-muted px-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200 text-left whitespace-normal leading-relaxed"
-                        value={selectedAppId ?? ''}
-                        onChange={(e) => {
-                          const nextId = e.target.value || null;
-                          if (nextId === selectedAppId) return;
-                          confirmLeaveIfDirty(() => {
-                            // 대상 신청서가 바뀌면 “작성 중인 내용”은 의미가 달라지므로 초기화
-                            resetForm();
-                            setSelectedAppId(nextId);
-                          });
-                        }}
-                        disabled={!apps.length}
-                      >
-                        {apps.length === 0 && <option value="">작성 가능한 신청서가 없습니다</option>}
-                        {apps.map((a) => (
-                          <option key={a._id} value={a._id}>
-                            {a.label}
-                          </option>
-                        ))}
-                      </select>
-
-                      {/* 선택된 신청서 요약 카드 */}
-                      {selectedApp && (
-                        <div className="mt-3 rounded-xl border border-border bg-muted p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm font-medium text-foreground">{selectedApp.createdAt ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}` : ''}</div>
-                            {selectedApp.status && <ApplicationStatusBadge status={selectedApp.status} />}
-                          </div>
-
-                          <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                            <div>
-                              <dt className="text-foreground">예약일자</dt>
-                              <dd className="text-foreground">{formatYMD(selectedApp.preferredDate) || '-'}</dd>
-                            </div>
-                            <div>
-                              <dt className="text-foreground">예약시간</dt>
-                              <dd className="text-foreground">{formatHM(selectedApp.preferredTime) || '-'}</dd>
-                            </div>
-                            <div>
-                              <dt className="text-foreground">라켓</dt>
-                              <dd className="text-foreground">{selectedApp.racketType || '-'}</dd>
-                            </div>
-                            <div>
-                              <dt className="text-foreground">스트링</dt>
-                              <dd className="text-foreground truncate">{(selectedApp.stringItems || []).map((s) => s.name).join(', ') || '-'}</dd>
-                            </div>
-                          </dl>
-
-                          {/* 요청사항 블록 */}
-                          {selectedApp.requirements && (
-                            <div className="mt-3 rounded-lg border border-border bg-card/60 dark:bg-muted p-3">
-                              <div className="text-xs text-foreground mb-1">요청사항</div>
-                              <p className="text-sm text-foreground whitespace-pre-line break-words">{selectedApp.requirements}</p>
-                            </div>
-                          )}
-
-                          <div className="mt-2 text-xs text-foreground">신청번호 {selectedApp._id}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
                   {/* 별점 섹션 */}
                   <div className="text-center py-6 bg-primary/10 border border-primary/20 rounded-xl">
                     <label className="block text-sm font-semibold text-foreground mb-4">만족도를 별점으로 평가해주세요</label>
-                    <Stars value={rating} onChange={setRating} disabled={state !== 'ok'} />
+                    <Stars value={rating} onChange={setRating} disabled={locked} />
                     <div className="mt-2 text-sm text-foreground">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>
                   </div>
 
                   {/* 후기 작성 */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 mt-8">
                     <label className="block text-sm font-semibold text-foreground">상세 후기</label>
                     <Textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)"
                       className="min-h-[180px] resize-y border-border focus:ring-2 focus:ring-ring focus:border-border rounded-xl"
-                      disabled={state !== 'ok'}
+                      disabled={locked}
                     />
                     <div className="text-xs text-foreground text-right">{content.length} / 1000자</div>
                   </div>
 
                   {/* 사진 업로드 */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 mt-8">
                     <Label className="text-sm font-semibold text-foreground">사진 첨부 (선택, 최대 5장)</Label>
                     <div className="rounded-xl border-2 border-dashed border-border p-4">
-                      <PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} />
-                      <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={state !== 'ok' || isUploading} />
+                      <PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" />
+                      <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />
                       {isUploading && <div className="mt-2 text-xs text-foreground">이미지 업로드 중...</div>}
                     </div>
                   </div>
