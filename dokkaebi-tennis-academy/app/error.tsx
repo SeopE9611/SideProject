@@ -23,7 +23,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
             <div className="h-1.5 w-full bg-muted/30" />
 
             <CardContent className="p-8">
-              <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground grid place-content-center shadow-lg mb-6">
+              <div className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary grid place-content-center shadow-lg mb-6">
                 <AlertTriangle className="h-7 w-7" />
               </div>
 
