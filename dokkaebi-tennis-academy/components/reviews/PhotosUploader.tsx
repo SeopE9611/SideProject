@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { X, ImagePlus, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { showErrorToast } from '@/lib/toast';
+import { AlertCircle, ImagePlus, Loader2, X } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
 type Photo = string;
 
@@ -22,11 +22,20 @@ type Props = {
 };
 
 export default function PhotosUploader({ value, onChange, max = 5, onUploadingChange }: Props) {
+  // Supabase Storage key는 ':' 같은 특수문자를 허용하지 않아 React useId() 값을 경로에 쓰면
+  // 400 Invalid key가 발생 -> 안전한 문자(영문/숫자/_, -)만으로 prefix를 생성.
+  const queueIdPrefixRef = useRef<string | null>(null);
+  if (!queueIdPrefixRef.current) {
+    const raw = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    queueIdPrefixRef.current = raw.replace(/[^a-zA-Z0-9_-]/g, '');
+  }
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const queueIdPrefix = useId();
+  const queueIdPrefix = queueIdPrefixRef.current!;
   const queueIdRef = useRef(0);
+
+  const sanitizeStorageKey = (key: string) => key.replace(/[^a-zA-Z0-9/_.-]/g, '_');
 
   const totalCount = (value?.length ?? 0) + queue.length;
   const hasRoom = totalCount < max;
@@ -49,19 +58,27 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
 
   const uploadOne = async (file: File): Promise<string | null> => {
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`;
+    const path = sanitizeStorageKey(`${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`);
 
     const res = await withTimeout(
       supabase.storage.from(BUCKET).upload(path, file, {
         cacheControl: '3600',
         upsert: false,
-        contentType: file.type,
+        contentType: file.type || undefined,
       }),
-      45000 // 45초
+      45000, // 45초
     );
 
-    if (!res || (res as any).error) {
-      showErrorToast('이미지 업로드가 지연되거나 실패했어요. 다시 시도해 주세요.');
+    const err = (res as any)?.error;
+    if (!res || err) {
+      console.error('[PhotosUploader] upload failed', {
+        bucket: BUCKET,
+        path,
+        file: { name: file.name, size: file.size, type: file.type },
+        error: err,
+      });
+
+      showErrorToast(err?.message ? `이미지 업로드 실패 (${err?.statusCode ?? '??'}): ${err.message}` : '이미지 업로드가 지연되거나 실패했어요. 다시 시도해 주세요.');
       return null;
     }
 
@@ -93,7 +110,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
         }
 
         // 미리보기 큐 추가
-        const id = `${queueIdPrefix}-${Date.now()}-${queueIdRef.current++}`;
+        const id = `${queueIdPrefix}-${Date.now()}-${queueIdRef.current}`;
         const objectUrl = URL.createObjectURL(f);
         setQueue((q) => [...q, { id, url: objectUrl }]);
 
