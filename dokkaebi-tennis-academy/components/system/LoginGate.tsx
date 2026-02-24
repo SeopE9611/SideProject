@@ -88,7 +88,7 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
             <div className="h-1.5 w-full bg-primary" />
 
             <CardContent className="p-8">
-              <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground grid place-content-center shadow-lg mb-6">
+              <div className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary grid place-content-center shadow-lg mb-6">
                 <LogIn className="h-7 w-7" />
               </div>
 

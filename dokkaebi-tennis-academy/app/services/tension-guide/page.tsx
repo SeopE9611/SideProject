@@ -544,8 +544,8 @@ export default function TensionGuidePage() {
                       <div className="flex items-start gap-2">
                         <Info className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-xs bp-md:text-sm font-medium text-muted-foreground dark:text-primary mb-0.5 bp-md:mb-1">텐션 조정 팁</p>
-                          <p className="text-[10px] bp-sm:text-xs text-primary">{string.adjustment}</p>
+                          <p className="text-xs bp-md:text-sm font-medium text-foreground mb-0.5 bp-md:mb-1">텐션 조정 팁</p>
+                          <p className="text-[10px] bp-sm:text-xs text-muted-foreground">{string.adjustment}</p>
                         </div>
                       </div>
                     </div>

@@ -319,7 +319,7 @@ export default function CartPageClient() {
             </div>
             <div>
               <h1 className="mb-2 text-2xl bp-sm:text-3xl bp-md:text-4xl font-black">장바구니</h1>
-              <p className="text-primary">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
+              <p className="text-muted-foreground">선택하신 상품들을 확인하고 주문을 진행해보세요</p>
             </div>
           </div>
 

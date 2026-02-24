@@ -331,8 +331,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                   <Clock className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-primary">아직 발송 전이신가요?</h3>
-                  <p className="text-sm text-primary leading-relaxed">
+                  <h3 className="font-semibold text-foreground">아직 발송 전이신가요?</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     발송 후 이 페이지에서 운송장(택배사/송장번호)을 등록하셔도 됩니다.
                     <br />
                     발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
