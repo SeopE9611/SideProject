@@ -1,21 +1,20 @@
 'use client';
 
-import Image from 'next/image';
-import { useRef, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Star, ThumbsUp, ImageIcon, Package, Wrench, Loader2 } from 'lucide-react';
 import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
 import MaskedBlock from '@/components/reviews/MaskedBlock';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
-import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Eye, EyeOff, ImageIcon, Loader2, MoreHorizontal, Package, Pencil, Star, ThumbsUp, Trash2, Wrench } from 'lucide-react';
+import Image from 'next/image';
+import { useRef, useState } from 'react';
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
@@ -76,7 +75,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
   };
 
   // 공개/비공개에 따른 표시 이름
-  const displayName = item.status === 'hidden' ? (item.ownedByMe ? `${item.userName ?? '내 리뷰'} (비공개)` : isAdmin ? `${item.userName ?? '사용자'} (비공개)` : '비공개 리뷰') : item.userName ?? '익명';
+  const displayName = item.status === 'hidden' ? (item.ownedByMe ? `${item.userName ?? '내 리뷰'} (비공개)` : isAdmin ? `${item.userName ?? '사용자'} (비공개)` : '비공개 리뷰') : (item.userName ?? '익명');
 
   // 마스킹 여부(서버가 내려준 masked를 우선 사용, 없으면 폴백)
   const isMasked = item.masked ?? (item.status === 'hidden' && !(item.ownedByMe || isAdmin));
@@ -184,10 +183,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         {/* Header with badges and date */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Badge
-              variant={item.type === 'product' ? 'info' : 'neutral'}
-              className="gap-1.5 px-3 py-1 rounded-full font-medium"
-            >
+            <Badge variant={item.type === 'product' ? 'info' : 'neutral'} className="gap-1.5 px-3 py-1 rounded-full font-medium">
               {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
               {item.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}
             </Badge>
@@ -344,7 +340,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
             variant={voted ? 'default' : 'secondary'}
             onClick={onHelpful}
             disabled={pending}
-            className={`rounded-full px-4 py-2 font-medium transition-all ${ voted ? 'shadow-md' : '' }`}
+            className={`rounded-full px-4 py-2 font-medium transition-all ${voted ? 'shadow-md' : ''}`}
             aria-pressed={voted}
             aria-label={`도움돼요 ${count ? `(${count})` : ''}`}
           >
@@ -415,7 +411,8 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
               <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
               <div className="mt-3">
                 <Label>사진 (선택, 최대 5장)</Label>
-                <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} />
+                <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} previewMode="queue" />
+
                 <PhotosReorderGrid value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} />
               </div>
             </div>

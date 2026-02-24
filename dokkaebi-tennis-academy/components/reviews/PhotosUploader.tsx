@@ -19,9 +19,16 @@ type Props = {
   onChange: (next: Photo[]) => void;
   max?: number;
   onUploadingChange?: (uploading: boolean) => void;
+  /**
+   * 미리보기 표시 방식
+   * - 'all'  : 업로드 중(큐) + 완료된 사진(value) 모두 표시 (기본)
+   * - 'queue': 업로드 중(큐)만 표시 (완료된 사진은 아래 PhotosReorderGrid에서만 보이게)
+   * - 'none' : 업로드 버튼만 표시 (미리보기 전부 숨김)
+   */
+  previewMode?: 'all' | 'queue' | 'none';
 };
 
-export default function PhotosUploader({ value, onChange, max = 5, onUploadingChange }: Props) {
+export default function PhotosUploader({ value, onChange, max = 5, onUploadingChange, previewMode = 'all' }: Props) {
   // Supabase Storage key는 ':' 같은 특수문자를 허용하지 않아 React useId() 값을 경로에 쓰면
   // 400 Invalid key가 발생 -> 안전한 문자(영문/숫자/_, -)만으로 prefix를 생성.
   const queueIdPrefixRef = useRef<string | null>(null);
@@ -34,6 +41,10 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
   const [isUploading, setIsUploading] = useState(false);
   const queueIdPrefix = queueIdPrefixRef.current!;
   const queueIdRef = useRef(0);
+
+  // previewMode에 따라 어떤 미리보기를 보여줄지 결정
+  const showQueue = previewMode !== 'none';
+  const showDone = previewMode === 'all';
 
   const sanitizeStorageKey = (key: string) => key.replace(/[^a-zA-Z0-9/_.-]/g, '_');
 
@@ -174,17 +185,19 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
       {(queue.length > 0 || (Array.isArray(value) && value.length > 0)) && (
         <div className="grid grid-cols-3 gap-2">
           {/* 업로드 중 썸네일 */}
-          {queue.map((q) => (
-            <div key={`q-${q.id}`} className="relative rounded-md overflow-hidden border bg-background">
-              <Image src={q.url} alt="uploading" width={160} height={160} className="object-cover w-full h-24" />
-              <div className="absolute inset-0 bg-overlay/35 flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-foreground" aria-label="업로드 중" />
+          {showQueue &&
+            queue.map((q) => (
+              <div key={`q-${q.id}`} className="relative rounded-md overflow-hidden border bg-background">
+                <Image src={q.url} alt="uploading" width={160} height={160} className="object-cover w-full h-24" />
+                <div className="absolute inset-0 bg-overlay/35 flex items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-foreground" aria-label="업로드 중" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           {/* 완료된 썸네일 */}
-          {value.map((src, i) => (
+          {showDone &&
+            value.map((src, i) => (
             <div key={src + i} className="relative group rounded-md overflow-hidden border">
               <Image src={src} alt={`photo-${i}`} width={160} height={160} className="object-cover w-full h-24" loading="lazy" />
               <button type="button" onClick={() => removeAt(i)} className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-label="삭제" title="삭제">

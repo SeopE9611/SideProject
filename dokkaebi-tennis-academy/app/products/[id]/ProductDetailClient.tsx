@@ -1,30 +1,58 @@
 'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Star, ShoppingCart, Heart, ArrowLeft, Truck, Shield, Clock, ChevronLeft, ChevronRight, Zap, RotateCcw, Plus, Minus, Check, X, Loader2, Target, Activity, FileText, Settings, Pencil, MessageSquare, Lock, CreditCard } from 'lucide-react';
+import { useWishlist } from '@/app/features/wishlist/useWishlist';
+import type { User } from '@/app/store/authStore';
+import { useBuyNowStore } from '@/app/store/buyNowStore';
+import { type CartItem, useCartStore } from '@/app/store/cartStore';
+import SiteContainer from '@/components/layout/SiteContainer';
+import MaskedBlock from '@/components/reviews/MaskedBlock';
+import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { type CartItem, useCartStore } from '@/app/store/cartStore';
-import { useState, useEffect, useMemo } from 'react';
-import { toast } from 'sonner';
-import { useRouter, useSearchParams } from 'next/navigation';
-import type { User } from '@/app/store/authStore';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useWishlist } from '@/app/features/wishlist/useWishlist';
-import MaskedBlock from '@/components/reviews/MaskedBlock';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, EyeOff, Trash2 } from 'lucide-react';
-import useSWR from 'swr';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
-import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
-import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
-import { useBuyNowStore } from '@/app/store/buyNowStore';
-import SiteContainer from '@/components/layout/SiteContainer';
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import {
+  Activity,
+  ArrowLeft,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Eye,
+  EyeOff,
+  FileText,
+  Heart,
+  Loader2,
+  Lock,
+  MessageSquare,
+  Minus,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Settings,
+  Shield,
+  ShoppingCart,
+  Star,
+  Target,
+  Trash2,
+  Truck,
+  X,
+  Zap,
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import useSWR from 'swr';
 
 type GuestOrderMode = 'off' | 'legacy' | 'on';
 
@@ -625,10 +653,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={product.name} fill className="object-cover transition-transform duration-300 hover:scale-105" />
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={prevImage}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      onClick={prevImage}
+                    >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={nextImage}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      onClick={nextImage}
+                    >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </>
@@ -738,11 +776,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Button>
                       ) : (
                         <>
-                          <Button
-                            className="w-full h-10 sm:h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow"
-                            onClick={handleBuyNow}
-                            disabled={loading || stock <= 0 || quantity > stock}
-                          >
+                          <Button className="w-full h-10 sm:h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow" onClick={handleBuyNow} disabled={loading || stock <= 0 || quantity > stock}>
                             <CreditCard className="mr-2 h-4 w-4" />
                             즉시 구매하기
                           </Button>
@@ -831,11 +865,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
               <div>
                 <h4 className="font-medium text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">추가 특성</h4>
-                {additionalFeaturesText ? (
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{additionalFeaturesText}</p>
-                ) : (
-                  <p className="text-xs sm:text-sm text-muted-foreground italic">추가 특성 정보가 없습니다.</p>
-                )}
+                {additionalFeaturesText ? <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{additionalFeaturesText}</p> : <p className="text-xs sm:text-sm text-muted-foreground italic">추가 특성 정보가 없습니다.</p>}
               </div>
             </CardContent>
           </Card>
@@ -1194,7 +1224,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                                         >
                                           <Image src={src || '/placeholder.svg'} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
-                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>}
+                                          {i === 3 && review.photos.length > 4 && (
+                                            <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>
+                                          )}
                                         </button>
                                       ))}
                                     </div>
@@ -1368,10 +1400,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   {/* 플레이스홀더로 4칸 채우기 */}
                   {Array.from({ length: Math.max(0, 4 - relatedFiltered.length) }).map((_, i) => (
-                    <div
-                      key={`rel-ph-${i}`}
-                      className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-border/70 dark:border-border/70 bg-muted/30 text-center flex flex-col"
-                    >
+                    <div key={`rel-ph-${i}`} className="rounded-xl p-3 sm:p-4 border-2 border-dashed border-border/70 dark:border-border/70 bg-muted/30 text-center flex flex-col">
                       <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3 flex items-center justify-center">
                         <span className="text-muted-foreground text-sm">준비 중</span>
                       </div>
@@ -1441,7 +1470,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
                   <div className="mt-3">
                     <Label>사진 (선택, 최대 5장)</Label>
-                    <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} />
+                    <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} previewMode="queue" />
                     <PhotosReorderGrid value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} />
                   </div>
                 </div>

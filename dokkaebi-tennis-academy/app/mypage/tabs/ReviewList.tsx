@@ -1,21 +1,20 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useMemo, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
-import Link from 'next/link';
-import Image from 'next/image';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
-import { Star, Calendar, Edit3, Trash2, Eye, EyeOff, Loader2, Package, Award } from 'lucide-react';
-import { showSuccessToast, showErrorToast } from '@/lib/toast';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
+import PhotosUploader from '@/components/reviews/PhotosUploader';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Package, Star, Trash2 } from 'lucide-react';
 
 /*  API 타입 */
 type ApiMineItem = {
@@ -125,7 +124,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         cover: a.target?.image ?? null,
         photos: Array.isArray(a.photos) ? a.photos : [],
       })),
-    [apiItems]
+    [apiItems],
   );
 
   const lastPage = data && data.length ? data[data.length - 1] : undefined;
@@ -203,9 +202,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     ...(payload.content !== undefined ? { content: payload.content } : {}),
                     ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
                     ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
-                  }
+                  },
           ),
-        })
+        }),
       );
     }, false);
 
@@ -265,7 +264,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         showErrorToast(e.message || '상태 변경 중 오류가 발생했습니다.');
       }
     },
-    [data, mutate]
+    [data, mutate],
   );
   // 삭제
   const removeReview = useCallback(
@@ -291,7 +290,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         showErrorToast(e.message || '삭제 중 오류가 발생했습니다.');
       }
     },
-    [data, mutate]
+    [data, mutate],
   );
 
   // 필터
@@ -520,7 +519,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
             <div>
               <div className="text-sm mb-2">사진 (선택, 최대 5장)</div>
-              <PhotosUploader key={editing?._id ?? 'new'} value={editPhotos} onChange={setEditPhotos} max={5} />
+              <PhotosUploader key={editing?._id ?? 'new'} value={editPhotos} onChange={setEditPhotos} max={5} previewMode="queue" />
               <PhotosReorderGrid value={editPhotos} onChange={setEditPhotos} />
             </div>
           </div>
