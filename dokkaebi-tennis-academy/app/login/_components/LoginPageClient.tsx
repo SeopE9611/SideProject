@@ -1120,10 +1120,9 @@ export default function LoginPageClient() {
  className={
  isSocialOauthRegister
  ? (
- // 브랜드 예외: 소셜 회원가입 완료 버튼 분기에서만 제휴사(Naver/Kakao) 브랜드 색상을 유지합니다.
- oauthProvider === 'naver'
- ? 'w-full h-12 bg-[#03C75A] hover:bg-[#02B350] text-white font-semibold shadow-lg'
- : 'w-full h-12 bg-[#FEE500] hover:bg-[#FDD835] text-[#191919] font-semibold shadow-lg'
+  oauthProvider === 'naver'
+ ? 'w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted hover:border-success/40 font-semibold shadow-lg'
+ : 'w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted hover:border-warning/40 font-semibold shadow-lg'
  )
  : 'w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg'
  }
