@@ -463,8 +463,8 @@ export default function PackageOrdersClient() {
         <div className="container py-6">
           {/* 제목 및 설명 */}
           <div className="flex items-center space-x-3 mb-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
-              <Package className="h-6 w-6 text-primary-foreground" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+              <Package className="h-6 w-6" />
             </div>
             <div>
               {/* 토큰화 */}

@@ -216,8 +216,8 @@ export default function NoticeDetailPage() {
                       </div>
 
                       <div className="flex items-start gap-3 mb-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/30 shadow-lg flex-shrink-0 mt-1">
-                          <Bell className="h-5 w-5 text-primary-foreground" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex-shrink-0 mt-1">
+                          <Bell className="h-5 w-5" />
                         </div>
                         <h1 className="text-3xl font-bold text-foreground leading-tight">{notice.title}</h1>
                       </div>

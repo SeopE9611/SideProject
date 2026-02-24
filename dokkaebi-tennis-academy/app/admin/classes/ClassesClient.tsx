@@ -99,8 +99,8 @@ export default function ClassesPage() {
     <div className="p-6 space-y-8">
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
-            <Calendar className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+            <Calendar className="h-6 w-6" />
           </div>
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">클래스 관리</h1>

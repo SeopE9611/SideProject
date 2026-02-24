@@ -653,8 +653,8 @@ export default function BoardPage() {
         {/* 헤더 섹션 */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
-              <MessageSquare className="h-6 w-6 text-primary-foreground" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+              <MessageSquare className="h-6 w-6" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">게시판</h1>
           </div>
