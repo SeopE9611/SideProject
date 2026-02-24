@@ -1,20 +1,22 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, ChevronRight, Check, Truck, Shield, Calendar, ShoppingCart, FileText, Settings, Scale } from 'lucide-react';
+import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
+import { CompareRacketItem, useRacketCompareStore } from '@/app/store/racketCompareStore';
+import StatusBadge from '@/components/badges/StatusBadge';
+import SiteContainer from '@/components/layout/SiteContainer';
+import MaskedBlock from '@/components/reviews/MaskedBlock';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { racketBrandLabel } from '@/lib/constants';
-import StatusBadge from '@/components/badges/StatusBadge';
-import SiteContainer from '@/components/layout/SiteContainer';
-import { CompareRacketItem, useRacketCompareStore } from '@/app/store/racketCompareStore';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { ArrowLeft, Calendar, Check, ChevronLeft, ChevronRight, FileText, Pencil, Scale, Settings, Shield, ShoppingCart, Star, Truck } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import useSWR from 'swr';
 
 interface RacketDetailClientProps {
   racket: any;
@@ -30,13 +32,88 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const rentSectionRef = useRef<HTMLDivElement>(null);
   const [autoOpen, setAutoOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'reviews'>('description');
 
   const soldOut = stock.available <= 0;
 
   // 라켓 ID 정규화
   const racketId = String(racket?.id ?? racket?._id ?? '');
   const canBuy = !soldOut && racketId !== '';
+
+  // 리뷰 탭 표시를 위한 데이터
+  // - racket API에서 reviews/reviewSummary를 함께 내려주도록 되어 있어야 함
+  const baseReviews = Array.isArray(racket?.reviews) ? racket.reviews : [];
+  const reviewsLen = baseReviews.length;
+
+  const fetcher = async (url: string) => {
+    const res = await fetch(url, { credentials: 'include' });
+    if (!res.ok) return null;
+    return res.json();
+  };
+
+  // 로그인 여부 (내 비공개 리뷰는 /api/reviews/self로 원문을 받아 병합)
+  const [user, setUser] = useState<any | null>(null);
+
+  useEffect(() => {
+    fetch('/api/users/me', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data === 'object' && 'error' in data) setUser(null);
+        else setUser(data);
+      })
+      .catch(() => setUser(null));
+  }, []);
+
+  const isAdmin = !!user && ((user as any).role === 'admin' || (user as any).role === 'ADMIN' || (user as any).isAdmin === true || (Array.isArray((user as any).roles) && (user as any).roles.includes('admin')));
+
+  // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
+  const reviewsCount = reviewsLen || 10;
+  const { data: adminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${racketId}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
+  const { data: myReview } = useSWR(user ? `/api/reviews/self?productId=${racketId}` : null, fetcher, { revalidateOnFocus: false });
+
+  // 서버가 내려준 racket.reviews는 숨김 리뷰를 마스킹
+  // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  // isAdmin이면 adminReviews로 표시 범위 내 항목을 원문으로 덮어쓰기 + 마스킹 해제
+  const mergedReviews = useMemo(() => {
+    let next = baseReviews;
+
+    // 내 리뷰 덮어쓰기 (있을 때만)
+    if (myReview && (myReview as any)._id) {
+      const i = next.findIndex((r: any) => String(r._id) === String((myReview as any)._id));
+      if (i !== -1) {
+        next = [...next];
+        next[i] = {
+          ...next[i],
+          user: (myReview as any).userName ?? next[i].user,
+          content: (myReview as any).content,
+          photos: (myReview as any).photos ?? [],
+          masked: false,
+          ownedByMe: true,
+          status: (myReview as any).status,
+        };
+      }
+    }
+
+    // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
+    if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
+      const map = new Map((adminReviews as any[]).map((r: any) => [String(r._id), r]));
+      next = next.map((r: any) => {
+        const raw = map.get(String(r._id));
+        if (!raw) return r;
+        return {
+          ...r,
+          user: raw.userName ?? r.user,
+          content: raw.content,
+          photos: raw.photos ?? [],
+          status: raw.status,
+          masked: false,
+          adminView: true,
+        };
+      });
+    }
+
+    return next;
+  }, [baseReviews, myReview, isAdmin, adminReviews]);
 
   // 대여중 수량(상세는 count를 굳이 안 받아도 quantity-available로 복원 가능)
   const rentedCount = Math.max(0, stock.quantity - stock.available);
@@ -167,10 +244,20 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 )}
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={prevImage}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      onClick={prevImage}
+                    >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={nextImage}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      onClick={nextImage}
+                    >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </>
@@ -289,7 +376,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       </Button>
                     </div>
 
-                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <div className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>}
+                    {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
+                      <div className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded-lg p-3">대여 불가 사유: {racket.rental.disabledReason}</div>
+                    )}
                   </div>
 
                   {/* 배송 정보 */}
@@ -330,7 +419,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         <Card className="mt-8 border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 h-16 bg-muted/30 rounded-t-lg">
+              <TabsList className="w-full grid grid-cols-3 h-16 bg-muted/30 rounded-t-lg">
                 <TabsTrigger
                   value="description"
                   className="text-base font-medium h-full data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-card dark:data-[state=active]:text-primary"
@@ -344,6 +433,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   상세 스펙
+                </TabsTrigger>
+                <TabsTrigger value="reviews" className="text-base font-medium h-full data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary dark:data-[state=active]:bg-card dark:data-[state=active]:text-primary">
+                  <Star className="h-4 w-4 mr-2" />
+                  리뷰
+                  <span className="ml-1">({reviewsLen})</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -423,6 +517,61 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </div>
                 </div>
               </TabsContent>
+              <TabsContent value="reviews" className="p-8">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                        <Star className="h-6 w-6 text-primary-foreground" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground">고객 리뷰</h3>
+                    </div>
+                    <Button asChild variant="outline" className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg">
+                      <Link href={`/reviews/write?productId=${racketId}`}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        리뷰 작성하기
+                      </Link>
+                    </Button>
+                  </div>
+
+                  {mergedReviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {mergedReviews.map((review: any, index: number) => (
+                        <Card key={String(review?._id ?? index)} className="border-0 shadow-lg bg-muted/30">
+                          <CardContent className="p-6 space-y-3">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <div className="font-bold text-foreground truncate">{review?.status === 'hidden' ? (review?.ownedByMe ? `${review?.user ?? '내 리뷰'} (비공개)` : '비공개 리뷰') : (review?.user ?? '익명')}</div>
+                                {review?.date ? <div className="text-xs text-muted-foreground mt-0.5">{review.date}</div> : null}
+                              </div>
+
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star key={i} className={`h-4 w-4 ${i < Number(review?.rating ?? 0) ? 'text-primary fill-primary' : 'text-muted-foreground/40'}`} />
+                                ))}
+                              </div>
+                            </div>
+
+                            {review?.masked ? <MaskedBlock /> : <p className="text-sm text-foreground whitespace-pre-line">{review?.content || ''}</p>}
+
+                            {Array.isArray(review?.photos) && review.photos.length > 0 ? (
+                              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                {review.photos.slice(0, 8).map((src: string, i: number) => (
+                                  <button key={i} type="button" onClick={() => window.open(src, '_blank', 'noopener,noreferrer')} className="relative aspect-square overflow-hidden rounded-md border border-border bg-muted" title="새 창으로 보기">
+                                    <Image src={src} alt={`리뷰 이미지 ${i + 1}`} fill className="object-cover" />
+                                  </button>
+                                ))}
+                              </div>
+                            ) : null}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-muted p-6 rounded-lg border border-border text-muted-foreground">아직 등록된 리뷰가 없습니다.</div>
+                  )}
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
@@ -467,11 +616,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <RentDialog id={racketId} rental={racket.rental} brand={racketBrandLabel(racket.brand)} model={racket.model} autoOpen={autoOpen} full />
                 </div>
               ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
-                >
+                <button type="button" disabled className="flex-1 h-12 rounded-lg border border-border bg-muted dark:bg-card text-muted-foreground font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2">
                   <Calendar className="h-4 w-4" />
                   {racket?.rental?.enabled === false ? '대여 불가' : soldOut ? '품절' : '대여 불가'}
                 </button>
@@ -484,7 +629,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={toggleCompare}
                 disabled={!racketId}
                 title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${ isCompared ? 'border-border bg-primary/10 text-primary' : 'border-border bg-card text-foreground' } ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? 'border-border bg-primary/10 text-primary' : 'border-border bg-card text-foreground'} ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <Scale className="h-4 w-4" />
                 {isCompared ? `비교 선택됨 (${compareCount}/4)` : `비교 담기 (${compareCount}/4)`}
@@ -495,12 +640,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={() => router.push('/rackets/compare')}
                 disabled={compareCount < 2}
                 title={compareCount < 2 ? '비교는 최소 2개부터 가능합니다.' : undefined}
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${ compareCount < 2 ? 'border-border bg-muted text-muted-foreground cursor-not-allowed' : 'border-border bg-card text-foreground' }`}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${compareCount < 2 ? 'border-border bg-muted text-muted-foreground cursor-not-allowed' : 'border-border bg-card text-foreground'}`}
               >
                 비교하기
               </button>
             </div>
-            {racket?.rental?.enabled === false && racket?.rental?.disabledReason && <p className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>}
+            {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
+              <p className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded px-3 py-2">대여 불가 사유: {racket.rental.disabledReason}</p>
+            )}
           </div>
         </div>
       </div>
