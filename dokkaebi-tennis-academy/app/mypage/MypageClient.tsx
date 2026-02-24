@@ -169,17 +169,17 @@ export default function MypageClient({ user }: Props) {
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{ordersCount}</div>
-                  <div className="text-xs bp-sm:text-sm text-primary">총 주문</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">총 주문</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{applicationsCount}</div>
-                  <div className="text-xs bp-sm:text-sm text-primary">서비스 신청</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">서비스 신청</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1">
                   <UserCheck className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{user.role === 'admin' ? '관리자' : '일반 회원'}</div>
-                  <div className="text-xs bp-sm:text-sm text-primary">회원 등급</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">회원 등급</div>
                 </div>
               </div>
             </div>

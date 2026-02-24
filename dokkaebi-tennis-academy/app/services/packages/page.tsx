@@ -320,7 +320,7 @@ export default function StringPackagesPage() {
 
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 text-foreground">스트링 교체 패키지</h1>
 
-            <p className="text-base sm:text-xl md:text-2xl mb-8 text-primary leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl mb-8 text-muted-foreground leading-relaxed">
               정기적인 스트링 교체로 최상의 경기력을 유지하세요
               <br />
               <span className="text-foreground font-semibold">패키지 구매 시 최대 20만원 절약</span>
@@ -460,7 +460,7 @@ export default function StringPackagesPage() {
               추가 혜택
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">패키지만의 특별한 혜택</h2>
-            <p className="text-xl text-primary max-w-3xl mx-auto leading-relaxed">단순한 할인을 넘어서는 프리미엄 서비스를 경험하세요.</p>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">단순한 할인을 넘어서는 프리미엄 서비스를 경험하세요.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -468,7 +468,7 @@ export default function StringPackagesPage() {
               <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[benefit.variant]}`}>{benefit.icon}</div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>
-                <p className="text-primary text-center leading-relaxed">{benefit.description}</p>
+                <p className="text-muted-foreground text-center leading-relaxed">{benefit.description}</p>
               </div>
             ))}
           </div>

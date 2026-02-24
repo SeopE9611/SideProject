@@ -200,7 +200,7 @@ export default function OrderDetailPage() {
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
-                  <p className="text-primary mb-8 max-w-md">{error}</p>
+                  <p className="text-destructive mb-8 max-w-md">{error}</p>
                   <Button onClick={handleGoBack} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     이전 페이지로 돌아가기
@@ -260,8 +260,8 @@ export default function OrderDetailPage() {
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-primary mb-2">스트링 장착 서비스 신청 가능</h3>
-                      <p className="text-primary mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아래 버튼을 클릭하여 신청해주세요.</p>
+                      <h3 className="font-semibold text-foreground mb-2">스트링 장착 서비스 신청 가능</h3>
+                      <p className="text-muted-foreground mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아래 버튼을 클릭하여 신청해주세요.</p>
                       <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors">
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         스트링 장착 서비스 신청하기
@@ -364,7 +364,7 @@ export default function OrderDetailPage() {
                         <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
-                            <p className="text-sm text-primary mb-1">운송장 번호</p>
+                            <p className="text-sm text-muted-foreground mb-1">운송장 번호</p>
                             <p className="font-mono font-semibold text-primary">{order.trackingNumber}</p>
                           </div>
                           <Button variant="link" className="text-primary hover:text-primary p-0">
