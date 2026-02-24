@@ -147,8 +147,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
       <div className="min-h-full bg-background text-foreground">
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
-          <div className="absolute inset-0 bg-background/10"></div>
-          <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
+          <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
           <SiteContainer variant="wide" className="relative py-16">
             <div className="text-center">
               <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">

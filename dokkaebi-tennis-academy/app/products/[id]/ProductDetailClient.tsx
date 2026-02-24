@@ -597,20 +597,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     <div className="min-h-full bg-muted/30 pb-20 bp-md:pb-8">
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-muted/30 dark:bg-card/40 text-foreground py-6 sm:py-8 border-b border-border">
-        <div className="absolute inset-0 bg-overlay/10"></div>
-        {/* Tennis court line pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full text-primary" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="detail-court-lines" patternUnits="userSpaceOnUse" width="100" height="50">
-                <rect width="100" height="50" fill="transparent" />
-                <line x1="0" y1="25" x2="100" y2="25" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-                <line x1="50" y1="0" x2="50" y2="50" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
         <SiteContainer variant="wide" className="relative">
           <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm mb-3 sm:mb-4 opacity-90 overflow-x-auto scrollbar-hide">
             <Link href="/" className="hover:text-primary transition-colors whitespace-nowrap">
@@ -1332,7 +1319,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </div>
             {/* 썸네일 네비게이션 */}
             {viewerImages.length > 1 && (
-              <div className="p-3 flex flex-wrap gap-2 justify-center bg-foreground/70">
+              <div className="p-3 flex flex-wrap gap-2 justify-center bg-background/80 backdrop-blur border border-border">
                 {viewerImages.map((thumb, i) => (
                   <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
                     <Image src={thumb || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
