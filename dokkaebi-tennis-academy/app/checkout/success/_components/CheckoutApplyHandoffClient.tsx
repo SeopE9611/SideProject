@@ -57,7 +57,7 @@ export default function CheckoutApplyHandoffClient({ href, orderId, seconds = 5 
             </div>
 
             {!cancelled ? (
-              <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/10 p-4 text-primary dark:bg-primary/20">
+              <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/10 p-4 text-foreground dark:bg-primary/20">
                 <div className="flex h-5 w-5 items-center justify-center">
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>

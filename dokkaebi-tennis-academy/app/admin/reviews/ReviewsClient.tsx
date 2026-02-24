@@ -193,7 +193,7 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">전체 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{totalReviews}</p>
               </div>
-              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <MessageSquare className="h-6 w-6" />
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">5점 리뷰</p>
                 <p className="text-3xl font-bold text-foreground">{fiveStarReviews}</p>
               </div>
-              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <Award className="h-6 w-6" />
               </div>
             </div>

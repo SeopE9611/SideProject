@@ -380,7 +380,7 @@ export default function QnaDetailPage() {
                       await mutate();
                     }}
                     disabled={!answerText.trim()}
-                    className="px-6 bg-primary hover:bg-primary/90"
+                    className="px-6 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     답변 등록
                   </Button>
@@ -481,7 +481,7 @@ export default function QnaDetailPage() {
                           setIsEditing(false);
                           await mutate();
                         }}
-                        className="bg-primary hover:bg-primary/90"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         저장
                       </Button>
@@ -499,7 +499,7 @@ export default function QnaDetailPage() {
                 목록으로 돌아가기
               </Link>
             </Button>
-            <Button size="lg" asChild className="px-8 bg-primary hover:bg-primary/90">
+            <Button size="lg" asChild className="px-8 bg-primary text-primary-foreground hover:bg-primary/90">
               <Link href="/board/qna/write" onClick={confirmLeave}>
                 <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
               </Link>

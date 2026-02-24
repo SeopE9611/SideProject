@@ -446,7 +446,7 @@ export default function AdminRentalDetailClient() {
                 {/* 반납 처리(return) */}
                 <Button
                   size="sm"
-                  className="h-9 bg-primary hover:bg-primary/90"
+                  className="h-9 bg-primary text-primary-foreground hover:bg-primary/90"
                   disabled={isBusy || !['paid', 'out'].includes(data.status)}
                   onClick={() => {
                     if (isBusy) return;

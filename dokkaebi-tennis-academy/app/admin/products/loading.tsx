@@ -36,7 +36,7 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <Package className="h-6 w-6" />
               </div>
             </div>
@@ -51,7 +51,7 @@ export default function ProductsLoading() {
                   <NumberSkeleton />
                 </p>
               </div>
-              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-primary dark:bg-primary/20">
+              <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <CheckCircle className="h-6 w-6" />
               </div>
             </div>
