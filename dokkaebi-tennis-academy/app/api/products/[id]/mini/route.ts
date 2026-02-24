@@ -1,3 +1,4 @@
+import { racketBrandLabel } from '@/lib/constants';
 import { getDb } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { NextResponse } from 'next/server';
@@ -14,12 +15,17 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const idFilter = { _id: idObj };
 
   const projection = {
+    // products
     name: 1,
     title: 1,
     thumbnail: 1,
     images: 1,
     mountingFee: 1,
     price: 1,
+
+    // used_rackets
+    brand: 1,
+    model: 1,
   };
 
   // 1) products 먼저
@@ -64,7 +70,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
         ok: true,
         kind: 'racket' as const,
         href: `/rackets/${id}`,
-        name: (racket as any).name ?? (racket as any).title ?? '라켓',
+        name: (() => {
+          const brand = String((racket as any).brand ?? '').trim();
+          const model = String((racket as any).model ?? '').trim();
+          const computed = `${racketBrandLabel(brand)} ${model}`.trim();
+          return computed || (racket as any).name || (racket as any).title || '라켓';
+        })(),
         image: (racket as any).thumbnail || (Array.isArray((racket as any).images) && (racket as any).images[0]) || null,
         mountingFee: 0, // 라켓은 장착비 개념 없음(필요하면 정책에 맞게)
         price: safePrice,

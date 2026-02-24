@@ -493,11 +493,25 @@ export default function ReviewWritePage() {
           const r = await fetch(`/api/products/${resolvedProductId}/mini`, { cache: 'no-store' });
           const d = await r.json();
           if (!aborted && d?.ok) {
-            setCurrentMeta({
-              name: d.name,
-              image: d.image,
-              kind: d.kind ?? 'product',
-              href: d.href ?? `/products/${resolvedProductId}`,
+            // 레이스 컨디션 방지:
+            // - /api/products/:id/mini 응답과 /api/orders/:id/review-items 응답이
+            //   서로 다른 타이밍으로 도착하면서 setCurrentMeta를 "통째로 덮어쓰기"하면
+            //   이름/이미지가 들쑥날쑥해질 수 있음에 따라 항상 "merge" 방식으로 업데이트.
+            setCurrentMeta((prev) => {
+              const prevName = (prev?.name ?? '').trim();
+              const nextName = String(d.name ?? '').trim();
+
+              // prev가 더 구체적이면(prevName) 유지, 아니면 nextName 채택
+              const safeName = prevName && prevName !== '라켓' && prevName !== '상품' && prevName !== '상품 리뷰' ? prevName : nextName || prevName || '상품';
+
+              const safeImage = prev?.image ?? d.image ?? null;
+
+              return {
+                name: safeName,
+                image: safeImage,
+                kind: (d.kind ?? prev?.kind ?? 'product') as any,
+                href: (d.href ?? prev?.href ?? `/products/${resolvedProductId}`) as any,
+              };
             });
           }
         } catch {}
@@ -514,19 +528,22 @@ export default function ReviewWritePage() {
     const found = orderItems.find((it) => it.productId === resolvedProductId);
     if (!found) return;
 
-    // 기존 kind/href 유지 + name/image만 주문 스냅샷으로 덮어쓰기
+    // 주문 스냅샷 우선 정책이더라도,
+    // - found.image가 null이거나 found.name이 '라켓' 같은 일반값이면
+    //   이미 확보된(미니 메타 등) 더 좋은 값이 덮어써져 버릴 수 있음 그렇기에 "좋은 값은 유지"하는 형태로 merge.
     setCurrentMeta((prev) => {
-      // prev가 이미 있으면 kind/href 보존
-      if (prev) {
-        return { ...prev, name: found.name, image: found.image };
-      }
+      const prevName = (prev?.name ?? '').trim();
+      const snapName = String(found.name ?? '').trim();
 
-      // prev가 없으면 최소값으로 생성(여긴 사실상 거의 안 탐)
+      const isGeneric = snapName === '라켓' || snapName === '상품' || snapName === '상품 리뷰';
+      const safeName = !snapName ? prevName || '상품' : isGeneric && prevName && prevName !== '라켓' && prevName !== '상품' && prevName !== '상품 리뷰' ? prevName : snapName;
+
+      const safeImage = found.image ?? prev?.image ?? null;
       return {
-        name: found.name,
-        image: found.image,
-        kind: 'product',
-        href: `/products/${resolvedProductId}`,
+        name: safeName,
+        image: safeImage,
+        kind: prev?.kind ?? 'product',
+        href: prev?.href ?? `/products/${resolvedProductId}`,
       };
     });
   }, [orderItems, resolvedProductId]);
