@@ -30,7 +30,7 @@ html body[data-scroll-locked] {
 /* 라이트 모드용 CSS 변수 정의 */
 :root {
   /* Page base */
-  --background: 120 100% 99%;
+  --background: 120 35% 99%;
   --foreground: 120 4% 11%;
 
   /* Surface (card/panel) */
@@ -57,15 +57,15 @@ html body[data-scroll-locked] {
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
-  --secondary: 120 12% 94%;
+  --secondary: 120 8% 94%;
   --secondary-foreground: 120 4% 11%;
 
-  --muted: 120 10% 95%;
+  --muted: 120 6% 95%;
   --muted-foreground: 120 6% 31%;
   --brand-text: 129 57% 33%;
 
-  --border: 120 18% 87%;
-  --input: 120 8% 86%;
+  --border: 120 10% 87%;
+  --input: 120 5% 86%;
   --ring: 145 64% 46%;
   --overlay: 120 8% 8%;
 

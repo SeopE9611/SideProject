@@ -226,7 +226,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <CheckCircle className="h-12 w-12 text-primary" />
  </div>
  <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">신청이 완료되었습니다!</h1>
- <p className="text-xl md:text-2xl text-primary max-w-3xl mx-auto leading-relaxed">도깨비 테니스 아카데미에서 확인 후 빠르게 연락드리겠습니다</p>
+ <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비 테니스 아카데미에서 확인 후 빠르게 연락드리겠습니다</p>
  <div className="mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
  <Calendar className="h-5 w-5" />
  <span className="text-sm font-medium">신청일: {new Date(application.createdAt).toLocaleDateString('ko-KR')}</span>
@@ -240,12 +240,12 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
  <Package className="h-6 w-6 text-primary" />
  </div>
- <h3 className="text-xl font-bold text-primary">운송장 등록 안내</h3>
+ <h3 className="text-xl font-bold text-foreground">운송장 등록 안내</h3>
  </div>
- <p className="text-primary mb-4 leading-relaxed">
+ <p className="text-muted-foreground mb-4 leading-relaxed">
  <span className="font-semibold">라켓을 발송하신 뒤</span> 아래 버튼을 눌러 운송장을 등록해 주세요.
  <br />
- <span className="text-sm text-primary/80">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
+ <span className="text-sm text-muted-foreground">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
  </p>
  <Button variant="default" className="font-semibold shadow-lg" asChild>
  <Link href={`/services/applications/${applicationId}/shipping`} className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </CardDescription>
  </div>
  <div className="text-right">
- <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-medium text-primary dark:bg-primary/20">
+ <div className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-4 py-2 text-sm font-medium text-success dark:bg-success/15">
  <CheckCircle className="h-4 w-4 mr-2" />
  접수 완료
  </div>
@@ -330,7 +330,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  ) : (
  <p className="mt-2 text-sm text-muted-foreground">교체 서비스 비용 기준</p>
  )}
- {application.packageApplied && <p className="mt-2 text-sm text-primary">패키지 적용으로 입금 불필요</p>}
+ {application.packageApplied && <p className="mt-2 text-sm text-foreground">패키지 적용으로 입금 불필요</p>}
  </div>
 
  <div className="bg-muted p-6 rounded-xl">

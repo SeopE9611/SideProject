@@ -485,7 +485,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
  <div>
  <h1 className="text-4xl font-bold mb-2">패키지 주문/결제</h1>
- <p className="text-primary">선택하신 패키지로 프리미엄 서비스를 시작하세요</p>
+ <p className="text-muted-foreground">선택하신 패키지로 프리미엄 서비스를 시작하세요</p>
  </div>
  </div>
 
@@ -620,7 +620,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  placeholder="신청자 이름을 입력하세요"
  className={inputClass('border-2 focus:border-border transition-colors', 'name', fieldErrors)}
  />
- {hasInteracted && fieldErrors.name && <p className="mt-1 text-xs text-primary">{fieldErrors.name}</p>}
+ {hasInteracted && fieldErrors.name && <p className="mt-1 text-xs text-destructive">{fieldErrors.name}</p>}
  </div>
  <div className="space-y-2">
  <Label htmlFor="applicant-email" className="flex items-center gap-2">
@@ -638,7 +638,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  placeholder="example@naver.com"
  className={inputClass('border-2 focus:border-border transition-colors', 'email', fieldErrors)}
  />
- {hasInteracted && fieldErrors.email && <p className="mt-1 text-xs text-primary">{fieldErrors.email}</p>}
+ {hasInteracted && fieldErrors.email && <p className="mt-1 text-xs text-destructive">{fieldErrors.email}</p>}
  </div>
  <div className="space-y-2 sm:col-span-2">
  <Label htmlFor="applicant-phone" className="flex items-center gap-2">
@@ -655,7 +655,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  placeholder="연락처를 입력하세요 ('-' 제외)"
  className={inputClass('border-2 focus:border-border transition-colors', 'phone', fieldErrors)}
  />
- {hasInteracted && fieldErrors.phone && <p className="mt-1 text-xs text-primary">{fieldErrors.phone}</p>}
+ {hasInteracted && fieldErrors.phone && <p className="mt-1 text-xs text-destructive">{fieldErrors.phone}</p>}
  </div>
  </div>
 
@@ -811,15 +811,15 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  placeholder="입금자명을 입력하세요"
  className={inputClass('border-2 focus:border-border transition-colors', 'depositor', fieldErrors)}
  />
- {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-primary">{fieldErrors.depositor}</p>}
+ {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-destructive">{fieldErrors.depositor}</p>}
  </div>
 
  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
  <div className="flex items-center gap-2 mb-3">
  <Shield className="h-5 w-5 text-primary" />
- <p className="font-semibold text-primary">무통장입금 안내</p>
+ <p className="font-semibold text-foreground">무통장입금 안내</p>
  </div>
- <ul className="space-y-2 text-sm text-primary">
+ <ul className="space-y-2 text-sm text-muted-foreground">
  <li className="flex items-center gap-2">
  <CheckCircle className="h-4 w-4" />
  주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
@@ -965,11 +965,11 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
 
  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
- <div className="flex items-center gap-2 text-primary mb-2">
+ <div className="flex items-center gap-2 text-foreground mb-2">
  <Shield className="h-4 w-4" />
  <span className="font-semibold">패키지 안내</span>
  </div>
- <div className="text-sm text-primary space-y-1">
+ <div className="text-sm text-muted-foreground space-y-1">
  <p>• 입금 확인 후 패키지가 활성화됩니다.</p>
  <p>• 예약은 전화 또는 온라인으로 가능합니다.</p>
  <p>• 유효기간 내에 모든 횟수를 이용해주세요.</p>
@@ -977,7 +977,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  </div>
  </CardContent>
  <div className="flex flex-col gap-4 p-6">
- {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-primary">필수 입력칸을 확인해주세요. (이름/이메일/연락처/입금자명)</p>}
+ {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-destructive">필수 입력칸을 확인해주세요. (이름/이메일/연락처/입금자명)</p>}
  <PackageCheckoutButton
  disabled={!canSubmit}
  packageInfo={selectedPackage}
