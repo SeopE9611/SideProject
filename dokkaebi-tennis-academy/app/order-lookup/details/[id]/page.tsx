@@ -314,9 +314,9 @@ export default function OrderDetailPage() {
                         <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                           <div className="space-y-2">
                             <p className="font-semibold text-foreground">{order.paymentInfo.method}</p>
-                            <p className="font-semibold text-primary">{bankLabelMap[order.paymentInfo.bank].label}</p>
-                            <p className="font-mono text-primary">{bankLabelMap[order.paymentInfo.bank].account}</p>
-                            <p className="text-sm text-primary">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</p>
+                            <p className="font-semibold text-foreground">{bankLabelMap[order.paymentInfo.bank].label}</p>
+                            <p className="font-mono text-foreground">{bankLabelMap[order.paymentInfo.bank].account}</p>
+                            <p className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</p>
                           </div>
                         </div>
                       ) : (
@@ -454,8 +454,8 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-primary">배송 보장</p>
-                          <p className="text-xs text-primary">30,000원 이상 무료배송</p>
+                          <p className="text-sm font-medium text-foreground">배송 보장</p>
+                          <p className="text-xs text-muted-foreground">30,000원 이상 무료배송</p>
                         </div>
                       </div>
                     </div>

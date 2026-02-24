@@ -307,7 +307,7 @@ export default function OrderLookupPage() {
                     </div>
                     <div className="text-sm">
                       <p className="font-medium text-foreground mb-1">조회 가능한 주문</p>
-                      <p className="text-primary">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
+                      <p className="text-muted-foreground">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
                     </div>
                   </div>
                 </div>

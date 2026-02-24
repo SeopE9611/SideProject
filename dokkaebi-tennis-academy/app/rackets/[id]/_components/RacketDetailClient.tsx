@@ -521,8 +521,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                        <Star className="h-6 w-6 text-primary-foreground" />
+                      <div className="w-12 h-12 bg-primary text-primary-foreground rounded-lg flex items-center justify-center">
+                        <Star className="h-6 w-6" />
                       </div>
                       <h3 className="text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
