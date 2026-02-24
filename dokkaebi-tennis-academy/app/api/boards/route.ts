@@ -404,6 +404,17 @@ export async function POST(req: NextRequest) {
   if (body.type === 'free' || body.type === 'market' || body.type === 'gear') {
     const db = await getDb();
     const now = new Date();
+
+    // postNo 생성
+    type CounterDoc = { _id: string; seq: number };
+    const countersCol = db.collection<CounterDoc>('counters');
+
+    // 게시판 종류별로 카운터를 분리해서 연번 유지
+    const counterId = body.type === 'free' ? 'community_free' : body.type === 'market' ? 'community_market' : body.type === 'gear' ? 'community_gear' : 'community_other';
+
+    const counterDoc = await countersCol.findOneAndUpdate({ _id: counterId }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: 'after' });
+
+    const postNo = typeof counterDoc?.seq === 'number' ? counterDoc.seq : 1;
     const safeImages = Array.isArray(body.images) ? body.images.filter((u) => isAllowedHttpUrl(u)) : [];
     const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
 
@@ -415,6 +426,7 @@ export async function POST(req: NextRequest) {
       brand: null,
       images: safeImages,
       attachments: safeAttachments,
+      postNo,
       userId: new ObjectId(String(payload.sub)),
       nickname: payload?.name ?? payload?.nickname ?? payload?.email?.split('@')?.[0] ?? '회원',
       status: 'public',
