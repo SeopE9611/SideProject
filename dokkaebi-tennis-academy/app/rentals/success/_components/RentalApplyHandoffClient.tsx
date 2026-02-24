@@ -55,7 +55,7 @@ export default function RentalApplyHandoffClient({ href, rentalId, seconds = 12,
             <div className="font-mono text-sm font-semibold">{rentalId}</div>
           </div>
 
-          <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-primary dark:bg-primary/20">
+          <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-foreground dark:bg-primary/20">
             <div className="flex items-start gap-2">
               <Clock className="mt-0.5 h-4 w-4" />
               <div className="flex-1">

@@ -482,7 +482,7 @@ export default function PackageOrdersClient() {
                     <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
                     <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
                   </div>
-                  <div className="bg-primary/10 rounded-xl p-3 text-primary">
+                  <div className="bg-primary/10 rounded-xl p-3 text-foreground">
                     <Package className="h-6 w-6" />
                   </div>
                 </div>

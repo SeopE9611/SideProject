@@ -226,7 +226,7 @@ export default function StringingSettingsPage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-3">
-              <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-lg">
+              <div className="rounded-2xl bg-primary/10 p-3 text-foreground shadow-lg">
                 <Settings2 className="h-7 w-7 text-primary-foreground" />
               </div>
               <div>

@@ -592,8 +592,11 @@ for (const file of files) {
 
     const hasSolidPrimary = /\bbg-primary(?!\/)\b/.test(block);
     const hasPrimaryForeground = /\btext-primary-foreground\b/.test(block);
-    const isDotIndicator = /(?:^|\s)(?:w-1|h-1)(?:\s|$)/.test(block);
-    if (hasSolidPrimary && !hasPrimaryForeground && !isDotIndicator) {
+    const isDotIndicator = /(?:^|\s)(?:w-(?:1|1\.5)|h-(?:1|1\.5))(?:\s|$)/.test(block);
+    const isSliderRange = sliderRangeRegex.test(block) || /\bdata-slider-range\b/.test(block);
+    const isProgressBarFill = /\b(?:progress|aria-\[value\])\b/.test(block) || (/\bh-(?:1|1\.5|2|2\.5)\b/.test(block) && /\brounded(?:-full)?\b/.test(block) && !/\btext-/.test(block));
+    const isDecorativePrimaryOnly = isDotIndicator || isSliderRange || isProgressBarFill;
+    if (hasSolidPrimary && !hasPrimaryForeground && !isDecorativePrimaryOnly) {
       warnings.push({
         file,
         type: 'solid-bg-primary-without-foreground',

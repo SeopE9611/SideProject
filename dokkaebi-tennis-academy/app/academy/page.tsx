@@ -196,14 +196,14 @@ export default function AcademyPage() {
           </div>
 
           {/* 장식 요소 */}
-          <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-20 left-10 w-32 h-32 bg-muted/60 rounded-full blur-xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg"></div>
           <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-muted/60 dark:bg-card/60 rounded-full blur-md animate-pulse delay-1000"></div>
 
           <div className="container relative z-10 text-center text-foreground">
             <div className="max-w-4xl mx-auto">
-              <Badge className="mb-6 bg-primary/10 text-primary dark:bg-primary/20 border-border backdrop-blur-sm">
-                <Award className="w-4 h-4 mr-2" />
+              <Badge className="mb-6 bg-primary/10 text-foreground dark:bg-primary/20 border-border backdrop-blur-sm">
+                <Award className="w-4 h-4 mr-2 text-primary" />
                 테니스 교육 전문 기관
               </Badge>
 
@@ -264,8 +264,8 @@ export default function AcademyPage() {
         <section className="py-20 bg-background" id="programs">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
-                <Trophy className="w-4 h-4 mr-2" />
+              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20">
+                <Trophy className="w-4 h-4 mr-2 text-primary" />
                 맞춤형 교육 프로그램
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">프로그램 소개</h2>
@@ -283,8 +283,8 @@ export default function AcademyPage() {
                   className={`group relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card border border-border ${ program.isPopular ? 'ring-2 ring-primary scale-105' : '' }`}
                 >
                   {program.isPopular && (
-                    <div className="absolute top-0 right-0 bg-primary/10 text-primary dark:bg-primary/20 px-4 py-2 text-sm font-bold rounded-bl-xl">
-                      <Star className="w-4 h-4 inline mr-1" />
+                    <div className="absolute top-0 right-0 bg-primary/10 text-foreground dark:bg-primary/20 px-4 py-2 text-sm font-bold rounded-bl-xl">
+                      <Star className="w-4 h-4 inline mr-1 text-primary" />
                       인기 프로그램
                     </div>
                   )}
@@ -360,8 +360,8 @@ export default function AcademyPage() {
 
           <div className="container relative z-10">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20 border-border">
-                <Users className="w-4 h-4 mr-2" />
+              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20 border-border">
+                <Users className="w-4 h-4 mr-2 text-primary" />
                 전문 코칭진
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">강사 소개</h2>
@@ -435,8 +435,8 @@ export default function AcademyPage() {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
-                <Award className="w-4 h-4 mr-2" />
+              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20">
+                <Award className="w-4 h-4 mr-2 text-primary" />
                 최신 시설 완비
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">아카데미 시설</h2>
@@ -478,8 +478,8 @@ export default function AcademyPage() {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
-                <Star className="w-4 h-4 mr-2" />
+              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20">
+                <Star className="w-4 h-4 mr-2 text-primary" />
                 수강생 만족도 96%
               </Badge>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
@@ -529,7 +529,7 @@ export default function AcademyPage() {
         {/* 수강 신청 안내 섹션 */}
         <section className="py-20 bg-background relative overflow-hidden" id="apply">
           {/* 배경 장식 */}
-          <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-muted/60 rounded-full blur-xl animate-pulse"></div>
           <div className="absolute bottom-10 right-10 w-24 h-24 bg-primary/30 rounded-full blur-lg"></div>
 
           <div className="container relative z-10">

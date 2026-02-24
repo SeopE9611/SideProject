@@ -233,7 +233,7 @@ export default function PackageSettingsClient() {
                     <h2 className="text-2xl font-bold text-foreground">패키지 상품 관리</h2>
                     <p className="text-muted-foreground">패키지별 가격, 혜택, 유효기간을 설정할 수 있습니다.</p>
                   </div>
-                  <Button onClick={addNewPackage} className="bg-primary hover:bg-primary/90">
+                  <Button onClick={addNewPackage} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Plus className="mr-2 h-4 w-4" />새 패키지 추가
                   </Button>
                 </div>
@@ -379,7 +379,7 @@ export default function PackageSettingsClient() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button onClick={handleSavePackages} disabled={isSaving} className="bg-primary hover:bg-primary/90">
+                  <Button onClick={handleSavePackages} disabled={isSaving} className="bg-primary text-primary-foreground hover:bg-primary/90">
                     <Save className="mr-2 h-4 w-4" />
                     {isSaving ? '저장 중...' : '패키지 설정 저장'}
                   </Button>
