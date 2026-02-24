@@ -411,11 +411,11 @@ export default function AdminDashboardClient() {
             <StackedBarChart data={last14RevenueBySource} />
             <div className="mt-6 flex flex-wrap items-center gap-6 rounded-lg bg-muted/30 px-4 py-3">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-sm bg-primary" />
+                <div className="h-2 w-2 rounded-full bg-primary" />
                 <span className="text-xs font-medium text-primary">주문</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-sm bg-warning" />
+                <div className="h-2 w-2 rounded-full bg-warning" />
                 <span className="text-xs font-medium text-warning">교체 서비스</span>
               </div>
               <div className="flex items-center gap-2">

@@ -247,7 +247,7 @@ export default function ReviewsClient() {
 
       <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
         <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <p className="text-primary-foreground text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (리뷰 관리)</p>
+          <p className="text-foreground text-2xl md:text-4xl font-semibold">이 기능은 개발 중 입니다. (리뷰 관리)</p>
           <p className="text-lg text-muted-foreground">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
         </div>
         <CardHeader className="pb-4">

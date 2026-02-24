@@ -43,7 +43,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                 {s.caption && (
                   <div className="absolute bottom-4 left-4 bp-sm:bottom-6 bp-sm:left-6 bp-md:bottom-8 bp-md:left-10">
                     <span
-                      className="inline-block rounded-full bg-overlay/50 text-primary-foreground text-xs bp-md:text-sm px-3 py-1 backdrop-blur"
+                      className="inline-block rounded-full bg-background/80 text-foreground border border-border text-xs bp-md:text-sm px-3 py-1 shadow-sm backdrop-blur dark:bg-background/30 dark:hover:bg-background/40"
                     >
                       {s.caption}
                     </span>

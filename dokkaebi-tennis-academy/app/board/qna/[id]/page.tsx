@@ -299,7 +299,7 @@ export default function QnaDetailPage() {
                                 >
                                   <img src={url || '/placeholder.svg'} alt={name} className="w-full h-32 object-cover" />
                                   <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
-                                    <ExternalLink className="h-5 w-5 text-primary-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <ExternalLink className="h-5 w-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                   </div>
                                 </button>
                               </div>
@@ -326,7 +326,7 @@ export default function QnaDetailPage() {
                   <img src={lightbox.src || '/placeholder.svg'} alt={lightbox.alt} className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl" />
                   <button
                     onClick={() => setLightbox({ open: false, src: '', alt: '' })}
-                    className="absolute top-4 right-4 w-10 h-10 bg-overlay/50 hover:bg-overlay/70 text-primary-foreground rounded-full flex items-center justify-center transition-colors duration-200"
+                    className="absolute top-4 right-4 w-10 h-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40 rounded-full flex items-center justify-center transition-colors duration-200"
                     aria-label="닫기"
                   >
                     ×

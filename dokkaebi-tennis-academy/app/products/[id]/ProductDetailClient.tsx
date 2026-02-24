@@ -638,10 +638,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <Image src={images[selectedImageIndex] || '/placeholder.svg'} alt={product.name} fill className="object-cover transition-transform duration-300 hover:scale-105" />
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-foreground/50 text-primary-foreground hover:bg-foreground/70" onClick={prevImage}>
+                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={prevImage}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-foreground/50 text-primary-foreground hover:bg-foreground/70" onClick={nextImage}>
+                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 sm:h-10 sm:w-10 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={nextImage}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </>
@@ -929,8 +929,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="description" className="p-4 sm:p-8">
                 <div className="prose max-w-none">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
-                      <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                      <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
@@ -945,8 +945,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="specifications" className="p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
-                      <Settings className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                      <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상세 스펙</h3>
                   </div>
@@ -969,8 +969,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         {/* 상세 스펙 그리드(파란 그라데이션 카드)와 톤 통일 */}
                         <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
                           <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="w-9 sm:w-10 h-9 sm:h-10 bg-muted/30 rounded-lg flex items-center justify-center">
-                              <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+                            <div className="w-9 sm:w-10 h-9 sm:h-10 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
                             <h4 className="text-lg sm:text-xl font-bold text-foreground">하이브리드 구성</h4>
                           </div>
@@ -1207,7 +1207,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                                         >
                                           <Image src={src || '/placeholder.svg'} alt={`리뷰 사진 ${i + 1}`} fill className="object-cover" />
-                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-foreground/60 text-primary-foreground text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>}
+                                          {i === 3 && review.photos.length > 4 && <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">+{review.photos.length - 3}</div>}
                                         </button>
                                       ))}
                                     </div>
@@ -1238,8 +1238,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="qna" className="p-4 sm:p-8">
                 <div className="flex items-center justify-between mb-5 sm:mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 문의</h3>
                   </div>
@@ -1310,7 +1310,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
         {/* 리뷰 사진 확대 보기 */}
         <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
-          <DialogContent className="sm:max-w-4xl p-0 bg-foreground/90 text-primary-foreground border-0">
+          <DialogContent className="sm:max-w-4xl p-0 bg-background/90 text-foreground border border-border">
             {/* 접근성용 제목(시각적으로 숨김) */}
             <DialogHeader className="sr-only">
               <DialogTitle>리뷰 사진 확대 보기</DialogTitle>

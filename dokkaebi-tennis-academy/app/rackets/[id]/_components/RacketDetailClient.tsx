@@ -147,7 +147,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               {racketBrandLabel(racket.brand)} {racket.model}
             </span>
           </div>
-          <Button variant="ghost" className="text-primary-foreground hover:bg-primary/80 mb-4 p-0" onClick={() => router.back()}>
+          <Button variant="ghost" className="mb-4 p-0 text-primary hover:bg-primary/10 dark:hover:bg-primary/20" onClick={() => router.back()}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             이전 페이지로
           </Button>
@@ -167,10 +167,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 )}
                 {images.length > 1 && (
                   <>
-                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 bg-overlay/50 text-primary-foreground hover:bg-overlay/70" onClick={prevImage}>
+                    <Button variant="ghost" size="icon" className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={prevImage}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 bg-overlay/50 text-primary-foreground hover:bg-overlay/70" onClick={nextImage}>
+                    <Button variant="ghost" size="icon" className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40" onClick={nextImage}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </>
@@ -457,7 +457,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                 disabled={!canBuy}
                 title={!canBuy ? (racketId === '' ? '상품 ID가 없어 구매 경로를 만들 수 없습니다.' : isAllRented ? '현재 전량 대여중입니다.' : '판매가 종료된 상품입니다.') : undefined}
-                className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${ canBuy ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed' }`}
+                className={`flex-1 h-12 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 ${canBuy ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
               >
                 <ShoppingCart className="h-4 w-4" />
                 {soldOut ? '품절(구매 불가)' : '구매하기'}

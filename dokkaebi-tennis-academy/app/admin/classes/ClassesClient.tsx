@@ -180,7 +180,7 @@ export default function ClassesPage() {
           </div>
         </CardHeader>
         <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
-          <p className="text-primary-foreground text-2xl md:text-4xl font-semibold">이 기능은 사용하지 않습니다. (아카데미 클래스 관리)</p>
+          <p className="text-foreground text-2xl md:text-4xl font-semibold">이 기능은 사용하지 않습니다. (아카데미 클래스 관리)</p>
           <p className="text-lg text-muted-foreground">다시 활성화되기 전까지 이 기능은 사용할 수 없습니다.</p>
         </div>
         <CardContent>
