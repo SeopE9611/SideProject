@@ -55,6 +55,7 @@ const accentTintSurfaceRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent\/(?:10|15)(?:\s|$)
 const textAccentUsageRegex = /(?:^|\s)(?:[\w-]+:)*(?:text-accent|dark:text-accent)(?:\s|$)/;
 const buttonLikeRegex = /(?:^|\s)(?:[\w-]+:)*(?:btn|button|variant="(?:destructive|default|secondary|outline|ghost|link)"|size="(?:sm|lg|icon)"|inline-flex)(?:\s|$)/i;
 const sliderRangeRegex = /(?:^|\s)(?:[\w-]+:)*slider-range(?:\s|$)/;
+const checkedStatePrimaryRegex = /(?:^|\s)(?:[\w-]+:)*data-\[state=checked\]:bg-primary(?:\s|$)/;
 
 const brokenSplitBgTokenRegex = /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
 const brokenSplitGradientTokenRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:primary|accent|background|card|muted)\s+\d(?:\b|\/\d+)?/g;
@@ -565,7 +566,7 @@ for (const file of files) {
       });
     }
 
-    if (/\bbg-primary(?!\/)\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block) && !sliderRangeRegex.test(block)) {
+    if (/\bbg-primary(?!\/)\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block) && !sliderRangeRegex.test(block) && !checkedStatePrimaryRegex.test(block)) {
       warnings.push({
         file,
         type: 'large-surface-solid-bg-primary',
@@ -574,7 +575,7 @@ for (const file of files) {
       });
     }
 
-    if (/\bbg-primary(?!\/)\b/.test(block) && /\btext-primary-foreground\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block) && !sliderRangeRegex.test(block)) {
+    if (/\bbg-primary(?!\/)\b/.test(block) && /\btext-primary-foreground\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block) && !sliderRangeRegex.test(block) && !checkedStatePrimaryRegex.test(block)) {
       warnings.push({
         file,
         type: 'large-surface-solid-bg-primary-with-primary-foreground',
@@ -620,10 +621,13 @@ for (const file of files) {
 
     const hasSolidPrimary = /\bbg-primary(?!\/)\b/.test(block);
     const hasPrimaryForeground = /\btext-primary-foreground\b/.test(block);
-    const isDotIndicator = /(?:^|\s)(?:w-(?:1|1\.5)|h-(?:1|1\.5))(?:\s|$)/.test(block);
-    const isSliderRange = sliderRangeRegex.test(block) || /\bdata-slider-range\b/.test(block);
-    const isProgressBarFill = /\b(?:progress|aria-\[value\])\b/.test(block) || (/\bh-(?:1|1\.5|2|2\.5)\b/.test(block) && /\brounded(?:-full)?\b/.test(block) && !/\btext-/.test(block));
-    const isDecorativePrimaryOnly = isDotIndicator || isSliderRange || isProgressBarFill;
+    const tinyDotSizeTokens = block.match(/\b(?:w-(?:1|2|3)|h-(?:1|2|3))\b/g) ?? [];
+    const hasRoundedToken = /\brounded(?:-full|-sm|-md|-lg|-xl|-[0-9]+)?\b/.test(block);
+    const isTinyDot = tinyDotSizeTokens.length >= 2 && hasRoundedToken;
+    const isSliderRange = sliderRangeRegex.test(block) || /\bdata-slider-range\b/.test(block) || /(?:^|\s)(?:absolute\s+)?h-full\s+bg-primary(?:\s|$)/.test(block);
+    const isProgressBarFill = /\b(?:progress|aria-\[value\]|progress-fill)\b/.test(block) || (/\bh-(?:1|1\.5|2|2\.5|full)\b/.test(block) && /\brounded(?:-full)?\b/.test(block) && !/\btext-/.test(block));
+    const isCheckedStatePrimary = checkedStatePrimaryRegex.test(block);
+    const isDecorativePrimaryOnly = isTinyDot || isSliderRange || isProgressBarFill || isCheckedStatePrimary;
     if (hasSolidPrimary && !hasPrimaryForeground && !isDecorativePrimaryOnly) {
       warnings.push({
         file,

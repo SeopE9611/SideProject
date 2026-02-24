@@ -149,8 +149,8 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
             </Button>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
-                <Bell className="h-6 w-6 sm:h-7 sm:w-7 text-primary-foreground" />
+              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+                <Bell className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
