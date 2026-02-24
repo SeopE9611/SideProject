@@ -3,10 +3,11 @@ import { cookies } from 'next/headers';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { racketBrandLabel } from '@/lib/constants';
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const orderId = id; 
+  const orderId = id;
 
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
@@ -91,6 +92,36 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       metaFromOrder.set(pid, {
         name: prev.name ?? p.name ?? p.title,
         image: prev.image ?? p.thumbnail ?? (Array.isArray(p.images) && p.images[0]) ?? undefined,
+      });
+    }
+  }
+
+  // products에서 못 찾았거나(=제품이 아니라 라켓) 아직 name/image가 부족한 항목은 used_rackets에서도 백필
+  const stillMissingIds = Array.from(missingMetaIds).filter((pid) => {
+    const m = metaFromOrder.get(pid) || {};
+    return !m.name || !m.image;
+  });
+
+  if (stillMissingIds.length) {
+    const rackets = await db
+      .collection('used_rackets')
+      .find({ _id: { $in: stillMissingIds.map((rid) => new ObjectId(rid)) } })
+      .project({ brand: 1, model: 1, images: 1 })
+      .toArray();
+
+    for (const r of rackets) {
+      const pid = String(r._id);
+      const prev = metaFromOrder.get(pid) || {};
+
+      const brand = typeof (r as any).brand === 'string' ? (r as any).brand : '';
+      const model = typeof (r as any).model === 'string' ? (r as any).model : '';
+      const computedName = `${racketBrandLabel(brand)} ${model}`.trim() || '라켓';
+      const computedImage =
+        Array.isArray((r as any).images) && (r as any).images.length ? (r as any).images[0] : undefined;
+
+      metaFromOrder.set(pid, {
+        name: prev.name ?? computedName,
+        image: prev.image ?? computedImage,
       });
     }
   }
