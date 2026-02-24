@@ -374,7 +374,7 @@ export default function ReviewWritePage() {
       if (aborted) return;
 
       // 라벨/요약을 가진 AppLite로 포맷
-      const formatted: AppLite[] = (list || []).map((a) => ({
+      const formattedAll: AppLite[] = (list || []).map((a) => ({
         _id: String(a._id),
         label: buildAppLabel(a),
         status: a.status,
@@ -390,12 +390,41 @@ export default function ReviewWritePage() {
         requirements: a?.stringDetails?.requirements ?? null,
       }));
 
-      setApps(formatted);
+      // UX 정책: 드롭다운에는 “작성 가능한 신청서”만 노출
+      // - 서버 eligibility 로직 기준과 동일하게:
+      //   1) status === '교체완료'
+      //   2) 아직 서비스 리뷰를 작성하지 않은 신청서
+      let eligibleApps = formattedAll.filter((x) => x.status === '교체완료');
 
-      // URL로 applicationId가 넘어오면 그걸 최우선으로 선택
-      const urlPreferred = applicationIdParam && formatted.some((x) => x._id === applicationIdParam) ? applicationIdParam : null;
+      // 이미 작성한 서비스 리뷰(serviceApplicationId) 제외
+      // - /api/reviews/mine 은 최대 50개까지 조회 가능
+      // - 서비스 리뷰 수가 매우 많아지면(>50) 추가 페이지네이션이 필요하지만,
+      //   일반적으로 서비스 리뷰가 50개를 넘기는 케이스는 드뭅니다.
+      try {
+        const mine = await fetch('/api/reviews/mine?limit=50', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (mine.ok) {
+          const mineJson = (await mine.json()) as any;
+          const reviewedIds = new Set(
+            (mineJson?.items ?? [])
+              .map((it: any) => it?.serviceApplicationId)
+              .filter(Boolean)
+              .map((v: any) => String(v)),
+          );
+          eligibleApps = eligibleApps.filter((x) => !reviewedIds.has(String(x._id)));
+        }
+      } catch {
+        // 네트워크/권한 이슈가 있어도 최소한 status 필터는 유지
+      }
 
-      // 기본 선택: urlPreferred -> suggested -> 최근 '교체완료' -> 첫 항목
+      setApps(eligibleApps);
+
+      // URL로 applicationId가 넘어오면 그걸 최우선으로 선택(단, eligibleApps 안에 있어야 함)
+      const urlPreferred = applicationIdParam && eligibleApps.some((x) => x._id === applicationIdParam) ? applicationIdParam : null;
+
+      // 기본 선택: urlPreferred -> suggested(서버 추천) -> 첫 항목
       let nextId: string | null = null;
 
       try {
@@ -404,9 +433,12 @@ export default function ReviewWritePage() {
           cache: 'no-store',
         }).then((x) => x.json());
 
-        nextId = urlPreferred ?? elig?.suggestedApplicationId ?? formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
+        const suggested = elig?.suggestedApplicationId ? String(elig.suggestedApplicationId) : null;
+        const suggestedOk = suggested && eligibleApps.some((x) => x._id === suggested) ? suggested : null;
+
+        nextId = urlPreferred ?? suggestedOk ?? eligibleApps[0]?._id ?? null;
       } catch {
-        nextId = urlPreferred ?? formatted.find((x) => x.status === '교체완료')?._id ?? formatted[0]?._id ?? null;
+        nextId = urlPreferred ?? eligibleApps[0]?._id ?? null;
       }
 
       if (!aborted) setSelectedAppId(nextId);
@@ -801,7 +833,7 @@ export default function ReviewWritePage() {
                         }}
                         disabled={!apps.length}
                       >
-                        {apps.length === 0 && <option value="">내 신청서가 없습니다</option>}
+                        {apps.length === 0 && <option value="">작성 가능한 신청서가 없습니다</option>}
                         {apps.map((a) => (
                           <option key={a._id} value={a._id}>
                             {a.label}
