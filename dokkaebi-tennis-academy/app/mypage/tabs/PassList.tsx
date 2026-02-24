@@ -92,7 +92,7 @@ export default function PassList() {
               {/* Progress */}
               <div className="mt-4">
                 <div className="h-2 w-full rounded-full bg-muted/80 dark:bg-muted overflow-hidden">
-                  <div className="h-2 bg-primary" style={{ width: `${remainPct}%` }} />
+                  <div className="h-full bg-primary transition-all" style={{ width: `${remainPct}%` }} />
                 </div>
                 <div className="mt-2 text-sm text-muted-foreground">
                   사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}

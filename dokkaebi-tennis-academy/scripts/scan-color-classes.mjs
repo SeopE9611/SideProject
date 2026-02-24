@@ -132,6 +132,10 @@ function getStaticTextTokens(block, prefix) {
     .filter((token) => !token.includes(':'));
 }
 
+function hasConditionalClassExpression(block) {
+  return block.includes('${') && /\?[^}]*:/.test(block);
+}
+
 function getExceptionType(file) {
   if (BRAND_EXCEPTION_WHITELIST.has(file)) return 'brand-whitelist';
   if (NON_WEB_UI_EXCEPTION_WHITELIST.has(file)) return 'non-web-ui';
@@ -454,7 +458,9 @@ for (const file of files) {
       });
     }
 
-    if (/\bbg-muted\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
+    const hasConditionalExpression = hasConditionalClassExpression(block);
+
+    if (!hasConditionalExpression && /\bbg-muted\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
       warnings.push({
         file,
         type: 'semantic-inversion-bg-muted-dark-bg-primary',
@@ -463,7 +469,7 @@ for (const file of files) {
       });
     }
 
-    if (/\bbg-card\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
+    if (!hasConditionalExpression && /\bbg-card\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
       warnings.push({
         file,
         type: 'semantic-inversion-bg-card-dark-bg-primary',
@@ -548,15 +554,6 @@ for (const file of files) {
       });
     }
 
-    if (/\bbg-destructive(?!\/)\b/.test(block) && !/\btext-destructive-foreground\b/.test(block)) {
-      warnings.push({
-        file,
-        type: 'solid-bg-destructive-without-foreground',
-        token: block,
-        line: getLine(text, match.index ?? 0),
-      });
-    }
-
     if (/\bbg-destructive(?!\/)\b/.test(block) && largePaddingRegex.test(block) && !buttonLikeRegex.test(block)) {
       warnings.push({
         file,
@@ -621,13 +618,17 @@ for (const file of files) {
 
     const hasSolidPrimary = /\bbg-primary(?!\/)\b/.test(block);
     const hasPrimaryForeground = /\btext-primary-foreground\b/.test(block);
-    const tinyDotSizeTokens = block.match(/\b(?:w-(?:1|2|3)|h-(?:1|2|3))\b/g) ?? [];
-    const hasRoundedToken = /\brounded(?:-full|-sm|-md|-lg|-xl|-[0-9]+)?\b/.test(block);
-    const isTinyDot = tinyDotSizeTokens.length >= 2 && hasRoundedToken;
+    const hasSolidDestructive = /\bbg-destructive(?!\/)\b/.test(block);
+    const hasSolidWarning = /\bbg-warning(?!\/)\b/.test(block);
+    const hasSolidSuccess = /\bbg-success(?!\/)\b/.test(block);
+    const isTinyDot = /\bw-(?:1|2)\b/.test(block) && /\bh-(?:1|2)\b/.test(block) && /\brounded-full\b/.test(block);
     const isSliderRange = sliderRangeRegex.test(block) || /\bdata-slider-range\b/.test(block) || /(?:^|\s)(?:absolute\s+)?h-full\s+bg-primary(?:\s|$)/.test(block);
+    const isThinProgressBar = (/\bh-(?:1|1\.5|2)\b/.test(block) && /\bw-full\b/.test(block)) || (/\bh-full\b/.test(block) && /\btransition-all\b/.test(block));
     const isProgressBarFill = /\b(?:progress|aria-\[value\]|progress-fill)\b/.test(block) || (/\bh-(?:1|1\.5|2|2\.5|full)\b/.test(block) && /\brounded(?:-full)?\b/.test(block) && !/\btext-/.test(block));
     const isCheckedStatePrimary = checkedStatePrimaryRegex.test(block);
-    const isDecorativePrimaryOnly = isTinyDot || isSliderRange || isProgressBarFill || isCheckedStatePrimary;
+    const isDecorativePrimaryOnly = isTinyDot || isSliderRange || isProgressBarFill || isCheckedStatePrimary || isThinProgressBar;
+    const isDecorativeSolid = isTinyDot || isThinProgressBar;
+
     if (hasSolidPrimary && !hasPrimaryForeground && !isDecorativePrimaryOnly) {
       warnings.push({
         file,
@@ -635,6 +636,34 @@ for (const file of files) {
         token: block,
         line: getLine(text, match.index ?? 0),
       });
+    }
+
+    if (hasSolidDestructive && !/\btext-destructive-foreground\b/.test(block) && !isDecorativeSolid) {
+      warnings.push({
+        file,
+        type: 'solid-bg-destructive-without-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if ((hasSolidWarning || hasSolidSuccess) && isDecorativeSolid) {
+      // tiny-dot/progress 패턴은 WARN 예외 처리
+    }
+
+    if (file !== 'components/ui/button.tsx') {
+      const semanticForegroundTokens = ['primary', 'success', 'warning', 'destructive'];
+      for (const semantic of semanticForegroundTokens) {
+        const foregroundRegex = new RegExp(`(?:^|\\s)(?:[\\w-]+:)*text-${semantic}-foreground(?:\\s|$)`);
+        const solidBgRegex = new RegExp(`\\bbg-${semantic}(?!\\/)\\b`);
+        if (foregroundRegex.test(block) && !solidBgRegex.test(block)) {
+          found.push({
+            type: `text-${semantic}-foreground-without-solid-bg-${semantic}`,
+            token: block,
+            line: getLine(text, match.index ?? 0),
+          });
+        }
+      }
     }
   }
 

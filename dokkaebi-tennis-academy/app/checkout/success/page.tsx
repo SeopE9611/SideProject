@@ -157,20 +157,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
               <p className="mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
 
-              {/* <div className="flex flex-wrap justify-center gap-6 text-sm">
- <div className="flex items-center gap-2">
- <Shield className="h-4 w-4 text-primary-foreground/80" />
- <span>안전한 결제 완료</span>
- </div>
- <div className="flex items-center gap-2">
- <Clock className="h-4 w-4 text-primary" />
- <span>빠른 처리</span>
- </div>
- <div className="flex items-center gap-2">
- <Star className="h-4 w-4 text-primary" />
- <span>프리미엄 서비스</span>
- </div>
- </div> */}
+
             </div>
 
             {/* 서비스 ON이면 항상 노출 */}

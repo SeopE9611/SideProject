@@ -36,7 +36,7 @@ export default function BrandBoardPage() {
           <CardHeader className="flex flex-row items-center justify-between gap-3 border-b bg-muted/30">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted shadow-lg">
-                <Grid2X2 className="h-5 w-5 text-primary-foreground" />
+                <Grid2X2 className="h-5 w-5 text-primary" />
               </div>
               <CardTitle className="text-lg md:text-xl">브랜드별 게시판 기능을 준비 중입니다</CardTitle>
             </div>

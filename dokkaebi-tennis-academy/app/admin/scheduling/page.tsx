@@ -226,8 +226,8 @@ export default function StringingSettingsPage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-3">
-              <div className="rounded-2xl bg-primary/10 p-3 text-foreground shadow-lg">
-                <Settings2 className="h-7 w-7 text-primary-foreground" />
+              <div className="rounded-2xl bg-primary/10 p-3 text-primary shadow-lg dark:bg-primary/20">
+                <Settings2 className="h-7 w-7" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">{/* was: text-foreground */}교체 서비스 예약 · 영업일 설정</h1>
