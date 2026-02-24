@@ -1072,14 +1072,14 @@ const res = await communityFetch(`/api/community/comments/${targetComment.id}/re
  <div className="mb-1 text-sm text-muted-foreground">
  <span className="font-medium text-success">게시판</span>
  <span className="mx-1">›</span>
- <Link href="${config.routePrefix}" className="text-muted-foreground underline-offset-2 hover:underline">
- 중고 거래 게시판
- </Link>
+  <Link href={config.routePrefix} className="text-muted-foreground underline-offset-2 hover:underline">
+   {config.boardTitle}
+  </Link>
  <span className="mx-1">›</span>
  <span>글 상세</span>
  </div>
- <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">중고 거래 게시판 글 상세</h1>
- <p className="mt-1 text-sm text-muted-foreground md:text-base">중고 거래 게시판에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
+ <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">{config.boardTitle} 글 상세</h1>
+ <p className="mt-1 text-sm text-muted-foreground md:text-base">{config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
  </div>
 
  <div className="flex gap-2">
