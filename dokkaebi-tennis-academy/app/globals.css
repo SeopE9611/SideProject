@@ -49,11 +49,11 @@ html body[data-scroll-locked] {
   /* Secondary emphasis */
   --accent: 135 59% 41%;
   --accent-foreground: 120 4% 11%;
-  --accent-hover: 130 57% 29%;
-  --accent-active: 130 57% 25%;
+  --accent-hover: 135 59% 37%;
+  --accent-active: 135 59% 33%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 145 63% 42%;
+  --success: 135 59% 41%;
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
@@ -62,11 +62,11 @@ html body[data-scroll-locked] {
 
   --muted: 120 10% 95%;
   --muted-foreground: 120 6% 31%;
-  --brand-text: 130 57% 33%;
+  --brand-text: 129 57% 33%;
 
   --border: 120 18% 87%;
   --input: 120 8% 86%;
-  --ring: 129 57% 33%;
+  --ring: 145 64% 46%;
   --overlay: 120 8% 8%;
 
   --destructive: 0 72% 51%;
@@ -111,8 +111,8 @@ html body[data-scroll-locked] {
   /* Secondary emphasis */
   --accent: 135 59% 41%;
   --accent-foreground: 120 4% 11%;
-  --accent-hover: 130 57% 40%;
-  --accent-active: 130 57% 45%;
+  --accent-hover: 135 59% 46%;
+  --accent-active: 135 59% 50%;
 
   /* System feedback (toast/badge/banner) */
   --success: 145 64% 46%;
@@ -124,11 +124,11 @@ html body[data-scroll-locked] {
 
   --muted: 120 3% 18%;
   --muted-foreground: 120 8% 75%;
-  --brand-text: 130 45% 68%;
+  --brand-text: 129 45% 68%;
 
   --border: 120 7% 25%;
   --input: 120 3% 24%;
-  --ring: 129 57% 33%;
+  --ring: 145 64% 46%;
   --overlay: 120 10% 4%;
 
   --destructive: 0 72% 51%;
