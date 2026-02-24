@@ -125,7 +125,7 @@ function StackedBarChart({ data, height = 180 }: { data: Array<{ date: string; o
         return (
           <g key={d.date}>
             <rect x={x + 1} y={yOrders} width={Math.max(1, barW - 2)} height={hOrders} rx="3" className="fill-primary/70" />
-            <rect x={x + 1} y={yApps} width={Math.max(1, barW - 2)} height={hApps} rx="3" className="fill-accent/70" />
+            <rect x={x + 1} y={yApps} width={Math.max(1, barW - 2)} height={hApps} rx="3" className="fill-warning/70" />
             <rect x={x + 1} y={yPackages} width={Math.max(1, barW - 2)} height={hPackages} rx="3" className="fill-muted-foreground/50" />
           </g>
         );
@@ -415,8 +415,8 @@ export default function AdminDashboardClient() {
                 <span className="text-xs font-medium text-primary">주문</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-sm bg-accent" />
-                <span className="text-xs font-medium text-primary">교체 서비스</span>
+                <div className="h-3 w-3 rounded-sm bg-warning" />
+                <span className="text-xs font-medium text-warning">교체 서비스</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-sm bg-muted-foreground/60" />

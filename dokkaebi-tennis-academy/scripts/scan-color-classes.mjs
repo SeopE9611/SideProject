@@ -42,6 +42,8 @@ const warningTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-warning\/(?:10|15
 const destructiveTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-destructive\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive-foreground(?:\s|$)/;
 const successTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-success\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-success-foreground(?:\s|$)/;
 const lowContrastMutedCardBackgroundForegroundRegex = /\bbg-(?:muted|card|background)\/\d{1,3}\b(?:\s+[A-Za-z0-9_:[\]/.-]+){0,8}\s+text-primary-foreground\b/;
+const lowContrastForegroundTintWithPrimaryForegroundRegex = /\bbg-foreground\/(?:5|10|15|20)\b(?:\s+[A-Za-z0-9_:[\]/.-]+){0,8}\s+text-primary-foreground\b/;
+const groupHoverSolidPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*group-hover:bg-primary(?!\/)(?:\s|$)/;
 const solidHoverDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\/)(?:\s|$)/;
 const hoverTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
 const solidHoverPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
@@ -409,6 +411,23 @@ for (const file of files) {
       });
     }
 
+    if (lowContrastForegroundTintWithPrimaryForegroundRegex.test(block)) {
+      found.push({
+        type: 'low-contrast-foreground-tint-with-primary-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (groupHoverSolidPrimaryRegex.test(block)) {
+      warnings.push({
+        file,
+        type: 'group-hover-solid-bg-primary',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
     if (/\bbg-muted\b/.test(block) && /\bdark:bg-primary\b/.test(block)) {
       warnings.push({
         file,
@@ -540,6 +559,14 @@ for (const file of files) {
       warnings.push({
         file,
         type: 'large-surface-accent-tint',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if ((file.startsWith('app/') || file.startsWith('components/')) && file !== 'components/ui/button.tsx' && /\bbg-accent(?:\/\d{1,3})?\b/.test(block)) {
+      found.push({
+        type: 'bg-accent-usage-outside-button-allowlist',
         token: block,
         line: getLine(text, match.index ?? 0),
       });

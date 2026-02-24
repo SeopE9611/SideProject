@@ -765,8 +765,7 @@ const Header = () => {
                           )}
                           {hasNaver && (
                             <Badge
-                              variant="neutral"
-                              className="border-0 text-[10px] h-5 px-2"
+                              className="border border-success/20 bg-success/10 text-success dark:bg-success/15 text-[10px] h-5 px-2"
                             >
                               네이버
                             </Badge>
