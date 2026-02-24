@@ -114,7 +114,7 @@ export default function TensionGuidePage() {
       cons: ['설정이 복잡', '일관성 떨어질 수 있음'],
       adjustment: '메인을 크로스보다 2kg 높게 설정하세요',
       bestFor: '자신만의 세팅을 원하는 분, 다양한 실험을 좋아하는 분',
-      color: 'bg-destructive/20',
+      color: 'bg-warning/20 dark:bg-warning/25',
     },
     {
       id: 'natural',
@@ -210,7 +210,7 @@ export default function TensionGuidePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-muted/50 dark:bg-background/50">
+      <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 border-b border-border">
         <div className="relative mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 pt-8 bp-sm:pt-10 bp-md:pt-12 pb-10 bp-md:pb-16">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
@@ -432,8 +432,8 @@ export default function TensionGuidePage() {
                     <CardHeader className="pb-3 bp-md:pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3 bp-sm:gap-4">
-                          <div className={`w-10 h-10 bp-sm:w-12 bp-sm:h-12 bp-md:w-14 bp-md:h-14 bg-background ${player.color} rounded-xl bp-md:rounded-2xl flex items-center justify-center shadow-md`}>
-                            <IconComponent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 bp-md:h-7 bp-md:w-7 text-primary-foreground" />
+                          <div className={`w-10 h-10 bp-sm:w-12 bp-sm:h-12 bp-md:w-14 bp-md:h-14 ${player.color} rounded-xl bp-md:rounded-2xl flex items-center justify-center shadow-md`}>
+                            <IconComponent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 bp-md:h-7 bp-md:w-7 text-primary" />
                           </div>
                           <div>
                             <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-1 text-card-foreground">{player.type}</CardTitle>
@@ -456,7 +456,7 @@ export default function TensionGuidePage() {
                         </div>
                         <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                           <div
-                            className={`absolute h-full bg-primary ${player.color} rounded-full`}
+                            className="absolute h-full bg-primary/60 rounded-full"
                             style={{
                               left: `${((player.tensionRange[0] - 20) / 12) * 100}%`,
                               width: `${((player.tensionRange[1] - player.tensionRange[0]) / 12) * 100}%`,
@@ -494,12 +494,12 @@ export default function TensionGuidePage() {
             <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-md:gap-6">
               {stringTypes.map((string, index) => (
                 <Card key={index} className="overflow-hidden border bg-card hover:shadow-md transition-all duration-300">
-                  <div className={`h-1.5 bp-md:h-2 bg-primary ${string.color}`} />
+                  <div className={`h-1.5 bp-md:h-2 ${string.color}`} />
                   <CardHeader className="pb-3 bp-md:pb-4">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <CardTitle className="flex items-center gap-2 bp-sm:gap-3 text-base bp-sm:text-lg bp-md:text-xl text-card-foreground">
-                        <div className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 bg-background ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}>
-                          <string.icon className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary-foreground" />
+                        <div className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}>
+                          <string.icon className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
                         </div>
                         {string.name}
                       </CardTitle>
@@ -754,12 +754,12 @@ export default function TensionGuidePage() {
         </Tabs>
 
         {/* CTA 섹션 */}
-        <Card className="bg-primary/90 border-0 overflow-hidden">
+        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden">
           <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
-                <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-primary-foreground">최적의 텐션으로 스트링 서비스를 받아보세요</h3>
-                <p className="text-primary-foreground/90 text-sm bp-md:text-base bp-lg:text-lg">스트링어가 정밀하게 작업해 드립니다</p>
+                <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">최적의 텐션으로 스트링 서비스를 받아보세요</h3>
+                <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">스트링어가 정밀하게 작업해 드립니다</p>
               </div>
               <Button asChild size="lg" variant="secondary" className="px-6 bp-md:px-8 whitespace-nowrap">
                 <Link href="/services/apply">
@@ -770,12 +770,12 @@ export default function TensionGuidePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-primary/90 border-0 overflow-hidden">
+        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden">
           <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
-                <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-primary-foreground">나에게 맞는 라켓을 찾아보세요</h3>
-                <p className="text-primary-foreground/90 text-sm bp-md:text-base bp-lg:text-lg">라켓 파인더를 활용해 나의 라켓을 선택해보세요</p>
+                <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">나에게 맞는 라켓을 찾아보세요</h3>
+                <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">라켓 파인더를 활용해 나의 라켓을 선택해보세요</p>
               </div>
               <Button asChild size="lg" variant="secondary" className="px-6 bp-md:px-8 whitespace-nowrap">
                 <Link href="/rackets/finder">

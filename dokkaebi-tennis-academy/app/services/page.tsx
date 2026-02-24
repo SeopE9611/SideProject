@@ -346,11 +346,11 @@ export default function ServicesPage() {
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-8">
             {stringTypes.map((type) => (
-              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
+                <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg group-hover:scale-110 transition-transform duration-300">{type.icon}</div>
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-primary/20 bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shadow-lg group-hover:scale-110 transition-transform duration-300">{type.icon}</div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
                   <CardDescription className="text-base">{type.description}</CardDescription>
                 </CardHeader>
@@ -458,7 +458,7 @@ export default function ServicesPage() {
                 key={item.service}
                 className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${ item.popular ? 'bg-card text-foreground border border-primary/20 scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95' }`}
               >
-                {item.popular && <div className="absolute top-0 right-0 bg-destructive/100 text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
+                {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
                   <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'}`}>{item.icon}</div>
@@ -468,7 +468,7 @@ export default function ServicesPage() {
                 </CardHeader>
 
                 <CardContent>
-                  <p className={`text-sm text-center ${item.popular ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>{item.description}</p>
+                  <p className="text-sm text-center text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
             ))}

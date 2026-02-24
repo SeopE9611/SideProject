@@ -18,7 +18,7 @@ const buttonVariants = cva(
         muted:
           "bg-muted text-foreground border border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground",
         cardAction:
-          "bg-card text-foreground border border-border hover:bg-card group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-lg",
+          "bg-card text-foreground border border-border hover:bg-card group-hover:bg-primary/10 dark:group-hover:bg-primary/20 group-hover:text-foreground group-hover:shadow-lg",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         danger:

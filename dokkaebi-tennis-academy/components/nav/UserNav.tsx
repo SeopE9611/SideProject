@@ -73,7 +73,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
 
             {isAdmin && (
               <span
-                className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1.5 py-[2px] rounded bg-accent/15 text-accent"
+                className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1.5 py-[2px] rounded border border-success/20 bg-success/10 text-success dark:bg-success/15"
               >
                 관리자
               </span>
@@ -89,7 +89,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
                 <span className="text-xs text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
                   {hasKakao && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-primary text-primary-foreground hover:bg-primary/90">카카오</Badge>}
-                  {hasNaver && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-accent text-accent-foreground hover:bg-accent/90">네이버</Badge>}
+                  {hasNaver && <Badge className="pointer-events-none h-5 px-2 text-[11px] border border-success/20 bg-success/10 text-success dark:bg-success/15 hover:bg-success/15">네이버</Badge>}
                 </div>
               </div>
             </div>

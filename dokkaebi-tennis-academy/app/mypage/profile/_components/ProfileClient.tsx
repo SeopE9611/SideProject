@@ -283,7 +283,7 @@ export default function ProfileClient({ user }: Props) {
  <div className="min-h-full bg-background">
  <div className="absolute inset-0 opacity-5 dark:opacity-10 bg-cross-line-pattern" />
 
- <div className="relative overflow-hidden bg-card text-foreground">
+ <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
  <div className="absolute inset-0 bg-overlay/10"></div>
  <div className="absolute inset-0">
  <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
@@ -294,7 +294,7 @@ export default function ProfileClient({ user }: Props) {
  <div className="relative container mx-auto px-4 py-16">
  <div className="max-w-4xl mx-auto">
  <div className="flex items-center gap-6 mb-8">
- <Link href="/mypage" className="inline-flex items-center text-foreground/80 hover:text-primary-foreground transition-colors font-medium">
+ <Link href="/mypage" className="inline-flex items-center text-foreground/80 hover:text-primary transition-colors font-medium">
  <ArrowLeft className="mr-2 h-5 w-5" />
  마이페이지로 돌아가기
  </Link>
@@ -306,7 +306,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  <div>
  <h1 className="text-4xl md:text-5xl font-black mb-2 text-foreground">회원정보 수정</h1>
- <p className="text-xl text-primary">개인정보를 안전하게 관리하세요</p>
+ <p className="text-xl text-muted-foreground">개인정보를 안전하게 관리하세요</p>
  </div>
  </div>
  </div>

@@ -711,8 +711,8 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-card text-foreground border-b border-border">
-        <div className="absolute inset-0 bg-foreground/10 dark:bg-foreground/10"></div>
+      <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
+        <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
         <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-md:py-14">
           <div className="flex items-center gap-4 mb-4">
@@ -1375,7 +1375,7 @@ export default function CheckoutPage() {
                             href="/cart"
                             data-no-unsaved-guard
                             onClick={onLeaveCartClick}
-                            className="inline-flex items-center justify-center rounded-md bg-foreground/10 px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-foreground/10"
+                            className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
                           >
                             장바구니로 가서 정리하기
                           </Link>

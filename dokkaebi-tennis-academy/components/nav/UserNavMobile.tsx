@@ -50,7 +50,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
           <p className="text-xs text-muted-foreground">소셜 로그인</p>
           <div className="flex flex-wrap justify-center gap-1">
             {hasKakao && <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">카카오</Badge>}
-            {hasNaver && <Badge className="bg-accent text-accent-foreground hover:bg-accent/90">네이버</Badge>}
+            {hasNaver && <Badge className="bg-success/10 text-success border border-success/20 dark:bg-success/15 hover:bg-success/15">네이버</Badge>}
           </div>
         </div>
       )}
