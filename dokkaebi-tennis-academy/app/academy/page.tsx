@@ -350,10 +350,7 @@ export default function AcademyPage() {
 
         {/* 강사 소개 섹션 */}
         <section className="py-20 bg-background relative overflow-hidden">
-          {/* 배경 패턴 */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('/placeholder.svg?height=400&width=400&text=Pattern')] bg-repeat opacity-20"></div>
-          </div>
+          <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
 
           <div className="container relative z-10">
             <div className="text-center mb-16">
