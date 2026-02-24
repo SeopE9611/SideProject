@@ -188,12 +188,9 @@ export default function AcademyPage() {
 
       <div className="flex flex-col">
         {/* Hero 섹션 */}
-        <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-          {/* 배경 그라데이션 */}
-          <div className="absolute inset-0 bg-background">
-            <div className="absolute inset-0 bg-[url('/placeholder.svg?height=800&width=1200&text=Tennis+Academy')] bg-cover bg-center opacity-20"></div>
-            <div className="absolute inset-0 bg-overlay/20"></div>
-          </div>
+        <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-muted/30 dark:bg-card/40 border-b border-border">
+          {/* 배경 오버레이 */}
+          <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
 
           {/* 장식 요소 */}
           <div className="absolute top-20 left-10 w-32 h-32 bg-muted/60 rounded-full blur-xl animate-pulse"></div>

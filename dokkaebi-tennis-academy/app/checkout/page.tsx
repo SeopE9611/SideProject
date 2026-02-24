@@ -713,7 +713,6 @@ export default function CheckoutPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
         <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
-        <div className="absolute inset-0 bg-[url('/placeholder.svg?height=400&width=800')] opacity-10"></div>
         <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-md:py-14">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full">
