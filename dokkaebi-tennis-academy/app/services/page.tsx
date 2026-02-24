@@ -275,7 +275,7 @@ export default function ServicesPage() {
 
         {/* <div className="container relative z-10 text-center text-primary-foreground">
           <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-card/20 text-primary-foreground border-border/30 backdrop-blur-sm">
+            <Badge className="mb-6 bg-card/20 text-foreground border-border/30 backdrop-blur-sm">
               <Award className="w-4 h-4 mr-2" />
               전문 스트링 서비스
             </Badge>

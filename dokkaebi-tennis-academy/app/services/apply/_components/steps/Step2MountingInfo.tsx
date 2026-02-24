@@ -266,8 +266,8 @@ export default function Step2MountingInfo(props: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <ClipboardList className="h-8 w-8 text-primary-foreground" />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+          <ClipboardList className="h-8 w-8" />
         </div>
         <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
         <p className="text-muted-foreground">라켓과 스트링 정보를 선택해주세요</p>

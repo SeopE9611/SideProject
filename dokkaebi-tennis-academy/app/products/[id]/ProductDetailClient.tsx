@@ -596,11 +596,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
   return (
     <div className="min-h-full bg-muted/30 pb-20 bp-md:pb-8">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-muted/30 text-primary-foreground py-6 sm:py-8">
-        <div className="absolute inset-0 bg-foreground/20"></div>
+      <div className="relative bg-muted/30 dark:bg-card/40 text-foreground py-6 sm:py-8 border-b border-border">
+        <div className="absolute inset-0 bg-overlay/10"></div>
         {/* Tennis court line pattern */}
         <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full text-primary-foreground" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-full h-full text-primary" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="detail-court-lines" patternUnits="userSpaceOnUse" width="100" height="50">
                 <rect width="100" height="50" fill="transparent" />
@@ -623,7 +623,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <span>/</span>
             <span className="text-primary truncate max-w-[120px] sm:max-w-none">{product.name}</span>
           </div>
-          <Button variant="ghost" className="text-primary-foreground hover:bg-card/10 p-0 h-auto text-sm" onClick={() => router.back()}>
+          <Button variant="ghost" className="text-foreground hover:bg-card/10 p-0 h-auto text-sm" onClick={() => router.back()}>
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             이전 페이지로
           </Button>
@@ -647,8 +647,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </>
                 )}
                 <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex gap-1.5 sm:gap-2">
-                  <Badge className="bg-muted/30 text-primary-foreground text-xs">NEW</Badge>
-                  <Badge className="bg-muted/30 text-primary-foreground text-xs">정품</Badge>
+                  <Badge className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary text-xs">NEW</Badge>
+                  <Badge className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary text-xs">정품</Badge>
                 </div>
               </div>
             </Card>
@@ -694,7 +694,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       {product.originalPrice && product.originalPrice > product.price && (
                         <>
                           <span className="text-base sm:text-lg text-muted-foreground line-through">{product.originalPrice.toLocaleString()}원</span>
-                          <Badge className="bg-muted/30 text-primary-foreground text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
+                          <Badge className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
                         </>
                       )}
                     </div>
@@ -752,7 +752,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       ) : (
                         <>
                           <Button
-                            className="w-full h-10 sm:h-11 text-sm bg-muted/30 text-primary-foreground shadow"
+                            className="w-full h-10 sm:h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/90 shadow"
                             onClick={handleBuyNow}
                             disabled={loading || stock <= 0 || quantity > stock}
                           >
@@ -1012,11 +1012,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
-                        <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
+                        <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                       </div>
                       <h3 className="text-xl sm:text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
-                    <Button asChild className="bg-muted/30 text-primary-foreground shadow-lg text-xs sm:text-sm h-9 sm:h-10">
+                    <Button asChild variant="outline" className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                       <Link href={`/reviews/write?productId=${product._id}`}>
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                         리뷰 작성하기
@@ -1038,7 +1038,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             <div className="flex items-start justify-between mb-3 sm:mb-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-muted/30 rounded-full flex items-center justify-center text-primary-foreground font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
+                                <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-lg shadow-lg">{review.user?.charAt(0) || 'U'}</div>
                                 <div>
                                   <div className="font-bold text-foreground text-sm sm:text-base">
                                     {review.status === 'hidden' ? (review.ownedByMe ? `${review.user ?? '내 리뷰'} (비공개)` : review.adminView ? `${review.user ?? '사용자'} (비공개)` : '비공개 리뷰') : (review.user ?? '익명')}
@@ -1225,7 +1225,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                         <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 리뷰가 없습니다</h3>
                         <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 리뷰를 작성해보세요!</p>
-                        <Button className="bg-muted/30 text-primary-foreground shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <Button className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Pencil className="h-4 w-4 mr-2" />
                           리뷰 작성하기
                         </Button>
@@ -1243,7 +1243,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 문의</h3>
                   </div>
-                  <Button asChild className="bg-muted/30 text-primary-foreground shadow-lg text-xs sm:text-sm h-9 sm:h-10">
+                  <Button asChild className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                     <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                   </Button>
                 </div>
@@ -1260,7 +1260,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                         <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">아직 문의가 없습니다</h4>
                         <p className="text-muted-foreground mb-6 text-base sm:text-lg">첫 번째 문의를 남겨보세요!</p>
-                        <Button asChild className="bg-muted/30 text-primary-foreground shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
+                        <Button asChild className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base">
                           <Link href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}>문의하기</Link>
                         </Button>
                       </div>

@@ -28,6 +28,8 @@ const zeroGradientBaseRegex = /\bbg-gradient-to-/;
 const zeroGradientStopRegex = /(?:^|\s)(?:[\w-]+:)*(?:from|via|to)-/;
 const zeroGradientTextRegex = /\bbg-clip-text\b|\btext-transparent\b/;
 const zeroGradientArbitraryRegex = /\bbg-\[(?:radial|linear|conic)-gradient/;
+const zeroGradientStringRegex = /radial-gradient\(|linear-gradient\(|conic-gradient\(|repeating-linear-gradient\(|repeating-radial-gradient\(/g;
+const zeroGradientBackgroundArbitraryRegex = /\[background:[^\]]*gradient\(/g;
 const zeroGradientSvgRegex = /<linearGradient|<radialGradient|fill="url\(#/g;
 const lowContrastPrimaryRegex = /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
 const lowContrastGradientRegex = /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
@@ -39,6 +41,7 @@ const primaryTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-primary\/(?:10|15
 const warningTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-warning\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-warning-foreground(?:\s|$)/;
 const destructiveTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-destructive\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive-foreground(?:\s|$)/;
 const successTintWithForegroundRegex = /(?:^|\s)(?:[\w-]+:)*bg-success\/(?:10|15|20)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-success-foreground(?:\s|$)/;
+const lowContrastMutedCardBackgroundForegroundRegex = /\bbg-(?:muted|card|background)\/\d{1,3}\b(?:\s+[A-Za-z0-9_:[\]/.-]+){0,8}\s+text-primary-foreground\b/;
 const solidHoverDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\/)(?:\s|$)/;
 const hoverTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
 const solidHoverPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
@@ -271,6 +274,22 @@ for (const file of files) {
     });
   }
 
+  for (const match of text.matchAll(zeroGradientStringRegex)) {
+    found.push({
+      type: 'zero-gradient-policy-gradient-string',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
+  for (const match of text.matchAll(zeroGradientBackgroundArbitraryRegex)) {
+    found.push({
+      type: 'zero-gradient-policy-background-arbitrary-gradient',
+      token: match[0],
+      line: getLine(text, match.index ?? 0),
+    });
+  }
+
   for (const match of text.matchAll(classNameBlockRegex)) {
     const block = (match[1] ?? match[2] ?? '').replace(/\s+/g, ' ').trim();
     if (!block) continue;
@@ -377,6 +396,14 @@ for (const file of files) {
     if (successTintWithForegroundRegex.test(block)) {
       found.push({
         type: 'success-tint-with-success-foreground',
+        token: block,
+        line: getLine(text, match.index ?? 0),
+      });
+    }
+
+    if (lowContrastMutedCardBackgroundForegroundRegex.test(block)) {
+      found.push({
+        type: 'low-contrast-muted-card-background-with-primary-foreground',
         token: block,
         line: getLine(text, match.index ?? 0),
       });
