@@ -1,20 +1,21 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Phone, User, RatIcon as Racquet, Zap, GraduationCap, ArrowRight, FileText, Target, LayoutGrid, RocketIcon, Gauge, CheckCircle, Delete, Ban, XCircle, Undo2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import useSWRInfinite from 'swr/infinite';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
-import { useMemo, useState } from 'react';
-import { useSWRConfig } from 'swr';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { showInfoToast, showSuccessToast, showErrorToast } from '@/lib/toast';
 import { Badge } from '@/components/ui/badge';
-import CancelStringingDialog from './CancelStringingDialog';
-import { MdSportsTennis } from 'react-icons/md';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import { ArrowRight, Ban, Calendar, CheckCircle, Clock, FileText, GraduationCap, LayoutGrid, Phone, Undo2, User, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { MdSportsTennis } from 'react-icons/md';
+import { useSWRConfig } from 'swr';
+import useSWRInfinite from 'swr/infinite';
+import CancelStringingDialog from './CancelStringingDialog';
+import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 
 export interface Application {
   id: string;
@@ -346,14 +347,8 @@ export default function ApplicationsClient() {
               <CardContent className="relative p-6">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30"
-                    >
-                      {isStringService ? (
-                        <LayoutGrid className={`h-6 w-6 ${isStringService ? 'text-warning' : 'text-success'}`} />
-                      ) : (
-                        <GraduationCap className="h-6 w-6 text-success" />
-                      )}
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">
+                      {isStringService ? <LayoutGrid className={`h-6 w-6 ${isStringService ? 'text-warning' : 'text-success'}`} /> : <GraduationCap className="h-6 w-6 text-success" />}
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">{app.type}</h3>
@@ -366,10 +361,7 @@ export default function ApplicationsClient() {
                       {hasOrderLink && orderId && (
                         <div className="mt-1 flex items-center gap-2">
                           <Link href={`/mypage?tab=orders&orderId=${orderId}`}>
-                            <Badge
-                              variant="outline"
-                              className="border-border bg-muted/80 text-[11px] font-medium text-foreground dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-card"
-                            >
+                            <Badge variant="outline" className="border-border bg-muted/80 text-[11px] font-medium text-foreground dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-card">
                               원 주문 상세 보기
                             </Badge>
                           </Link>
@@ -403,10 +395,7 @@ export default function ApplicationsClient() {
                       if (!isRequested) return null;
 
                       return (
-                        <Badge
-                          variant="outline"
-                          className="ml-1 border-border bg-muted text-[11px] font-medium text-primary dark:border-border dark:bg-muted dark:text-primary"
-                        >
+                        <Badge variant="outline" className="ml-1 border-border bg-muted text-[11px] font-medium text-primary dark:border-border dark:bg-muted dark:text-primary">
                           취소 요청됨
                         </Badge>
                       );
@@ -547,6 +536,9 @@ export default function ApplicationsClient() {
                         </Tooltip>
                       </TooltipProvider>
                     )}
+
+                    {/* 서비스 리뷰 작성 (교체완료 + 미작성일 때만 노출) */}
+                    {isStringService && <ServiceReviewCTA applicationId={app.id} status={app.status} className="w-auto" />}
 
                     {isCancelRequested ? (
                       <Button variant="destructive" size="sm" onClick={() => handleWithdrawCancelRequest(app.id)} className="gap-2">
