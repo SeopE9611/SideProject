@@ -1,25 +1,26 @@
 'use client';
 
-import { FormEvent, useEffect, useState, useRef, ChangeEvent, useMemo } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { MessageSquare, ArrowLeft, Loader2, Upload, X, AlertTriangle } from 'lucide-react';
-import useSWR, { mutate as globalMutate } from 'swr';
-import type { MouseEvent as ReactMouseEvent } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { CATEGORY_OPTIONS } from '@/app/board/free/_components/FreeBoardWriteClient';
+import ImageUploader from '@/components/admin/ImageUploader';
+import SiteContainer from '@/components/layout/SiteContainer';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import type { CommunityPost } from '@/lib/types/community';
-import ImageUploader from '@/components/admin/ImageUploader';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { supabase } from '@/lib/supabase';
-import { CATEGORY_OPTIONS } from '@/app/board/free/_components/FreeBoardWriteClient';
-import SiteContainer from '@/components/layout/SiteContainer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { supabase } from '@/lib/supabase';
+import type { CommunityPost } from '@/lib/types/community';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, ArrowLeft, Loader2, MessageSquare, Upload, X } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import useSWR, { mutate as globalMutate } from 'swr';
 
 type Props = {
   id: string;
@@ -267,14 +268,12 @@ export default function FreeBoardEditClient({ id }: Props) {
       if (selectedFiles.length > 0 && nextAttachments && nextAttachments.length > 0) {
         payload.attachments = nextAttachments;
       }
-
-      const res = await fetch(`/api/community/posts/${id}`, {
+      const res = await communityFetch(`/api/community/posts/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           ...(clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
         },
-        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -346,7 +345,9 @@ export default function FreeBoardEditClient({ id }: Props) {
         <div className="container mx-auto px-4 py-8">
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
             <CardContent className="space-y-4 p-6">
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+                해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
+              </div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/board/free">목록으로</Link>
@@ -512,10 +513,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         <p className="text-xs text-muted-foreground">새로 첨부할 파일 ({selectedFiles.length}개)</p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                           {selectedFiles.map((file, index) => (
-                            <div
-                              key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
-                            >
+                            <div key={`${file.name}-${index}`} className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition">
                               <div className="flex-1 flex flex-col gap-1 text-xs">
                                 <span className="font-medium truncate" title={file.name}>
                                   {file.name}

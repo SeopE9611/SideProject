@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabase';
 import { CATEGORY_OPTIONS } from '@/app/board/market/_components/FreeBoardWriteClient';
 import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 
 type Props = {
   id: string;
@@ -287,15 +288,14 @@ export default function FreeBoardEditClient({ id }: Props) {
         payload.attachments = nextAttachments;
       }
 
-      const res = await fetch(`/api/community/posts/${id}?type=market`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
+const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+    ...(clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
+  },
+  body: JSON.stringify(payload),
+});
 
       const json = await res.json();
 

@@ -24,6 +24,7 @@ import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import ErrorBox from '@/app/board/_components/ErrorBox';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -265,10 +266,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  // TTL이 지났거나 기록이 없으면 /view 호출
  (async () => {
  try {
- const res = await fetch(`/api/community/posts/${item.id}/view`, {
- method: 'POST',
- credentials: 'include',
- });
+const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
+  method: 'POST',
+});
 
  const json = await res.json().catch(() => null);
 
@@ -303,10 +303,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  // 항상 /view 호출 → 서버에서 userId 기준으로 중복 방지
  (async () => {
  try {
- const res = await fetch(`/api/community/posts/${item.id}/view`, {
- method: 'POST',
- credentials: 'include',
- });
+const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
+  method: 'POST',
+});
 
  const json = await res.json().catch(() => null);
 
@@ -656,10 +655,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  try {
  setIsLiking(true);
 
- const res = await fetch(`/api/community/posts/${item.id}/like`, {
- method: 'POST',
- credentials: 'include',
- });
+const res = await communityFetch(`/api/community/posts/${item.id}/like`, {
+  method: 'POST',
+});
 
  const json = (await res.json().catch(() => null)) as { ok: true; liked: boolean; likes: number } | { ok: false; error?: string } | null;
 
@@ -703,12 +701,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  try {
  setIsReporting(true);
 
- const res = await fetch(`/api/community/posts/${item.id}/report`, {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- credentials: 'include',
- body: JSON.stringify({ reason }),
- });
+const res = await communityFetch(`/api/community/posts/${item.id}/report`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ reason }),
+});
 
  if (!res.ok) {
  const data = await res.json().catch(() => null);
@@ -774,12 +771,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
  try {
  setIsCommentReporting(true);
 
- const res = await fetch(`/api/community/comments/${targetComment.id}/report`, {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- credentials: 'include',
- body: JSON.stringify({ reason: commentReportReason }),
- });
+const res = await communityFetch(`/api/community/comments/${targetComment.id}/report`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ reason: commentReportReason }),
+});
 
  if (!res.ok) {
  if (res.status === 401) {

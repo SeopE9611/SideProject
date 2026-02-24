@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabase';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { communityFetch } from '@/lib/community/communityFetch.client';
 
 export const CATEGORY_OPTIONS = [
   { value: 'general', label: '자유' },
@@ -320,12 +321,11 @@ export default function FreeBoardWriteClient() {
         payload.attachments = attachments;
       }
 
-      const res = await fetch('/api/boards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
+  const res = await communityFetch('/api/boards', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload),
+});
 
       let data: any = null;
       try {
