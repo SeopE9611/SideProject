@@ -7,7 +7,7 @@ import useSWR from 'swr';
 
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Skeleton } from '@/components/ui/skeleton';
-import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getNoticeCategoryColor, getQnaCategoryColor, getReviewTypeColor, noticePinColor } from '@/lib/badge-style';
+import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getBoardCategoryBadgeColor, getNoticeCategoryColor, getQnaCategoryColor, getReviewTypeColor, noticePinColor } from '@/lib/badge-style';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -79,68 +79,6 @@ function getBoardCategoryLabel(kind: BoardKind, category?: string | null) {
       return c ? c : '분류';
   }
 }
-
-function getBoardCategoryBadgeColor(kind: BoardKind, category?: string | null) {
-  const c = category ?? '';
-
-  // 공통 fallback
-  const gray = 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground';
-
-  if (kind === 'free') {
-    switch (c) {
-      case 'general':
-        return 'bg-background text-foreground dark:bg-card dark:text-foreground';
-      case 'info':
-        return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
-      case 'qna':
-        return 'bg-success/10 text-success dark:bg-success/10 dark:text-success';
-      case 'tip':
-        return 'bg-muted text-primary dark:bg-muted dark:text-primary';
-      case 'etc':
-        return gray;
-      default:
-        return gray;
-    }
-  }
-
-  if (kind === 'market') {
-    switch (c) {
-      case 'racket':
-        return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
-      case 'string':
-        return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
-      case 'equipment':
-        return 'bg-muted text-primary dark:bg-muted dark:text-primary';
-      default:
-        return gray;
-    }
-  }
-
-  // gear
-  switch (c) {
-    case 'racket':
-      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
-    case 'string':
-      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
-    case 'shoes':
-      return 'bg-muted text-primary dark:bg-muted dark:text-primary';
-    case 'bag':
-      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
-    case 'apparel':
-      return 'bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive';
-    case 'grip':
-      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
-    case 'accessory':
-      return 'bg-background text-foreground dark:bg-card dark:text-foreground';
-    case 'ball':
-      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
-    case 'other':
-      return gray;
-    default:
-      return gray;
-  }
-}
-
 function CommunityLatestCard({
   kind,
   title,

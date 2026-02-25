@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { racketBrandLabel } from '@/lib/constants';
+import { racketStockBadgeVariant } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowLeft, Calendar, Check, ChevronLeft, ChevronRight, FileText, Pencil, Scale, Settings, Shield, ShoppingCart, Star, Truck } from 'lucide-react';
 import Image from 'next/image';
@@ -367,7 +368,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </>
                 )}
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge className="bg-primary text-primary-foreground">중고</Badge>
+                  <Badge variant="brand">중고</Badge>
                   <StatusBadge kind="rental" state={rentalState} />
                 </div>
               </div>
@@ -393,7 +394,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 <div className="space-y-4">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <Badge variant="outline" className="mb-2 text-primary border-border dark:text-primary dark:border-border">
+                    <Badge variant="outline" className="mb-2">
                       {racketBrandLabel(racket.brand)}
                     </Badge>
                     <h1 className="text-2xl lg:text-3xl font-bold text-foreground">{racket.model}</h1>
@@ -405,19 +406,19 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       ) : (
                         <div className="flex items-center gap-2 flex-wrap" title={`보유 ${stock.quantity}개 / 대여중 ${rentedCount}개 / 가용 ${stock.available}개`}>
                           {isSold ? (
-                            <Badge className="bg-muted text-foreground dark:bg-card dark:text-foreground">판매 완료</Badge>
+                            <Badge variant={racketStockBadgeVariant('sold')}>판매 완료</Badge>
                           ) : isAllRented ? (
-                            <Badge className="bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive">
+                            <Badge variant={racketStockBadgeVariant('allRented')}>
                               전량 대여중 ({rentedCount}/{stock.quantity})
                             </Badge>
                           ) : (
-                            <Badge className="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary">
+                            <Badge variant={racketStockBadgeVariant('available')}>
                               가용 {stock.available}/{stock.quantity}
                             </Badge>
                           )}
 
                           {/* 보조: 대여중 수량 (가용 상태일 때만 추가로 강조) */}
-                          {rentedCount > 0 && !isSold && !isAllRented && <Badge className="bg-muted text-primary dark:bg-muted dark:text-primary">대여중 {rentedCount}</Badge>}
+                          {rentedCount > 0 && !isSold && !isAllRented && <Badge variant={racketStockBadgeVariant('rented')}>대여중 {rentedCount}</Badge>}
                         </div>
                       )}
                     </div>

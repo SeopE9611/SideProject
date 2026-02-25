@@ -14,6 +14,7 @@ import { ArrowRight, Award, Calendar, CheckCircle, Clock, Gift, MessageSquare, P
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { packagesBadgeVariant } from '@/lib/badge-style';
 
 interface PackageOption {
   id: string;
@@ -303,7 +304,7 @@ export default function StringPackagesPage() {
 
         <SiteContainer variant="wide" className="relative z-10 text-center text-foreground">
           <div className="max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-card/20 text-foreground border-border/30 backdrop-blur-sm">
+            <Badge variant={packagesBadgeVariant('hero')} className="mb-6 backdrop-blur-sm">
               <Package className="w-4 h-4 mr-2" />
               프리미엄 스트링 패키지
             </Badge>
@@ -354,7 +355,7 @@ export default function StringPackagesPage() {
       <section id="packages" ref={packagesSectionRef} className="py-20 bg-background scroll-mt-24">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20">
+            <Badge variant={packagesBadgeVariant('selection')} className="mb-4">
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
             </Badge>
@@ -445,7 +446,7 @@ export default function StringPackagesPage() {
 
         <SiteContainer variant="wide" className="relative z-10">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-card/20 text-foreground border-border/30">
+            <Badge variant={packagesBadgeVariant('benefits')} className="mb-4">
               <Award className="w-4 h-4 mr-2" />
               추가 혜택
             </Badge>
@@ -469,7 +470,7 @@ export default function StringPackagesPage() {
       <section className="py-20 bg-background">
         <SiteContainer variant="wide">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20">
+            <Badge variant={packagesBadgeVariant('faq')} className="mb-4">
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
             </Badge>

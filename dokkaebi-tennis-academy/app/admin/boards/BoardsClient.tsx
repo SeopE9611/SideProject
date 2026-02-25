@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from '@/lib/board-public-url-policy';
+import { adminPostVisibilityBadgeVariant, adminReportStatusBadgeVariant, adminReportTargetBadgeVariant } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 type PostItem = {
@@ -369,9 +370,9 @@ export default function BoardsClient() {
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">#{p.postNo ?? '-'}</span>
                                 {p.status === 'public' ? (
-                                  <Badge className="bg-primary/10 text-primary border-border">공개</Badge>
+                                  <Badge variant={adminPostVisibilityBadgeVariant('public')}>공개</Badge>
                                 ) : (
-                                  <Badge className="bg-muted text-primary border-border">숨김</Badge>
+                                  <Badge variant={adminPostVisibilityBadgeVariant('hidden')}>숨김</Badge>
                                 )}
                               </div>
 
@@ -546,16 +547,16 @@ export default function BoardsClient() {
                                 <div className="flex-1 space-y-2">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     {r.targetType === 'post' ? (
-                                      <Badge className="bg-muted text-foreground border-border">게시글</Badge>
+                                      <Badge variant={adminReportTargetBadgeVariant('post')}>게시글</Badge>
                                     ) : (
-                                      <Badge className="bg-muted text-primary border-border">댓글</Badge>
+                                      <Badge variant={adminReportTargetBadgeVariant('comment')}>댓글</Badge>
                                     )}
                                     <Badge variant="outline" className="font-medium">
                                       {resolveBoardLabel(r.boardType)}
                                     </Badge>
-                                    {r.status === 'pending' && <Badge variant="warning">대기</Badge>}
-                                    {r.status === 'resolved' && <Badge variant="success">완료</Badge>}
-                                    {r.status === 'rejected' && <Badge variant="destructive">반려</Badge>}
+                                    {r.status === 'pending' && <Badge variant={adminReportStatusBadgeVariant('pending')}>대기</Badge>}
+                                    {r.status === 'resolved' && <Badge variant={adminReportStatusBadgeVariant('resolved')}>완료</Badge>}
+                                    {r.status === 'rejected' && <Badge variant={adminReportStatusBadgeVariant('rejected')}>반려</Badge>}
                                   </div>
 
                                   <div>
