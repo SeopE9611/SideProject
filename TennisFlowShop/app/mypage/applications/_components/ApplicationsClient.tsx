@@ -395,7 +395,7 @@ export default function ApplicationsClient() {
                       if (!isRequested) return null;
 
                       return (
-                        <Badge variant="outline" className="ml-1 border-border bg-muted text-[11px] font-medium text-primary dark:border-border dark:bg-muted dark:text-primary">
+                        <Badge variant="outline" className="ml-1 border-warning/30 bg-warning/10 text-[11px] font-medium text-warning dark:bg-warning/15 dark:text-warning">
                           취소 요청됨
                         </Badge>
                       );

@@ -440,7 +440,7 @@ export default function PackageOrdersClient() {
       case 'muted':
         return 'bg-background text-foreground border border-border';
       case 'warning':
-        return 'bg-muted text-primary border border-border';
+        return 'bg-warning/10 text-warning border border-warning/30 dark:bg-warning/15';
       case 'success':
       default:
         return 'bg-primary/10 text-primary border border-border dark:bg-primary/20';
