@@ -700,7 +700,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Badge variant="outline" className="mb-2 text-xs text-primary border-border dark:text-primary dark:border-border">
                       {BRAND_MAP[(product?.brand ?? '').toLowerCase()] ?? product.brand}
                     </Badge>
-                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-muted/30 text-primary leading-tight">{product.name}</h1>
+                    <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-muted/30 text-foreground leading-tight">{product.name}</h1>
                     <div className="mt-2 flex items-center gap-2 sm:gap-3">
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
@@ -946,7 +946,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="description" className="p-4 sm:p-8">
                 <div className="prose max-w-none">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 설명</h3>
@@ -962,7 +962,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="specifications" className="p-4 sm:p-8">
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg flex items-center justify-center">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상세 스펙</h3>
@@ -974,7 +974,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       .map(([key, value]) => (
                         <div key={key} className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
                           <div className="flex items-center justify-between">
-                            <span className="font-semibold text-primary text-sm sm:text-base">{key}</span>
+                            <span className="font-semibold text-foreground text-sm sm:text-base">{key}</span>
                             <span className="text-muted-foreground font-medium text-sm sm:text-base">{String(value)}</span>
                           </div>
                         </div>
@@ -986,7 +986,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         {/* 상세 스펙 그리드(파란 그라데이션 카드)와 톤 통일 */}
                         <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
                           <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="w-9 sm:w-10 h-9 sm:h-10 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                            <div className="w-9 sm:w-10 h-9 sm:h-10 border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary rounded-lg flex items-center justify-center">
                               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
                             <h4 className="text-lg sm:text-xl font-bold text-foreground">하이브리드 구성</h4>

@@ -215,7 +215,7 @@ export default function TensionGuidePage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-4 bp-md:mb-6">
               <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
-              <span className="text-xs bp-sm:text-sm font-semibold text-muted-foreground dark:text-primary">전문가 텐션 가이드</span>
+              <span className="text-xs bp-sm:text-sm font-semibold text-muted-foreground">전문가 텐션 가이드</span>
             </div>
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold text-foreground mb-4 bp-md:mb-6 text-balance">
               나에게 맞는
@@ -293,7 +293,7 @@ export default function TensionGuidePage() {
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <st.icon className={`h-4 w-4 ${stringType === st.id ? 'text-primary' : 'text-muted-foreground'}`} />
-                              <span className={`font-medium text-sm ${stringType === st.id ? 'text-muted-foreground dark:text-primary' : 'text-foreground'}`}>{st.name}</span>
+                              <span className={`font-medium text-sm ${stringType === st.id ? 'text-primary' : 'text-foreground'}`}>{st.name}</span>
                             </div>
                             <span className="text-xs text-muted-foreground">{st.recommendedTension}</span>
                           </button>
@@ -311,7 +311,7 @@ export default function TensionGuidePage() {
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${ playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
                           >
-                            <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-muted-foreground dark:text-primary' : 'text-foreground'}`}>{option.label}</div>
+                            <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
                           </button>
                         ))}
@@ -328,7 +328,7 @@ export default function TensionGuidePage() {
                             onClick={() => setSwingSpeed(option.id as SwingSpeed)}
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${ swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
                           >
-                            <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-muted-foreground dark:text-primary' : 'text-foreground'}`}>{option.label}</div>
+                            <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
                           </button>
                         ))}
@@ -650,7 +650,7 @@ export default function TensionGuidePage() {
                   </CardHeader>
                   <CardContent className="space-y-2 bp-md:space-y-3">
                     <p className="text-xs bp-md:text-sm text-foreground">스트링은 장착 후 지속적으로 텐션이 감소합니다.</p>
-                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground dark:text-primary">
+                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-primary/70 rounded-full flex-shrink-0" />첫 24시간: 10-15% 손실
                       </li>
