@@ -3,7 +3,7 @@
 import { AlertTriangle, BarChartBig, BellRing, ChevronDown, ChevronRight, ClipboardCheck, Copy, Eye, Link2, Search, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
 import { Badge } from '@/components/ui/badge';
@@ -267,6 +267,26 @@ export default function OperationsClient() {
   const pathname = usePathname();
   const sp = useSearchParams();
 
+  /**
+   * replaceNoScroll
+   * - 필터 변경 시 URL(쿼리스트링)을 동기화하면서도 스크롤을 상단으로 올리지 않기 위한 래퍼 함수.
+   * - Next.js App Router의 router.replace는 기본적으로 네비게이션으로 간주되어 스크롤이 튈 수 있음.
+   * - { scroll: false } 옵션을 주면 "URL만 변경"하고 현재 스크롤 위치를 유지.
+   *
+   * useCallback을 쓰는 이유
+   * - 이 함수는 컴포넌트 렌더 때마다 새로 생성되면(참조값 변경),
+   *   useSyncOperationsQuery 내부의 useEffect/debounce 의존성에 걸려
+   *   불필요한 재실행/타이머 리셋이 발생할 수 있음.
+   * - useCallback으로 함수 참조를 안정화해서
+   *   "필터 값이 바뀔 때만" 의도대로 URL 동기화가 일어나게 함.
+   */
+  const replaceNoScroll = useCallback(
+    (url: string) => {
+      router.replace(url, { scroll: false });
+    },
+    [router],
+  );
+
   const [q, setQ] = useState('');
   const [kind, setKind] = useState<'all' | Kind>('all');
   const [flow, setFlow] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>('all');
@@ -319,7 +339,11 @@ export default function OperationsClient() {
   }, [q, kind, flow, integrated, page, onlyWarn, warnFilter, warnSort]);
 
   // 2) 상태 → URL 동기화(디바운스)
-  useSyncOperationsQuery({ q, kind, flow, integrated, onlyWarn, page }, pathname, router.replace);
+  /**
+   * useSyncOperationsQuery는 필터 상태가 변하면 URL에 반영(쿼리스트링 sync)하는 역할.
+   * 여기서 replace를 scroll:false 버전으로 넘겨서, 필터 변경 시 화면이 위로 튀지 않게 함.
+   */
+  useSyncOperationsQuery({ q, kind, flow, integrated, onlyWarn, page }, pathname, replaceNoScroll);
 
   // 3) API 키 구성
   const queryString = buildQueryString({
@@ -436,7 +460,12 @@ export default function OperationsClient() {
     setWarnFilter('all');
     setWarnSort('default');
     setPage(1);
-    router.replace(pathname);
+    /**
+     * reset도 URL을 초기화하지만,
+     * "초기화 버튼 누를 때마다 화면이 위로 튀는 것"이 싫다면 scroll:false로 동일하게 처리.
+     * (만약 reset 시에는 위로 올리고 싶다면 이 줄만 scroll:true로 분리하면 됨)
+     */
+    router.replace(pathname, { scroll: false });
   }
 
   function clearPresetMode() {
