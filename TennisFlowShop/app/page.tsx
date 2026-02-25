@@ -35,7 +35,7 @@ type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
 // 상단 배너 슬라이드 데이터
 const SLIDES = [
   {
-    img: 'dokkaebi(1).jpg',
+    img: 'tennisflowmain.png',
     // imgMobile: '',
     alt: '이벤트',
     href: '/board/notice',
@@ -43,19 +43,19 @@ const SLIDES = [
     // objectPosition: 'center 20%',
   },
   {
-    img: 'dokkaebi(1).jpg',
+    img: 'tennisflowmain.png',
     alt: '서비스',
     href: '/services',
     caption: '장착 서비스 예약',
   },
   {
-    img: 'dokkaebi(1).jpg',
+    img: 'tennisflowmain.png',
     alt: '패키지',
     href: '/services/packages',
     caption: '스트링 패키지',
   },
   {
-    img: 'dokkaebi(1).jpg',
+    img: 'tennisflowmain.png',
     alt: '라켓과 스트링 디테일',
     href: '/products',
     caption: '추천 스트링',

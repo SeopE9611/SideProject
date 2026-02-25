@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
 
 type Slide = {
   img: string;
@@ -29,9 +28,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
         <div className="flex">
           {slides.map((s, i) => {
             const body = (
-              <div
-                className="relative h-[200px] /* ≤575 */ bp-sm:h-[240px] /* 576~767 */ bp-md-only:h-[340px] /* 768~1199 */ bp-lg:h-[520px] /* ≥1200 */ w-full flex-[0_0_100%] select-none"
-              >
+              <div className="relative h-[200px] /* ≤575 */ bp-sm:h-[240px] /* 576~767 */ bp-md-only:h-[340px] /* 768~1199 */ bp-lg:h-[520px] /* ≥1200 */ w-full flex-[0_0_100%] select-none">
                 {/* 원본 비율 유지 + 잘림 방지(cover → contain)
                     - grid place-items-center: 중앙 정렬
                     - max-w/max-h: 작은 이미지를 억지로 확대하지 않음(원본 크기 느낌 유지) */}
@@ -42,11 +39,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                 <div className="absolute inset-0 bg-muted/30" />
                 {s.caption && (
                   <div className="absolute bottom-4 left-4 bp-sm:bottom-6 bp-sm:left-6 bp-md:bottom-8 bp-md:left-10">
-                    <span
-                      className="inline-block rounded-full bg-background/80 text-foreground border border-border text-xs bp-md:text-sm px-3 py-1 shadow-sm backdrop-blur dark:bg-background/30 dark:hover:bg-background/40"
-                    >
-                      {s.caption}
-                    </span>
+                    <span className="inline-block rounded-full bg-background/80 text-foreground border border-border text-xs bp-md:text-sm px-3 py-1 shadow-sm backdrop-blur dark:bg-background/30 dark:hover:bg-background/40">{s.caption}</span>
                   </div>
                 )}
               </div>
