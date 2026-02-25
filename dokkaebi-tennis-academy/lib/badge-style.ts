@@ -286,57 +286,37 @@ export function usedBadgeMeta(kind: UsedBadgeKind, state: string) {
 
 export type BoardBadgeKind = 'free' | 'market' | 'gear';
 
-export function getBoardCategoryBadgeColor(kind: BoardBadgeKind, category?: string | null) {
-  const c = category ?? '';
-  const muted = 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground';
+export type BoardCategoryTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 
-  if (kind === 'free') {
-    switch (c) {
-      case 'general':
-        return SEMANTIC_BADGE.neutral;
-      case 'info':
-        return SEMANTIC_BADGE.info;
-      case 'qna':
-        return SEMANTIC_BADGE.success;
-      case 'tip':
-        return SEMANTIC_BADGE.warning;
-      case 'etc':
-      default:
-        return muted;
-    }
-  }
+export const boardCategoryToneMap: Record<BoardBadgeKind, Record<string, BoardCategoryTone>> = {
+  free: {
+    general: 'neutral',
+    info: 'info',
+    qna: 'success',
+    tip: 'warning',
+    etc: 'neutral',
+  },
+  market: {
+    racket: 'info',
+    string: 'info',
+    equipment: 'warning',
+  },
+  gear: {
+    racket: 'info',
+    string: 'info',
+    shoes: 'warning',
+    bag: 'neutral',
+    apparel: 'danger',
+    grip: 'success',
+    accessory: 'warning',
+    ball: 'warning',
+    other: 'neutral',
+  },
+};
 
-  if (kind === 'market') {
-    switch (c) {
-      case 'racket':
-      case 'string':
-        return SEMANTIC_BADGE.info;
-      case 'equipment':
-        return SEMANTIC_BADGE.warning;
-      default:
-        return muted;
-    }
-  }
-
-  switch (c) {
-    case 'racket':
-    case 'string':
-      return SEMANTIC_BADGE.info;
-    case 'shoes':
-      return SEMANTIC_BADGE.warning;
-    case 'bag':
-      return SEMANTIC_BADGE.neutral;
-    case 'apparel':
-      return SEMANTIC_BADGE.danger;
-    case 'grip':
-      return SEMANTIC_BADGE.success;
-    case 'accessory':
-    case 'ball':
-      return SEMANTIC_BADGE.warning;
-    case 'other':
-    default:
-      return muted;
-  }
+export function getBoardCategoryTone(kind: BoardBadgeKind, category?: string | null): BoardCategoryTone {
+  const categoryKey = category ?? '';
+  return boardCategoryToneMap[kind][categoryKey] ?? 'neutral';
 }
 
 export function academyBadgeVariant() {
