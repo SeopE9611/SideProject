@@ -27,6 +27,36 @@ import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils'
 
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
+const PAGE_COPY = {
+  title: '운영 통합 센터',
+  description: '주문·대여·신청을 한 화면에서 확인하는 관리자 운영 허브입니다.',
+  dailyTodoTitle: '오늘 해야 할 일',
+  dailyTodoLabels: {
+    urgent: '긴급',
+    caution: '주의',
+    pending: '미처리',
+  },
+  actionsTitle: '이 페이지에서 가능한 액션',
+  actions: [
+    {
+      title: '결제 불일치 확인',
+      description: '그룹 단위 결제 상태가 혼재되었는지 빠르게 점검합니다.',
+    },
+    {
+      title: '연결 오류 점검',
+      description: '연결 누락/불일치 경고 건을 우선 정리합니다.',
+    },
+    {
+      title: '상세 이동',
+      description: '주문·신청서·대여 상세 화면으로 즉시 이동합니다.',
+    },
+    {
+      title: '정산 관리 이동',
+      description: '지난달 기준 정산 화면으로 빠르게 이동해 마감합니다.',
+    },
+  ],
+};
+
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
 // 그룹(묶음) 만들기 유틸
@@ -262,6 +292,23 @@ export default function OperationsClient() {
   // 클라이언트에서 표본 기반으로 다시 필터링하면 경고 누락/오판 가능성이 있어 제거.
   const groupsToRender = groups;
 
+  const todayTodoCount = useMemo(() => {
+    return groupsToRender.reduce(
+      (acc, group) => {
+        const groupItems = [group.anchor, ...group.items.filter((it) => it.id !== group.anchor.id)];
+        const hasWarn = groupItems.some((it) => Array.isArray(it.warnReasons) && it.warnReasons.length > 0);
+        const hasPending = groupItems.some((it) => Array.isArray(it.pendingReasons) && it.pendingReasons.length > 0);
+        const hasPaymentIssue = groupItems.some((it) => it.paymentLabel === '미결제' || it.paymentLabel === '결제취소');
+
+        if (hasWarn) acc.urgent += 1;
+        if (hasPaymentIssue) acc.caution += 1;
+        if (hasPending) acc.pending += 1;
+        return acc;
+      },
+      { urgent: 0, caution: 0, pending: 0 }
+    );
+  }, [groupsToRender]);
+
   // 펼칠 수 있는 그룹(통합 묶음)만 추림
   const expandableGroupKeys = useMemo(() => groupsToRender.filter((g) => g.items.length > 1).map((g) => g.key), [groupsToRender]);
   const hasExpandableGroups = expandableGroupKeys.length > 0;
@@ -344,8 +391,30 @@ export default function OperationsClient() {
       {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
-        <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>
-        <p className="mt-1 text-xs text-muted-foreground">주문 · 신청서 · 대여를 한 화면에서 확인하고, 상세로 빠르게 이동합니다.</p>
+        <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{PAGE_COPY.description}</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {PAGE_COPY.dailyTodoTitle}:{' '}
+          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.urgent} {todayTodoCount.urgent}건</span>
+          <span className="mx-2">·</span>
+          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.caution} {todayTodoCount.caution}건</span>
+          <span className="mx-2">·</span>
+          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.pending} {todayTodoCount.pending}건</span>
+        </p>
+      </div>
+
+      <div className="mx-auto mb-2 max-w-7xl">
+        <p className="mb-3 text-sm font-medium text-foreground">{PAGE_COPY.actionsTitle}</p>
+      </div>
+      <div className="mx-auto mb-5 grid max-w-7xl gap-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+        {PAGE_COPY.actions.map((action) => (
+          <Card key={action.title} className="rounded-xl border-border bg-card shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{action.title}</CardTitle>
+              <CardDescription className="text-xs">{action.description}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
       </div>
 
       {/* 필터 및 검색 카드 */}
