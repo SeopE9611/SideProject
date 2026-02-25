@@ -72,7 +72,7 @@ function getBoardTypeColor(type: string) {
     case 'community':
       return 'bg-success/10 text-success hover:bg-success/10 dark:bg-success/15';
     case 'faq':
-      return 'bg-muted text-primary hover:bg-muted';
+      return 'bg-muted text-foreground hover:bg-muted';
     default:
       return 'bg-card text-muted-foreground hover:bg-card';
   }

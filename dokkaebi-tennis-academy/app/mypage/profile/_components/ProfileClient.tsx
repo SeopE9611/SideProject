@@ -393,7 +393,7 @@ export default function ProfileClient({ user }: Props) {
  {socialProviders.length ? (
  <>
  {socialProviders.includes('kakao') && (
- <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/10 dark:text-warning">
+ <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/15 dark:text-warning">
  카카오
  </Badge>
  )}

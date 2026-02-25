@@ -180,7 +180,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 {getStatusIcon(r.status)}
                 <Badge className={`px-3 py-1 text-xs font-medium ${getStatusBadgeColor(r.status)}`}>{getStatusLabel(r.status)}</Badge>
-                {r.cancelStatus === 'requested' && <Badge className="bg-muted text-primary dark:bg-muted dark:text-primary border border-border">취소 요청됨</Badge>}
+                {r.cancelStatus === 'requested' && <Badge className="bg-warning/10 text-warning border border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40">취소 요청됨</Badge>}
               </div>
             </div>
 

@@ -30,15 +30,15 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 // 배지 색상(라이트/다크 모두 대비 높임)
 const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
   활성: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
-  만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/10 dark:text-destructive dark:border-border',
-  일시정지: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
+  만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/15 dark:text-destructive dark:border-border',
+  일시정지: 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40',
   취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
   대기: 'bg-background text-foreground border-border dark:bg-card dark:text-foreground dark:border-border',
 };
 
 const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
   결제완료: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
-  결제대기: 'bg-muted text-primary border-border dark:bg-muted dark:text-primary dark:border-border',
+  결제대기: 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40',
   결제취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
 };
 
@@ -483,7 +483,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                               <Badge variant="outline" className="text-xs">
                                 신청서 ID: {u.applicationId}
                               </Badge>
-                              <Badge className="text-xs bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive">-{u.sessionsUsed}회 차감</Badge>
+                              <Badge className="text-xs bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive">-{u.sessionsUsed}회 차감</Badge>
                             </div>
                             <p className="font-medium mb-1">{u.description}</p>
                             <p className="text-sm text-muted-foreground">{new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(u.date))}</p>

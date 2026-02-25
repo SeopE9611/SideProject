@@ -62,7 +62,7 @@ function conditionLabel(condition?: string | null) {
     return {
       label: 'C',
       desc: '보통',
-      className: 'bg-muted text-primary ring-1 ring-ring',
+      className: 'bg-muted text-muted-foreground ring-1 ring-ring dark:bg-muted dark:text-muted-foreground',
     };
   return { label: c, desc: '', className: 'bg-muted text-muted-foreground ring-1 ring-muted' };
 }
