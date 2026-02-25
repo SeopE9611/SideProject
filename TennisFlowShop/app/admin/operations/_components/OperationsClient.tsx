@@ -1,29 +1,29 @@
 'use client';
 
-import useSWR from 'swr';
-import Link from 'next/link';
-import { Fragment, useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Fragment, useEffect, useMemo, useState } from 'react';
+import useSWR from 'swr';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
-import { shortenId } from '@/lib/shorten';
-import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
-import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
-import { prevMonthYyyymmKST, flowBadgeClass, settlementBadgeClass, type Kind, type Flow } from './filters/operationsFilters';
-import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
-import { copyToClipboard } from './actions/operationsActions';
-import { initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
-import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
+import { shortenId } from '@/lib/shorten';
+import { cn } from '@/lib/utils';
+import { copyToClipboard } from './actions/operationsActions';
+import { flowBadgeClass, prevMonthYyyymmKST, settlementBadgeClass, type Flow, type Kind } from './filters/operationsFilters';
+import { initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
+import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
 
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
@@ -161,11 +161,10 @@ function isWarnGroup(g: { anchor: OpItem; items: OpItem[] }) {
   return payMismatch || hasMixed;
 }
 
-const thClasses = 'px-4 py-3 text-left align-middle font-semibold text-foreground text-xs whitespace-nowrap';
-const tdClasses = 'px-4 py-4 align-top';
+const thClasses = 'px-4 py-2 text-left align-middle font-semibold text-foreground text-[11px] whitespace-nowrap';
+const tdClasses = 'px-4 py-2.5 align-top';
 const th = thClasses;
 const td = tdClasses;
-
 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
   success: 'bg-primary/10 text-primary dark:bg-primary/20',
@@ -177,6 +176,32 @@ const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
 
 function opsBadgeToneClass(tone: OpsBadgeTone) {
   return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
+}
+
+/**
+ * 운영함(통합) 테이블에서 Flow 라벨이 너무 길어 뱃지가 “가로로 늘어나며” 난잡해지는 문제 해결용.
+ * - 표에는 짧은 라벨만 보여주고
+ * - 전체 문구(flowLabel)는 title로 유지해서 hover로 확인하게 합니다.
+ */
+function flowShortLabel(flow?: Flow) {
+  switch (flow) {
+    case 1:
+      return '스트링';
+    case 2:
+      return '스트링+교체';
+    case 3:
+      return '교체(단독)';
+    case 4:
+      return '라켓';
+    case 5:
+      return '라켓+교체';
+    case 6:
+      return '대여';
+    case 7:
+      return '대여+교체';
+    default:
+      return '미분류';
+  }
 }
 
 export default function OperationsClient() {
@@ -286,7 +311,6 @@ export default function OperationsClient() {
     }));
   }
 
-
   function renderLinkedDocs(docs: Array<{ kind: Kind; id: string; href: string }>) {
     if (!docs || docs.length === 0) {
       return <span className="text-xs text-muted-foreground">-</span>;
@@ -317,7 +341,7 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-6">
-        {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
+      {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>
@@ -691,35 +715,57 @@ export default function OperationsClient() {
                         {/* 그룹 대표(앵커) Row */}
                         <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-card')}>
                           <TableCell className={tdClasses}>
-                            <div className="flex flex-col gap-1">
-                              {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
-                              <div className="flex flex-wrap gap-1">
-                                {g.kinds.map((k) => (
-                                  <Badge key={k} className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(k)))}>
-                                    {opsKindLabel(k)}
-                                  </Badge>
-                                ))}
-                              </div>
+                            {(() => {
+                              /**
+                               * 운영함(통합) “유형” 컬럼 개선(표시만)
+                               * - 기존: 뱃지를 여러 줄로 쌓아 행 높이가 커지고, Flow 라벨이 길어 뱃지가 가로로 늘어남
+                               * - 개선: 핵심 뱃지만 노출 + 나머지는 +N으로 접기(AdminBadgeRow),
+                               *         Flow는 짧은 라벨만 표기하고 전체 문구는 title로 유지
+                               */
+                              const items: BadgeItem[] = [];
 
-                              {/* 통합/단독 + (그룹 건수) */}
-                              <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-primary/10 text-primary dark:bg-primary/20' : g.anchor.isIntegrated ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-card text-muted-foreground')}>
-                                  {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
-                                </Badge>
-                                {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>{g.items.length}건</Badge>}
-                              </div>
-                              {/* 7개 시나리오(Flow) */}
-                              <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(g.anchor.flow))} title={`Flow ${g.anchor.flow}`}>
-                                  {g.anchor.flowLabel}
-                                </Badge>
-                              </div>
+                              // 통합/단독
+                              const integratedLabel = isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독';
+                              items.push({
+                                label: integratedLabel,
+                                className: integratedLabel === '통합' ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-card text-muted-foreground',
+                                title: isGroup ? '연결된 문서가 함께 묶인 그룹' : '단일 문서',
+                              });
 
-                              {/* 정산 기준(앵커) 라벨: 금액 해석 혼동 방지 */}
-                              <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{g.anchor.settlementLabel}</Badge>
-                              </div>
-                            </div>
+                              // 통합 그룹이면 건수도 함께(의미 큼)
+                              if (isGroup) {
+                                items.push({
+                                  label: `${g.items.length}건`,
+                                  className: 'bg-card text-foreground',
+                                  title: '이 그룹에 포함된 문서 수',
+                                });
+                              }
+
+                              // 그룹 포함 종류(주문/신청서/대여)
+                              g.kinds.forEach((k) =>
+                                items.push({
+                                  label: opsKindLabel(k),
+                                  className: opsBadgeToneClass(opsKindBadgeTone(k)),
+                                  title: `포함 문서: ${opsKindLabel(k)}`,
+                                }),
+                              );
+
+                              // Flow: 표시는 짧게, 전체는 title로
+                              items.push({
+                                label: flowShortLabel(g.anchor.flow),
+                                className: flowBadgeClass(g.anchor.flow),
+                                title: `Flow ${g.anchor.flow} · ${g.anchor.flowLabel}`,
+                              });
+
+                              // 정산 기준
+                              items.push({
+                                label: g.anchor.settlementLabel,
+                                className: settlementBadgeClass(),
+                                title: '금액/정산 해석 기준',
+                              });
+
+                              return <AdminBadgeRow items={items} maxVisible={4} />;
+                            })()}
                           </TableCell>
 
                           <TableCell className={tdClasses}>
@@ -867,12 +913,26 @@ export default function OperationsClient() {
                           children.map((it) => (
                             <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-card hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
                               <TableCell className={tdClasses}>
-                                <div className="flex flex-col gap-1">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(it.kind)))}>{opsKindLabel(it.kind)}</Badge>
-                                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(it.flow))} title={`Flow ${it.flow}`}>
-                                    {it.flowLabel}
-                                  </Badge>
-                                </div>
+                                <AdminBadgeRow
+                                  maxVisible={4}
+                                  items={[
+                                    {
+                                      label: opsKindLabel(it.kind),
+                                      className: opsBadgeToneClass(opsKindBadgeTone(it.kind)),
+                                      title: '문서 종류',
+                                    },
+                                    {
+                                      label: flowShortLabel(it.flow),
+                                      className: flowBadgeClass(it.flow),
+                                      title: `Flow ${it.flow} · ${it.flowLabel}`,
+                                    },
+                                    {
+                                      label: it.settlementLabel,
+                                      className: settlementBadgeClass(),
+                                      title: '금액/정산 해석 기준',
+                                    },
+                                  ]}
+                                />
                                 <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{it.settlementLabel}</Badge>
                               </TableCell>
 
