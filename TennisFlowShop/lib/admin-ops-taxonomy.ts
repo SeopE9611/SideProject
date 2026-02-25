@@ -5,6 +5,7 @@
  */
 export type OpsKind = 'order' | 'stringing_application' | 'rental';
 export type OpsBadgeTone = 'success' | 'warning' | 'destructive' | 'muted' | 'info';
+export type OpsSignalType = 'status' | 'payment';
 
 export function opsKindLabel(kind: OpsKind) {
   if (kind === 'order') return '주문';
@@ -57,4 +58,34 @@ export function opsStatusBadgeTone(kind: OpsKind, label: string): OpsBadgeTone {
   if (kind === 'order') return orderStatusColors[label] ?? 'muted';
   if (kind === 'stringing_application') return applicationStatusColors[label] ?? 'muted';
   return rentalStatusColors[label] ?? 'muted';
+}
+
+const SIGNAL_PRIORITY: Record<OpsBadgeTone, number> = {
+  destructive: 5,
+  warning: 4,
+  info: 3,
+  success: 2,
+  muted: 1,
+};
+
+/**
+ * 상태/결제 라벨이 같은 의미로 중복 노출되는 것을 막기 위한 우선 신호 선택기.
+ * - 톤 매핑은 입력받은 값을 그대로 사용한다.
+ * - 우선순위는 위험도(파괴적 > 경고 > 정보 > 성공 > 중립) + 같은 톤이면 결제를 우선한다.
+ */
+export function pickPrimaryOpsSignal(
+  signals: Array<{ label?: string | null; tone: OpsBadgeTone; type: OpsSignalType }>,
+) {
+  const filtered = signals.filter((signal) => signal.label && signal.label.trim().length > 0);
+  if (filtered.length === 0) return null;
+
+  const deduped = filtered.filter((signal, idx, arr) => arr.findIndex((x) => x.label === signal.label && x.tone === signal.tone) === idx);
+  deduped.sort((a, b) => {
+    const toneDiff = SIGNAL_PRIORITY[b.tone] - SIGNAL_PRIORITY[a.tone];
+    if (toneDiff !== 0) return toneDiff;
+    if (a.type === b.type) return 0;
+    return a.type === 'payment' ? -1 : 1;
+  });
+
+  return deduped[0] ?? null;
 }
