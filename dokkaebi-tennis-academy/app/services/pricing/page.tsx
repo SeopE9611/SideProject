@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Check, Clock, Star, Wrench, Zap, Shield } from 'lucide-react';
 import Link from 'next/link';
 
@@ -88,7 +89,7 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Tennis court line pattern background */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] bg-tennis-court-pattern" />
+      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
