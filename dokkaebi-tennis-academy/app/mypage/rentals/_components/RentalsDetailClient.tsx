@@ -581,7 +581,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
             {/* 반납 운송장 등록(사용자 발송) */}
             {data?.shipping?.return?.trackingNumber && (
               <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/20">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
                   <Truck className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
@@ -598,7 +598,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
             )}
 
             <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
                 <CheckCircle className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">

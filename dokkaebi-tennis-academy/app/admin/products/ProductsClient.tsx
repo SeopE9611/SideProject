@@ -46,7 +46,7 @@ const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.E
   },
   low_stock: {
     label: '재고 부족',
-    color: 'bg-muted text-primary ring-1 ring-ring ' + 'dark:bg-muted dark:text-primary dark:ring-ring',
+    color: 'bg-warning/10 text-warning ring-1 ring-warning/30 ' + 'dark:bg-warning/15 dark:text-warning dark:ring-warning/40',
     Icon: TriangleAlert,
   },
   out_of_stock: {

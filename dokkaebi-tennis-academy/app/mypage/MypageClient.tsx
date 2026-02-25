@@ -201,7 +201,7 @@ export default function MypageClient({ user }: Props) {
                           {user.oauthProviders?.length ? (
                             <>
                               {user.oauthProviders.includes('kakao') && (
-                                <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/10 dark:text-warning text-xs py-0 px-2 h-5">
+                                <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/15 dark:text-warning text-xs py-0 px-2 h-5">
                                   카카오
                                 </Badge>
                               )}

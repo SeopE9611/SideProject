@@ -355,7 +355,7 @@ export default function AdminNotificationsClient() {
                           className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
                             it.status === 'sent' && 'bg-primary/10 text-primary dark:bg-primary/20',
-                            it.status === 'queued' && 'bg-muted text-primary',
+                            it.status === 'queued' && 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground',
                             it.status === 'failed' && 'bg-destructive/10 text-destructive dark:bg-destructive/15'
                           )}
                         >

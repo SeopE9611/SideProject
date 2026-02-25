@@ -59,7 +59,7 @@ const rentalStatusColors: Record<string, string> = {
   pending: 'bg-card text-muted-foreground dark:bg-card',
   paid: 'bg-primary/10 text-primary dark:bg-primary/20',
   out: 'bg-muted text-foreground dark:bg-muted',
-  returned: 'bg-success/10 text-success dark:bg-success/10',
+  returned: 'bg-success/10 text-success dark:bg-success/15',
 };
 
 const rentalStatusLabels: Record<string, string> = {
@@ -116,7 +116,7 @@ export default function AdminRentalsClient() {
 
   function getSettlementBadge() {
     // 대여 화면의 정산 앵커는 항상 “대여”
-    return { label: '정산: 대여', className: 'bg-muted text-primary dark:bg-muted dark:text-primary' };
+    return { label: '정산: 대여', className: 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground' };
   }
 
   const router = useRouter();
@@ -406,7 +406,7 @@ export default function AdminRentalsClient() {
     return s === 'paid' ? (
       <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[11px] dark:bg-primary/20">결제확정</span>
     ) : (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-[11px]">입금대기</span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/30 text-[11px] dark:bg-warning/15 dark:border-warning/40">입금대기</span>
     );
   }
 

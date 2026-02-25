@@ -269,7 +269,7 @@ export default function OrderLookupResultsPage() {
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
-                  <p className="text-primary mb-8 max-w-md">{error}</p>
+                  <p className="text-muted-foreground mb-8 max-w-md">{error}</p>
                   {fieldErrors && (
                     <div className="w-full max-w-md mb-8 text-left">
                       <div className="rounded-lg border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 p-4 text-foreground">

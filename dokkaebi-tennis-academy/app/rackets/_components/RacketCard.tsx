@@ -64,7 +64,7 @@ function RacketAvailBadge({ id }: { id: string }) {
   // 전량 대여중
   if (isAllRented) {
     return (
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive whitespace-nowrap">
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive whitespace-nowrap">
         전량 대여중 ({rentedCount}/{qty})
       </div>
     );
@@ -82,7 +82,7 @@ function RacketAvailBadge({ id }: { id: string }) {
         가용 {avail}/{qty}
       </div>
 
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-primary dark:bg-muted dark:text-primary whitespace-nowrap">대여중 {rentedCount}</div>
+      <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground whitespace-nowrap">대여중 {rentedCount}</div>
     </div>
   );
 }
