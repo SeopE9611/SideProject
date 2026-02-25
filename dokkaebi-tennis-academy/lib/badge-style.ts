@@ -12,6 +12,7 @@ const SEMANTIC_BADGE = {
   warning: 'bg-warning/20 text-warning border border-warning/40 dark:bg-warning/25 dark:border-warning/50',
   info: 'bg-primary/20 text-primary border border-primary/40 dark:bg-primary/25 dark:border-primary/50',
   neutral: 'bg-card text-foreground border border-border',
+  danger: 'bg-destructive/20 text-destructive border border-destructive/40 dark:bg-destructive/25 dark:border-destructive/50',
   destructive: 'bg-destructive/20 text-destructive border border-destructive/40 dark:bg-destructive/25 dark:border-destructive/50',
 } as const;
 
@@ -19,6 +20,22 @@ export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
 
 export function badgeToneClass(tone: BadgeSemanticTone) {
   return SEMANTIC_BADGE[tone];
+}
+
+
+export const SEMANTIC_BADGE_VARIANT = {
+  neutral: 'neutral',
+  info: 'info',
+  success: 'success',
+  warning: 'warning',
+  danger: 'danger',
+  destructive: 'danger',
+} as const;
+
+export type BadgeSemanticVariant = (typeof SEMANTIC_BADGE_VARIANT)[BadgeSemanticTone];
+
+export function badgeToneVariant(tone: BadgeSemanticTone): BadgeSemanticVariant {
+  return SEMANTIC_BADGE_VARIANT[tone];
 }
 
 export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -264,4 +281,90 @@ export function usedBadgeMeta(kind: UsedBadgeKind, state: string) {
       className: SEMANTIC_BADGE.neutral,
     }
   );
+}
+
+
+export type BoardBadgeKind = 'free' | 'market' | 'gear';
+
+export function getBoardCategoryBadgeColor(kind: BoardBadgeKind, category?: string | null) {
+  const c = category ?? '';
+  const muted = 'bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground';
+
+  if (kind === 'free') {
+    switch (c) {
+      case 'general':
+        return SEMANTIC_BADGE.neutral;
+      case 'info':
+        return SEMANTIC_BADGE.info;
+      case 'qna':
+        return SEMANTIC_BADGE.success;
+      case 'tip':
+        return SEMANTIC_BADGE.warning;
+      case 'etc':
+      default:
+        return muted;
+    }
+  }
+
+  if (kind === 'market') {
+    switch (c) {
+      case 'racket':
+      case 'string':
+        return SEMANTIC_BADGE.info;
+      case 'equipment':
+        return SEMANTIC_BADGE.warning;
+      default:
+        return muted;
+    }
+  }
+
+  switch (c) {
+    case 'racket':
+    case 'string':
+      return SEMANTIC_BADGE.info;
+    case 'shoes':
+      return SEMANTIC_BADGE.warning;
+    case 'bag':
+      return SEMANTIC_BADGE.neutral;
+    case 'apparel':
+      return SEMANTIC_BADGE.danger;
+    case 'grip':
+      return SEMANTIC_BADGE.success;
+    case 'accessory':
+    case 'ball':
+      return SEMANTIC_BADGE.warning;
+    case 'other':
+    default:
+      return muted;
+  }
+}
+
+export function academyBadgeVariant() {
+  return 'brand' as const;
+}
+
+export function packagesBadgeVariant(kind: 'hero' | 'selection' | 'benefits' | 'faq') {
+  if (kind === 'hero' || kind === 'benefits') return 'neutral' as const;
+  return 'brand' as const;
+}
+
+export function racketStockBadgeVariant(state: 'sold' | 'allRented' | 'available' | 'rented') {
+  if (state === 'sold') return 'neutral' as const;
+  if (state === 'allRented') return 'danger' as const;
+  if (state === 'rented') return 'warning' as const;
+  return 'brand' as const;
+}
+
+export function adminPostVisibilityBadgeVariant(status: 'public' | 'hidden') {
+  return status === 'public' ? ('brand' as const) : ('neutral' as const);
+}
+
+export function adminReportTargetBadgeVariant(targetType: 'post' | 'comment') {
+  return targetType === 'post' ? ('neutral' as const) : ('info' as const);
+}
+
+export function adminReportStatusBadgeVariant(status: 'pending' | 'resolved' | 'rejected') {
+  if (status === 'pending') return 'warning' as const;
+  if (status === 'resolved') return 'success' as const;
+  return 'danger' as const;
 }

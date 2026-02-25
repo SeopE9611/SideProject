@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Star, Users, Trophy, Target, Award, ArrowRight, Phone, Mail, MapPin, Calendar } from 'lucide-react';
+import { academyBadgeVariant } from '@/lib/badge-style';
 
 export default function AcademyPage() {
   type ProgramVariant = 'primary' | 'accent' | 'muted';
@@ -199,7 +200,7 @@ export default function AcademyPage() {
 
           <div className="container relative z-10 text-center text-foreground">
             <div className="max-w-4xl mx-auto">
-              <Badge className="mb-6 bg-primary/10 text-foreground dark:bg-primary/20 border-border backdrop-blur-sm">
+              <Badge variant={academyBadgeVariant()} className="mb-6 backdrop-blur-sm">
                 <Award className="w-4 h-4 mr-2 text-primary" />
                 테니스 교육 전문 기관
               </Badge>
@@ -261,7 +262,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background" id="programs">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20">
+              <Badge variant={academyBadgeVariant()} className="mb-4">
                 <Trophy className="w-4 h-4 mr-2 text-primary" />
                 맞춤형 교육 프로그램
               </Badge>
@@ -354,7 +355,7 @@ export default function AcademyPage() {
 
           <div className="container relative z-10">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20 border-border">
+              <Badge variant={academyBadgeVariant()} className="mb-4">
                 <Users className="w-4 h-4 mr-2 text-primary" />
                 전문 코칭진
               </Badge>
@@ -397,7 +398,7 @@ export default function AcademyPage() {
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {coach.specialties.map((specialty, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge key={index} variant="neutral" className="text-xs">
                             {specialty}
                           </Badge>
                         ))}
@@ -429,7 +430,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20">
+              <Badge variant={academyBadgeVariant()} className="mb-4">
                 <Award className="w-4 h-4 mr-2 text-primary" />
                 최신 시설 완비
               </Badge>
@@ -472,7 +473,7 @@ export default function AcademyPage() {
         <section className="py-20 bg-background">
           <div className="container">
             <div className="text-center mb-16">
-              <Badge className="mb-4 bg-primary/10 text-foreground dark:bg-primary/20">
+              <Badge variant={academyBadgeVariant()} className="mb-4">
                 <Star className="w-4 h-4 mr-2 text-primary" />
                 수강생 만족도 96%
               </Badge>
