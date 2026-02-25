@@ -1257,7 +1257,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsContent value="qna" className="p-4 sm:p-8">
                 <div className="flex items-center justify-between mb-5 sm:mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-primary rounded-lg flex items-center justify-center">
+                    <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-foreground rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground">상품 문의</h3>
@@ -1365,7 +1365,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <div className="mt-8 sm:mt-12">
           <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
             <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl font-bold bg-muted/30 text-primary">관련 상품</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl font-bold bg-muted/30 text-foreground">관련 상품</CardTitle>
             </CardHeader>
             <CardContent>
               {/* 4칸 고정: 상품이 부족하면 플레이스홀더로 채움 */}

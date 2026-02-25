@@ -316,7 +316,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">평균 평점</p>
                 <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
               </div>
-              <div className="rounded-md p-2 bg-warning/10 dark:bg-warning/10">
+              <div className="rounded-md p-2 bg-warning/10 dark:bg-warning/15">
                 <Star className="h-5 w-5 text-warning" />
               </div>
             </div>

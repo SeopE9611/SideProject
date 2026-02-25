@@ -249,7 +249,7 @@ export default function ProductsClient() {
               label: '재고 부족',
               icon: <AlertTriangle className="h-6 w-6 text-warning" />,
               value: lowStockAll,
-              bgColor: 'bg-warning/10 dark:bg-warning/10',
+              bgColor: 'bg-warning/10 dark:bg-warning/15',
             },
             {
               label: '품절',

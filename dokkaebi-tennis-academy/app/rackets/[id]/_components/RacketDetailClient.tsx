@@ -467,7 +467,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
-                        className={`flex-1 h-12 ${isCompared ? 'bg-primary/10 border-border text-primary hover:bg-primary/20' : ''}`}
+                        className={`flex-1 h-12 ${isCompared ? 'bg-primary/10 border-border text-primary hover:bg-primary/20 dark:bg-primary/20' : 'bg-card border-border text-foreground'}`}
                         onClick={toggleCompare}
                         disabled={!racketId}
                         title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
@@ -968,7 +968,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 onClick={toggleCompare}
                 disabled={!racketId}
                 title={!racketId ? '상품 ID가 없어 비교 목록에 담을 수 없습니다.' : !isCompared && compareCount >= 4 ? '비교는 최대 4개까지 가능합니다.' : undefined}
-                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? 'border-border bg-primary/10 text-primary' : 'border-border bg-card text-foreground'} ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''} dark:bg-primary/20`}
+                className={`h-11 rounded-lg border text-sm font-semibold flex items-center justify-center gap-2 ${isCompared ? 'border-border bg-primary/10 text-primary dark:bg-primary/20' : 'border-border bg-card text-foreground'} ${!racketId || (!isCompared && compareCount >= 4) ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <Scale className="h-4 w-4" />
                 {isCompared ? `비교 선택됨 (${compareCount}/4)` : `비교 담기 (${compareCount}/4)`}
