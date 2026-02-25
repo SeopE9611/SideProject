@@ -546,21 +546,21 @@ export default async function StringServiceSuccessPage(props: Props) {
  신청자 정보
  </h3>
  <div className="space-y-4">
- <div className="flex items-center p-4 bg-background dark:bg-card rounded-lg">
+ <div className="flex items-center p-4 bg-card rounded-lg">
  <User className="h-5 w-5 text-muted-foreground mr-3" />
  <div>
  <p className="text-sm text-muted-foreground">이름</p>
  <p className="font-semibold text-foreground">{application.name}</p>
  </div>
  </div>
- <div className="flex items-center p-4 bg-background dark:bg-card rounded-lg">
+ <div className="flex items-center p-4 bg-card rounded-lg">
  <Mail className="h-5 w-5 text-muted-foreground mr-3" />
  <div>
  <p className="text-sm text-muted-foreground">이메일</p>
  <p className="font-semibold text-foreground">{application.email}</p>
  </div>
  </div>
- <div className="flex items-center p-4 bg-background dark:bg-card rounded-lg">
+ <div className="flex items-center p-4 bg-card rounded-lg">
  <Phone className="h-5 w-5 text-muted-foreground mr-3" />
  <div>
  <p className="text-sm text-muted-foreground">연락처</p>
@@ -576,12 +576,12 @@ export default async function StringServiceSuccessPage(props: Props) {
  배송지 정보
  </h3>
  <div className="space-y-4">
- <div className="p-4 bg-background dark:bg-card rounded-lg">
+ <div className="p-4 bg-card rounded-lg">
  <p className="text-sm text-muted-foreground mb-1">주소</p>
  <p className="font-semibold text-foreground">{application.shippingInfo?.address}</p>
  {application.shippingInfo?.addressDetail && <p className="text-foreground mt-1">{application.shippingInfo.addressDetail}</p>}
  </div>
- <div className="p-4 bg-background dark:bg-card rounded-lg">
+ <div className="p-4 bg-card rounded-lg">
  <p className="text-sm text-muted-foreground mb-1">우편번호</p>
  <p className="font-semibold text-foreground">{application.shippingInfo?.postalCode}</p>
  </div>
@@ -629,7 +629,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
  <div className="space-y-3">
  {racketLines.map((line: any, idx: number) => (
- <div key={line.id ?? idx} className="p-4 rounded-lg bg-background dark:bg-card flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+ <div key={line.id ?? idx} className="p-4 rounded-lg bg-card flex flex-col md:flex-row md:items-center md:justify-between gap-3">
  <div>
  <p className="text-xs text-muted-foreground mb-1">라켓 {line.racketType || line.racketLabel || `${idx + 1}번`}</p>
 
@@ -654,7 +654,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  )}
  </CardContent>
 
- <CardFooter className="bg-background dark:bg-card rounded-b-lg p-8">
+ <CardFooter className="bg-card rounded-b-lg p-8">
  <div className="flex flex-col sm:flex-row gap-4 w-full">
  <Button variant="default" className="flex-1 h-12 transition-all duration-200" asChild>
  <Link href={`/mypage?${new URLSearchParams({ tab: 'applications', id: String(application._id) }).toString()}`}>

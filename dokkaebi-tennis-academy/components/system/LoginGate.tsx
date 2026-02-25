@@ -99,7 +99,7 @@ export default function LoginGate({ next, variant = 'default' }: { next: string;
 
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {v.perks.map((p) => (
-                  <div key={p.text} className="flex items-center gap-2 rounded-xl bg-card dark:bg-background p-3 shadow-sm ring-1 ring-border/70">
+                  <div key={p.text} className="flex items-center gap-2 rounded-xl bg-card p-3 shadow-sm ring-1 ring-border/70">
                     {p.icon}
                     <span className="text-sm">{p.text}</span>
                   </div>

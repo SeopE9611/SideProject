@@ -654,7 +654,7 @@ export default function PackageOrdersClient() {
             <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
               <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border shadow-sm max-h-[60vh] min-w-0">
                 <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs" aria-busy={isValidating && packages.length === 0}>
-                  <TableHeader className="sticky top-0 bg-background dark:bg-card shadow-sm">
+                  <TableHeader className="sticky top-0 bg-card shadow-sm">
                     <TableRow>
                       <TableHead className={cn(thClasses, 'w-[120px]')}>패키지 ID</TableHead>
 

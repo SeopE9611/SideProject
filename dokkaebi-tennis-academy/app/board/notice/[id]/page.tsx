@@ -362,7 +362,7 @@ export default function NoticeDetailPage() {
                             return (
                               <div
                                 key={`file-${i}`}
-                                className="flex items-center justify-between p-4 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200"
+                                className="flex items-center justify-between p-4 bg-background hover:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className="flex-shrink-0 w-10 h-10 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-lg flex items-center justify-center">

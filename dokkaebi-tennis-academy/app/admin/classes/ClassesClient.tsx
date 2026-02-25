@@ -227,7 +227,7 @@ export default function ClassesPage() {
           <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-background dark:bg-card hover:bg-background dark:hover:bg-card">
+                <TableRow className="bg-card hover:bg-background dark:hover:bg-card">
                   <TableHead className="w-[50px]">
                     <Checkbox ref={allCheckboxRef} checked={selectedClasses.length === classes.length} onCheckedChange={handleSelectAll} aria-label="전체 선택" />
                   </TableHead>

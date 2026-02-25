@@ -109,7 +109,7 @@ export default function ProductsLoading() {
           <div className="w-full max-w-md">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <div className="pl-8 h-9 text-xs rounded-md bg-background dark:bg-card" />
+              <div className="pl-8 h-9 text-xs rounded-md bg-card" />
               <button className="absolute right-0 top-0 h-9 w-9 rounded-l-none px-3 opacity-50 cursor-not-allowed">
                 <XIcon className="h-4 w-4" />
               </button>
@@ -130,7 +130,7 @@ export default function ProductsLoading() {
                 {Array.from({ length: PAGE_SIZE }).map((_, i) => (
                   <TableRow key={i}>
                     <TableCell colSpan={8} className="p-0">
-                      <div className="h-14 animate-pulse bg-background dark:bg-card" />
+                      <div className="h-14 animate-pulse bg-card" />
                     </TableCell>
                   </TableRow>
                 ))}

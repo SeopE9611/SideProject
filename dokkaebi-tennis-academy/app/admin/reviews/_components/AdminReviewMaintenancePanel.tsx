@@ -147,7 +147,7 @@ export default function AdminReviewMaintenancePanel() {
         </div>
 
         {/* 기능 설명 */}
-        <div className="rounded-md bg-background dark:bg-card p-3 text-[13px] text-foreground space-y-2">
+        <div className="rounded-md bg-card p-3 text-[13px] text-foreground space-y-2">
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
@@ -169,7 +169,7 @@ export default function AdminReviewMaintenancePanel() {
         </div>
 
         {/* 결과 출력 */}
-        {lastResult && <pre className="mt-2 whitespace-pre-wrap rounded-md bg-background dark:bg-card p-3 text-xs">{JSON.stringify(lastResult, null, 2)}</pre>}
+        {lastResult && <pre className="mt-2 whitespace-pre-wrap rounded-md bg-card p-3 text-xs">{JSON.stringify(lastResult, null, 2)}</pre>}
       </CardContent>
     </Card>
   );

@@ -1491,7 +1491,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       {/* ===== 모바일 전용 하단 Sticky ===== */}
       {showSticky && (
         <div data-bottom-sticky="1" className="fixed inset-x-0 bottom-0 z-50 bp-md:hidden border-t border-border">
-          <div className="bg-card dark:bg-background shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
+          <div className="bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_16px_rgba(0,0,0,0.3)]">
             <SiteContainer variant="wide" className="py-3">
               {/* 상품 정보 섹션 */}
               <div className="flex items-center gap-3 pb-3 border-b border-border">
