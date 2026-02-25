@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Link2, Search, Trash2 } from 'lucide-react';
+import { AlertTriangle, BarChartBig, BellRing, ChevronDown, ChevronRight, ClipboardCheck, Copy, Eye, Link2, Search, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams, type ReadonlyURLSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
@@ -63,9 +63,7 @@ const PAGE_COPY = {
     title: '처음 방문하셨나요? 운영 통합 센터 3단계',
     description: '페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 건을 먼저 처리하세요.',
     steps: ['1) 오늘 해야 할 일 확인', '2) 업무 목적형 프리셋 선택', '3) 주의/미처리 건 순서로 처리'],
-    dismissLabel: '닫기',
-    collapsedSummary: '운영 통합 센터 온보딩을 다시 확인할 수 있습니다.',
-    reopenLabel: '온보딩 다시 보기',
+    dismissLabel: '다시 보지 않기',
   },
 };
 
@@ -79,44 +77,31 @@ type PresetKey = 'paymentMismatch' | 'integratedReview' | 'singleApplication';
 
 const PRESET_CONFIG: Record<PresetKey, {
   label: string;
-  priorityReason: string;
-  nextAction: string;
+  helperText: string;
   params: Partial<{ q: string; kind: 'all' | Kind; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; integrated: 'all' | '1' | '0'; warn: boolean }>;
   isActive: (state: { integrated: 'all' | '1' | '0'; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; kind: 'all' | Kind; onlyWarn: boolean }) => boolean;
 }> = {
   paymentMismatch: {
     label: '결제불일치 확인',
-    priorityReason: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 모드입니다.',
-    nextAction: '주의 배지 건부터 펼쳐 결제 라벨/상태 혼재 여부를 확인하고 필요한 상세 화면으로 이동하세요.',
+    helperText: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 뷰입니다.',
     params: { warn: true, integrated: 'all', flow: 'all', kind: 'all' },
     isActive: ({ onlyWarn }) => onlyWarn,
   },
   integratedReview: {
     label: '통합건 검수',
-    priorityReason: '주문/대여와 신청서가 연결된 통합 건의 연결 무결성을 점검하는 모드입니다.',
-    nextAction: '그룹 펼치기로 연결 문서 상태를 검수하고, 경고/정상 배지를 기준으로 처리 우선순위를 정하세요.',
+    helperText: '주문/대여와 신청서가 연결된 통합 건만 모아 확인합니다.',
     params: { integrated: '1', flow: 'all', kind: 'all', warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '1' && flow === 'all' && kind === 'all' && !onlyWarn,
   },
   singleApplication: {
     label: '단독 신청서 처리',
-    priorityReason: '연결되지 않은 교체서비스 신청서만 빠르게 소진하기 위한 모드입니다.',
-    nextAction: '상태/결제 라벨을 확인해 미처리 신청서를 먼저 처리하고, 필요 시 연결 문서 생성 흐름으로 이어가세요.',
+    helperText: '연결되지 않은 교체서비스 신청서만 빠르게 처리합니다.',
     params: { integrated: '0', flow: '3', kind: 'stringing_application', warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '0' && flow === '3' && kind === 'stringing_application' && !onlyWarn,
   },
 };
 
-const ONBOARDING_SEEN_KEY = 'admin-operations-onboarding-seen-v1';
-const SAVED_VIEWS_KEY = 'admin-operations-saved-views-v1';
-const MAX_SAVED_VIEWS = 5;
-
-type SavedOperationView = {
-  id: string;
-  href: string;
-  label: string;
-  createdAt: number;
-};
+const ONBOARDING_DISMISS_KEY = 'admin-operations-onboarding-dismissed-v1';
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
@@ -285,14 +270,8 @@ export default function OperationsClient() {
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
-  const [showActionsGuide, setShowActionsGuide] = useState(false);
+  const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
-  const [savedViews, setSavedViews] = useState<SavedOperationView[]>([]);
-  const [savedViewLabel, setSavedViewLabel] = useState('');
-  const [savedViewCopiedId, setSavedViewCopiedId] = useState<string | null>(null);
-  const [isFilterScrolled, setIsFilterScrolled] = useState(false);
-  const [displayDensity, setDisplayDensity] = useState<'default' | 'compact'>('default');
   const defaultPageSize = 50;
   // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
   // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
@@ -309,31 +288,8 @@ export default function OperationsClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const seen = window.localStorage.getItem(ONBOARDING_SEEN_KEY);
-    if (seen === '1') {
-      setShowOnboarding(false);
-      setShowOnboardingSummary(true);
-      return;
-    }
-
-    setShowOnboarding(true);
-    setShowOnboardingSummary(false);
-    window.localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const onScroll = () => {
-      setIsFilterScrolled(window.scrollY > 140);
-    };
-
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-    };
+    const dismissed = window.localStorage.getItem(ONBOARDING_DISMISS_KEY);
+    setShowOnboarding(dismissed !== '1');
   }, []);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
@@ -412,74 +368,6 @@ export default function OperationsClient() {
     return `${window.location.origin}${shareViewHref}`;
   }, [shareViewHref]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const raw = window.localStorage.getItem(SAVED_VIEWS_KEY);
-    if (!raw) return;
-
-    try {
-      const parsed = JSON.parse(raw) as SavedOperationView[];
-      if (!Array.isArray(parsed)) return;
-
-      const sanitized = parsed
-        .filter((item) => item && typeof item.href === 'string' && typeof item.label === 'string' && typeof item.id === 'string')
-        .slice(0, MAX_SAVED_VIEWS);
-
-      setSavedViews(sanitized);
-    } catch {
-      window.localStorage.removeItem(SAVED_VIEWS_KEY);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
-  }, [savedViews]);
-
-  function applyViewFromHref(href: string) {
-    const search = href.includes('?') ? href.split('?')[1] ?? '' : '';
-    const params = new URLSearchParams(search);
-
-    setQ('');
-    setKind('all');
-    setFlow('all');
-    setIntegrated('all');
-    setOnlyWarn(false);
-    setPage(1);
-
-    initOperationsStateFromQuery(params as unknown as ReadonlyURLSearchParams, {
-      setQ,
-      setKind,
-      setFlow,
-      setIntegrated,
-      setOnlyWarn,
-      setPage,
-    });
-  }
-
-  function saveCurrentView() {
-    const trimmedLabel = savedViewLabel.trim();
-    const label = trimmedLabel || `최근 뷰 ${new Date().toLocaleDateString('ko-KR')}`;
-    const now = Date.now();
-
-    setSavedViews((prev) => {
-      const withoutCurrent = prev.filter((item) => item.href !== shareViewHref);
-      return [{ id: `${now}`, href: shareViewHref, label, createdAt: now }, ...withoutCurrent].slice(0, MAX_SAVED_VIEWS);
-    });
-    setSavedViewLabel('');
-  }
-
-  async function copySavedViewLink(href: string, id: string) {
-    const fullHref = typeof window === 'undefined' ? href : `${window.location.origin}${href}`;
-    await copyToClipboard(fullHref);
-    setSavedViewCopiedId(id);
-    setTimeout(() => setSavedViewCopiedId(null), 1200);
-  }
-
-  function deleteSavedView(id: string) {
-    setSavedViews((prev) => prev.filter((item) => item.id !== id));
-  }
-
   function toggleAllGroups() {
     if (!hasExpandableGroups) return;
     const nextOpen = !isAllExpanded;
@@ -497,18 +385,11 @@ export default function OperationsClient() {
     setPage(1);
   }
 
-  function clearPresetMode() {
-    applyPreset({ kind: 'all', flow: 'all', integrated: 'all', warn: false });
-  }
-
   function dismissOnboarding() {
     setShowOnboarding(false);
-    setShowOnboardingSummary(true);
-  }
-
-  function reopenOnboarding() {
-    setShowOnboarding(true);
-    setShowOnboardingSummary(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(ONBOARDING_DISMISS_KEY, '1');
+    }
   }
 
   async function copyShareViewLink() {
@@ -579,7 +460,7 @@ export default function OperationsClient() {
               <span className="font-mono">{shortenId(d.id)}</span>
             </Link>
 
-            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0 bg-transparent" onClick={() => copyToClipboard(d.id)} aria-label="연결 문서 ID 복사">
+            <Button type="button" size="sm" variant="outline" className="h-7 w-7 p-0 bg-transparent" onClick={() => copyToClipboard(d.id)} aria-label={ROW_ACTION_LABELS.copyId}>
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -594,6 +475,59 @@ export default function OperationsClient() {
     <div className="container py-5">
       {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
+      <div className="mx-auto max-w-7xl mb-5">
+        <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{PAGE_COPY.description}</p>
+
+        <div className="mt-3 grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
+          <Card className="border-warning/30 bg-warning/5 shadow-none">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+                <Siren className="h-4 w-4 text-warning" />
+                {PAGE_COPY.dailyTodoLabels.urgent}
+              </CardTitle>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.urgent}건</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="border-info/40 bg-info/5 shadow-none">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+                <BellRing className="h-4 w-4 text-info" />
+                {PAGE_COPY.dailyTodoLabels.caution}
+              </CardTitle>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.caution}건</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="border-primary/30 bg-primary/5 shadow-none">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                {PAGE_COPY.dailyTodoLabels.pending}
+              </CardTitle>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.pending}건</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {showOnboarding && (
+          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{PAGE_COPY.onboarding.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{PAGE_COPY.onboarding.description}</p>
+                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                  {PAGE_COPY.onboarding.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ul>
+              </div>
+              <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={dismissOnboarding}>
+                {PAGE_COPY.onboarding.dismissLabel}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
       <div className="mx-auto mb-4 max-w-7xl space-y-3">
         <section className="sticky top-3 z-10 rounded-xl border border-border/80 bg-background/95 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <div className="mb-2 flex items-center justify-between gap-2">
@@ -644,7 +578,6 @@ export default function OperationsClient() {
               </div>
             </div>
           )}
-
           {showOnboardingSummary && (
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
               <p className="text-xs text-muted-foreground">{PAGE_COPY.onboarding.collapsedSummary}</p>
@@ -710,9 +643,9 @@ export default function OperationsClient() {
             </Button>
           </CardHeader>
         <CardContent className="space-y-4">
-          {/* 검색 input */}
-          <div className="w-full max-w-md">
-            <div className="relative">
+          {/* 검색 + 주요 버튼 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-full max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 type="search"
@@ -725,15 +658,39 @@ export default function OperationsClient() {
                 placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
               />
             </div>
+
+            <Button
+              variant={onlyWarn ? 'default' : 'outline'}
+              size="sm"
+              title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
+              className={cn('h-9', !onlyWarn && 'bg-transparent')}
+              onClick={() => {
+                setOnlyWarn((v) => !v);
+                setPage(1);
+              }}
+            >
+              경고만 보기
+            </Button>
+
+            <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
+              <Link2 className="mr-1.5 h-4 w-4" />
+              {shareLinkCopied ? '링크 복사됨' : '현재 뷰 링크 복사'}
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={reset} className="h-9 bg-transparent">
+              필터 초기화
+            </Button>
+
+            <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
+              <Link href={settlementsHref}>
+                <BarChartBig className="h-4 w-4 mr-1.5" />
+                정산 관리
+              </Link>
+            </Button>
           </div>
 
           {/* 필터 컴포넌트들 */}
-          <div
-            className={cn(
-              'grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6',
-              onlyWarn && 'rounded-lg bg-warning/5 px-2 py-2 border-warning/20'
-            )}
-          >
+          <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
             <Select
               value={kind}
               onValueChange={(v: any) => {
@@ -791,19 +748,6 @@ export default function OperationsClient() {
               </SelectContent>
             </Select>
 
-            <Button
-              variant="outline"
-              size="sm"
-              title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
-              className={cn('w-full bg-transparent', onlyWarn && 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15 dark:bg-warning/15 dark:hover:bg-warning/20 dark:border-warning/40')}
-              onClick={() => {
-                setOnlyWarn((v) => !v);
-                setPage(1);
-              }}
-            >
-              경고만 보기
-            </Button>
-
             <Select
               value={warnFilter}
               onValueChange={(v: any) => {
@@ -831,14 +775,6 @@ export default function OperationsClient() {
                 <SelectItem value="safe_first">정상 우선</SelectItem>
               </SelectContent>
             </Select>
-
-            <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
-              <Link href={settlementsHref}>
-                <BarChartBig className="h-4 w-4 mr-1.5" />
-                정산 관리
-              </Link>
-            </Button>
-
           </div>
 
           {/* 프리셋 버튼(원클릭) */}
@@ -846,6 +782,51 @@ export default function OperationsClient() {
             <Button
               variant={presetActive.paymentMismatch ? 'default' : 'outline'}
               size="sm"
+              aria-pressed={presetActive.paymentMismatch}
+              onClick={() => {
+                applyPreset(PRESET_CONFIG.paymentMismatch.params);
+                setActivePresetGuide('paymentMismatch');
+              }}
+              className={!presetActive.paymentMismatch ? 'bg-transparent' : ''}
+            >
+              {PRESET_CONFIG.paymentMismatch.label}
+            </Button>
+
+            <Button
+              variant={presetActive.integratedReview ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.integratedReview}
+              onClick={() => {
+                applyPreset(PRESET_CONFIG.integratedReview.params);
+                setActivePresetGuide('integratedReview');
+              }}
+              className={!presetActive.integratedReview ? 'bg-transparent' : ''}
+            >
+              {PRESET_CONFIG.integratedReview.label}
+            </Button>
+
+            <Button
+              variant={presetActive.singleApplication ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.singleApplication}
+              onClick={() => {
+                applyPreset(PRESET_CONFIG.singleApplication.params);
+                setActivePresetGuide('singleApplication');
+              }}
+              className={!presetActive.singleApplication ? 'bg-transparent' : ''}
+            >
+              {PRESET_CONFIG.singleApplication.label}
+            </Button>
+          </div>
+
+          {activePresetGuide && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <p className="text-xs text-muted-foreground">
+                현재 결과 <span className="font-semibold text-foreground">{total.toLocaleString('ko-KR')}건</span>
+              </p>
+              <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
+             size="sm"
               aria-pressed={presetActive.paymentMismatch}
               onClick={() => applyPreset(PRESET_CONFIG.paymentMismatch.params)}
               className={cn(
@@ -910,59 +891,7 @@ export default function OperationsClient() {
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>저장된 뷰 링크</Badge>
             <p className="text-xs text-muted-foreground">현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에 공유하세요.</p>
-            <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={copyShareViewLink}>
-              <Link2 className="mr-1.5 h-4 w-4" />
-              {shareLinkCopied ? '링크 복사됨' : '현재 뷰 링크 복사'}
-            </Button>
-
-            <div className="flex w-full flex-col gap-2 rounded-md border border-border/70 bg-muted/20 p-2 bp-md:flex-row bp-md:items-center">
-              <Input
-                value={savedViewLabel}
-                onChange={(e) => setSavedViewLabel(e.target.value)}
-                placeholder="라벨 입력 (예: 결제불일치 점검)"
-                className="h-8 text-xs bp-md:max-w-[280px]"
-              />
-              <Button type="button" size="sm" variant="secondary" className="h-8" onClick={saveCurrentView}>
-                현재 뷰 저장
-              </Button>
-              <p className="text-[11px] text-muted-foreground">최대 {MAX_SAVED_VIEWS}개까지 저장됩니다.</p>
-            </div>
-
-            {savedViews.length > 0 && (
-              <div className="w-full space-y-1.5">
-                {savedViews.map((view) => (
-                  <div key={view.id} className="flex flex-col gap-1 rounded-md border border-border/70 px-2 py-1.5 bp-md:flex-row bp-md:items-center bp-md:justify-between">
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-medium text-foreground">{view.label}</p>
-                      <p className="truncate text-[11px] text-muted-foreground">{view.href}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button type="button" size="sm" variant="outline" className="h-7 bg-transparent px-2 text-xs" onClick={() => applyViewFromHref(view.href)}>
-                        적용
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="h-7 bg-transparent px-2 text-xs"
-                        onClick={() => copySavedViewLink(view.href, view.id)}
-                      >
-                        {savedViewCopiedId === view.id ? '복사됨' : '복사'}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs text-muted-foreground"
-                        onClick={() => deleteSavedView(view.id)}
-                      >
-                        <Trash2 className="mr-1 h-3.5 w-3.5" />삭제
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">{shareViewHref}</code>
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
@@ -1164,7 +1093,7 @@ export default function OperationsClient() {
 
                           <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
                             <div className="flex justify-end gap-1.5">
-                              <Button asChild size="sm" variant="default" className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
+                              <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
                                 <Link href={g.anchor.href} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.detail}>
                                   <Eye className="h-3.5 w-3.5" />
                                   <span className="text-xs">상세</span>
@@ -1176,14 +1105,7 @@ export default function OperationsClient() {
                                   <span className="text-xs">정산</span>
                                 </Link>
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 w-8 p-0"
-                                onClick={() => copyToClipboard(g.anchor.id)}
-                                title={ROW_ACTION_LABELS.copyId}
-                                aria-label={ROW_ACTION_LABELS.copyId}
-                              >
+                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title={ROW_ACTION_LABELS.copyId} aria-label={ROW_ACTION_LABELS.copyId}>
                                 <Copy className="h-3.5 w-3.5" />
                               </Button>
                             </div>
