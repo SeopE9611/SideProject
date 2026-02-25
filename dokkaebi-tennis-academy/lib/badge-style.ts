@@ -5,14 +5,14 @@ import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 // 전역 배지 토큰 (크기/정렬/테두리 옵션)
 export const badgeSizeSm = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 export const badgeBase = 'inline-flex items-center gap-1 font-normal';
-export const badgeBaseOutlined = `${badgeBase} border`;
+export const badgeBaseOutlined = `${badgeBase} border border-border bg-background`;
 
 const SEMANTIC_BADGE = {
-  success: 'bg-success/10 text-success border border-success/30',
-  warning: 'bg-warning/10 text-warning border border-warning/30',
-  info: 'bg-primary/10 text-primary border border-primary/20',
+  success: 'bg-success/20 text-success border border-success/40 dark:bg-success/25 dark:border-success/50',
+  warning: 'bg-warning/20 text-warning border border-warning/40 dark:bg-warning/25 dark:border-warning/50',
+  info: 'bg-primary/20 text-primary border border-primary/40 dark:bg-primary/25 dark:border-primary/50',
   neutral: 'bg-card text-foreground border border-border',
-  destructive: 'bg-destructive/10 text-destructive border border-destructive/30',
+  destructive: 'bg-destructive/20 text-destructive border border-destructive/40 dark:bg-destructive/25 dark:border-destructive/50',
 } as const;
 
 export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;

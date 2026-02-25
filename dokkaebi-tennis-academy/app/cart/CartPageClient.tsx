@@ -15,6 +15,7 @@ import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { calcShippingFee } from '@/lib/shipping-fee';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 // 통화 포맷 유틸 (일관성)
 const formatKRW = (n: number) => n.toLocaleString('ko-KR');
@@ -299,19 +300,7 @@ export default function CartPageClient() {
       {/* 헤더 */}
       <div className="relative overflow-hidden bg-muted text-foreground">
         <div className="absolute inset-0 bg-foreground/10" />
-        <div className="absolute inset-0 opacity-20">
-          <svg className="w-full h-full text-foreground" viewBox="0 0 400 200" fill="none">
-            <defs>
-              <pattern id="court-lines" x="0" y="0" width="400" height="200" patternUnits="userSpaceOnUse">
-                <rect width="400" height="200" fill="none" stroke="currentColor" strokeWidth="2" />
-                <line x1="200" y1="0" x2="200" y2="200" stroke="currentColor" strokeWidth="2" />
-                <rect x="50" y="50" width="300" height="100" fill="none" stroke="currentColor" strokeWidth="1" />
-                <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
         <SiteContainer variant="wide" className="relative py-10 bp-sm:py-12 bp-md:py-14">
           <div className="mb-4 flex items-center gap-4">
             <div className="rounded-2xl bg-card/20 p-3 backdrop-blur-sm shadow-lg">

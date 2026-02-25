@@ -13,6 +13,7 @@ import { bankLabelMap } from '@/lib/constants';
 import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import LoginGate from '@/components/system/LoginGate';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 const Trophy = ({ className }: { className: string }) => (
  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,18 +122,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  {/* Hero Section */}
  <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
  <div className="absolute inset-0 bg-overlay/20"></div>
- <div className="absolute inset-0 opacity-20">
- <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none">
- <defs>
- <pattern id="stringPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
- <rect width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
- <line x1="0" y1="20" x2="40" y2="20" stroke="currentColor" strokeWidth="1" opacity="0.5" />
- <line x1="20" y1="0" x2="20" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.5" />
- </pattern>
- </defs>
- <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
- </svg>
- </div>
+ <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
  <div className="relative container py-16">
  <div className="text-center">
  <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">

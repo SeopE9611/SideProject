@@ -375,7 +375,7 @@ export default function RacketCompareClient() {
 
                           const deltaClass = isBaseCol || delta === null ? 'text-muted-foreground' : delta > 0 ? 'text-primary' : delta < 0 ? 'text-destructive' : 'text-muted-foreground';
 
-                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-primary' : delta < 0 ? 'bg-destructive/10 dark:bg-destructive/10' : 'bg-muted/30';
+                          const barClass = delta === null ? 'bg-primary/10 dark:bg-primary/20' : delta > 0 ? 'bg-primary/10 dark:bg-primary/20' : delta < 0 ? 'bg-destructive/10 dark:bg-destructive/20' : 'bg-muted/30';
 
                           return (
                             <td key={r.id + row.key} className="p-4 relative overflow-hidden">

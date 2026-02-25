@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminMobileMenu from '@/components/admin/AdminMobileMenu';
 import { logInfo } from '@/lib/logger';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 export const metadata = {
   title: '관리자 페이지 - 도깨비 테니스 아카데미',
@@ -75,19 +76,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="flex min-h-full flex-col bg-muted/30">
       <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="absolute inset-0 opacity-20">
-          <svg className="w-full h-full text-foreground" viewBox="0 0 400 200" fill="none">
-            <defs>
-              <pattern id="court-lines" x="0" y="0" width="400" height="200" patternUnits="userSpaceOnUse">
-                <rect width="400" height="200" fill="none" stroke="currentColor" strokeWidth="2" />
-                <line x1="200" y1="0" x2="200" y2="200" stroke="currentColor" strokeWidth="2" />
-                <rect x="50" y="50" width="300" height="100" fill="none" stroke="currentColor" strokeWidth="1" />
-                <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
         <div className="relative container py-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-card backdrop-blur-sm rounded-2xl shadow-lg">
@@ -95,7 +84,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </div>
             <div>
               <h1 className="text-4xl font-black mb-2">관리자 페이지</h1>
-              <p className="text-primary">관리자 전용 페이지 입니다. 상품 및 주문관리를 진행해보세요.</p>
+              <p className="text-muted-foreground">
+                관리자 전용 페이지 입니다.
+                <span className="font-medium text-primary"> 상품 및 주문관리</span>를 진행해보세요.
+              </p>
             </div>
           </div>
         </div>

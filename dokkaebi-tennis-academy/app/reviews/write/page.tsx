@@ -6,6 +6,7 @@ import ApplicationStatusBadge from '@/app/features/stringing-applications/compon
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import LoginGate from '@/components/system/LoginGate';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -708,24 +709,7 @@ export default function ReviewWritePage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.08] pointer-events-none">
-        <svg width="100%" height="100%" viewBox="0 0 800 600" className="absolute inset-0 w-full h-full">
-          <defs>
-            <pattern id="court-bg" patternUnits="userSpaceOnUse" width="800" height="600">
-              {/* 메인 코트 */}
-              <rect x="50" y="100" width="700" height="400" fill="none" stroke="currentColor" strokeWidth="2" />
-              {/* 중앙선 */}
-              <line x1="400" y1="100" x2="400" y2="500" stroke="currentColor" strokeWidth="2" />
-              {/* 서비스 라인 */}
-              <line x1="50" y1="300" x2="750" y2="300" stroke="currentColor" strokeWidth="1" />
-              {/* 서비스 박스 */}
-              <line x1="200" y1="100" x2="200" y2="500" stroke="currentColor" strokeWidth="1" />
-              <line x1="600" y1="100" x2="600" y2="500" stroke="currentColor" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-        </svg>
-      </div>
+      <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
       <div className="relative mx-auto max-w-7xl px-4 py-8">
         <div className="grid lg:grid-cols-[400px_1fr] gap-8 min-h-[80vh]">

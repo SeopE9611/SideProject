@@ -4,6 +4,7 @@ import { PhoneCall, Calendar, CheckCircle, HelpCircle, Clock, Shield, Award, Zap
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Separator } from '@/components/ui/separator';
 
 export default function ServicesPage() {
@@ -159,20 +160,7 @@ export default function ServicesPage() {
       {/* Hero 섹션 */}
       <section className="relative min-h-[90vh] bp-md:min-h-[100vh] bp-lg:min-h-[110vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-muted">
-          <div className="absolute inset-0 opacity-20">
-            <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="courtLines" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
-                  <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
-                  <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="2" />
-                  <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="2" />
-                  <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
-                  <rect x="100" y="100" width="200" height="100" fill="none" stroke="currentColor" strokeWidth="1" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-            </svg>
-          </div>
+          <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0 bg-background/40"></div>
         </div>
 
@@ -379,19 +367,7 @@ export default function ServicesPage() {
 
       {/* 가격 안내 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background relative overflow-hidden" id="pricing">
-        <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="courtPattern" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
-                <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
-                <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="2" />
-                <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="2" />
-                <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
         <div className="container relative z-10">
           <div className="text-center mb-16">

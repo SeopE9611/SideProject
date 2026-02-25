@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { CardGridSkeleton } from '@/components/system/PageLoading';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -22,19 +23,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     <div className="min-h-full bg-muted/30">
       <div className="relative overflow-hidden bg-muted/30 py-10 bp-sm:py-12 bp-md:py-24">
         <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
-        <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
-          <svg className="w-full h-full text-foreground" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="court-lines" patternUnits="userSpaceOnUse" width="200" height="100">
-                <rect width="200" height="100" fill="transparent" />
-                <line x1="0" y1="50" x2="200" y2="50" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                <line x1="100" y1="0" x2="100" y2="100" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                <rect x="25" y="25" width="150" height="50" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.2" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
         <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
         <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
