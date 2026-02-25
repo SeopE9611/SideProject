@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, X, MessageSquareText, Trophy, Target } from 'lucide-react';
@@ -99,7 +100,7 @@ export default function ReviewsClient() {
   return (
     <div className="min-h-screen bg-muted/30 relative">
       {/* Tennis court background pattern */}
-      <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.01] bg-tennis-court-pattern-review" />
+      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
 
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-6">
         {/* Header with tennis theme */}
