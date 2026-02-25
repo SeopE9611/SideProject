@@ -7,7 +7,7 @@ import useSWR from 'swr';
 
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Skeleton } from '@/components/ui/skeleton';
-import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getBoardCategoryBadgeColor, getNoticeCategoryColor, getQnaCategoryColor, getReviewTypeColor, noticePinColor } from '@/lib/badge-style';
+import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getBoardCategoryTone, getNoticeCategoryColor, getQnaCategoryColor, getReviewTypeColor, noticePinColor } from '@/lib/badge-style';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -142,7 +142,7 @@ function CommunityLatestCard({
                     <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {!!post.category && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getBoardCategoryBadgeColor(kind, post.category)} shrink-0`} title={post.category ?? undefined}>
+                          <Badge variant={getBoardCategoryTone(kind, post.category)} className={`${badgeSizeSm} shrink-0`} title={post.category ?? undefined}>
                             {getBoardCategoryLabel(kind, post.category)}
                           </Badge>
                         )}

@@ -7,6 +7,7 @@ import { ArrowLeft, Eye, MessageSquare, ThumbsUp, FileText } from 'lucide-react'
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CommunityCategory, CommunityComment, CommunityPost } from '@/lib/types/community';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
@@ -19,12 +20,13 @@ import Image from 'next/image';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
-import { getCategoryBadgeClass, getCategoryBadgeText } from '@/app/board/_components/board-config';
+import { getCategoryBadgeText } from '@/app/board/_components/board-config';
 import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import ErrorBox from '@/app/board/_components/ErrorBox';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import { badgeSizeSm, getBoardCategoryTone } from '@/lib/badge-style';
 
 // 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
@@ -1137,7 +1139,7 @@ const res = await communityFetch(`/api/community/comments/${targetComment.id}/re
  {typeof item.postNo === 'number' && <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">{item.postNo}</span>}
 
  {/* 카테고리 뱃지 */}
- <span className={`mr-2 inline-flex items-center rounded-full ${getCategoryBadgeClass(config.categoryMap[item.category ?? '']?.badgePreset ?? config.defaultCategoryBadgePreset)}`}>{config.categoryMap[item.category ?? ''] ? getCategoryBadgeText(config.categoryMap[item.category ?? '']) : '분류 없음'}</span>
+ <Badge variant={getBoardCategoryTone(config.boardType, item.category)} className={`mr-2 ${badgeSizeSm}`}>{config.categoryMap[item.category ?? ''] ? getCategoryBadgeText(config.categoryMap[item.category ?? '']) : '분류 없음'}</Badge>
 
  {config.brandOptionsByCategory?.[item.category ?? ''] && item.brand ? (
  <span className="mr-2 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">{config.brandLabelMap?.[item.brand] ?? item.brand}</span>

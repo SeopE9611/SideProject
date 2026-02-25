@@ -2,9 +2,7 @@ import { MARKET_BRANDS_BY_CATEGORY, MARKET_BRAND_LABEL_MAP } from '@/app/board/m
 
 export type BoardType = 'free' | 'market' | 'gear';
 
-export type CategoryBadgePreset = 'neutral' | 'highlight' | 'status';
-
-type CategoryConfig = { value: string; label: string; semanticTag: string; badgePreset: CategoryBadgePreset };
+type CategoryConfig = { value: string; label: string; semanticTag: string };
 
 export type BoardTypeConfig = {
   boardType: BoardType;
@@ -16,22 +14,9 @@ export type BoardTypeConfig = {
   emptyDescription: string;
   categories: Array<{ value: string; label: string }>;
   categoryMap: Record<string, CategoryConfig>;
-  defaultCategoryBadgePreset: CategoryBadgePreset;
   brandOptionsByCategory?: Record<string, ReadonlyArray<{ value: string; label: string }>>;
   brandLabelMap?: Record<string, string>;
 };
-
-const badgePresetClassMap: Record<CategoryBadgePreset, string> = {
-  neutral: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-muted text-muted-foreground',
-  highlight: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md bg-primary/10 text-primary',
-  status: 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md border border-primary/20 bg-primary/10 text-primary',
-};
-
-const defaultCategoryBadgePreset: CategoryBadgePreset = 'neutral';
-
-export function getCategoryBadgeClass(preset: CategoryBadgePreset) {
-  return badgePresetClassMap[preset] ?? badgePresetClassMap[defaultCategoryBadgePreset];
-}
 
 export function getCategoryBadgeText(category: CategoryConfig) {
   return `${category.semanticTag} ${category.label}`;
@@ -57,13 +42,12 @@ export const FREE_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'etc', label: '기타' },
   ],
   categoryMap: createCategoryMap([
-    { value: 'general', label: '자유', semanticTag: '💬', badgePreset: 'neutral' },
-    { value: 'info', label: '정보', semanticTag: '📘', badgePreset: 'highlight' },
-    { value: 'qna', label: '질문', semanticTag: '❓', badgePreset: 'status' },
-    { value: 'tip', label: '노하우', semanticTag: '💡', badgePreset: 'highlight' },
-    { value: 'etc', label: '기타', semanticTag: '🏷️', badgePreset: 'neutral' },
+    { value: 'general', label: '자유', semanticTag: '💬' },
+    { value: 'info', label: '정보', semanticTag: '📘' },
+    { value: 'qna', label: '질문', semanticTag: '❓' },
+    { value: 'tip', label: '노하우', semanticTag: '💡' },
+    { value: 'etc', label: '기타', semanticTag: '🏷️' },
   ]),
-  defaultCategoryBadgePreset,
 };
 
 export const MARKET_BOARD_CONFIG: BoardTypeConfig = {
@@ -80,11 +64,10 @@ export const MARKET_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'equipment', label: '일반장비' },
   ],
   categoryMap: createCategoryMap([
-    { value: 'racket', label: '라켓', semanticTag: '🎾', badgePreset: 'highlight' },
-    { value: 'string', label: '스트링', semanticTag: '🧵', badgePreset: 'status' },
-    { value: 'equipment', label: '일반장비', semanticTag: '🧰', badgePreset: 'neutral' },
+    { value: 'racket', label: '라켓', semanticTag: '🎾' },
+    { value: 'string', label: '스트링', semanticTag: '🧵' },
+    { value: 'equipment', label: '일반장비', semanticTag: '🧰' },
   ]),
-  defaultCategoryBadgePreset,
   brandOptionsByCategory: MARKET_BRANDS_BY_CATEGORY,
   brandLabelMap: MARKET_BRAND_LABEL_MAP,
 };
@@ -109,15 +92,14 @@ export const GEAR_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'other', label: '기타' },
   ],
   categoryMap: createCategoryMap([
-    { value: 'racket', label: '라켓', semanticTag: '🎾', badgePreset: 'highlight' },
-    { value: 'string', label: '스트링', semanticTag: '🧵', badgePreset: 'status' },
-    { value: 'shoes', label: '테니스화', semanticTag: '👟', badgePreset: 'highlight' },
-    { value: 'bag', label: '가방', semanticTag: '👜', badgePreset: 'neutral' },
-    { value: 'apparel', label: '의류', semanticTag: '👕', badgePreset: 'status' },
-    { value: 'grip', label: '그립', semanticTag: '🖐️', badgePreset: 'status' },
-    { value: 'accessory', label: '악세서리', semanticTag: '🔧', badgePreset: 'neutral' },
-    { value: 'ball', label: '테니스볼', semanticTag: '🟡', badgePreset: 'highlight' },
-    { value: 'other', label: '기타', semanticTag: '🏷️', badgePreset: 'neutral' },
+    { value: 'racket', label: '라켓', semanticTag: '🎾' },
+    { value: 'string', label: '스트링', semanticTag: '🧵' },
+    { value: 'shoes', label: '테니스화', semanticTag: '👟' },
+    { value: 'bag', label: '가방', semanticTag: '👜' },
+    { value: 'apparel', label: '의류', semanticTag: '👕' },
+    { value: 'grip', label: '그립', semanticTag: '🖐️' },
+    { value: 'accessory', label: '악세서리', semanticTag: '🔧' },
+    { value: 'ball', label: '테니스볼', semanticTag: '🟡' },
+    { value: 'other', label: '기타', semanticTag: '🏷️' },
   ]),
-  defaultCategoryBadgePreset,
 };
