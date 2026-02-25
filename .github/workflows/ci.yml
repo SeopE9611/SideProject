@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
     paths:
-      - 'tennis-flow/**'
+      - 'TennisFlowShop/**'
       - '.github/workflows/ci.yml'
   push:
     branches: ['main', 'master']
@@ -18,7 +18,7 @@ concurrency:
 env:
   CI: true
   NEXT_TELEMETRY_DISABLED: 1
-  WORKDIR: tennis-flow
+  WORKDIR: TennisFlowShop
   # E2E/CI 기본값: 클라이언트 번들에서 createClient() 초기화 오류를 방지하기 위한 안전한 더미 값
   NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ci_dummy_anon_key
@@ -41,9 +41,9 @@ jobs:
         with:
           filters: |
             admin:
-              - 'tennis-flow/app/admin/**'
-              - 'tennis-flow/app/api/admin/**'
-              - 'tennis-flow/lib/admin/**'
+              - 'TennisFlowShop/app/admin/**'
+              - 'TennisFlowShop/app/api/admin/**'
+              - 'TennisFlowShop/lib/admin/**'
 
   # 1) Install -> lint
   lint:
@@ -66,7 +66,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -101,7 +101,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -130,7 +130,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -159,7 +159,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -188,7 +188,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -217,7 +217,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -247,7 +247,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -256,9 +256,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.WORKDIR }}/.next/cache
-          key: next-${{ runner.os }}-${{ hashFiles('tennis-flow/pnpm-lock.yaml') }}-${{ hashFiles('tennis-flow/**/*.ts', 'tennis-flow/**/*.tsx', 'tennis-flow/**/*.js', 'tennis-flow/**/*.jsx', 'tennis-flow/**/*.mjs', 'tennis-flow/**/*.cjs') }}
+          key: next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-${{ hashFiles('TennisFlowShop/**/*.ts', 'TennisFlowShop/**/*.tsx', 'TennisFlowShop/**/*.js', 'TennisFlowShop/**/*.jsx', 'TennisFlowShop/**/*.mjs', 'TennisFlowShop/**/*.cjs') }}
           restore-keys: |
-            next-${{ runner.os }}-${{ hashFiles('tennis-flow/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-
             next-${{ runner.os }}-
 
       - name: Build
@@ -319,7 +319,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: tennis-flow/pnpm-lock.yaml
+          cache-dependency-path: TennisFlowShop/pnpm-lock.yaml
 
       - name: Install dependencies (pnpm i --frozen-lockfile)
         run: pnpm install --frozen-lockfile
@@ -328,7 +328,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/Cypress
-          key: cypress-${{ runner.os }}-${{ hashFiles('tennis-flow/pnpm-lock.yaml') }}
+          key: cypress-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}
           restore-keys: |
             cypress-${{ runner.os }}-
 
@@ -342,9 +342,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.WORKDIR }}/.next/cache
-          key: next-${{ runner.os }}-${{ hashFiles('tennis-flow/pnpm-lock.yaml') }}-${{ hashFiles('tennis-flow/**/*.ts', 'tennis-flow/**/*.tsx', 'tennis-flow/**/*.js', 'tennis-flow/**/*.jsx', 'tennis-flow/**/*.mjs', 'tennis-flow/**/*.cjs') }}
+          key: next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-${{ hashFiles('TennisFlowShop/**/*.ts', 'TennisFlowShop/**/*.tsx', 'TennisFlowShop/**/*.js', 'TennisFlowShop/**/*.jsx', 'TennisFlowShop/**/*.mjs', 'TennisFlowShop/**/*.cjs') }}
           restore-keys: |
-            next-${{ runner.os }}-${{ hashFiles('tennis-flow/pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-${{ hashFiles('TennisFlowShop/pnpm-lock.yaml') }}-
             next-${{ runner.os }}-
 
       - name: Build
