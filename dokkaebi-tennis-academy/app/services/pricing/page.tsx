@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { Check, Clock, Star, Wrench, Zap, Shield } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Check, Clock, Shield, Star, Wrench, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PricingPage() {
@@ -18,7 +18,7 @@ export default function PricingPage() {
       name: '스트링 장착 (스트링 포함)',
       price: '35,000원',
       time: '30-45분',
-      description: '도깨비 테니스의 추천 스트링 포함 가격',
+      description: '테니스 플로우의 추천 스트링 포함 가격',
       features: ['추천 스트링 포함', '맞춤 텐션 설정', '플레이 스타일 분석', '3개월 A/S'],
       popular: true,
     },

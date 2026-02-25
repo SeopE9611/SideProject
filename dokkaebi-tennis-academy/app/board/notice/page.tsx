@@ -1,22 +1,22 @@
-import type { Metadata } from 'next';
-import NoticeListClient from './_components/NoticeListClient';
 import { getBoardList } from '@/lib/boards.queries';
 import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import type { Metadata } from 'next';
+import NoticeListClient from './_components/NoticeListClient';
 
 export const metadata: Metadata = {
-  title: '공지사항 | 도깨비 테니스',
-  description: '도깨비 테니스의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+  title: '공지사항 | 테니스 플로우',
+  description: '테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
   alternates: { canonical: '/board/notice' },
   openGraph: {
-    title: '공지사항 | 도깨비 테니스',
-    description: '도깨비 테니스의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+    title: '공지사항 | 테니스 플로우',
+    description: '테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
     url: '/board/notice',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: '공지사항 | 도깨비 테니스',
-    description: '도깨비 테니스의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+    title: '공지사항 | 테니스 플로우',
+    description: '테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
   },
 };
 
@@ -56,11 +56,7 @@ async function fetchIsAdmin() {
   return me?.role === 'admin';
 }
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function Page({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   // URL 쿼리로 직접 진입하는 케이스(/board/notice?page=3&q=...&field=title 등)에서
   // 서버 프리로드가 항상 page=1로 뜨는 문제를 방지
   const pick = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -74,24 +70,11 @@ export default async function Page({
   const page = clamp(Number.parseInt(String(rawPage ?? '1'), 10) || 1, 1, 10_000);
   const limit = 20;
 
-  const field: 'all' | 'title' | 'content' | 'title_content' =
-    rawField === 'title' || rawField === 'content' || rawField === 'title_content' ? rawField : 'all';
+  const field: 'all' | 'title' | 'content' | 'title_content' = rawField === 'title' || rawField === 'content' || rawField === 'title_content' ? rawField : 'all';
 
   const q = rawQ;
 
-  const [{ items, total }, isAdmin] = await Promise.all([
-    fetchNotices({ page, limit, q, field }),
-    fetchIsAdmin(),
-  ]);
+  const [{ items, total }, isAdmin] = await Promise.all([fetchNotices({ page, limit, q, field }), fetchIsAdmin()]);
 
-  return (
-    <NoticeListClient
-      initialItems={items}
-      initialTotal={total}
-      isAdmin={isAdmin}
-      initialPage={page}
-      initialKeyword={q}
-      initialField={field}
-    />
-  );
+  return <NoticeListClient initialItems={items} initialTotal={total} isAdmin={isAdmin} initialPage={page} initialKeyword={q} initialField={field} />;
 }

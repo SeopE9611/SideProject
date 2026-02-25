@@ -1,11 +1,10 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { PhoneCall, Calendar, CheckCircle, HelpCircle, Clock, Shield, Award, Zap, Star, ArrowRight, Users, Target, Trophy } from 'lucide-react';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Separator } from '@/components/ui/separator';
+import { ArrowRight, Award, Calendar, CheckCircle, Clock, HelpCircle, PhoneCall, Shield, Star, Target, Trophy, Users, Zap } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ServicesPage() {
   // 스트링 유형 데이터
@@ -58,7 +57,7 @@ export default function ServicesPage() {
     {
       service: '스트링 장착 (스트링 포함)',
       price: 35000,
-      description: '도깨비 테니스의 추천 스트링 포함 가격',
+      description: '테니스 플로우의 추천 스트링 포함 가격',
       icon: <Shield className="h-6 w-6" />,
       duration: '30-45분',
       popular: true,
@@ -243,7 +242,7 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                  <Button variant="outline"  asChild>
+                  <Button variant="outline" asChild>
                     <Link href="/board/qna">
                       <HelpCircle className="mr-2 h-4 w-4" />
                       자주 묻는 질문
@@ -260,8 +259,6 @@ export default function ServicesPage() {
             </Card>
           </div>
         </div>
-
-
 
         {/* 스크롤 인디케이터 */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
@@ -289,11 +286,13 @@ export default function ServicesPage() {
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-8">
             {stringTypes.map((type) => (
-                <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
+              <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
                 <div className="h-2 bg-muted"></div>
 
                 <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-primary/20 bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shadow-lg group-hover:scale-110 transition-transform duration-300">{type.icon}</div>
+                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-primary/20 bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    {type.icon}
+                  </div>
                   <CardTitle className="text-2xl font-bold mb-2">{type.title}</CardTitle>
                   <CardDescription className="text-base">{type.description}</CardDescription>
                 </CardHeader>
@@ -387,7 +386,7 @@ export default function ServicesPage() {
             {pricingInfo.map((item) => (
               <Card
                 key={item.service}
-                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${ item.popular ? 'bg-card text-foreground border border-primary/20 scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95' }`}
+                className={`relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 ${item.popular ? 'bg-card text-foreground border border-primary/20 scale-105' : 'bg-card/95 backdrop-blur-sm dark:bg-card/95'}`}
               >
                 {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
@@ -436,7 +435,7 @@ export default function ServicesPage() {
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">스트링 장착 과정</h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              도깨비 테니스 아카데미는 세심한 과정을 통해
+              테니스 플로우는 세심한 과정을 통해
               <br />
               최고 품질의 스트링 장착 서비스를 제공합니다.
             </p>
@@ -474,7 +473,7 @@ export default function ServicesPage() {
         <div className="container">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">고객 후기</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">도깨비 테니스 스트링 서비스를 경험한 후기를 확인해보세요</p>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">테니스 플로우 스트링 서비스를 경험한 후기를 확인해보세요</p>
           </div>
 
           {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">

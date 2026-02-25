@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import ReviewsClient from './_components/ReviewsClient';
 
 export const metadata = {
-  title: '리뷰 게시판 | 도깨비 테니스',
+  title: '리뷰 게시판 | 테니스 플로우',
   description: '상품/서비스 리뷰를 한 곳에서 확인할 수 있는 리뷰 게시판입니다.',
   alternates: { canonical: '/reviews' },
 };

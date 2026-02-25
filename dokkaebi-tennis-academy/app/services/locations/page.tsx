@@ -1,17 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { MapPin, Clock, Phone, Calendar, Car, Train, Star } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Car, Clock, MapPin, Phone, Train } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LocationsPage() {
   const locations = [
     {
-      name: '도깨비 테니스',
+      name: '테니스 플로우',
       address: '서울 동작구 노량진로 22 B1',
       phone: '0507-1392-3493',
-      email: 'info@dokkaebi-tennis.com',
+      email: 'info@tennis-flow.com',
       hours: {
         weekday: '10:00 - 22:00',
         weekend: '09:00 - 18:00',

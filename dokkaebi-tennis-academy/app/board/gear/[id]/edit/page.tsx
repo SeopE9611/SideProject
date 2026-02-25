@@ -5,7 +5,7 @@ type Props = {
 };
 
 export const metadata = {
-  title: '사용기 글 수정 | 도깨비 테니스',
+  title: '사용기 글 수정 | 테니스 플로우',
   // description: '자유 게시판에 작성된 글을 수정합니다.',
 };
 

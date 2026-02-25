@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: '운송장 입력 | 도깨비 테니스',
+  title: '운송장 입력 | 테니스 플로우',
   description: '자가발송 신청을 위한 운송장 정보를 입력합니다.',
 };
 

@@ -9,7 +9,7 @@ import { logInfo } from '@/lib/logger';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 export const metadata = {
-  title: '관리자 페이지 - 도깨비 테니스 아카데미',
+  title: '관리자 페이지 - 테니스 플로우',
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {

@@ -1,32 +1,32 @@
 'use client';
-import Link from 'next/link';
-import Image from 'next/image';
-import type { MouseEvent as ReactMouseEvent } from 'react';
+import CheckoutButton from '@/app/checkout/CheckoutButton';
+import { useAuthStore, type User } from '@/app/store/authStore';
+import { useBuyNowStore } from '@/app/store/buyNowStore';
+import { CartItem, useCartStore } from '@/app/store/cartStore';
+import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
+import SiteContainer from '@/components/layout/SiteContainer';
+import LoginGate from '@/components/system/LoginGate';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { CartItem, useCartStore } from '@/app/store/cartStore';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import CheckoutButton from '@/app/checkout/CheckoutButton';
-import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
-import { CreditCard, MapPin, Truck, Shield, CheckCircle, UserIcon, Mail, Phone, Home, MessageSquare, Building2, Package, Star, AlertTriangle } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
 import { bankLabelMap } from '@/lib/constants';
-import { useBuyNowStore } from '@/app/store/buyNowStore';
-import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
-import SiteContainer from '@/components/layout/SiteContainer';
-import { cn } from '@/lib/utils';
-import LoginGate from '@/components/system/LoginGate';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import { calcShippingFee } from '@/lib/shipping-fee';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 declare global {
   interface Window {
@@ -816,10 +816,7 @@ export default function CheckoutPage() {
                 )}
                 <div className="space-y-4">
                   {orderItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex flex-col bp-sm:flex-row bp-sm:items-center gap-3 bp-sm:gap-4 p-3 bp-sm:p-4 bg-muted/50 rounded-lg border border-border"
-                    >
+                    <div key={item.id} className="flex flex-col bp-sm:flex-row bp-sm:items-center gap-3 bp-sm:gap-4 p-3 bp-sm:p-4 bg-muted/50 rounded-lg border border-border">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="relative shrink-0">
                           <Image
@@ -870,7 +867,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                     <RadioGroupItem value="방문수령" id="방문수령" />
                     <Label htmlFor="방문수령" className="flex-1 cursor-pointer font-medium">
-                      오프라인 매장 방문 (도깨비 테니스 샵에서 직접 수령)
+                      오프라인 매장 방문 (테니스 플로우 샵에서 직접 수령)
                     </Label>
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
@@ -1370,12 +1367,7 @@ export default function CheckoutPage() {
  */}
                       {fieldErrors.composition && mode !== 'buynow' && (
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Link
-                            href="/cart"
-                            data-no-unsaved-guard
-                            onClick={onLeaveCartClick}
-                            className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
-                          >
+                          <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick} className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
                             장바구니로 가서 정리하기
                           </Link>
                           <span className="text-xs text-muted-foreground">정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.</span>

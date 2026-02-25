@@ -1,9 +1,8 @@
-import Link from 'next/link';
-import { Phone, Mail, MapPin, Clock } from 'lucide-react';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 const Footer = () => {
-
   /**
    * 비회원 주문(게스트) 기능 노출 정책
    * - server env: GUEST_ORDER_MODE = 'off' | 'legacy' | 'on'
@@ -40,8 +39,8 @@ const Footer = () => {
             <div className="bp-sm:col-span-2 bp-lg:col-span-1">
               <Link href="/" className="flex items-center gap-3 mb-5 group">
                 <div>
-                  <div className="font-black text-lg bp-sm:text-xl bg-muted/30 text-primary">도깨비 테니스</div>
-                  <div className="text-xs text-muted-foreground font-semibold tracking-wider">DOKKAEBI TENNIS</div>
+                  <div className="font-black text-lg bp-sm:text-xl bg-muted/30 text-primary">테니스 플로우</div>
+                  <div className="text-xs text-muted-foreground font-semibold tracking-wider">Tennis Flow</div>
                 </div>
               </Link>
 
@@ -118,7 +117,7 @@ const Footer = () => {
           <SiteContainer className="bp-lg:mx-0">
             <div className="flex flex-col bp-sm:flex-row items-start bp-sm:items-center justify-between gap-2 text-xs text-muted-foreground">
               <div className="space-y-1">
-                <p>&copy; {new Date().getFullYear()} 도깨비 테니스. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} 테니스 플로우. All rights reserved.</p>
                 <p>사업자등록번호: 등록예정 | 대표: 김재민 | 통신판매업신고: 등록예정</p>
               </div>
             </div>

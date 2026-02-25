@@ -1,4 +1,4 @@
-// dokkaebi-tennis-academy/eslint.config.mjs
+// tennis-flow/eslint.config.mjs
 
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';

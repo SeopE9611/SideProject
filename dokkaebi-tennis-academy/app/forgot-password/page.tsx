@@ -2,14 +2,14 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Mail, Shield, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { ArrowLeft, CheckCircle, Mail, Shield } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -19,7 +19,6 @@ export default function ForgotPasswordPage() {
   // 입력이 있고(초기값 대비 변경), 아직 제출 완료 전이면 이탈 경고
   const isDirty = !isSubmitted && email.trim() !== '';
   useUnsavedChangesGuard(isDirty && !isSubmitting);
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +72,7 @@ export default function ForgotPasswordPage() {
                       <Input
                         id="email"
                         type="email"
-                        placeholder="example@dokkaebi-tennis.com"
+                        placeholder="example@tennis-flow.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -96,11 +95,7 @@ export default function ForgotPasswordPage() {
 
             <CardFooter className="p-6">
               {!isSubmitted ? (
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  disabled={isSubmitting || !email}
-                >
+                <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300" disabled={isSubmitting || !email}>
                   {isSubmitting ? '전송 중...' : '비밀번호 재설정 링크 전송'}
                 </Button>
               ) : (

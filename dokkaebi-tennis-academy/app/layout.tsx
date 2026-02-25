@@ -21,7 +21,7 @@ import 'spoqa-han-sans/css/SpoqaHanSansNeo.css';
 import RootScrollLockBridge from '@/components/system/RootScrollLockBridge';
 
 export const metadata: Metadata = {
-  title: '도깨비 테니스 아카데미',
+  title: '테니스 플로우',
   description: '테니스 스트링 및 장비 전문 쇼핑몰',
 };
 

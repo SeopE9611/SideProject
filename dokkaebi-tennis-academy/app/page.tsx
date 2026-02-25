@@ -2,16 +2,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import HeroSlider from '@/components/HeroSlider';
-import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
-import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
-import { useRouter } from 'next/navigation';
-import { Package, BadgeCheck, Wrench, BookOpen, Tags, MessageSquareText, Search } from 'lucide-react';
-import Link from 'next/link';
 import HomeMarketPreview from '@/components/HomeMarketPreview';
 import HomeNoticePreview from '@/components/HomeNoticePreview';
-import SignupBonusPromoPopup from '@/components/system/SignupBonusPromoPopup';
-import { isSignupBonusActive, SIGNUP_BONUS_CAMPAIGN_ID, SIGNUP_BONUS_END_DATE, SIGNUP_BONUS_POINTS, SIGNUP_BONUS_START_DATE } from '@/lib/points.policy';
+import HorizontalProducts, { type HItem } from '@/components/HorizontalProducts';
 import SiteContainer from '@/components/layout/SiteContainer';
+import SignupBonusPromoPopup from '@/components/system/SignupBonusPromoPopup';
+import { RACKET_BRANDS, racketBrandLabel, STRING_BRANDS, stringBrandLabel } from '@/lib/constants';
+import { isSignupBonusActive, SIGNUP_BONUS_CAMPAIGN_ID, SIGNUP_BONUS_END_DATE, SIGNUP_BONUS_POINTS, SIGNUP_BONUS_START_DATE } from '@/lib/points.policy';
+import { BadgeCheck, BookOpen, MessageSquareText, Package, Search, Tags, Wrench } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -430,13 +430,9 @@ export default function Home() {
       <section className="py-5 bp-sm:py-6">
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
-            <div
-              className="rounded-2xl border border-border bg-card p-5 bp-sm:p-6 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 transition-all hover:shadow-lg"
-            >
+            <div className="rounded-2xl border border-border bg-card p-5 bp-sm:p-6 flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 transition-all hover:shadow-lg">
               <div className="flex items-start gap-4">
-                <div
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20"
-                >
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20">
                   <Search className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
@@ -445,9 +441,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div
-                className="shrink-0 inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs bp-sm:text-sm font-semibold bg-muted text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-foreground dark:group-hover:bg-primary/20"
-              >
+              <div className="shrink-0 inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs bp-sm:text-sm font-semibold bg-muted text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-foreground dark:group-hover:bg-primary/20">
                 바로가기
               </div>
             </div>
@@ -572,7 +566,7 @@ export default function Home() {
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
             <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">중고 라켓</h2>
-            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">도깨비 테니스에서 관리하는 라켓을 활용해보세요</p>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">테니스 플로우에서 관리하는 라켓을 활용해보세요</p>
           </div>
           <div className="mb-6 bp-sm:mb-8">
             <div className="flex justify-center">
@@ -597,7 +591,7 @@ export default function Home() {
           </div>
           <HorizontalProducts
             title="중고 라켓"
-            subtitle={activeBrand === 'all' ? '도깨비 테니스 중고' : `${racketBrandLabel(activeBrand)} 중고`}
+            subtitle={activeBrand === 'all' ? '테니스 플로우 중고' : `${racketBrandLabel(activeBrand)} 중고`}
             items={usedRacketsItems}
             moreHref={activeBrand === 'all' ? '/rackets' : `/rackets?brand=${activeBrand}`}
             firstPageSlots={4}

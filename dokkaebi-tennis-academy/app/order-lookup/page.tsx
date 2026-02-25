@@ -2,17 +2,17 @@
 
 import type React from 'react';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import LoginGate from '@/components/system/LoginGate';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import Link from 'next/link';
-import { ArrowLeft, Search, Mail, User, Phone, Package, Shield, Clock } from 'lucide-react';
-import LoginGate from '@/components/system/LoginGate';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { ArrowLeft, Clock, Mail, Package, Phone, Search, Shield, User } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -253,7 +253,7 @@ export default function OrderLookupPage() {
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="example@dokkaebi.com"
+                      placeholder="example@tennisflow.com"
                       value={formData.email}
                       onChange={handleChange}
                       required

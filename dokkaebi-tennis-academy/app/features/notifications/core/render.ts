@@ -2,7 +2,7 @@ import { ApplicationCtx, EventType, UserCtx } from '@/app/features/notifications
 
 /* ========= Theme ========= */
 const THEME = {
-  brand: '도깨비 테니스',
+  brand: '테니스 플로우',
   surface: '#FCFFFC',
   text: '#1A1C1A',
   sub: '#4A544A',
@@ -62,16 +62,16 @@ function buildICS(app: ApplicationCtx): string | undefined {
   const endMm = endH === 23 && Number(mm) > 0 ? '59' : mm;
   const dtend = `DTEND;TZID=Asia/Seoul:${date}T${endHh}${endMm}00`;
 
-  const uid = `stringing-${app.applicationId}@dokkaebi-tennis`;
+  const uid = `stringing-${app.applicationId}@tennis-flow`;
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Dokkaebi Tennis//Stringing//KR',
+    'PRODID:-//Tennis Flow//Stringing//KR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${uid}`,
-    'SUMMARY:도깨비 테니스 스트링 교체 예약',
+    'SUMMARY:테니스 플로우 스트링 교체 예약',
     dtstart,
     dtend,
     `DESCRIPTION:참조코드 ${shortCode(app.applicationId)}`,
@@ -89,7 +89,7 @@ function pickPhone(app: ApplicationCtx) {
 
 // SMS 공통 포맷
 function makeSms(prefix: string, ctx: { name?: string; when?: string; id: string; baseUrl: string }) {
-  const lines = [`[도깨비 테니스] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/mypage?tab=applications&applicationId=${ctx.id}`];
+  const lines = [`[테니스 플로우] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/mypage?tab=applications&applicationId=${ctx.id}`];
   return lines.filter(Boolean).join('\n');
 }
 
@@ -120,7 +120,7 @@ function summaryTable(rows: [string, string][]) {
       <td style="padding:12px 14px;font-weight:600;width:120px;color:${THEME.text};background:${THEME.bgSoft};border-bottom:1px solid ${THEME.line};">${k}</td>
       <td style="padding:12px 14px;border-bottom:1px solid ${THEME.line};color:${THEME.text};">${v}</td>
     </tr>
-  `
+  `,
     )
     .join('');
   return `
@@ -134,7 +134,7 @@ function buttons(ctas?: { label: string; url: string }[]) {
     .map(
       (b) => `
     <a href="${b.url}" style="display:inline-block;margin-right:8px;padding:11px 16px;border-radius:10px;background:${THEME.btnBg};color:${THEME.btnText};text-decoration:none;font-weight:700;font-size:14px;">${b.label}</a>
-  `
+  `,
     )
     .join('');
   return `<div style="margin-top:16px;">${btns}</div>`;

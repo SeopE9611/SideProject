@@ -1,19 +1,19 @@
 'use client';
-import Link from 'next/link';
+import ErrorBox from '@/app/board/_components/ErrorBox';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MessageSquare, Search, Users, CheckCircle, Clock, ArrowLeft, Plus, Lock } from 'lucide-react';
-import useSWR from 'swr';
-import { useEffect, useMemo, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
-import { usePathname } from 'next/navigation';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
-import ErrorBox from '@/app/board/_components/ErrorBox';
+import { ArrowLeft, Lock, MessageSquare, Plus, Search, Users } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 const CAT_LABELS: Record<string, string> = {
   product: '상품문의',
@@ -61,7 +61,6 @@ type Props = {
 };
 
 export default function QnaPageClient({ initialItems, initialTotal, initialPage = 1, initialCategory = 'all', initialAnswerFilter = 'all', initialKeyword = '', initialField = 'all' }: Props) {
-
   type MeRes = { id: string; role?: string | null };
   async function meFetcher(url: string): Promise<MeRes | null> {
     const res = await fetch(url, { credentials: 'include' });
@@ -286,7 +285,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
-                <p className="text-lg text-muted-foreground">도깨비 테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
+                <p className="text-lg text-muted-foreground">테니스 플로우 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.</p>
               </div>
             </div>
           </div>
@@ -587,8 +586,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             <div className="mt-8 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
-                  <span className="sr-only">첫 페이지</span>
-                  «
+                  <span className="sr-only">첫 페이지</span>«
                 </Button>
                 <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
@@ -598,14 +596,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                 </Button>
 
                 {visiblePages.map((pageNumber) => (
-                  <Button
-                    key={pageNumber}
-                    variant="outline"
-                    size="sm"
-                    className={pageNumber === page ? 'h-10 w-10 bg-primary text-primary-foreground border-border' : 'h-10 w-10 bg-card'}
-                    onClick={() => movePage(pageNumber)}
-                    disabled={isBusy}
-                  >
+                  <Button key={pageNumber} variant="outline" size="sm" className={pageNumber === page ? 'h-10 w-10 bg-primary text-primary-foreground border-border' : 'h-10 w-10 bg-card'} onClick={() => movePage(pageNumber)} disabled={isBusy}>
                     {pageNumber}
                   </Button>
                 ))}
@@ -617,20 +608,11 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   </svg>
                 </Button>
                 <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
-                  <span className="sr-only">마지막 페이지</span>
-                  »
+                  <span className="sr-only">마지막 페이지</span>»
                 </Button>
 
                 <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={pageJump}
-                    onChange={(e) => setPageJump(e.target.value)}
-                    placeholder="페이지"
-                    className="h-10 w-20"
-                  />
+                  <Input type="number" min={1} max={totalPages} value={pageJump} onChange={(e) => setPageJump(e.target.value)} placeholder="페이지" className="h-10 w-20" />
                   <Button type="submit" variant="outline" size="sm" className="h-10 px-2 bg-card" disabled={isBusy}>
                     이동
                   </Button>

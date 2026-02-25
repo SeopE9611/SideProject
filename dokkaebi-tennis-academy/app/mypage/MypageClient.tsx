@@ -1,38 +1,36 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Suspense } from 'react';
-import OrderList from '@/app/mypage/tabs/OrderList';
-import OrderListSkeleton from '@/app/mypage/tabs/OrderListSkeleton';
+import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import ApplicationsClient from '@/app/mypage/applications/_components/ApplicationsClient';
 import ApplicationsSkeleton from '@/app/mypage/applications/loading';
+import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
+import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
+import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
+import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
+import ActivityFeedSkeleton from '@/app/mypage/tabs/ActivityFeedSkeleton';
+import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
+import OrderList from '@/app/mypage/tabs/OrderList';
+import OrderListSkeleton from '@/app/mypage/tabs/OrderListSkeleton';
+import PassList from '@/app/mypage/tabs/PassList';
+import PassListSkeleton from '@/app/mypage/tabs/PassListSkeleton';
 import QnAList from '@/app/mypage/tabs/QnAList';
 import QnAListSkeleton from '@/app/mypage/tabs/QnAListSkeleton';
+import RentalSkeleton from '@/app/mypage/tabs/RentalSkeleton';
+import RentalsList from '@/app/mypage/tabs/RentalsList';
 import ReviewList from '@/app/mypage/tabs/ReviewList';
 import ReviewListSkeleton from '@/app/mypage/tabs/ReviewListSkeleton';
 import Wishlist from '@/app/mypage/tabs/Wishlist';
 import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
-import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
-import { useState, useEffect } from 'react';
-import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
-import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import AuthGuard from '@/components/auth/AuthGuard';
-import { User, Trophy, Target, MessageSquare, UserCheck, Ticket, Heart, MessageCircleQuestion, ClipboardList, CalendarCheck, ReceiptCent, Briefcase, Layers } from 'lucide-react';
-import type { Order } from '@/lib/types/order';
-import PassList from '@/app/mypage/tabs/PassList';
-import PassListSkeleton from '@/app/mypage/tabs/PassListSkeleton';
-import RentalsList from '@/app/mypage/tabs/RentalsList';
-import RentalSkeleton from '@/app/mypage/tabs/RentalSkeleton';
-import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
-import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
-import { Badge } from '@/components/ui/badge';
 import SiteContainer from '@/components/layout/SiteContainer';
-import ActivityFeedSkeleton from '@/app/mypage/tabs/ActivityFeedSkeleton';
-import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast } from '@/lib/toast';
+import { Briefcase, CalendarCheck, ClipboardList, Heart, Layers, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User, UserCheck } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 type Props = {
   user: {
@@ -104,7 +102,7 @@ export default function MypageClient({ user }: Props) {
   if (loading) {
     return <FullPageSpinner label="마이페이지 불러오는 중..." />;
   }
-  
+
   if (!user) return null;
 
   const currentTab = searchParams.get('tab') ?? 'activity'; // 마이페이지 첫 진입 시 “전체”를 기본으로
@@ -161,7 +159,7 @@ export default function MypageClient({ user }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-5xl font-black mb-1 text-foreground truncate">안녕하세요, {user.name}님!</h1>
-                  <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">도깨비 테니스의 회원이 되어주셔서 감사합니다</p>
+                  <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">테니스 플로우의 회원이 되어주셔서 감사합니다</p>
                 </div>
               </div>
 
@@ -239,10 +237,7 @@ export default function MypageClient({ user }: Props) {
                         <Layers className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">전체</span>
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="orders"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
-                      >
+                      <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">주문 내역</span>
                       </TabsTrigger>
@@ -255,26 +250,17 @@ export default function MypageClient({ user }: Props) {
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">신청 내역</span>
                       </TabsTrigger>
 
-                      <TabsTrigger
-                        value="rentals"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
-                      >
+                      <TabsTrigger value="rentals" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <Briefcase className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">대여 내역</span>
                       </TabsTrigger>
 
-                      <TabsTrigger
-                        value="wishlist"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
-                      >
+                      <TabsTrigger value="wishlist" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">위시리스트</span>
                       </TabsTrigger>
 
-                      <TabsTrigger
-                        value="reviews"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
-                      >
+                      <TabsTrigger value="reviews" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">리뷰 관리</span>
                       </TabsTrigger>
@@ -284,18 +270,12 @@ export default function MypageClient({ user }: Props) {
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">Q&A 내역</span>
                       </TabsTrigger>
 
-                      <TabsTrigger
-                        value="passes"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
-                      >
+                      <TabsTrigger value="passes" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">패키지</span>
                       </TabsTrigger>
 
-                      <TabsTrigger
-                        value="points"
-                        className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0"
-                      >
+                      <TabsTrigger value="points" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">적립 포인트</span>
                       </TabsTrigger>

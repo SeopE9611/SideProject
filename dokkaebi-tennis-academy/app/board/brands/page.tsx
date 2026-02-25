@@ -1,11 +1,11 @@
-import Link from 'next/link';
-import { Grid2X2 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Grid2X2 } from 'lucide-react';
+import Link from 'next/link';
 
 export const metadata = {
-  title: '브랜드별 게시판 (준비중) | 도깨비 테니스',
+  title: '브랜드별 게시판 (준비중) | 테니스 플로우',
   description: '라켓/스트링 브랜드별 사용 후기를 나누는 게시판입니다. 현재 준비 중입니다.',
   alternates: { canonical: '/board/brands' },
 };

@@ -1,16 +1,16 @@
 'use client';
-import Link from 'next/link';
+import ErrorBox from '@/app/board/_components/ErrorBox';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Bell, Search, Eye, Pin, ArrowLeft, Plus } from 'lucide-react';
-import useSWR from 'swr';
-import { useState } from 'react';
-import { badgeBaseOutlined, badgeSizeSm, noticePinColor, getNoticeCategoryColor, attachImageColor, attachFileColor } from '@/lib/badge-style';
+import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getNoticeCategoryColor, noticePinColor } from '@/lib/badge-style';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
-import ErrorBox from '@/app/board/_components/ErrorBox';
+import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import useSWR from 'swr';
 
 type Props = {
   initialItems: any[];
@@ -154,7 +154,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">도깨비 테니스 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">테니스 플로우 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>
@@ -285,8 +285,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
-                  <span className="sr-only">첫 페이지</span>
-                  «
+                  <span className="sr-only">첫 페이지</span>«
                 </Button>
                 <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(page - 1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">이전 페이지</span>
@@ -314,8 +313,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                   </svg>
                 </Button>
                 <Button variant="outline" size="icon" className="bg-card h-10 w-10 sm:h-12 sm:w-12" onClick={() => movePage(totalPages)} disabled={page >= totalPages || isBusy}>
-                  <span className="sr-only">마지막 페이지</span>
-                  »
+                  <span className="sr-only">마지막 페이지</span>»
                 </Button>
 
                 <form onSubmit={handlePageJump} className="ml-1 flex items-center gap-1">

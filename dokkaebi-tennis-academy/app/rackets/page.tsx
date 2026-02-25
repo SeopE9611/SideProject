@@ -1,10 +1,10 @@
 import FilterableRacketList from '@/app/rackets/_components/FilterableRacketList';
 import SiteContainer from '@/components/layout/SiteContainer';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -48,7 +48,9 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 <span className="font-medium text-primary">합리적인 가격</span>에 대여하세요.</p>
+            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
+              테니스 플로우의 중고 라켓으로 <span className="font-medium text-primary">합리적인 가격</span>에 대여하세요.
+            </p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">
                 <Link href={finderHref} aria-label="라켓 파인더로 이동">
@@ -89,7 +91,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                       <Link
                         href="/rackets?from=apply"
                         aria-current={!rentOnly ? 'page' : undefined}
-                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${ rentOnly ? 'text-foreground hover:bg-background/70' : 'bg-primary text-primary-foreground shadow hover:bg-primary/90' }`}
+                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? 'text-foreground hover:bg-background/70' : 'bg-primary text-primary-foreground shadow hover:bg-primary/90'}`}
                       >
                         전체보기
                       </Link>
@@ -97,7 +99,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
                       <Link
                         href="/rackets?from=apply&rentOnly=1"
                         aria-current={rentOnly ? 'page' : undefined}
-                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${ rentOnly ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90' : 'text-foreground hover:bg-background/70' }`}
+                        className={`flex-1 text-center text-sm font-semibold rounded-full px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${rentOnly ? 'bg-primary text-primary-foreground shadow hover:bg-primary/90' : 'text-foreground hover:bg-background/70'}`}
                       >
                         대여가능만
                       </Link>

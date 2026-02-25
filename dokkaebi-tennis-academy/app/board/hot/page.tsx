@@ -1,10 +1,10 @@
-import Link from 'next/link';
-import { Flame } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Flame } from 'lucide-react';
+import Link from 'next/link';
 
 export const metadata = {
-  title: '인기글 모아보기 (준비중) | 도깨비 테니스',
+  title: '인기글 모아보기 (준비중) | 테니스 플로우',
   description: '조회수/댓글/공감 수 기준 인기 게시글을 모아서 보여주는 페이지입니다. 현재 준비 중입니다.',
   alternates: { canonical: '/board/hot' },
 };

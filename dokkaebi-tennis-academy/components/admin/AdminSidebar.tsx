@@ -1,16 +1,16 @@
 'use client';
 
+import { adminTypography } from '@/components/admin/admin-typography';
+import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from '@/components/admin/sidebar-navigation';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { isAdminNavActive } from '@/lib/admin-nav';
+import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
-import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from '@/components/admin/sidebar-navigation';
-import { isAdminNavActive } from '@/lib/admin-nav';
-import { adminTypography } from '@/components/admin/admin-typography';
 
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
@@ -39,7 +39,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         )}
       >
         <div className={cn('relative flex items-center justify-between', collapsed ? 'px-2 py-2' : 'px-3 py-3')}>
-          {!collapsed && <div className="text-sm font-semibold tracking-tight text-foreground">도깨비 테니스</div>}
+          {!collapsed && <div className="text-sm font-semibold tracking-tight text-foreground">테니스 플로우</div>}
           <button
             onClick={() => setCollapsed((v) => !v)}
             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background dark:border-border dark:bg-card dark:text-muted-foreground"
@@ -73,7 +73,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
                       {!collapsed && <span className="truncate">{item.title}</span>}
                       {!!count && !collapsed && (
-                        <Badge variant="secondary" className={cn("ml-auto", adminTypography.sidebarCount)}>
+                        <Badge variant="secondary" className={cn('ml-auto', adminTypography.sidebarCount)}>
                           {count > 99 ? '99+' : count}
                         </Badge>
                       )}

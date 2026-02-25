@@ -1,20 +1,20 @@
+import { getBoardList } from '@/lib/boards.queries';
 import type { Metadata } from 'next';
 import QnaPageClient from './_components/QnaPageClient';
-import { getBoardList } from '@/lib/boards.queries';
 
 export const metadata: Metadata = {
-  title: 'Q&A 게시판 | 도깨비 테니스',
+  title: 'Q&A 게시판 | 테니스 플로우',
   description: '상품, 주문, 배송, 환불 등 고객 문의와 답변을 확인할 수 있는 Q&A 게시판입니다.',
   alternates: { canonical: '/board/qna' },
   openGraph: {
-    title: 'Q&A 게시판 | 도깨비 테니스',
+    title: 'Q&A 게시판 | 테니스 플로우',
     description: '상품, 주문, 배송, 환불 등 고객 문의와 답변을 확인할 수 있는 Q&A 게시판입니다.',
     url: '/board/qna',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Q&A 게시판 | 도깨비 테니스',
+    title: 'Q&A 게시판 | 테니스 플로우',
     description: '상품, 주문, 배송, 환불 등 고객 문의와 답변을 확인할 수 있는 Q&A 게시판입니다.',
   },
 };
