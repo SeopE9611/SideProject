@@ -233,7 +233,7 @@ export default function HorizontalProducts({
       <div
         className="relative mb-3 bp-sm:mb-4 bp-md:mb-5 aspect-square w-full rounded-lg bg-muted/50 dark:bg-card flex items-center justify-center"
       >
-        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-primary/10" />
+        <div className="w-12 h-12 bp-sm:w-14 bp-sm:h-14 bp-md:w-16 bp-md:h-16 rounded-full bg-primary/10 dark:bg-primary/20" />
       </div>
       <div className="text-center space-y-1.5">
         <div className="text-sm bp-sm:text-base bp-md:text-lg font-semibold text-foreground">준비 중</div>
@@ -262,7 +262,7 @@ export default function HorizontalProducts({
     >
       <div className="text-center space-y-2 bp-sm:space-y-3 bp-md:space-y-4">
         <div
-          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-primary/10 rounded-full mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+          className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 bp-md:w-20 bp-md:h-20 bg-primary/10 rounded-full mx-auto flex items-center justify-center group-hover:scale-110 transition-transform duration-300 dark:bg-primary/20"
         >
           <ArrowRight className="h-6 w-6 bp-sm:h-7 bp-sm:w-7 bp-md:h-9 bp-md:w-9 text-primary" />
         </div>
@@ -278,7 +278,7 @@ export default function HorizontalProducts({
     <div
       className="h-full rounded-xl p-4 bp-sm:p-5 bp-md:p-6 bp-lg:p-7 bg-card/50 flex flex-col items-center justify-center text-center"
     >
-      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
+      <div className="w-14 h-14 bp-sm:w-16 bp-sm:h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 dark:bg-primary/20">
         <Inbox className="h-6 w-6 text-primary" />
       </div>
       <div className="text-sm bp-sm:text-base font-semibold text-foreground">{emptyTitle ?? '등록된 상품이 없습니다'}</div>

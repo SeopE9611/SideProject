@@ -205,7 +205,7 @@ export default function OrderLookupPage() {
           {/* Main Card */}
           <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">주문 정보 입력</CardTitle>
@@ -300,7 +300,7 @@ export default function OrderLookupPage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 dark:bg-primary/20">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       <Clock className="w-5 h-5 text-primary mt-0.5" />
@@ -354,7 +354,7 @@ export default function OrderLookupPage() {
             </div>
 
             <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4 dark:bg-success/15">
                 <Clock className="w-6 h-6 text-success" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>

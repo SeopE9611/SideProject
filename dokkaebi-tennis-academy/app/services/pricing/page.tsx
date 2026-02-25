@@ -110,7 +110,7 @@ export default function PricingPage() {
               <Card key={index} className={`relative hover:shadow-lg transition-all duration-300 ${service.popular ? 'ring-2 ring-ring' : ''}`}>
                 {service.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary/10 hover:bg-primary/15 dark:hover:bg-primary/25">
+                    <Badge className="bg-primary/10 hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20">
                       <Star className="h-3 w-3 mr-1" />
                       인기
                     </Badge>

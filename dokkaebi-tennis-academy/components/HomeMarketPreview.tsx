@@ -34,7 +34,7 @@ export default function HomeMarketPreview() {
             ))}
           </>
           ) : hasError ? (
-          <li className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 bp-sm:p-5 text-sm bp-sm:text-base text-destructive">
+          <li className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 bp-sm:p-5 text-sm bp-sm:text-base text-destructive dark:bg-destructive/15">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <div className="flex-1">

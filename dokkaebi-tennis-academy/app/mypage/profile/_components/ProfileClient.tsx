@@ -451,7 +451,7 @@ export default function ProfileClient({ user }: Props) {
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
- <div className="bg-primary/10 text-primary rounded-2xl p-3 shadow-lg">
+ <div className="bg-primary/10 text-primary rounded-2xl p-3 shadow-lg dark:bg-primary/20">
  <Shield className="h-6 w-6 text-primary" />
  </div>
  <div>

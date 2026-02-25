@@ -94,15 +94,15 @@ const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, '.');
 // 대여 상태는 프로젝트마다 다를 수 있어서 “넓게” 커버(한글/영문 혼합 대응)
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-muted text-muted-foreground border border-border',
-  paid: 'bg-primary/15 text-primary border border-border',
+  paid: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
   out: 'bg-secondary text-foreground border border-border',
-  returned: 'bg-primary/15 text-primary border border-border',
-  canceled: 'bg-destructive/15 text-destructive border border-border',
+  returned: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
+  canceled: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
 
   대기중: 'bg-muted text-muted-foreground border border-border',
   대여중: 'bg-secondary text-foreground border border-border',
-  반납완료: 'bg-primary/15 text-primary border border-border',
-  취소: 'bg-destructive/15 text-destructive border border-border',
+  반납완료: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
+  취소: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
 };
 
 function kindLabel(kind: ActivityKind) {
@@ -225,7 +225,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className: 'border border-primary/20 bg-primary/10 text-primary text-xs font-semibold',
+        className: 'border border-primary/20 bg-primary/10 text-primary text-xs font-semibold dark:bg-primary/20',
       });
     }
   }

@@ -235,7 +235,7 @@ export default function RacketCompareClient() {
                               {r.model}
                             </Link>
                             {idx === 0 && (
-                              <Badge variant="secondary" className="h-4 px-1.5 text-[10px] bg-primary/10 text-primary">
+                              <Badge variant="secondary" className="h-4 px-1.5 text-[10px] bg-primary/10 text-primary dark:bg-primary/20">
                                 기준
                               </Badge>
                             )}

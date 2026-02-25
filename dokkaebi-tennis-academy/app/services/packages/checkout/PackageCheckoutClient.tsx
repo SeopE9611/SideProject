@@ -512,7 +512,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="lg:col-span-2 space-y-6">
  {/* 선택된 패키지 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary/10 p-6">
+ <div className="bg-primary/10 p-6 dark:bg-primary/20">
  <CardTitle className="flex items-center gap-3">
  <Package className="h-5 w-5 text-primary" />
  선택된 패키지
@@ -536,7 +536,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  <div className="flex-1">
  <div className="flex items-center gap-2 mb-2">
  <h3 className="text-2xl font-bold">{selectedPackage.title}</h3>
- {selectedPackage.popular && <Badge className="bg-primary/10 text-primary">인기</Badge>}
+ {selectedPackage.popular && <Badge className="bg-primary/10 text-primary dark:bg-primary/20">인기</Badge>}
  </div>
  <p className="text-muted-foreground">{selectedPackage.description}</p>
  </div>
@@ -595,7 +595,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
  {/* 신청자 정보 */}
  <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
- <div className="bg-primary/10 p-6">
+ <div className="bg-primary/10 p-6 dark:bg-primary/20">
  <CardTitle className="flex items-center gap-3">
  <UserIcon className="h-5 w-5 text-primary" />
  신청자 정보

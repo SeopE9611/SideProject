@@ -33,7 +33,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
   if (errorMessage) {
     return (
       <div className="space-y-2">
-        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-primary">{errorMessage}</div>
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">{errorMessage}</div>
         {/* 필요하면 이 날짜에서는 선택 불가임을 한번 더 안내 */}
         <p className="text-xs text-muted-foreground">다른 날짜를 선택해주세요.</p>
       </div>

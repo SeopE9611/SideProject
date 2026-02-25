@@ -168,9 +168,9 @@ const td = tdClasses;
 
 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
-  success: 'bg-primary/10 text-primary',
+  success: 'bg-primary/10 text-primary dark:bg-primary/20',
   warning: 'bg-muted/10 text-primary',
-  destructive: 'bg-destructive/10 text-destructive',
+  destructive: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
   muted: 'bg-muted text-muted-foreground',
   info: 'bg-info/10 text-info',
 };
@@ -317,7 +317,7 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-6">
-        {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{commonErrorMessage}</div>}
+        {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">운영함 (통합)</h1>
@@ -502,9 +502,9 @@ export default function OperationsClient() {
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
             <span className="text-muted-foreground">|</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary')}>통합(연결됨)</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합(연결됨)</Badge>
             <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive')}>연결오류</Badge>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive dark:bg-destructive/15')}>연결오류</Badge>
 
             <span className="text-muted-foreground">|</span>
             <span className="font-medium text-foreground">시나리오</span>
@@ -703,7 +703,7 @@ export default function OperationsClient() {
 
                               {/* 통합/단독 + (그룹 건수) */}
                               <div className="flex flex-wrap gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-primary/10 text-primary' : g.anchor.isIntegrated ? 'bg-primary/10 text-primary' : 'bg-card text-muted-foreground')}>
+                                <Badge className={cn(badgeBase, badgeSizeSm, isGroup ? 'bg-primary/10 text-primary dark:bg-primary/20' : g.anchor.isIntegrated ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-card text-muted-foreground')}>
                                   {isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독'}
                                 </Badge>
                                 {isGroup && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>{g.items.length}건</Badge>}
@@ -742,7 +742,7 @@ export default function OperationsClient() {
                                     if (hasLinkWarn) {
                                       items.push({
                                         label: '연결오류',
-                                        className: 'bg-destructive/10 text-destructive',
+                                        className: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
                                         title: linkWarnTitle,
                                       });
                                     } else if (hasLinkPending) {
@@ -884,7 +884,7 @@ export default function OperationsClient() {
                                     {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
                                       <Badge
                                         title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')}
-                                        className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive')}
+                                        className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive dark:bg-destructive/15')}
                                       >
                                         연결오류
                                       </Badge>

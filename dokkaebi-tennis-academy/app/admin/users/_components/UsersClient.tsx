@@ -660,7 +660,7 @@ export default function UsersClient() {
 
               {/* 삭제 선택 시: 경고 칩 */}
               {hasDeletedSelected && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-1 text-primary">
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-1 text-foreground">
                   <AlertCircle className="h-3.5 w-3.5" />
                   삭제(탈퇴)된 회원은 복구할 수 없습니다. 재가입만 가능합니다.
                 </span>

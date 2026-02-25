@@ -151,7 +151,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="mt-8 max-w-2xl mx-auto">
  <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
- <div className="p-2 bg-warning/15 rounded-full">
+ <div className="p-2 bg-warning/15 rounded-full dark:bg-warning/20">
  <Package className="h-6 w-6 text-primary" />
  </div>
  <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
@@ -262,7 +262,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  ) : (
  <p className="text-muted-foreground">선택된 은행 없음</p>
  )}
- <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30">
+ <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
  <p className="text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
  </div>
  </div>

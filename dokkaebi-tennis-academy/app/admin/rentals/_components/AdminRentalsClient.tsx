@@ -404,7 +404,7 @@ export default function AdminRentalsClient() {
   function PaymentBadge({ item }: { item: RentalRow }) {
     const s = derivePaymentStatus(item);
     return s === 'paid' ? (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[11px]">결제확정</span>
+      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[11px] dark:bg-primary/20">결제확정</span>
     ) : (
       <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-[11px]">입금대기</span>
     );

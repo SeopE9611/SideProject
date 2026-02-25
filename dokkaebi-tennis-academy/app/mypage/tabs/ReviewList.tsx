@@ -378,7 +378,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               {/* 헤더 영역 */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-border/5">
+                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-border/5 dark:bg-warning/15">
                     {it.cover ? (
                       <Image src={it.cover} alt={it.title} fill sizes="48px" className="object-cover" />
                     ) : (

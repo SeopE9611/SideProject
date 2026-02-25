@@ -474,7 +474,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </span>
  <span className="tabular-nums">{remainPct}%</span>
  </div>
- <div className="h-2 w-full bg-primary/20 rounded-full overflow-hidden">
+ <div className="h-2 w-full bg-primary/20 rounded-full overflow-hidden dark:bg-primary/30">
  <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
  </div>
  <div className="mt-1 text-xs text-muted-foreground">
@@ -526,7 +526,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div>
  )}
 
- <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+ <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
  <div className="flex items-center">
  <Zap className="h-5 w-5 text-destructive mr-2" />
  <p className="font-semibold text-destructive">입금 기한: {new Date(application.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>

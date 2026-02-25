@@ -274,7 +274,7 @@ export default function AdminReviewListClient() {
       return { date: '-', time: '-' };
     }
   }
-  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary/10 text-primary hover:bg-primary/20');
+  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20');
   const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
 
   const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';
@@ -303,7 +303,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">전체 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.total ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-primary/10 border border-primary/20">
+              <div className="rounded-md p-2 bg-primary/10 border border-primary/20 dark:bg-primary/20">
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function AdminReviewListClient() {
                 <p className="text-xs text-muted-foreground">5점 리뷰</p>
                 <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
               </div>
-              <div className="rounded-md p-2 bg-primary/10 border border-primary/20">
+              <div className="rounded-md p-2 bg-primary/10 border border-primary/20 dark:bg-primary/20">
                 <Award className="h-5 w-5 text-primary" />
               </div>
             </div>
@@ -450,7 +450,7 @@ export default function AdminReviewListClient() {
                     'transition-colors cursor-pointer',
                     'even:bg-background hover:bg-primary/10',
                     'dark:even:bg-card dark:hover:bg-primary/20',
-                    isSel ? 'border-l-4 border-primary bg-primary/10' : '',
+                    isSel ? 'border-l-4 border-primary bg-primary/10 dark:bg-primary/20' : '',
                   ].join(' ')}
                 >
                   {/* 체크박스 */}

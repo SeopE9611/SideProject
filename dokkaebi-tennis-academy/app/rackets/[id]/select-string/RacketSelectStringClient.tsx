@@ -330,7 +330,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{p.name}</h3>
-                        {isCurrent && <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary">현재 선택</span>}
+                        {isCurrent && <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-primary/20">현재 선택</span>}
                       </div>
                       <p className="text-lg font-bold text-foreground">{Number(p.price ?? 0).toLocaleString()}원</p>
                       {/* 재고 힌트 */}

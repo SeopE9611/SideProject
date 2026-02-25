@@ -45,7 +45,7 @@ export default function StringCheckboxes({ items, stringTypes, customInput, onCh
             className={cn(
               'flex items-center justify-between border rounded-lg px-4 py-2 cursor-pointer transition-all',
               'hover:border-primary',
-              isChecked ? 'border-primary bg-primary/10' : 'border-muted',
+              isChecked ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-muted',
               isDisabled ? 'opacity-50 pointer-events-none' : ''
             )}
           >
@@ -60,7 +60,7 @@ export default function StringCheckboxes({ items, stringTypes, customInput, onCh
 
       {/* 직접 입력 항목 */}
       {!hideCustom && (
-        <label className={cn('flex flex-col gap-2 border rounded-lg px-4 py-2 cursor-pointer transition-all', stringTypes.includes('custom') ? 'border-primary bg-primary/10' : 'border-muted')}>
+        <label className={cn('flex flex-col gap-2 border rounded-lg px-4 py-2 cursor-pointer transition-all', stringTypes.includes('custom') ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-muted')}>
           <div className="flex items-center gap-2">
             <input type="checkbox" checked={stringTypes.includes('custom')} onChange={() => toggle('custom')} />
             <span className="font-medium">직접 입력하기</span>

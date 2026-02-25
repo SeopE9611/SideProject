@@ -304,7 +304,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  {/* 취소 요청 상태 안내 배너 */}
  {cancelLabel && (
- <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-sm text-primary">
+ <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground">
  <span className="min-w-0 break-words">{cancelLabel}</span>
 
  {canWithdrawCancelRequest && (
@@ -403,7 +403,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  <div id="reviews-cta" className="mt-4">
  {allReviewed ? (
- <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/10 p-6 shadow-sm">
+ <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/10 p-6 shadow-sm dark:bg-primary/20">
  <div className="flex items-center gap-3 text-primary">
  <CheckCircle className="h-6 w-6" />
  <div>

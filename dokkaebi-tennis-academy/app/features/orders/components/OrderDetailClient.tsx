@@ -489,7 +489,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Package className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">주문 상태</span>
  </div>
- <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground')}>{localStatus}</Badge>
+ <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground dark:bg-primary/20')}>{localStatus}</Badge>
  </div>
 
  <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
@@ -529,7 +529,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardHeader className="bg-muted/30 border-b pb-3">
  <div className="flex items-center justify-between">
  <CardTitle>주문 상태 관리</CardTitle>
- <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground')}>{localStatus}</Badge>
+ <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground dark:bg-primary/20')}>{localStatus}</Badge>
  </div>
  <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
  </CardHeader>

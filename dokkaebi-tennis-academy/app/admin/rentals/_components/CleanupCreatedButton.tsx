@@ -45,7 +45,7 @@ export default function CleanupCreatedButton({ hours = 2 }: { hours?: number }) 
         {loading ? '정리 중…' : '데이터 정리'}
       </button>
       {!isFeatureEnabled && (
-        <span className="rounded border border-border bg-muted px-2 py-1 text-xs font-medium text-primary">
+        <span className="rounded border border-border bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
           현재 비활성
         </span>
       )}

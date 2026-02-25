@@ -637,7 +637,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     <div className="container py-10 space-y-8">
       <div className="mx-auto max-w-4xl">
         {/* 헤더 */}
-        <div className="bg-primary/10 rounded-2xl p-8 border border-primary/20 shadow-lg mb-8">
+        <div className="bg-primary/10 rounded-2xl p-8 border border-primary/20 shadow-lg mb-8 dark:bg-primary/20">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
@@ -792,12 +792,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </div>
           {/* 취소 요청 상태 안내 (관리자용) */}
           {isAdmin && cancelInfo && (
-            <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-primary">
+            <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
+                  <p className="font-medium text-foreground">취소 요청 상태: {cancelInfo.badge}</p>
                   <p className="mt-1">{cancelInfo.label}</p>
-                  {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
+                  {cancelInfo.reason && <p className="mt-1 text-xs text-foreground">사유: {cancelInfo.reason}</p>}
                 </div>
               </div>
             </div>
@@ -1060,7 +1060,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </div>
                   )}
 
-                  <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20 dark:bg-primary/20">
                     <div>
                       <p className="text-sm text-muted-foreground">결제 금액</p>
                       <p className="text-xl font-bold text-primary dark:text-foreground">{data.totalPrice.toLocaleString()}원</p>
@@ -1246,7 +1246,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   onCancel={() => setEditingRequirements(false)}
                 />
               ) : data.stringDetails.requirements?.trim() ? (
-                <div className="bg-warning/10 border border-border rounded-lg p-4">
+                <div className="bg-warning/10 border border-border rounded-lg p-4 dark:bg-warning/15">
                   <p className="text-foreground whitespace-pre-line">{data.stringDetails.requirements}</p>
                 </div>
               ) : (

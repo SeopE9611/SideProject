@@ -352,7 +352,7 @@ export default function AdminRentalDetailClient() {
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
-              <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-primary">
+              <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
@@ -568,9 +568,9 @@ export default function AdminRentalDetailClient() {
                 </CardTitle>
                 <div className="ml-auto">
                   {derivePaymentStatus(data) === 'paid' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">결제확정</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-xs dark:bg-primary/20">결제확정</span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-primary text-xs">입금대기</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-foreground text-xs">입금대기</span>
                   )}
                 </div>
               </CardHeader>
@@ -664,9 +664,9 @@ export default function AdminRentalDetailClient() {
                 {
                   {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">운송장 없음</span>,
-                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-primary text-xs">출고 운송장</span>,
+                    'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">출고 운송장</span>,
                     'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">반납 운송장</span>,
-                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs">왕복 운송장</span>,
+                    'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs dark:bg-primary/20">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
                 }
               </div>

@@ -117,19 +117,19 @@ export default function AdminRacketsClient() {
               label: '판매 가능',
               icon: <CheckCircle className="h-6 w-6 text-success" />,
               value: stats.available,
-              bgColor: 'bg-success/10',
+              bgColor: 'bg-success/10 dark:bg-success/15',
             },
             {
               label: '대여 중',
               icon: <AlertTriangle className="h-6 w-6 text-warning" />,
               value: stats.rented,
-              bgColor: 'bg-warning/10',
+              bgColor: 'bg-warning/10 dark:bg-warning/15',
             },
             {
               label: '판매 완료',
               icon: <XCircle className="h-6 w-6 text-destructive" />,
               value: stats.sold,
-              bgColor: 'bg-destructive/10',
+              bgColor: 'bg-destructive/10 dark:bg-destructive/15',
             },
           ].map((c, i) => (
             <Card key={i} className="shadow-xl bg-muted/30 border border-border">

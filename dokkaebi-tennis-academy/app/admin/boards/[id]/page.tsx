@@ -66,11 +66,11 @@ function getStatusName(status: string) {
 function getBoardTypeColor(type: string) {
   switch (type) {
     case 'notice':
-      return 'bg-primary/20 text-primary hover:bg-primary/30';
+      return 'bg-primary/20 text-primary hover:bg-primary/30 dark:bg-primary/30';
     case 'qna':
-      return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25';
+      return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20';
     case 'community':
-      return 'bg-success/10 text-success hover:bg-success/10';
+      return 'bg-success/10 text-success hover:bg-success/10 dark:bg-success/15';
     case 'faq':
       return 'bg-muted text-primary hover:bg-muted';
     default:

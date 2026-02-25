@@ -43,7 +43,7 @@ export default function AdminMobileMenu() {
                         href={item.href}
                         className={cn(
                           'flex h-full items-center gap-2 rounded-lg border px-3 py-2 text-sm',
-                          active ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border text-foreground hover:bg-background',
+                          active ? 'border-primary/40 bg-primary/10 text-primary dark:bg-primary/20' : 'border-border text-foreground hover:bg-background',
                         )}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
@@ -71,7 +71,7 @@ export default function AdminMobileMenu() {
                           href={item.href}
                           className={cn(
                             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                            active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground',
+                            active ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground',
                           )}
                         >
                           <Icon className="h-4 w-4 shrink-0" />

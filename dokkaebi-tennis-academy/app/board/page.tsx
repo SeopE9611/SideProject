@@ -196,7 +196,7 @@ function FiveLineSkeleton() {
 }
 
 function ErrorBox({ message = '데이터를 불러오는 중 오류가 발생했습니다.' }) {
-  return <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{message}</div>;
+  return <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{message}</div>;
 }
 
 type NoticeItem = {
