@@ -215,3 +215,13 @@ rg -n "lib/shadcn-plugin|shadcn-plugin" . --glob '!node_modules/**'
 - `npm run check:token-palette-consistency`
   - `--primary`, `--background` 재정의가 `app/globals.css` 밖에서 발견되면 실패
   - blue 계열 회귀(`3b82f6`, `blue-*`)가 브랜드 예외 화이트리스트 밖에서 발견되면 실패
+
+## `/academy` 페이지 운영 상태 및 점검 범위
+- 운영 결정: **옵션 B 적용(실서비스 미사용 라우트 차단 유지)**.
+- 현재 `app/academy/page.tsx`는 안내 카드만 렌더링하는 차단 페이지로 축소했으며, 기존 상세 소개 UI는 운영 범위에서 제외했다.
+- 점검 범위:
+  - `app/academy/page.tsx`는 일반 UI 토큰 정책(`bg-*`, `text-*`, `border-*`) 및 `check:color-policy` 스캔 대상에 포함한다.
+  - 차단 해제(재오픈) 시에는 별도 PR에서 신규 UI를 작성하고, 동일 문서 섹션에 재오픈 여부/스캔 결과를 갱신한다.
+- 재혼입 방지 규칙:
+  - `/academy` 라우트에 대규모 마케팅성 섹션(커스텀 색상/다크 보정 포함)을 즉시 복원하지 않는다.
+  - 복원이 필요하면 `legacy/` 등 분리 경로에서 먼저 정리한 뒤 토큰 정책 검증(`npm run check:color-policy`) 통과를 확인하고 재반영한다.
