@@ -339,7 +339,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 </Button>
                               )}
 
-                              <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50">
+                              <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="gap-2 hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50">
                                 <Trash2 className="h-4 w-4" />
                                 삭제
                               </Button>

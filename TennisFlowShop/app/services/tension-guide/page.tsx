@@ -577,7 +577,7 @@ export default function TensionGuidePage() {
                     {/* 낮은 텐션 */}
                     <div className="space-y-3 bp-md:space-y-4">
                       <div className="flex items-center gap-2 bp-sm:gap-3">
-                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-primary/15 dark:bg-primary/15 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-xl flex items-center justify-center">
                           <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                         </div>
                         <div>

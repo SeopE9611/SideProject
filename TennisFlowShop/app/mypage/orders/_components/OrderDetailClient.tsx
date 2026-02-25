@@ -692,7 +692,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  )}
  {isEditMode && canUserEdit && !editingRequest && (
  <CardFooter className="flex justify-center bg-muted/50">
- <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-warning/10 border-border">
+ <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border">
  요청사항 수정
  </Button>
  </CardFooter>
