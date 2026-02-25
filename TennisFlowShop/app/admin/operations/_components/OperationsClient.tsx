@@ -274,6 +274,7 @@ export default function OperationsClient() {
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
+  const [displayDensity, setDisplayDensity] = useState<'default' | 'compact'>('default');
   const defaultPageSize = 50;
   // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
   // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
@@ -869,7 +870,7 @@ export default function OperationsClient() {
       {/* 업무 목록 카드 */}
       <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
             {data ? (
               <>
                 <div className="flex items-center gap-2">
@@ -877,10 +878,35 @@ export default function OperationsClient() {
                   {activePresetKey && (
                     <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>
                       {PRESET_CONFIG[activePresetKey].label}
-                    </Badge>
-                  )}
-                </div>
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
                 <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
+                <span className="text-xs text-muted-foreground">표시 밀도</span>
+                <div className="inline-flex items-center rounded-md border border-border p-0.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={displayDensity === 'default' ? 'secondary' : 'ghost'}
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setDisplayDensity('default')}
+                    aria-pressed={displayDensity === 'default'}
+                  >
+                    기본
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={displayDensity === 'compact' ? 'secondary' : 'ghost'}
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setDisplayDensity('compact')}
+                    aria-pressed={displayDensity === 'compact'}
+                  >
+                    컴팩트
+                  </Button>
+                </div>
+              </div>
               </>
             ) : (
               <>
@@ -923,11 +949,11 @@ export default function OperationsClient() {
                     <TableHead className={thClasses}>대상</TableHead>
                     <TableHead className={thClasses}>상태</TableHead>
                     <TableHead className={thClasses}>금액</TableHead>
-                    <TableHead className={cn(thClasses, 'text-right')}>액션</TableHead>
+                    <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {groupsToRender.map((g) => {
+                  {groupsToRender.map((g, idx) => {
                     const isGroup = g.items.length > 1;
                     const isOpen = !!openGroups[g.key];
                     const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
@@ -938,10 +964,17 @@ export default function OperationsClient() {
                     const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
                     const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
 
+                    const rowDensityClass = displayDensity === 'compact' ? 'py-1.5' : 'py-2.5';
+                    const rowBaseToneClass = idx % 2 === 0 ? 'bg-background' : 'bg-muted/[0.18]';
+                    const warnEmphasisClass = warn
+                      ? 'border-l-2 border-l-warning/60 bg-warning/[0.08]'
+                      : 'border-l-2 border-l-transparent';
+                    const stickyActionCellClass = 'sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
+
                     return (
                       <Fragment key={g.key}>
-                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-card')}>
-                          <TableCell className={tdClasses}>
+                        <TableRow className={cn('transition-colors hover:bg-muted/35', rowBaseToneClass, warnEmphasisClass)}>
+                          <TableCell className={cn(tdClasses, rowDensityClass)}>
                             <div className="space-y-1">
                               <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>
                                 {warn ? '주의' : '정상'}
@@ -952,7 +985,7 @@ export default function OperationsClient() {
                             </div>
                           </TableCell>
 
-                          <TableCell className={tdClasses}>
+                          <TableCell className={cn(tdClasses, rowDensityClass)}>
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
                                 {isGroup && (
@@ -968,7 +1001,7 @@ export default function OperationsClient() {
                             </div>
                           </TableCell>
 
-                          <TableCell className={tdClasses}>
+                          <TableCell className={cn(tdClasses, rowDensityClass)}>
                             <div className="space-y-1">
                               <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
                               {g.anchor.paymentLabel ? (
@@ -979,7 +1012,7 @@ export default function OperationsClient() {
                             </div>
                           </TableCell>
 
-                          <TableCell className={cn(tdClasses, 'font-semibold text-sm')}>
+                          <TableCell className={cn(tdClasses, rowDensityClass, 'font-semibold text-sm')}>
                             {isGroup ? (
                               <div className="space-y-1">
                                 {pickOnePerKind(g.items).map((it) => (
@@ -994,7 +1027,7 @@ export default function OperationsClient() {
                             )}
                           </TableCell>
 
-                          <TableCell className={cn(tdClasses, 'text-right')}>
+                          <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
                             <div className="flex justify-end gap-1.5">
                               <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title="상세 보기">
                                 <Link href={g.anchor.href} className="flex items-center gap-1">
