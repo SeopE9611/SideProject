@@ -286,7 +286,7 @@ export default function OrderList() {
 
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === 'requested' && (
-                    <Badge variant="outline" className="ml-1 border-border bg-muted text-[11px] font-medium text-primary">
+                    <Badge variant="outline" className="ml-1 border-warning/30 bg-warning/10 text-[11px] font-medium text-warning dark:bg-warning/15 dark:text-warning">
                       취소 요청됨
                     </Badge>
                   )}
