@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import type { ReadonlyURLSearchParams } from 'next/navigation';
 import { buildQueryString, replaceQueryUrl } from '@/lib/admin/urlQuerySync';
+import type { ReadonlyURLSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 import type { Kind } from '../filters/operationsFilters';
 
 type FlowValue = 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
@@ -42,18 +42,33 @@ export function initOperationsStateFromQuery(
 }
 
 export function useSyncOperationsQuery(params: Params, pathname: string, replace: (url: string) => void) {
+  /**
+   * TODO: Issue 무한 리렌더(혹은 "무한 URL replace") 방지 포인트
+   *
+   * - OperationsClient에서 이 훅을 호출할 때 `{ q, kind, ... }` 객체 리터럴을 바로 넘기고 있음
+   * - 객체 리터럴은 렌더링마다 "새 참조"가 만들어지므로,
+   *   dependency 배열에 `params` 객체를 그대로 넣으면 매 렌더마다 effect가 다시 실행됨
+   * - effect가 매번 `router.replace()`를 호출하면 URL 갱신 → searchParams 변경 → 리렌더 → 다시 replace...
+   *   형태로 루프가 생길 수 있다.
+   *
+   * 해결:
+   * - dependency를 "객체"가 아니라 "원시 값"(string/number/boolean)으로 분해해서 걸어둠.
+   *   그러면 실제 값이 바뀔 때만 effect가 다시 실행됨.
+   */
+  const { q, kind, flow, integrated, onlyWarn, page } = params;
+
   useEffect(() => {
     const t = setTimeout(() => {
       const queryString = buildQueryString({
-        q: params.q,
-        kind: params.kind,
-        flow: params.flow,
-        integrated: params.integrated,
-        page: params.page === 1 ? undefined : params.page,
-        warn: params.onlyWarn ? '1' : undefined,
+        q,
+        kind,
+        flow,
+        integrated,
+        page: page === 1 ? undefined : page,
+        warn: onlyWarn ? '1' : undefined,
       });
       replaceQueryUrl(pathname, queryString, replace);
     }, 200);
     return () => clearTimeout(t);
-  }, [params, pathname, replace]);
+  }, [q, kind, flow, integrated, onlyWarn, page, pathname, replace]);
 }
