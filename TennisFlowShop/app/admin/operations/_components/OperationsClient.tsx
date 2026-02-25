@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
+import { AlertTriangle, BarChartBig, BellRing, ChevronDown, ChevronRight, ClipboardCheck, Copy, Eye, Link2, Search, Siren } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
@@ -59,7 +59,43 @@ const PAGE_COPY = {
       description: '지난달 기준 정산 화면으로 빠르게 이동해 마감합니다.',
     },
   ],
+  onboarding: {
+    title: '처음 방문하셨나요? 운영 통합 센터 3단계',
+    description: '페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 건을 먼저 처리하세요.',
+    steps: ['1) 오늘 해야 할 일 확인', '2) 업무 목적형 프리셋 선택', '3) 주의/미처리 건 순서로 처리'],
+    dismissLabel: '다시 보지 않기',
+  },
 };
+
+type PresetKey = 'paymentMismatch' | 'integratedReview' | 'singleApplication';
+
+const PRESET_CONFIG: Record<PresetKey, {
+  label: string;
+  helperText: string;
+  params: Partial<{ q: string; kind: 'all' | Kind; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; integrated: 'all' | '1' | '0'; warn: boolean }>;
+  isActive: (state: { integrated: 'all' | '1' | '0'; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; kind: 'all' | Kind; onlyWarn: boolean }) => boolean;
+}> = {
+  paymentMismatch: {
+    label: '결제불일치 확인',
+    helperText: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 뷰입니다.',
+    params: { warn: true, integrated: 'all', flow: 'all', kind: 'all' },
+    isActive: ({ onlyWarn }) => onlyWarn,
+  },
+  integratedReview: {
+    label: '통합건 검수',
+    helperText: '주문/대여와 신청서가 연결된 통합 건만 모아 확인합니다.',
+    params: { integrated: '1', flow: 'all', kind: 'all', warn: false },
+    isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '1' && flow === 'all' && kind === 'all' && !onlyWarn,
+  },
+  singleApplication: {
+    label: '단독 신청서 처리',
+    helperText: '연결되지 않은 교체서비스 신청서만 빠르게 처리합니다.',
+    params: { integrated: '0', flow: '3', kind: 'stringing_application', warn: false },
+    isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '0' && flow === '3' && kind === 'stringing_application' && !onlyWarn,
+  },
+};
+
+const ONBOARDING_DISMISS_KEY = 'admin-operations-onboarding-dismissed-v1';
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
@@ -227,6 +263,9 @@ export default function OperationsClient() {
   const [showAdvancedLegend, setShowAdvancedLegend] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
+  const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const defaultPageSize = 50;
   // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
   // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
@@ -240,6 +279,12 @@ export default function OperationsClient() {
   useEffect(() => {
     initOperationsStateFromQuery(sp, { setQ, setKind, setFlow, setIntegrated, setOnlyWarn, setPage });
   }, [sp]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const dismissed = window.localStorage.getItem(ONBOARDING_DISMISS_KEY);
+    setShowOnboarding(dismissed !== '1');
+  }, []);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
   useEffect(() => {
@@ -308,6 +353,14 @@ export default function OperationsClient() {
   const expandableGroupKeys = useMemo(() => groupsToRender.filter((g) => g.items.length > 1).map((g) => g.key), [groupsToRender]);
   const hasExpandableGroups = expandableGroupKeys.length > 0;
   const isAllExpanded = hasExpandableGroups && expandableGroupKeys.every((k) => !!openGroups[k]);
+  const shareViewHref = useMemo(() => {
+    const qs = sp.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }, [pathname, sp]);
+  const shareViewFullHref = useMemo(() => {
+    if (typeof window === 'undefined') return shareViewHref;
+    return `${window.location.origin}${shareViewHref}`;
+  }, [shareViewHref]);
 
   function toggleAllGroups() {
     if (!hasExpandableGroups) return;
@@ -326,6 +379,19 @@ export default function OperationsClient() {
     setPage(1);
   }
 
+  function dismissOnboarding() {
+    setShowOnboarding(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(ONBOARDING_DISMISS_KEY, '1');
+    }
+  }
+
+  async function copyShareViewLink() {
+    await copyToClipboard(shareViewFullHref);
+    setShareLinkCopied(true);
+    setTimeout(() => setShareLinkCopied(false), 1200);
+  }
+
   function reset() {
     setQ('');
     setKind('all');
@@ -340,12 +406,9 @@ export default function OperationsClient() {
 
   // 프리셋 버튼 "활성" 판정(현재 필터 상태가 프리셋과 일치하는지)
   const presetActive = {
-    integratedOnly: integrated === '1' && flow === 'all',
-    singleOnly: integrated === '0' && flow === 'all',
-    rentalBundle: integrated === '1' && flow === '7',
-    stringBundle: integrated === '1' && flow === '2',
-    appSingle: integrated === '0' && flow === '3' && kind === 'stringing_application',
-    racketBundle: integrated === '1' && flow === '5',
+    paymentMismatch: PRESET_CONFIG.paymentMismatch.isActive({ integrated, flow, kind, onlyWarn }),
+    integratedReview: PRESET_CONFIG.integratedReview.isActive({ integrated, flow, kind, onlyWarn }),
+    singleApplication: PRESET_CONFIG.singleApplication.isActive({ integrated, flow, kind, onlyWarn }),
   };
 
   function toggleGroup(key: string) {
@@ -390,14 +453,55 @@ export default function OperationsClient() {
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{PAGE_COPY.description}</p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {PAGE_COPY.dailyTodoTitle}:{' '}
-          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.urgent} {todayTodoCount.urgent}건</span>
-          <span className="mx-2">·</span>
-          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.caution} {todayTodoCount.caution}건</span>
-          <span className="mx-2">·</span>
-          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.pending} {todayTodoCount.pending}건</span>
-        </p>
+
+        <div className="mt-3 grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
+          <Card className="border-warning/30 bg-warning/5 shadow-none">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+                <Siren className="h-4 w-4 text-warning" />
+                {PAGE_COPY.dailyTodoLabels.urgent}
+              </CardTitle>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.urgent}건</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="border-info/40 bg-info/5 shadow-none">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+                <BellRing className="h-4 w-4 text-info" />
+                {PAGE_COPY.dailyTodoLabels.caution}
+              </CardTitle>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.caution}건</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="border-primary/30 bg-primary/5 shadow-none">
+            <CardHeader className="p-3">
+              <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                {PAGE_COPY.dailyTodoLabels.pending}
+              </CardTitle>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.pending}건</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {showOnboarding && (
+          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{PAGE_COPY.onboarding.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{PAGE_COPY.onboarding.description}</p>
+                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                  {PAGE_COPY.onboarding.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ul>
+              </div>
+              <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={dismissOnboarding}>
+                {PAGE_COPY.onboarding.dismissLabel}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mx-auto mb-2 max-w-7xl">
@@ -421,9 +525,9 @@ export default function OperationsClient() {
           <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 검색 input */}
-          <div className="w-full max-w-md">
-            <div className="relative">
+          {/* 검색 + 주요 버튼 */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-full max-w-md">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 type="search"
@@ -436,10 +540,39 @@ export default function OperationsClient() {
                 placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
               />
             </div>
+
+            <Button
+              variant={onlyWarn ? 'default' : 'outline'}
+              size="sm"
+              title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
+              className={cn('h-9', !onlyWarn && 'bg-transparent')}
+              onClick={() => {
+                setOnlyWarn((v) => !v);
+                setPage(1);
+              }}
+            >
+              경고만 보기
+            </Button>
+
+            <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
+              <Link2 className="mr-1.5 h-4 w-4" />
+              {shareLinkCopied ? '링크 복사됨' : '현재 뷰 링크 복사'}
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={reset} className="h-9 bg-transparent">
+              필터 초기화
+            </Button>
+
+            <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
+              <Link href={settlementsHref}>
+                <BarChartBig className="h-4 w-4 mr-1.5" />
+                정산 관리
+              </Link>
+            </Button>
           </div>
 
           {/* 필터 컴포넌트들 */}
-          <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
+          <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
             <Select
               value={kind}
               onValueChange={(v: any) => {
@@ -497,19 +630,6 @@ export default function OperationsClient() {
               </SelectContent>
             </Select>
 
-            <Button
-              variant="outline"
-              size="sm"
-              title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
-              className={cn('w-full bg-transparent', onlyWarn && 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15 dark:bg-warning/15 dark:hover:bg-warning/20 dark:border-warning/40')}
-              onClick={() => {
-                setOnlyWarn((v) => !v);
-                setPage(1);
-              }}
-            >
-              경고만 보기
-            </Button>
-
             <Select
               value={warnFilter}
               onValueChange={(v: any) => {
@@ -537,80 +657,64 @@ export default function OperationsClient() {
                 <SelectItem value="safe_first">정상 우선</SelectItem>
               </SelectContent>
             </Select>
-
-            <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
-              <Link href={settlementsHref}>
-                <BarChartBig className="h-4 w-4 mr-1.5" />
-                정산 관리
-              </Link>
-            </Button>
-
-            <Button variant="outline" size="sm" onClick={reset} className="w-full bg-transparent">
-              필터 초기화
-            </Button>
           </div>
 
           {/* 프리셋 버튼(원클릭) */}
           <div className="flex flex-wrap gap-2 pt-2">
             <Button
-              variant={presetActive.integratedOnly ? 'default' : 'outline'}
+              variant={presetActive.paymentMismatch ? 'default' : 'outline'}
               size="sm"
-              aria-pressed={presetActive.integratedOnly}
-              onClick={() => applyPreset({ integrated: '1', flow: 'all', kind: 'all', warn: false })}
-              className={!presetActive.integratedOnly ? 'bg-transparent' : ''}
+              aria-pressed={presetActive.paymentMismatch}
+              onClick={() => {
+                applyPreset(PRESET_CONFIG.paymentMismatch.params);
+                setActivePresetGuide('paymentMismatch');
+              }}
+              className={!presetActive.paymentMismatch ? 'bg-transparent' : ''}
             >
-              통합만
+              {PRESET_CONFIG.paymentMismatch.label}
             </Button>
 
             <Button
-              variant={presetActive.singleOnly ? 'default' : 'outline'}
+              variant={presetActive.integratedReview ? 'default' : 'outline'}
               size="sm"
-              aria-pressed={presetActive.singleOnly}
-              onClick={() => applyPreset({ integrated: '0', flow: 'all', kind: 'all', warn: false })}
-              className={!presetActive.singleOnly ? 'bg-transparent' : ''}
+              aria-pressed={presetActive.integratedReview}
+              onClick={() => {
+                applyPreset(PRESET_CONFIG.integratedReview.params);
+                setActivePresetGuide('integratedReview');
+              }}
+              className={!presetActive.integratedReview ? 'bg-transparent' : ''}
             >
-              단독만
+              {PRESET_CONFIG.integratedReview.label}
             </Button>
 
             <Button
-              variant={presetActive.rentalBundle ? 'default' : 'outline'}
+              variant={presetActive.singleApplication ? 'default' : 'outline'}
               size="sm"
-              aria-pressed={presetActive.rentalBundle}
-              onClick={() => applyPreset({ integrated: '1', flow: '7', kind: 'all', warn: false })}
-              className={!presetActive.rentalBundle ? 'bg-transparent' : ''}
+              aria-pressed={presetActive.singleApplication}
+              onClick={() => {
+                applyPreset(PRESET_CONFIG.singleApplication.params);
+                setActivePresetGuide('singleApplication');
+              }}
+              className={!presetActive.singleApplication ? 'bg-transparent' : ''}
             >
-              대여+교체(통합)
+              {PRESET_CONFIG.singleApplication.label}
             </Button>
+          </div>
 
-            <Button
-              variant={presetActive.stringBundle ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.stringBundle}
-              onClick={() => applyPreset({ integrated: '1', flow: '2', kind: 'all', warn: false })}
-              className={!presetActive.stringBundle ? 'bg-transparent' : ''}
-            >
-              스트링+교체(통합)
-            </Button>
+          {activePresetGuide && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+              <p className="text-xs text-muted-foreground">
+                현재 결과 <span className="font-semibold text-foreground">{total.toLocaleString('ko-KR')}건</span>
+              </p>
+              <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
+            </div>
+          )}
 
-            <Button
-              variant={presetActive.appSingle ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.appSingle}
-              onClick={() => applyPreset({ integrated: '0', flow: '3', kind: 'stringing_application', warn: false })}
-              className={!presetActive.appSingle ? 'bg-transparent' : ''}
-            >
-              교체신청(단독)
-            </Button>
-
-            <Button
-              variant={presetActive.racketBundle ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.racketBundle}
-              onClick={() => applyPreset({ integrated: '1', flow: '5', kind: 'all', warn: false })}
-              className={!presetActive.racketBundle ? 'bg-transparent' : ''}
-            >
-              라켓+교체(통합)
-            </Button>
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>저장된 뷰 링크</Badge>
+            <p className="text-xs text-muted-foreground">현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에 공유하세요.</p>
+            <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">{shareViewHref}</code>
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
