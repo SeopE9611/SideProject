@@ -637,7 +637,7 @@ export default function SettlementsClient() {
                                 </span>
                               )}
                               {statusMap[String(row.yyyymm)] === 'ok' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border dark:bg-primary/25">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   최신
                                 </span>
@@ -1007,7 +1007,7 @@ export default function SettlementsClient() {
                           </span>
                         )}
                         {statusMap[String(row.yyyymm)] === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border dark:bg-primary/25">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             최신
                           </span>

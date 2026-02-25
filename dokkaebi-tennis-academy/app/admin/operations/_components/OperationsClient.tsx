@@ -169,10 +169,10 @@ const td = tdClasses;
 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
   success: 'bg-primary/10 text-primary dark:bg-primary/20',
-  warning: 'bg-muted/10 text-primary',
+  warning: 'bg-warning/10 text-warning dark:bg-warning/15',
   destructive: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
   muted: 'bg-muted text-muted-foreground',
-  info: 'bg-info/10 text-info',
+  info: 'bg-info/10 text-info dark:bg-info/20',
 };
 
 function opsBadgeToneClass(tone: OpsBadgeTone) {
@@ -411,7 +411,7 @@ export default function OperationsClient() {
               variant="outline"
               size="sm"
               title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
-              className={cn('w-full bg-transparent', onlyWarn && 'border-border bg-muted text-primary hover:bg-muted dark:text-primary dark:border-border')}
+              className={cn('w-full bg-transparent', onlyWarn && 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/15 dark:bg-warning/15 dark:hover:bg-warning/20 dark:border-warning/40')}
               onClick={() => {
                 setOnlyWarn((v) => !v);
                 setPage(1);
@@ -756,7 +756,7 @@ export default function OperationsClient() {
                                     if (isGroup) {
                                       items.push({ label: '기준', className: 'bg-muted text-foreground', title: '그룹의 기준 문서' });
                                       items.push({ label: opsKindLabel(g.anchor.kind), className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)), title: '기준 문서 종류' });
-                                      warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-muted text-primary', title: b.title }));
+                                      warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30', title: b.title }));
                                     }
 
                                     return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;

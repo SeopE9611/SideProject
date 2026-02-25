@@ -71,7 +71,7 @@ const getStatusColor = (status: string) => {
     case '배송중':
       return 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20';
     case '배송준비중':
-      return 'bg-muted text-primary border-border';
+      return 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15';
     case '주문취소':
       return 'bg-muted text-foreground border-border';
     default:

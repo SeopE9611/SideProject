@@ -17,7 +17,7 @@ export const PASS_STATUS_LABELS: Record<PassStatus, string> = {
 };
 
 export const packageStatusColors: Record<PassStatus | '대기', string> = {
-  비활성: 'bg-muted text-primary border-border',
+  비활성: 'bg-muted text-muted-foreground border-border',
   활성: 'bg-success/10 text-success border-border dark:bg-success/15',
   만료: 'bg-background text-foreground border-border',
   취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',

@@ -250,7 +250,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (needs) {
       pills.push({
         text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: linked.hasTracking ? 'bg-success/10 text-success dark:bg-success/10 ' : 'bg-muted text-primary dark:bg-muted ',
+        className: linked.hasTracking ? 'bg-success/10 text-success dark:bg-success/15 ' : 'bg-warning/10 text-warning dark:bg-warning/15 ',
       });
     }
   }
@@ -265,7 +265,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       if (needs) {
         pills.push({
           text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-          className: app.hasTracking ? 'bg-success/10 text-success dark:bg-success/10 ' : 'bg-muted text-primary dark:bg-muted ',
+          className: app.hasTracking ? 'bg-success/10 text-success dark:bg-success/15 ' : 'bg-warning/10 text-warning dark:bg-warning/15 ',
         });
       }
     }
@@ -552,7 +552,7 @@ export default function ActivityFeed() {
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
           <div className="flex items-center gap-3 mb-2">
-            <div className="rounded-lg bg-success/10 dark:bg-success/10 p-2">
+            <div className="rounded-lg bg-success/10 dark:bg-success/15 p-2">
               <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" />
             </div>
             <span className="text-xs bp-sm:text-sm font-medium text-success">완료</span>
@@ -910,7 +910,7 @@ export default function ActivityFeed() {
                                     <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
 
                                     {hasAction && (
-                                      <Badge variant="outline" className="text-xs rounded-md bg-muted text-primary border-border">
+                                      <Badge variant="outline" className="text-xs rounded-md bg-warning/10 text-warning border-warning/30 dark:bg-warning/15">
                                         액션 필요
                                       </Badge>
                                     )}

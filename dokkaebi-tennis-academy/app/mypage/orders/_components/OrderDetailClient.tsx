@@ -326,7 +326,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="bg-muted/30 border border-border rounded-xl p-6 shadow-lg">
  <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
  <div className="flex items-start bp-sm:items-center space-x-3 min-w-0">
- <div className="bg-warning/10 dark:bg-warning/10 rounded-full p-2">
+ <div className="bg-warning/10 dark:bg-warning/15 rounded-full p-2">
  <CheckCircle className="h-6 w-6 text-warning" />
  </div>
  <div>
@@ -350,10 +350,10 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </div>
  ) : totalSlots > 0 ? (
- <div className="bg-success/10 dark:bg-success/10 border border-border rounded-xl p-6 shadow-lg mt-4">
+ <div className="bg-success/10 dark:bg-success/15 border border-border rounded-xl p-6 shadow-lg mt-4">
  <div className="flex flex-col bp-md:flex-row bp-md:items-start bp-md:justify-between gap-4">
  <div className="flex items-start space-x-3">
- <div className="bg-success/10 dark:bg-success/10 rounded-full p-2 mt-1">
+ <div className="bg-success/10 dark:bg-success/15 rounded-full p-2 mt-1">
  <CheckCircle className="h-6 w-6 text-success" />
  </div>
  <div>
@@ -369,7 +369,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {linkedStringingApps.map((app) => (
  <div key={app.id} className="flex flex-wrap items-center justify-between gap-2">
  <div className="flex flex-wrap items-center gap-2">
- <span className="px-1.5 py-0.5 rounded-full bg-success/10 dark:bg-success/10 text-[11px] font-medium">{app.status ?? '상태 미정'}</span>
+ <span className="px-1.5 py-0.5 rounded-full bg-success/10 dark:bg-success/15 text-[11px] font-medium">{app.status ?? '상태 미정'}</span>
  {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
  <span>라켓 {app.racketCount ?? 0}개</span>
  </div>
@@ -418,7 +418,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Link>
  </div>
  ) : (
- <div className="bg-warning/10 dark:bg-warning/10 border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
+ <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
  <div className="flex items-center gap-3">
  <Clock className="h-6 w-6 text-warning" />
  <div>
@@ -682,7 +682,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  ) : (
  <CardContent className="p-4 bp-sm:p-6">
  {orderDetail.shippingInfo.deliveryRequest ? (
- <div className="bg-warning/10 dark:bg-warning/10 border border-border rounded-lg p-4">
+ <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-lg p-4">
  <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
  </div>
  ) : (

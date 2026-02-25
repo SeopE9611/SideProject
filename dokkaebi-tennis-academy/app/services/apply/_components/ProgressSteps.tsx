@@ -22,7 +22,7 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
           <div key={step.id} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${ currentStep >= step.id ? 'bg-primary/10 border-primary/20 text-primary' : 'border-border text-muted-foreground bg-card' }`}
+                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${ currentStep >= step.id ? 'bg-primary/10 border-primary/20 text-primary dark:bg-primary/20' : 'border-border text-muted-foreground bg-card' }`}
               >
                 <step.icon className="h-6 w-6" />
               </div>

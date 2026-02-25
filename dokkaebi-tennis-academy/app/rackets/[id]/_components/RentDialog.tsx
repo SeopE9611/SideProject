@@ -81,7 +81,7 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
                   <button
                     key={d}
                     onClick={() => setPeriod(d as 7 | 15 | 30)}
-                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${ period === d ? 'bg-primary/10 border-primary/30 text-foreground' : 'border-border hover:border-border dark:hover:border-border text-foreground' }`}
+                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${ period === d ? 'bg-primary/10 border-primary/30 text-foreground dark:bg-primary/20' : 'border-border hover:border-border dark:hover:border-border text-foreground' }`}
                   >
                     {d}일
                   </button>

@@ -496,7 +496,7 @@ export default function PackageOrdersClient() {
                     <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
                     <div className="text-3xl font-bold text-success">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
                   </div>
-                  <div className="bg-success/10 dark:bg-success/10 rounded-xl p-3">
+                  <div className="bg-success/10 dark:bg-success/15 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-success" />
                   </div>
                 </div>
@@ -524,7 +524,7 @@ export default function PackageOrdersClient() {
                     <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
                     <div className="text-3xl font-bold text-warning">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
                   </div>
-                  <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-3">
+                  <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
                     <Calendar className="h-6 w-6 text-warning" />
                   </div>
                 </div>

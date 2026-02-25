@@ -300,7 +300,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground">전체 문의</p>
                     <p className="text-2xl font-bold text-foreground">{total}</p>
                   </div>
-                  <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
+                  <div className="bg-success/10 dark:bg-success/15 rounded-xl p-2">
                     <MessageSquare className="h-5 w-5 text-success" />
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground">답변 완료</p>
                     <p className="text-2xl font-bold text-foreground">{answeredCount}</p>
                   </div>
-                  <div className="bg-success/10 dark:bg-success/10 rounded-xl p-2">
+                  <div className="bg-success/10 dark:bg-success/15 rounded-xl p-2">
                     <CheckCircle className="h-5 w-5 text-success" />
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                     <p className="text-sm font-medium text-foreground">답변 대기</p>
                     <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
                   </div>
-                  <div className="bg-warning/10 dark:bg-warning/10 rounded-xl p-2">
+                  <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-2">
                     <Clock className="h-5 w-5 text-warning" />
                   </div>
                 </div>
