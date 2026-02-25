@@ -32,7 +32,7 @@ export default function TensionGuidePage() {
       characteristics: ['파워 증가', '편안한 느낌', '부상 위험 감소', '넓은 스윗스팟'],
       recommended: '처음 시작하시는 분들께는 24kg을 권장합니다',
       color: 'bg-primary/10 dark:bg-primary/20',
-      bgColor: 'bg-primary/10 dark:bg-primary/15',
+      bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
     },
     {

@@ -97,7 +97,7 @@ export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) 
     >
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden [&>button]:z-20 [&>button]:bg-background/20 [&>button]:hover:bg-background/30 [&>button]:text-foreground" onEscapeKeyDown={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()}>
         {/* 상단 비주얼 영역 */}
-        <div className="relative overflow-hidden border-b border-primary/20 bg-primary/10 px-6 py-12 text-foreground dark:bg-primary/15">
+        <div className="relative overflow-hidden border-b border-primary/20 bg-primary/10 px-6 py-12 text-foreground dark:bg-primary/20">
           <div className="relative z-10 pr-32">
             <div className="text-sm font-semibold opacity-90">가입 이벤트</div>
             <div className="mt-2 text-2xl font-black">회원가입 시 {promo.amount.toLocaleString('ko-KR')}P 지급</div>

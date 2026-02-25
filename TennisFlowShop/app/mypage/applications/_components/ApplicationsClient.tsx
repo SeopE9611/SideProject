@@ -471,7 +471,7 @@ export default function ApplicationsClient() {
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/mypage?tab=applications&applicationId=${app.id}`)}
-                      className="border-border hover:border-border hover:bg-success/10 dark:border-border dark:hover:border-border dark:hover:bg-success/10 transition-colors"
+                      className="border-border hover:border-border hover:bg-success/10 dark:border-border dark:hover:border-border dark:hover:bg-success/15 transition-colors"
                     >
                       상세보기
                       <ArrowRight className="ml-1 h-3 w-3" />

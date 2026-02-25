@@ -389,7 +389,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {/* [호환용] 리스트가 없고, 대표 신청 ID만 있는 경우 단일 버튼 유지 */}
  {!hasLinkedStringingApps && primaryStringingAppId && (
  <Link className="w-full bp-sm:w-auto" href={`/mypage?tab=applications&applicationId=${primaryStringingAppId}`}>
- <Button variant="outline" className="border-border text-success dark:border-border dark:text-success dark:hover:bg-success/10 bg-transparent">
+ <Button variant="outline" className="border-border text-success dark:border-border dark:text-success dark:hover:bg-success/15 bg-transparent">
  신청 상세 보기
  </Button>
  </Link>
