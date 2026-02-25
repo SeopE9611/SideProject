@@ -42,18 +42,19 @@ html body[data-scroll-locked] {
   --popover: 0 0% 100%;
   --popover-foreground: 120 4% 11%;
 
-  /* Primary action (CTA / main interaction) */
-  --primary: 152 100% 20%;
+  /* Primary action (CTA / main interaction)
+     기준 색상: #2C5341 */
+  --primary: 152.3 30.7% 24.9%;
   --primary-foreground: 120 100% 99%;
 
   /* Secondary emphasis */
-  --accent: 152 100% 20%;
+  --accent: 152.3 30.7% 24.9%;
   --accent-foreground: 120 100% 99%;
-  --accent-hover: 152 100% 18%;
-  --accent-active: 152 100% 16%;
+  --accent-hover: 152.3 30.7% 22%;
+  --accent-active: 152.3 30.7% 20%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 152 100% 20%;
+  --success: 152.3 30.7% 24.9%;
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
@@ -62,24 +63,19 @@ html body[data-scroll-locked] {
 
   --muted: 120 6% 95%;
   --muted-foreground: 120 6% 31%;
-
-  /* 브랜드 텍스트도 primary 계열로 정합성 */
-  --brand-text: 152 100% 20%;
+  --brand-text: 152.3 30.7% 24.9%;
 
   --border: 120 10% 87%;
   --input: 120 5% 86%;
-
-  /* focus ring도 primary 계열로 정합성 */
-  --ring: 152 100% 20%;
-
+  --ring: 152.3 30.7% 24.9%;
   --overlay: 120 8% 8%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
 
   /* 패키지 페이지를 위한 추가 디자인 토큰 */
-  --chart-1: 152 60% 42%;
-  --chart-2: 152 100% 20%;
+  --chart-1: 152.3 30.7% 44%;
+  --chart-2: 152.3 30.7% 24.9%;
   --chart-3: 120 4% 35%;
   --chart-4: 120 8% 60%;
   --chart-5: 120 12% 45%;
@@ -87,12 +83,12 @@ html body[data-scroll-locked] {
 
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 120 4% 11%;
-  --sidebar-primary: 152 60% 42%;
+  --sidebar-primary: 152.3 30.7% 44%;
   --sidebar-primary-foreground: 120 4% 11%;
-  --sidebar-accent: 152 100% 20%;
+  --sidebar-accent: 152.3 30.7% 24.9%;
   --sidebar-accent-foreground: 120 100% 99%;
   --sidebar-border: 120 8% 86%;
-  --sidebar-ring: 152 60% 42%;
+  --sidebar-ring: 152.3 30.7% 44%;
 }
 
 /* 다크 모드용 CSS 변수 정의 */
@@ -110,18 +106,19 @@ html body[data-scroll-locked] {
   --popover: 120 6% 14%;
   --popover-foreground: 120 100% 99%;
 
-  /* Primary action (CTA / main interaction) */
-  --primary: 152 60% 42%;
+  /* Primary action (CTA / main interaction)
+     다크에서는 가독성 때문에 같은 Hue/S에서 L을 올린 버전 사용 */
+  --primary: 152.3 30.7% 44%;
   --primary-foreground: 120 4% 11%;
 
   /* Secondary emphasis */
-  --accent: 152 60% 42%;
+  --accent: 152.3 30.7% 44%;
   --accent-foreground: 120 4% 11%;
-  --accent-hover: 152 60% 46%;
-  --accent-active: 152 60% 50%;
+  --accent-hover: 152.3 30.7% 48%;
+  --accent-active: 152.3 30.7% 52%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 152 60% 42%;
+  --success: 152.3 30.7% 44%;
   --success-foreground: 120 100% 99%;
   --warning: 40 94% 54%;
   --warning-foreground: 30 90% 8%;
@@ -130,11 +127,11 @@ html body[data-scroll-locked] {
 
   --muted: 120 3% 18%;
   --muted-foreground: 120 8% 75%;
-  --brand-text: 152 100% 22%;
+  --brand-text: 152.3 30.7% 44%;
 
   --border: 120 7% 25%;
   --input: 120 3% 24%;
-  --ring: 152 60% 42%;
+  --ring: 152.3 30.7% 44%;
   --overlay: 120 10% 4%;
 
   --destructive: 0 72% 51%;
@@ -142,12 +139,12 @@ html body[data-scroll-locked] {
 
   --sidebar: 120 4% 13%;
   --sidebar-foreground: 120 100% 99%;
-  --sidebar-primary: 152 60% 42%;
+  --sidebar-primary: 152.3 30.7% 44%;
   --sidebar-primary-foreground: 120 4% 11%;
-  --sidebar-accent: 152 100% 22%;
+  --sidebar-accent: 152.3 30.7% 24.9%;
   --sidebar-accent-foreground: 120 100% 99%;
   --sidebar-border: 120 3% 24%;
-  --sidebar-ring: 152 60% 42%;
+  --sidebar-ring: 152.3 30.7% 44%;
 }
 
 /* 전역 기본 스타일 */
