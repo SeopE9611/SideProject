@@ -117,7 +117,7 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground">전체 클래스</p>
                 <p className="text-3xl font-bold text-foreground">{classes.length}</p>
               </div>
-              <div className="bg-primary/10 rounded-xl p-3 text-foreground">
+              <div className="bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                 <Calendar className="h-6 w-6" />
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground">모집 중</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'recruiting').length}</p>
               </div>
-              <div className="bg-primary/10 rounded-xl p-3 text-foreground">
+              <div className="bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                 <Users className="h-6 w-6" />
               </div>
             </div>
@@ -145,7 +145,7 @@ export default function ClassesPage() {
                 <p className="text-sm font-medium text-muted-foreground">마감</p>
                 <p className="text-3xl font-bold text-foreground">{classes.filter((c) => c.status === 'closed').length}</p>
               </div>
-              <div className="bg-destructive/10 rounded-xl p-3 text-destructive">
+              <div className="bg-destructive/10 rounded-xl p-3 text-destructive dark:bg-destructive/15">
                 <Clock className="h-6 w-6" />
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function ClassesPage() {
           </div>
 
           {selectedClasses.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg bg-primary/10 p-3 text-foreground">
+            <div className="mb-4 flex items-center gap-2 rounded-lg bg-primary/10 p-3 text-foreground dark:bg-primary/20">
               <span className="text-sm font-medium text-primary">{selectedClasses.length}개의 클래스가 선택됨</span>
               <div className="ml-auto flex gap-2">
                 <Button variant="outline" size="sm" className="h-8 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">

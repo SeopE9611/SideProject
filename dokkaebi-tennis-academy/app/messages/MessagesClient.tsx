@@ -127,7 +127,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
         <CardHeader className="border-b border-border/40 bg-muted/30">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
                 <Mail className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -239,7 +239,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                         return (
                           <button
                             key={m.id}
-                            className={cn('w-full text-left border border-border/30 rounded-lg p-4 transition-all hover:shadow-md hover:border-primary/30', active && 'border-primary/40 bg-primary/5 shadow-md', !active && 'hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground')}
+                            className={cn('w-full text-left border border-border/30 rounded-lg p-4 transition-all hover:shadow-md hover:border-primary/30', active && 'border-primary/40 bg-primary/5 shadow-md dark:bg-primary/10', !active && 'hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground')}
                             onClick={async () => {
                               setSelectedId(m.id);
                               setTimeout(afterOpenDetail, 250);

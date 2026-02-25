@@ -716,7 +716,7 @@ export default function ReviewWritePage() {
           {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
           <div className="space-y-6">
             {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-primary/10 border border-primary/20 text-foreground p-6 shadow-xl overflow-hidden">
+            <div className="relative rounded-2xl bg-primary/10 border border-primary/20 text-foreground p-6 shadow-xl overflow-hidden dark:bg-primary/20">
               {/* 코트 라인 장식 */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
@@ -724,7 +724,7 @@ export default function ReviewWritePage() {
 
               <div className="relative">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-warning/10"></div>
+                  <div className="w-2 h-2 rounded-full bg-warning/10 dark:bg-warning/15"></div>
                   <span className="text-sm font-medium opacity-90">{mode === 'product' ? 'PRODUCT REVIEW' : mode === 'service' ? 'SERVICE REVIEW' : 'INVALID'}</span>
                 </div>
 
@@ -910,7 +910,7 @@ export default function ReviewWritePage() {
                   )}
 
                   {/* 별점 섹션 */}
-                  <div className="text-center py-6 bg-primary/10 border border-primary/20 rounded-xl">
+                  <div className="text-center py-6 bg-primary/10 border border-primary/20 rounded-xl dark:bg-primary/20">
                     <label className="block text-sm font-semibold text-foreground mb-4">만족도를 별점으로 평가해주세요</label>
                     <Stars value={rating} onChange={setRating} disabled={locked} />
                     <div className="mt-2 text-sm text-foreground">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>

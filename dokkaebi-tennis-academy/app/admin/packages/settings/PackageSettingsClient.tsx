@@ -248,7 +248,7 @@ export default function PackageSettingsClient() {
                             <div className="flex items-center space-x-2">
                               <Package className="h-5 w-5 text-primary" />
                               <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                              {pkg.isPopular && <Badge className="bg-warning/10 text-warning">인기</Badge>}
+                              {pkg.isPopular && <Badge className="bg-warning/10 text-warning dark:bg-warning/15">인기</Badge>}
                               {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
                             </div>
                             <div className="flex items-center space-x-2">
@@ -500,7 +500,7 @@ export default function PackageSettingsClient() {
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10">
+                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10 dark:bg-success/15">
                       <Save className="mr-2 h-4 w-4" />
                       {isSaving ? '저장 중...' : '일반 설정 저장'}
                     </Button>

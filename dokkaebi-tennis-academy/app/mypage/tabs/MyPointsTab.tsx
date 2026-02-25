@@ -83,7 +83,7 @@ export default function MyPointsTab() {
     return (
       <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
         <CardContent className="flex flex-col items-center justify-center py-12 bp-sm:py-16">
-          <div className="bg-destructive/10 rounded-full p-4 mb-4">
+          <div className="bg-destructive/10 rounded-full p-4 mb-4 dark:bg-destructive/15">
             <Coins className="h-8 w-8 text-destructive" />
           </div>
           <p className="text-base font-medium mb-2">포인트 정보를 불러올 수 없습니다</p>

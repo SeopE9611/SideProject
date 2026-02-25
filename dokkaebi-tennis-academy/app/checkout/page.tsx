@@ -1351,7 +1351,7 @@ export default function CheckoutPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 bp-sm:p-6 shrink-0">
                   {(fieldErrors.items || fieldErrors.bundle || (isMountingFeeReady && fieldErrors.composition)) && (
-                    <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive">
+                    <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
                       <p className="font-semibold mb-1">확인 필요</p>
                       {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                       {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}

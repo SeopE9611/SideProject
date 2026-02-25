@@ -108,11 +108,11 @@ function StatusBadge({ status }: { status?: string }) {
     s === 'failed'
       ? 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15'
       : s === 'sent'
-      ? 'bg-success/10 text-success border-border'
+      ? 'bg-success/10 text-success border-border dark:bg-success/15'
       : s === 'queued'
-      ? 'bg-warning/10 text-warning border-border'
+      ? 'bg-warning/10 text-warning border-border dark:bg-warning/15'
       : s === 'processing'
-      ? 'bg-primary/10 text-primary border-border'
+      ? 'bg-primary/10 text-primary border-border dark:bg-primary/20'
       : 'bg-muted text-muted-foreground border-border/40';
 
   return <Badge className={`border ${cls}`}>{s}</Badge>;

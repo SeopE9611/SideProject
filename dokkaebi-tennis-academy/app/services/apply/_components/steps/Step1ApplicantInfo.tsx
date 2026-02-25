@@ -109,7 +109,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
   return (
     <div className="relative space-y-5">
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 mb-4 dark:bg-primary/20">
           <User className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">신청자 정보</h2>
@@ -370,7 +370,7 @@ export default function Step1ApplicantInfo({ formData, setFormData, handleInputC
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 dark:bg-warning/15">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">

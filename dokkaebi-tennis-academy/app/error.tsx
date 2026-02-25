@@ -35,7 +35,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
               {isDev && <pre className="mt-4 max-h-48 overflow-auto rounded-xl bg-muted dark:bg-card p-4 text-xs text-foreground ring-1 ring-ring">{String(error?.message ?? error)}</pre>}
 
               <div className="mt-4">
-                <Badge className="bg-destructive/10 text-destructive ring-1 ring-inset ring-ring">일시적인 오류일 수 있습니다</Badge>
+                <Badge className="bg-destructive/10 text-destructive ring-1 ring-inset ring-ring dark:bg-destructive/15">일시적인 오류일 수 있습니다</Badge>
               </div>
             </CardContent>
 
@@ -54,8 +54,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
               </div>
             </CardFooter>
 
-            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-destructive/10 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-warning/10 blur-3xl" />
+            <div className="pointer-events-none absolute -top-24 -right-24 h-44 w-44 rounded-full bg-destructive/10 blur-3xl dark:bg-destructive/15" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-warning/10 blur-3xl dark:bg-warning/15" />
           </Card>
         </div>
       </div>

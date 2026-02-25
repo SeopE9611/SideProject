@@ -36,7 +36,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             )}
 
             <div className="mt-4">
-              <span className="inline-block rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive">일시적인 오류일 수 있습니다</span>
+              <span className="inline-block rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive dark:bg-destructive/15">일시적인 오류일 수 있습니다</span>
             </div>
           </CardContent>
 

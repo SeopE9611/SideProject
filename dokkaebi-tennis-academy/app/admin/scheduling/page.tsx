@@ -283,7 +283,7 @@ export default function StringingSettingsPage() {
             <Card className="overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
               <CardHeader className="border-b border-border bg-card pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
-                  <div className="rounded-xl bg-primary/10 p-2 text-primary">
+                  <div className="rounded-xl bg-primary/10 p-2 text-primary dark:bg-primary/20">
                     <Clock className="h-5 w-5" />
                   </div>
                   기본 슬롯 설정

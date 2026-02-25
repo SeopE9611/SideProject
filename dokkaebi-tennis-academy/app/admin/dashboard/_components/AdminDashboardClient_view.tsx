@@ -141,7 +141,7 @@ function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; val
     <Card className="group relative overflow-hidden border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15">{icon}</div>
+        <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20">{icon}</div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="text-3xl font-bold tracking-tight">{value}</div>
@@ -325,7 +325,7 @@ export default function AdminDashboardClient() {
           <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <div className="rounded-full bg-primary/10 p-1.5">
+                <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">
                   <Package className="h-4 w-4 text-primary" />
                 </div>
                 배송 관리
@@ -349,7 +349,7 @@ export default function AdminDashboardClient() {
           <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <div className="rounded-full bg-primary/10 p-1.5">
+                <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">
                   <Boxes className="h-4 w-4 text-primary" />
                 </div>
                 재고 현황
@@ -373,7 +373,7 @@ export default function AdminDashboardClient() {
           <Card className="border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <div className="rounded-full bg-primary/10 p-1.5">
+                <div className="rounded-full bg-primary/10 p-1.5 dark:bg-primary/20">
                   <Bell className="h-4 w-4 text-primary" />
                 </div>
                 시스템 알림
@@ -440,7 +440,7 @@ export default function AdminDashboardClient() {
                 <div className="space-y-3">
                   {data.top.products7d.map((p, idx) => (
                     <div key={p.productId} className="group flex items-center gap-4 rounded-lg bg-muted/30 p-3 transition-all hover:bg-muted/50">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{idx + 1}</div>
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary dark:bg-primary/20">{idx + 1}</div>
                       <div className="min-w-0 flex-1">
                         <Link href={`/admin/products/${p.productId}/edit`} className="block truncate text-sm font-semibold group-hover:underline">
                           {p.name || '(이름 없음)'}
@@ -478,7 +478,7 @@ export default function AdminDashboardClient() {
                     const brandHref = hasBrand ? `/admin/products?brand=${encodeURIComponent(b.brand)}` : undefined;
                     return (
                       <div key={`${b.brand}-${b.qty}-${b.revenue}`} className="group flex items-center gap-4 rounded-lg bg-muted/30 p-3 transition-all hover:bg-muted/50">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">{idx + 1}</div>
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary dark:bg-primary/20">{idx + 1}</div>
                         <div className="min-w-0 flex-1">
                           {brandHref ? (
                             <Link href={brandHref} className="block truncate text-sm font-semibold group-hover:underline">

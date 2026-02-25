@@ -54,7 +54,7 @@ export default function SideMenu() {
       "hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring dark:hover:ring-ring hover:z-10 active:scale-[0.99]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       isActive
-        ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm"
+        ? "bg-primary/10 text-foreground border border-primary/20 shadow-sm dark:bg-primary/20"
         : "text-muted-foreground hover:text-foreground",
     );
   };

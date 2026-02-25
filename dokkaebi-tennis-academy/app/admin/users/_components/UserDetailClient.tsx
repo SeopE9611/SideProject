@@ -497,7 +497,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                       'absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-border',
                       statusKey(user) === 'active' && 'bg-primary',
                       statusKey(user) === 'suspended' && 'bg-muted',
-                      statusKey(user) === 'deleted' && 'bg-destructive/10',
+                      statusKey(user) === 'deleted' && 'bg-destructive/10 dark:bg-destructive/15',
                     )}
                   />
                 </div>
@@ -845,7 +845,7 @@ function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os:
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-sm font-medium truncate">
           {s.browser} · {s.os}
-          {highlight && <Badge className="border-0 bg-primary/10 text-primary">현재</Badge>}
+          {highlight && <Badge className="border-0 bg-primary/10 text-primary dark:bg-primary/20">현재</Badge>}
           <Badge className={cn('border-0 hidden sm:inline-block', s.isMobile ? 'bg-muted text-foreground' : 'bg-muted text-foreground')}>{s.isMobile ? '모바일' : '데스크탑'}</Badge>
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">

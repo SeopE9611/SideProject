@@ -492,7 +492,7 @@ export default function NoticeWritePage() {
             <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
           )}
           {editId && conflictError && (
-            <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
+            <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <p>{conflictError}</p>
               <div>
                 <Button
@@ -531,7 +531,7 @@ export default function NoticeWritePage() {
                   <SelectContent>
                     <SelectItem value="general">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-border">
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-border dark:bg-primary/20">
                           일반
                         </Badge>
                         <span>일반적인 공지사항</span>
@@ -539,7 +539,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="event">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-success/10 text-success border-border">
+                        <Badge variant="outline" className="bg-success/10 text-success border-border dark:bg-success/15">
                           이벤트
                         </Badge>
                         <span>할인, 프로모션 등 이벤트</span>
@@ -555,7 +555,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="maintenance">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-warning/10 text-warning border-border">
+                        <Badge variant="outline" className="bg-warning/10 text-warning border-border dark:bg-warning/15">
                           점검
                         </Badge>
                         <span>시스템 점검, 휴무 안내</span>

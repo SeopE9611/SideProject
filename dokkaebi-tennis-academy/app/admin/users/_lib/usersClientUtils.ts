@@ -31,7 +31,7 @@ export const roleColors: Record<'admin' | 'user', string> = {
 };
 
 export const STATUS = {
-  active: 'bg-primary/10 text-primary border-border',
+  active: 'bg-primary/10 text-primary border-border dark:bg-primary/20',
   suspended: 'bg-muted text-primary border-border',
   deleted: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
 } as const;

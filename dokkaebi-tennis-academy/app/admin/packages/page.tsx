@@ -443,7 +443,7 @@ export default function PackageOrdersClient() {
         return 'bg-muted text-primary border border-border';
       case 'success':
       default:
-        return 'bg-primary/10 text-primary border border-border';
+        return 'bg-primary/10 text-primary border border-border dark:bg-primary/20';
     }
   }
 
@@ -482,7 +482,7 @@ export default function PackageOrdersClient() {
                     <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
                     <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
                   </div>
-                  <div className="bg-primary/10 rounded-xl p-3 text-foreground">
+                  <div className="bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                     <Package className="h-6 w-6" />
                   </div>
                 </div>

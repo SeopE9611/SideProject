@@ -228,7 +228,7 @@ export default function OrderLookupResultsPage() {
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex justify-center items-center py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6 dark:bg-primary/20">
                     <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-2">주문 정보 조회 중</h3>
@@ -329,7 +329,7 @@ export default function OrderLookupResultsPage() {
 
           <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm mb-8">
             <CardHeader className="text-center pb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
               </div>
               <CardTitle className="text-2xl font-bold text-foreground"><span className="text-primary">주문</span> 내역</CardTitle>
@@ -347,7 +347,7 @@ export default function OrderLookupResultsPage() {
                         {/* Order Header */}
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
                           <div className="flex items-center mb-4 lg:mb-0">
-                            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4">
+                            <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 dark:bg-primary/20">
                               <span className="text-foreground font-bold">#{index + 1}</span>
                             </div>
                             <div>
@@ -389,7 +389,7 @@ export default function OrderLookupResultsPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                          <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/20 dark:bg-primary/20">
                             <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                             <div className="min-w-0">
                               <p className="text-xs text-primary mb-1">결제금액</p>
@@ -420,7 +420,7 @@ export default function OrderLookupResultsPage() {
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary cursor-default">
+                                      <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary cursor-default dark:bg-primary/20">
                                         <CheckCircle2 className="w-4 h-4 mr-2" />
                                         스트링 신청 완료
                                       </div>

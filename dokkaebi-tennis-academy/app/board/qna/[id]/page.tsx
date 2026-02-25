@@ -400,7 +400,7 @@ export default function QnaDetailPage() {
                         <MessageCircle className="h-4 w-4 text-primary" />
                       </div>
                       <h2 className="text-xl font-bold text-foreground">관리자 답변</h2>
-                      <Badge variant="secondary" className="bg-success/15 text-success">
+                      <Badge variant="secondary" className="bg-success/15 text-success dark:bg-success/20">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         답변 완료
                       </Badge>

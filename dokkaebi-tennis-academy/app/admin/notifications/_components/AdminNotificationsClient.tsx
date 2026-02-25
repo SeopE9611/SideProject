@@ -245,7 +245,7 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 실패 상태인 알림 수">실패</p>
                 <p className="mt-2 text-3xl font-bold">{stats.failed}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
                 <XCircle className="h-6 w-6 text-destructive" />
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function AdminNotificationsClient() {
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수">발송 완료</p>
                 <p className="mt-2 text-3xl font-bold">{stats.sent}</p>
               </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <CheckCircle2 className="h-6 w-6 text-primary" />
               </div>
             </div>
@@ -270,7 +270,7 @@ export default function AdminNotificationsClient() {
       <Card className="border-border/40 bg-card/50 backdrop-blur">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
               <Mail className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -354,7 +354,7 @@ export default function AdminNotificationsClient() {
                         <div
                           className={cn(
                             'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                            it.status === 'sent' && 'bg-primary/10 text-primary',
+                            it.status === 'sent' && 'bg-primary/10 text-primary dark:bg-primary/20',
                             it.status === 'queued' && 'bg-muted text-primary',
                             it.status === 'failed' && 'bg-destructive/10 text-destructive dark:bg-destructive/15'
                           )}

@@ -266,7 +266,7 @@ export default function Step2MountingInfo(props: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 dark:bg-primary/20">
           <ClipboardList className="h-8 w-8" />
         </div>
         <h2 className="text-2xl font-bold mb-2">장착 정보</h2>
@@ -287,7 +287,7 @@ export default function Step2MountingInfo(props: Props) {
               스트링 종류 <span className="text-destructive">*</span>
             </Label>
             <div className="mt-2 space-y-2">
-              <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
+              <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 dark:bg-warning/15">
                 <div className="flex items-start space-x-3">
                   <Zap className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-foreground">
@@ -367,7 +367,7 @@ export default function Step2MountingInfo(props: Props) {
 
                   {/* (대여) 체크 해제 상태를 “체감”으로 확실히 보이게: 경고 + 즉시 복구 CTA */}
                   {isRentalNonOrder && !isLockedIdSelected && (
-                    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive">
+                    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive dark:bg-destructive/20">
                       <div className="flex items-start justify-between gap-3">
                         <div className="leading-relaxed">
                           <p className="font-medium">현재 이 스트링이 체크 해제되어 신청서에 포함되지 않았습니다.</p>

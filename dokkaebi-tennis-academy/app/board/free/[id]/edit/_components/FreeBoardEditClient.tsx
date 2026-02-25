@@ -381,7 +381,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">자유 게시판 글 수정</h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.</p>
             {/* 이탈 경고(고정 노출) */}
-            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
+            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
@@ -541,7 +541,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               {errorMsg && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">{errorMsg}</div>}
 
               {conflictOpen && (
-                <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-primary dark:border-border dark:bg-muted dark:text-primary">
+                <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                   <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
                   <p className="mt-1">최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해 주세요.</p>
                   <div className="mt-3 flex flex-wrap gap-2">

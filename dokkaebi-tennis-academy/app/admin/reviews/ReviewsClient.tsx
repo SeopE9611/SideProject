@@ -153,9 +153,9 @@ export default function ReviewsClient() {
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25';
+        return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20';
       case 'stringing':
-        return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25';
+        return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20';
       case 'product':
         return 'bg-muted text-foreground hover:bg-muted';
       default:
@@ -207,7 +207,7 @@ export default function ReviewsClient() {
                 <p className="text-sm font-medium text-muted-foreground">평균 평점</p>
                 <p className="text-3xl font-bold text-foreground">{averageRating.toFixed(1)}</p>
               </div>
-              <div className="bg-warning/10 rounded-xl p-3">
+              <div className="bg-warning/10 rounded-xl p-3 dark:bg-warning/15">
                 <Star className="h-6 w-6 text-warning" />
               </div>
             </div>

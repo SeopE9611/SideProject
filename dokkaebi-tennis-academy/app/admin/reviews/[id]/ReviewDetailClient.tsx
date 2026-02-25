@@ -114,9 +114,9 @@ export default function ReviewDetailClient({ reviewId }: Props) {
   const getReviewTypeBadge = (type: Review['type']) => {
     switch (type) {
       case 'lesson':
-        return <Badge className="bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25">레슨 리뷰</Badge>;
+        return <Badge className="bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20">레슨 리뷰</Badge>;
       case 'stringing':
-        return <Badge className="bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25">스트링 서비스 리뷰</Badge>;
+        return <Badge className="bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20">스트링 서비스 리뷰</Badge>;
       case 'product':
         return <Badge className="bg-muted text-foreground hover:bg-muted">상품 리뷰</Badge>;
       default:
@@ -138,7 +138,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
       {/* 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-lg dark:bg-primary/20">
             <MessageSquare className="h-6 w-6" />
           </div>
           <div>
@@ -181,7 +181,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
-                <div className="bg-primary/10 rounded-lg p-2 text-primary">
+                <div className="bg-primary/10 rounded-lg p-2 text-primary dark:bg-primary/20">
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">작성자 정보</h3>
@@ -203,7 +203,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
             <div className="space-y-4 p-6 bg-background rounded-xl">
               <div className="flex items-center space-x-3">
-                <div className="bg-primary/10 rounded-lg p-2 text-primary">
+                <div className="bg-primary/10 rounded-lg p-2 text-primary dark:bg-primary/20">
                   <Calendar className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground">리뷰 정보</h3>

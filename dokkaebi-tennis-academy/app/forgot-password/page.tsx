@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
       <div className="absolute top-10 left-10 w-20 h-20 bg-muted/60 dark:bg-card/60 rounded-full blur-2xl animate-pulse"></div>
-      <div className="absolute bottom-10 right-10 w-32 h-32 bg-success/10 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-10 right-10 w-32 h-32 bg-success/10 rounded-full blur-3xl animate-pulse dark:bg-success/15"></div>
 
       <div className="relative w-full max-w-md">
         <div className="mb-6">

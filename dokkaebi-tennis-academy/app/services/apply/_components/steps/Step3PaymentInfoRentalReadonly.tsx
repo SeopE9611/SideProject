@@ -23,7 +23,7 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4 dark:bg-primary/20">
           <CreditCard className="h-8 w-8 text-foreground" />
         </div>
         <h2 className="text-2xl font-bold mb-2">결제 정보</h2>

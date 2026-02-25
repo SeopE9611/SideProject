@@ -611,7 +611,7 @@ export default function RacketFinderClient() {
             </div>
           </div>
 
-          {error && <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive">조회 중 오류가 발생했습니다.</div>}
+          {error && <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive dark:bg-destructive/15">조회 중 오류가 발생했습니다.</div>}
 
           {!hasSearched ? (
             <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-8 text-center">
@@ -648,7 +648,7 @@ export default function RacketFinderClient() {
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-2xl bg-destructive/10 p-6 text-center">
+            <div className="rounded-2xl bg-destructive/10 p-6 text-center dark:bg-destructive/15">
               <p className="text-sm text-destructive">데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을 확인해주세요.</p>
             </div>
           ) : items.length === 0 ? (

@@ -219,7 +219,7 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <FileText className="h-6 w-6" />
               </div>
               <div>
@@ -233,7 +233,7 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <Eye className="h-6 w-6" />
               </div>
               <div>
@@ -247,7 +247,7 @@ export default function BoardsClient() {
         <Card className="border-border/40 bg-card/50 backdrop-blur hover:border-border/60 transition-all duration-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div>
@@ -340,7 +340,7 @@ export default function BoardsClient() {
                 </div>
               )}
 
-              {postsErr && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
+              {postsErr && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
 
               {!postsLoading && !postsErr && (
                 <>
@@ -518,7 +518,7 @@ export default function BoardsClient() {
                 </div>
               )}
 
-              {reportsErr && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
+              {reportsErr && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
 
               {!reportsLoading && !reportsErr && (
                 <>
