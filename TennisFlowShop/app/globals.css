@@ -43,17 +43,17 @@ html body[data-scroll-locked] {
   --popover-foreground: 120 4% 11%;
 
   /* Primary action (CTA / main interaction) */
-  --primary: 129 57% 33%;
+  --primary: 159.6 100% 22%;
   --primary-foreground: 120 100% 99%;
 
   /* Secondary emphasis */
-  --accent: 135 59% 41%;
-  --accent-foreground: 120 4% 11%;
-  --accent-hover: 135 59% 37%;
-  --accent-active: 135 59% 33%;
+  --accent: 159.6 100% 22%;
+  --accent-foreground: 120 100% 99%;
+  --accent-hover: 159.6 100% 20%;
+  --accent-active: 159.6 100% 18%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 135 59% 41%;
+  --success: 159.6 100% 22%;
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
@@ -73,20 +73,20 @@ html body[data-scroll-locked] {
   --destructive-foreground: 210 40% 98%;
 
   /* 패키지 페이지를 위한 추가 디자인 토큰 */
-  --chart-1: 133 59% 41%;
-  --chart-2: 130 57% 33%;
+  --chart-1: 159.6 60% 42%;
+  --chart-2: 159.6 100% 22%;
   --chart-3: 120 4% 35%;
   --chart-4: 120 8% 60%;
   --chart-5: 120 12% 45%;
   --radius: 0.5rem;
   --sidebar: 0 0% 100%;
   --sidebar-foreground: 120 4% 11%;
-  --sidebar-primary: 133 59% 41%;
+  --sidebar-primary: 159.6 60% 42%;
   --sidebar-primary-foreground: 120 4% 11%;
-  --sidebar-accent: 130 57% 33%;
+  --sidebar-accent: 159.6 100% 22%;
   --sidebar-accent-foreground: 120 100% 99%;
   --sidebar-border: 120 8% 86%;
-  --sidebar-ring: 133 59% 41%;
+  --sidebar-ring: 159.6 60% 42%;
 }
 
 /* 다크 모드용 CSS 변수 정의 */
@@ -105,17 +105,17 @@ html body[data-scroll-locked] {
   --popover-foreground: 120 100% 99%;
 
   /* Primary action (CTA / main interaction) */
-  --primary: 135 59% 41%;
+  --primary: 159.6 60% 42%;
   --primary-foreground: 120 4% 11%;
 
   /* Secondary emphasis */
-  --accent: 135 59% 41%;
+  --accent: 159.6 60% 42%;
   --accent-foreground: 120 4% 11%;
-  --accent-hover: 135 59% 46%;
-  --accent-active: 135 59% 50%;
+  --accent-hover: 159.6 60% 46%;
+  --accent-active: 159.6 60% 50%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 145 64% 46%;
+  --success: 159.6 60% 42%;
   --success-foreground: 120 100% 99%;
   --warning: 40 94% 54%;
   --warning-foreground: 30 90% 8%;
@@ -124,11 +124,11 @@ html body[data-scroll-locked] {
 
   --muted: 120 3% 18%;
   --muted-foreground: 120 8% 75%;
-  --brand-text: 129 45% 68%;
+  --brand-text: 159.6 100% 22%;
 
   --border: 120 7% 25%;
   --input: 120 3% 24%;
-  --ring: 145 64% 46%;
+  --ring: 159.6 60% 42%;
   --overlay: 120 10% 4%;
 
   --destructive: 0 72% 51%;
@@ -136,12 +136,12 @@ html body[data-scroll-locked] {
 
   --sidebar: 120 4% 13%;
   --sidebar-foreground: 120 100% 99%;
-  --sidebar-primary: 133 59% 41%;
+  --sidebar-primary: 159.6 60% 42%;
   --sidebar-primary-foreground: 120 4% 11%;
-  --sidebar-accent: 130 57% 33%;
+  --sidebar-accent: 159.6 100% 22%;
   --sidebar-accent-foreground: 120 100% 99%;
   --sidebar-border: 120 3% 24%;
-  --sidebar-ring: 133 59% 41%;
+  --sidebar-ring: 159.6 60% 42%;
 }
 
 /* 전역 기본 스타일 */
