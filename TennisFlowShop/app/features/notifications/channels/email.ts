@@ -25,13 +25,14 @@ export async function sendEmail({ to, subject, html, ics, bcc }: SendEmailArgs) 
     (process.env.SAFE_RCPT_ALLOWLIST ?? '')
       .split(',')
       .map((s) => s.trim().toLowerCase())
-      .filter(Boolean)
+      .filter(Boolean),
   );
   const guardRecipients = (rcpt: string | string[]) => {
     if (!SAFE_MODE) return rcpt;
     const list = Array.isArray(rcpt) ? rcpt : [rcpt];
     const filtered = list.filter((e) => allowSet.has(e.toLowerCase()));
-    return filtered.length > 0 ? filtered : ['dev@dokkaebi.tennis']; // 최소 보호용
+    const fallback = process.env.SAFE_RCPT_FALLBACK || 'dev@example.com';
+    return filtered.length > 0 ? filtered : [fallback]; // 최소 보호용
   };
 
   const transporter = nodemailer.createTransport({

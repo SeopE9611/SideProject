@@ -10,17 +10,17 @@ export const bankLabelMap: Record<string, { label: string; account: string; hold
   shinhan: {
     label: '신한은행',
     account: '123-456-789012',
-    holder: '도깨비테니스',
+    holder: '테니스플로우',
   },
   kookmin: {
     label: '국민은행',
     account: '123-45-6789-012',
-    holder: '도깨비테니스',
+    holder: '테니스플로우',
   },
   woori: {
     label: '우리은행',
     account: '1234-567-890123',
-    holder: '도깨비테니스',
+    holder: '테니스플로우',
   },
 };
 

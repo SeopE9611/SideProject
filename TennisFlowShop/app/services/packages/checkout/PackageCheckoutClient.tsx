@@ -1,25 +1,25 @@
 'use client';
 
-import Link from 'next/link';
+import { PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant, type PackageVariant } from '@/app/services/packages/_lib/packageVariant';
+import { useAuthStore, type User } from '@/app/store/authStore';
+import { FullPageSpinner } from '@/components/system/PageLoading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useAuthStore, type User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
-import { CreditCard, MapPin, Shield, CheckCircle, UserIcon, Mail, Phone, MessageSquare, Building2, Package, Star, Calendar, Gift, Target, Award } from 'lucide-react';
-import PackageCheckoutButton from './PackageCheckoutButton';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { FullPageSpinner } from '@/components/system/PageLoading';
-import { type PackageVariant, PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
+import { Award, Building2, Calendar, CheckCircle, CreditCard, Gift, Mail, MapPin, MessageSquare, Package, Phone, Shield, Star, Target, UserIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import PackageCheckoutButton from './PackageCheckoutButton';
 
 // 클라이언트 유효성(UX용)
 type CheckoutField = 'name' | 'email' | 'phone' | 'depositor' | 'postalCode' | 'address' | 'addressDetail';
@@ -781,9 +781,9 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                         <SelectValue placeholder="입금 계좌를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="shinhan">신한은행 123-456-789012 (예금주: 도깨비테니스)</SelectItem>
-                        <SelectItem value="kookmin">국민은행 123-45-6789-012 (예금주: 도깨비테니스)</SelectItem>
-                        <SelectItem value="woori">우리은행 1234-567-890123 (예금주: 도깨비테니스)</SelectItem>
+                        <SelectItem value="shinhan">신한은행 123-456-789012 (예금주: 테니스플로우)</SelectItem>
+                        <SelectItem value="kookmin">국민은행 123-45-6789-012 (예금주: 테니스플로우)</SelectItem>
+                        <SelectItem value="woori">우리은행 1234-567-890123 (예금주: 테니스플로우)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

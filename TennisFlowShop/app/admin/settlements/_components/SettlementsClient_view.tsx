@@ -2,23 +2,23 @@
 
 /** Responsibility: 정산 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
-import useSWR from 'swr';
-import { useEffect, useMemo, useState } from 'react';
-import { showErrorToast, showSuccessToast, showInfoToast } from '@/lib/toast';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { FileDown, RefreshCw, CheckCircle2, AlertTriangle, Loader2, Calendar, TrendingUp, Package, DollarSign, TrendingDown, Activity, Trash2, ArrowUpDown, ArrowUp, ArrowDown, BarChartBig as ChartBar, MoreHorizontal } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { formatKRWCard, formatKRWFull } from '@/lib/money';
 import KpiCard from '@/app/admin/settlements/_components/KpiCard';
-import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
-import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
-import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
-import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
-import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST, TZ } from './filters/settlementDateFilters';
-import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
 import { makeCsvFilename } from '@/app/admin/settlements/_lib/settlementExport';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
+import { formatKRWCard, formatKRWFull } from '@/lib/money';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
+import { Activity, AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, Calendar, BarChartBig as ChartBar, CheckCircle2, DollarSign, FileDown, Loader2, MoreHorizontal, Package, RefreshCw, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import useSWR from 'swr';
+import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST } from './filters/settlementDateFilters';
+import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
+import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
 import { buildAllSettlementSelection, getSettlementCacheKey, isSettlementMatched, toggleYyyymmSelection, validateYyyymmClient } from './utils/settlementClientTransforms';
 
 export default function SettlementsClient() {
@@ -296,7 +296,7 @@ export default function SettlementsClient() {
     const lines = [header, ...csvRows].map((a) => a.join(',')).join('\r\n');
     const csv = '\ufeff' + lines;
 
-    const fileName = makeCsvFilename(`도깨비테니스_정산스냅샷_${minYm}-${maxYm}`);
+    const fileName = makeCsvFilename(`테니스플로우_정산스냅샷_${minYm}-${maxYm}`);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -371,23 +371,14 @@ export default function SettlementsClient() {
           />
 
           {/* 순익 */}
-          <KpiCard
-            label="순익"
-            value={totalNet ?? 0}
-            storageKey="settlements.kpi.compact.net"
-            formatCompact={formatKRWCard}
-            icon={<Activity className="h-6 w-6 text-primary" />}
-            isLoading={isLoading}
-            hint={true}
-            skeletonWidthClass="w-28"
-          />
+          <KpiCard label="순익" value={totalNet ?? 0} storageKey="settlements.kpi.compact.net" formatCompact={formatKRWCard} icon={<Activity className="h-6 w-6 text-primary" />} isLoading={isLoading} hint={true} skeletonWidthClass="w-28" />
         </div>
 
         <div className="border-b bg-card/80 backdrop-blur-sm rounded-t-2xl shadow-lg overflow-x-auto">
           <div className="px-4 sm:px-6 flex gap-1 min-w-max">
             <button
               onClick={() => setTab('snapshot')}
-              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${ tab === 'snapshot' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground' }`}
+              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === 'snapshot' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'}`}
             >
               스냅샷 관리
               {tab === 'snapshot' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
@@ -403,7 +394,7 @@ export default function SettlementsClient() {
                 }
               }}
               disabled={doing.live}
-              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${ tab === 'live' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground' }`}
+              className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-semibold transition-all relative whitespace-nowrap ${tab === 'live' ? 'text-primary' : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground'}`}
             >
               실시간 조회
               {tab === 'live' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
@@ -1195,7 +1186,7 @@ export default function SettlementsClient() {
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        const fileName = makeCsvFilename(`도깨비테니스_정산실시간_${live.range.from}~${live.range.to}`);
+                        const fileName = makeCsvFilename(`테니스플로우_정산실시간_${live.range.from}~${live.range.to}`);
                         a.download = fileName;
                         a.click();
                         URL.revokeObjectURL(url);
