@@ -40,7 +40,7 @@ const Footer = () => {
               <Link href="/" className="flex items-center gap-3 mb-5 group">
                 <div>
                   <div className="font-black text-lg bp-sm:text-xl bg-muted/30 text-primary">테니스 플로우</div>
-                  <div className="text-xs text-muted-foreground font-semibold tracking-wider">Tennis Flow</div>
+                  <div className="text-xs text-muted-foreground font-semibold tracking-wider">TENNIS FLOW</div>
                 </div>
               </Link>
 

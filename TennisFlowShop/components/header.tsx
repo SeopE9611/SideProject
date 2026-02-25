@@ -355,7 +355,7 @@ const Header = () => {
           <div className="shrink-0 p-6 pb-4 border-b border-border bg-muted/30">
             <Link href="/" className="flex flex-col group" aria-label="테니스 플로우 홈" onClick={() => setOpen(false)}>
               <div className="font-bold text-lg text-foreground whitespace-nowrap">테니스 플로우</div>
-              <div className="text-xs tracking-wider text-muted-foreground font-medium">Tennis Flow SHOP</div>
+              <div className="text-xs tracking-wider text-muted-foreground font-medium">TENNIS FLOW SHOP</div>
             </Link>
             <div className="mt-4">
               <SearchPreview placeholder="스트링 / 라켓 검색." className="w-full rounded-lg border-border focus-within:border-border focus-within:ring-2 focus-within:ring-ring transition-colors" onSelect={() => setOpen(false)} />
@@ -746,7 +746,7 @@ const Header = () => {
 
               <Link href="/" className="flex flex-col items-center group" aria-label="테니스 플로우 홈" onClick={() => setOpen(false)}>
                 <div className="font-black text-[15px] tracking-tight text-foreground group-hover:text-foreground transition-colors">테니스 플로우</div>
-                <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">Tennis Flow SHOP</div>
+                <div className="text-[10px] tracking-wider text-muted-foreground font-medium whitespace-nowrap">TENNIS FLOW SHOP</div>
               </Link>
 
               <div className="flex items-center gap-1.5">
@@ -762,7 +762,7 @@ const Header = () => {
             <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-3 bp-lg:gap-4">
               <Link href="/" className="flex flex-col group" aria-label="테니스 플로우 홈">
                 <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">테니스 플로우</div>
-                <div className="text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">Tennis Flow SHOP</div>
+                <div className="text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">TENNIS FLOW SHOP</div>
               </Link>
 
               <nav ref={navRef} className="hidden bp-lg:flex items-center gap-1.5 ml-2 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
