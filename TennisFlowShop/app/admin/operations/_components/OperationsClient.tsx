@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
+import { AlertTriangle, BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
@@ -14,7 +14,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
+import {
+  opsKindBadgeTone,
+  opsKindLabel,
+  opsStatusBadgeTone,
+  pickPrimaryOpsSignal,
+  type OpsBadgeTone,
+} from '@/lib/admin-ops-taxonomy';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
@@ -208,6 +214,10 @@ function opsBadgeToneClass(tone: OpsBadgeTone) {
   return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
 }
 
+function signalIcon() {
+  return <AlertTriangle className="h-3 w-3" aria-hidden="true" />;
+}
+
 /**
  * 운영함(통합) 테이블에서 Flow 라벨이 너무 길어 뱃지가 “가로로 늘어나며” 난잡해지는 문제 해결용.
  * - 표에는 짧은 라벨만 보여주고
@@ -244,6 +254,7 @@ export default function OperationsClient() {
   const [flow, setFlow] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>('all');
   const [integrated, setIntegrated] = useState<'all' | '1' | '0'>('all'); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
+  const [showAdvancedLegend, setShowAdvancedLegend] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const defaultPageSize = 50;
@@ -589,22 +600,37 @@ export default function OperationsClient() {
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground border-t border-border pt-3 mt-1">
-            <span className="font-medium text-foreground">범례</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>주문</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('stringing_application')))}>신청서</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('rental')))}>대여</Badge>
-            <span className="text-muted-foreground">|</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합(연결됨)</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-muted-foreground')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive dark:bg-destructive/15')}>연결오류</Badge>
+          <div className="space-y-2 border-t border-border pt-3 mt-1">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">범례</span>
+              <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>문서유형</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합여부</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30')}><AlertTriangle className="h-3 w-3" aria-hidden="true" />경고</Badge>
+            </div>
 
-            <span className="text-muted-foreground">|</span>
-            <span className="font-medium text-foreground">시나리오</span>
-            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                aria-expanded={showAdvancedLegend}
+                onClick={() => setShowAdvancedLegend((prev) => !prev)}
+              >
+                {showAdvancedLegend ? <ChevronDown className="mr-1 h-3.5 w-3.5" /> : <ChevronRight className="mr-1 h-3.5 w-3.5" />}
+                고급 필터
+              </Button>
+            </div>
+
+            {showAdvancedLegend && (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">시나리오</span>
+                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -738,6 +764,21 @@ export default function OperationsClient() {
                     // 표시 우선순위: 결제불일치 > 혼재
                     const warnInline = payHint ?? mixedHint;
 
+                    const primarySignal = pickPrimaryOpsSignal([
+                      { label: g.anchor.statusLabel, tone: opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel), type: 'status' },
+                      {
+                        label: g.anchor.paymentLabel,
+                        tone: g.anchor.paymentLabel && ['결제실패', '결제취소', '환불'].includes(g.anchor.paymentLabel)
+                          ? 'destructive'
+                          : g.anchor.paymentLabel === '결제대기'
+                            ? 'warning'
+                            : g.anchor.paymentLabel === '결제완료'
+                              ? 'success'
+                              : 'muted',
+                        type: 'payment',
+                      },
+                    ]);
+
                     const warnBadges: Array<{ label: '결제불일치' | '혼재'; title: string }> = [];
                     if (payMismatch) {
                       warnBadges.push({
@@ -810,30 +851,23 @@ export default function OperationsClient() {
                                 });
                               }
 
-                              // 그룹 포함 종류(주문/신청서/대여)
-                              g.kinds.forEach((k) =>
+                              // 대표 문서 유형(그룹이면 anchor 기준)만 노출해 의미 중복을 줄임
+                              items.push({
+                                label: opsKindLabel(g.anchor.kind),
+                                className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)),
+                                title: isGroup ? '기준 문서 유형' : '문서 유형',
+                              });
+
+                              // 상태/결제는 우선 신호 1개만 메인 배지로 노출
+                              if (primarySignal) {
                                 items.push({
-                                  label: opsKindLabel(k),
-                                  className: opsBadgeToneClass(opsKindBadgeTone(k)),
-                                  title: `포함 문서: ${opsKindLabel(k)}`,
-                                }),
-                              );
+                                  label: primarySignal.label!,
+                                  className: opsBadgeToneClass(primarySignal.tone),
+                                  title: primarySignal.type === 'payment' ? '결제 신호(우선)' : '상태 신호(우선)',
+                                });
+                              }
 
-                              // Flow: 표시는 짧게, 전체는 title로
-                              items.push({
-                                label: flowShortLabel(g.anchor.flow),
-                                className: flowBadgeClass(g.anchor.flow),
-                                title: `Flow ${g.anchor.flow} · ${g.anchor.flowLabel}`,
-                              });
-
-                              // 정산 기준
-                              items.push({
-                                label: g.anchor.settlementLabel,
-                                className: settlementBadgeClass(),
-                                title: '금액/정산 해석 기준',
-                              });
-
-                              return <AdminBadgeRow items={items} maxVisible={4} />;
+                              return <AdminBadgeRow items={items} maxVisible={3} />;
                             })()}
                           </TableCell>
 
@@ -859,6 +893,7 @@ export default function OperationsClient() {
                                         label: '연결오류',
                                         className: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
                                         title: linkWarnTitle,
+                                        icon: signalIcon(),
                                       });
                                     } else if (hasLinkPending) {
                                       items.push({
@@ -871,7 +906,14 @@ export default function OperationsClient() {
                                     if (isGroup) {
                                       items.push({ label: '기준', className: 'bg-muted text-foreground', title: '그룹의 기준 문서' });
                                       items.push({ label: opsKindLabel(g.anchor.kind), className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)), title: '기준 문서 종류' });
-                                      warnBadges.forEach((b) => items.push({ label: b.label, className: 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30', title: b.title }));
+                                      warnBadges.forEach((b) =>
+                                        items.push({
+                                          label: b.label,
+                                          className: 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30',
+                                          title: b.title,
+                                          icon: signalIcon(),
+                                        }),
+                                      );
                                     }
 
                                     return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;
@@ -983,7 +1025,7 @@ export default function OperationsClient() {
                             <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-card hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
                               <TableCell className={tdClasses}>
                                 <AdminBadgeRow
-                                  maxVisible={4}
+                                  maxVisible={3}
                                   items={[
                                     {
                                       label: opsKindLabel(it.kind),
@@ -1002,7 +1044,6 @@ export default function OperationsClient() {
                                     },
                                   ]}
                                 />
-                                <Badge className={cn(badgeBase, badgeSizeSm, settlementBadgeClass())}>{it.settlementLabel}</Badge>
                               </TableCell>
 
                               <TableCell className={tdClasses}>
@@ -1015,6 +1056,7 @@ export default function OperationsClient() {
                                         title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')}
                                         className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive dark:bg-destructive/15')}
                                       >
+                                        <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                                         연결오류
                                       </Badge>
                                     )}

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
@@ -12,6 +14,7 @@ export type BadgeItem = {
   label: string; // 뱃지에 표시할 텍스트
   className?: string; // 색상/톤 클래스
   title?: string; // hover 시 의미를 보충(접힌 뱃지 목록에도 같이 사용)
+  icon?: ReactNode; // 접근성 보강: 색상 외 아이콘으로 의미 전달
 };
 
 type Props = {
@@ -40,7 +43,8 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
           title={b.title} // 각 뱃지의 의미를 hover로 보충
           className={cn(badgeBase, badgeSizeSm, adminTypography.badgeLabel, 'whitespace-nowrap', b.className)}
         >
-          {b.label}
+          {b.icon}
+          <span>{b.label}</span>
         </Badge>
       ))}
 
@@ -57,7 +61,7 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
             'bg-muted text-foreground dark:bg-card',
           )}
         >
-          +{hidden.length}
+          외 {hidden.length}
         </Badge>
       )}
     </div>
