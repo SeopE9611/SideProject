@@ -69,6 +69,12 @@ const PAGE_COPY = {
   },
 };
 
+const ROW_ACTION_LABELS = {
+  detail: '상세 보기',
+  settlement: '정산 페이지 이동',
+  copyId: '문서 ID 복사',
+} as const;
+
 type PresetKey = 'paymentMismatch' | 'integratedReview' | 'singleApplication';
 
 const PRESET_CONFIG: Record<PresetKey, {
@@ -1158,19 +1164,26 @@ export default function OperationsClient() {
 
                           <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
                             <div className="flex justify-end gap-1.5">
-                              <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title="상세 보기">
-                                <Link href={g.anchor.href} className="flex items-center gap-1">
+                              <Button asChild size="sm" variant="default" className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
+                                <Link href={g.anchor.href} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.detail}>
                                   <Eye className="h-3.5 w-3.5" />
                                   <span className="text-xs">상세</span>
                                 </Link>
                               </Button>
-                              <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title="정산 이동">
-                                <Link href={settleHref} className="flex items-center gap-1">
+                              <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title={ROW_ACTION_LABELS.settlement}>
+                                <Link href={settleHref} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.settlement}>
                                   <BarChartBig className="h-3.5 w-3.5" />
                                   <span className="text-xs">정산</span>
                                 </Link>
                               </Button>
-                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title="ID 복사">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                onClick={() => copyToClipboard(g.anchor.id)}
+                                title={ROW_ACTION_LABELS.copyId}
+                                aria-label={ROW_ACTION_LABELS.copyId}
+                              >
                                 <Copy className="h-3.5 w-3.5" />
                               </Button>
                             </div>
