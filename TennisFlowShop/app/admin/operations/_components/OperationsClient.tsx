@@ -73,25 +73,29 @@ type PresetKey = 'paymentMismatch' | 'integratedReview' | 'singleApplication';
 
 const PRESET_CONFIG: Record<PresetKey, {
   label: string;
-  helperText: string;
+  priorityReason: string;
+  nextAction: string;
   params: Partial<{ q: string; kind: 'all' | Kind; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; integrated: 'all' | '1' | '0'; warn: boolean }>;
   isActive: (state: { integrated: 'all' | '1' | '0'; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; kind: 'all' | Kind; onlyWarn: boolean }) => boolean;
 }> = {
   paymentMismatch: {
     label: '결제불일치 확인',
-    helperText: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 뷰입니다.',
+    priorityReason: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 모드입니다.',
+    nextAction: '주의 배지 건부터 펼쳐 결제 라벨/상태 혼재 여부를 확인하고 필요한 상세 화면으로 이동하세요.',
     params: { warn: true, integrated: 'all', flow: 'all', kind: 'all' },
     isActive: ({ onlyWarn }) => onlyWarn,
   },
   integratedReview: {
     label: '통합건 검수',
-    helperText: '주문/대여와 신청서가 연결된 통합 건만 모아 확인합니다.',
+    priorityReason: '주문/대여와 신청서가 연결된 통합 건의 연결 무결성을 점검하는 모드입니다.',
+    nextAction: '그룹 펼치기로 연결 문서 상태를 검수하고, 경고/정상 배지를 기준으로 처리 우선순위를 정하세요.',
     params: { integrated: '1', flow: 'all', kind: 'all', warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '1' && flow === 'all' && kind === 'all' && !onlyWarn,
   },
   singleApplication: {
     label: '단독 신청서 처리',
-    helperText: '연결되지 않은 교체서비스 신청서만 빠르게 처리합니다.',
+    priorityReason: '연결되지 않은 교체서비스 신청서만 빠르게 소진하기 위한 모드입니다.',
+    nextAction: '상태/결제 라벨을 확인해 미처리 신청서를 먼저 처리하고, 필요 시 연결 문서 생성 흐름으로 이어가세요.',
     params: { integrated: '0', flow: '3', kind: 'stringing_application', warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '0' && flow === '3' && kind === 'stringing_application' && !onlyWarn,
   },
@@ -268,7 +272,6 @@ export default function OperationsClient() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
   const [showActionsGuide, setShowActionsGuide] = useState(false);
-  const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const defaultPageSize = 50;
@@ -407,6 +410,10 @@ export default function OperationsClient() {
     setPage(1);
   }
 
+  function clearPresetMode() {
+    applyPreset({ kind: 'all', flow: 'all', integrated: 'all', warn: false });
+  }
+
   function dismissOnboarding() {
     setShowOnboarding(false);
     setShowOnboardingSummary(true);
@@ -441,6 +448,13 @@ export default function OperationsClient() {
     integratedReview: PRESET_CONFIG.integratedReview.isActive({ integrated, flow, kind, onlyWarn }),
     singleApplication: PRESET_CONFIG.singleApplication.isActive({ integrated, flow, kind, onlyWarn }),
   };
+
+  const activePresetKey = useMemo(() => {
+    if (presetActive.paymentMismatch) return 'paymentMismatch' as const;
+    if (presetActive.integratedReview) return 'integratedReview' as const;
+    if (presetActive.singleApplication) return 'singleApplication' as const;
+    return null;
+  }, [presetActive.integratedReview, presetActive.paymentMismatch, presetActive.singleApplication]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -746,11 +760,12 @@ export default function OperationsClient() {
               variant={presetActive.paymentMismatch ? 'default' : 'outline'}
               size="sm"
               aria-pressed={presetActive.paymentMismatch}
-              onClick={() => {
-                applyPreset(PRESET_CONFIG.paymentMismatch.params);
-                setActivePresetGuide('paymentMismatch');
-              }}
-              className={!presetActive.paymentMismatch ? 'bg-transparent' : ''}
+              onClick={() => applyPreset(PRESET_CONFIG.paymentMismatch.params)}
+              className={cn(
+                'relative overflow-hidden',
+                !presetActive.paymentMismatch && 'bg-transparent',
+                presetActive.paymentMismatch && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
+              )}
             >
               {PRESET_CONFIG.paymentMismatch.label}
             </Button>
@@ -759,11 +774,12 @@ export default function OperationsClient() {
               variant={presetActive.integratedReview ? 'default' : 'outline'}
               size="sm"
               aria-pressed={presetActive.integratedReview}
-              onClick={() => {
-                applyPreset(PRESET_CONFIG.integratedReview.params);
-                setActivePresetGuide('integratedReview');
-              }}
-              className={!presetActive.integratedReview ? 'bg-transparent' : ''}
+              onClick={() => applyPreset(PRESET_CONFIG.integratedReview.params)}
+              className={cn(
+                'relative overflow-hidden',
+                !presetActive.integratedReview && 'bg-transparent',
+                presetActive.integratedReview && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
+              )}
             >
               {PRESET_CONFIG.integratedReview.label}
             </Button>
@@ -772,20 +788,36 @@ export default function OperationsClient() {
               variant={presetActive.singleApplication ? 'default' : 'outline'}
               size="sm"
               aria-pressed={presetActive.singleApplication}
-              onClick={() => {
-                applyPreset(PRESET_CONFIG.singleApplication.params);
-                setActivePresetGuide('singleApplication');
-              }}
-              className={!presetActive.singleApplication ? 'bg-transparent' : ''}
+              onClick={() => applyPreset(PRESET_CONFIG.singleApplication.params)}
+              className={cn(
+                'relative overflow-hidden',
+                !presetActive.singleApplication && 'bg-transparent',
+                presetActive.singleApplication && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
+              )}
             >
               {PRESET_CONFIG.singleApplication.label}
             </Button>
+
+            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={clearPresetMode}>
+              전체 보기
+            </Button>
           </div>
 
-          {activePresetGuide && (
-            <p className="pt-2 text-xs text-muted-foreground">
-              현재 결과 <span className="font-medium text-foreground">{total.toLocaleString('ko-KR')}건</span> · {PRESET_CONFIG[activePresetGuide].helperText}
-            </p>
+          {activePresetKey && (
+            <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
+              <div>
+                <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
+                <p className="text-sm font-medium text-foreground">{total.toLocaleString('ko-KR')}건</p>
+              </div>
+              <div>
+                <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
+                <p>{PRESET_CONFIG[activePresetKey].priorityReason}</p>
+              </div>
+              <div>
+                <p className="mb-1 text-[11px] font-semibold text-primary">다음 액션</p>
+                <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
+              </div>
+            </div>
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
@@ -840,7 +872,14 @@ export default function OperationsClient() {
           <div className="flex items-center justify-between">
             {data ? (
               <>
-                <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+                  {activePresetKey && (
+                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>
+                      {PRESET_CONFIG[activePresetKey].label}
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
               </>
             ) : (
