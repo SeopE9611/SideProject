@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
+import { adminTypography } from '@/components/admin/admin-typography';
 
 /**
  * 테이블에서 “뱃지 과다 노출”로 난잡해지는 문제를 막기 위한 공용 렌더러.
@@ -37,7 +38,7 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
         <Badge
           key={`${b.label}-${idx}`}
           title={b.title} // 각 뱃지의 의미를 hover로 보충
-          className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', b.className)}
+          className={cn(badgeBase, badgeSizeSm, adminTypography.badgeLabel, 'whitespace-nowrap', b.className)}
         >
           {b.label}
         </Badge>
@@ -50,6 +51,7 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
           className={cn(
             badgeBase,
             badgeSizeSm,
+            adminTypography.badgeLabel,
             'whitespace-nowrap',
             // overflow 표시는 중립 톤(너무 튀지 않게)
             'bg-muted text-foreground dark:bg-card',

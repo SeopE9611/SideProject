@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Separator } from '@/components/ui/separator';
 import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from '@/components/admin/sidebar-navigation';
 import { isAdminNavActive } from '@/lib/admin-nav';
+import { adminTypography } from '@/components/admin/admin-typography';
 
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
@@ -53,7 +54,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
         <nav className="mt-2 h-[calc(100%-2.75rem)] overflow-y-auto px-2 pb-8">
           {SIDEBAR_SECTIONS.map((section) => (
             <div key={section.label} className="mt-3">
-              <div className={cn('px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground', collapsed && 'px-0 text-center')}>{section.label}</div>
+              <div className={cn('px-3', adminTypography.sidebarSection, collapsed && 'px-0 text-center')}>{section.label}</div>
               <ul className="mt-2 space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
@@ -72,7 +73,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
                       <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
                       {!collapsed && <span className="truncate">{item.title}</span>}
                       {!!count && !collapsed && (
-                        <Badge variant="secondary" className="ml-auto text-[10px] font-medium">
+                        <Badge variant="secondary" className={cn("ml-auto", adminTypography.sidebarCount)}>
                           {count > 99 ? '99+' : count}
                         </Badge>
                       )}
@@ -96,7 +97,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
             </div>
           ))}
 
-          <div className={cn('mt-6 px-3 text-[11px] text-muted-foreground', collapsed && 'px-0 text-center')}>v1.0 • 관리자</div>
+          <div className={cn('mt-6 px-3', adminTypography.sidebarFooter, collapsed && 'px-0 text-center')}>v1.0 • 관리자</div>
         </nav>
       </aside>
     </TooltipProvider>
