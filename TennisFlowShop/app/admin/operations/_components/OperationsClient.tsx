@@ -1,8 +1,8 @@
 'use client';
 
-import { AlertTriangle, BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Link2, Search } from 'lucide-react';
+import { AlertTriangle, BarChartBig, ChevronDown, ChevronRight, Copy, Eye, Link2, Search, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams, type ReadonlyURLSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -102,6 +102,15 @@ const PRESET_CONFIG: Record<PresetKey, {
 };
 
 const ONBOARDING_SEEN_KEY = 'admin-operations-onboarding-seen-v1';
+const SAVED_VIEWS_KEY = 'admin-operations-saved-views-v1';
+const MAX_SAVED_VIEWS = 5;
+
+type SavedOperationView = {
+  id: string;
+  href: string;
+  label: string;
+  createdAt: number;
+};
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
@@ -273,6 +282,9 @@ export default function OperationsClient() {
   const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
+  const [savedViews, setSavedViews] = useState<SavedOperationView[]>([]);
+  const [savedViewLabel, setSavedViewLabel] = useState('');
+  const [savedViewCopiedId, setSavedViewCopiedId] = useState<string | null>(null);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<'default' | 'compact'>('default');
   const defaultPageSize = 50;
@@ -393,6 +405,74 @@ export default function OperationsClient() {
     if (typeof window === 'undefined') return shareViewHref;
     return `${window.location.origin}${shareViewHref}`;
   }, [shareViewHref]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = window.localStorage.getItem(SAVED_VIEWS_KEY);
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as SavedOperationView[];
+      if (!Array.isArray(parsed)) return;
+
+      const sanitized = parsed
+        .filter((item) => item && typeof item.href === 'string' && typeof item.label === 'string' && typeof item.id === 'string')
+        .slice(0, MAX_SAVED_VIEWS);
+
+      setSavedViews(sanitized);
+    } catch {
+      window.localStorage.removeItem(SAVED_VIEWS_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(SAVED_VIEWS_KEY, JSON.stringify(savedViews));
+  }, [savedViews]);
+
+  function applyViewFromHref(href: string) {
+    const search = href.includes('?') ? href.split('?')[1] ?? '' : '';
+    const params = new URLSearchParams(search);
+
+    setQ('');
+    setKind('all');
+    setFlow('all');
+    setIntegrated('all');
+    setOnlyWarn(false);
+    setPage(1);
+
+    initOperationsStateFromQuery(params as unknown as ReadonlyURLSearchParams, {
+      setQ,
+      setKind,
+      setFlow,
+      setIntegrated,
+      setOnlyWarn,
+      setPage,
+    });
+  }
+
+  function saveCurrentView() {
+    const trimmedLabel = savedViewLabel.trim();
+    const label = trimmedLabel || `최근 뷰 ${new Date().toLocaleDateString('ko-KR')}`;
+    const now = Date.now();
+
+    setSavedViews((prev) => {
+      const withoutCurrent = prev.filter((item) => item.href !== shareViewHref);
+      return [{ id: `${now}`, href: shareViewHref, label, createdAt: now }, ...withoutCurrent].slice(0, MAX_SAVED_VIEWS);
+    });
+    setSavedViewLabel('');
+  }
+
+  async function copySavedViewLink(href: string, id: string) {
+    const fullHref = typeof window === 'undefined' ? href : `${window.location.origin}${href}`;
+    await copyToClipboard(fullHref);
+    setSavedViewCopiedId(id);
+    setTimeout(() => setSavedViewCopiedId(null), 1200);
+  }
+
+  function deleteSavedView(id: string) {
+    setSavedViews((prev) => prev.filter((item) => item.id !== id));
+  }
 
   function toggleAllGroups() {
     if (!hasExpandableGroups) return;
@@ -828,6 +908,55 @@ export default function OperationsClient() {
               <Link2 className="mr-1.5 h-4 w-4" />
               {shareLinkCopied ? '링크 복사됨' : '현재 뷰 링크 복사'}
             </Button>
+
+            <div className="flex w-full flex-col gap-2 rounded-md border border-border/70 bg-muted/20 p-2 bp-md:flex-row bp-md:items-center">
+              <Input
+                value={savedViewLabel}
+                onChange={(e) => setSavedViewLabel(e.target.value)}
+                placeholder="라벨 입력 (예: 결제불일치 점검)"
+                className="h-8 text-xs bp-md:max-w-[280px]"
+              />
+              <Button type="button" size="sm" variant="secondary" className="h-8" onClick={saveCurrentView}>
+                현재 뷰 저장
+              </Button>
+              <p className="text-[11px] text-muted-foreground">최대 {MAX_SAVED_VIEWS}개까지 저장됩니다.</p>
+            </div>
+
+            {savedViews.length > 0 && (
+              <div className="w-full space-y-1.5">
+                {savedViews.map((view) => (
+                  <div key={view.id} className="flex flex-col gap-1 rounded-md border border-border/70 px-2 py-1.5 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium text-foreground">{view.label}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">{view.href}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button type="button" size="sm" variant="outline" className="h-7 bg-transparent px-2 text-xs" onClick={() => applyViewFromHref(view.href)}>
+                        적용
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-7 bg-transparent px-2 text-xs"
+                        onClick={() => copySavedViewLink(view.href, view.id)}
+                      >
+                        {savedViewCopiedId === view.id ? '복사됨' : '복사'}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs text-muted-foreground"
+                        onClick={() => deleteSavedView(view.id)}
+                      >
+                        <Trash2 className="mr-1 h-3.5 w-3.5" />삭제
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* 범례(운영자 인지 부하 감소) */}
