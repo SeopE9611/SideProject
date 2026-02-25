@@ -166,7 +166,7 @@ export default function ServicesPage() {
 
         {/* 장식 요소 */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-card/10 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 rounded-full blur-lg"></div>
+        <div className="absolute bottom-20 right-10 w-24 h-24 bg-primary/20 dark:bg-primary/30 rounded-full blur-lg"></div>
         <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-muted rounded-full blur-md animate-pulse delay-1000"></div>
 
         <div className="container relative z-10">
@@ -184,7 +184,7 @@ export default function ServicesPage() {
               <CardContent className="p-5 bp-md:p-8">
                 <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 bp-md:gap-8 mb-6 bp-md:mb-8">
                   <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+                    <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">전화 예약</h3>
@@ -194,7 +194,7 @@ export default function ServicesPage() {
                   </div>
 
                   <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
-                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+                    <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">온라인 신청</h3>
@@ -392,7 +392,7 @@ export default function ServicesPage() {
                 {item.popular && <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold rounded-bl-lg">인기</div>}
 
                 <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'}`}>{item.icon}</div>
+                  <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-primary/10 dark:bg-primary/20 text-primary' : 'bg-primary/10 dark:bg-primary/20 text-primary'}`}>{item.icon}</div>
                   <CardTitle className={`text-lg font-bold ${item.popular ? 'text-foreground' : ''}`}>{item.service}</CardTitle>
                   <div className={`text-3xl font-bold ${item.popular ? 'text-foreground' : 'text-foreground'}`}>{item.price.toLocaleString()}원</div>
                   <div className={`text-sm ${item.popular ? 'text-muted-foreground' : 'text-muted-foreground'}`}>소요시간: {item.duration}</div>
@@ -413,7 +413,7 @@ export default function ServicesPage() {
                 <div key={service.title} className="border border-border rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
+                      <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
                     {service.free ? <Badge className="bg-primary/10 text-primary dark:bg-primary/20">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
@@ -445,13 +445,13 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
-                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 transform translate-x-4 z-0"></div>}
+                {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 dark:bg-primary/30 transform translate-x-4 z-0"></div>}
 
                 <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card">
                   <CardContent className="p-5 bp-md:p-8">
                     <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>
+                      <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>
                     </div>
                     <h3 className="text-xl font-bold mb-4">{step.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{step.description}</p>

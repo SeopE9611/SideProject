@@ -159,7 +159,7 @@ export default function OrderDetailPage() {
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex justify-center items-center py-16">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full mb-6">
                     <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-2">주문 정보 로딩 중</h3>
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
               <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <Calendar className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">주문 정보</CardTitle>
@@ -311,7 +311,7 @@ export default function OrderDetailPage() {
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">입금 계좌</p>
                       {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
-                        <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                        <div className="bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-lg p-4">
                           <div className="space-y-2">
                             <p className="font-semibold text-foreground">{order.paymentInfo.method}</p>
                             <p className="font-semibold text-foreground">{bankLabelMap[order.paymentInfo.bank].label}</p>
@@ -331,7 +331,7 @@ export default function OrderDetailPage() {
               <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <MapPin className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">배송 정보</CardTitle>
@@ -381,7 +381,7 @@ export default function OrderDetailPage() {
               <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <ShoppingBag className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">주문 상품</CardTitle>
@@ -419,7 +419,7 @@ export default function OrderDetailPage() {
               <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm sticky top-8">
                 <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <CreditCard className="w-5 h-5 text-foreground" />
                     </div>
                     <CardTitle className="text-xl font-bold">결제 정보</CardTitle>

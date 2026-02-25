@@ -643,7 +643,7 @@ export default function SettlementsClient() {
                                 </span>
                               )}
                               {statusMap[String(row.yyyymm)] === 'stale' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 text-destructive font-medium border border-destructive/40">
+                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 dark:bg-destructive/20 text-destructive font-medium border border-destructive/40">
                                   <AlertTriangle className="w-3.5 h-3.5" />
                                   갱신 필요
                                 </span>
@@ -749,7 +749,7 @@ export default function SettlementsClient() {
                           </div>
 
                           {openMap[String(row.yyyymm)] && statusMap[String(row.yyyymm)] === 'stale' && diffMap[String(row.yyyymm)] && (
-                            <div className="mx-5 mb-5 rounded-2xl border-2 border-destructive/40 bg-destructive/10 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
+                            <div className="mx-5 mb-5 rounded-2xl border-2 border-destructive/40 bg-destructive/10 dark:bg-destructive/15 shadow-xl max-h-[60vh] overflow-auto overscroll-auto">
                               <div className="p-4 border-b border-destructive/40 bg-card/50 backdrop-blur-sm flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <AlertTriangle className="w-5 h-5 text-destructive" />
@@ -770,7 +770,7 @@ export default function SettlementsClient() {
 
                               <div className="p-5">
                                 <div className="rounded-xl border-2 border-destructive/40 overflow-hidden bg-card shadow-sm">
-                                  <div className="grid grid-cols-7 gap-4 p-4 bg-destructive/10 text-xs font-semibold border-b border-destructive/40 text-destructive">
+                                  <div className="grid grid-cols-7 gap-4 p-4 bg-destructive/10 dark:bg-destructive/15 text-xs font-semibold border-b border-destructive/40 text-destructive">
                                     <div></div>
                                     <div className="text-right">매출</div>
                                     <div className="text-right">환불</div>
@@ -799,7 +799,7 @@ export default function SettlementsClient() {
                                   </div>
                                 </div>
 
-                                <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-destructive/15 border-2 border-destructive/40">
+                                <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-destructive/15 dark:bg-destructive/20 border-2 border-destructive/40">
                                   <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
                                   <span className="text-sm text-destructive flex-1 font-medium">값이 다릅니다. '지금 갱신'을 눌러 스냅샷을 업데이트 하세요.</span>
                                   <button
@@ -1013,7 +1013,7 @@ export default function SettlementsClient() {
                           </span>
                         )}
                         {statusMap[String(row.yyyymm)] === 'stale' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 text-destructive font-medium border border-destructive/40">
+                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 dark:bg-destructive/20 text-destructive font-medium border border-destructive/40">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             갱신 필요
                           </span>
@@ -1022,7 +1022,7 @@ export default function SettlementsClient() {
                       </div>
 
                       {openMap[String(row.yyyymm)] && statusMap[String(row.yyyymm)] === 'stale' && diffMap[String(row.yyyymm)] && (
-                        <div className="mt-4 rounded-xl border-2 border-destructive/40 bg-destructive/10 overflow-hidden">
+                        <div className="mt-4 rounded-xl border-2 border-destructive/40 bg-destructive/10 dark:bg-destructive/15 overflow-hidden">
                           <div className="p-3 border-b border-destructive/40 bg-card/50 backdrop-blur-sm flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <AlertTriangle className="w-4 h-4 text-destructive" />
