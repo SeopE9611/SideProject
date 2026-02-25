@@ -270,6 +270,7 @@ export default function OperationsClient() {
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
+  const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const defaultPageSize = 50;
   // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
   // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
@@ -296,6 +297,21 @@ export default function OperationsClient() {
     setShowOnboarding(true);
     setShowOnboardingSummary(false);
     window.localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const onScroll = () => {
+      setIsFilterScrolled(window.scrollY > 140);
+    };
+
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
@@ -426,6 +442,18 @@ export default function OperationsClient() {
     singleApplication: PRESET_CONFIG.singleApplication.isActive({ integrated, flow, kind, onlyWarn }),
   };
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (q.trim()) count += 1;
+    if (kind !== 'all') count += 1;
+    if (flow !== 'all') count += 1;
+    if (integrated !== 'all') count += 1;
+    if (onlyWarn) count += 1;
+    if (warnFilter !== 'all') count += 1;
+    if (warnSort !== 'default') count += 1;
+    return count;
+  }, [flow, integrated, kind, onlyWarn, q, warnFilter, warnSort]);
+
   function toggleGroup(key: string) {
     setOpenGroups((prev) => ({
       ...prev,
@@ -550,11 +578,36 @@ export default function OperationsClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className="mb-4 rounded-xl border-border bg-card shadow-md px-6 py-4">
-        <CardHeader className="pb-3">
-          <CardTitle>필터 및 검색</CardTitle>
-          <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
-        </CardHeader>
+      <div
+        className={cn(
+          'sticky top-3 z-30 mb-4 transition-all duration-200',
+          isFilterScrolled && 'drop-shadow-xl'
+        )}
+      >
+        <Card
+          className={cn(
+            'rounded-xl border-border px-6 py-4 shadow-md transition-all duration-200',
+            onlyWarn
+              ? 'bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30'
+              : 'bg-card',
+            isFilterScrolled && 'bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90'
+          )}
+        >
+          <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
+            <div>
+              <CardTitle>필터 및 검색</CardTitle>
+              <CardDescription className="text-xs mt-1">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
+              {activeFilterCount > 0 && (
+                <Badge className={cn(badgeBase, badgeSizeSm, 'mt-2 bg-primary/10 text-primary dark:bg-primary/20')}>
+                  적용된 필터 {activeFilterCount}개
+                </Badge>
+              )}
+            </div>
+
+            <Button variant="outline" size="sm" onClick={reset} className="shrink-0 bg-transparent">
+              필터 초기화
+            </Button>
+          </CardHeader>
         <CardContent className="space-y-4">
           {/* 검색 input */}
           <div className="w-full max-w-md">
@@ -574,7 +627,12 @@ export default function OperationsClient() {
           </div>
 
           {/* 필터 컴포넌트들 */}
-          <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6">
+          <div
+            className={cn(
+              'grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-6',
+              onlyWarn && 'rounded-lg bg-warning/5 px-2 py-2 border-warning/20'
+            )}
+          >
             <Select
               value={kind}
               onValueChange={(v: any) => {
@@ -680,9 +738,6 @@ export default function OperationsClient() {
               </Link>
             </Button>
 
-            <Button variant="outline" size="sm" onClick={reset} className="w-full bg-transparent">
-              필터 초기화
-            </Button>
           </div>
 
           {/* 프리셋 버튼(원클릭) */}
@@ -776,7 +831,8 @@ export default function OperationsClient() {
             )}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* 업무 목록 카드 */}
       <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
