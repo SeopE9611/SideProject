@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
-import { getHangulInitials } from '@/lib/hangul-utils';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
-import type { AdminProductUpdateRequestDto, AdminProductMutationResponseDto } from '@/types/admin/products';
+import { getHangulInitials } from '@/lib/hangul-utils';
+import { getDb } from '@/lib/mongodb';
+import type { AdminProductMutationResponseDto, AdminProductUpdateRequestDto } from '@/types/admin/products';
+import { ObjectId } from 'mongodb';
+import { NextRequest, NextResponse } from 'next/server';
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
@@ -52,6 +52,37 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
 
 function invalidIdResponse() {
   return NextResponse.json({ message: '유효하지 않은 상품 ID입니다.' }, { status: 400 });
+}
+
+/**
+ * 단일 상품 조회 (관리자)
+ * - 스트링 수정 페이지(/admin/products/[id]/edit)에서 GET /api/admin/products/:id 로 호출.
+ */
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) return invalidIdResponse();
+
+  try {
+    const db = await getDb();
+    const prod = await db.collection('products').findOne({ _id: new ObjectId(id), isDeleted: { $ne: true } }, { projection: { isDeleted: 0 } });
+
+    if (!prod) {
+      return NextResponse.json({ message: '상품을 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      product: {
+        ...prod,
+        _id: prod._id.toString(),
+      },
+    });
+  } catch (err) {
+    console.error('[admin/products/[id]] get error', err);
+    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
