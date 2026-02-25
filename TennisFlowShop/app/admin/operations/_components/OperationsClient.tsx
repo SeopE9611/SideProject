@@ -63,7 +63,9 @@ const PAGE_COPY = {
     title: '처음 방문하셨나요? 운영 통합 센터 3단계',
     description: '페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 건을 먼저 처리하세요.',
     steps: ['1) 오늘 해야 할 일 확인', '2) 업무 목적형 프리셋 선택', '3) 주의/미처리 건 순서로 처리'],
-    dismissLabel: '다시 보지 않기',
+    dismissLabel: '닫기',
+    collapsedSummary: '운영 통합 센터 온보딩을 다시 확인할 수 있습니다.',
+    reopenLabel: '온보딩 다시 보기',
   },
 };
 
@@ -95,7 +97,7 @@ const PRESET_CONFIG: Record<PresetKey, {
   },
 };
 
-const ONBOARDING_DISMISS_KEY = 'admin-operations-onboarding-dismissed-v1';
+const ONBOARDING_SEEN_KEY = 'admin-operations-onboarding-seen-v1';
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
@@ -264,6 +266,8 @@ export default function OperationsClient() {
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
+  const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const defaultPageSize = 50;
@@ -282,8 +286,16 @@ export default function OperationsClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const dismissed = window.localStorage.getItem(ONBOARDING_DISMISS_KEY);
-    setShowOnboarding(dismissed !== '1');
+    const seen = window.localStorage.getItem(ONBOARDING_SEEN_KEY);
+    if (seen === '1') {
+      setShowOnboarding(false);
+      setShowOnboardingSummary(true);
+      return;
+    }
+
+    setShowOnboarding(true);
+    setShowOnboardingSummary(false);
+    window.localStorage.setItem(ONBOARDING_SEEN_KEY, '1');
   }, []);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
@@ -381,9 +393,12 @@ export default function OperationsClient() {
 
   function dismissOnboarding() {
     setShowOnboarding(false);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(ONBOARDING_DISMISS_KEY, '1');
-    }
+    setShowOnboardingSummary(true);
+  }
+
+  function reopenOnboarding() {
+    setShowOnboarding(true);
+    setShowOnboardingSummary(false);
   }
 
   async function copyShareViewLink() {
@@ -447,57 +462,95 @@ export default function OperationsClient() {
   }
 
   return (
-    <div className="container py-6">
+    <div className="container py-5">
       {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
-      <div className="mx-auto max-w-7xl mb-5">
-        <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{PAGE_COPY.description}</p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {PAGE_COPY.dailyTodoTitle}:{' '}
-          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.urgent} {todayTodoCount.urgent}건</span>
-          <span className="mx-2">·</span>
-          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.caution} {todayTodoCount.caution}건</span>
-          <span className="mx-2">·</span>
-          <span className="font-medium text-foreground">{PAGE_COPY.dailyTodoLabels.pending} {todayTodoCount.pending}건</span>
-        </p>
+      <div className="mx-auto mb-4 max-w-7xl space-y-3">
+        <section className="sticky top-3 z-10 rounded-xl border border-border/80 bg-background/95 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-foreground">{PAGE_COPY.dailyTodoTitle}</p>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>상단 고정</Badge>
+          </div>
+          <div className="grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
+            <Card className="rounded-lg border border-warning/30 bg-warning/5 shadow-none">
+              <CardHeader className="space-y-1 pb-2">
+                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.urgent}</CardDescription>
+                <CardTitle className="text-2xl text-warning">{todayTodoCount.urgent}건</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="rounded-lg border border-info/30 bg-info/5 shadow-none">
+              <CardHeader className="space-y-1 pb-2">
+                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.caution}</CardDescription>
+                <CardTitle className="text-2xl text-info">{todayTodoCount.caution}건</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="rounded-lg border border-muted bg-muted/40 shadow-none">
+              <CardHeader className="space-y-1 pb-2">
+                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.pending}</CardDescription>
+                <CardTitle className="text-2xl text-foreground">{todayTodoCount.pending}건</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        </section>
 
-        {showOnboarding && (
-          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-foreground">{PAGE_COPY.onboarding.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{PAGE_COPY.onboarding.description}</p>
-                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                  {PAGE_COPY.onboarding.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ul>
+        <section className="space-y-2">
+          <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
+          <p className="text-sm text-muted-foreground">{PAGE_COPY.description}</p>
+
+          {showOnboarding && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{PAGE_COPY.onboarding.title}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{PAGE_COPY.onboarding.description}</p>
+                  <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                    {PAGE_COPY.onboarding.steps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+                <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={dismissOnboarding}>
+                  {PAGE_COPY.onboarding.dismissLabel}
+                </Button>
               </div>
-              <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={dismissOnboarding}>
-                {PAGE_COPY.onboarding.dismissLabel}
+            </div>
+          )}
+
+          {showOnboardingSummary && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+              <p className="text-xs text-muted-foreground">{PAGE_COPY.onboarding.collapsedSummary}</p>
+              <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={reopenOnboarding}>
+                {PAGE_COPY.onboarding.reopenLabel}
               </Button>
             </div>
+          )}
+        </section>
+      </div>
+
+      <div className="mx-auto mb-4 max-w-7xl">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-foreground">{PAGE_COPY.actionsTitle}</p>
+          <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setShowActionsGuide((prev) => !prev)}>
+            {showActionsGuide ? '도움말 닫기' : '도움말 보기'}
+          </Button>
+        </div>
+
+        {showActionsGuide && (
+          <div className="grid max-w-7xl gap-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+            {PAGE_COPY.actions.map((action) => (
+              <Card key={action.title} className="rounded-xl border-border bg-card shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{action.title}</CardTitle>
+                  <CardDescription className="text-xs">{action.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
           </div>
         )}
       </div>
 
-      <div className="mx-auto mb-2 max-w-7xl">
-        <p className="mb-3 text-sm font-medium text-foreground">{PAGE_COPY.actionsTitle}</p>
-      </div>
-      <div className="mx-auto mb-5 grid max-w-7xl gap-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
-        {PAGE_COPY.actions.map((action) => (
-          <Card key={action.title} className="rounded-xl border-border bg-card shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{action.title}</CardTitle>
-              <CardDescription className="text-xs">{action.description}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
-
       {/* 필터 및 검색 카드 */}
-      <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
+      <Card className="mb-4 rounded-xl border-border bg-card shadow-md px-6 py-4">
         <CardHeader className="pb-3">
           <CardTitle>필터 및 검색</CardTitle>
           <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
