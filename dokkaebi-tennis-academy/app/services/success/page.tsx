@@ -13,6 +13,7 @@ import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
 import { Badge } from '@/components/ui/badge';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import LoginGate from '@/components/system/LoginGate';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
 interface Props {
@@ -202,19 +203,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  <div className="min-h-full bg-muted/30">
  <div className="relative overflow-hidden bg-muted/30 py-20">
  <div className="absolute inset-0 bg-overlay/20"></div>
- <div className="absolute inset-0 opacity-10">
- <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
- <defs>
- <pattern id="successCourtLines" x="0" y="0" width="400" height="300" patternUnits="userSpaceOnUse">
- <rect width="400" height="300" fill="none" stroke="currentColor" strokeWidth="2" />
- <line x1="200" y1="0" x2="200" y2="300" stroke="currentColor" strokeWidth="2" />
- <line x1="0" y1="150" x2="400" y2="150" stroke="currentColor" strokeWidth="2" />
- <rect x="50" y="75" width="300" height="150" fill="none" stroke="currentColor" strokeWidth="1" />
- </pattern>
- </defs>
- <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
- </svg>
- </div>
+ <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
  <div className="absolute inset-0">
  <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse"></div>
  <div className="absolute top-32 right-20 w-16 h-16 bg-card/10 rounded-full animate-pulse delay-1000"></div>

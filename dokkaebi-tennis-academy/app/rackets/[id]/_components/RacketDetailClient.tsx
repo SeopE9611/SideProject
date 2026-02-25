@@ -4,6 +4,7 @@ import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { CompareRacketItem, useRacketCompareStore } from '@/app/store/racketCompareStore';
 import StatusBadge from '@/components/badges/StatusBadge';
 import SiteContainer from '@/components/layout/SiteContainer';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import MaskedBlock from '@/components/reviews/MaskedBlock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -312,19 +313,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       {/* Hero Section with Breadcrumb */}
       <div className="relative bg-muted text-foreground py-8 border border-primary/20 rounded-2xl">
         <div className="absolute inset-0 bg-overlay/20"></div>
-        {/* Tennis court line pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full text-foreground" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="detail-court-lines" patternUnits="userSpaceOnUse" width="100" height="50">
-                <rect width="100" height="50" fill="transparent" />
-                <line x1="0" y1="25" x2="100" y2="25" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-                <line x1="50" y1="0" x2="50" y2="50" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
         <SiteContainer variant="wide" className="relative z-10">
           <div className="flex items-center gap-2 text-sm mb-4 opacity-90">
             <Link href="/" className="hover:text-primary transition-colors">
@@ -810,7 +799,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                   <button key={i} type="button" onClick={() => openViewer(review.photos, i)} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted" title="확대 보기">
                                     <Image src={src} alt={`리뷰 이미지 ${i + 1}`} fill className="object-cover" />
                                     {/* 4장 넘어가면 +N 표시 */}
-                                    {i === 3 && review.photos.length > 4 ? <div className="absolute inset-0 bg-black/45 flex items-center justify-center text-white text-sm font-semibold">+{review.photos.length - 4}</div> : null}
+                                    {i === 3 && review.photos.length > 4 ? <div className="absolute inset-0 bg-foreground/45 flex items-center justify-center text-background text-sm font-semibold">+{review.photos.length - 4}</div> : null}
                                   </button>
                                 ))}
                               </div>

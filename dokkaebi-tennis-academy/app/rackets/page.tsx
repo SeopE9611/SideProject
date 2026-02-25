@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -38,19 +39,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
     <div className="min-h-full bg-muted/30">
       <div className="relative overflow-hidden bg-muted/30 py-10 bp-sm:py-12 bp-md:py-24">
         <div className="absolute inset-0 bg-overlay/20" />
-        <div className="hidden bp-md:block absolute inset-0 opacity-20 dark:opacity-10">
-          <svg className="w-full h-full text-foreground" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="court-lines" patternUnits="userSpaceOnUse" width="200" height="100">
-                <rect width="200" height="100" fill="transparent" />
-                <line x1="0" y1="50" x2="200" y2="50" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                <line x1="100" y1="0" x2="100" y2="100" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-                <rect x="25" y="25" width="150" height="50" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.2" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-          </svg>
-        </div>
+        <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
         <div className="hidden bp-md:block absolute top-10 left-4 bp-md:left-10 w-16 h-16 bp-md:w-20 bp-md:h-20 bg-card/10 rounded-full blur-xl animate-float" />
         <div className="hidden bp-md:block absolute bottom-10 right-4 bp-md:right-10 w-24 h-24 bp-md:w-32 bp-md:h-32 bg-card/5 rounded-full blur-2xl animate-float-delayed" />
@@ -59,7 +48,7 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
         <SiteContainer variant="wide" className="relative">
           <div className="text-center text-foreground">
             <h1 className="text-3xl bp-sm:text-4xl bp-md:text-5xl bp-lg:text-6xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">중고 라켓</h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 합리적인 가격에 대여하세요.</p>
+            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">도깨비 테니스의 중고 라켓으로 <span className="font-medium text-primary">합리적인 가격</span>에 대여하세요.</p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">
                 <Link href={finderHref} aria-label="라켓 파인더로 이동">

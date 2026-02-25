@@ -5,6 +5,7 @@ import type React from 'react';
 import { type PackageVariant, PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { FullPageSpinner } from '@/components/system/PageLoading';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -296,18 +297,7 @@ export default function StringPackagesPage() {
       {/* Hero Section */}
       <section className="relative min-h-[70svh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-muted/30 dark:bg-muted/20">
-          <div className="absolute inset-0 opacity-20">
-            <svg className="w-full h-full text-foreground" viewBox="0 0 400 300" fill="none">
-              <defs>
-                <pattern id="stringPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <rect width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-                  <line x1="0" y1="20" x2="40" y2="20" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-                  <line x1="20" y1="0" x2="20" y2="40" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="hsl(var(--primary) / 0.12)" />
-            </svg>
-          </div>
+          <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0 bg-overlay/20"></div>
         </div>
 
