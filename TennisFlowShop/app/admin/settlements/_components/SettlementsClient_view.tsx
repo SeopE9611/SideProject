@@ -484,7 +484,7 @@ export default function SettlementsClient() {
                     <button
                       onClick={() => setPendingDeleteAction({ type: 'bulk', count: selectedSnapshots.size })}
                       disabled={deleting || selectedSnapshots.size === 0}
-                      className="px-4 py-3 rounded-xl border-2 border-destructive/40 bg-card hover:bg-destructive/10 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-destructive"
+                      className="px-4 py-3 rounded-xl border-2 border-destructive/40 bg-card hover:bg-destructive/10 dark:hover:bg-destructive/15 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow text-destructive"
                     >
                       {deleting ? (
                         <>

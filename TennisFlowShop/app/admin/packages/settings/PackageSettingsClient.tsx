@@ -500,7 +500,7 @@ export default function PackageSettingsClient() {
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10 dark:bg-success/15">
+                    <Button onClick={handleSaveGeneralSettings} disabled={isSaving} className="bg-success/10 hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15">
                       <Save className="mr-2 h-4 w-4" />
                       {isSaving ? '저장 중...' : '일반 설정 저장'}
                     </Button>

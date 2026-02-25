@@ -422,7 +422,7 @@ export default function StringingSettingsPage() {
                       {sortedHolidays.map((h) => (
                         <li key={h} className="flex items-center justify-between px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors">
                           <span className="font-medium text-foreground">{h}</span>
-                          <Button type="button" variant="ghost" size="sm" className="hover:bg-destructive/10 text-destructive hover:text-destructive" onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}>
+                          <Button type="button" variant="ghost" size="sm" className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive hover:text-destructive" onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </li>
@@ -555,10 +555,10 @@ export default function StringingSettingsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Button size="icon" variant="ghost" className="hover:bg-primary/10 text-primary" onClick={() => setExInput(ex)}>
+                        <Button size="icon" variant="ghost" className="hover:bg-primary/10 dark:hover:bg-primary/20 text-primary" onClick={() => setExInput(ex)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="hover:bg-destructive/10 text-destructive" onClick={() => setExceptions((prev) => prev.filter((x) => x.date !== ex.date))}>
+                        <Button size="icon" variant="ghost" className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive" onClick={() => setExceptions((prev) => prev.filter((x) => x.date !== ex.date))}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

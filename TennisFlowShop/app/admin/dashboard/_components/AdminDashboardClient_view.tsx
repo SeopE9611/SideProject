@@ -141,7 +141,7 @@ function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; val
     <Card className="group relative overflow-hidden border-border/40 bg-card/50 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20">{icon}</div>
+        <div className="rounded-lg bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">{icon}</div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="text-3xl font-bold tracking-tight">{value}</div>

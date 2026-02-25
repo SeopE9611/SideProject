@@ -70,7 +70,7 @@ function getBoardTypeColor(type: string) {
     case 'qna':
       return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20';
     case 'community':
-      return 'bg-success/10 text-success hover:bg-success/10 dark:bg-success/15';
+      return 'bg-success/10 text-success hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15';
     case 'faq':
       return 'bg-muted text-foreground hover:bg-muted';
     default:

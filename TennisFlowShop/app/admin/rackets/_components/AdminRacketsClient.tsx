@@ -224,7 +224,7 @@ export default function AdminRacketsClient() {
                       setStatusFilter('all');
                       setConditionFilter('all');
                     }}
-                    className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border dark:hover:bg-card"
+                    className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
                   >
                     필터 초기화
                   </Button>
@@ -271,7 +271,7 @@ export default function AdminRacketsClient() {
                     </TableHeader>
                     <TableBody>
                       {filteredItems.map((item) => (
-                        <TableRow key={item.id} className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:hover:bg-card even:bg-muted/30 dark:even:bg-card transition-colors">
+                        <TableRow key={item.id} className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors">
                           <TableCell className="py-4">
                             <div className="flex items-center gap-3">
                               {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}

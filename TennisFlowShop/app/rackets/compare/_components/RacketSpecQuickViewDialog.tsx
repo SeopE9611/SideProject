@@ -64,7 +64,7 @@ function HintIcon({ text }: { text: string }) {
           className={cn(
             'inline-flex h-5 w-5 items-center justify-center rounded-full',
             'text-muted-foreground/70 transition-colors duration-200',
-            'hover:bg-primary/10 hover:text-primary',
+            'hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
           )}
           aria-label="해석 힌트"
@@ -88,7 +88,7 @@ function SpecRow({ specKey, label, value, isLast }: { specKey: string; label: st
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex items-center gap-2 bp-sm:gap-3">
-        <div className={cn('flex h-7 w-7 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8', 'bg-muted/60 transition-all duration-200', 'group-hover:bg-primary/10', isHovered && 'scale-105')}>
+        <div className={cn('flex h-7 w-7 items-center justify-center rounded-md bp-sm:h-8 bp-sm:w-8', 'bg-muted/60 transition-all duration-200', 'group-hover:bg-primary/10 dark:group-hover:bg-primary/20', isHovered && 'scale-105')}>
           <IconComponent className={cn('h-3.5 w-3.5 bp-sm:h-4 bp-sm:w-4', 'text-muted-foreground transition-colors duration-200', 'group-hover:text-primary')} />
         </div>
         <span className={cn('text-xs font-medium bp-sm:text-sm', 'text-muted-foreground transition-colors duration-200', 'group-hover:text-foreground')}>{label}</span>
