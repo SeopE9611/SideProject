@@ -2,7 +2,7 @@
 
 import { AlertTriangle, BarChartBig, BellRing, ChevronDown, ChevronRight, ClipboardCheck, Copy, Eye, Link2, Search, Siren } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams, type ReadonlyURLSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -13,12 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  opsKindBadgeTone,
-  opsKindLabel,
-  opsStatusBadgeTone,
-  type OpsBadgeTone,
-} from '@/lib/admin-ops-taxonomy';
+import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
@@ -77,14 +72,17 @@ const ROW_ACTION_LABELS = {
 
 type PresetKey = 'paymentMismatch' | 'integratedReview' | 'singleApplication';
 
-const PRESET_CONFIG: Record<PresetKey, {
-  label: string;
-  helperText: string;
-  priorityReason: string;
-  nextAction: string;
-  params: Partial<{ q: string; kind: 'all' | Kind; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; integrated: 'all' | '1' | '0'; warn: boolean }>;
-  isActive: (state: { integrated: 'all' | '1' | '0'; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; kind: 'all' | Kind; onlyWarn: boolean }) => boolean;
-}> = {
+const PRESET_CONFIG: Record<
+  PresetKey,
+  {
+    label: string;
+    helperText: string;
+    priorityReason: string;
+    nextAction: string;
+    params: Partial<{ q: string; kind: 'all' | Kind; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; integrated: 'all' | '1' | '0'; warn: boolean }>;
+    isActive: (state: { integrated: 'all' | '1' | '0'; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; kind: 'all' | Kind; onlyWarn: boolean }) => boolean;
+  }
+> = {
   paymentMismatch: {
     label: '결제불일치 확인',
     helperText: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 뷰입니다.',
@@ -349,8 +347,7 @@ export default function OperationsClient() {
       warn: isWarnGroup(group),
     }));
 
-    const filtered =
-      warnFilter === 'all' ? withWarn : withWarn.filter((group) => (warnFilter === 'warn' ? group.warn : !group.warn));
+    const filtered = warnFilter === 'all' ? withWarn : withWarn.filter((group) => (warnFilter === 'warn' ? group.warn : !group.warn));
 
     if (warnSort === 'default') return filtered;
 
@@ -374,7 +371,7 @@ export default function OperationsClient() {
         if (hasPending) acc.pending += 1;
         return acc;
       },
-      { urgent: 0, caution: 0, pending: 0 }
+      { urgent: 0, caution: 0, pending: 0 },
     );
   }, [groupsToRender]);
 
@@ -565,66 +562,6 @@ export default function OperationsClient() {
           </div>
         )}
       </div>
-      <div className="mx-auto mb-4 max-w-7xl space-y-3">
-        <section className="sticky top-3 z-10 rounded-xl border border-border/80 bg-background/95 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-foreground">{PAGE_COPY.dailyTodoTitle}</p>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>상단 고정</Badge>
-          </div>
-          <div className="grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
-            <Card className="rounded-lg border border-warning/30 bg-warning/5 shadow-none">
-              <CardHeader className="space-y-1 pb-2">
-                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.urgent}</CardDescription>
-                <CardTitle className="text-2xl text-warning">{todayTodoCount.urgent}건</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card className="rounded-lg border border-info/30 bg-info/5 shadow-none">
-              <CardHeader className="space-y-1 pb-2">
-                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.caution}</CardDescription>
-                <CardTitle className="text-2xl text-info">{todayTodoCount.caution}건</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card className="rounded-lg border border-muted bg-muted/40 shadow-none">
-              <CardHeader className="space-y-1 pb-2">
-                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.pending}</CardDescription>
-                <CardTitle className="text-2xl text-foreground">{todayTodoCount.pending}건</CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
-        </section>
-
-        <section className="space-y-2">
-          <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
-          <p className="text-sm text-muted-foreground">{PAGE_COPY.description}</p>
-
-          {showOnboarding && (
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{PAGE_COPY.onboarding.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{PAGE_COPY.onboarding.description}</p>
-                  <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                    {PAGE_COPY.onboarding.steps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ul>
-                </div>
-                <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={dismissOnboarding}>
-                  {PAGE_COPY.onboarding.dismissLabel}
-                </Button>
-              </div>
-            </div>
-          )}
-          {showOnboardingSummary && (
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
-              <p className="text-xs text-muted-foreground">{PAGE_COPY.onboarding.collapsedSummary}</p>
-              <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={reopenOnboarding}>
-                {PAGE_COPY.onboarding.reopenLabel}
-              </Button>
-            </div>
-          )}
-        </section>
-      </div>
 
       <div className="mx-auto mb-4 max-w-7xl">
         <div className="mb-2 flex items-center justify-between gap-2">
@@ -649,289 +586,274 @@ export default function OperationsClient() {
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <div
-        className={cn(
-          'sticky top-3 z-30 mb-4 transition-all duration-200',
-          isFilterScrolled && 'drop-shadow-xl'
-        )}
-      >
+      <div className={cn('top-3 z-30 mb-4 transition-all duration-200', isFilterScrolled && 'drop-shadow-xl')}>
         <Card
           className={cn(
             'rounded-xl border-border px-6 py-4 shadow-md transition-all duration-200',
-            onlyWarn
-              ? 'bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30'
-              : 'bg-card',
-            isFilterScrolled && 'bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90'
+            onlyWarn ? 'bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30' : 'bg-card',
+            isFilterScrolled && 'bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90',
           )}
         >
           <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
             <div>
               <CardTitle>필터 및 검색</CardTitle>
               <CardDescription className="text-xs mt-1">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
-              {activeFilterCount > 0 && (
-                <Badge className={cn(badgeBase, badgeSizeSm, 'mt-2 bg-primary/10 text-primary dark:bg-primary/20')}>
-                  적용된 필터 {activeFilterCount}개
-                </Badge>
-              )}
+              {activeFilterCount > 0 && <Badge className={cn(badgeBase, badgeSizeSm, 'mt-2 bg-primary/10 text-primary dark:bg-primary/20')}>적용된 필터 {activeFilterCount}개</Badge>}
             </div>
 
             <Button variant="outline" size="sm" onClick={reset} className="shrink-0 bg-transparent">
               필터 초기화
             </Button>
           </CardHeader>
-        <CardContent className="space-y-4">
-          {/* 검색 + 주요 버튼 */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                type="search"
-                className="pl-8 text-xs h-9 w-full"
-                value={q}
-                onChange={(e) => {
-                  setQ(e.target.value);
+          <CardContent className="space-y-4">
+            {/* 검색 + 주요 버튼 */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="search"
+                  className="pl-8 text-xs h-9 w-full"
+                  value={q}
+                  onChange={(e) => {
+                    setQ(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
+                />
+              </div>
+
+              <Button
+                variant={onlyWarn ? 'default' : 'outline'}
+                size="sm"
+                title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
+                className={cn('h-9', !onlyWarn && 'bg-transparent')}
+                onClick={() => {
+                  setOnlyWarn((v) => !v);
                   setPage(1);
                 }}
-                placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
-              />
-            </div>
-
-            <Button
-              variant={onlyWarn ? 'default' : 'outline'}
-              size="sm"
-              title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
-              className={cn('h-9', !onlyWarn && 'bg-transparent')}
-              onClick={() => {
-                setOnlyWarn((v) => !v);
-                setPage(1);
-              }}
-            >
-              경고만 보기
-            </Button>
-
-            <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
-              <Link2 className="mr-1.5 h-4 w-4" />
-              {shareLinkCopied ? '링크 복사됨' : '현재 뷰 링크 복사'}
-            </Button>
-
-            <Button variant="outline" size="sm" onClick={reset} className="h-9 bg-transparent">
-              필터 초기화
-            </Button>
-
-            <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
-              <Link href={settlementsHref}>
-                <BarChartBig className="h-4 w-4 mr-1.5" />
-                정산 관리
-              </Link>
-            </Button>
-          </div>
-
-          {/* 필터 컴포넌트들 */}
-          <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
-            <Select
-              value={kind}
-              onValueChange={(v: any) => {
-                setKind(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="종류(전체)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">종류(전체)</SelectItem>
-                <SelectItem value="order">주문</SelectItem>
-                <SelectItem value="stringing_application">신청서</SelectItem>
-                <SelectItem value="rental">대여</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={flow}
-              onValueChange={(v: any) => {
-                setFlow(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="시나리오(전체)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">시나리오(전체)</SelectItem>
-                <SelectItem value="1">스트링 단품 구매</SelectItem>
-                <SelectItem value="2">스트링 구매 + 교체서비스 신청(통합)</SelectItem>
-                <SelectItem value="3">교체서비스 단일 신청</SelectItem>
-                <SelectItem value="4">라켓 단품 구매</SelectItem>
-                <SelectItem value="5">라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
-                <SelectItem value="6">라켓 단품 대여</SelectItem>
-                <SelectItem value="7">라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={integrated}
-              onValueChange={(v: any) => {
-                setIntegrated(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="연결(전체)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">연결(전체)</SelectItem>
-                <SelectItem value="1">통합(연결됨)</SelectItem>
-                <SelectItem value="0">단독</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={warnFilter}
-              onValueChange={(v: any) => {
-                setWarnFilter(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="주의 필터" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">주의(전체)</SelectItem>
-                <SelectItem value="warn">주의만</SelectItem>
-                <SelectItem value="safe">정상만</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="주의 정렬" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">주의 정렬(기본)</SelectItem>
-                <SelectItem value="warn_first">주의 우선</SelectItem>
-                <SelectItem value="safe_first">정상 우선</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 프리셋 버튼(원클릭) */}
-          <div className="flex flex-wrap gap-2 pt-2">
-            <Button
-              variant={presetActive.paymentMismatch ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.paymentMismatch}
-              onClick={() => {
-                applyPreset(PRESET_CONFIG.paymentMismatch.params);
-                setActivePresetGuide('paymentMismatch');
-              }}
-              className={!presetActive.paymentMismatch ? 'bg-transparent' : ''}
-            >
-              {PRESET_CONFIG.paymentMismatch.label}
-            </Button>
-
-            <Button
-              variant={presetActive.integratedReview ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.integratedReview}
-              onClick={() => {
-                applyPreset(PRESET_CONFIG.integratedReview.params);
-                setActivePresetGuide('integratedReview');
-              }}
-              className={!presetActive.integratedReview ? 'bg-transparent' : ''}
-            >
-              {PRESET_CONFIG.integratedReview.label}
-            </Button>
-
-            <Button
-              variant={presetActive.singleApplication ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.singleApplication}
-              onClick={() => {
-                applyPreset(PRESET_CONFIG.singleApplication.params);
-                setActivePresetGuide('singleApplication');
-              }}
-              className={!presetActive.singleApplication ? 'bg-transparent' : ''}
-            >
-              {PRESET_CONFIG.singleApplication.label}
-            </Button>
-
-            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={clearPresetMode}>
-              전체 보기
-            </Button>
-          </div>
-
-          {activePresetGuide && (
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-              <p className="text-xs text-muted-foreground">
-                현재 결과 <span className="font-semibold text-foreground">{total.toLocaleString('ko-KR')}건</span>
-              </p>
-              <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
-              <div className="mt-2">
-                <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setActivePresetGuide(null)}>
-                  가이드 닫기
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {activePresetKey && (
-            <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
-              <div>
-                <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
-                <p className="text-sm font-medium text-foreground">{total.toLocaleString('ko-KR')}건</p>
-              </div>
-              <div>
-                <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
-                <p>{PRESET_CONFIG[activePresetKey].priorityReason}</p>
-              </div>
-              <div>
-                <p className="mb-1 text-[11px] font-semibold text-primary">다음 액션</p>
-                <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>저장된 뷰 링크</Badge>
-            <p className="text-xs text-muted-foreground">현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에 공유하세요.</p>
-            <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">{shareViewHref}</code>
-          </div>
-
-          {/* 범례(운영자 인지 부하 감소) */}
-          <div className="space-y-2 border-t border-border pt-3 mt-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">범례</span>
-              <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>문서유형</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합여부</Badge>
-              <Badge className={cn(badgeBase, badgeSizeSm, 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30')}><AlertTriangle className="h-3 w-3" aria-hidden="true" />경고</Badge>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                aria-expanded={showAdvancedLegend}
-                onClick={() => setShowAdvancedLegend((prev) => !prev)}
               >
-                {showAdvancedLegend ? <ChevronDown className="mr-1 h-3.5 w-3.5" /> : <ChevronRight className="mr-1 h-3.5 w-3.5" />}
-                고급 필터
+                경고만 보기
+              </Button>
+
+              <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
+                <Link2 className="mr-1.5 h-4 w-4" />
+                {shareLinkCopied ? '링크 복사됨' : '현재 뷰 링크 복사'}
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={reset} className="h-9 bg-transparent">
+                필터 초기화
+              </Button>
+
+              <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
+                <Link href={settlementsHref}>
+                  <BarChartBig className="h-4 w-4 mr-1.5" />
+                  정산 관리
+                </Link>
               </Button>
             </div>
 
-            {showAdvancedLegend && (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">시나리오</span>
-                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
-                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
-                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
-                <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
+            {/* 필터 컴포넌트들 */}
+            <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
+              <Select
+                value={kind}
+                onValueChange={(v: any) => {
+                  setKind(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="종류(전체)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">종류(전체)</SelectItem>
+                  <SelectItem value="order">주문</SelectItem>
+                  <SelectItem value="stringing_application">신청서</SelectItem>
+                  <SelectItem value="rental">대여</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={flow}
+                onValueChange={(v: any) => {
+                  setFlow(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="시나리오(전체)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">시나리오(전체)</SelectItem>
+                  <SelectItem value="1">스트링 단품 구매</SelectItem>
+                  <SelectItem value="2">스트링 구매 + 교체서비스 신청(통합)</SelectItem>
+                  <SelectItem value="3">교체서비스 단일 신청</SelectItem>
+                  <SelectItem value="4">라켓 단품 구매</SelectItem>
+                  <SelectItem value="5">라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
+                  <SelectItem value="6">라켓 단품 대여</SelectItem>
+                  <SelectItem value="7">라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={integrated}
+                onValueChange={(v: any) => {
+                  setIntegrated(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="연결(전체)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">연결(전체)</SelectItem>
+                  <SelectItem value="1">통합(연결됨)</SelectItem>
+                  <SelectItem value="0">단독</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={warnFilter}
+                onValueChange={(v: any) => {
+                  setWarnFilter(v);
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="주의 필터" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">주의(전체)</SelectItem>
+                  <SelectItem value="warn">주의만</SelectItem>
+                  <SelectItem value="safe">정상만</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="주의 정렬" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">주의 정렬(기본)</SelectItem>
+                  <SelectItem value="warn_first">주의 우선</SelectItem>
+                  <SelectItem value="safe_first">정상 우선</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 프리셋 버튼(원클릭) */}
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button
+                variant={presetActive.paymentMismatch ? 'default' : 'outline'}
+                size="sm"
+                aria-pressed={presetActive.paymentMismatch}
+                onClick={() => {
+                  applyPreset(PRESET_CONFIG.paymentMismatch.params);
+                  setActivePresetGuide('paymentMismatch');
+                }}
+                className={!presetActive.paymentMismatch ? 'bg-transparent' : ''}
+              >
+                {PRESET_CONFIG.paymentMismatch.label}
+              </Button>
+
+              <Button
+                variant={presetActive.integratedReview ? 'default' : 'outline'}
+                size="sm"
+                aria-pressed={presetActive.integratedReview}
+                onClick={() => {
+                  applyPreset(PRESET_CONFIG.integratedReview.params);
+                  setActivePresetGuide('integratedReview');
+                }}
+                className={!presetActive.integratedReview ? 'bg-transparent' : ''}
+              >
+                {PRESET_CONFIG.integratedReview.label}
+              </Button>
+
+              <Button
+                variant={presetActive.singleApplication ? 'default' : 'outline'}
+                size="sm"
+                aria-pressed={presetActive.singleApplication}
+                onClick={() => {
+                  applyPreset(PRESET_CONFIG.singleApplication.params);
+                  setActivePresetGuide('singleApplication');
+                }}
+                className={!presetActive.singleApplication ? 'bg-transparent' : ''}
+              >
+                {PRESET_CONFIG.singleApplication.label}
+              </Button>
+
+              <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={clearPresetMode}>
+                전체 보기
+              </Button>
+            </div>
+
+            {activePresetGuide && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <p className="text-xs text-muted-foreground">
+                  현재 결과 <span className="font-semibold text-foreground">{total.toLocaleString('ko-KR')}건</span>
+                </p>
+                <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
+                <div className="mt-2">
+                  <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setActivePresetGuide(null)}>
+                    가이드 닫기
+                  </Button>
+                </div>
               </div>
             )}
-          </div>
-        </CardContent>
+
+            {activePresetKey && (
+              <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
+                <div>
+                  <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
+                  <p className="text-sm font-medium text-foreground">{total.toLocaleString('ko-KR')}건</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
+                  <p>{PRESET_CONFIG[activePresetKey].priorityReason}</p>
+                </div>
+                <div>
+                  <p className="mb-1 text-[11px] font-semibold text-primary">다음 액션</p>
+                  <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+              <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>저장된 뷰 링크</Badge>
+              <p className="text-xs text-muted-foreground">현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에 공유하세요.</p>
+              <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">{shareViewHref}</code>
+            </div>
+
+            {/* 범례(운영자 인지 부하 감소) */}
+            <div className="space-y-2 border-t border-border pt-3 mt-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">범례</span>
+                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>문서유형</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합여부</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30')}>
+                  <AlertTriangle className="h-3 w-3" aria-hidden="true" />
+                  경고
+                </Badge>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" aria-expanded={showAdvancedLegend} onClick={() => setShowAdvancedLegend((prev) => !prev)}>
+                  {showAdvancedLegend ? <ChevronDown className="mr-1 h-3.5 w-3.5" /> : <ChevronRight className="mr-1 h-3.5 w-3.5" />}
+                  고급 필터
+                </Button>
+              </div>
+
+              {showAdvancedLegend && (
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">시나리오</span>
+                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
+                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
+                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
+                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
+                </div>
+              )}
+            </div>
+          </CardContent>
         </Card>
       </div>
 
@@ -943,38 +865,20 @@ export default function OperationsClient() {
               <>
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base font-medium">업무 목록</CardTitle>
-                  {activePresetKey && (
-                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>
-                      {PRESET_CONFIG[activePresetKey].label}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
-                <span className="text-xs text-muted-foreground">표시 밀도</span>
-                <div className="inline-flex items-center rounded-md border border-border p-0.5">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={displayDensity === 'default' ? 'secondary' : 'ghost'}
-                    className="h-6 px-2 text-xs"
-                    onClick={() => setDisplayDensity('default')}
-                    aria-pressed={displayDensity === 'default'}
-                  >
-                    기본
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={displayDensity === 'compact' ? 'secondary' : 'ghost'}
-                    className="h-6 px-2 text-xs"
-                    onClick={() => setDisplayDensity('compact')}
-                    aria-pressed={displayDensity === 'compact'}
-                  >
-                    컴팩트
-                  </Button>
+                  {activePresetKey && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>{PRESET_CONFIG[activePresetKey].label}</Badge>}
                 </div>
-              </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
+                  <span className="text-xs text-muted-foreground">표시 밀도</span>
+                  <div className="inline-flex items-center rounded-md border border-border p-0.5">
+                    <Button type="button" size="sm" variant={displayDensity === 'default' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('default')} aria-pressed={displayDensity === 'default'}>
+                      기본
+                    </Button>
+                    <Button type="button" size="sm" variant={displayDensity === 'compact' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('compact')} aria-pressed={displayDensity === 'compact'}>
+                      컴팩트
+                    </Button>
+                  </div>
+                </div>
               </>
             ) : (
               <>
@@ -1009,184 +913,172 @@ export default function OperationsClient() {
             </div>
           ) : (
             <>
-            <div className="hidden bp-lg:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent border-b border-border">
-                    <TableHead className={thClasses}>우선순위/위험</TableHead>
-                    <TableHead className={thClasses}>대상</TableHead>
-                    <TableHead className={thClasses}>상태</TableHead>
-                    <TableHead className={thClasses}>금액</TableHead>
-                    <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {groupsToRender.map((g, idx) => {
-                    const isGroup = g.items.length > 1;
-                    const isOpen = !!openGroups[g.key];
-                    const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
-                    const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-                    const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
-                    const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
-                    const warn = g.warn;
-                    const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
-                    const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
+              <div className="hidden bp-lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-b border-border">
+                      <TableHead className={thClasses}>우선순위/위험</TableHead>
+                      <TableHead className={thClasses}>대상</TableHead>
+                      <TableHead className={thClasses}>상태</TableHead>
+                      <TableHead className={thClasses}>금액</TableHead>
+                      <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupsToRender.map((g, idx) => {
+                      const isGroup = g.items.length > 1;
+                      const isOpen = !!openGroups[g.key];
+                      const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
+                      const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+                      const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
+                      const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
+                      const warn = g.warn;
+                      const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
+                      const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
 
-                    const rowDensityClass = displayDensity === 'compact' ? 'py-1.5' : 'py-2.5';
-                    const rowBaseToneClass = idx % 2 === 0 ? 'bg-background' : 'bg-muted/[0.18]';
-                    const warnEmphasisClass = warn
-                      ? 'border-l-2 border-l-warning/60 bg-warning/[0.08]'
-                      : 'border-l-2 border-l-transparent';
-                    const stickyActionCellClass = 'sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
+                      const rowDensityClass = displayDensity === 'compact' ? 'py-1.5' : 'py-2.5';
+                      const rowBaseToneClass = idx % 2 === 0 ? 'bg-background' : 'bg-muted/[0.18]';
+                      const warnEmphasisClass = warn ? 'border-l-2 border-l-warning/60 bg-warning/[0.08]' : 'border-l-2 border-l-transparent';
+                      const stickyActionCellClass = 'sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
 
-                    return (
-                      <Fragment key={g.key}>
-                        <TableRow className={cn('transition-colors hover:bg-muted/35', rowBaseToneClass, warnEmphasisClass)}>
-                          <TableCell className={cn(tdClasses, rowDensityClass)}>
-                            <div className="space-y-1">
-                              <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>
-                                {warn ? '주의' : '정상'}
-                              </Badge>
-                              <div className="text-[11px] text-muted-foreground">
-                                {isGroup ? `${g.items.length}건 그룹` : '단일 건'}
-                              </div>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className={cn(tdClasses, rowDensityClass)}>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                {isGroup && (
-                                  <Button type="button" size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => toggleGroup(g.key)} title={isOpen ? '상세 접기' : '상세 펼치기'}>
-                                    {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                                  </Button>
-                                )}
-                                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
-                                <span className="font-medium text-sm">{shortenId(g.anchor.id)}</span>
-                              </div>
-                              <div className="text-sm">{g.anchor.customer?.name || '-'}</div>
-                              <div className="text-xs text-muted-foreground">{formatKST(g.createdAt ?? g.anchor.createdAt)}</div>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className={cn(tdClasses, rowDensityClass)}>
-                            <div className="space-y-1">
-                              <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
-                              {g.anchor.paymentLabel ? (
-                                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">-</span>
-                              )}
-                            </div>
-                          </TableCell>
-
-                          <TableCell className={cn(tdClasses, rowDensityClass, 'font-semibold text-sm')}>
-                            {isGroup ? (
+                      return (
+                        <Fragment key={g.key}>
+                          <TableRow className={cn('transition-colors hover:bg-muted/35', rowBaseToneClass, warnEmphasisClass)}>
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="space-y-1">
-                                {pickOnePerKind(g.items).map((it) => (
-                                  <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
-                                    <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
-                                    <span>{won(it.amount)}</span>
-                                  </div>
-                                ))}
+                                <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
+                                <div className="text-[11px] text-muted-foreground">{isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
-                            ) : (
-                              <div>{won(g.anchor.amount)}</div>
-                            )}
-                          </TableCell>
+                            </TableCell>
 
-                          <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
-                            <div className="flex justify-end gap-1.5">
-                              <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
-                                <Link href={g.anchor.href} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.detail}>
-                                  <Eye className="h-3.5 w-3.5" />
-                                  <span className="text-xs">상세</span>
-                                </Link>
-                              </Button>
-                              <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title={ROW_ACTION_LABELS.settlement}>
-                                <Link href={settleHref} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.settlement}>
-                                  <BarChartBig className="h-3.5 w-3.5" />
-                                  <span className="text-xs">정산</span>
-                                </Link>
-                              </Button>
-                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title={ROW_ACTION_LABELS.copyId} aria-label={ROW_ACTION_LABELS.copyId}>
-                                <Copy className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-
-                        {isGroup && isOpen && (
-                          <TableRow className="bg-muted/20">
-                            <TableCell colSpan={5} className={cn(tdClasses, 'border-l-2 border-l-primary/40')}>
-                              <div className="grid gap-4 bp-xl:grid-cols-2">
-                                <div>
-                                  <p className="mb-1 text-xs font-medium text-foreground">연결 문서</p>
-                                  {renderLinkedDocs(linkedDocsForAnchor)}
-                                </div>
-                                <div>
-                                  <p className="mb-1 text-xs font-medium text-foreground">상태 혼재 내역</p>
-                                  {childStatusSummary.length > 0 ? (
-                                    <div className="space-y-1">
-                                      {childStatusSummary.map((s) => (
-                                        <div key={`st:${g.key}:${s.kind}`} className="text-xs text-muted-foreground">
-                                          {opsKindLabel(s.kind)}: {s.text}
-                                          {s.mixed ? ' (혼재)' : ''}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <span className="text-xs text-muted-foreground">혼재 없음</span>
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {isGroup && (
+                                    <Button type="button" size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => toggleGroup(g.key)} title={isOpen ? '상세 접기' : '상세 펼치기'}>
+                                      {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                    </Button>
                                   )}
+                                  <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
+                                  <span className="font-medium text-sm">{shortenId(g.anchor.id)}</span>
                                 </div>
+                                <div className="text-sm">{g.anchor.customer?.name || '-'}</div>
+                                <div className="text-xs text-muted-foreground">{formatKST(g.createdAt ?? g.anchor.createdAt)}</div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                              <div className="space-y-1">
+                                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
+                                {g.anchor.paymentLabel ? (
+                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">-</span>
+                                )}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass, 'font-semibold text-sm')}>
+                              {isGroup ? (
+                                <div className="space-y-1">
+                                  {pickOnePerKind(g.items).map((it) => (
+                                    <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
+                                      <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
+                                      <span>{won(it.amount)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div>{won(g.anchor.amount)}</div>
+                              )}
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
+                              <div className="flex justify-end gap-1.5">
+                                <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
+                                  <Link href={g.anchor.href} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.detail}>
+                                    <Eye className="h-3.5 w-3.5" />
+                                    <span className="text-xs">상세</span>
+                                  </Link>
+                                </Button>
+                                <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title={ROW_ACTION_LABELS.settlement}>
+                                  <Link href={settleHref} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.settlement}>
+                                    <BarChartBig className="h-3.5 w-3.5" />
+                                    <span className="text-xs">정산</span>
+                                  </Link>
+                                </Button>
+                                <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title={ROW_ACTION_LABELS.copyId} aria-label={ROW_ACTION_LABELS.copyId}>
+                                  <Copy className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
                             </TableCell>
                           </TableRow>
-                        )}
-                      </Fragment>
-                    );
-                  })}
 
-                  {groupsToRender.length === 0 && (
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell colSpan={5} className="py-16 text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <Search className="h-8 w-8 text-muted-foreground/50" />
-                          <p className="text-sm text-muted-foreground">{onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
+                          {isGroup && isOpen && (
+                            <TableRow className="bg-muted/20">
+                              <TableCell colSpan={5} className={cn(tdClasses, 'border-l-2 border-l-primary/40')}>
+                                <div className="grid gap-4 bp-xl:grid-cols-2">
+                                  <div>
+                                    <p className="mb-1 text-xs font-medium text-foreground">연결 문서</p>
+                                    {renderLinkedDocs(linkedDocsForAnchor)}
+                                  </div>
+                                  <div>
+                                    <p className="mb-1 text-xs font-medium text-foreground">상태 혼재 내역</p>
+                                    {childStatusSummary.length > 0 ? (
+                                      <div className="space-y-1">
+                                        {childStatusSummary.map((s) => (
+                                          <div key={`st:${g.key}:${s.kind}`} className="text-xs text-muted-foreground">
+                                            {opsKindLabel(s.kind)}: {s.text}
+                                            {s.mixed ? ' (혼재)' : ''}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-muted-foreground">혼재 없음</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+
+                    {groupsToRender.length === 0 && (
+                      <TableRow className="hover:bg-transparent">
+                        <TableCell colSpan={5} className="py-16 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Search className="h-8 w-8 text-muted-foreground/50" />
+                            <p className="text-sm text-muted-foreground">{onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="space-y-3 bp-lg:hidden">
+                {groupsToRender.map((g) => {
+                  const warn = g.warn;
+                  return (
+                    <Card key={`m:${g.key}`} className="border-border">
+                      <CardContent className="p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
+                          <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                        <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
+                        <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
+                        <div className="text-sm font-semibold">금액: {won(g.anchor.amount)}</div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
 
-            <div className="space-y-3 bp-lg:hidden">
-              {groupsToRender.map((g) => {
-                const warn = g.warn;
-                return (
-                  <Card key={`m:${g.key}`} className="border-border">
-                    <CardContent className="p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>
-                          {warn ? '주의' : '정상'}
-                        </Badge>
-                        <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
-                      </div>
-                      <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
-                      <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
-                      <div className="text-sm font-semibold">금액: {won(g.anchor.amount)}</div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-
-              {groupsToRender.length === 0 && (
-                <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">
-                  표시할 항목이 없습니다.
-                </div>
-              )}
-            </div>
+                {groupsToRender.length === 0 && <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">표시할 항목이 없습니다.</div>}
+              </div>
             </>
           )}
 
