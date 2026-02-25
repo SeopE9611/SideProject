@@ -319,9 +319,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 <p className="text-muted-foreground">대여번호: {data.id}</p>
 
                 {data.stringingApplicationId ? (
-                  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/15 dark:text-primary">신청서 연결됨</Badge>
+                  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/20 dark:text-primary">신청서 연결됨</Badge>
                 ) : withStringService ? (
-                  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/15 dark:text-primary">교체 서비스 포함</Badge>
+                  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/20 dark:text-primary">교체 서비스 포함</Badge>
                 ) : null}
               </div>
             </div>

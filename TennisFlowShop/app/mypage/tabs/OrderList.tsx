@@ -435,7 +435,7 @@ export default function OrderList() {
                     </Link>
                   </Button>
                   {order.stringingApplicationId ? (
-                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-border dark:hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
+                    <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-border dark:hover:bg-primary/20 bg-transparent">
                       <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
                         신청서 보기
                         <ArrowRight className="h-3 w-3" />

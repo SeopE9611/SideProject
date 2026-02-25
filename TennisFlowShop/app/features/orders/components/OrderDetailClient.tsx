@@ -709,7 +709,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
  <CardContent className="p-6">
  {isShippingManagedByApplication && linkedStringingAppId ? (
- <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground dark:bg-primary/15">
+ <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground dark:bg-primary/20">
  <div className="flex items-start gap-2">
  <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="space-y-2">
