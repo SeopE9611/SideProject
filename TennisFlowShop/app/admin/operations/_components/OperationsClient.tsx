@@ -64,6 +64,8 @@ const PAGE_COPY = {
     description: '페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 건을 먼저 처리하세요.',
     steps: ['1) 오늘 해야 할 일 확인', '2) 업무 목적형 프리셋 선택', '3) 주의/미처리 건 순서로 처리'],
     dismissLabel: '다시 보지 않기',
+    collapsedSummary: '온보딩이 숨겨져 있습니다. 필요 시 다시 열어 주요 사용 흐름을 확인하세요.',
+    reopenLabel: '온보딩 다시 보기',
   },
 };
 
@@ -78,24 +80,32 @@ type PresetKey = 'paymentMismatch' | 'integratedReview' | 'singleApplication';
 const PRESET_CONFIG: Record<PresetKey, {
   label: string;
   helperText: string;
+  priorityReason: string;
+  nextAction: string;
   params: Partial<{ q: string; kind: 'all' | Kind; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; integrated: 'all' | '1' | '0'; warn: boolean }>;
   isActive: (state: { integrated: 'all' | '1' | '0'; flow: 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'; kind: 'all' | Kind; onlyWarn: boolean }) => boolean;
 }> = {
   paymentMismatch: {
     label: '결제불일치 확인',
     helperText: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 뷰입니다.',
+    priorityReason: '결제/상태 불일치는 CS 및 정산 이슈로 즉시 확산될 수 있습니다.',
+    nextAction: '연결 문서 결제 상태를 비교해 기준값으로 정리하고 필요한 경우 고객 연락 이력을 남기세요.',
     params: { warn: true, integrated: 'all', flow: 'all', kind: 'all' },
     isActive: ({ onlyWarn }) => onlyWarn,
   },
   integratedReview: {
     label: '통합건 검수',
     helperText: '주문/대여와 신청서가 연결된 통합 건만 모아 확인합니다.',
+    priorityReason: '연결 구조가 복잡해 문서 누락/상태 불일치가 가장 자주 발생합니다.',
+    nextAction: '앵커 문서 기준으로 연결 문서의 상태·금액·정산 대상 월을 차례대로 검수하세요.',
     params: { integrated: '1', flow: 'all', kind: 'all', warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '1' && flow === 'all' && kind === 'all' && !onlyWarn,
   },
   singleApplication: {
     label: '단독 신청서 처리',
     helperText: '연결되지 않은 교체서비스 신청서만 빠르게 처리합니다.',
+    priorityReason: '단독 신청서는 후속 주문/대여 연결이 없어 처리 누락 시 장기 미처리로 남기 쉽습니다.',
+    nextAction: '미처리 사유를 우선 확인하고 담당자 배정 또는 상태 업데이트를 즉시 진행하세요.',
     params: { integrated: '0', flow: '3', kind: 'stringing_application', warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) => integrated === '0' && flow === '3' && kind === 'stringing_application' && !onlyWarn,
   },
@@ -270,6 +280,10 @@ export default function OperationsClient() {
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
+  const [showActionsGuide, setShowActionsGuide] = useState(true);
+  const [isFilterScrolled, setIsFilterScrolled] = useState(false);
+  const [displayDensity, setDisplayDensity] = useState<'default' | 'compact'>('default');
   const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const defaultPageSize = 50;
@@ -290,6 +304,15 @@ export default function OperationsClient() {
     if (typeof window === 'undefined') return;
     const dismissed = window.localStorage.getItem(ONBOARDING_DISMISS_KEY);
     setShowOnboarding(dismissed !== '1');
+    setShowOnboardingSummary(dismissed === '1');
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onScroll = () => setIsFilterScrolled(window.scrollY > 12);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
@@ -387,8 +410,17 @@ export default function OperationsClient() {
 
   function dismissOnboarding() {
     setShowOnboarding(false);
+    setShowOnboardingSummary(true);
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(ONBOARDING_DISMISS_KEY, '1');
+    }
+  }
+
+  function reopenOnboarding() {
+    setShowOnboarding(true);
+    setShowOnboardingSummary(false);
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(ONBOARDING_DISMISS_KEY);
     }
   }
 
@@ -408,6 +440,11 @@ export default function OperationsClient() {
     setWarnSort('default');
     setPage(1);
     router.replace(pathname);
+  }
+
+  function clearPresetMode() {
+    setActivePresetGuide(null);
+    applyPreset({ integrated: 'all', flow: 'all', kind: 'all', warn: false });
   }
 
   // 프리셋 버튼 "활성" 판정(현재 필터 상태가 프리셋과 일치하는지)
@@ -817,6 +854,10 @@ export default function OperationsClient() {
             >
               {PRESET_CONFIG.singleApplication.label}
             </Button>
+
+            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={clearPresetMode}>
+              전체 보기
+            </Button>
           </div>
 
           {activePresetGuide && (
@@ -826,50 +867,13 @@ export default function OperationsClient() {
               </p>
               <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
               <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
-             size="sm"
-              aria-pressed={presetActive.paymentMismatch}
-              onClick={() => applyPreset(PRESET_CONFIG.paymentMismatch.params)}
-              className={cn(
-                'relative overflow-hidden',
-                !presetActive.paymentMismatch && 'bg-transparent',
-                presetActive.paymentMismatch && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
-              )}
-            >
-              {PRESET_CONFIG.paymentMismatch.label}
-            </Button>
-
-            <Button
-              variant={presetActive.integratedReview ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.integratedReview}
-              onClick={() => applyPreset(PRESET_CONFIG.integratedReview.params)}
-              className={cn(
-                'relative overflow-hidden',
-                !presetActive.integratedReview && 'bg-transparent',
-                presetActive.integratedReview && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
-              )}
-            >
-              {PRESET_CONFIG.integratedReview.label}
-            </Button>
-
-            <Button
-              variant={presetActive.singleApplication ? 'default' : 'outline'}
-              size="sm"
-              aria-pressed={presetActive.singleApplication}
-              onClick={() => applyPreset(PRESET_CONFIG.singleApplication.params)}
-              className={cn(
-                'relative overflow-hidden',
-                !presetActive.singleApplication && 'bg-transparent',
-                presetActive.singleApplication && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
-              )}
-            >
-              {PRESET_CONFIG.singleApplication.label}
-            </Button>
-
-            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={clearPresetMode}>
-              전체 보기
-            </Button>
-          </div>
+              <div className="mt-2">
+                <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setActivePresetGuide(null)}>
+                  가이드 닫기
+                </Button>
+              </div>
+            </div>
+          )}
 
           {activePresetKey && (
             <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
