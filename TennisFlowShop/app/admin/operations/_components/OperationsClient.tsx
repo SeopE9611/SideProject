@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
-import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +17,6 @@ import {
   opsKindBadgeTone,
   opsKindLabel,
   opsStatusBadgeTone,
-  pickPrimaryOpsSignal,
   type OpsBadgeTone,
 } from '@/lib/admin-ops-taxonomy';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
@@ -27,7 +25,7 @@ import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from './actions/operationsActions';
-import { flowBadgeClass, prevMonthYyyymmKST, settlementBadgeClass, type Flow, type Kind } from './filters/operationsFilters';
+import { flowBadgeClass, prevMonthYyyymmKST, type Kind } from './filters/operationsFilters';
 import { initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
 import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
 
@@ -214,36 +212,6 @@ function opsBadgeToneClass(tone: OpsBadgeTone) {
   return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
 }
 
-function signalIcon() {
-  return <AlertTriangle className="h-3 w-3" aria-hidden="true" />;
-}
-
-/**
- * 운영함(통합) 테이블에서 Flow 라벨이 너무 길어 뱃지가 “가로로 늘어나며” 난잡해지는 문제 해결용.
- * - 표에는 짧은 라벨만 보여주고
- * - 전체 문구(flowLabel)는 title로 유지해서 hover로 확인하게 합니다.
- */
-function flowShortLabel(flow?: Flow) {
-  switch (flow) {
-    case 1:
-      return '스트링';
-    case 2:
-      return '스트링+교체';
-    case 3:
-      return '교체(단독)';
-    case 4:
-      return '라켓';
-    case 5:
-      return '라켓+교체';
-    case 6:
-      return '대여';
-    case 7:
-      return '대여+교체';
-    default:
-      return '미분류';
-  }
-}
-
 export default function OperationsClient() {
   const router = useRouter();
   const pathname = usePathname();
@@ -254,6 +222,8 @@ export default function OperationsClient() {
   const [flow, setFlow] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>('all');
   const [integrated, setIntegrated] = useState<'all' | '1' | '0'>('all'); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
+  const [warnFilter, setWarnFilter] = useState<'all' | 'warn' | 'safe'>('all');
+  const [warnSort, setWarnSort] = useState<'default' | 'warn_first' | 'safe_first'>('default');
   const [showAdvancedLegend, setShowAdvancedLegend] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -274,7 +244,7 @@ export default function OperationsClient() {
   // 필터/페이지가 바뀌면 펼침 상태를 초기화(예상치 못한 "열림 유지" 방지)
   useEffect(() => {
     setOpenGroups({});
-  }, [q, kind, flow, integrated, page, onlyWarn]);
+  }, [q, kind, flow, integrated, page, onlyWarn, warnFilter, warnSort]);
 
   // 2) 상태 → URL 동기화(디바운스)
   useSyncOperationsQuery({ q, kind, flow, integrated, onlyWarn, page }, pathname, router.replace);
@@ -299,9 +269,23 @@ export default function OperationsClient() {
 
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items), [items]);
-  // warn=1 필터는 서버(/api/admin/operations)에서 처리한다.
-  // 클라이언트에서 표본 기반으로 다시 필터링하면 경고 누락/오판 가능성이 있어 제거.
-  const groupsToRender = groups;
+  const groupsToRender = useMemo(() => {
+    const withWarn = groups.map((group) => ({
+      ...group,
+      warn: isWarnGroup(group),
+    }));
+
+    const filtered =
+      warnFilter === 'all' ? withWarn : withWarn.filter((group) => (warnFilter === 'warn' ? group.warn : !group.warn));
+
+    if (warnSort === 'default') return filtered;
+
+    return [...filtered].sort((a, b) => {
+      if (a.warn === b.warn) return 0;
+      if (warnSort === 'warn_first') return a.warn ? -1 : 1;
+      return a.warn ? 1 : -1;
+    });
+  }, [groups, warnFilter, warnSort]);
 
   const todayTodoCount = useMemo(() => {
     return groupsToRender.reduce(
@@ -348,6 +332,8 @@ export default function OperationsClient() {
     setFlow('all');
     setIntegrated('all');
     setOnlyWarn(false);
+    setWarnFilter('all');
+    setWarnSort('default');
     setPage(1);
     router.replace(pathname);
   }
@@ -524,6 +510,34 @@ export default function OperationsClient() {
               경고만 보기
             </Button>
 
+            <Select
+              value={warnFilter}
+              onValueChange={(v: any) => {
+                setWarnFilter(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="주의 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">주의(전체)</SelectItem>
+                <SelectItem value="warn">주의만</SelectItem>
+                <SelectItem value="safe">정상만</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="주의 정렬" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">주의 정렬(기본)</SelectItem>
+                <SelectItem value="warn_first">주의 우선</SelectItem>
+                <SelectItem value="safe_first">정상 우선</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Button asChild variant="outline" size="sm" className="w-full bg-transparent">
               <Link href={settlementsHref}>
                 <BarChartBig className="h-4 w-4 mr-1.5" />
@@ -676,306 +690,67 @@ export default function OperationsClient() {
               <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden bp-lg:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-b border-border">
-                    <TableHead className={thClasses}>유형</TableHead>
-                    <TableHead className={cn(thClasses, 'text-muted-foreground')}>ID</TableHead>
-                    <TableHead className={thClasses}>고객</TableHead>
-                    <TableHead className={cn(thClasses, 'text-muted-foreground')}>날짜</TableHead>
+                    <TableHead className={thClasses}>우선순위/위험</TableHead>
+                    <TableHead className={thClasses}>대상</TableHead>
                     <TableHead className={thClasses}>상태</TableHead>
-                    <TableHead className={thClasses}>결제</TableHead>
                     <TableHead className={thClasses}>금액</TableHead>
-                    <TableHead className={cn(thClasses, 'text-muted-foreground')}>연결</TableHead>
-                    <TableHead className={cn(thClasses, 'text-right')}>작업</TableHead>
+                    <TableHead className={cn(thClasses, 'text-right')}>액션</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {groupsToRender.map((g) => {
                     const isGroup = g.items.length > 1;
                     const isOpen = !!openGroups[g.key];
-
-                    // anchor 제외한 하위 아이템들(펼쳤을 때 표시)
                     const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                     const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-
-                    // 그룹(통합) 대표 행에 노출할 "연결 문서 상태/결제 요약"
-                    const childStatusSummary = isGroup ? summarizeByKind(children, (it) => it.statusLabel) : [];
-                    const childPaymentSummary = isGroup ? summarizeByKind(children, (it) => it.paymentLabel) : [];
-
-                    // ===== 경고 배지(1개) 판단 =====
-                    // 1) 같은 kind 안에서 상태/결제 라벨이 여러 개 섞여 있으면(혼재)
-                    const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
-
-                    // 2) 기준(앵커) 결제 라벨과 연결 문서 결제 라벨이 다르면(결제불일치)
-                    // - 앵커 결제가 "결제완료" 같은 확정 상태인데 연결이 "결제대기"면 운영 리스크가 큼
-                    // - 앵커가 '-'(없음)인 경우는 비교 기준이 없으므로 불일치로 보지 않음
-                    const anchorPay = g.anchor.paymentLabel ?? '-';
-                    const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
-                    const payMismatch = isGroup && anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
-
-                    // 경고 "근거"를 한 줄로 바로 보이게(운영자 인지부하 감소)
-                    // - 테이블 폭을 망치지 않도록 데스크톱에서만 노출(xl 이상)
-                    const uniq = (arr: (string | null | undefined)[]) => Array.from(new Set(arr.filter(Boolean).map(String)));
-
-                    // 서버가 내려준 warnReasons(연결 누락/불일치 등)를 그룹/단독 모두에서 수집
-                    const linkWarnReasons = uniq(
-                      (isGroup ? g.items : [g.anchor]).reduce((acc, x) => {
-                        if (Array.isArray(x.warnReasons) && x.warnReasons.length > 0) acc.push(...x.warnReasons);
-                        return acc;
-                      }, [] as string[]),
-                    );
-                    const hasLinkWarn = linkWarnReasons.length > 0;
-                    const linkWarnTitle = linkWarnReasons.slice(0, 3).join('\n') + (linkWarnReasons.length > 3 ? `\n외 ${linkWarnReasons.length - 3}개` : '');
-
-                    // draft(초안) 등 '오류는 아니지만 아직 작성/제출이 끝나지 않은' 상태를 수집
-                    const linkPendingReasons = uniq(
-                      (isGroup ? g.items : [g.anchor]).reduce((acc, x) => {
-                        if (Array.isArray(x.pendingReasons) && x.pendingReasons.length > 0) acc.push(...x.pendingReasons);
-                        return acc;
-                      }, [] as string[]),
-                    );
-                    const hasLinkPending = linkPendingReasons.length > 0;
-                    const linkPendingTitle = linkPendingReasons.slice(0, 3).join('\n') + (linkPendingReasons.length > 3 ? `\n외 ${linkPendingReasons.length - 3}개` : '');
-
-                    // 경고(혼재/결제불일치/연결오류) 항목에서는 자식 행에 "왜 연결인지" 라벨을 노출해 놓침을 줄입니다.
-                    const showLinkReason = onlyWarn || payMismatch || hasMixed || hasLinkWarn;
-
-                    const childPayUniq = uniq(childPays).filter((p) => p !== '-');
-                    const childStatusUniq = uniq(children.map((x) => x.statusLabel));
-
-                    const payHint = (() => {
-                      if (!payMismatch) return null;
-                      if (childPayUniq.length === 0) return `결제: ${anchorPay} ≠ (연결 없음)`;
-                      const head = childPayUniq.slice(0, 2).join(', ');
-                      const tail = childPayUniq.length > 2 ? ` 외 ${childPayUniq.length - 2}` : '';
-                      return `결제: ${anchorPay} ≠ ${head}${tail}`;
-                    })();
-
-                    const mixedHint = (() => {
-                      if (!hasMixed) return null;
-                      if (childStatusUniq.length === 0) return `상태: 혼재`;
-                      const head = childStatusUniq[0];
-                      const tail = childStatusUniq.length > 1 ? ` 외 ${childStatusUniq.length - 1}` : '';
-                      return `상태: ${head}${tail}`;
-                    })();
-
-                    // 표시 우선순위: 결제불일치 > 혼재
-                    const warnInline = payHint ?? mixedHint;
-
-                    const primarySignal = pickPrimaryOpsSignal([
-                      { label: g.anchor.statusLabel, tone: opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel), type: 'status' },
-                      {
-                        label: g.anchor.paymentLabel,
-                        tone: g.anchor.paymentLabel && ['결제실패', '결제취소', '환불'].includes(g.anchor.paymentLabel)
-                          ? 'destructive'
-                          : g.anchor.paymentLabel === '결제대기'
-                            ? 'warning'
-                            : g.anchor.paymentLabel === '결제완료'
-                              ? 'success'
-                              : 'muted',
-                        type: 'payment',
-                      },
-                    ]);
-
-                    const warnBadges: Array<{ label: '결제불일치' | '혼재'; title: string }> = [];
-                    if (payMismatch) {
-                      warnBadges.push({
-                        label: '결제불일치',
-                        title: `기준 결제: ${anchorPay} / 연결 결제: ${childPays.filter((p) => p && p !== '-').join(', ')}`,
-                      });
-                    }
-                    if (hasMixed) {
-                      warnBadges.push({
-                        label: '혼재',
-                        title: '연결 문서 내 상태/결제가 여러 값으로 섞여 있습니다.',
-                      });
-                    }
-                    // 그룹(통합)인 경우, 앵커를 제외한 “연결 문서” 요약(포함: 신청서 2건 · 대여 1건 …)
-                    const childKindCounts = isGroup
-                      ? children.reduce(
-                          (acc, x) => {
-                            acc[x.kind] = (acc[x.kind] ?? 0) + 1;
-                            return acc;
-                          },
-                          {} as Record<Kind, number>,
-                        )
-                      : null;
-
-                    const includesSummary = isGroup
-                      ? (['order', 'rental', 'stringing_application'] as Kind[])
-                          .filter((k) => (childKindCounts?.[k] ?? 0) > 0)
-                          .map((k) => `${opsKindLabel(k)} ${childKindCounts![k]}건`)
-                          .join(' · ')
-                      : '';
-
-                    // 연결 컬럼에 보여줄 문서들
-                    // - 그룹(통합)인 경우: 앵커 외 나머지 문서(신청서/대여 등)를 “바로” 노출
-                    // - 단독인 경우: API에서 내려준 related(있으면 1개)만 노출
+                    const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
                     const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
-
-                    // 정산 화면 이동(운영 편의): 추천 yyyymm만 title로 안내 (정산 화면 쿼리 미지원이어도 즉시 유용)
+                    const warn = g.warn;
                     const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
-                    const settleTitle = settleYyyymm ? `정산 페이지로 이동 (추천 월: ${settleYyyymm})` : '정산 페이지로 이동';
                     const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
 
                     return (
                       <Fragment key={g.key}>
-                        {/* 그룹 대표(앵커) Row */}
                         <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-card')}>
                           <TableCell className={tdClasses}>
-                            {(() => {
-                              /**
-                               * 운영함(통합) “유형” 컬럼 개선(표시만)
-                               * - 기존: 뱃지를 여러 줄로 쌓아 행 높이가 커지고, Flow 라벨이 길어 뱃지가 가로로 늘어남
-                               * - 개선: 핵심 뱃지만 노출 + 나머지는 +N으로 접기(AdminBadgeRow),
-                               *         Flow는 짧은 라벨만 표기하고 전체 문구는 title로 유지
-                               */
-                              const items: BadgeItem[] = [];
-
-                              // 통합/단독
-                              const integratedLabel = isGroup ? '통합' : g.anchor.isIntegrated ? '통합' : '단독';
-                              items.push({
-                                label: integratedLabel,
-                                className: integratedLabel === '통합' ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-card text-muted-foreground',
-                                title: isGroup ? '연결된 문서가 함께 묶인 그룹' : '단일 문서',
-                              });
-
-                              // 통합 그룹이면 건수도 함께(의미 큼)
-                              if (isGroup) {
-                                items.push({
-                                  label: `${g.items.length}건`,
-                                  className: 'bg-card text-foreground',
-                                  title: '이 그룹에 포함된 문서 수',
-                                });
-                              }
-
-                              // 대표 문서 유형(그룹이면 anchor 기준)만 노출해 의미 중복을 줄임
-                              items.push({
-                                label: opsKindLabel(g.anchor.kind),
-                                className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)),
-                                title: isGroup ? '기준 문서 유형' : '문서 유형',
-                              });
-
-                              // 상태/결제는 우선 신호 1개만 메인 배지로 노출
-                              if (primarySignal) {
-                                items.push({
-                                  label: primarySignal.label!,
-                                  className: opsBadgeToneClass(primarySignal.tone),
-                                  title: primarySignal.type === 'payment' ? '결제 신호(우선)' : '상태 신호(우선)',
-                                });
-                              }
-
-                              return <AdminBadgeRow items={items} maxVisible={3} />;
-                            })()}
-                          </TableCell>
-
-                          <TableCell className={tdClasses}>
-                            <div className="flex items-start gap-2">
-                              {/* 펼치기 토글: 그룹일 때만 */}
-                              {isGroup ? (
-                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleGroup(g.key)} aria-label={isOpen ? '그룹 접기' : '그룹 펼치기'}>
-                                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                </Button>
-                              ) : (
-                                <div className="h-8 w-8" />
-                              )}
-                              <div className="space-y-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <div className="font-medium">{shortenId(g.anchor.id)}</div>
-                                  {(() => {
-                                    // 운영함에서 난잡해지는 구간(그룹 기준/경고 뱃지들)을 “접기”로 정리
-                                    const items: BadgeItem[] = [];
-
-                                    if (hasLinkWarn) {
-                                      items.push({
-                                        label: '연결오류',
-                                        className: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
-                                        title: linkWarnTitle,
-                                        icon: signalIcon(),
-                                      });
-                                    } else if (hasLinkPending) {
-                                      items.push({
-                                        label: '작성대기',
-                                        className: 'bg-muted text-foreground',
-                                        title: linkPendingTitle,
-                                      });
-                                    }
-
-                                    if (isGroup) {
-                                      items.push({ label: '기준', className: 'bg-muted text-foreground', title: '그룹의 기준 문서' });
-                                      items.push({ label: opsKindLabel(g.anchor.kind), className: opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)), title: '기준 문서 종류' });
-                                      warnBadges.forEach((b) =>
-                                        items.push({
-                                          label: b.label,
-                                          className: 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30',
-                                          title: b.title,
-                                          icon: signalIcon(),
-                                        }),
-                                      );
-                                    }
-
-                                    return items.length > 0 ? <AdminBadgeRow maxVisible={3} items={items} /> : null;
-                                  })()}
-
-                                  {isGroup && warnInline && (
-                                    <span className="ml-2 hidden xl:inline text-xs text-muted-foreground" title={warnInline}>
-                                      {warnInline}
-                                    </span>
-                                  )}
-                                </div>
-
-                                <div className="text-xs text-muted-foreground line-clamp-1">{isGroup ? `기준: ${g.anchor.title}` : g.anchor.title}</div>
-
-                                {isGroup && <div className="text-[11px] text-muted-foreground line-clamp-1">포함: {includesSummary || '-'}</div>}
+                            <div className="space-y-1">
+                              <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>
+                                {warn ? '주의' : '정상'}
+                              </Badge>
+                              <div className="text-[11px] text-muted-foreground">
+                                {isGroup ? `${g.items.length}건 그룹` : '단일 건'}
                               </div>
                             </div>
                           </TableCell>
 
                           <TableCell className={tdClasses}>
                             <div className="space-y-1">
-                              <div className="font-medium text-sm">{g.anchor.customer?.name || '-'}</div>
-                              <div className="text-xs text-muted-foreground truncate max-w-[180px]">{g.anchor.customer?.email || '-'}</div>
+                              <div className="flex items-center gap-2">
+                                {isGroup && (
+                                  <Button type="button" size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => toggleGroup(g.key)} title={isOpen ? '상세 접기' : '상세 펼치기'}>
+                                    {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                  </Button>
+                                )}
+                                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
+                                <span className="font-medium text-sm">{shortenId(g.anchor.id)}</span>
+                              </div>
+                              <div className="text-sm">{g.anchor.customer?.name || '-'}</div>
+                              <div className="text-xs text-muted-foreground">{formatKST(g.createdAt ?? g.anchor.createdAt)}</div>
                             </div>
                           </TableCell>
-
-                          <TableCell className={cn(tdClasses, 'text-sm text-muted-foreground whitespace-nowrap')}>{formatKST(g.createdAt)}</TableCell>
 
                           <TableCell className={tdClasses}>
                             <div className="space-y-1">
                               <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
-
-                              {isGroup && childStatusSummary.length > 0 && (
-                                <div className="space-y-1">
-                                  {childStatusSummary.map((s) => (
-                                    <div key={`st:${s.kind}`} className="text-[11px] text-muted-foreground">
-                                      {opsKindLabel(s.kind)}: {s.text}
-                                      {s.mixed ? ' (혼재)' : ''}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-
-                          <TableCell className={tdClasses}>
-                            <div className="space-y-1">
                               {g.anchor.paymentLabel ? (
                                 <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
                               ) : (
                                 <span className="text-xs text-muted-foreground">-</span>
-                              )}
-
-                              {isGroup && childPaymentSummary.length > 0 && (
-                                <div className="space-y-1">
-                                  {childPaymentSummary.map((p) => (
-                                    <div key={`pay:${p.kind}`} className="text-[11px] text-muted-foreground">
-                                      {opsKindLabel(p.kind)}: {p.text}
-                                      {p.mixed ? ' (혼재)' : ''}
-                                    </div>
-                                  ))}
-                                </div>
                               )}
                             </div>
                           </TableCell>
@@ -989,138 +764,67 @@ export default function OperationsClient() {
                                     <span>{won(it.amount)}</span>
                                   </div>
                                 ))}
-                                <div className="text-[11px] text-muted-foreground">* 종류별로 1회만 표시</div>
                               </div>
                             ) : (
                               <div>{won(g.anchor.amount)}</div>
                             )}
                           </TableCell>
 
-                          <TableCell className={tdClasses}>{renderLinkedDocs(linkedDocsForAnchor)}</TableCell>
-
                           <TableCell className={cn(tdClasses, 'text-right')}>
                             <div className="flex justify-end gap-1.5">
-                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title="ID 복사">
-                                <Copy className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" title="상세 보기">
-                                <Link href={g.anchor.href}>
+                              <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title="상세 보기">
+                                <Link href={g.anchor.href} className="flex items-center gap-1">
                                   <Eye className="h-3.5 w-3.5" />
+                                  <span className="text-xs">상세</span>
                                 </Link>
                               </Button>
-                              <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title={settleTitle}>
+                              <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title="정산 이동">
                                 <Link href={settleHref} className="flex items-center gap-1">
                                   <BarChartBig className="h-3.5 w-3.5" />
-                                  <span className="hidden bp-md:inline text-xs">정산</span>
+                                  <span className="text-xs">정산</span>
                                 </Link>
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(g.anchor.id)} title="ID 복사">
+                                <Copy className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </TableCell>
                         </TableRow>
 
-                        {/* 그룹 하위 Row(펼쳤을 때) */}
-                        {isGroup &&
-                          isOpen &&
-                          children.map((it) => (
-                            <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-card hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
-                              <TableCell className={tdClasses}>
-                                <AdminBadgeRow
-                                  maxVisible={3}
-                                  items={[
-                                    {
-                                      label: opsKindLabel(it.kind),
-                                      className: opsBadgeToneClass(opsKindBadgeTone(it.kind)),
-                                      title: '문서 종류',
-                                    },
-                                    {
-                                      label: flowShortLabel(it.flow),
-                                      className: flowBadgeClass(it.flow),
-                                      title: `Flow ${it.flow} · ${it.flowLabel}`,
-                                    },
-                                    {
-                                      label: it.settlementLabel,
-                                      className: settlementBadgeClass(),
-                                      title: '금액/정산 해석 기준',
-                                    },
-                                  ]}
-                                />
-                              </TableCell>
-
-                              <TableCell className={tdClasses}>
-                                <div className="space-y-1 pl-6">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-card text-foreground')}>연결</Badge>
-                                    <div className="font-medium text-sm">{shortenId(it.id)}</div>
-                                    {Array.isArray(it.warnReasons) && it.warnReasons.length > 0 && (
-                                      <Badge
-                                        title={it.warnReasons.slice(0, 3).join('\n') + (it.warnReasons.length > 3 ? `\n외 ${it.warnReasons.length - 3}개` : '')}
-                                        className={cn(badgeBase, badgeSizeSm, 'bg-destructive/10 text-destructive dark:bg-destructive/15')}
-                                      >
-                                        <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                                        연결오류
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {showLinkReason && (
-                                    <div className="text-[11px] text-muted-foreground">
-                                      연결됨: {opsKindLabel(g.anchor.kind)}(#{shortenId(g.anchor.id)})
+                        {isGroup && isOpen && (
+                          <TableRow className="bg-muted/20">
+                            <TableCell colSpan={5} className={cn(tdClasses, 'border-l-2 border-l-primary/40')}>
+                              <div className="grid gap-4 bp-xl:grid-cols-2">
+                                <div>
+                                  <p className="mb-1 text-xs font-medium text-foreground">연결 문서</p>
+                                  {renderLinkedDocs(linkedDocsForAnchor)}
+                                </div>
+                                <div>
+                                  <p className="mb-1 text-xs font-medium text-foreground">상태 혼재 내역</p>
+                                  {childStatusSummary.length > 0 ? (
+                                    <div className="space-y-1">
+                                      {childStatusSummary.map((s) => (
+                                        <div key={`st:${g.key}:${s.kind}`} className="text-xs text-muted-foreground">
+                                          {opsKindLabel(s.kind)}: {s.text}
+                                          {s.mixed ? ' (혼재)' : ''}
+                                        </div>
+                                      ))}
                                     </div>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">혼재 없음</span>
                                   )}
                                 </div>
-                              </TableCell>
-
-                              <TableCell className={tdClasses}>
-                                <div className="space-y-1">
-                                  <div className="font-medium text-sm">{it.customer?.name || '-'}</div>
-                                  <div className="text-xs text-muted-foreground truncate max-w-[180px]">{it.customer?.email || '-'}</div>
-                                </div>
-                              </TableCell>
-
-                              <TableCell className={cn(tdClasses, 'text-sm text-muted-foreground whitespace-nowrap')}>{formatKST(it.createdAt)}</TableCell>
-
-                              <TableCell className={tdClasses}>
-                                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(it.kind, it.statusLabel)))}>{it.statusLabel}</Badge>
-                              </TableCell>
-
-                              <TableCell className={tdClasses}>
-                                {it.paymentLabel ? (
-                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[it.paymentLabel] ?? 'bg-card text-muted-foreground')}>{it.paymentLabel}</Badge>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">-</span>
-                                )}
-                              </TableCell>
-
-                              <TableCell className={cn(tdClasses, 'font-semibold text-sm')}>
-                                {/* 그룹에서는 상단(대표 row)에서 종류별 금액을 1회만 보여주므로
-                                    하위 row에서는 금액을 반복 노출하지 않습니다(중복 해석 방지). */}
-                                <span className="text-xs text-muted-foreground" title="금액은 그룹(기준) 행에서 종류별로 1회만 표시합니다.">
-                                  -
-                                </span>
-                              </TableCell>
-
-                              <TableCell className={tdClasses}>{renderLinkedDocs(it.related ? [it.related] : [])}</TableCell>
-
-                              <TableCell className={cn(tdClasses, 'text-right')}>
-                                <div className="flex justify-end gap-1.5">
-                                  <Button size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" onClick={() => copyToClipboard(it.id)} title="ID 복사">
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0 bg-transparent" title="상세 보기">
-                                    <Link href={it.href}>
-                                      <Eye className="h-3.5 w-3.5" />
-                                    </Link>
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
                       </Fragment>
                     );
                   })}
 
                   {groupsToRender.length === 0 && (
                     <TableRow className="hover:bg-transparent">
-                      <TableCell colSpan={9} className="py-16 text-center">
+                      <TableCell colSpan={5} className="py-16 text-center">
                         <div className="flex flex-col items-center gap-2">
                           <Search className="h-8 w-8 text-muted-foreground/50" />
                           <p className="text-sm text-muted-foreground">{onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
@@ -1131,6 +835,34 @@ export default function OperationsClient() {
                 </TableBody>
               </Table>
             </div>
+
+            <div className="space-y-3 bp-lg:hidden">
+              {groupsToRender.map((g) => {
+                const warn = g.warn;
+                return (
+                  <Card key={`m:${g.key}`} className="border-border">
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>
+                          {warn ? '주의' : '정상'}
+                        </Badge>
+                        <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
+                      </div>
+                      <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
+                      <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
+                      <div className="text-sm font-semibold">금액: {won(g.anchor.amount)}</div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+
+              {groupsToRender.length === 0 && (
+                <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">
+                  표시할 항목이 없습니다.
+                </div>
+              )}
+            </div>
+            </>
           )}
 
           {/* 페이지네이션 */}
