@@ -333,7 +333,7 @@ export default function ProfileClient({ user }: Props) {
  </TabsTrigger>
  <TabsTrigger
  value="tennis-profile"
- className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground dark:text-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
+ className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
  >
  <MdSportsTennis className="h-5 w-5" />
  <span className="text-xs font-medium">테니스 프로필</span>

@@ -687,7 +687,7 @@ export default function NoticeWritePage() {
                                     <NextImage src={url} alt={file.name} fill className="object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} priority={false} />
                                   </div>
                                 ) : (
-                                  <div className="h-28 rounded bg-background dark:bg-card animate-pulse" />
+                                  <div className="h-28 rounded bg-card animate-pulse" />
                                 )
                               ) : (
                                 <div className="h-28 flex flex-col items-center justify-center gap-1 px-2 text-center">
@@ -743,7 +743,7 @@ export default function NoticeWritePage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between p-8 border-t bg-background dark:bg-card">
+            <CardFooter className="flex justify-between p-8 border-t bg-card">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/notice" onClick={guardLeave}>
                   취소

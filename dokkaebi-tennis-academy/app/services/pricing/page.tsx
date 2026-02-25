@@ -180,7 +180,7 @@ export default function PricingPage() {
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {additionalServices.map((service, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-background dark:bg-card rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 bg-card rounded-lg">
                     <div>
                       <div className="font-semibold text-foreground">{service.name}</div>
                       <div className="text-sm text-muted-foreground">{service.time}</div>

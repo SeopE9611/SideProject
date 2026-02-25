@@ -528,7 +528,7 @@ export default function OperationsClient() {
             ) : (
               <>
                 <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-card" />
-                <Skeleton className="h-4 w-36 rounded bg-background dark:bg-card" />
+                <Skeleton className="h-4 w-36 rounded bg-card" />
               </>
             )}
           </div>
@@ -689,7 +689,7 @@ export default function OperationsClient() {
                     return (
                       <Fragment key={g.key}>
                         {/* 그룹 대표(앵커) Row */}
-                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-background dark:bg-card')}>
+                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-card')}>
                           <TableCell className={tdClasses}>
                             <div className="flex flex-col gap-1">
                               {/* 그룹에 포함된 종류들(주문/신청서/대여) */}
@@ -865,7 +865,7 @@ export default function OperationsClient() {
                         {isGroup &&
                           isOpen &&
                           children.map((it) => (
-                            <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-background dark:bg-card hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
+                            <TableRow key={`${g.key}:${it.kind}:${it.id}`} className="bg-card hover:bg-muted/40 transition-colors border-l-2 border-l-primary/30">
                               <TableCell className={tdClasses}>
                                 <div className="flex flex-col gap-1">
                                   <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(it.kind)))}>{opsKindLabel(it.kind)}</Badge>

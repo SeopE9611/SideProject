@@ -69,7 +69,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
           <div className="bg-card rounded-xl shadow-sm border border-border p-8">
             <div className="space-y-4">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-12 bg-background dark:bg-card rounded animate-pulse" />
+                <div key={i} className="h-12 bg-card rounded animate-pulse" />
               ))}
             </div>
           </div>

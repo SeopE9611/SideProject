@@ -683,11 +683,11 @@ export default function Step2MountingInfo(props: Props) {
                       </p>
                     )
                   ) : (
-                    <p className="text-sm text-muted-foreground dark:text-foreground">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
+                    <p className="text-sm text-muted-foreground">현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.</p>
                   )}
 
                   {packagePreview?.has && (
-                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground dark:text-foreground">
+                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                       <span>필요 {requiredPassCount}회</span>
                       <span className="h-3 w-px bg-muted/80" />
                       <span>잔여 {packageRemaining}회</span>

@@ -134,7 +134,7 @@ export default function Step3PaymentInfo({ formData, setFormData, handleInputCha
         </div>
       ) : (
         /* 패키지 없음 카드 다크모드 적용 */
-        <div className="rounded-2xl border border-border bg-background dark:bg-card p-5">
+        <div className="rounded-2xl border border-border bg-card p-5">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 shrink-0 rounded-full bg-muted dark:bg-card grid place-content-center text-muted-foreground">
               <Ticket className="h-5 w-5" />

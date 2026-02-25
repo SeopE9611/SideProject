@@ -196,28 +196,28 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                 <CardTitle className="text-primary">게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
-                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
+                <div className="flex items-center p-3 bg-card rounded-lg">
                   <User className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">{post.authorDisplayName || post.authorNickname || '작성자 미상'}</p>
                     <p className="text-sm text-muted-foreground">{post.authorNickname || post.authorId || '-'}</p>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
+                <div className="flex items-center p-3 bg-card rounded-lg">
                   <Calendar className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">작성일</p>
                     <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
+                <div className="flex items-center p-3 bg-card rounded-lg">
                   <Eye className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">조회수</p>
                     <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
                   </div>
                 </div>
-                <div className="flex items-center p-3 bg-background dark:bg-card rounded-lg">
+                <div className="flex items-center p-3 bg-card rounded-lg">
                   <MessageSquare className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">댓글</p>

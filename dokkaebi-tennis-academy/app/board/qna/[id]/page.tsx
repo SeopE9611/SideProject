@@ -304,7 +304,7 @@ export default function QnaDetailPage() {
                                 </button>
                               </div>
                             ) : (
-                              <div key={i} className="p-3 bg-background hover:bg-background dark:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200">
+                              <div key={i} className="p-3 bg-background hover:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200">
                                 <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-primary hover:text-primary font-medium break-all">
                                   <FileText className="h-4 w-4 flex-shrink-0" />
                                   {name}

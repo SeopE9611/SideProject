@@ -595,7 +595,7 @@ export default function AdminRentalsClient() {
             ) : (
               <>
                 <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-card" />
-                <Skeleton className="h-4 w-36 rounded bg-background dark:bg-card" />
+                <Skeleton className="h-4 w-36 rounded bg-card" />
               </>
             )}
           </div>

@@ -9,14 +9,14 @@ export default function OrdersLoading() {
         {/* 페이지 제목 스켈레톤 */}
         <div className="mb-8">
           <Skeleton className="h-10 w-48 rounded-md bg-muted dark:bg-card" />
-          <Skeleton className="mt-2 h-5 w-96 rounded bg-background dark:bg-card" />
+          <Skeleton className="mt-2 h-5 w-96 rounded bg-card" />
         </div>
 
         {/* 필터 및 검색 스켈레톤 */}
         <Card className="mb-8 border border-muted bg-muted/30 shadow-sm">
           <CardHeader className="pb-3">
             <Skeleton className="h-6 w-32 rounded bg-muted dark:bg-card" />
-            <Skeleton className="h-4 w-80 mt-2 rounded bg-background dark:bg-card" />
+            <Skeleton className="h-4 w-80 mt-2 rounded bg-card" />
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 md:flex-row">
@@ -36,7 +36,7 @@ export default function OrdersLoading() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <Skeleton className="h-6 w-32 rounded bg-muted dark:bg-card" />
-              <Skeleton className="h-4 w-36 rounded bg-background dark:bg-card" />
+              <Skeleton className="h-4 w-36 rounded bg-card" />
             </div>
           </CardHeader>
           <CardContent>
@@ -46,7 +46,7 @@ export default function OrdersLoading() {
                   <TableRow>
                     {[...Array(7)].map((_, idx) => (
                       <TableHead key={idx}>
-                        <Skeleton className="h-4 w-20 rounded bg-background dark:bg-card" />
+                        <Skeleton className="h-4 w-20 rounded bg-card" />
                       </TableHead>
                     ))}
                     <TableHead className="w-[70px]" />
@@ -60,24 +60,24 @@ export default function OrdersLoading() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <Skeleton className="h-4 w-24 rounded bg-background dark:bg-card" />
-                          <Skeleton className="h-3 w-32 rounded bg-background dark:bg-card" />
+                          <Skeleton className="h-4 w-24 rounded bg-card" />
+                          <Skeleton className="h-3 w-32 rounded bg-card" />
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-32 rounded bg-background dark:bg-card" />
+                        <Skeleton className="h-4 w-32 rounded bg-card" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-6 w-16 rounded-full bg-background dark:bg-card" />
+                        <Skeleton className="h-6 w-16 rounded-full bg-card" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-6 w-16 rounded-full bg-background dark:bg-card" />
+                        <Skeleton className="h-6 w-16 rounded-full bg-card" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-6 w-16 rounded-full bg-background dark:bg-card" />
+                        <Skeleton className="h-6 w-16 rounded-full bg-card" />
                       </TableCell>
                       <TableCell className="text-right">
-                        <Skeleton className="h-4 w-20 ml-auto rounded bg-background dark:bg-card" />
+                        <Skeleton className="h-4 w-20 ml-auto rounded bg-card" />
                       </TableCell>
                       <TableCell>
                         <Skeleton className="h-8 w-8 rounded-full bg-muted dark:bg-card" />

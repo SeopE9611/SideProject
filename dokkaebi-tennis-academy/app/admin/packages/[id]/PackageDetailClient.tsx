@@ -310,7 +310,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           <div className="rounded-2xl p-6 md:p-8 border shadow-lg mb-8 bg-card/80 border-border dark:bg-card dark:border-border">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="rounded-xl p-3 bg-background dark:bg-card">
+                <div className="rounded-xl p-3 bg-card">
                   <PackageIcon className="h-7 w-7 text-foreground" />
                 </div>
                 <div>
@@ -384,7 +384,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   { icon: <Phone className="h-4 w-4" />, label: '전화번호', value: data.customer.phone ?? '-' },
                   { icon: <MapPin className="h-4 w-4" />, label: '서비스 유형', value: data.serviceType },
                 ].map((row, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-background dark:bg-card">
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card">
                     <span className="text-muted-foreground">{row.icon}</span>
                     <div>
                       <p className="text-xs text-muted-foreground">{row.label}</p>
@@ -407,17 +407,17 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background dark:bg-card">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-card">
                   <span className="text-sm text-muted-foreground">현재 상태</span>
                   <PackageCurrentStatusSelect orderId={packageId} passStatus={data.passStatus} paymentStatus={data.paymentStatus ?? '결제대기'} onUpdated={() => mutate()} />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background dark:bg-card">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-card">
                   <span className="text-sm text-muted-foreground">결제 상태</span>
                   <Badge className={payStatusColors[data.paymentStatus ?? '결제대기']}>{data.paymentStatus ?? '결제대기'}</Badge>
                 </div>
 
-                <div className="p-3 rounded-lg bg-background dark:bg-card">
+                <div className="p-3 rounded-lg bg-card">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm text-muted-foreground">이용 진행률</span>
                     <span className="text-sm font-medium">{progressPercentage}%</span>
@@ -431,7 +431,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-background dark:bg-card">
+                <div className="p-3 rounded-lg bg-card">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">만료까지</span>
                     <span
@@ -448,7 +448,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               </CardContent>
 
               {isEditMode && (
-                <CardFooter className="flex justify-center gap-2 bg-background dark:bg-card">
+                <CardFooter className="flex justify-center gap-2 bg-card">
                   <Button variant="outline" size="sm" disabled={!isPaid || isCancelled} onClick={() => setShowExtensionForm(true)} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20">
                     <RotateCcw className="mr-1 h-4 w-4" />
                     패키지 연장

@@ -361,7 +361,7 @@ export default function TensionGuidePage() {
                       </div>
                       <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                         <div
-                          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card dark:bg-background ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
+                          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
                           style={{ left: `calc(${((calculatedTension - 20) / 12) * 100}% - 12px)` }}
                         />
                       </div>

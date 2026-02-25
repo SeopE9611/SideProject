@@ -726,12 +726,12 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
  우편번호 찾기
  </Button>
  </div>
- <Input id="service-postal" readOnly value={postalCode} placeholder="우편번호" className="bg-background dark:bg-card cursor-not-allowed max-w-[200px] border-2" />
+ <Input id="service-postal" readOnly value={postalCode} placeholder="우편번호" className="bg-card cursor-not-allowed max-w-[200px] border-2" />
  </div>
 
  <div className="space-y-2">
  <Label htmlFor="service-address">서비스 주소</Label>
- <Input id="service-address" readOnly value={address} placeholder="기본 주소" className="bg-background dark:bg-card cursor-not-allowed border-2" />
+ <Input id="service-address" readOnly value={address} placeholder="기본 주소" className="bg-card cursor-not-allowed border-2" />
  </div>
 
  <div className="space-y-2">
