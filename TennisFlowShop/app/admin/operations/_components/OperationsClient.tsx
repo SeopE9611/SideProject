@@ -2,7 +2,7 @@
 
 import { AlertTriangle, BarChartBig, BellRing, ChevronDown, ChevronRight, ClipboardCheck, Copy, Eye, Link2, Search, Siren } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams, type ReadonlyURLSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -417,6 +417,25 @@ export default function OperationsClient() {
     singleApplication: PRESET_CONFIG.singleApplication.isActive({ integrated, flow, kind, onlyWarn }),
   };
 
+  const activePresetKey = useMemo(() => {
+    if (presetActive.paymentMismatch) return 'paymentMismatch' as const;
+    if (presetActive.integratedReview) return 'integratedReview' as const;
+    if (presetActive.singleApplication) return 'singleApplication' as const;
+    return null;
+  }, [presetActive.integratedReview, presetActive.paymentMismatch, presetActive.singleApplication]);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (q.trim()) count += 1;
+    if (kind !== 'all') count += 1;
+    if (flow !== 'all') count += 1;
+    if (integrated !== 'all') count += 1;
+    if (onlyWarn) count += 1;
+    if (warnFilter !== 'all') count += 1;
+    if (warnSort !== 'default') count += 1;
+    return count;
+  }, [flow, integrated, kind, onlyWarn, q, warnFilter, warnSort]);
+
   function toggleGroup(key: string) {
     setOpenGroups((prev) => ({
       ...prev,
@@ -453,7 +472,7 @@ export default function OperationsClient() {
   }
 
   return (
-    <div className="container py-6">
+    <div className="container py-5">
       {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
       <div className="mx-auto max-w-7xl mb-5">
@@ -509,27 +528,120 @@ export default function OperationsClient() {
           </div>
         )}
       </div>
+      <div className="mx-auto mb-4 max-w-7xl space-y-3">
+        <section className="sticky top-3 z-10 rounded-xl border border-border/80 bg-background/95 p-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-foreground">{PAGE_COPY.dailyTodoTitle}</p>
+            <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>상단 고정</Badge>
+          </div>
+          <div className="grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
+            <Card className="rounded-lg border border-warning/30 bg-warning/5 shadow-none">
+              <CardHeader className="space-y-1 pb-2">
+                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.urgent}</CardDescription>
+                <CardTitle className="text-2xl text-warning">{todayTodoCount.urgent}건</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="rounded-lg border border-info/30 bg-info/5 shadow-none">
+              <CardHeader className="space-y-1 pb-2">
+                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.caution}</CardDescription>
+                <CardTitle className="text-2xl text-info">{todayTodoCount.caution}건</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className="rounded-lg border border-muted bg-muted/40 shadow-none">
+              <CardHeader className="space-y-1 pb-2">
+                <CardDescription className="text-xs text-muted-foreground">{PAGE_COPY.dailyTodoLabels.pending}</CardDescription>
+                <CardTitle className="text-2xl text-foreground">{todayTodoCount.pending}건</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        </section>
 
-      <div className="mx-auto mb-2 max-w-7xl">
-        <p className="mb-3 text-sm font-medium text-foreground">{PAGE_COPY.actionsTitle}</p>
+        <section className="space-y-2">
+          <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
+          <p className="text-sm text-muted-foreground">{PAGE_COPY.description}</p>
+
+          {showOnboarding && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{PAGE_COPY.onboarding.title}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{PAGE_COPY.onboarding.description}</p>
+                  <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                    {PAGE_COPY.onboarding.steps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+                <Button type="button" variant="outline" size="sm" className="bg-transparent" onClick={dismissOnboarding}>
+                  {PAGE_COPY.onboarding.dismissLabel}
+                </Button>
+              </div>
+            </div>
+          )}
+          {showOnboardingSummary && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+              <p className="text-xs text-muted-foreground">{PAGE_COPY.onboarding.collapsedSummary}</p>
+              <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={reopenOnboarding}>
+                {PAGE_COPY.onboarding.reopenLabel}
+              </Button>
+            </div>
+          )}
+        </section>
       </div>
-      <div className="mx-auto mb-5 grid max-w-7xl gap-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
-        {PAGE_COPY.actions.map((action) => (
-          <Card key={action.title} className="rounded-xl border-border bg-card shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{action.title}</CardTitle>
-              <CardDescription className="text-xs">{action.description}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
+
+      <div className="mx-auto mb-4 max-w-7xl">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-foreground">{PAGE_COPY.actionsTitle}</p>
+          <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setShowActionsGuide((prev) => !prev)}>
+            {showActionsGuide ? '도움말 닫기' : '도움말 보기'}
+          </Button>
+        </div>
+
+        {showActionsGuide && (
+          <div className="grid max-w-7xl gap-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+            {PAGE_COPY.actions.map((action) => (
+              <Card key={action.title} className="rounded-xl border-border bg-card shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{action.title}</CardTitle>
+                  <CardDescription className="text-xs">{action.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 필터 및 검색 카드 */}
-      <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
-        <CardHeader className="pb-3">
-          <CardTitle>필터 및 검색</CardTitle>
-          <CardDescription className="text-xs">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
-        </CardHeader>
+      <div
+        className={cn(
+          'sticky top-3 z-30 mb-4 transition-all duration-200',
+          isFilterScrolled && 'drop-shadow-xl'
+        )}
+      >
+        <Card
+          className={cn(
+            'rounded-xl border-border px-6 py-4 shadow-md transition-all duration-200',
+            onlyWarn
+              ? 'bg-warning/5 border-warning/20 dark:bg-warning/10 dark:border-warning/30'
+              : 'bg-card',
+            isFilterScrolled && 'bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90'
+          )}
+        >
+          <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
+            <div>
+              <CardTitle>필터 및 검색</CardTitle>
+              <CardDescription className="text-xs mt-1">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
+              {activeFilterCount > 0 && (
+                <Badge className={cn(badgeBase, badgeSizeSm, 'mt-2 bg-primary/10 text-primary dark:bg-primary/20')}>
+                  적용된 필터 {activeFilterCount}개
+                </Badge>
+              )}
+            </div>
+
+            <Button variant="outline" size="sm" onClick={reset} className="shrink-0 bg-transparent">
+              필터 초기화
+            </Button>
+          </CardHeader>
         <CardContent className="space-y-4">
           {/* 검색 + 주요 버튼 */}
           <div className="flex flex-wrap items-center gap-2">
@@ -714,6 +826,65 @@ export default function OperationsClient() {
               </p>
               <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
               <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
+             size="sm"
+              aria-pressed={presetActive.paymentMismatch}
+              onClick={() => applyPreset(PRESET_CONFIG.paymentMismatch.params)}
+              className={cn(
+                'relative overflow-hidden',
+                !presetActive.paymentMismatch && 'bg-transparent',
+                presetActive.paymentMismatch && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
+              )}
+            >
+              {PRESET_CONFIG.paymentMismatch.label}
+            </Button>
+
+            <Button
+              variant={presetActive.integratedReview ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.integratedReview}
+              onClick={() => applyPreset(PRESET_CONFIG.integratedReview.params)}
+              className={cn(
+                'relative overflow-hidden',
+                !presetActive.integratedReview && 'bg-transparent',
+                presetActive.integratedReview && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
+              )}
+            >
+              {PRESET_CONFIG.integratedReview.label}
+            </Button>
+
+            <Button
+              variant={presetActive.singleApplication ? 'default' : 'outline'}
+              size="sm"
+              aria-pressed={presetActive.singleApplication}
+              onClick={() => applyPreset(PRESET_CONFIG.singleApplication.params)}
+              className={cn(
+                'relative overflow-hidden',
+                !presetActive.singleApplication && 'bg-transparent',
+                presetActive.singleApplication && 'after:absolute after:bottom-0 after:left-2 after:right-2 after:h-0.5 after:rounded-full after:bg-primary-foreground',
+              )}
+            >
+              {PRESET_CONFIG.singleApplication.label}
+            </Button>
+
+            <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={clearPresetMode}>
+              전체 보기
+            </Button>
+          </div>
+
+          {activePresetKey && (
+            <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
+              <div>
+                <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
+                <p className="text-sm font-medium text-foreground">{total.toLocaleString('ko-KR')}건</p>
+              </div>
+              <div>
+                <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
+                <p>{PRESET_CONFIG[activePresetKey].priorityReason}</p>
+              </div>
+              <div>
+                <p className="mb-1 text-[11px] font-semibold text-primary">다음 액션</p>
+                <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
+              </div>
             </div>
           )}
 
@@ -757,16 +928,49 @@ export default function OperationsClient() {
             )}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* 업무 목록 카드 */}
       <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
             {data ? (
               <>
-                <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+                  {activePresetKey && (
+                    <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>
+                      {PRESET_CONFIG[activePresetKey].label}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
                 <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
+                <span className="text-xs text-muted-foreground">표시 밀도</span>
+                <div className="inline-flex items-center rounded-md border border-border p-0.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={displayDensity === 'default' ? 'secondary' : 'ghost'}
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setDisplayDensity('default')}
+                    aria-pressed={displayDensity === 'default'}
+                  >
+                    기본
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={displayDensity === 'compact' ? 'secondary' : 'ghost'}
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setDisplayDensity('compact')}
+                    aria-pressed={displayDensity === 'compact'}
+                  >
+                    컴팩트
+                  </Button>
+                </div>
+              </div>
               </>
             ) : (
               <>
@@ -809,11 +1013,11 @@ export default function OperationsClient() {
                     <TableHead className={thClasses}>대상</TableHead>
                     <TableHead className={thClasses}>상태</TableHead>
                     <TableHead className={thClasses}>금액</TableHead>
-                    <TableHead className={cn(thClasses, 'text-right')}>액션</TableHead>
+                    <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {groupsToRender.map((g) => {
+                  {groupsToRender.map((g, idx) => {
                     const isGroup = g.items.length > 1;
                     const isOpen = !!openGroups[g.key];
                     const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
@@ -824,10 +1028,17 @@ export default function OperationsClient() {
                     const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
                     const settleHref = settleYyyymm ? `/admin/settlements?yyyymm=${settleYyyymm}` : '/admin/settlements';
 
+                    const rowDensityClass = displayDensity === 'compact' ? 'py-1.5' : 'py-2.5';
+                    const rowBaseToneClass = idx % 2 === 0 ? 'bg-background' : 'bg-muted/[0.18]';
+                    const warnEmphasisClass = warn
+                      ? 'border-l-2 border-l-warning/60 bg-warning/[0.08]'
+                      : 'border-l-2 border-l-transparent';
+                    const stickyActionCellClass = 'sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
+
                     return (
                       <Fragment key={g.key}>
-                        <TableRow className={cn('hover:bg-muted/50 transition-colors', isGroup && 'bg-card')}>
-                          <TableCell className={tdClasses}>
+                        <TableRow className={cn('transition-colors hover:bg-muted/35', rowBaseToneClass, warnEmphasisClass)}>
+                          <TableCell className={cn(tdClasses, rowDensityClass)}>
                             <div className="space-y-1">
                               <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>
                                 {warn ? '주의' : '정상'}
@@ -838,7 +1049,7 @@ export default function OperationsClient() {
                             </div>
                           </TableCell>
 
-                          <TableCell className={tdClasses}>
+                          <TableCell className={cn(tdClasses, rowDensityClass)}>
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
                                 {isGroup && (
@@ -854,7 +1065,7 @@ export default function OperationsClient() {
                             </div>
                           </TableCell>
 
-                          <TableCell className={tdClasses}>
+                          <TableCell className={cn(tdClasses, rowDensityClass)}>
                             <div className="space-y-1">
                               <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
                               {g.anchor.paymentLabel ? (
@@ -865,7 +1076,7 @@ export default function OperationsClient() {
                             </div>
                           </TableCell>
 
-                          <TableCell className={cn(tdClasses, 'font-semibold text-sm')}>
+                          <TableCell className={cn(tdClasses, rowDensityClass, 'font-semibold text-sm')}>
                             {isGroup ? (
                               <div className="space-y-1">
                                 {pickOnePerKind(g.items).map((it) => (
@@ -880,7 +1091,7 @@ export default function OperationsClient() {
                             )}
                           </TableCell>
 
-                          <TableCell className={cn(tdClasses, 'text-right')}>
+                          <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
                             <div className="flex justify-end gap-1.5">
                               <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
                                 <Link href={g.anchor.href} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.detail}>
