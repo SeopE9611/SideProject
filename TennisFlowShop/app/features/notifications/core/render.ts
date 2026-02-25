@@ -10,9 +10,9 @@ const THEME = {
   line: '#D7E3D7',
   bgSoft: '#F3F8F3',
   badgeBg: '#E9F6EC',
-  badgeText: '#248232',
-  btnBg: '#2BA84A',
-  btnText: '#1A1C1A',
+  badgeText: '#2C5341',
+  btnBg: '#2C5341',
+  btnText: '#FCFFFC',
 } as const;
 
 /* ========= Utils ========= */
