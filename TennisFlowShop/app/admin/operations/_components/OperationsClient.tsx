@@ -250,6 +250,11 @@ const tdClasses = 'px-4 py-2.5 align-top';
 const th = thClasses;
 const td = tdClasses;
 
+// 액션 컬럼은 본문 셀이 sticky(right)로 고정되어 있으므로,
+// 헤더도 동일하게 sticky 처리해 가로 스크롤 시 컬럼 머리글이 어긋나지 않게 맞춘다.
+// 단, header 배경색은 thead의 bg-muted/50과 동일 톤을 써서 "액션"만 색이 달라 보이는 현상을 방지.
+const stickyActionHeadClass = 'sticky right-0 z-20 bg-muted/50 text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
+
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
   success: 'bg-primary/10 text-primary dark:bg-primary/20',
   warning: 'bg-warning/10 text-warning dark:bg-warning/15',
@@ -950,7 +955,8 @@ export default function OperationsClient() {
                       <TableHead className={thClasses}>대상</TableHead>
                       <TableHead className={thClasses}>상태</TableHead>
                       <TableHead className={thClasses}>금액</TableHead>
-                      <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead>
+                      {/* <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead> */}
+                      <TableHead className={cn(thClasses, stickyActionHeadClass)}>액션</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -974,7 +980,7 @@ export default function OperationsClient() {
                         <Fragment key={g.key}>
                           <TableRow className={cn('transition-colors hover:bg-muted/35', rowBaseToneClass, warnEmphasisClass)}>
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1">
+                              <div className="flex flex-wrap items-center gap-1">
                                 <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
                                 <div className="text-[11px] text-muted-foreground">{isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
@@ -997,7 +1003,7 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1">
+                              <div className="flex flex-col items-start gap-1">
                                 <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
                                 {g.anchor.paymentLabel ? (
                                   <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
@@ -1024,7 +1030,7 @@ export default function OperationsClient() {
 
                             <TableCell className={cn(tdClasses, rowDensityClass, 'text-right', stickyActionCellClass)}>
                               <div className="flex justify-end gap-1.5">
-                                <Button asChild size="sm" variant={isGroup ? 'default' : 'outline'} className="h-8 px-2" title={ROW_ACTION_LABELS.detail}>
+                                <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent" title={ROW_ACTION_LABELS.detail}>
                                   <Link href={g.anchor.href} className="flex items-center gap-1" aria-label={ROW_ACTION_LABELS.detail}>
                                     <Eye className="h-3.5 w-3.5" />
                                     <span className="text-xs">상세</span>
