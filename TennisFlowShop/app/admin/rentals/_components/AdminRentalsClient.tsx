@@ -501,7 +501,7 @@ export default function AdminRentalsClient() {
                 <SelectContent>
                   <SelectItem value="all">결제(전체)</SelectItem>
                   <SelectItem value="pending">결제대기</SelectItem>
-                  <SelectItem value="paid">결제확정</SelectItem>
+                  <SelectItem value="paid">결제완료</SelectItem>
                   <SelectItem value="refunded">환불</SelectItem>
                 </SelectContent>
               </Select>

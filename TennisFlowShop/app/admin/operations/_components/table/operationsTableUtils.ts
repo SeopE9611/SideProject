@@ -1,6 +1,7 @@
 import type { Flow, Kind } from '../filters/operationsFilters';
 
 export type SettlementAnchor = 'order' | 'rental' | 'application';
+export type ReviewLevel = 'none' | 'info' | 'action';
 
 export type OpItem = {
   id: string;
@@ -25,7 +26,16 @@ export type OpItem = {
   pendingReasons?: string[];
   warn?: boolean;
   needsReview?: boolean;
+  reviewLevel?: ReviewLevel;
+  reviewTitle?: string;
   reviewReasons?: string[];
+  stringingSummary?: {
+    requested: boolean;
+    name?: string;
+    price?: number;
+    mountingFee?: number;
+    applicationStatus?: string;
+  };
   stage?: string;
   nextAction?: string;
   hasOutboundTracking?: boolean;

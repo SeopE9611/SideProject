@@ -105,7 +105,7 @@ export default function AdminRentalDetailClient() {
   const [pendingAction, setPendingAction] = useState<null | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
 
   const isBusy = busyAction !== null;
-  // 무통장 결제확정: created → paid 전이
+  // 무통장 결제완료 처리: created → paid 전이
   const onConfirmPayment = async () => {
     if (confirming) return;
     setConfirming(true);
@@ -116,11 +116,11 @@ export default function AdminRentalDetailClient() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
           });
-          ensureAdminMutationSucceeded(json, '결제확정 실패');
+          ensureAdminMutationSucceeded(json, '결제완료 처리 실패');
           return json;
         },
         successMessage: '결제완료로 상태 변경',
-        fallbackErrorMessage: '결제확정 실패',
+        fallbackErrorMessage: '결제완료 처리 실패',
       });
       if (result) await mutate();
     } finally {
@@ -286,6 +286,10 @@ export default function AdminRentalDetailClient() {
 
   const paymentLabel = data?.paymentStatusLabel ?? (derivePaymentStatus(data) === 'paid' ? '결제완료' : '결제대기');
   const paymentSource = data?.paymentStatusSource ?? 'derived';
+  const stringingName = data?.stringing?.name ? String(data.stringing.name) : null;
+  const stringPrice = Number(data?.amount?.stringPrice ?? (data?.stringing?.requested ? data?.stringing?.price ?? 0 : 0));
+  const stringingFee = Number(data?.amount?.stringingFee ?? (data?.stringing?.requested ? data?.stringing?.mountingFee ?? 0 : 0));
+  const hasStringingSummary = Boolean(data?.stringing?.requested || stringPrice > 0 || stringingFee > 0 || data?.stringingApplicationId);
 
   const rentalGuide = inferNextActionForOperationItem({
     kind: 'rental',
@@ -430,6 +434,30 @@ export default function AdminRentalDetailClient() {
                 </CardContent>
               </Card>
             </>
+          )}
+
+          {hasStringingSummary && (
+            <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">스트링/교체서비스 요약</CardTitle>
+                <CardDescription>스트링 선택 정보와 교체서비스 신청 진행 상태를 한 번에 확인합니다.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-2 text-sm">
+                <p className="text-muted-foreground">스트링: <span className="font-medium text-foreground">{stringingName ?? '선택됨(이름 미기록)'}</span></p>
+                <p className="text-muted-foreground">요금: <span className="font-medium text-foreground">{stringPrice > 0 ? won(stringPrice) : '0원'}</span></p>
+                <p className="text-muted-foreground">교체비: <span className="font-medium text-foreground">{stringingFee > 0 ? won(stringingFee) : '0원'}</span></p>
+                {data?.stringingApplicationId ? (
+                  <p className="text-muted-foreground">
+                    신청서: <span className="font-medium text-foreground">{data?.stringingApplicationStatus ?? '상태 확인 필요'}</span>{' '}
+                    <Link href={`/admin/applications/stringing/${encodeURIComponent(String(data.stringingApplicationId))}`} className="underline underline-offset-2 text-primary">
+                      상세 이동
+                    </Link>
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground">신청서: 연결 없음</p>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8">
