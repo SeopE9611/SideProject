@@ -44,6 +44,11 @@ const isAppDone = (status?: string | null) => {
   return s.includes('교체완료') || s === '완료';
 };
 
+const hasIncludedPaymentContext = (paymentLabel?: string | null) => {
+  const s = String(paymentLabel ?? '').toLowerCase();
+  return s.includes('패키지차감') || s.includes('주문결제포함') || s.includes('대여결제포함');
+};
+
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
   if (item.kind === 'rental') {
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
@@ -61,6 +66,12 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
   }
 
   if (item.kind === 'stringing_application') {
+    if (hasIncludedPaymentContext(item.paymentLabel) && isAppWaiting(item.statusLabel)) {
+      return {
+        stage: '신청서 결제 문맥 검수 단계',
+        nextAction: '결제 문맥(패키지/주문/대여 포함) 확인 후 신청서 작업 상태 확인 필요',
+      };
+    }
     if (isAppWaiting(item.statusLabel)) {
       return { stage: '신청서 접수/검토 단계', nextAction: '신청서 작업 상태 확인 필요' };
     }
@@ -83,8 +94,21 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
 }
 
 export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActionGuide {
+  const order = items.find((it) => it.kind === 'order');
   const rental = items.find((it) => it.kind === 'rental');
   const app = items.find((it) => it.kind === 'stringing_application');
+
+  if (order && app) {
+    if (!doneLike(order.paymentLabel)) {
+      return { stage: '주문+신청 · 결제 확인 단계', nextAction: '주문 결제 확인 및 신청 작업 가능 상태 점검 필요' };
+    }
+    if (isAppWaiting(app.statusLabel)) {
+      return { stage: '주문+신청 · 신청 접수 단계', nextAction: '신청서 작업 상태 확인 필요' };
+    }
+    if (isAppWorking(app.statusLabel)) {
+      return { stage: '주문+신청 · 교체 작업 단계', nextAction: '작업 완료 후 신청서 교체완료 처리 필요' };
+    }
+  }
 
   if (rental && app) {
     if (isRentalPending(rental.statusLabel) || !doneLike(rental.paymentLabel)) {
