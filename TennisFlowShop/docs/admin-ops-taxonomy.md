@@ -138,3 +138,22 @@
 - `/admin/notifications` 로 접근한 경우에는 query string을 유지한 채 `/admin/notifications/outbox` 로 리다이렉트한다.
 - 관리자 메뉴 라벨은 실제 기능 의미와 동일하게 **“알림 발송함”** 으로 표기한다.
 - 알림 상세(`/admin/notifications/outbox/[id]`)는 목록의 하위 경로로 간주하며, 상단 내비게이션/브레드크럼에서 목록→상세 관계를 동일하게 표시한다.
+
+
+## 7) 운영 통합 센터 신호/결제 해석 정책 (2026-02)
+
+- `주의`: 데이터 무결성/연결 오류일 때만 사용한다.
+  - 예) 주문/대여/신청서 양방향 링크 누락, 존재하지 않는 문서 참조, 중복 연결
+- `검수필요`: 오류는 아니지만 운영자 확인이 필요한 경우에 사용한다.
+  - 예) 신청서 paymentStatus 미기재로 파생 결제상태 사용, packageApplied 적용, paymentSource=order:*
+
+신청서 결제 라벨 우선순위:
+1) paymentStatus 명시값 정규화
+2) packageApplied=true → 패키지차감
+3) paymentSource startsWith order: → 주문결제포함
+4) servicePaid=true → 결제완료
+5) totalPrice>0 또는 serviceAmount>0 → 결제대기
+6) 그 외 → 확인필요
+
+주문 결제 라벨은 `paymentStatus ?? paymentInfo.status` 폴백을 사용한다.
+대여는 결제 필드가 없을 수 있으므로, 필드가 없는 문서는 결제 비교에서 제외하고 `검수필요` 사유를 남긴다.

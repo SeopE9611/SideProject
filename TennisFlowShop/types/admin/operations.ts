@@ -24,6 +24,9 @@ export type AdminOperationItem = {
   isIntegrated: boolean;
   warnReasons?: string[];
   pendingReasons?: string[];
+  warn?: boolean;
+  needsReview?: boolean;
+  reviewReasons?: string[];
 };
 
 

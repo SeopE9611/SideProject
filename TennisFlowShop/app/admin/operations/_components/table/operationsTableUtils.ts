@@ -20,6 +20,9 @@ export type OpItem = {
   isIntegrated: boolean;
   warnReasons?: string[];
   pendingReasons?: string[];
+  warn?: boolean;
+  needsReview?: boolean;
+  reviewReasons?: string[];
 };
 
 export function formatKST(iso?: string | null) {
