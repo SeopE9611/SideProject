@@ -22,6 +22,7 @@ import OrderStatusSelect from '@/app/features/orders/components/OrderStatusSelec
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
+import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -301,6 +302,29 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  return docs;
  })();
+
+ const linkedApplicationForGuide = Array.isArray(orderDetail.stringingApplications)
+ ? orderDetail.stringingApplications
+     .filter((app) => Boolean(app?.id))
+     .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]
+ : null;
+
+ const orderGuide = inferNextActionForOperationGroup([
+ {
+ kind: 'order',
+ statusLabel: localStatus,
+ paymentLabel: orderDetail.paymentStatus,
+ },
+ ...(linkedApplicationForGuide
+ ? [
+ {
+ kind: 'stringing_application' as const,
+ statusLabel: linkedApplicationForGuide.status,
+ paymentLabel: null,
+ },
+ ]
+ : []),
+ ]);
 
  // 취소 성공 시 호출되는 콜백
  const handleCancelSuccess = async (reason: string, detail?: string) => {
@@ -601,6 +625,17 @@ export default function OrderDetailClient({ orderId }: Props) {
  : '이 주문은 교체서비스 신청서와 연결되어 있습니다. 배송/운송장 정보는 신청서에서 단일 관리합니다.'
  }
  />
+
+ <Card className="mt-4 border border-primary/20 bg-primary/5">
+ <CardHeader className="pb-2">
+ <CardTitle className="text-base">연결 업무 가이드</CardTitle>
+ <CardDescription>주문 + 신청 연결 문맥에서 현재 업무 단계와 다음 할 일을 안내합니다.</CardDescription>
+ </CardHeader>
+ <CardContent className="space-y-1 text-sm">
+ <p className="text-muted-foreground">현재 단계: {orderGuide.stage}</p>
+ <p className="font-medium">다음 할 일: {orderGuide.nextAction}</p>
+ </CardContent>
+ </Card>
  </div>
  )}
  </Card>
