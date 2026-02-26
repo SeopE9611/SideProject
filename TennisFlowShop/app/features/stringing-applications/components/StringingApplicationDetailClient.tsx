@@ -21,6 +21,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { badgeBase, badgeSizeSm, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -51,6 +52,7 @@ interface ApplicationDetail {
   requestedAt: string;
   submittedAt?: string;
   status: string;
+  paymentStatus?: string | null;
   totalPrice: number;
   history?: { status: string; date: string; description: string }[];
   cancelRequest?: {
@@ -593,6 +595,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const paymentMethodLabel = data.packageInfo?.applied ? '무통장입금(패키지 사용)' : '무통장입금';
 
+
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = getAdminApplicationCancelRequestInfo(data);
 
@@ -628,6 +631,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const invoice = data.shippingInfo?.invoice;
 
   const hasStoreShippingInfo = Boolean(shippingMethod) || Boolean(invoice?.trackingNumber) || Boolean(invoice?.shippedAt);
+
+  const appGuide = inferNextActionForOperationItem({
+    kind: 'stringing_application',
+    statusLabel: data.status,
+    paymentLabel: data.paymentStatus ?? paymentStatus,
+    hasInboundTracking: hasTracking,
+  });
+
+  const linkedContextLabel = data.rentalId ? '대여 + 신청 연결 업무' : data.orderId ? '주문 + 신청 연결 업무' : '단독 신청 업무';
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
   const completedLikeStatuses = ['교체완료', '반송완료', '완료', 'DONE', '취소'];
@@ -874,7 +886,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </CardContent>
         </Card>
         {/* 연결 문서(공용 카드) */}
-        {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-8" />}
+        {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
+
+        {(data.orderId || data.rentalId) && (
+          <Card className="mb-8 border border-primary/20 bg-primary/5">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">연결 업무 기준 관리자 할 일</CardTitle>
+              <CardDescription>{linkedContextLabel} 문맥에서 현재 단계와 다음 액션을 안내합니다.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-1 text-sm">
+              <p className="text-muted-foreground">현재 단계: {appGuide.stage}</p>
+              <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}

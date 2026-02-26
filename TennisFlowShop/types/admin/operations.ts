@@ -30,6 +30,9 @@ export type AdminOperationItem = {
   warn?: boolean;
   needsReview?: boolean;
   reviewReasons?: string[];
+  stage?: string;
+  nextAction?: string;
+  hasOutboundTracking?: boolean;
 };
 
 

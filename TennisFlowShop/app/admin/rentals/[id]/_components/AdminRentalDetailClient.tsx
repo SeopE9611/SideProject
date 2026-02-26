@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
@@ -283,6 +284,13 @@ export default function AdminRentalDetailClient() {
       ]
     : [];
 
+  const rentalGuide = inferNextActionForOperationItem({
+    kind: 'rental',
+    statusLabel: data.status,
+    paymentLabel: derivePaymentStatus(data) === 'paid' ? '결제완료' : '결제대기',
+    hasOutboundTracking: Boolean(data?.shipping?.outbound?.trackingNumber),
+  });
+
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
       <div className="container py-10">
@@ -406,7 +414,19 @@ export default function AdminRentalDetailClient() {
 
           {/* 연결 문서(공용 카드) */}
           {linkedDocs.length > 0 && (
-            <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-ring" />
+            <>
+              <LinkedDocsCard docs={linkedDocs} description="이 대여는 교체서비스 신청서와 연결되어 있습니다. 교체서비스 진행/상태는 신청서에서 확인하세요." className="border-0 shadow-xl ring-1 ring-ring" />
+              <Card className="border-0 shadow-xl ring-1 ring-ring bg-primary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">연결 업무 가이드</CardTitle>
+                  <CardDescription>현재 업무 단계와 다음 해야 할 작업을 요약합니다.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-1 text-sm">
+                  <p className="text-muted-foreground">현재 단계: {rentalGuide.stage}</p>
+                  <p className="font-medium">다음 할 일: {rentalGuide.nextAction}</p>
+                </CardContent>
+              </Card>
+            </>
           )}
 
           <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8">
