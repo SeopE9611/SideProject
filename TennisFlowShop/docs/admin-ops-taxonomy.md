@@ -152,6 +152,11 @@
 - `검수필요만`: 오류는 아니지만 정책 확인이 필요한 건만 조회
 - `완전정상만`: 주의/검수필요 신호가 모두 없는 건만 조회
 - 그룹 펼침의 `검수 사유` 섹션에서 reviewReasons를 즉시 확인
+- `주의(오류)만 보기`가 켜진 경우 `warnFilter`는 `주의만`으로 정규화해 충돌 조합(`검수필요만/완전정상만`)을 허용하지 않는다.
+
+URL 동기화 규칙:
+- 현재 뷰 링크는 `q/kind/flow/integrated/warn(page onlyWarn)/warnFilter/warnSort/page`를 함께 보존한다.
+- `전체 보기`는 프리셋 + 위험 신호 필터(`warnFilter`) + 위험 신호 정렬(`warnSort`)까지 기본값으로 초기화한다.
 
 신청서 결제 라벨 우선순위:
 1) paymentStatus 명시값 정규화

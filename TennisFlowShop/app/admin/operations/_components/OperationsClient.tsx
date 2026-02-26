@@ -38,12 +38,12 @@ const PAGE_COPY = {
   actionsTitle: '이 페이지에서 가능한 액션',
   actions: [
     {
-      title: '결제 불일치 확인',
-      description: '그룹 단위 결제 상태가 혼재되었는지 빠르게 점검합니다.',
+      title: '주의(오류) 우선 처리',
+      description: '데이터 연결/무결성 오류 신호를 먼저 점검해 운영 리스크를 줄입니다.',
     },
     {
-      title: '연결 오류 점검',
-      description: '연결 누락/불일치 경고 건을 우선 정리합니다.',
+      title: '검수필요 확인',
+      description: '오류는 아니지만 운영 확인이 필요한 건의 검수 사유를 빠르게 확인합니다.',
     },
     {
       title: '상세 이동',
@@ -56,8 +56,8 @@ const PAGE_COPY = {
   ],
   onboarding: {
     title: '처음 방문하셨나요? 운영 통합 센터 3단계',
-    description: '페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 건을 먼저 처리하세요.',
-    steps: ['1) 오늘 해야 할 일 확인', '2) 업무 목적형 프리셋 선택', '3) 주의/미처리 건 순서로 처리'],
+    description: '페이지 목적을 확인하고, 주요 필터 프리셋으로 업무 대상을 좁힌 뒤, 주의 → 검수필요 → 미처리 순으로 점검하세요.',
+    steps: ['1) 오늘 해야 할 일 확인', '2) 업무 목적형 프리셋 선택', '3) 주의 → 검수필요 → 미처리 순 점검'],
     dismissLabel: '다시 보지 않기',
     collapsedSummary: '온보딩이 숨겨져 있습니다. 필요 시 다시 열어 주요 사용 흐름을 확인하세요.',
     reopenLabel: '온보딩 다시 보기',
@@ -335,8 +335,15 @@ export default function OperationsClient() {
 
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
-    initOperationsStateFromQuery(sp, { setQ, setKind, setFlow, setIntegrated, setOnlyWarn, setPage });
+    initOperationsStateFromQuery(sp, { setQ, setKind, setFlow, setIntegrated, setOnlyWarn, setWarnFilter, setWarnSort, setPage });
   }, [sp]);
+
+  useEffect(() => {
+    if (!onlyWarn) return;
+    if (warnFilter === 'warn') return;
+    setWarnFilter('warn');
+    setPage(1);
+  }, [onlyWarn, warnFilter]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -363,7 +370,7 @@ export default function OperationsClient() {
    * useSyncOperationsQuery는 필터 상태가 변하면 URL에 반영(쿼리스트링 sync)하는 역할.
    * 여기서 replace를 scroll:false 버전으로 넘겨서, 필터 변경 시 화면이 위로 튀지 않게 함.
    */
-  useSyncOperationsQuery({ q, kind, flow, integrated, onlyWarn, page }, pathname, replaceNoScroll);
+  useSyncOperationsQuery({ q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page }, pathname, replaceNoScroll);
 
   // 3) API 키 구성
   const queryString = buildQueryString({
@@ -501,6 +508,8 @@ export default function OperationsClient() {
   function clearPresetMode() {
     setActivePresetGuide(null);
     applyPreset({ integrated: 'all', flow: 'all', kind: 'all', warn: false });
+    setWarnFilter('all');
+    setWarnSort('default');
   }
 
   // 프리셋 버튼 "활성" 판정(현재 필터 상태가 프리셋과 일치하는지)
@@ -571,6 +580,7 @@ export default function OperationsClient() {
       <div className="mx-auto max-w-7xl mb-5">
         <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{PAGE_COPY.description}</p>
+        <p className="mt-1 text-xs text-muted-foreground">상단 요약 수치는 현재 필터 결과 기준으로 계산됩니다.</p>
 
         <div className="mt-3 grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
           <Card className="border-warning/30 bg-warning/5 shadow-none">
@@ -687,7 +697,11 @@ export default function OperationsClient() {
                 title={onlyWarn ? '주의(오류) 항목만 조회 중' : '주의(오류) 항목만 모아보기'}
                 className={cn('h-9', !onlyWarn && 'bg-transparent')}
                 onClick={() => {
-                  setOnlyWarn((v) => !v);
+                  setOnlyWarn((v) => {
+                    const next = !v;
+                    if (next) setWarnFilter('warn');
+                    return next;
+                  });
                   setPage(1);
                 }}
               >
@@ -773,6 +787,7 @@ export default function OperationsClient() {
               <Select
                 value={warnFilter}
                 onValueChange={(v: any) => {
+                  if (onlyWarn && v !== 'warn') return;
                   setWarnFilter(v);
                   setPage(1);
                 }}
@@ -783,8 +798,12 @@ export default function OperationsClient() {
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="warn">주의만</SelectItem>
-                  <SelectItem value="review">검수필요만</SelectItem>
-                  <SelectItem value="clean">완전정상만</SelectItem>
+                  <SelectItem value="review" disabled={onlyWarn}>
+                    검수필요만
+                  </SelectItem>
+                  <SelectItem value="clean" disabled={onlyWarn}>
+                    완전정상만
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
