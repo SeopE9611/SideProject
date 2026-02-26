@@ -17,6 +17,31 @@ type Params = {
   page: number;
 };
 
+const VALID_KINDS: Array<'all' | Kind> = ['all', 'order', 'stringing_application', 'rental'];
+const VALID_FLOWS: FlowValue[] = ['all', '1', '2', '3', '4', '5', '6', '7'];
+const VALID_INTEGRATED: IntegratedValue[] = ['all', '1', '0'];
+const VALID_WARN_FILTERS: Params['warnFilter'][] = ['all', 'warn', 'review', 'clean'];
+const VALID_WARN_SORTS: Params['warnSort'][] = ['default', 'warn_first', 'safe_first'];
+
+function parsePage(value: string | null) {
+  if (!value) return 1;
+  const parsed = Number(value);
+  return !Number.isNaN(parsed) && parsed > 0 ? parsed : 1;
+}
+
+export function buildOperationsViewQueryString(params: Params) {
+  return buildQueryString({
+    q: params.q.trim() || undefined,
+    kind: params.kind,
+    flow: params.flow,
+    integrated: params.integrated,
+    warnFilter: params.warnFilter,
+    warnSort: params.warnSort,
+    page: params.page === 1 ? undefined : params.page,
+    warn: params.onlyWarn ? '1' : undefined,
+  });
+}
+
 export function initOperationsStateFromQuery(
   sp: ReadonlyURLSearchParams,
   setters: {
@@ -37,19 +62,24 @@ export function initOperationsStateFromQuery(
   const warn = sp.get('warn');
   const warnFilter = (sp.get('warnFilter') as Params['warnFilter']) ?? 'all';
   const warnSort = (sp.get('warnSort') as Params['warnSort']) ?? 'default';
-  const p = Number(sp.get('page') ?? 1);
+  const p = parsePage(sp.get('page'));
 
-  if (k === 'all' || k === 'order' || k === 'stringing_application' || k === 'rental') setters.setKind(k);
-  if (f === 'all' || ['1', '2', '3', '4', '5', '6', '7'].includes(f)) setters.setFlow(f);
-  if (i === 'all' || i === '1' || i === '0') setters.setIntegrated(i);
-  if (query) setters.setQ(query);
-  if (warn === '1') setters.setOnlyWarn(true);
-  if (warnFilter === 'all' || warnFilter === 'warn' || warnFilter === 'review' || warnFilter === 'clean') setters.setWarnFilter(warnFilter);
-  if (warnSort === 'default' || warnSort === 'warn_first' || warnSort === 'safe_first') setters.setWarnSort(warnSort);
+  const nextKind: 'all' | Kind = VALID_KINDS.includes(k) ? k : 'all';
+  const nextFlow: FlowValue = VALID_FLOWS.includes(f) ? f : 'all';
+  const nextIntegrated: IntegratedValue = VALID_INTEGRATED.includes(i) ? i : 'all';
+  const nextOnlyWarn = warn === '1';
+  const nextWarnFilter: Params['warnFilter'] = VALID_WARN_FILTERS.includes(warnFilter) ? warnFilter : 'all';
+  const normalizedWarnFilter: Params['warnFilter'] = nextOnlyWarn && (nextWarnFilter === 'review' || nextWarnFilter === 'clean') ? 'warn' : nextWarnFilter;
+  const nextWarnSort: Params['warnSort'] = VALID_WARN_SORTS.includes(warnSort) ? warnSort : 'default';
 
-  // onlyWarn=true이면 위험 신호 필터는 주의만 상태로 정규화
-  if (warn === '1' && (warnFilter === 'review' || warnFilter === 'clean')) setters.setWarnFilter('warn');
-  if (!Number.isNaN(p) && p > 0) setters.setPage(p);
+  setters.setKind(nextKind);
+  setters.setFlow(nextFlow);
+  setters.setIntegrated(nextIntegrated);
+  setters.setQ(query);
+  setters.setOnlyWarn(nextOnlyWarn);
+  setters.setWarnFilter(normalizedWarnFilter);
+  setters.setWarnSort(nextWarnSort);
+  setters.setPage(p);
 }
 
 export function useSyncOperationsQuery(params: Params, pathname: string, replace: (url: string) => void) {
@@ -70,16 +100,7 @@ export function useSyncOperationsQuery(params: Params, pathname: string, replace
 
   useEffect(() => {
     const t = setTimeout(() => {
-      const queryString = buildQueryString({
-        q,
-        kind,
-        flow,
-        integrated,
-        warnFilter,
-        warnSort,
-        page: page === 1 ? undefined : page,
-        warn: onlyWarn ? '1' : undefined,
-      });
+      const queryString = buildOperationsViewQueryString({ q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page });
       replaceQueryUrl(pathname, queryString, replace);
     }, 200);
     return () => clearTimeout(t);

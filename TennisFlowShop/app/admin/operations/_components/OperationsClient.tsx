@@ -21,7 +21,7 @@ import { shortenId } from '@/lib/shorten';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from './actions/operationsActions';
 import { flowBadgeClass, prevMonthYyyymmKST, type Kind } from './filters/operationsFilters';
-import { initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
+import { buildOperationsViewQueryString, initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
 import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
 
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -441,9 +441,9 @@ export default function OperationsClient() {
   const hasExpandableGroups = expandableGroupKeys.length > 0;
   const isAllExpanded = hasExpandableGroups && expandableGroupKeys.every((k) => !!openGroups[k]);
   const shareViewHref = useMemo(() => {
-    const qs = sp.toString();
+    const qs = buildOperationsViewQueryString({ q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page });
     return qs ? `${pathname}?${qs}` : pathname;
-  }, [pathname, sp]);
+  }, [flow, integrated, kind, onlyWarn, page, pathname, q, warnFilter, warnSort]);
   const shareViewFullHref = useMemo(() => {
     if (typeof window === 'undefined') return shareViewHref;
     return `${window.location.origin}${shareViewHref}`;
