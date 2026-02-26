@@ -26,6 +26,15 @@ import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils'
 
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
+function amountMeaningText(item: OpItem) {
+  const bits: string[] = [];
+  if (item.amountNote) bits.push(item.amountNote);
+  if (typeof item.amountReference === 'number' && item.amountReference > 0) {
+    bits.push(`${item.amountReferenceLabel ?? '기준금액'} ${won(item.amountReference)}`);
+  }
+  return bits.join(' · ');
+}
+
 const PAGE_COPY = {
   title: '운영 통합 센터',
   description: '주의(실제 오류)와 검수필요(운영 확인 신호)를 구분해 주문·대여·신청을 한 화면에서 점검하는 관리자 운영 허브입니다.',
@@ -1067,16 +1076,25 @@ export default function OperationsClient() {
 
                             <TableCell className={cn(tdClasses, rowDensityClass, 'font-semibold text-sm')}>
                               {isGroup ? (
-                                <div className="space-y-1">
-                                  {pickOnePerKind(g.items).map((it) => (
-                                    <div key={`${it.kind}:${it.id}`} className="flex items-center justify-between gap-3">
-                                      <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
-                                      <span>{won(it.amount)}</span>
-                                    </div>
-                                  ))}
+                                <div className="space-y-1.5">
+                                  {pickOnePerKind(g.items).map((it) => {
+                                    const meaning = amountMeaningText(it);
+                                    return (
+                                      <div key={`${it.kind}:${it.id}`} className="flex items-start justify-between gap-3">
+                                        <span className="text-xs text-muted-foreground">{opsKindLabel(it.kind)}</span>
+                                        <div className="text-right">
+                                          <div>{won(it.amount)}</div>
+                                          {meaning ? <div className="text-[11px] font-normal text-muted-foreground">{meaning}</div> : null}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               ) : (
-                                <div>{won(g.anchor.amount)}</div>
+                                <div>
+                                  <div>{won(g.anchor.amount)}</div>
+                                  {amountMeaningText(g.anchor) ? <div className="text-[11px] font-normal text-muted-foreground">{amountMeaningText(g.anchor)}</div> : null}
+                                </div>
                               )}
                             </TableCell>
 
@@ -1188,6 +1206,7 @@ export default function OperationsClient() {
                           </div>
                         )}
                         <div className="text-sm font-semibold">금액: {won(g.anchor.amount)}</div>
+                        {amountMeaningText(g.anchor) ? <div className="text-xs text-muted-foreground">{amountMeaningText(g.anchor)}</div> : null}
                       </CardContent>
                     </Card>
                   );

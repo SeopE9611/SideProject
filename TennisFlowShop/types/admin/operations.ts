@@ -15,6 +15,9 @@ export type AdminOperationItem = {
   statusLabel: string;
   paymentLabel?: string;
   amount: number;
+  amountNote?: string;
+  amountReference?: number;
+  amountReferenceLabel?: string;
   flow: AdminOperationFlow;
   flowLabel: string;
   settlementAnchor: SettlementAnchor;
