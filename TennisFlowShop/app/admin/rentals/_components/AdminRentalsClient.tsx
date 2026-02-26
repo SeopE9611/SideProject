@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
@@ -402,30 +402,21 @@ export default function AdminRentalsClient() {
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
   function PaymentBadge({ item }: { item: RentalRow }) {
-    const s = derivePaymentStatus(item);
-    return s === 'paid' ? (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-[11px] dark:bg-primary/20">결제확정</span>
-    ) : (
-      <span className="inline-flex items-center px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/30 text-[11px] dark:bg-warning/15 dark:border-warning/40">입금대기</span>
+    const paymentLabel = item.paymentStatusLabel ?? (derivePaymentStatus(item) === 'paid' ? '결제완료' : '결제대기');
+    return (
+      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[paymentLabel])}>
+        {paymentLabel}
+      </Badge>
     );
   }
 
   function ShippingBadge({ item }: { item: RentalRow }) {
     const s = deriveShippingStatus(item);
-
-    if (s === 'both-set') {
-      return (
-        <div className="inline-flex gap-1">
-          <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-foreground text-[11px]">출고</span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-foreground text-[11px]">반납</span>
-        </div>
-      );
-    }
-
     const map = {
       none: ['운송장 없음', 'bg-background text-foreground'],
       'outbound-set': ['출고 운송장', 'bg-muted text-foreground'],
       'return-set': ['반납 운송장', 'bg-muted text-foreground'],
+      'both-set': ['왕복 운송장', 'bg-primary/10 text-primary dark:bg-primary/20'],
     } as const;
 
     const [label, cls] = map[s];
@@ -627,7 +618,7 @@ export default function AdminRentalsClient() {
                 </TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>기간</TableHead>
                 <TableHead className={cn(thClasses, 'text-center')}>상태</TableHead>
-                <TableHead className={cn(thClasses, 'text-center')}>결제/배송</TableHead>
+                <TableHead className={cn(thClasses, 'text-center')}>결제 상태 / 출고 상태</TableHead>
                 <TableHead onClick={() => handleSort('total')} className={cn(thClasses, 'text-center cursor-pointer select-none', sortBy === 'total' && 'text-primary')}>
                   금액
                   <ChevronDown className={cn('inline ml-1 w-3 h-3 text-muted-foreground transition-transform', sortBy === 'total' && sortDirection === 'desc' && 'rotate-180')} />
@@ -773,7 +764,7 @@ export default function AdminRentalsClient() {
                         <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', rentalStatusColors[r.status])}>{rentalStatusLabels[r.status] || r.status}</Badge>
                       </TableCell>
                       <TableCell className={tdClasses}>
-                        <div className="flex gap-1 justify-center">
+                        <div className="flex flex-col items-center gap-1">
                           <PaymentBadge item={r} />
                           <ShippingBadge item={r} />
                         </div>

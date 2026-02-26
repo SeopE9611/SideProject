@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
+import { normalizeRentalPaymentMeta } from '@/lib/admin-ops-normalize';
 
 function maskAccount(acct?: string) {
   if (!acct) return '';
@@ -43,6 +44,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       }
     : null;
 
+  const paymentMeta = normalizeRentalPaymentMeta(doc);
+
   return NextResponse.json({
     id: doc._id.toString(),
     racketId: doc.racketId?.toString?.(),
@@ -60,6 +63,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // 대여 기반 교체 서비스 신청서 연결 정보 (있으면 관리자 상세에서 CTA 노출 가능)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
     stringingApplicationId: (doc as any).stringingApplicationId ?? null,
+    paymentStatusLabel: paymentMeta.label,
+    paymentStatusSource: paymentMeta.source,
 
     shipping: {
       outbound: doc.shipping?.outbound ?? null,

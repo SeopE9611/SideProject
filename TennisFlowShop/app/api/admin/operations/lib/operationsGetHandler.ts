@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
-import { toISO, normalizeOrderStatus, normalizePaymentStatus, normalizeRentalStatus, summarizeOrderItems, pickCustomerFromDoc, normalizeRentalAmountTotal } from '@/lib/admin-ops-normalize';
+import {
+  toISO,
+  normalizeOrderStatus,
+  normalizePaymentStatus,
+  normalizeRentalStatus,
+  summarizeOrderItems,
+  pickCustomerFromDoc,
+  normalizeRentalAmountTotal,
+  normalizeRentalPaymentMeta,
+} from '@/lib/admin-ops-normalize';
 import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor, AdminOperationsListRequestDto, AdminOperationsListResponseDto } from '@/types/admin/operations';
 import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
@@ -763,7 +772,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const isIntegrated = Boolean(appId);
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
-    const rentalPaymentRaw = getString(r?.paymentStatus) ?? getString(r?.paymentInfo?.status);
+    const rentalPaymentMeta = normalizeRentalPaymentMeta(r);
     const hasOutboundTracking = Boolean(r?.shipping?.outbound?.trackingNumber);
 
     return {
@@ -773,7 +782,7 @@ export async function handleAdminOperationsGet(req: Request) {
       customer: cust,
       title: `${String(r?.brand ?? '')} ${String(r?.model ?? '')}`.trim() + (days ? ` (${days}일)` : ''),
       statusLabel: normalizeRentalStatus(r?.status),
-      paymentLabel: rentalPaymentRaw ? normalizePaymentStatus(rentalPaymentRaw) : undefined,
+      paymentLabel: rentalPaymentMeta.label,
       amount,
       flow: rentalFlowByWithService(withStringService),
       flowLabel: flowLabelOf(rentalFlowByWithService(withStringService)),
@@ -785,13 +794,13 @@ export async function handleAdminOperationsGet(req: Request) {
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`rental:${id}`) ?? [],
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
-      needsReview: !rentalPaymentRaw,
-      reviewReasons: !rentalPaymentRaw ? ['대여 문서에 결제상태 필드가 없어 운영 통합 센터 결제 비교에서 제외했습니다.'] : [],
+      needsReview: rentalPaymentMeta.source === 'derived',
+      reviewReasons: rentalPaymentMeta.source === 'derived' ? ['대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다.'] : [],
       hasOutboundTracking,
       ...inferNextActionForOperationItem({
         kind: 'rental',
         statusLabel: normalizeRentalStatus(r?.status),
-        paymentLabel: rentalPaymentRaw ? normalizePaymentStatus(rentalPaymentRaw) : undefined,
+        paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
       }),
     };

@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { requireAdmin } from '@/lib/admin.guard';
 import type { AdminRentalListItemDto, AdminRentalsListResponseDto } from '@/types/admin/rentals';
+import { normalizeRentalPaymentMeta } from '@/lib/admin-ops-normalize';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,6 +106,8 @@ export async function GET(req: Request) {
     const withStringService = Boolean(rentalDoc?.stringing?.requested) || Boolean(record.isStringServiceApplied) || Boolean(rawAppId);
     const stringingApplicationId = rawAppId ? (typeof rawAppId === 'string' ? rawAppId : String(rawAppId)) : null;
 
+    const paymentMeta = normalizeRentalPaymentMeta(rentalDoc);
+
     return {
       id: rentalDoc._id?.toString(),
       racketId: rentalDoc.racketId?.toString(),
@@ -120,6 +123,8 @@ export async function GET(req: Request) {
       depositRefundedAt: rentalDoc.depositRefundedAt ?? null,
       stringingApplicationId,
       withStringService,
+      paymentStatusLabel: paymentMeta.label as '결제완료' | '결제대기',
+      paymentStatusSource: paymentMeta.source,
       shipping: {
         outbound: out ? { courier: out.courier ?? '', trackingNumber: out.trackingNumber ?? '', shippedAt: out.shippedAt ?? null } : null,
         return: ret ? { courier: ret.courier ?? '', trackingNumber: ret.trackingNumber ?? '', shippedAt: ret.shippedAt ?? null } : null,
