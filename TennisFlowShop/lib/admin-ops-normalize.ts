@@ -80,6 +80,42 @@ export function normalizePaymentStatus(status?: string | null) {
   }
 }
 
+type RentalPaymentMetaSource = 'explicit' | 'derived';
+
+/**
+ * 대여 결제 상태 표시용 정규화
+ * - 우선순위: paymentStatus/paymentInfo.status 명시값 > 대여 상태/paidAt 기반 파생값
+ * - rental_orders는 결제 필드가 비어 있는 레거시 문서가 있어 파생 규칙을 공통으로 유지한다.
+ */
+export function normalizeRentalPaymentMeta(rentalDoc: any): { label: string; source: RentalPaymentMetaSource } {
+  const raw = getRawRentalPaymentStatus(rentalDoc);
+  if (raw) {
+    return {
+      label: normalizePaymentStatus(raw),
+      source: 'explicit',
+    };
+  }
+
+  const status = String(rentalDoc?.status ?? '').trim().toLowerCase();
+  const paidByFlag = Boolean(rentalDoc?.payment?.paidAt || rentalDoc?.paidAt);
+  const paidByStatus = ['paid', 'out', 'returned'].includes(status);
+
+  return {
+    label: paidByFlag || paidByStatus ? '결제완료' : '결제대기',
+    source: 'derived',
+  };
+}
+
+function getRawRentalPaymentStatus(rentalDoc: any): string | null {
+  const direct = rentalDoc?.paymentStatus;
+  if (typeof direct === 'string' && direct.trim()) return direct;
+
+  const info = rentalDoc?.paymentInfo?.status;
+  if (typeof info === 'string' && info.trim()) return info;
+
+  return null;
+}
+
 /**
  * 대여 상태 표시용 정규화
  * - rental_orders의 status 코드들을 운영함/대여목록에서 동일 라벨로 보여주기 위한 목적

@@ -1071,8 +1071,8 @@ export default function OperationsClient() {
                                 <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
                                 {g.anchor.paymentLabel ? (
                                   <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">-</span>
+) : (
+                                  <span className="text-xs text-muted-foreground">결제정보 없음(문서 미기입)</span>
                                 )}
                               </div>
                             </TableCell>

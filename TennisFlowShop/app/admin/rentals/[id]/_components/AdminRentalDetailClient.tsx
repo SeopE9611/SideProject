@@ -12,7 +12,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
-import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
@@ -284,10 +284,13 @@ export default function AdminRentalDetailClient() {
       ]
     : [];
 
+  const paymentLabel = data?.paymentStatusLabel ?? (derivePaymentStatus(data) === 'paid' ? '결제완료' : '결제대기');
+  const paymentSource = data?.paymentStatusSource ?? 'derived';
+
   const rentalGuide = inferNextActionForOperationItem({
     kind: 'rental',
     statusLabel: data.status,
-    paymentLabel: derivePaymentStatus(data) === 'paid' ? '결제완료' : '결제대기',
+    paymentLabel,
     hasOutboundTracking: Boolean(data?.shipping?.outbound?.trackingNumber),
   });
 
@@ -586,12 +589,9 @@ export default function AdminRentalDetailClient() {
                   <CreditCard className="h-5 w-5 text-primary" />
                   <span>결제 정보</span>
                 </CardTitle>
-                <div className="ml-auto">
-                  {derivePaymentStatus(data) === 'paid' ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-primary/10 text-primary text-xs dark:bg-primary/20">결제확정</span>
-                  ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-muted text-foreground text-xs">입금대기</span>
-                  )}
+                <div className="ml-auto flex flex-col items-end gap-1">
+                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[paymentLabel])}>{paymentLabel}</Badge>
+                  {paymentSource === 'derived' && <span className="text-[11px] text-muted-foreground">대여 상태 기준 파생</span>}
                 </div>
               </CardHeader>
               <CardContent className="p-6">
