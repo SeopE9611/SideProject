@@ -110,6 +110,7 @@ export const paymentStatusColors: Record<string, string> = {
   결제취소: SEMANTIC_BADGE.destructive,
   패키지차감: SEMANTIC_BADGE.info,
   주문결제포함: SEMANTIC_BADGE.success,
+  대여결제포함: SEMANTIC_BADGE.success,
   확인필요: SEMANTIC_BADGE.warning,
   환불: SEMANTIC_BADGE.destructive,
 };

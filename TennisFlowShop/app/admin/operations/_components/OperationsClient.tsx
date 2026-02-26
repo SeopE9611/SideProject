@@ -923,7 +923,7 @@ export default function OperationsClient() {
                   주의(실제 오류)
                 </Badge>
                 <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요(운영 확인)</Badge>
-                <span>결제 라벨 `패키지차감/주문결제포함/확인필요`는 정책 파생 결과입니다.</span>
+                <span>결제 라벨 `패키지차감/주문결제포함/대여결제포함/확인필요`는 정책 파생 결과입니다.</span>
               </div>
 
               <div className="flex items-center gap-2">
