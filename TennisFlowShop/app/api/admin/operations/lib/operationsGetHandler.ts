@@ -117,41 +117,40 @@ function pickAnchor(groupItems: OpItem[]): OpItem {
   return groupItems.find((x) => x.kind === 'order') ?? groupItems.find((x) => x.kind === 'rental') ?? groupItems[0]!;
 }
 
-function summarizeByKind(items: OpItem[], getLabel: (it: OpItem) => string | undefined | null) {
-  const map = new Map<Kind, Set<string>>();
-  for (const it of items) {
-    const v = getLabel(it);
-    if (!v) continue;
-    if (!map.has(it.kind)) map.set(it.kind, new Set());
-    map.get(it.kind)!.add(String(v));
-  }
-
-  return (['order', 'rental', 'stringing_application'] as Kind[])
-    .map((k) => {
-      const labels = Array.from(map.get(k) ?? []);
-      if (labels.length === 0) return null;
-      return { kind: k, mixed: labels.length > 1, text: labels.length === 1 ? labels[0] : `${labels[0]} 외 ${labels.length - 1}` };
-    })
-    .filter(Boolean) as Array<{ kind: Kind; mixed: boolean; text: string }>;
+function isWarnGroup(g: OpGroup) {
+  return (g.items ?? []).some((it) => it.warn);
 }
 
-function isWarnGroup(g: OpGroup) {
-  const hasLinkWarn = (g.items ?? []).some((it) => (it.warnReasons?.length ?? 0) > 0);
-  if (hasLinkWarn) return true;
-  if (!g.items || g.items.length <= 1) return false;
-  const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
-  const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-  if (children.length === 0) return false;
+function deriveStringingPaymentLabel(app: UnknownDoc): {
+  paymentLabel: string;
+  derived: boolean;
+  source: 'explicit' | 'package' | 'order' | 'service_paid' | 'pending' | 'unknown';
+} {
+  const rawPaymentStatus = getString(app?.paymentStatus);
+  if (rawPaymentStatus && rawPaymentStatus.trim()) {
+    return { paymentLabel: normalizePaymentStatus(rawPaymentStatus), derived: false, source: 'explicit' };
+  }
 
-  const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
-  const childPaymentSummary = summarizeByKind(children, (it) => it.paymentLabel);
-  const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
+  if (app?.packageApplied === true) {
+    return { paymentLabel: '패키지차감', derived: true, source: 'package' };
+  }
 
-  const anchorPay = g.anchor.paymentLabel ?? '-';
-  const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
-  const payMismatch = anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
+  const paymentSource = getString(app?.paymentSource) ?? '';
+  if (paymentSource.startsWith('order:')) {
+    return { paymentLabel: '주문결제포함', derived: true, source: 'order' };
+  }
 
-  return payMismatch || hasMixed;
+  if (app?.servicePaid === true) {
+    return { paymentLabel: '결제완료', derived: true, source: 'service_paid' };
+  }
+
+  const totalPrice = Number(app?.totalPrice ?? 0);
+  const serviceAmount = Number(app?.serviceAmount ?? 0);
+  if (totalPrice > 0 || serviceAmount > 0) {
+    return { paymentLabel: '결제대기', derived: true, source: 'pending' };
+  }
+
+  return { paymentLabel: '확인필요', derived: true, source: 'unknown' };
 }
 
 function filterWarnGroups(list: OpItem[]): OpItem[] {
@@ -251,6 +250,11 @@ export async function handleAdminOperationsGet(req: Request) {
       createdAt: 1,
       status: 1,
       paymentStatus: 1,
+      paymentInfo: 1,
+      packageApplied: 1,
+      paymentSource: 1,
+      servicePaid: 1,
+      serviceFeeBefore: 1,
       stringingApplicationId: 1,
       totalPrice: 1,
       serviceAmount: 1,
@@ -305,6 +309,7 @@ export async function handleAdminOperationsGet(req: Request) {
       createdAt: 1,
       status: 1,
       paymentStatus: 1,
+      paymentInfo: 1,
       isStringServiceApplied: 1,
       stringingApplicationId: 1,
       totalPrice: 1,
@@ -325,6 +330,8 @@ export async function handleAdminOperationsGet(req: Request) {
       _id: 1,
       createdAt: 1,
       status: 1,
+      paymentStatus: 1,
+      paymentInfo: 1,
       userId: 1,
       guest: 1,
       brand: 1,
@@ -372,6 +379,11 @@ export async function handleAdminOperationsGet(req: Request) {
         createdAt: 1,
         status: 1,
         paymentStatus: 1,
+        paymentInfo: 1,
+        packageApplied: 1,
+        paymentSource: 1,
+        servicePaid: 1,
+        serviceFeeBefore: 1,
         stringingApplicationId: 1,
         totalPrice: 1,
         serviceAmount: 1,
@@ -622,7 +634,7 @@ export async function handleAdminOperationsGet(req: Request) {
       customer: cust,
       title: summarizeOrderItems(o.items),
       statusLabel: normalizeOrderStatus(o.status),
-      paymentLabel: normalizePaymentStatus(o.paymentStatus),
+      paymentLabel: normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status)),
       amount: Number(o.totalPrice ?? 0),
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
       flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
@@ -633,6 +645,7 @@ export async function handleAdminOperationsGet(req: Request) {
       isIntegrated,
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`order:${id}`) ?? [],
+      warn: (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
     };
   });
 
@@ -650,6 +663,13 @@ export async function handleAdminOperationsGet(req: Request) {
     // 연결 우선순위: 주문 연결 > 대여 연결 (필요 시 UX 기준으로 바꿔도 됨)
     const related = linkedOrderId ? { kind: 'order' as const, id: linkedOrderId, href: `/admin/orders/${linkedOrderId}` } : linkedRentalId ? { kind: 'rental' as const, id: linkedRentalId, href: `/admin/rentals/${linkedRentalId}` } : null;
 
+    const paymentDerived = deriveStringingPaymentLabel(a);
+    const reviewReasons: string[] = [];
+    if (linkedOrderId && !getString(a?.paymentStatus)) reviewReasons.push('주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
+    if (a?.packageApplied === true) reviewReasons.push('패키지 차감 기반 신청서입니다.');
+    if ((getString(a?.paymentSource) ?? '').startsWith('order:')) reviewReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
+    if (paymentDerived.derived) reviewReasons.push('신청서 결제상태를 정책 규칙으로 파생했습니다.');
+
     return {
       id,
       kind: 'stringing_application',
@@ -657,7 +677,7 @@ export async function handleAdminOperationsGet(req: Request) {
       customer: cust,
       title: '교체 서비스 신청',
       statusLabel: String(a?.status ?? '접수완료'),
-      paymentLabel: normalizePaymentStatus(getString(a?.paymentStatus)),
+      paymentLabel: paymentDerived.paymentLabel,
       amount,
       flow: (() => {
         if (!isIntegrated) return 3 as Flow;
@@ -695,6 +715,9 @@ export async function handleAdminOperationsGet(req: Request) {
       isIntegrated,
       warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`stringing_application:${id}`) ?? [],
+      warn: (warnByKey.get(`stringing_application:${id}`)?.length ?? 0) > 0,
+      needsReview: reviewReasons.length > 0,
+      reviewReasons,
     };
   });
 
@@ -709,6 +732,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const isIntegrated = Boolean(appId);
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
+    const rentalPaymentRaw = getString(r?.paymentStatus) ?? getString(r?.paymentInfo?.status);
 
     return {
       id,
@@ -717,6 +741,7 @@ export async function handleAdminOperationsGet(req: Request) {
       customer: cust,
       title: `${String(r?.brand ?? '')} ${String(r?.model ?? '')}`.trim() + (days ? ` (${days}일)` : ''),
       statusLabel: normalizeRentalStatus(r?.status),
+      paymentLabel: rentalPaymentRaw ? normalizePaymentStatus(rentalPaymentRaw) : undefined,
       amount,
       flow: rentalFlowByWithService(withStringService),
       flowLabel: flowLabelOf(rentalFlowByWithService(withStringService)),
@@ -727,6 +752,9 @@ export async function handleAdminOperationsGet(req: Request) {
       isIntegrated,
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`rental:${id}`) ?? [],
+      warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
+      needsReview: !rentalPaymentRaw,
+      reviewReasons: !rentalPaymentRaw ? ['대여 문서에 결제상태 필드가 없어 운영 통합 센터 결제 비교에서 제외했습니다.'] : [],
     };
   });
 

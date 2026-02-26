@@ -227,8 +227,13 @@ function summarizeByKind(items: OpItem[], getLabel: (it: OpItem) => string | und
     .filter(Boolean) as Array<{ kind: Kind; mixed: boolean; text: string }>;
 }
 
-// 경고(혼재/결제불일치) 그룹 여부 판단: 표시 전용(운영자 필터 토글용)
-function isWarnGroup(g: { anchor: OpItem; items: OpItem[] }) {
+function isWarnGroup(g: { items: OpItem[] }) {
+  return (g.items ?? []).some((it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0);
+}
+
+function isNeedsReviewGroup(g: { anchor: OpItem; items: OpItem[] }) {
+  const hasItemReview = (g.items ?? []).some((it) => it.needsReview === true || (it.reviewReasons?.length ?? 0) > 0);
+  if (hasItemReview) return true;
   if (!g.items || g.items.length <= 1) return false;
   const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
   const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
@@ -236,13 +241,12 @@ function isWarnGroup(g: { anchor: OpItem; items: OpItem[] }) {
 
   const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
   const childPaymentSummary = summarizeByKind(children, (it) => it.paymentLabel);
-  const hasMixed = childStatusSummary.some((s) => s.mixed) || childPaymentSummary.some((p) => p.mixed);
+  const hasMixed = childStatusSummary.some((st) => st.mixed) || childPaymentSummary.some((pay) => pay.mixed);
 
   const anchorPay = g.anchor.paymentLabel ?? '-';
   const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
-  const payMismatch = anchorPay !== '-' && childPays.some((p) => p && p !== '-' && p !== anchorPay);
-
-  return payMismatch || hasMixed;
+  const payMismatch = anchorPay !== '-' && childPays.some((pay) => pay && pay !== '-' && pay !== anchorPay);
+  return hasMixed || payMismatch;
 }
 
 const thClasses = 'px-4 py-2 text-left align-middle font-semibold text-foreground text-[11px] whitespace-nowrap';
@@ -371,17 +375,21 @@ export default function OperationsClient() {
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items), [items]);
   const groupsToRender = useMemo(() => {
-    const withWarn = groups.map((group) => ({
+    const withSignals = groups.map((group) => ({
       ...group,
       warn: isWarnGroup(group),
+      needsReview: isNeedsReviewGroup(group),
     }));
 
-    const filtered = warnFilter === 'all' ? withWarn : withWarn.filter((group) => (warnFilter === 'warn' ? group.warn : !group.warn));
+    const filtered = warnFilter === 'all' ? withSignals : withSignals.filter((group) => (warnFilter === 'warn' ? group.warn : !group.warn));
 
     if (warnSort === 'default') return filtered;
 
     return [...filtered].sort((a, b) => {
-      if (a.warn === b.warn) return 0;
+      if (a.warn === b.warn) {
+        if (a.needsReview === b.needsReview) return 0;
+        return a.needsReview ? -1 : 1;
+      }
       if (warnSort === 'warn_first') return a.warn ? -1 : 1;
       return a.warn ? 1 : -1;
     });
@@ -393,10 +401,11 @@ export default function OperationsClient() {
         const groupItems = [group.anchor, ...group.items.filter((it) => it.id !== group.anchor.id)];
         const hasWarn = groupItems.some((it) => Array.isArray(it.warnReasons) && it.warnReasons.length > 0);
         const hasPending = groupItems.some((it) => Array.isArray(it.pendingReasons) && it.pendingReasons.length > 0);
-        const hasPaymentIssue = groupItems.some((it) => it.paymentLabel === '미결제' || it.paymentLabel === '결제취소');
+        const hasPaymentIssue = groupItems.some((it) => it.paymentLabel === '결제대기' || it.paymentLabel === '결제취소' || it.paymentLabel === '확인필요');
+        const hasNeedsReview = groupItems.some((it) => it.needsReview === true || (it.reviewReasons?.length ?? 0) > 0) || group.needsReview;
 
         if (hasWarn) acc.urgent += 1;
-        if (hasPaymentIssue) acc.caution += 1;
+        if (hasPaymentIssue || hasNeedsReview) acc.caution += 1;
         if (hasPending) acc.pending += 1;
         return acc;
       },
@@ -758,7 +767,7 @@ export default function OperationsClient() {
                 <SelectContent>
                   <SelectItem value="all">주의(전체)</SelectItem>
                   <SelectItem value="warn">주의만</SelectItem>
-                  <SelectItem value="safe">정상만</SelectItem>
+                  <SelectItem value="safe">주의 제외</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -981,7 +990,10 @@ export default function OperationsClient() {
                           <TableRow className={cn('transition-colors hover:bg-muted/35', rowBaseToneClass, warnEmphasisClass)}>
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="flex flex-wrap items-center gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
+                                <div className="flex items-center gap-1">
+                                  <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
+                                  {!warn && g.needsReview && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
+                                </div>
                                 <div className="text-[11px] text-muted-foreground">{isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
                             </TableCell>
@@ -1085,7 +1097,7 @@ export default function OperationsClient() {
                         <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">{onlyWarn ? '경고(연결오류/혼재/결제불일치) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
+                            <p className="text-sm text-muted-foreground">{onlyWarn ? '주의(연결오류) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1101,7 +1113,10 @@ export default function OperationsClient() {
                     <Card key={`m:${g.key}`} className="border-border">
                       <CardContent className="p-3 space-y-2">
                         <div className="flex items-center justify-between">
-                          <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
+                          <div className="flex items-center gap-1">
+                            <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
+                            {!warn && g.needsReview && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
+                          </div>
                           <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
                         </div>
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
