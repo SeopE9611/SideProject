@@ -1,9 +1,9 @@
 'use client';
-import useSWR from 'swr';
-import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
+import useSWR from 'swr';
 
-type Notice = { id: string; title: string; createdAt: string };
+type Notice = { _id: string; title: string; createdAt: string };
 const fetcher = async (u: string) => {
   const res = await fetch(u, { credentials: 'include' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -33,15 +33,13 @@ export default function HomeNoticePreview() {
               </li>
             ))}
           </>
-           ) : hasError ? (
+        ) : hasError ? (
           <li className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 bp-sm:p-5 text-sm bp-sm:text-base text-destructive dark:border-destructive/40 dark:bg-destructive/15">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               <div className="flex-1">
                 <p className="font-semibold">공지사항을 불러오지 못했어요.</p>
-                <p className="mt-1 text-xs bp-sm:text-sm opacity-90">
-                  네트워크/서버 상태를 확인한 뒤 다시 시도해 주세요.
-               </p>
+                <p className="mt-1 text-xs bp-sm:text-sm opacity-90">네트워크/서버 상태를 확인한 뒤 다시 시도해 주세요.</p>
                 <button
                   type="button"
                   onClick={() => mutate()}
@@ -54,8 +52,8 @@ export default function HomeNoticePreview() {
           </li>
         ) : items.length > 0 ? (
           items.map((p, idx) => (
-            <li key={p.id ?? `${p.createdAt}-${idx}`}>
-              <Link className="group flex items-start justify-between gap-3 bp-sm:gap-4 rounded-lg px-4 bp-sm:px-5 py-3 bp-sm:py-4 transition-colors hover:bg-muted dark:hover:bg-card" href={`/board/notice/${p.id}`}>
+            <li key={p._id ?? `${p.createdAt}-${idx}`}>
+              <Link className="group flex items-start justify-between gap-3 bp-sm:gap-4 rounded-lg px-4 bp-sm:px-5 py-3 bp-sm:py-4 transition-colors hover:bg-muted dark:hover:bg-card" href={p._id ? `/board/notice/${p._id}` : '/board/notice'}>
                 <span className="flex-1 line-clamp-2 bp-lg:line-clamp-1 text-sm bp-sm:text-base text-foreground group-hover:text-foreground">{p.title}</span>
                 <span className="shrink-0 text-xs bp-sm:text-sm text-muted-foreground">{new Date(p.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
               </Link>
