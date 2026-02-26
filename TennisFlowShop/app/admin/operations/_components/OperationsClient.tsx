@@ -28,7 +28,7 @@ const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const PAGE_COPY = {
   title: '운영 통합 센터',
-  description: '주문·대여·신청을 한 화면에서 확인하는 관리자 운영 허브입니다.',
+  description: '주의(실제 오류)와 검수필요(운영 확인 신호)를 구분해 주문·대여·신청을 한 화면에서 점검하는 관리자 운영 허브입니다.',
   dailyTodoTitle: '오늘 해야 할 일',
   dailyTodoLabels: {
     urgent: '긴급',
@@ -84,10 +84,10 @@ const PRESET_CONFIG: Record<
   }
 > = {
   paymentMismatch: {
-    label: '결제불일치 확인',
-    helperText: '주의 건(결제/상태 혼재 가능성)을 우선 검수하는 뷰입니다.',
-    priorityReason: '결제/상태 불일치는 CS 및 정산 이슈로 즉시 확산될 수 있습니다.',
-    nextAction: '연결 문서 결제 상태를 비교해 기준값으로 정리하고 필요한 경우 고객 연락 이력을 남기세요.',
+    label: '주의(오류) 우선 점검',
+    helperText: '데이터 연결/무결성 오류(주의) 건을 우선 처리하는 뷰입니다.',
+    priorityReason: '주의는 실제 데이터 오류 신호이므로 CS·정산 이슈로 확산되기 전에 우선 조치가 필요합니다.',
+    nextAction: '연결 누락/불일치 원인을 확인해 문서를 재연결하거나 상태를 정정하고 조치 이력을 남기세요.',
     params: { warn: true, integrated: 'all', flow: 'all', kind: 'all' },
     isActive: ({ onlyWarn }) => onlyWarn,
   },
@@ -249,6 +249,17 @@ function isNeedsReviewGroup(g: { anchor: OpItem; items: OpItem[] }) {
   return hasMixed || payMismatch;
 }
 
+function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
+  const reasons = new Set<string>();
+  for (const it of g.items ?? []) {
+    for (const reason of it.reviewReasons ?? []) {
+      const value = reason?.trim();
+      if (value) reasons.add(value);
+    }
+  }
+  return Array.from(reasons);
+}
+
 const thClasses = 'px-4 py-2 text-left align-middle font-semibold text-foreground text-[11px] whitespace-nowrap';
 const tdClasses = 'px-4 py-2.5 align-top';
 const th = thClasses;
@@ -301,7 +312,7 @@ export default function OperationsClient() {
   const [flow, setFlow] = useState<'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>('all');
   const [integrated, setIntegrated] = useState<'all' | '1' | '0'>('all'); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
-  const [warnFilter, setWarnFilter] = useState<'all' | 'warn' | 'safe'>('all');
+  const [warnFilter, setWarnFilter] = useState<'all' | 'warn' | 'review' | 'clean'>('all');
   const [warnSort, setWarnSort] = useState<'default' | 'warn_first' | 'safe_first'>('default');
   const [showAdvancedLegend, setShowAdvancedLegend] = useState(false);
   const [page, setPage] = useState(1);
@@ -314,7 +325,7 @@ export default function OperationsClient() {
   const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const defaultPageSize = 50;
-  // 경고만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
+  // 주의(오류)만 보기에서는 "놓침"을 줄이기 위해 조회 범위를 넓힘(표시/운영 안전 목적)
   // - API/스키마 변경 없음 (그냥 pageSize 파라미터만 키움)
   const effectivePageSize = onlyWarn ? 200 : defaultPageSize;
 
@@ -381,7 +392,12 @@ export default function OperationsClient() {
       needsReview: isNeedsReviewGroup(group),
     }));
 
-    const filtered = warnFilter === 'all' ? withSignals : withSignals.filter((group) => (warnFilter === 'warn' ? group.warn : !group.warn));
+    const filtered = withSignals.filter((group) => {
+      if (warnFilter === 'all') return true;
+      if (warnFilter === 'warn') return group.warn;
+      if (warnFilter === 'review') return !group.warn && group.needsReview;
+      return !group.warn && !group.needsReview;
+    });
 
     if (warnSort === 'default') return filtered;
 
@@ -668,14 +684,14 @@ export default function OperationsClient() {
               <Button
                 variant={onlyWarn ? 'default' : 'outline'}
                 size="sm"
-                title={onlyWarn ? '경고 항목만 조회 중' : '경고 항목만 모아보기'}
+                title={onlyWarn ? '주의(오류) 항목만 조회 중' : '주의(오류) 항목만 모아보기'}
                 className={cn('h-9', !onlyWarn && 'bg-transparent')}
                 onClick={() => {
                   setOnlyWarn((v) => !v);
                   setPage(1);
                 }}
               >
-                경고만 보기
+                주의(오류)만 보기
               </Button>
 
               <Button type="button" variant="outline" size="sm" className="h-9 bg-transparent" onClick={copyShareViewLink}>
@@ -762,23 +778,24 @@ export default function OperationsClient() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="주의 필터" />
+                  <SelectValue placeholder="위험 신호 필터" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">주의(전체)</SelectItem>
+                  <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="warn">주의만</SelectItem>
-                  <SelectItem value="safe">주의 제외</SelectItem>
+                  <SelectItem value="review">검수필요만</SelectItem>
+                  <SelectItem value="clean">완전정상만</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="주의 정렬" />
+                  <SelectValue placeholder="위험 신호 정렬" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">주의 정렬(기본)</SelectItem>
+                  <SelectItem value="default">위험 신호 정렬(기본)</SelectItem>
                   <SelectItem value="warn_first">주의 우선</SelectItem>
-                  <SelectItem value="safe_first">정상 우선</SelectItem>
+                  <SelectItem value="safe_first">완전정상 우선</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -875,8 +892,10 @@ export default function OperationsClient() {
                 <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합여부</Badge>
                 <Badge className={cn(badgeBase, badgeSizeSm, 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30')}>
                   <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                  경고
+                  주의(실제 오류)
                 </Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요(운영 확인)</Badge>
+                <span>결제 라벨 `패키지차감/주문결제포함/확인필요`는 정책 파생 결과입니다.</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -975,6 +994,7 @@ export default function OperationsClient() {
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                       const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
                       const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
+                      const reviewReasons = collectReviewReasons(g);
                       const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
                       const warn = g.warn;
                       const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
@@ -994,6 +1014,7 @@ export default function OperationsClient() {
                                   <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
                                   {!warn && g.needsReview && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
                                 </div>
+                                {!warn && g.needsReview && reviewReasons.length > 0 && <div className="w-full text-[11px] text-primary/90">사유 {reviewReasons.length}건 · 펼쳐서 확인</div>}
                                 <div className="text-[11px] text-muted-foreground">{isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
                             </TableCell>
@@ -1064,7 +1085,7 @@ export default function OperationsClient() {
                           {isGroup && isOpen && (
                             <TableRow className="bg-muted/20">
                               <TableCell colSpan={5} className={cn(tdClasses, 'border-l-2 border-l-primary/40')}>
-                                <div className="grid gap-4 bp-xl:grid-cols-2">
+                                <div className="grid gap-4 bp-xl:grid-cols-3">
                                   <div>
                                     <p className="mb-1 text-xs font-medium text-foreground">연결 문서</p>
                                     {renderLinkedDocs(linkedDocsForAnchor)}
@@ -1084,6 +1105,18 @@ export default function OperationsClient() {
                                       <span className="text-xs text-muted-foreground">혼재 없음</span>
                                     )}
                                   </div>
+                                  {reviewReasons.length > 0 && (
+                                    <div>
+                                      <p className="mb-1 text-xs font-medium text-foreground">검수 사유</p>
+                                      <ul className="space-y-1">
+                                        {reviewReasons.map((reason) => (
+                                          <li key={`review:${g.key}:${reason}`} className="text-xs text-muted-foreground list-disc list-inside">
+                                            {reason}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -1097,7 +1130,7 @@ export default function OperationsClient() {
                         <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">{onlyWarn ? '주의(연결오류) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
+                            <p className="text-sm text-muted-foreground">{onlyWarn ? '주의(실제 오류) 조건에 해당하는 결과가 없습니다.' : '결과가 없습니다.'}</p>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1109,6 +1142,7 @@ export default function OperationsClient() {
               <div className="space-y-3 bp-lg:hidden">
                 {groupsToRender.map((g) => {
                   const warn = g.warn;
+                  const reviewReasons = collectReviewReasons(g);
                   return (
                     <Card key={`m:${g.key}`} className="border-border">
                       <CardContent className="p-3 space-y-2">
@@ -1121,6 +1155,19 @@ export default function OperationsClient() {
                         </div>
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
                         <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
+                        {g.anchor.paymentLabel ? <div className="text-xs text-muted-foreground">결제: {g.anchor.paymentLabel}</div> : null}
+                        {!warn && g.needsReview && reviewReasons.length > 0 && (
+                          <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
+                            <p className="text-[11px] font-medium text-primary">검수 사유</p>
+                            <ul className="mt-1 space-y-0.5">
+                              {reviewReasons.map((reason) => (
+                                <li key={`m-review:${g.key}:${reason}`} className="text-[11px] text-muted-foreground list-disc list-inside">
+                                  {reason}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                         <div className="text-sm font-semibold">금액: {won(g.anchor.amount)}</div>
                       </CardContent>
                     </Card>
