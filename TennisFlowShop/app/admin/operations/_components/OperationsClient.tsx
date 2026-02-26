@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import { cn } from '@/lib/utils';
@@ -1023,6 +1024,7 @@ export default function OperationsClient() {
                       const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
                       const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
                       const reviewReasons = collectReviewReasons(g);
+                      const groupGuide = inferNextActionForOperationGroup(g.items);
                       const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
                       const warn = g.warn;
                       const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
@@ -1043,7 +1045,8 @@ export default function OperationsClient() {
                                   {!warn && g.needsReview && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
                                 </div>
                                 {!warn && g.needsReview && reviewReasons.length > 0 && <div className="w-full text-[11px] text-primary/90">사유 {reviewReasons.length}건 · 펼쳐서 확인</div>}
-                                <div className="text-[11px] text-muted-foreground">{isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
+                                <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">다음 할 일: {groupGuide.nextAction}</div>
+                                <div className="text-[11px] text-muted-foreground">{groupGuide.stage} · {isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
                             </TableCell>
 
@@ -1142,6 +1145,11 @@ export default function OperationsClient() {
                                       <span className="text-xs text-muted-foreground">혼재 없음</span>
                                     )}
                                   </div>
+                                  <div>
+                                    <p className="mb-1 text-xs font-medium text-foreground">현재 업무 단계 / 다음 할 일</p>
+                                    <p className="text-xs text-muted-foreground">{groupGuide.stage}</p>
+                                    <p className="text-xs text-foreground">{groupGuide.nextAction}</p>
+                                  </div>
                                   {reviewReasons.length > 0 && (
                                     <div>
                                       <p className="mb-1 text-xs font-medium text-foreground">검수 사유</p>
@@ -1180,6 +1188,7 @@ export default function OperationsClient() {
                 {groupsToRender.map((g) => {
                   const warn = g.warn;
                   const reviewReasons = collectReviewReasons(g);
+                  const groupGuide = inferNextActionForOperationGroup(g.items);
                   return (
                     <Card key={`m:${g.key}`} className="border-border">
                       <CardContent className="p-3 space-y-2">
@@ -1193,6 +1202,11 @@ export default function OperationsClient() {
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
                         <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
                         {g.anchor.paymentLabel ? <div className="text-xs text-muted-foreground">결제: {g.anchor.paymentLabel}</div> : null}
+                        <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
+                          <p className="text-[11px] font-medium text-primary">현재 업무 단계</p>
+                          <p className="text-[11px] text-muted-foreground">{groupGuide.stage}</p>
+                          <p className="mt-1 text-[11px] text-foreground">다음 할 일: {groupGuide.nextAction}</p>
+                        </div>
                         {!warn && g.needsReview && reviewReasons.length > 0 && (
                           <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
                             <p className="text-[11px] font-medium text-primary">검수 사유</p>

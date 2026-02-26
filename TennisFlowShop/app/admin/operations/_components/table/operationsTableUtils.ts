@@ -26,6 +26,9 @@ export type OpItem = {
   warn?: boolean;
   needsReview?: boolean;
   reviewReasons?: string[];
+  stage?: string;
+  nextAction?: string;
+  hasOutboundTracking?: boolean;
 };
 
 export function formatKST(iso?: string | null) {

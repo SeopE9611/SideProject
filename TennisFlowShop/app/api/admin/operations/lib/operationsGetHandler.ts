@@ -5,6 +5,7 @@ import { toISO, normalizeOrderStatus, normalizePaymentStatus, normalizeRentalSta
 import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor, AdminOperationsListRequestDto, AdminOperationsListResponseDto } from '@/types/admin/operations';
 import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
+import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 
@@ -650,6 +651,11 @@ export async function handleAdminOperationsGet(req: Request) {
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`order:${id}`) ?? [],
       warn: (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
+      ...inferNextActionForOperationItem({
+        kind: 'order',
+        statusLabel: normalizeOrderStatus(o.status),
+        paymentLabel: normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status)),
+      }),
     };
   });
 
@@ -738,6 +744,11 @@ export async function handleAdminOperationsGet(req: Request) {
       warn: (warnByKey.get(`stringing_application:${id}`)?.length ?? 0) > 0,
       needsReview: reviewReasons.length > 0,
       reviewReasons,
+      ...inferNextActionForOperationItem({
+        kind: 'stringing_application',
+        statusLabel: String(a?.status ?? '접수완료'),
+        paymentLabel: paymentDerived.paymentLabel,
+      }),
     };
   });
 
@@ -753,6 +764,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
     const rentalPaymentRaw = getString(r?.paymentStatus) ?? getString(r?.paymentInfo?.status);
+    const hasOutboundTracking = Boolean(r?.shipping?.outbound?.trackingNumber);
 
     return {
       id,
@@ -775,6 +787,13 @@ export async function handleAdminOperationsGet(req: Request) {
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
       needsReview: !rentalPaymentRaw,
       reviewReasons: !rentalPaymentRaw ? ['대여 문서에 결제상태 필드가 없어 운영 통합 센터 결제 비교에서 제외했습니다.'] : [],
+      hasOutboundTracking,
+      ...inferNextActionForOperationItem({
+        kind: 'rental',
+        statusLabel: normalizeRentalStatus(r?.status),
+        paymentLabel: rentalPaymentRaw ? normalizePaymentStatus(rentalPaymentRaw) : undefined,
+        hasOutboundTracking,
+      }),
     };
   });
 
