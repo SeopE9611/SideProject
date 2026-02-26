@@ -46,6 +46,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const paymentMeta = normalizeRentalPaymentMeta(doc);
 
+  let linkedApplicationStatus: string | null = null;
+  const rawStringingApplicationId = (doc as any).stringingApplicationId;
+  if (rawStringingApplicationId) {
+    const linkedApp = await db.collection('stringing_applications').findOne(
+      { _id: rawStringingApplicationId },
+      { projection: { status: 1 } },
+    );
+    linkedApplicationStatus = typeof linkedApp?.status === 'string' ? linkedApp.status : null;
+  }
+
   return NextResponse.json({
     id: doc._id.toString(),
     racketId: doc.racketId?.toString?.(),
@@ -62,7 +72,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     // 대여 기반 교체 서비스 신청서 연결 정보 (있으면 관리자 상세에서 CTA 노출 가능)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
+    stringing: (doc as any).stringing ?? null,
     stringingApplicationId: (doc as any).stringingApplicationId ?? null,
+    stringingApplicationStatus: linkedApplicationStatus,
     paymentStatusLabel: paymentMeta.label,
     paymentStatusSource: paymentMeta.source,
 

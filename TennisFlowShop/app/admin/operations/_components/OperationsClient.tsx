@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 import { copyToClipboard } from './actions/operationsActions';
 import { flowBadgeClass, prevMonthYyyymmKST, type Kind } from './filters/operationsFilters';
 import { buildOperationsViewQueryString, initOperationsStateFromQuery, useSyncOperationsQuery } from './hooks/useOperationsQueryState';
-import { formatKST, yyyymmKST, type OpItem } from './table/operationsTableUtils';
+import { formatKST, yyyymmKST, type OpItem, type ReviewLevel } from './table/operationsTableUtils';
 
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
@@ -241,13 +241,24 @@ function isWarnGroup(g: { items: OpItem[] }) {
   return (g.items ?? []).some((it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0);
 }
 
-function isNeedsReviewGroup(g: { anchor: OpItem; items: OpItem[] }) {
-  const hasItemReview = (g.items ?? []).some((it) => it.needsReview === true || (it.reviewReasons?.length ?? 0) > 0);
-  if (hasItemReview) return true;
-  if (!g.items || g.items.length <= 1) return false;
+function reviewLevelPriority(level: ReviewLevel) {
+  if (level === 'action') return 2;
+  if (level === 'info') return 1;
+  return 0;
+}
+
+function computeReviewLevelGroup(g: { anchor: OpItem; items: OpItem[] }): ReviewLevel {
+  let level: ReviewLevel = 'none';
+  for (const it of g.items ?? []) {
+    const itemLevel: ReviewLevel = it.reviewLevel ?? (it.needsReview ? 'action' : (it.reviewReasons?.length ?? 0) > 0 ? 'info' : 'none');
+    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level)) level = itemLevel;
+  }
+
+  if (!g.items || g.items.length <= 1) return level;
+
   const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
   const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-  if (children.length === 0) return false;
+  if (children.length === 0) return level;
 
   const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
   const childPaymentSummary = summarizeByKind(children, (it) => it.paymentLabel);
@@ -256,7 +267,8 @@ function isNeedsReviewGroup(g: { anchor: OpItem; items: OpItem[] }) {
   const anchorPay = g.anchor.paymentLabel ?? '-';
   const childPays = children.map((x) => x.paymentLabel).filter(Boolean) as string[];
   const payMismatch = anchorPay !== '-' && childPays.some((pay) => pay && pay !== '-' && pay !== anchorPay);
-  return hasMixed || payMismatch;
+  if (hasMixed || payMismatch) return 'action';
+  return level;
 }
 
 function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
@@ -268,6 +280,15 @@ function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
     }
   }
   return Array.from(reasons);
+}
+
+function stringSummaryText(item?: OpItem) {
+  if (!item?.stringingSummary?.requested) return null;
+  const summary = item.stringingSummary;
+  const bits = [summary.name ?? '스트링 선택됨', summary.price ? `요금 ${won(summary.price)}` : null, summary.mountingFee ? `교체비 ${won(summary.mountingFee)}` : null, summary.applicationStatus ? `신청 ${summary.applicationStatus}` : '신청 상태 확인']
+    .filter(Boolean)
+    .join(' / ');
+  return bits || '스트링 선택됨';
 }
 
 const thClasses = 'px-4 py-2 text-left align-middle font-semibold text-foreground text-[11px] whitespace-nowrap';
@@ -403,16 +424,20 @@ export default function OperationsClient() {
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items), [items]);
   const groupsToRender = useMemo(() => {
-    const withSignals = groups.map((group) => ({
-      ...group,
-      warn: isWarnGroup(group),
-      needsReview: isNeedsReviewGroup(group),
-    }));
+    const withSignals = groups.map((group) => {
+      const reviewLevel = computeReviewLevelGroup(group);
+      return {
+        ...group,
+        warn: isWarnGroup(group),
+        reviewLevel,
+        needsReview: reviewLevel === 'action',
+      };
+    });
 
     const filtered = withSignals.filter((group) => {
       if (warnFilter === 'all') return true;
       if (warnFilter === 'warn') return group.warn;
-      if (warnFilter === 'review') return !group.warn && group.needsReview;
+      if (warnFilter === 'review') return !group.warn && group.reviewLevel === 'action';
       return !group.warn && !group.needsReview;
     });
 
@@ -420,8 +445,8 @@ export default function OperationsClient() {
 
     return [...filtered].sort((a, b) => {
       if (a.warn === b.warn) {
-        if (a.needsReview === b.needsReview) return 0;
-        return a.needsReview ? -1 : 1;
+        if (a.reviewLevel === b.reviewLevel) return 0;
+        return reviewLevelPriority(a.reviewLevel) > reviewLevelPriority(b.reviewLevel) ? -1 : 1;
       }
       if (warnSort === 'warn_first') return a.warn ? -1 : 1;
       return a.warn ? 1 : -1;
@@ -435,7 +460,7 @@ export default function OperationsClient() {
         const hasWarn = groupItems.some((it) => Array.isArray(it.warnReasons) && it.warnReasons.length > 0);
         const hasPending = groupItems.some((it) => Array.isArray(it.pendingReasons) && it.pendingReasons.length > 0);
         const hasPaymentIssue = groupItems.some((it) => it.paymentLabel === '결제대기' || it.paymentLabel === '결제취소' || it.paymentLabel === '확인필요');
-        const hasNeedsReview = groupItems.some((it) => it.needsReview === true || (it.reviewReasons?.length ?? 0) > 0) || group.needsReview;
+        const hasNeedsReview = groupItems.some((it) => (it.reviewLevel ?? (it.needsReview ? 'action' : (it.reviewReasons?.length ?? 0) > 0 ? 'info' : 'none')) !== 'none') || group.reviewLevel !== 'none';
 
         if (hasWarn) acc.urgent += 1;
         if (hasPaymentIssue || hasNeedsReview) acc.caution += 1;
@@ -1042,10 +1067,12 @@ export default function OperationsClient() {
                               <div className="flex flex-wrap items-center gap-1">
                                 <div className="flex items-center gap-1">
                                   <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
-                                  {!warn && g.needsReview && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
+                                  {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
+                                  {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info border-info/30')}>참고/파생(조치없음)</Badge>}
                                 </div>
-                                {!warn && g.needsReview && reviewReasons.length > 0 && <div className="w-full text-[11px] text-primary/90">사유 {reviewReasons.length}건 · 펼쳐서 확인</div>}
-                                <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">다음 할 일: {groupGuide.nextAction}</div>
+                                {!warn && g.reviewLevel === 'action' && reviewReasons.length > 0 && <div className="w-full text-[11px] text-primary/90">사유 {reviewReasons.length}건 · 펼쳐서 확인</div>}
+                                {!warn && g.reviewLevel === 'info' && <div className="w-full text-[11px] text-info">정상 파생 · 조치 필요 없음</div>}
+                                <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">다음 할 일: {groupGuide.nextAction?.trim() ? groupGuide.nextAction : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</div>
                                 <div className="text-[11px] text-muted-foreground">{groupGuide.stage} · {isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
                             </TableCell>
@@ -1130,6 +1157,12 @@ export default function OperationsClient() {
                                     <p className="mb-1 text-xs font-medium text-foreground">연결 문서</p>
                                     {renderLinkedDocs(linkedDocsForAnchor)}
                                   </div>
+                                  {g.anchor.flow === 7 && (
+                                    <div>
+                                      <p className="mb-1 text-xs font-medium text-foreground">스트링 요약</p>
+                                      <p className="text-xs text-muted-foreground">{stringSummaryText(g.items.find((it) => it.kind === 'rental')) ?? '정보 없음'}</p>
+                                    </div>
+                                  )}
                                   <div>
                                     <p className="mb-1 text-xs font-medium text-foreground">상태 혼재 내역</p>
                                     {childStatusSummary.length > 0 ? (
@@ -1148,9 +1181,10 @@ export default function OperationsClient() {
                                   <div>
                                     <p className="mb-1 text-xs font-medium text-foreground">현재 업무 단계 / 다음 할 일</p>
                                     <p className="text-xs text-muted-foreground">{groupGuide.stage}</p>
-                                    <p className="text-xs text-foreground">{groupGuide.nextAction}</p>
+                                    <p className="text-xs text-foreground">{groupGuide.nextAction?.trim() ? groupGuide.nextAction : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</p>
                                   </div>
-                                  {reviewReasons.length > 0 && (
+                                  {g.reviewLevel === 'info' && <p className="text-xs text-info">참고 정보입니다. 조치 필요 없음.</p>}
+                                  {g.reviewLevel === 'action' && reviewReasons.length > 0 && (
                                     <div>
                                       <p className="mb-1 text-xs font-medium text-foreground">검수 사유</p>
                                       <ul className="space-y-1">
@@ -1195,19 +1229,21 @@ export default function OperationsClient() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1">
                             <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
-                            {!warn && g.needsReview && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
+                            {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
+                                  {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info border-info/30')}>참고/파생(조치없음)</Badge>}
                           </div>
                           <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
                         </div>
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
                         <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
                         {g.anchor.paymentLabel ? <div className="text-xs text-muted-foreground">결제: {g.anchor.paymentLabel}</div> : null}
+                        {g.anchor.flow === 7 && <div className="text-xs text-muted-foreground">스트링 요약: {stringSummaryText(g.items.find((it) => it.kind === 'rental')) ?? '정보 없음'}</div>}
                         <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
                           <p className="text-[11px] font-medium text-primary">현재 업무 단계</p>
                           <p className="text-[11px] text-muted-foreground">{groupGuide.stage}</p>
-                          <p className="mt-1 text-[11px] text-foreground">다음 할 일: {groupGuide.nextAction}</p>
+                          <p className="mt-1 text-[11px] text-foreground">다음 할 일: {groupGuide.nextAction?.trim() ? groupGuide.nextAction : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</p>
                         </div>
-                        {!warn && g.needsReview && reviewReasons.length > 0 && (
+                        {!warn && g.reviewLevel === 'action' && reviewReasons.length > 0 && (
                           <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
                             <p className="text-[11px] font-medium text-primary">검수 사유</p>
                             <ul className="mt-1 space-y-0.5">

@@ -11,7 +11,15 @@ import {
   normalizeRentalAmountTotal,
   normalizeRentalPaymentMeta,
 } from '@/lib/admin-ops-normalize';
-import type { AdminOperationFlow as Flow, AdminOperationItem as OpItem, AdminOperationKind as Kind, SettlementAnchor, AdminOperationsListRequestDto, AdminOperationsListResponseDto } from '@/types/admin/operations';
+import type {
+  AdminOperationFlow as Flow,
+  AdminOperationItem as OpItem,
+  AdminOperationKind as Kind,
+  AdminOperationReviewLevel,
+  SettlementAnchor,
+  AdminOperationsListRequestDto,
+  AdminOperationsListResponseDto,
+} from '@/types/admin/operations';
 import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
@@ -686,12 +694,17 @@ export async function handleAdminOperationsGet(req: Request) {
     const paymentSource = getString(a?.paymentSource) ?? '';
     const serviceFeeBefore = Number(a?.serviceFeeBefore ?? 0);
     const reviewReasons: string[] = [];
-    if (linkedOrderId && !getString(a?.paymentStatus)) reviewReasons.push('주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
-    if (linkedRentalId && !getString(a?.paymentStatus)) reviewReasons.push('대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
-    if (a?.packageApplied === true) reviewReasons.push('패키지 차감 기반 신청서입니다.');
-    if (paymentSource.startsWith('order:')) reviewReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
-    if (paymentSource.startsWith('rental:')) reviewReasons.push('결제 소스가 대여(rental:)를 가리킵니다.');
-    if (paymentDerived.derived) reviewReasons.push('신청서 결제상태를 정책 규칙으로 파생했습니다.');
+    const reviewInfoReasons: string[] = [];
+    const reviewActionReasons: string[] = [];
+    if (linkedOrderId && !getString(a?.paymentStatus)) reviewInfoReasons.push('주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
+    if (linkedRentalId && !getString(a?.paymentStatus)) reviewInfoReasons.push('대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
+    if (a?.packageApplied === true) reviewInfoReasons.push('패키지 차감 기반 신청서입니다.');
+    if (paymentSource.startsWith('order:')) reviewInfoReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
+    if (paymentSource.startsWith('rental:')) reviewInfoReasons.push('결제 소스가 대여(rental:)를 가리킵니다.');
+    if (paymentDerived.derived) reviewInfoReasons.push('신청서 결제상태를 정책 규칙으로 파생했습니다.');
+    if (paymentDerived.source === 'unknown') reviewActionReasons.push('신청서 결제소스를 판별할 수 없어 확인이 필요합니다.');
+    reviewReasons.push(...reviewActionReasons, ...reviewInfoReasons);
+    const reviewLevel: AdminOperationReviewLevel = reviewActionReasons.length > 0 ? 'action' : reviewInfoReasons.length > 0 ? 'info' : 'none';
 
     const amountNote = (() => {
       if (amount !== 0) return undefined;
@@ -751,7 +764,9 @@ export async function handleAdminOperationsGet(req: Request) {
       warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`stringing_application:${id}`) ?? [],
       warn: (warnByKey.get(`stringing_application:${id}`)?.length ?? 0) > 0,
-      needsReview: reviewReasons.length > 0,
+      needsReview: reviewLevel === 'action',
+      reviewLevel,
+      reviewTitle: reviewLevel === 'action' ? '결제 상태 확인 필요' : reviewLevel === 'info' ? '정상 파생(조치 필요 없음)' : undefined,
       reviewReasons,
       ...inferNextActionForOperationItem({
         kind: 'stringing_application',
@@ -774,6 +789,13 @@ export async function handleAdminOperationsGet(req: Request) {
     const amount = normalizeRentalAmountTotal(r);
     const rentalPaymentMeta = normalizeRentalPaymentMeta(r);
     const hasOutboundTracking = Boolean(r?.shipping?.outbound?.trackingNumber);
+    const linkedApplication = appId ? appById.get(appId) : null;
+    const stringingDoc = asDoc(r?.stringing);
+    const stringingName = getString(stringingDoc?.name);
+    const stringPrice = Number(r?.amount?.stringPrice ?? (stringingDoc?.requested ? stringingDoc?.price : 0) ?? 0);
+    const mountingFee = Number(r?.amount?.stringingFee ?? (stringingDoc?.requested ? stringingDoc?.mountingFee : 0) ?? 0);
+    const requested = Boolean(stringingDoc?.requested) || stringPrice > 0 || mountingFee > 0 || Boolean(appId);
+    const reviewLevel: AdminOperationReviewLevel = rentalPaymentMeta.source === 'derived' ? 'info' : 'none';
 
     return {
       id,
@@ -794,8 +816,19 @@ export async function handleAdminOperationsGet(req: Request) {
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`rental:${id}`) ?? [],
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
-      needsReview: rentalPaymentMeta.source === 'derived',
-      reviewReasons: rentalPaymentMeta.source === 'derived' ? ['대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다.'] : [],
+      needsReview: false,
+      reviewLevel,
+      reviewTitle: reviewLevel === 'info' ? '정상 파생(조치 필요 없음)' : undefined,
+      reviewReasons: reviewLevel === 'info' ? ['대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다.'] : [],
+      stringingSummary: requested
+        ? {
+            requested,
+            name: stringingName ?? undefined,
+            price: stringPrice > 0 ? stringPrice : undefined,
+            mountingFee: mountingFee > 0 ? mountingFee : undefined,
+            applicationStatus: getString(linkedApplication?.status) ?? undefined,
+          }
+        : undefined,
       hasOutboundTracking,
       ...inferNextActionForOperationItem({
         kind: 'rental',
