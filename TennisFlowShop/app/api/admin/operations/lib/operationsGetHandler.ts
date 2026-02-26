@@ -124,7 +124,7 @@ function isWarnGroup(g: OpGroup) {
 function deriveStringingPaymentLabel(app: UnknownDoc): {
   paymentLabel: string;
   derived: boolean;
-  source: 'explicit' | 'package' | 'order' | 'service_paid' | 'pending' | 'unknown';
+  source: 'explicit' | 'package' | 'order' | 'rental' | 'service_paid' | 'pending' | 'unknown';
 } {
   const rawPaymentStatus = getString(app?.paymentStatus);
   if (rawPaymentStatus && rawPaymentStatus.trim()) {
@@ -138,6 +138,10 @@ function deriveStringingPaymentLabel(app: UnknownDoc): {
   const paymentSource = getString(app?.paymentSource) ?? '';
   if (paymentSource.startsWith('order:')) {
     return { paymentLabel: '주문결제포함', derived: true, source: 'order' };
+  }
+
+  if (paymentSource.startsWith('rental:')) {
+    return { paymentLabel: '대여결제포함', derived: true, source: 'rental' };
   }
 
   if (app?.servicePaid === true) {
@@ -668,14 +672,17 @@ export async function handleAdminOperationsGet(req: Request) {
     const serviceFeeBefore = Number(a?.serviceFeeBefore ?? 0);
     const reviewReasons: string[] = [];
     if (linkedOrderId && !getString(a?.paymentStatus)) reviewReasons.push('주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
+    if (linkedRentalId && !getString(a?.paymentStatus)) reviewReasons.push('대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
     if (a?.packageApplied === true) reviewReasons.push('패키지 차감 기반 신청서입니다.');
     if (paymentSource.startsWith('order:')) reviewReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
+    if (paymentSource.startsWith('rental:')) reviewReasons.push('결제 소스가 대여(rental:)를 가리킵니다.');
     if (paymentDerived.derived) reviewReasons.push('신청서 결제상태를 정책 규칙으로 파생했습니다.');
 
     const amountNote = (() => {
       if (amount !== 0) return undefined;
       if (a?.packageApplied === true) return '패키지차감';
       if (paymentSource.startsWith('order:') || linkedOrderId) return '주문결제포함';
+      if (paymentSource.startsWith('rental:') || linkedRentalId) return '대여결제포함';
       if (paymentDerived.source === 'unknown') return '확인필요';
       return '별도청구없음';
     })();

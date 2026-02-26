@@ -145,7 +145,7 @@
 - `주의`: 데이터 무결성/연결 오류일 때만 사용한다.
   - 예) 주문/대여/신청서 양방향 링크 누락, 존재하지 않는 문서 참조, 중복 연결
 - `검수필요`: 오류는 아니지만 운영자 확인이 필요한 경우에 사용한다.
-  - 예) 신청서 paymentStatus 미기재로 파생 결제상태 사용, packageApplied 적용, paymentSource=order:*
+  - 예) 신청서 paymentStatus 미기재로 파생 결제상태 사용, packageApplied 적용, paymentSource=order:*/rental:*
 
 화면 UX 정렬 원칙:
 - `주의만`: 실제 오류(무결성/연결 문제)만 조회
@@ -165,17 +165,28 @@ URL 동기화 규칙:
   - 신청서: 신청서 자체 청구 금액(주문 포함/패키지 차감이면 0원 가능)
   - 대여: 대여 청구 금액
 - 메인 금액이 `0원`인 신청서는 반드시 이유를 함께 해석한다.
-  - `주문결제포함` / `패키지차감` / `별도청구없음` / `확인필요`
+  - `주문결제포함` / `대여결제포함` / `패키지차감` / `별도청구없음` / `확인필요`
 - `serviceFeeBefore` 등 기준 금액은 **보조 정보**로만 사용한다.
   - 예) `0원 · 주문결제포함 · 기준금액 192,220원`
+- 예) `0원 · 대여결제포함 · 기준금액 45,000원`
 
 신청서 결제 라벨 우선순위:
 1) paymentStatus 명시값 정규화
 2) packageApplied=true → 패키지차감
 3) paymentSource startsWith order: → 주문결제포함
-4) servicePaid=true → 결제완료
-5) totalPrice>0 또는 serviceAmount>0 → 결제대기
-6) 그 외 → 확인필요
+4) paymentSource startsWith rental: → 대여결제포함
+5) servicePaid=true → 결제완료
+6) totalPrice>0 또는 serviceAmount>0 → 결제대기
+7) 그 외 → 확인필요
 
 주문 결제 라벨은 `paymentStatus ?? paymentInfo.status` 폴백을 사용한다.
 대여는 결제 필드가 없을 수 있으므로, 필드가 없는 문서는 결제 비교에서 제외하고 `검수필요` 사유를 남긴다.
+
+
+Flow 7(대여 + 교체서비스) 0원 해석 규칙:
+- paymentSource가 `rental:<id>`이면 신청서 메인 금액이 0원이어도 `대여결제포함`으로 해석한다.
+- `serviceFeeBefore`가 있으면 `기준금액`으로만 보조 표시하고, 메인 금액(실청구 기준)은 0원을 유지한다.
+- 같은 0원이어도 문맥은 구분한다.
+  - 주문 기반: `0원 · 주문결제포함`
+  - 대여 기반: `0원 · 대여결제포함`
+  - 패키지 차감: `0원 · 패키지차감`
