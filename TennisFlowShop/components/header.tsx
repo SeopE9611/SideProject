@@ -243,7 +243,7 @@ const Header = () => {
     ],
     packages: [{ name: '패키지 안내', href: '/services/packages' }],
     support: [
-      { name: '고객센터 홈', href: '/support/notice' },
+      { name: '고객센터 홈', href: '/support' },
       { name: '공지사항', href: '/board/notice' },
       { name: 'QnA', href: '/board/qna' },
     ],
