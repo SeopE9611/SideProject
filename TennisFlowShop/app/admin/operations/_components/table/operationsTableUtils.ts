@@ -11,6 +11,9 @@ export type OpItem = {
   statusLabel: string;
   paymentLabel?: string;
   amount: number;
+  amountNote?: string;
+  amountReference?: number;
+  amountReferenceLabel?: string;
   flow: Flow;
   flowLabel: string;
   settlementAnchor: SettlementAnchor;

@@ -664,11 +664,21 @@ export async function handleAdminOperationsGet(req: Request) {
     const related = linkedOrderId ? { kind: 'order' as const, id: linkedOrderId, href: `/admin/orders/${linkedOrderId}` } : linkedRentalId ? { kind: 'rental' as const, id: linkedRentalId, href: `/admin/rentals/${linkedRentalId}` } : null;
 
     const paymentDerived = deriveStringingPaymentLabel(a);
+    const paymentSource = getString(a?.paymentSource) ?? '';
+    const serviceFeeBefore = Number(a?.serviceFeeBefore ?? 0);
     const reviewReasons: string[] = [];
     if (linkedOrderId && !getString(a?.paymentStatus)) reviewReasons.push('주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
     if (a?.packageApplied === true) reviewReasons.push('패키지 차감 기반 신청서입니다.');
-    if ((getString(a?.paymentSource) ?? '').startsWith('order:')) reviewReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
+    if (paymentSource.startsWith('order:')) reviewReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
     if (paymentDerived.derived) reviewReasons.push('신청서 결제상태를 정책 규칙으로 파생했습니다.');
+
+    const amountNote = (() => {
+      if (amount !== 0) return undefined;
+      if (a?.packageApplied === true) return '패키지차감';
+      if (paymentSource.startsWith('order:') || linkedOrderId) return '주문결제포함';
+      if (paymentDerived.source === 'unknown') return '확인필요';
+      return '별도청구없음';
+    })();
 
     return {
       id,
@@ -679,6 +689,9 @@ export async function handleAdminOperationsGet(req: Request) {
       statusLabel: String(a?.status ?? '접수완료'),
       paymentLabel: paymentDerived.paymentLabel,
       amount,
+      amountNote,
+      amountReference: amount === 0 && serviceFeeBefore > 0 ? serviceFeeBefore : undefined,
+      amountReferenceLabel: amount === 0 && serviceFeeBefore > 0 ? '기준금액' : undefined,
       flow: (() => {
         if (!isIntegrated) return 3 as Flow;
         if (related?.kind === 'order') return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
