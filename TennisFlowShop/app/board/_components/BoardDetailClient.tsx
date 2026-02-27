@@ -28,12 +28,17 @@ import type { CommunityComment, CommunityPost } from '@/lib/types/community';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-// 한글 매핑 작업
 const LEVEL_LABEL: Record<string, string> = {
-  beginner: '초보자',
-  intermediate: '중급자',
-  advanced: '상급자',
-  pro: '준프로 / 프로',
+  '1.0': '1.0',
+  '1.5': '1.5',
+  '2.0': '2.0',
+  '2.5': '2.5',
+  '3.0': '3.0',
+  '3.5': '3.5',
+  '4.0': '4.0',
+  '4.5': '4.5',
+  '5.0': '5.0',
+  pro: '프로',
 };
 const HAND_LABEL: Record<string, string> = { right: '오른손', left: '왼손', both: '양손' };
 const STYLE_LABEL: Record<string, string> = {

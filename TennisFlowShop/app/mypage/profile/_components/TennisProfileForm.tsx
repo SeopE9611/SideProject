@@ -13,7 +13,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdSportsTennis } from 'react-icons/md';
 
 // 제출 직전 최종 유효성 가드
-const ALLOWED_LEVEL = new Set(['beginner', 'intermediate', 'advanced', 'pro']);
+const ALLOWED_LEVEL = new Set(['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', 'pro']);
 const ALLOWED_HAND = new Set(['right', 'left', 'both']);
 const ALLOWED_PLAY_STYLE = new Set(['baseline', 'all_court', 'serve_and_volley', 'counter_puncher', 'other']);
 
@@ -331,16 +331,22 @@ export default function TennisProfileForm() {
               <div className="grid gap-4 md:grid-cols-3">
                 {/* 레벨 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">실력 레벨</Label>
+                  <Label className="text-xs text-muted-foreground">NTRP</Label>
                   <Select value={profile.level} onValueChange={(value) => updateField('level', value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="레벨을 선택해주세요" />
+                      <SelectValue placeholder="NTRP를 선택해주세요" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">초보자</SelectItem>
-                      <SelectItem value="intermediate">중급자</SelectItem>
-                      <SelectItem value="advanced">상급자</SelectItem>
-                      <SelectItem value="pro">준프로 / 프로</SelectItem>
+                      <SelectItem value="1.0">1.0</SelectItem>
+                      <SelectItem value="1.5">1.5</SelectItem>
+                      <SelectItem value="2.0">2.0</SelectItem>
+                      <SelectItem value="2.5">2.5</SelectItem>
+                      <SelectItem value="3.0">3.0</SelectItem>
+                      <SelectItem value="3.5">3.5</SelectItem>
+                      <SelectItem value="4.0">4.0</SelectItem>
+                      <SelectItem value="4.5">4.5</SelectItem>
+                      <SelectItem value="5.0">5.0</SelectItem>
+                      <SelectItem value="pro">프로</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
