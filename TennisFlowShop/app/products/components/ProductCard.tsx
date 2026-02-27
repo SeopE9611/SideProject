@@ -1,17 +1,17 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, Eye, Heart } from 'lucide-react';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useRouter } from 'next/navigation';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Eye, Heart, Star } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React from 'react';
 
 // 제품 타입 (필요시 공통으로 뺄 수도 있음)
 export type Product = {
@@ -325,15 +325,41 @@ const ProductCard = React.memo(
             </div>
           </CardContent>
 
-          <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 bp-xxs:flex-col">
-            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringSingleBuy} disabled={isSoldOut}>
-              {isApplyFlow ? '단품만 구매' : '단품 구매'}
-            </Button>
+          <CardFooter
+            className={
+              isApplyFlow
+                ? 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex flex-col gap-1.5 bp-sm:gap-2'
+                : 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 bp-xxs:flex-col'
+            }
+          >
+            <Button
+              type="button"
+              variant="outline"
+              className={
+                isApplyFlow
+                  ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center'
+                  : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
+              }
+              onClick={handleStringSingleBuy}
+              disabled={isSoldOut}
+            >
+               {isApplyFlow ? '단품만 구매' : '단품 구매'}
+             </Button>
 
-            <Button type="button" variant="outline" className="flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs" onClick={handleStringServiceApply} disabled={isSoldOut}>
-              {isApplyFlow ? '교체 서비스 포함 결제' : '작업의뢰'}
-            </Button>
-          </CardFooter>
+            <Button
+              type="button"
+              variant="outline"
+              className={
+                isApplyFlow
+                  ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center'
+                  : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
+              }
+              onClick={handleStringServiceApply}
+              disabled={isSoldOut}
+            >
+               {isApplyFlow ? '교체 서비스 포함 결제' : '작업의뢰'}
+             </Button>
+           </CardFooter>
         </Card>
       </Link>
     );
