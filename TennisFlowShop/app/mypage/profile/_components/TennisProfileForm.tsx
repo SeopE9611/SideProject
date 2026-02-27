@@ -233,21 +233,21 @@ export default function TennisProfileForm() {
 
     const tMain = tMainRaw ? parseOptionalNumber(tMainRaw) : null;
     if (tMainRaw && tMain === null) {
-      showErrorToast('메인 텐션은 숫자로 입력해주세요. (예: 23)');
+      showErrorToast('메인 텐션은 숫자로 입력해주세요. (예: 53)');
       return;
     }
-    if (tMain !== null && (tMain < 10 || tMain > 35)) {
-      showErrorToast('메인 텐션 범위가 비정상적입니다. (10~35kg 권장)');
+    if (tMain !== null && (tMain < 44 || tMain > 71)) {
+      showErrorToast('메인 텐션 범위가 비정상적입니다. (44~71LB 권장)');
       return;
     }
 
     const tCross = tCrossRaw ? parseOptionalNumber(tCrossRaw) : null;
     if (tCrossRaw && tCross === null) {
-      showErrorToast('크로스 텐션은 숫자로 입력해주세요. (예: 22)');
+      showErrorToast('크로스 텐션은 숫자로 입력해주세요. (예: 51)');
       return;
     }
-    if (tCross !== null && (tCross < 10 || tCross > 35)) {
-      showErrorToast('크로스 텐션 범위가 비정상적입니다. (10~35kg 권장)');
+    if (tCross !== null && (tCross < 44 || tCross > 71)) {
+      showErrorToast('크로스 텐션 범위가 비정상적입니다. (44~71LB 권장)');
       return;
     }
 
@@ -429,12 +429,12 @@ export default function TennisProfileForm() {
                   <Input value={profile.mainString.material} onChange={(e) => updateMainString('material', e.target.value)} placeholder="예: 폴리, 멀티, 내추럴" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">메인 텐션 (kg)</Label>
-                  <Input value={profile.mainString.tensionMain} onChange={(e) => updateMainString('tensionMain', e.target.value)} placeholder="예: 23" />
+                  <Label className="text-xs text-muted-foreground">메인 텐션 (LB)</Label>
+                  <Input value={profile.mainString.tensionMain} onChange={(e) => updateMainString('tensionMain', e.target.value)} placeholder="예: 53" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">크로스 텐션 (kg)</Label>
-                  <Input value={profile.mainString.tensionCross} onChange={(e) => updateMainString('tensionCross', e.target.value)} placeholder="예: 22" />
+                  <Label className="text-xs text-muted-foreground">크로스 텐션 (LB)</Label>
+                  <Input value={profile.mainString.tensionCross} onChange={(e) => updateMainString('tensionCross', e.target.value)} placeholder="예: 51" />
                 </div>
               </div>
             </div>

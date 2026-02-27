@@ -1,20 +1,20 @@
-import { cookies } from 'next/headers';
-import { notFound } from 'next/navigation';
-import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
-import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
-import jwt from 'jsonwebtoken';
-import Link from 'next/link';
-import { CheckCircle, Calendar, CreditCard, MapPin, Phone, Mail, User, Rocket as Racquet, Clock, Home, FileText, Shield, Award, Zap, Ticket, Package, ArrowRight } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
-import { Badge } from '@/components/ui/badge';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import LoginGate from '@/components/system/LoginGate';
+import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
+import LoginGate from '@/components/system/LoginGate';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
+import clientPromise from '@/lib/mongodb';
+import jwt from 'jsonwebtoken';
+import { ArrowRight, Award, Calendar, CheckCircle, Clock, CreditCard, FileText, Home, Mail, MapPin, Package, Phone, Rocket as Racquet, Shield, Ticket, User, Zap } from 'lucide-react';
+import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 interface Props {
   searchParams: Promise<{
@@ -641,7 +641,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                               <p>
                                 텐션&nbsp;
                                 <span className="font-medium">
-                                  메인 {line.tensionMain || '-'} / 크로스 {line.tensionCross || '-'}
+                                  메인 {line.tensionMain ? `${line.tensionMain}LB` : '-'} / 크로스 {line.tensionCross ? `${line.tensionCross}LB` : '-'}
                                 </span>
                               </p>
                             )}

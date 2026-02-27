@@ -19,10 +19,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
-import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -596,7 +596,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   const paymentMethodLabel = data.packageInfo?.applied ? '무통장입금(패키지 사용)' : '무통장입금';
 
-
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = getAdminApplicationCancelRequestInfo(data);
 
@@ -662,11 +661,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <TooltipProvider>
               <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
                 <Link href={backUrl}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
-                  >
+                  <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     신청 목록으로 돌아가기
                   </Button>
@@ -679,11 +674,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       return: `/mypage/applications/${data.id}`,
                     }).toString()}`}
                   >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
-                    >
+                    <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
                       <Truck className="w-4 h-4 mr-2" />
                       {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                     </Button>
@@ -692,12 +683,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                 {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
                 {isAdmin && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
-                  >
+                  <Button asChild variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
                     <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
                       <Truck className="mr-1 h-4 w-4" />
                       {invoice?.trackingNumber ? '운송장 수정하기' : '운송장 등록하기'}
@@ -735,8 +721,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </Tooltip>
               </div>
 
-                        {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
-                {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} className="w-auto h-9 px-3 text-sm" />}
+              {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
+              {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} className="w-auto h-9 px-3 text-sm" />}
 
               {/* 사용자: 교체확정 버튼 */}
               {!isAdmin && (
@@ -1150,7 +1136,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                             </p>
                             {(line.tensionMain || line.tensionCross) && (
                               <span className="inline-flex items-center rounded-full px-2 py-1 text-xs bg-muted text-foreground dark:bg-card">
-                                텐션 {line.tensionMain ?? '-'} / {line.tensionCross ?? '-'}
+                                텐션 {line.tensionMain ? `${line.tensionMain}LB` : '-'} / {line.tensionCross ? `${line.tensionCross}LB` : '-'}
                               </span>
                             )}
                           </div>

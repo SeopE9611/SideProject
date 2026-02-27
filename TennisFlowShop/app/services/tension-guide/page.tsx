@@ -17,7 +17,7 @@ export default function TensionGuidePage() {
   const [playStyle, setPlayStyle] = useState<PlayStyle>('allcourt');
   const [swingSpeed, setSwingSpeed] = useState<SwingSpeed>('medium');
   const [stringType, setStringType] = useState<StringType>('poly');
-  const [tensionValue, setTensionValue] = useState([25]);
+  const [tensionValue, setTensionValue] = useState([55]);
   const [activeSection, setActiveSection] = useState<string>('calculator');
 
   const playerTypes = [
@@ -25,11 +25,11 @@ export default function TensionGuidePage() {
       type: '초보자',
       level: 1,
       icon: Users,
-      tension: '22-26kg',
-      tensionRange: [22, 26],
+      tension: '49-57LB',
+      tensionRange: [49, 57],
       description: '편안한 플레이와 부상 방지를 위한 낮은 텐션',
       characteristics: ['파워 증가', '편안한 느낌', '부상 위험 감소', '넓은 스윗스팟'],
-      recommended: '처음 시작하시는 분들께는 24kg을 권장합니다',
+      recommended: '처음 시작하시는 분들께는 53LB를 권장합니다',
       color: 'bg-primary/10 dark:bg-primary/20',
       bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
@@ -38,11 +38,11 @@ export default function TensionGuidePage() {
       type: '중급자',
       level: 2,
       icon: Target,
-      tension: '24-28kg',
-      tensionRange: [24, 28],
+      tension: '53-62LB',
+      tensionRange: [53, 62],
       description: '컨트롤과 파워의 균형을 맞춘 중간 텐션',
       characteristics: ['균형잡힌 플레이', '적당한 컨트롤', '다양한 샷 구사', '스핀 생성 용이'],
-      recommended: '균형 잡힌 플레이를 원하시면 26kg이 적합합니다',
+      recommended: '균형 잡힌 플레이를 원하시면 57LB가 적합합니다',
       color: 'bg-primary/10 dark:bg-primary/20',
       bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
@@ -51,11 +51,11 @@ export default function TensionGuidePage() {
       type: '상급자',
       level: 3,
       icon: Zap,
-      tension: '26-30kg',
-      tensionRange: [26, 30],
+      tension: '57-66LB',
+      tensionRange: [57, 66],
       description: '정밀한 컨트롤과 스핀을 위한 높은 텐션',
       characteristics: ['정밀한 컨트롤', '강한 스핀', '빠른 스윙 활용', '일관된 타구감'],
-      recommended: '빠른 스윙을 가지신 분은 28kg을 권장합니다',
+      recommended: '빠른 스윙을 가지신 분은 62LB를 권장합니다',
       color: 'bg-primary/10 dark:bg-primary/20',
       bgColor: 'bg-primary/10 dark:bg-primary/20',
       borderColor: 'border-border',
@@ -64,11 +64,11 @@ export default function TensionGuidePage() {
       type: '프로/투어',
       level: 4,
       icon: TrendingUp,
-      tension: '28-32kg',
-      tensionRange: [28, 32],
+      tension: '62-71LB',
+      tensionRange: [62, 71],
       description: '최고 수준의 컨트롤과 정확성을 위한 고텐션',
       characteristics: ['최고 컨트롤', '정확한 플레이스먼트', '프로 수준 스핀', '정교한 터치'],
-      recommended: '프로 수준의 파워가 있다면 30kg 이상을 고려하세요',
+      recommended: '프로 수준의 파워가 있다면 66LB 이상을 고려하세요',
       color: 'bg-primary/10 dark:bg-primary/20',
       bgColor: 'bg-muted/50 dark:bg-muted/40',
       borderColor: 'border-border',
@@ -80,12 +80,12 @@ export default function TensionGuidePage() {
       id: 'poly',
       name: '폴리에스터',
       icon: Shield,
-      recommendedTension: '24-28kg',
-      tensionAdjust: -2,
+      recommendedTension: '53-62LB',
+      tensionAdjust: -4,
       characteristics: '내구성이 뛰어나고 스핀 생성에 유리합니다. 단단한 느낌으로 컨트롤이 좋습니다.',
       pros: ['뛰어난 내구성', '스핀 생성 우수', '컨트롤 향상', '텐션 유지력 양호'],
       cons: ['팔에 무리 가능', '파워 감소', '정기적 교체 필요'],
-      adjustment: '일반 텐션보다 2-3kg 낮게 시작하세요',
+      adjustment: '일반 텐션보다 4-7LB 낮게 시작하세요',
       bestFor: '스핀 위주 플레이어, 스트링이 자주 끊어지는 분',
       color: 'bg-muted/40',
     },
@@ -93,7 +93,7 @@ export default function TensionGuidePage() {
       id: 'multi',
       name: '멀티필라멘트',
       icon: Layers,
-      recommendedTension: '22-26kg',
+      recommendedTension: '49-57LB',
       tensionAdjust: 0,
       characteristics: '부드러운 느낌과 뛰어난 파워를 제공합니다. 팔에 무리가 적습니다.',
       pros: ['편안한 타구감', '파워 증가', '팔 부담 감소', '넓은 스윗스팟'],
@@ -106,12 +106,12 @@ export default function TensionGuidePage() {
       id: 'hybrid',
       name: '하이브리드',
       icon: Settings2,
-      recommendedTension: '메인: 26kg, 크로스: 24kg',
-      tensionAdjust: -1,
+      recommendedTension: '메인: 57LB, 크로스: 53LB',
+      tensionAdjust: -2,
       characteristics: '두 가지 스트링의 장점을 결합합니다. 맞춤형 설정이 가능합니다.',
       pros: ['커스터마이징 가능', '균형 잡힌 성능', '비용 효율적', '다양한 조합'],
       cons: ['설정이 복잡', '일관성 떨어질 수 있음'],
-      adjustment: '메인을 크로스보다 2kg 높게 설정하세요',
+      adjustment: '메인을 크로스보다 4LB 높게 설정하세요',
       bestFor: '자신만의 세팅을 원하는 분, 다양한 실험을 좋아하는 분',
       color: 'bg-warning/20 dark:bg-warning/25',
     },
@@ -119,12 +119,12 @@ export default function TensionGuidePage() {
       id: 'natural',
       name: '내추럴 거트',
       icon: Zap,
-      recommendedTension: '23-27kg',
-      tensionAdjust: -1,
+      recommendedTension: '51-60LB',
+      tensionAdjust: -2,
       characteristics: '최고의 느낌과 파워를 제공하는 프리미엄 스트링입니다.',
       pros: ['최상의 타구감', '뛰어난 파워', '텐션 유지력 최고', '팔에 부드러움'],
       cons: ['높은 가격', '습기에 약함', '관리 필요'],
-      adjustment: '표준 텐션보다 1-2kg 낮게 시작하세요',
+      adjustment: '표준 텐션보다 2-4LB 낮게 시작하세요',
       bestFor: '최고의 퍼포먼스를 원하는 분, 프로 선수',
       color: 'bg-primary/10 dark:bg-primary/20',
     },
@@ -134,48 +134,48 @@ export default function TensionGuidePage() {
     {
       factor: '날씨 - 더운 날',
       icon: Sun,
-      adjustment: '+1~2kg',
+      adjustment: '+2~4LB',
       reason: '열로 인해 스트링이 늘어나므로 텐션을 높여야 합니다',
       color: 'text-muted-foreground',
     },
     {
       factor: '날씨 - 추운 날',
       icon: Thermometer,
-      adjustment: '-1~2kg',
+      adjustment: '-2~4LB',
       reason: '추위로 스트링이 딱딱해지므로 텐션을 낮춰야 합니다',
       color: 'text-primary',
     },
     {
       factor: '습한 환경',
       icon: CloudRain,
-      adjustment: '+1kg',
+      adjustment: '+2LB',
       reason: '습기가 스트링에 영향을 미쳐 탄성이 변합니다',
       color: 'text-primary',
     },
     {
       factor: '고도가 높은 곳',
       icon: Wind,
-      adjustment: '+1~2kg',
+      adjustment: '+2~4LB',
       reason: '공기 저항이 적어 볼 스피드가 빨라집니다',
       color: 'text-muted-foreground',
     },
   ];
 
   const playStyleOptions = [
-    { id: 'baseline', label: '베이스라이너', adjust: 1, desc: '후방에서 랠리 중심 플레이' },
+    { id: 'baseline', label: '베이스라이너', adjust: 2, desc: '후방에서 랠리 중심 플레이' },
     { id: 'allcourt', label: '올코트', adjust: 0, desc: '다양한 위치에서 균형 잡힌 플레이' },
-    { id: 'servevolley', label: '서브&발리', adjust: -1, desc: '네트 플레이 중심' },
+    { id: 'servevolley', label: '서브&발리', adjust: -2, desc: '네트 플레이 중심' },
   ];
 
   const swingSpeedOptions = [
-    { id: 'slow', label: '느림', adjust: -2, desc: '컴팩트한 스윙' },
+    { id: 'slow', label: '느림', adjust: -4, desc: '컴팩트한 스윙' },
     { id: 'medium', label: '보통', adjust: 0, desc: '평균적인 스윙 스피드' },
-    { id: 'fast', label: '빠름', adjust: 2, desc: '강력하고 빠른 스윙' },
+    { id: 'fast', label: '빠름', adjust: 4, desc: '강력하고 빠른 스윙' },
   ];
 
   // 추천 텐션 계산
   const calculatedTension = useMemo(() => {
-    let baseTension = 25;
+    let baseTension = 55;
 
     // 스트링 타입에 따른 조정
     const selectedString = stringTypes.find((s) => s.id === stringType);
@@ -195,14 +195,14 @@ export default function TensionGuidePage() {
       baseTension += speedOption.adjust;
     }
 
-    return Math.max(20, Math.min(32, baseTension));
+    return Math.max(44, Math.min(71, baseTension));
   }, [stringType, playStyle, swingSpeed]);
 
   const getTensionFeedback = (value: number) => {
-    if (value < 22) return { level: 'low', text: '매우 낮음 - 파워 중심', color: 'text-primary' };
-    if (value < 25) return { level: 'medium-low', text: '낮음 - 편안함 & 파워', color: 'text-success' };
-    if (value < 27) return { level: 'medium', text: '중간 - 균형 잡힌 세팅', color: 'text-primary' };
-    if (value < 29) return { level: 'medium-high', text: '높음 - 컨트롤 중심', color: 'text-primary' };
+    if (value < 49) return { level: 'low', text: '매우 낮음 - 파워 중심', color: 'text-primary' };
+    if (value < 55) return { level: 'medium-low', text: '낮음 - 편안함 & 파워', color: 'text-success' };
+    if (value < 60) return { level: 'medium', text: '중간 - 균형 잡힌 세팅', color: 'text-primary' };
+    if (value < 64) return { level: 'medium-high', text: '높음 - 컨트롤 중심', color: 'text-primary' };
     return { level: 'high', text: '매우 높음 - 최대 컨트롤', color: 'text-muted-foreground' };
   };
 
@@ -226,11 +226,11 @@ export default function TensionGuidePage() {
             {/* Quick Stats */}
             <div className="flex flex-wrap justify-center gap-4 bp-sm:gap-6 bp-md:gap-12 text-center">
               <div className="bg-card dark:bg-muted/80 rounded-xl px-4 py-3 bp-sm:px-6 bp-sm:py-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
-                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">20-32kg</div>
+                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">44-71LB</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">일반 텐션 범위</div>
               </div>
               <div className="bg-card dark:bg-muted/80 rounded-xl px-4 py-3 bp-sm:px-6 bp-sm:py-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
-                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">25-26kg</div>
+                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">55-57LB</div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">가장 많이 사용</div>
               </div>
               <div className="bg-card dark:bg-muted/80 rounded-xl px-4 py-3 bp-sm:px-6 bp-sm:py-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
@@ -348,20 +348,20 @@ export default function TensionGuidePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-center mb-6 bp-md:mb-8">
-                      <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 animate-in fade-in duration-500">{calculatedTension}kg</div>
+                      <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 animate-in fade-in duration-500">{calculatedTension}LB</div>
                       <div className={`text-base bp-md:text-lg font-medium ${getTensionFeedback(calculatedTension).color}`}>{getTensionFeedback(calculatedTension).text}</div>
                     </div>
 
                     {/* 텐션 시각화 */}
                     <div className="mb-6 bp-md:mb-8">
                       <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                        <span>20kg</span>
-                        <span>32kg</span>
+                        <span>44LB</span>
+                        <span>71LB</span>
                       </div>
                       <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                         <div
                           className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
-                          style={{ left: `calc(${((calculatedTension - 20) / 12) * 100}% - 12px)` }}
+                          style={{ left: `calc(${((calculatedTension - 44) / 27) * 100}% - 12px)` }}
                         />
                       </div>
                       <div className="flex justify-between text-xs mt-2">
@@ -377,7 +377,7 @@ export default function TensionGuidePage() {
                         <span className="font-medium text-foreground">추천 범위</span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {calculatedTension - 1}kg ~ {calculatedTension + 1}kg 범위에서 시작하여 본인의 느낌에 따라 조절하세요.
+                        {calculatedTension - 2}LB ~ {calculatedTension + 2}LB 범위에서 시작하여 본인의 느낌에 따라 조절하세요.
                       </p>
                     </div>
 
@@ -446,15 +446,15 @@ export default function TensionGuidePage() {
                       {/* 텐션 범위 시각화 */}
                       <div className="mb-3 bp-md:mb-4">
                         <div className="flex justify-between text-[10px] bp-sm:text-xs text-muted-foreground mb-1">
-                          <span>20kg</span>
-                          <span>32kg</span>
+                          <span>44LB</span>
+                          <span>71LB</span>
                         </div>
                         <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                           <div
                             className="absolute h-full bg-primary/60 rounded-full"
                             style={{
-                              left: `${((player.tensionRange[0] - 20) / 12) * 100}%`,
-                              width: `${((player.tensionRange[1] - player.tensionRange[0]) / 12) * 100}%`,
+                              left: `${((player.tensionRange[0] - 44) / 27) * 100}%`,
+                              width: `${((player.tensionRange[1] - player.tensionRange[0]) / 27) * 100}%`,
                             }}
                           />
                         </div>
@@ -576,7 +576,7 @@ export default function TensionGuidePage() {
                           <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">낮은 텐션 (20-24kg)</h4>
+                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">낮은 텐션 (44LB-53LB)</h4>
                           <p className="text-xs bp-md:text-sm text-muted-foreground">파워와 편안함 중심</p>
                         </div>
                       </div>
@@ -607,7 +607,7 @@ export default function TensionGuidePage() {
                           <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">높은 텐션 (28-32kg)</h4>
+                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">높은 텐션 (62LB-71LB)</h4>
                           <p className="text-xs bp-md:text-sm text-muted-foreground">컨트롤과 정밀함 중심</p>
                         </div>
                       </div>
@@ -725,20 +725,20 @@ export default function TensionGuidePage() {
                   <div className="space-y-4 bp-md:space-y-6">
                     <div className="border-b border-border pb-3 bp-md:pb-4">
                       <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">메인과 크로스 텐션을 다르게 해야 하나요?</h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">반드시 필요하지는 않지만, 일부 선수들은 메인을 크로스보다 1-2kg 높게 설정합니다. 이는 스윗스팟을 확장하고 컨트롤과 파워의 균형을 맞추는 데 도움이 됩니다.</p>
+                      <p className="text-xs bp-md:text-sm text-muted-foreground">반드시 필요하지는 않지만, 일부 선수들은 메인을 크로스보다 2-4LB 높게 설정합니다. 이는 스윗스팟을 확장하고 컨트롤과 파워의 균형을 맞추는 데 도움이 됩니다.</p>
                     </div>
                     <div className="border-b border-border pb-3 bp-md:pb-4">
                       <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">새 라켓에는 어떤 텐션으로 시작해야 하나요?</h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는 것이 좋습니다. 이후 플레이 느낌에 따라 1-2kg씩 조절해 나가세요.</p>
+                      <p className="text-xs bp-md:text-sm text-muted-foreground">라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는 것이 좋습니다. 이후 플레이 느낌에 따라 2-4LB씩 조절해 나가세요.</p>
                     </div>
                     <div className="border-b border-border pb-3 bp-md:pb-4">
                       <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">텐션을 자주 바꿔도 되나요?</h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다. 하지만 계절 변화나 코트 조건에 따라 1-2kg 정도 조절하는 것은 권장됩니다.</p>
+                      <p className="text-xs bp-md:text-sm text-muted-foreground">일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다. 하지만 계절 변화나 코트 조건에 따라 2-4LB 정도 조절하는 것은 권장됩니다.</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">프로 선수들은 어떤 텐션을 사용하나요?</h4>
                       <p className="text-xs bp-md:text-sm text-muted-foreground">
-                        프로 선수들은 보통 23-27kg 범위를 사용합니다. 일반적인 인식과 달리 매우 높은 텐션을 사용하지 않는 경우가 많습니다. 중요한 것은 자신의 플레이 스타일에 맞는 텐션을 찾는 것입니다.
+                        프로 선수들은 보통 51-60LB 범위를 사용합니다. 일반적인 인식과 달리 매우 높은 텐션을 사용하지 않는 경우가 많습니다. 중요한 것은 자신의 플레이 스타일에 맞는 텐션을 찾는 것입니다.
                       </p>
                     </div>
                   </div>

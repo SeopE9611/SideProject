@@ -1711,11 +1711,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className="text-muted-foreground w-20">메인 텐션</span>
-                                <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.tensionMain)}</span>
+                                <span className="text-foreground">{authorOverview.tennisProfile.mainString?.tensionMain ? `${authorOverview.tennisProfile.mainString.tensionMain}LB` : '-'}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className="text-muted-foreground w-20">크로스 텐션</span>
-                                <span className="text-foreground">{v(authorOverview.tennisProfile.mainString?.tensionCross)}</span>
+                                <span className="text-foreground">{authorOverview.tennisProfile.mainString?.tensionCross ? `${authorOverview.tennisProfile.mainString.tensionCross}LB` : '-'}</span>
                               </div>
                             </div>
                           </div>

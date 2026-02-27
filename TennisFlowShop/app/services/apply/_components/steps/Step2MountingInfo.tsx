@@ -733,13 +733,13 @@ export default function Step2MountingInfo(props: Props) {
 
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground">공통 메인 텐션(kg)</Label>
-                    <Input value={bulkTensionMain} onChange={(e) => setBulkTensionMain(e.target.value)} placeholder="예: 24" className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring" />
+                    <Label className="text-xs font-medium text-foreground">공통 메인 텐션(LB)</Label>
+                    <Input value={bulkTensionMain} onChange={(e) => setBulkTensionMain(e.target.value)} placeholder="예: 53" className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring" />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground">공통 크로스 텐션(kg)</Label>
-                    <Input value={bulkTensionCross} onChange={(e) => setBulkTensionCross(e.target.value)} placeholder="예: 23" className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring" />
+                    <Label className="text-xs font-medium text-foreground">공통 크로스 텐션(LB)</Label>
+                    <Input value={bulkTensionCross} onChange={(e) => setBulkTensionCross(e.target.value)} placeholder="예: 51" className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring" />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-3">
@@ -784,20 +784,20 @@ export default function Step2MountingInfo(props: Props) {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-foreground">메인 텐션(kg)</Label>
+                        <Label className="text-xs font-medium text-foreground">메인 텐션(LB)</Label>
                         <Input
                           value={line.tensionMain ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionMain', e.target.value)}
-                          placeholder="예: 24"
+                          placeholder="예: 53"
                           className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-foreground">크로스 텐션(kg)</Label>
+                        <Label className="text-xs font-medium text-foreground">크로스 텐션(LB)</Label>
                         <Input
                           value={line.tensionCross ?? ''}
                           onChange={(e) => handleLineFieldChange(index, 'tensionCross', e.target.value)}
-                          placeholder="예: 23"
+                          placeholder="예: 51"
                           className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
