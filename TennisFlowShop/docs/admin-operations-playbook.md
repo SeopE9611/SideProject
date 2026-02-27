@@ -110,6 +110,13 @@
   - `구매확정/환불 요청 여부 모니터링`
 - 주의사항:
   - 신청서가 실제로 없는 주문 단독 건에는 신청서 문맥(`연결 신청서 ...`)을 노출하지 않는다.
+  - 주문 상태가 `환불/취소/결제취소`인 경우는 종단 상태로 간주하며, `주문 결제 확인 필요`로 재분류하지 않는다.
+
+## 주문 상세 배송 방법 필드 fallback (2026-02)
+
+- 관리자 주문 상세(`/admin/orders/[id]`)의 배송 방법 표시는 `shippingInfo.shippingMethod`를 우선 사용한다.
+- 레거시/혼재 데이터로 `shippingInfo.deliveryMethod`만 있는 문서가 있으므로, 관리자 화면에서는 `shippingInfo.shippingMethod ?? shippingInfo.deliveryMethod` fallback을 허용한다.
+- 배송 방법 배지/텍스트/요약 카드와 `hasShippingInfo` 판정에도 동일 fallback을 적용해 `정보 없음` 오판을 방지한다.
 
 ### 3) 대여 + 신청 (Flow 7)
 - 현재 단계 판단:
