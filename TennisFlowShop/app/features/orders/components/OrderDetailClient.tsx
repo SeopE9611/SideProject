@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
+import { orderShippingMethodLabel } from '@/lib/order-shipping';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -207,6 +208,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  // “사용자가 무엇을 선택했는지”는 운영자가 즉시 확인할 수 있어야 한다.
  const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
  const shippingMethodValue = orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
+ const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
 
  /**
  * 구매확정(관리자 화면에서 처리 버튼)
@@ -772,11 +774,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div>
  <p className="text-sm text-muted-foreground">주문 시 선택한 수령 방식</p>
  <p className="font-semibold text-primary">
- {{
- delivery: '택배 배송',
- quick: '퀵 배송 (당일)',
- visit: '방문 수령',
- }[shippingMethodValue] || '정보 없음'}
+ {shippingMethodLabel}
  </p>
  </div>
  </div>
@@ -808,11 +806,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div>
  <p className="text-sm text-muted-foreground">배송 방법</p>
  <p className="font-semibold text-foreground">
- {{
- delivery: '택배 배송',
- quick: '퀵 배송 (당일)',
- visit: '방문 수령',
- }[shippingMethodValue] || '정보 없음'}
+ {shippingMethodLabel}
  </p>
  </div>
  </div>
