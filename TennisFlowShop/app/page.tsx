@@ -426,7 +426,7 @@ export default function Home() {
           </div>
         </SiteContainer>
       </section>
-      {/* 라켓 파인더 바로가기 (Hero 아래 CTA 블록) */}
+      {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
       <section className="py-5 bp-sm:py-6">
         <SiteContainer>
           <Link href="/rackets/finder" className="group block">
@@ -436,7 +436,7 @@ export default function Home() {
                   <Search className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm bp-sm:text-base font-bold text-foreground">라켓 파인더</div>
+                  <div className="text-sm bp-sm:text-base font-bold text-foreground">라켓 검색</div>
                   <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground">헤드/무게/밸런스/RA/SW 범위로 중고 라켓을 빠르게 좁혀보세요.</p>
                 </div>
               </div>

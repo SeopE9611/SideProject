@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gauge, Target, Zap, Shield, Users, TrendingUp, ChevronRight, Info, Thermometer, Wind, Sun, CloudRain, ArrowRight, CheckCircle2, AlertTriangle, Lightbulb, BarChart3, Layers, Settings2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, CheckCircle2, ChevronRight, CloudRain, Gauge, Info, Layers, Lightbulb, Settings2, Shield, Sun, Target, Thermometer, TrendingUp, Users, Wind, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 
 type PlayStyle = 'baseline' | 'allcourt' | 'servevolley';
 type SwingSpeed = 'slow' | 'medium' | 'fast';
@@ -289,7 +288,7 @@ export default function TensionGuidePage() {
                           <button
                             key={st.id}
                             onClick={() => setStringType(st.id as StringType)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${ stringType === st.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${stringType === st.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <st.icon className={`h-4 w-4 ${stringType === st.id ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -309,7 +308,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setPlayStyle(option.id as PlayStyle)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${ playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
@@ -326,7 +325,7 @@ export default function TensionGuidePage() {
                           <button
                             key={option.id}
                             onClick={() => setSwingSpeed(option.id as SwingSpeed)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${ swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm' }`}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
@@ -424,11 +423,7 @@ export default function TensionGuidePage() {
                 const IconComponent = player.icon;
                 const isSelected = selectedLevel === index;
                 return (
-                  <Card
-                    key={index}
-                    className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? 'ring-2 ring-ring shadow-lg' : 'hover:shadow-md'}`}
-                    onClick={() => setSelectedLevel(isSelected ? null : index)}
-                  >
+                  <Card key={index} className={`cursor-pointer transition-all duration-300 overflow-hidden border bg-card ${isSelected ? 'ring-2 ring-ring shadow-lg' : 'hover:shadow-md'}`} onClick={() => setSelectedLevel(isSelected ? null : index)}>
                     <CardHeader className="pb-3 bp-md:pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3 bp-sm:gap-4">
@@ -775,11 +770,11 @@ export default function TensionGuidePage() {
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
                 <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">나에게 맞는 라켓을 찾아보세요</h3>
-                <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">라켓 파인더를 활용해 나의 라켓을 선택해보세요</p>
+                <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">라켓 검색를 활용해 나의 라켓을 선택해보세요</p>
               </div>
               <Button asChild size="lg" variant="secondary" className="px-6 bp-md:px-8 whitespace-nowrap">
                 <Link href="/rackets/finder">
-                  라켓 파인더 사용하기
+                  라켓 검색 사용하기
                   <ArrowRight className="ml-2 h-4 w-4 bp-md:h-5 bp-md:w-5" />
                 </Link>
               </Button>

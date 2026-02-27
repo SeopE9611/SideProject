@@ -1,15 +1,15 @@
-import { MongoClient } from 'mongodb';
-import { ensureReviewIndexes } from '@/lib/reviews.maintenance';
-import { ensurePassIndexes } from '@/lib/passes.indexes';
-import { ensureBoardIndexes } from '@/lib/boards.indexes';
-import { ensureRentalIndexes } from '@/lib/rentals.indexes';
-import { ensureMessageIndexes } from '@/lib/messages.indexes';
-import { ensurePointsIndexes } from '@/lib/points.indexes';
-import { ensureUsedRacketsIndexes } from '@/lib/usedRackets.indexes';
+import { ensureAdminLocksIndexes } from '@/lib/adminLocks.indexes';
 import { ensureAuthIndexes } from '@/lib/auth.indexes';
+import { ensureBoardIndexes } from '@/lib/boards.indexes';
+import { ensureMessageIndexes } from '@/lib/messages.indexes';
+import { ensurePassIndexes } from '@/lib/passes.indexes';
+import { ensurePointsIndexes } from '@/lib/points.indexes';
+import { ensureRentalIndexes } from '@/lib/rentals.indexes';
+import { ensureReviewIndexes } from '@/lib/reviews.maintenance';
+import { ensureUsedRacketsIndexes } from '@/lib/usedRackets.indexes';
 import { ensureUserIndexes } from '@/lib/users.indexes';
 import { ensureWishlistIndexes } from '@/lib/wishlist.indexes';
-import { ensureAdminLocksIndexes } from '@/lib/adminLocks.indexes';
+import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI;
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
@@ -49,7 +49,7 @@ declare global {
   // 포인트(적립금) 원장 컬렉션 인덱스 보장 상태
   var _pointsIndexesReady: Promise<void> | null | undefined;
 
-  // 라켓 파인더 인덱스 보장 상태
+  // 라켓 검색 인덱스 보장 상태
   var _usedRacketsIndexesReady: Promise<void> | null | undefined;
 }
 

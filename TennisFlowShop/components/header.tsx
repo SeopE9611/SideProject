@@ -323,7 +323,7 @@ const Header = () => {
 
     // 앞으로 커뮤니티(리뷰, 자유게시판 등) 허브가 될 /board
     { name: '게시판', href: '/board', hasMegaMenu: true, isBoardMenu: true },
-    { name: '라켓 파인더', href: '/rackets/finder', hasMegaMenu: false },
+    { name: '라켓 검색', href: '/rackets/finder', hasMegaMenu: false },
   ];
 
   const visibleCount = Math.max(0, menuItems.length - overflowCount);

@@ -53,9 +53,9 @@ export default async function RacketsPage({ searchParams }: { searchParams: Prom
             </p>
             <div className="mt-2 flex items-center justify-center">
               <Button asChild size="lg" variant="secondary">
-                <Link href={finderHref} aria-label="라켓 파인더로 이동">
+                <Link href={finderHref} aria-label="라켓 검색로 이동">
                   <Search className="mr-2 h-5 w-5" />
-                  스펙으로 찾기 (라켓 파인더)
+                  스펙으로 찾기 (라켓 검색)
                 </Link>
               </Button>
             </div>

@@ -1,22 +1,22 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import useSWR from 'swr';
-import { Button } from '@/components/ui/button';
+import FinderRacketCard, { type FinderRacket } from '@/app/rackets/finder/_components/FinderRacketCard';
+import RacketCompareTray from '@/app/rackets/finder/_components/RacketCompareTray';
+import { useRacketCompareStore } from '@/app/store/racketCompareStore';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Slider } from '@/components/ui/slider';
 import { RACKET_BRANDS, racketBrandLabel, STRING_PATTERNS } from '@/lib/constants';
-import { Input } from '@/components/ui/input';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import FinderRacketCard, { type FinderRacket } from '@/app/rackets/finder/_components/FinderRacketCard';
-import { X, Search, RotateCcw, SlidersHorizontal, ChevronLeft, ChevronRight, Filter, Sparkles } from 'lucide-react';
-import RacketCompareTray from '@/app/rackets/finder/_components/RacketCompareTray';
 import { cn } from '@/lib/utils';
-import { useRacketCompareStore } from '@/app/store/racketCompareStore';
+import { ChevronLeft, ChevronRight, Filter, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -314,13 +314,16 @@ export default function RacketFinderClient() {
     router.replace(pathname, { scroll: false });
   };
 
-  const applyNow = useCallback((next: Filters) => {
-    setDraft(next);
-    setApplied(next);
-    setPage(1);
-    setHasSearched(true);
-    syncUrl(next, 1);
-  }, [syncUrl]);
+  const applyNow = useCallback(
+    (next: Filters) => {
+      setDraft(next);
+      setApplied(next);
+      setPage(1);
+      setHasSearched(true);
+      syncUrl(next, 1);
+    },
+    [syncUrl],
+  );
 
   const chips = useMemo(() => {
     if (!hasSearched) return [];
@@ -387,7 +390,7 @@ export default function RacketFinderClient() {
             <Search className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">라켓 파인더</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">라켓 검색</h1>
             <p className="text-sm text-muted-foreground">스펙 범위로 원하는 중고 라켓을 빠르게 찾아보세요</p>
           </div>
         </div>
@@ -497,11 +500,7 @@ export default function RacketFinderClient() {
               </div>
 
               <label
-                className={cn(
-                  'flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all',
-                  'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
-                  draft.strict && 'bg-muted ring-1 ring-ring',
-                )}
+                className={cn('flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-all', 'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50', draft.strict && 'bg-muted ring-1 ring-ring')}
               >
                 <Checkbox checked={draft.strict} onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))} />
                 <div className="flex-1">
