@@ -457,11 +457,11 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div
  className="min-h-screen bg-muted/30 dark:bg-muted/30"
  >
- <div className="container py-10 space-y-8">
- <div className="mx-auto max-w-4xl">
+ <div className="container py-6 space-y-6 lg:py-8">
+ <div className="mx-auto w-full max-w-[1500px]">
  {/* 개선된 관리자 헤더 */}
- <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg mb-8">
- <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+ <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-5 shadow-lg lg:p-6">
+ <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
  <div className="flex items-center space-x-4">
  <div className="bg-card rounded-full p-3 shadow-md">
  <Settings className="h-8 w-8 text-primary" />
@@ -471,11 +471,11 @@ export default function OrderDetailClient({ orderId }: Props) {
  <p className="mt-1 text-muted-foreground">주문 ID: {orderDetail._id}</p>
  </div>
  </div>
- <div className="flex flex-col gap-2 sm:flex-row">
+ <div className="flex flex-wrap items-center gap-2">
  <Button
  variant="outline"
  size="sm"
- className="mb-3 bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:border-border dark:hover:bg-muted"
+ className="h-9 bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:border-border dark:hover:bg-muted"
  asChild
  >
  <Link href="/admin/orders">
@@ -505,8 +505,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
 
  {/* 주문 요약 정보 */}
- <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
- <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+ <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+ <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Calendar className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">주문일시</span>
@@ -514,7 +514,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <p className="text-lg font-semibold text-foreground">{formatDate(orderDetail.date)}</p>
  </div>
 
- <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+ <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <CreditCard className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">총 결제금액</span>
@@ -522,7 +522,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <p className="text-lg font-semibold text-foreground">{formatCurrency(orderDetail.total)}</p>
  </div>
 
- <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+ <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Package className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">주문 상태</span>
@@ -530,14 +530,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground dark:bg-primary/20')}>{localStatus}</Badge>
  </div>
 
- <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+ <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <User className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">결제 상태</span>
  </div>
  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
  </div>
- <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+ <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">수령/배송</span>
@@ -562,7 +562,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 주문 상태 및 요약 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden mb-8"
+ className="mb-6 overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring"
  >
  <CardHeader className="bg-muted/30 border-b pb-3">
  <div className="flex items-center justify-between">
@@ -573,7 +573,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  {formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.
  </CardDescription>
  </CardHeader>
- <CardFooter className="pt-4">
+ <CardFooter className="pt-3">
  <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
  <OrderStatusSelect orderId={orderId!} currentStatus={localStatus} />
@@ -636,7 +636,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 연결 문서(공용 카드) */}
  {linkedDocs.length > 0 && (
- <div className="m-4">
+ <div className="m-3.5">
  <LinkedDocsCard
  docs={linkedDocs}
  description={
@@ -660,10 +660,10 @@ export default function OrderDetailClient({ orderId }: Props) {
  )}
  </Card>
 
- <div className="grid gap-6 md:grid-cols-2">
+ <div className="grid gap-4 xl:grid-cols-12">
  {/* 고객 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+ className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
  <CardHeader className="bg-muted/30 border-b pb-3">
  <CardTitle className="flex items-center justify-between">
@@ -676,7 +676,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
 
  {editingCustomer ? (
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <CustomerEditForm
  initialData={{
  name: orderDetail.customer.name,
@@ -698,7 +698,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  ) : (
  <>
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <div className="space-y-4">
  <div
  className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border"
@@ -742,7 +742,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </CardContent>
  {isEditMode && (
- <CardFooter className="pt-3 flex justify-center bg-muted/50">
+ <CardFooter className="flex justify-center bg-muted/50 py-3">
  <Button variant="outline" size="sm" onClick={() => setEditingCustomer(true)} className="hover:bg-muted border-border">
  수정하기
  </Button>
@@ -754,7 +754,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 배송 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+ className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
  <CardHeader className="bg-muted/30 border-b pb-3">
  <CardTitle className="flex items-center">
@@ -762,7 +762,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  배송 정보
  </CardTitle>
  </CardHeader>
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  {isShippingManagedByApplication && linkedStringingAppId ? (
  <div className="rounded-lg border border-primary/20 bg-primary/10 p-4 text-sm text-foreground dark:bg-primary/20">
  <div className="flex items-start gap-2">
@@ -856,7 +856,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 결제 정보 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+ className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
  <CardHeader className="bg-muted/30 border-b pb-3">
  <CardTitle className="flex items-center justify-between">
@@ -869,7 +869,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardHeader>
 
  {editingPayment ? (
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <PaymentEditForm
  initialData={{ total: orderDetail.total }}
  orderId={orderId}
@@ -883,7 +883,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  ) : (
  <>
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <div className="space-y-4">
  <div
  className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border"
@@ -892,7 +892,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <p className="text-sm text-muted-foreground">결제 상태</p>
  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
  </div>
- {/* <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+ {/* <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">수령/배송</span>
@@ -919,7 +919,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </div>
  </CardContent>
  {isEditMode && (
- <CardFooter className="flex justify-center bg-muted/50">
+ <CardFooter className="flex justify-center bg-muted/50 py-3">
  <Button variant="outline" size="sm" onClick={() => setEditingPayment(true)} className="hover:bg-muted border-border">
  수정하기
  </Button>
@@ -931,7 +931,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 주문 항목 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+ className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
  <CardHeader className="bg-muted/30 border-b pb-3">
  <CardTitle className="flex items-center">
@@ -939,7 +939,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  주문 항목
  </CardTitle>
  </CardHeader>
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <div className="space-y-4">
  {orderDetail.items.map((item, idx) => (
  <div key={idx} className="flex items-center justify-between p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-muted transition-colors">
@@ -960,7 +960,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 배송 요청사항 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+ className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
  <CardHeader className="bg-muted/30 border-b pb-3">
  <CardTitle className="flex items-center justify-between">
@@ -970,7 +970,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
  </CardHeader>
  {editingRequest ? (
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <RequestEditForm
  initialData={orderDetail.shippingInfo.deliveryRequest || ''}
  orderId={orderId}
@@ -984,7 +984,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardContent>
  ) : (
  <>
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  {orderDetail.shippingInfo.deliveryRequest ? (
  <div className="bg-muted border border-border rounded-lg p-4">
  <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
@@ -994,7 +994,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  )}
  </CardContent>
  {isEditMode && (
- <CardFooter className="flex justify-center bg-muted/50">
+ <CardFooter className="flex justify-center bg-muted/50 py-3">
  <Button variant="outline" size="sm" onClick={() => setEditingRequest(true)} className="hover:bg-muted border-border">
  수정하기
  </Button>
@@ -1006,7 +1006,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
  {/* 처리 이력 */}
  <Card
- className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+ className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
  <CardHeader className="bg-muted/30 border-b">
  <CardTitle className="flex items-center space-x-2">
@@ -1014,7 +1014,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <span>주문 이력</span>
  </CardTitle>
  </CardHeader>
- <CardContent className="p-6">
+ <CardContent className="p-4 lg:p-5">
  <OrderHistory orderId={orderId} />
  </CardContent>
  </Card>

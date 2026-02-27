@@ -77,7 +77,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/10"></div>
         <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-        <div className="relative container py-16">
+        <div className="relative container py-12 lg:py-14">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-card backdrop-blur-sm rounded-2xl shadow-lg">
               <UserCog2Icon className="h-8 w-8" />
@@ -92,7 +92,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-[1400px] flex-1 gap-4 px-4 py-4 lg:gap-6">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 px-4 py-4 lg:gap-6 lg:px-6">
         <div className="hidden md:block">
           <AdminSidebar />
         </div>
