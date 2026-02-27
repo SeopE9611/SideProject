@@ -206,6 +206,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  // - 통합건(주문+신청)이라도, 실제 운송장/배송 등록은 신청서에서 하더라도
  // “사용자가 무엇을 선택했는지”는 운영자가 즉시 확인할 수 있어야 한다.
  const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
+ const shippingMethodValue = orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
 
  /**
  * 구매확정(관리자 화면에서 처리 버튼)
@@ -318,7 +319,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  statusLabel: localStatus,
  paymentLabel: orderDetail.paymentStatus,
  related: linkedApplicationForGuide ? { kind: 'stringing_application', id: linkedApplicationForGuide.id, href: `/admin/applications/stringing/${linkedApplicationForGuide.id}` } : null,
- hasShippingInfo: Boolean(orderDetail.shippingInfo?.shippingMethod || orderDetail.shippingInfo?.estimatedDate || orderDetail.shippingInfo?.invoice?.courier || orderDetail.shippingInfo?.invoice?.trackingNumber),
+ hasShippingInfo: Boolean(shippingMethodValue || orderDetail.shippingInfo?.estimatedDate || orderDetail.shippingInfo?.invoice?.courier || orderDetail.shippingInfo?.invoice?.trackingNumber),
  hasOutboundTracking: Boolean(orderDetail.shippingInfo?.invoice?.trackingNumber),
  },
  ...(linkedApplicationForGuide
@@ -775,7 +776,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  delivery: '택배 배송',
  quick: '퀵 배송 (당일)',
  visit: '방문 수령',
- }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
+ }[shippingMethodValue] || '정보 없음'}
  </p>
  </div>
  </div>
@@ -811,7 +812,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  delivery: '택배 배송',
  quick: '퀵 배송 (당일)',
  visit: '방문 수령',
- }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
+ }[shippingMethodValue] || '정보 없음'}
  </p>
  </div>
  </div>

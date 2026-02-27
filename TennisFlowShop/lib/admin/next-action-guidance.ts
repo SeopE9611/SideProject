@@ -62,16 +62,16 @@ const isOrderDeliveredLike = (status?: string | null) => {
 
 const isOrderClosed = (status?: string | null) => {
   const s = String(status ?? '').toLowerCase();
-  return s.includes('환불') || s.includes('취소') || s === 'refunded' || s === 'cancelled' || s === 'canceled';
+  return s.includes('환불') || s.includes('취소') || s.includes('결제취소') || s === 'refunded' || s === 'cancelled' || s === 'canceled';
 };
 
 function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
-  if (!doneLike(item.paymentLabel)) {
-    return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 필요' };
-  }
-
   if (isOrderClosed(item.statusLabel)) {
     return { stage: '주문 종료 단계', nextAction: '후속 조치 없음' };
+  }
+
+  if (!doneLike(item.paymentLabel)) {
+    return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 필요' };
   }
 
   if (isOrderDeliveredLike(item.statusLabel)) {
