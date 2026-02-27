@@ -325,41 +325,27 @@ const ProductCard = React.memo(
             </div>
           </CardContent>
 
-          <CardFooter
-            className={
-              isApplyFlow
-                ? 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex flex-col gap-1.5 bp-sm:gap-2'
-                : 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 bp-xxs:flex-col'
-            }
-          >
+          <CardFooter className={isApplyFlow ? 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 max-[1500px]:flex-col' : 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 bp-xxs:flex-col'}>
             <Button
               type="button"
               variant="outline"
-              className={
-                isApplyFlow
-                  ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center'
-                  : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
-              }
+              className={isApplyFlow ? 'flex-1 min-w-0 rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center max-[1500px]:w-full' : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'}
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
-               {isApplyFlow ? '단품만 구매' : '단품 구매'}
-             </Button>
+              {isApplyFlow ? '단품만 구매' : '단품 구매'}
+            </Button>
 
             <Button
               type="button"
               variant="outline"
-              className={
-                isApplyFlow
-                  ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center'
-                  : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
-              }
+              className={isApplyFlow ? 'flex-1 min-w-0 rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center max-[1500px]:w-full' : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'}
               onClick={handleStringServiceApply}
               disabled={isSoldOut}
             >
-               {isApplyFlow ? '교체 서비스 포함 결제' : '작업의뢰'}
-             </Button>
-           </CardFooter>
+              {isApplyFlow ? '교체 서비스 포함 결제' : '작업의뢰'}
+            </Button>
+          </CardFooter>
         </Card>
       </Link>
     );
