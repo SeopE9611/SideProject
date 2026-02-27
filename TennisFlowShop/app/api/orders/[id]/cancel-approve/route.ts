@@ -6,6 +6,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import jwt from 'jsonwebtoken';
 import { revertConsumption } from '@/lib/passes.service';
 import { deductPoints, grantPoints } from '@/lib/points.service';
+import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 
 
 function safeVerifyAccessToken(token?: string | null) {
@@ -68,6 +69,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // ───────────────── 배송 전인지 재확인 (A 규칙) ─────────────────
+    if (!isAdminCancelableOrderStatus(existing.status)) {
+      return new NextResponse(getAdminCancelPolicyMessage(existing.status), { status: 400 });
+    }
+
     const hasTrackingNumber = existing.shippingInfo?.invoice?.trackingNumber && typeof existing.shippingInfo.invoice.trackingNumber === 'string' && existing.shippingInfo.invoice.trackingNumber.trim().length > 0;
 
     if (hasTrackingNumber) {
