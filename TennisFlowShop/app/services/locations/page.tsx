@@ -2,7 +2,7 @@ import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Car, Clock, MapPin, Phone, Train } from 'lucide-react';
+import { Clock, MapPin, Phone, Train } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LocationsPage() {
@@ -18,7 +18,6 @@ export default function LocationsPage() {
         holiday: '휴무',
       },
       services: ['스트링 장착', '텐션 가이드', '스트링 추천', '라켓 상담'],
-      parking: '무료 주차 가능',
       transport: ['대방역 2번출구'],
       isMain: true,
       specialNote: '매장에 방문하시면 친절하게 상담해드립니다.',
@@ -96,14 +95,6 @@ export default function LocationsPage() {
                       <div>토요일: {location.hours.weekend}</div>
                       <div>일요일/공휴일: {location.hours.holiday}</div>
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Car className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-semibold">주차</span>
-                    </div>
-                    <div className="ml-6 text-sm text-muted-foreground">{location.parking}</div>
                   </div>
 
                   <div className="space-y-2">
