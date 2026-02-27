@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
+import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -187,6 +188,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  const isDelivered = localStatus === '배송완료';
  const isConfirmed = localStatus === '구매확정';
  const isCanceled = ['취소', '결제취소', '환불'].includes(localStatus);
+ const isCancelableByPolicy = isAdminCancelableOrderStatus(localStatus);
+ const cancelPolicyMessage = getAdminCancelPolicyMessage(localStatus);
 
  // 연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
  // - 주문 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
@@ -352,6 +355,11 @@ export default function OrderDetailClient({ orderId }: Props) {
  // 🔹 (추가) "취소 요청 승인" 버튼 클릭 시
  const handleApproveCancelRequest = async () => {
  if (!orderId) return;
+
+ if (!isCancelableByPolicy) {
+ showErrorToast(cancelPolicyMessage);
+ return;
+ }
 
  const ok = window.confirm('이 주문의 취소 요청을 승인하시겠습니까?\n주문과 연결된 모든 교체 서비스 신청이 함께 취소됩니다.');
  if (!ok) return;
@@ -558,7 +566,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardTitle>주문 상태 관리</CardTitle>
  <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground dark:bg-primary/20')}>{localStatus}</Badge>
  </div>
- <CardDescription>{formatDate(orderDetail.date)}에 접수된 주문입니다.</CardDescription>
+ <CardDescription>
+ {formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.
+ </CardDescription>
  </CardHeader>
  <CardFooter className="pt-4">
  <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
@@ -604,7 +614,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <p className="text-sm text-muted-foreground italic mt-2">취소된 주문입니다. 상태 변경 및 취소가 불가능합니다.</p>
  ) : isCancelRequested ? (
  <div className="flex gap-2 mt-2 sm:mt-0">
- <Button size="sm" variant="destructive" onClick={handleApproveCancelRequest} disabled={isProcessingCancelRequest}>
+ <Button size="sm" variant="destructive" onClick={handleApproveCancelRequest} disabled={isProcessingCancelRequest || !isCancelableByPolicy}>
  취소 승인
  </Button>
  <Button size="sm" variant="outline" onClick={handleRejectCancelRequest} disabled={isProcessingCancelRequest}>
@@ -612,9 +622,13 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Button>
  </div>
  ) : (
- <AdminCancelOrderDialog orderId={orderId!} onCancelSuccess={handleCancelSuccess} key={'cancel-' + allHistory.length} />
+ <div className="mt-2 sm:mt-0 space-y-2">
+ <AdminCancelOrderDialog orderId={orderId!} onCancelSuccess={handleCancelSuccess} key={'cancel-' + allHistory.length} disabled={!isCancelableByPolicy} />
+ {!isCancelableByPolicy && <p className="text-xs text-muted-foreground">{cancelPolicyMessage}</p>}
+ </div>
  )}
  </div>
+ {!isCanceled && <p className="w-full text-xs text-muted-foreground mt-2">운영 기준: {cancelPolicyMessage}</p>}
  </CardFooter>
 
  {/* 연결 문서(공용 카드) */}
