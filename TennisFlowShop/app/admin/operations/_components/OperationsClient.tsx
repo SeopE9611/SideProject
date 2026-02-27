@@ -350,7 +350,7 @@ export default function OperationsClient() {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
-  const [showActionsGuide, setShowActionsGuide] = useState(true);
+  const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<'default' | 'compact'>('default');
   const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(null);
@@ -612,13 +612,13 @@ export default function OperationsClient() {
   }
 
   return (
-    <div className="container py-5">
+    <div className="container py-4 lg:py-5">
       {commonErrorMessage && <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">{commonErrorMessage}</div>}
       {/* 페이지 헤더 */}
-      <div className="mx-auto max-w-7xl mb-5">
-        <h1 className="text-4xl font-semibold tracking-tight">{PAGE_COPY.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{PAGE_COPY.description}</p>
-        <p className="mt-1 text-xs text-muted-foreground">상단 요약 수치는 현재 필터 결과 기준으로 계산됩니다.</p>
+      <div className="mx-auto mb-4 max-w-[1440px]">
+        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">{PAGE_COPY.title}</h1>
+        <p className="mt-1 text-xs text-muted-foreground lg:text-sm">{PAGE_COPY.description}</p>
+        <p className="mt-1 text-[11px] text-muted-foreground">상단 요약 수치는 현재 필터 결과 기준으로 계산됩니다.</p>
 
         <div className="mt-3 grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
           <Card className="border-warning/30 bg-warning/5 shadow-none">
@@ -670,7 +670,7 @@ export default function OperationsClient() {
         )}
       </div>
 
-      <div className="mx-auto mb-4 max-w-7xl">
+      <div className="mx-auto mb-3 max-w-[1440px]">
         <div className="mb-2 flex items-center justify-between gap-2">
           <p className="text-sm font-medium text-foreground">{PAGE_COPY.actionsTitle}</p>
           <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setShowActionsGuide((prev) => !prev)}>
@@ -701,7 +701,7 @@ export default function OperationsClient() {
             isFilterScrolled && 'bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90',
           )}
         >
-          <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
+          <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
             <div>
               <CardTitle>필터 및 검색</CardTitle>
               <CardDescription className="text-xs mt-1">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
@@ -712,7 +712,7 @@ export default function OperationsClient() {
               필터 초기화
             </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {/* 검색 + 주요 버튼 */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative w-full max-w-md">
@@ -764,7 +764,7 @@ export default function OperationsClient() {
             </div>
 
             {/* 필터 컴포넌트들 */}
-            <div className="grid w-full gap-2 border-t border-border pt-3 grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
+            <div className="grid w-full grid-cols-1 gap-2 border-t border-border pt-2.5 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-5">
               <Select
                 value={kind}
                 onValueChange={(v: any) => {
@@ -935,14 +935,14 @@ export default function OperationsClient() {
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-border pt-2.5">
               <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>저장된 뷰 링크</Badge>
               <p className="text-xs text-muted-foreground">현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에 공유하세요.</p>
               <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">{shareViewHref}</code>
             </div>
 
             {/* 범례(운영자 인지 부하 감소) */}
-            <div className="space-y-2 border-t border-border pt-3 mt-1">
+            <div className="mt-1 space-y-2 border-t border-border pt-2.5">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">범례</span>
                 <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>문서유형</Badge>
@@ -977,7 +977,7 @@ export default function OperationsClient() {
       </div>
 
       {/* 업무 목록 카드 */}
-      <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
+      <Card className="rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
         <CardHeader className="pb-2">
           <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
             {data ? (

@@ -422,20 +422,20 @@ export default function OrdersClient() {
 
   return (
     <AuthGuard>
-      <div className="container py-6">
+      <div className="container py-4 lg:py-5">
         {/* 제목 및 설명 */}
-        <div className="mx-auto max-w-7xl mb-5">
+        <div className="mx-auto mb-4 max-w-[1440px]">
           <h1 className="text-4xl font-semibold tracking-tight">주문·신청 관리</h1>
           <p className="mt-1 text-xs text-muted-foreground">상품/클래스 주문과 교체서비스 신청서를 함께 관리합니다. (통합건은 같은 색 테두리로 묶여 표시됩니다)</p>
         </div>
 
         {/* 필터 및 검색 카드 */}
-        <Card className="mb-5 rounded-xl border-border bg-card shadow-md px-6 py-5">
-          <CardHeader className="pb-3">
+        <Card className="mb-4 rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
+          <CardHeader className="pb-2.5">
             <CardTitle>필터 및 검색</CardTitle>
             <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-1">
             <div className="flex flex-col gap-4">
               {/* 검색 input */}
               <div className="w-full max-w-md">
@@ -451,7 +451,7 @@ export default function OrdersClient() {
               </div>
 
               {/* 필터 컴포넌트들 */}
-              <div className="grid w-full gap-2 border-t pt-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              <div className="grid w-full gap-2 border-t pt-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
                 <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
                 <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
                 <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
@@ -466,8 +466,8 @@ export default function OrdersClient() {
         </Card>
 
         {/* 주문 목록 테이블 */}
-        <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
-          <CardHeader className="pb-2">
+        <Card className="rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
+          <CardHeader className="pb-2 pt-1">
             <div className="flex items-center justify-between">
               {data ? (
                 <>
@@ -482,17 +482,17 @@ export default function OrdersClient() {
               )}
             </div>
             {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kindBadgeClass('order'))}>주문</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kindBadgeClass('stringing_application'))}>신청서</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('integrated'))}>통합(주문+신청)</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('standalone'))}>단독</Badge>
-              <span className="ml-1">• 같은 색 테두리 = 같은 통합건</span>
-              <span className="ml-1">• “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록</span>
+              <span>• 같은 색 테두리 = 같은 통합건</span>
+              <span>• “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록</span>
             </div>
           </CardHeader>
-          <CardContent className="overflow-x-auto md:overflow-x-visible scrollbar-hidden relative pr-2 md:pr-0">
-            <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
+          <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
+            <Table className="w-full table-auto border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
               <TableHeader className="sticky top-0 bg-muted dark:bg-card shadow-sm">
                 <TableRow>
                   <TableHead className={cn(thClasses, 'w-[140px]')}>주문 ID</TableHead>
