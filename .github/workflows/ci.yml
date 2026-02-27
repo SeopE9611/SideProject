@@ -34,20 +34,42 @@ jobs:
   detect-admin-path-changes:
     runs-on: ubuntu-latest
     outputs:
-      admin_changed: ${{ steps.filter.outputs.admin }}
+      admin_changed: ${{ steps.detect.outputs.admin_changed }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Detect admin path changes
-        id: filter
-        uses: dorny/paths-filter@v3
         with:
-          filters: |
-            admin:
-              - 'TennisFlowShop/app/admin/**'
-              - 'TennisFlowShop/app/api/admin/**'
-              - 'TennisFlowShop/lib/admin/**'
+          fetch-depth: 0
+
+      - name: Detect admin path changes (git diff)
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          base_ref="${BASE_SHA:-}"
+          head_ref="${HEAD_SHA:-${GITHUB_SHA}}"
+
+          if [ -z "${base_ref}" ]; then
+            # push 이벤트 등 pull_request 컨텍스트가 없을 때 fallback
+            base_ref="$(git rev-parse HEAD~1)"
+          fi
+
+          git fetch --no-tags origin "${base_ref}" "${head_ref}" || true
+
+          changed_files="$(git diff --name-only "${base_ref}" "${head_ref}" || true)"
+
+          echo "[detect-admin-path-changes] base=${base_ref} head=${head_ref}"
+          echo "[detect-admin-path-changes] changed files:"
+          printf '%s\n' "${changed_files}"
+
+          if printf '%s\n' "${changed_files}" | grep -E '^TennisFlowShop/(app/admin/|app/api/admin/|lib/admin/)' >/dev/null; then
+            echo "admin_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "admin_changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
   # 1) Install -> lint
   lint:
