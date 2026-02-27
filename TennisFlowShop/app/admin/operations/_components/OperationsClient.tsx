@@ -17,7 +17,7 @@ import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone }
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
-import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneClass, paymentStatusColors } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from './actions/operationsActions';
@@ -302,11 +302,11 @@ const td = tdClasses;
 const stickyActionHeadClass = 'sticky right-0 z-20 bg-muted/50 text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
-  success: 'bg-primary/10 text-primary dark:bg-primary/20',
-  warning: 'bg-warning/10 text-warning dark:bg-warning/15',
-  destructive: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
-  muted: 'bg-muted text-muted-foreground',
-  info: 'bg-info/10 text-info dark:bg-info/20',
+  success: badgeToneClass('success'),
+  warning: badgeToneClass('warning'),
+  destructive: badgeToneClass('destructive'),
+  muted: badgeToneClass('neutral'),
+  info: badgeToneClass('info'),
 };
 
 function opsBadgeToneClass(tone: OpsBadgeTone) {
@@ -459,12 +459,15 @@ export default function OperationsClient() {
         const groupItems = [group.anchor, ...group.items.filter((it) => it.id !== group.anchor.id)];
         const hasWarn = groupItems.some((it) => Array.isArray(it.warnReasons) && it.warnReasons.length > 0);
         const hasPending = groupItems.some((it) => Array.isArray(it.pendingReasons) && it.pendingReasons.length > 0);
-        const hasPaymentIssue = groupItems.some((it) => it.paymentLabel === '결제대기' || it.paymentLabel === '결제취소' || it.paymentLabel === '확인필요');
-        const hasNeedsReview = groupItems.some((it) => (it.reviewLevel ?? (it.needsReview ? 'action' : (it.reviewReasons?.length ?? 0) > 0 ? 'info' : 'none')) !== 'none') || group.reviewLevel !== 'none';
+        const hasPaymentRisk = groupItems.some((it) => it.paymentLabel === '결제취소' || it.paymentLabel === '결제실패' || it.paymentLabel === '확인필요');
+        const hasPaymentPending = groupItems.some((it) => it.paymentLabel === '결제대기');
+        const hasActionReview = groupItems.some((it) => (it.reviewLevel ?? (it.needsReview ? 'action' : (it.reviewReasons?.length ?? 0) > 0 ? 'info' : 'none')) === 'action') || group.reviewLevel === 'action';
+        const groupGuide = inferNextActionForOperationGroup(group.items);
+        const hasRoutineNextAction = !hasWarn && !hasActionReview && !hasPaymentRisk && Boolean(groupGuide.nextAction?.trim()) && !groupGuide.nextAction.includes('후속 조치 없음');
 
         if (hasWarn) acc.urgent += 1;
-        if (hasPaymentIssue || hasNeedsReview) acc.caution += 1;
-        if (hasPending) acc.pending += 1;
+        if (hasPaymentRisk || hasActionReview) acc.caution += 1;
+        if (hasPending || hasPaymentPending || hasRoutineNextAction) acc.pending += 1;
         return acc;
       },
       { urgent: 0, caution: 0, pending: 0 },

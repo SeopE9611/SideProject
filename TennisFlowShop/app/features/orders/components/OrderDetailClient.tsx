@@ -314,6 +314,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  kind: 'order',
  statusLabel: localStatus,
  paymentLabel: orderDetail.paymentStatus,
+ related: linkedApplicationForGuide ? { kind: 'stringing_application', id: linkedApplicationForGuide.id, href: `/admin/applications/stringing/${linkedApplicationForGuide.id}` } : null,
+ hasShippingInfo: Boolean(orderDetail.shippingInfo?.shippingMethod || orderDetail.shippingInfo?.estimatedDate || orderDetail.shippingInfo?.invoice?.courier || orderDetail.shippingInfo?.invoice?.trackingNumber),
+ hasOutboundTracking: Boolean(orderDetail.shippingInfo?.invoice?.trackingNumber),
  },
  ...(linkedApplicationForGuide
  ? [
