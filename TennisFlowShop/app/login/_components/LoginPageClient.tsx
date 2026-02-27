@@ -85,6 +85,7 @@ function focusFirst(ids: string[]) {
 export default function LoginPageClient() {
   const router = useRouter();
   const params = useSearchParams();
+  const tabParam = params.get('tab');
   const [activeTab, setActiveTab] = useState<string>('login');
 
   // 비회원 중지
@@ -195,17 +196,11 @@ export default function LoginPageClient() {
 
   // URL 파라미터에 따라 탭 전환
   useEffect(() => {
-    const tabParam = params.get('tab');
     if (tabParam === 'login' || tabParam === 'register') {
       setActiveTab(tabParam);
-
-      // 회원가입 성공 후 /login?tab=login 으로 이동한 경우,
-      // 다시 '회원가입' 탭을 눌렀을 때 이전 입력값이 남지 않도록 폼을 리셋합니다.
-      if (tabParam === 'login') {
-        resetRegisterForm();
-      }
+      if (tabParam === 'login') resetRegisterForm();
     }
-  }, [params]);
+  }, [tabParam]);
 
   // 탭 전환 시 이전 탭의 에러 메시지가 남아 혼동되지 않도록 초기화
   useEffect(() => {
@@ -563,8 +558,12 @@ export default function LoginPageClient() {
 
       showSuccessToast('회원가입이 완료되었습니다. 로그인 탭으로 이동합니다.');
       resetRegisterForm();
-      router.push('/login?tab=login');
-      router.refresh();
+      setActiveTab('login');
+
+      const q = new URLSearchParams(params.toString());
+      q.set('tab', 'login');
+
+      router.replace(`/login?${q.toString()}`);
     } catch (err) {
       setRegisterFormError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       return;
