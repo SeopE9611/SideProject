@@ -749,7 +749,7 @@ export default function TensionGuidePage() {
         </Tabs>
 
         {/* CTA 섹션 */}
-        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden">
+        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-8">
           <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
@@ -765,7 +765,7 @@ export default function TensionGuidePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden">
+        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-8">
           <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
