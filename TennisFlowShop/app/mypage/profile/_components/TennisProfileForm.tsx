@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { MdSportsTennis } from 'react-icons/md';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { MdSportsTennis } from 'react-icons/md';
 
 // 제출 직전 최종 유효성 가드
 const ALLOWED_LEVEL = new Set(['beginner', 'intermediate', 'advanced', 'pro']);
@@ -371,7 +371,7 @@ export default function TennisProfileForm() {
                       <SelectItem value="baseline">베이스라이너</SelectItem>
                       <SelectItem value="all_court">올코트</SelectItem>
                       <SelectItem value="serve_and_volley">서브&발리</SelectItem>
-                      <SelectItem value="counter_puncher">카운터 펀처</SelectItem>
+                      <SelectItem value="counter_puncher">공격적</SelectItem>
                       <SelectItem value="other">기타</SelectItem>
                     </SelectContent>
                   </Select>
