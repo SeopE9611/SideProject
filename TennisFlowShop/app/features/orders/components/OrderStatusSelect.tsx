@@ -91,6 +91,7 @@ export default function OrderStatusSelect({ orderId, currentStatus }: Props) {
           </SelectContent>
         </Select>
       )}
+      <p className="mt-1 text-[11px] text-muted-foreground">취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.</p>
     </div>
   );
 }

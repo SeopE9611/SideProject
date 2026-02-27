@@ -7,6 +7,7 @@ import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import jwt from 'jsonwebtoken';
 import { deductPoints, grantPoints } from '@/lib/points.service';
 import { z } from 'zod';
+import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -480,6 +481,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     // 취소면 사유/상세 저장
     if (nextStatus === '취소') {
+      if (!isAdminCancelableOrderStatus(existing.status)) {
+        return new NextResponse(getAdminCancelPolicyMessage(existing.status), { status: 400 });
+      }
+
       const reason = typeof cancelReason === 'string' ? cancelReason.trim() : '';
       if (!reason) {
         return new NextResponse('취소 사유가 필요합니다.', { status: 400 });
