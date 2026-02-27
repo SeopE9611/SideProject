@@ -74,6 +74,24 @@ function hasRacketItems(items: unknown) {
   return asDocArray(items).some((it) => it.kind === 'racket' || it.kind === 'used_racket');
 }
 
+function hasOrderShippingInfo(order: UnknownDoc) {
+  const shippingInfo = asDoc(order?.shippingInfo);
+  if (!shippingInfo) return false;
+
+  const shippingMethod = getString(shippingInfo.shippingMethod) ?? getString(shippingInfo.deliveryMethod);
+  const estimatedDate = getString(shippingInfo.estimatedDate);
+  const invoice = asDoc(shippingInfo.invoice);
+  const invoiceCourier = getString(invoice?.courier);
+  const trackingNumber = getString(invoice?.trackingNumber);
+
+  return Boolean(
+    (shippingMethod && shippingMethod.trim()) ||
+      (estimatedDate && estimatedDate.trim()) ||
+      (invoiceCourier && invoiceCourier.trim()) ||
+      (trackingNumber && trackingNumber.trim()),
+  );
+}
+
 function flowLabelOf(flow: Flow) {
   switch (flow) {
     case 1:
@@ -649,14 +667,18 @@ export async function handleAdminOperationsGet(req: Request) {
     const cust = pickCustomerFromDoc(o);
     const appId = orderToApp.get(id) ?? null;
     const isIntegrated = !!appId;
+    const hasShippingInfo = hasOrderShippingInfo(o);
+    const hasOutboundTracking = Boolean(getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim());
+    const statusLabel = normalizeOrderStatus(o.status);
+    const paymentLabel = normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status));
     return {
       id,
       kind: 'order',
       createdAt: toISO(o.createdAt),
       customer: cust,
       title: summarizeOrderItems(o.items),
-      statusLabel: normalizeOrderStatus(o.status),
-      paymentLabel: normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status)),
+      statusLabel,
+      paymentLabel,
       amount: Number(o.totalPrice ?? 0),
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
       flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
@@ -665,13 +687,18 @@ export async function handleAdminOperationsGet(req: Request) {
       href: `/admin/orders/${id}`,
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
+      hasShippingInfo,
+      hasOutboundTracking,
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
       pendingReasons: pendingByKey.get(`order:${id}`) ?? [],
       warn: (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
       ...inferNextActionForOperationItem({
         kind: 'order',
-        statusLabel: normalizeOrderStatus(o.status),
-        paymentLabel: normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status)),
+        statusLabel,
+        paymentLabel,
+        related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
+        hasShippingInfo,
+        hasOutboundTracking,
       }),
     };
   });

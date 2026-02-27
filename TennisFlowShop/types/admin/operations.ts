@@ -42,6 +42,7 @@ export type AdminOperationItem = {
   };
   stage?: string;
   nextAction?: string;
+  hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
 };
 

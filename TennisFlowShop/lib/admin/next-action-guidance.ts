@@ -4,6 +4,7 @@ export type OpsLikeItem = {
   paymentLabel?: string | null;
   flow?: number | null;
   related?: { kind: 'order' | 'stringing_application' | 'rental'; id: string; href: string } | null;
+  hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
   hasInboundTracking?: boolean;
 };
@@ -49,6 +50,45 @@ const hasIncludedPaymentContext = (paymentLabel?: string | null) => {
   return s.includes('패키지차감') || s.includes('주문결제포함') || s.includes('대여결제포함');
 };
 
+const isOrderShipped = (status?: string | null) => {
+  const s = String(status ?? '').toLowerCase();
+  return s.includes('배송중') || s === 'shipped';
+};
+
+const isOrderDeliveredLike = (status?: string | null) => {
+  const s = String(status ?? '').toLowerCase();
+  return s.includes('배송완료') || s.includes('구매확정') || s === 'delivered' || s === 'confirmed';
+};
+
+const isOrderClosed = (status?: string | null) => {
+  const s = String(status ?? '').toLowerCase();
+  return s.includes('환불') || s.includes('취소') || s === 'refunded' || s === 'cancelled' || s === 'canceled';
+};
+
+function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
+  if (!doneLike(item.paymentLabel)) {
+    return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 필요' };
+  }
+
+  if (isOrderClosed(item.statusLabel)) {
+    return { stage: '주문 종료 단계', nextAction: '후속 조치 없음' };
+  }
+
+  if (isOrderDeliveredLike(item.statusLabel)) {
+    return { stage: '배송 완료 단계', nextAction: '구매확정/환불 요청 여부 모니터링' };
+  }
+
+  if (isOrderShipped(item.statusLabel)) {
+    return { stage: '배송 진행 단계', nextAction: '배송 완료 전 운송장/수령 상태 확인 필요' };
+  }
+
+  if (!item.hasShippingInfo) {
+    return { stage: '배송 준비 단계', nextAction: '배송 정보 등록 필요' };
+  }
+
+  return { stage: '배송 준비 단계', nextAction: '배송중 처리 필요' };
+}
+
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
   if (item.kind === 'rental') {
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
@@ -84,10 +124,13 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
   }
 
   if (item.kind === 'order') {
-    if (!doneLike(item.paymentLabel)) {
-      return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 및 연결 신청서 진행 가능 여부 확인 필요' };
+    if (item.related?.kind === 'stringing_application') {
+      if (!doneLike(item.paymentLabel)) {
+        return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 및 연결 신청서 진행 가능 여부 확인 필요' };
+      }
+      return { stage: '주문 후속 처리 단계', nextAction: '배송/수령 상태를 확인하고 연결 신청서 진행 상태를 점검하세요' };
     }
-    return { stage: '주문 후속 처리 단계', nextAction: '배송/수령 상태를 확인하고 연결 신청서 진행 상태를 점검하세요' };
+    return inferStandaloneOrderGuide(item);
   }
 
   return { stage: '운영 점검 단계', nextAction: '연결 문서 상태를 확인해 다음 처리 대상을 결정하세요' };
@@ -108,6 +151,10 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
     if (isAppWorking(app.statusLabel)) {
       return { stage: '주문+신청 · 교체 작업 단계', nextAction: '작업 완료 후 신청서 교체완료 처리 필요' };
     }
+  }
+
+  if (order && !app) {
+    return inferStandaloneOrderGuide(order);
   }
 
   if (rental && app) {
