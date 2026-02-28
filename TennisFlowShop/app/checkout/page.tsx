@@ -1,5 +1,6 @@
 'use client';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
+import CheckoutStringingPaymentAddon from '@/app/checkout/_components/CheckoutStringingPaymentAddon';
 import CheckoutStringingServiceSections from '@/app/checkout/_components/CheckoutStringingServiceSections';
 import useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
 import { useAuthStore, type User } from '@/app/store/authStore';
@@ -1135,6 +1136,21 @@ export default function CheckoutPage() {
                     />
                     <div className="min-h-[16px]">{fieldErrors.depositor && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
                   </div>
+
+                  {withStringService && (
+                    <CheckoutStringingPaymentAddon
+                      packagePreview={checkoutStringingAdapter.packagePreview}
+                      packageRemaining={checkoutStringingAdapter.packageRemaining}
+                      requiredPassCount={checkoutStringingAdapter.requiredPassCount}
+                      canApplyPackage={checkoutStringingAdapter.canApplyPackage}
+                      usingPackage={checkoutStringingAdapter.usingPackage}
+                      packageInsufficient={checkoutStringingAdapter.packageInsufficient}
+                      packageOptOut={!!checkoutStringingAdapter.formData.packageOptOut}
+                      onPackageOptOutChange={(next) => {
+                        checkoutStringingAdapter.setFormData((prev) => ({ ...prev, packageOptOut: next }));
+                      }}
+                    />
+                  )}
 
                   <div className="bg-muted p-4 rounded-lg border border-border">
                     <div className="flex items-center gap-2 mb-3">

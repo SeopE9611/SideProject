@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { CartItem } from '@/app/store/cartStore';
 import useStringingApplySharedState from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
@@ -34,6 +34,14 @@ const mapPickupToCollectionMethod = (pickup: ServicePickup) => {
 };
 
 export default function useCheckoutStringingServiceAdapter({ withStringService, orderItems, mountingFeeByProductId, serviceTargetIds, name, email, phone, postalCode, address, addressDetail, depositor, selectedBank, servicePickupMethod, isMember }: Params) {
+  const [packagePreview, setPackagePreview] = useState<{
+    has: boolean;
+    remaining?: number;
+    expiresAt?: string;
+    passId?: string;
+    packageSize?: number;
+  }>({ has: false });
+
   const previewOrder = useMemo(() => {
     const items = orderItems.map((item) => ({
       id: String(item.id),
@@ -72,6 +80,40 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
   });
 
   const { setFormData } = shared;
+
+  useEffect(() => {
+    if (!withStringService) return;
+
+    (async () => {
+      try {
+        const res = await fetch('/api/passes/me', { credentials: 'include' });
+        if (!res.ok) {
+          setPackagePreview({ has: false });
+          return;
+        }
+
+        const data = await res.json();
+        const items = (data?.items ?? []).filter((p: any) => p.status === 'active' && p.remainingCount > 0 && new Date(p.expiresAt).getTime() >= Date.now());
+        items.sort((a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
+
+        if (items.length === 0) {
+          setPackagePreview({ has: false });
+          return;
+        }
+
+        const pass = items[0];
+        setPackagePreview({
+          has: true,
+          remaining: pass.remainingCount,
+          expiresAt: pass.expiresAt,
+          passId: pass.id,
+          packageSize: pass.packageSize,
+        });
+      } catch {
+        setPackagePreview({ has: false });
+      }
+    })();
+  }, [withStringService]);
 
   useEffect(() => {
     if (!withStringService) return;
@@ -115,8 +157,29 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
   }, [withStringService, serviceTargetIds, previewOrder.items, setFormData]);
 
   const orderRemainingSlots = (previewOrder.stringService.totalSlots ?? 0) - (previewOrder.stringService.usedSlots ?? 0);
-  const price = shared.linesForSubmit.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0);
-  const base = shared.linesForSubmit[0]?.mountingFee ?? 0;
+  const requiredPassCount = useMemo(() => {
+    const ids = (shared.formData.stringTypes ?? []).filter(Boolean);
+    if (!ids.length) return 0;
+
+    return ids.reduce((sum, id) => {
+      const count = shared.formData.stringUseCounts?.[id];
+      return sum + (typeof count === 'number' && count > 0 ? count : 1);
+    }, 0);
+  }, [shared.formData.stringTypes, shared.formData.stringUseCounts]);
+
+  const packageRemaining = Math.max(0, packagePreview?.remaining ?? 0);
+  const canApplyPackage = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
+  const packageInsufficient = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
+  const usingPackage = !!(canApplyPackage && !shared.formData.packageOptOut);
+
+  useEffect(() => {
+    if (packageInsufficient && !shared.formData.packageOptOut) {
+      shared.setFormData((prev) => ({ ...prev, packageOptOut: true }));
+    }
+  }, [packageInsufficient, shared.formData.packageOptOut, shared.setFormData]);
+
+  const base = shared.linesForSubmit.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0);
+  const price = usingPackage ? 0 : base;
   const selectedOrderItem = previewOrder.items.find((it) => it.id === shared.formData.stringTypes?.[0]) ?? null;
 
   return {
@@ -127,18 +190,19 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
     selectedOrderItem,
 
     isMember,
-    packagePreview: { has: false },
-    canApplyPackage: false,
-    packageInsufficient: false,
-    packageRemaining: 0,
-    requiredPassCount: shared.lineCount,
+    packagePreview,
+    canApplyPackage,
+    packageInsufficient,
+    packageRemaining,
+    requiredPassCount,
+    usingPackage,
 
     price,
     priceView: {
-      usingPackage: false,
+      usingPackage,
       base,
       pickupFee: 0,
-      total: base,
+      total: price,
     },
 
     ...shared,
