@@ -385,10 +385,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                       }
                     }}
                   >
-                    <SelectTrigger
-                      id="courier"
-                      className={`h-12 text-base border-border focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring ? ' border-destructive focus:border-destructive focus:ring-ring dark:focus:ring-ring' : ''}`}
-                    >
+                    <SelectTrigger id="courier" className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? 'border-destructive focus:border-destructive' : 'border-border focus:border-border'}`}>
                       <SelectValue placeholder="택배사를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -414,7 +411,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                     value={form.trackingNo}
                     onChange={onChange('trackingNo')}
                     placeholder="숫자 또는 영문 조합으로 입력해 주세요"
-                    className={`h-12 text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring${fieldErrors.trackingNo ? ' border-destructive focus:border-destructive focus:ring-ring dark:focus:ring-ring' : ''}`}
+                    className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? 'border-destructive focus:border-destructive' : 'border-border focus:border-border dark:focus:border-border'}`}
                   />
                   <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.trackingNo ?? ''}</p>
                 </div>
