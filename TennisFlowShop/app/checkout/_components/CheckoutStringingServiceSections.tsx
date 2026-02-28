@@ -5,49 +5,18 @@ import { ClipboardList, MessageSquare } from 'lucide-react';
 
 import FinalRequestSection from '@/app/features/stringing-applications/components/apply-shared/FinalRequestSection';
 import MountingInfoSection from '@/app/features/stringing-applications/components/apply-shared/MountingInfoSection';
-import useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
-import type { CartItem } from '@/app/store/cartStore';
+import type useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
 
-type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
 type SectionType = 'mounting' | 'final';
+type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
 
 type Props = {
   section: SectionType;
   withStringService: boolean;
-  orderItems: CartItem[];
-  mountingFeeByProductId: Record<string, number>;
-  serviceTargetIds: string[];
-
-  name: string;
-  email: string;
-  phone: string;
-  postalCode: string;
-  address: string;
-  addressDetail: string;
-  depositor: string;
-  selectedBank: string;
-  servicePickupMethod: ServicePickup;
-  isMember: boolean;
+  adapter: CheckoutStringingServiceAdapter;
 };
 
-export default function CheckoutStringingServiceSections({ section, withStringService, orderItems, mountingFeeByProductId, serviceTargetIds, name, email, phone, postalCode, address, addressDetail, depositor, selectedBank, servicePickupMethod, isMember }: Props) {
-  const adapter = useCheckoutStringingServiceAdapter({
-    withStringService,
-    orderItems,
-    mountingFeeByProductId,
-    serviceTargetIds,
-    name,
-    email,
-    phone,
-    postalCode,
-    address,
-    addressDetail,
-    depositor,
-    selectedBank,
-    servicePickupMethod,
-    isMember,
-  });
-
+export default function CheckoutStringingServiceSections({ section, withStringService, adapter }: Props) {
   if (!withStringService) return null;
 
   if (section === 'mounting') {
