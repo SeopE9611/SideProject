@@ -8,6 +8,7 @@ import type { User } from '@/app/store/authStore';
 import { getMyInfo } from '@/lib/auth.client';
 import { showErrorToast } from '@/lib/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
+import type { StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 
 // 제출 직전 최종 유효성 가드
 type Bank = 'shinhan' | 'kookmin' | 'woori';
@@ -117,6 +118,7 @@ export default function CheckoutButton({
   serviceTargetIds = [],
   serviceFee = 0,
   pointsToUse = 0,
+  stringingApplicationInput,
 }: {
   disabled: boolean;
   name: string;
@@ -138,6 +140,7 @@ export default function CheckoutButton({
   serviceTargetIds?: string[];
   serviceFee?: number;
   pointsToUse?: number;
+  stringingApplicationInput?: StringingApplicationInput;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -337,6 +340,7 @@ export default function CheckoutButton({
         guestInfo: !user ? { name: nameTrim, phone: phoneDigits, email: emailTrim } : undefined,
         isStringServiceApplied: withStringService,
         servicePickupMethod,
+        stringingApplicationInput: withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
       };
 
       const sig = cartSignature(items);
@@ -369,7 +373,7 @@ export default function CheckoutButton({
         }
 
         success = true;
-        const qs = withStringService ? `orderId=${data.orderId}&autoApply=1` : `orderId=${data.orderId}`;
+        const qs = `orderId=${data.orderId}`;
         router.push(`/checkout/success?${qs}`);
         router.refresh();
         return;

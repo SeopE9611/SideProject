@@ -3,6 +3,7 @@ import CheckoutButton from '@/app/checkout/CheckoutButton';
 import CheckoutStringingPaymentAddon from '@/app/checkout/_components/CheckoutStringingPaymentAddon';
 import CheckoutStringingServiceSections from '@/app/checkout/_components/CheckoutStringingServiceSections';
 import useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
+import type { StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { CartItem, useCartStore } from '@/app/store/cartStore';
@@ -633,6 +634,51 @@ export default function CheckoutPage() {
 
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors && (!withStringService || isMountingFeeReady);
+
+  const stringingApplicationInput = useMemo<StringingApplicationInput | undefined>(() => {
+    if (!withStringService) return undefined;
+
+    const form = checkoutStringingAdapter.formData;
+    const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
+    const stringTypes = (form.stringTypes ?? []).filter(Boolean);
+
+    if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
+      return undefined;
+    }
+
+    return {
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      shippingInfo: {
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        addressDetail: addressDetail.trim(),
+        postalCode: postalCode.trim(),
+        depositor: depositor.trim(),
+        bank: selectedBank,
+        deliveryRequest: deliveryRequest.trim(),
+        collectionMethod: form.collectionMethod,
+      },
+      stringTypes,
+      customStringName: form.customStringType?.trim() || undefined,
+      preferredDate: form.preferredDate,
+      preferredTime: form.preferredTime,
+      requirements: form.requirements,
+      packageOptOut: !!form.packageOptOut,
+      lines: lines.map((line) => ({
+        racketType: line.racketType,
+        stringProductId: line.stringProductId,
+        stringName: line.stringName,
+        tensionMain: line.tensionMain,
+        tensionCross: line.tensionCross,
+        note: line.note,
+        mountingFee: line.mountingFee,
+      })),
+    };
+  }, [withStringService, checkoutStringingAdapter.formData, checkoutStringingAdapter.linesForSubmit, name, phone, email, address, addressDetail, postalCode, depositor, selectedBank, deliveryRequest]);
 
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
@@ -1445,6 +1491,7 @@ export default function CheckoutPage() {
                     items={orderItems}
                     serviceFee={serviceFee}
                     pointsToUse={appliedPoints}
+                    stringingApplicationInput={stringingApplicationInput}
                   />
                   <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                     <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
