@@ -4,17 +4,17 @@ import type React from 'react';
 
 import { type PackageVariant, PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import SiteContainer from '@/components/layout/SiteContainer';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
+import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { packagesBadgeVariant } from '@/lib/badge-style';
 import { ArrowRight, Award, Calendar, CheckCircle, Clock, Gift, MessageSquare, Package, Percent, Phone, Shield, Star, Target, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { packagesBadgeVariant } from '@/lib/badge-style';
 
 interface PackageOption {
   id: string;
@@ -367,7 +367,7 @@ export default function StringPackagesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="flex flex-wrap justify-center gap-8">
             {packages.map((pkg) => (
               <Card
                 key={pkg.id}
