@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2, Lock, Mail, MapPin, Phone, Shield, User } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type React from 'react';
@@ -616,9 +617,15 @@ export default function LoginPageClient() {
           <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative overflow-hidden">
             <div className="absolute inset-0 bg-foreground/10"></div>
             <div className="relative text-center">
-              {/* <div className="w-16 h-16 mx-auto mb-4 bg-card/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg"></div> */}
+              <div className="mx-auto mb-4 flex justify-center">
+                <div className="relative h-12 w-24 shrink-0 overflow-hidden">
+                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
+                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                </div>
+              </div>
+
               <h1 className="text-2xl bp-sm:text-3xl font-black">테니스 플로우</h1>
-              <p className="text-foreground mt-2 font-medium">Tennis Flow Shop</p>
+              <p className="text-foreground mt-2 font-medium">TENNIS FLOW SHOP</p>
             </div>
           </div>
 
