@@ -37,6 +37,7 @@ interface Order {
     withStringService?: boolean;
   };
   isStringServiceApplied?: boolean;
+  stringingApplicationId?: string | null;
 }
 
 const getStatusIcon = (status: string) => {
@@ -165,6 +166,7 @@ export default function OrderLookupResultsPage() {
                 withStringService: o.shippingInfo?.withStringService,
               },
               isStringServiceApplied: o.isStringServiceApplied,
+              stringingApplicationId: o.stringingApplicationId ?? null,
             })),
           );
         } else {
@@ -341,7 +343,10 @@ export default function OrderLookupResultsPage() {
             <CardContent className="pt-8">
               {orders && orders.length > 0 ? (
                 <div className="space-y-6">
-                  {orders.map((order, index) => (
+                  {orders.map((order, index) => {
+                    const hasCompletedStringingApplication = Boolean(order.stringingApplicationId) || order.isStringServiceApplied === true;
+
+                    return (
                     <Card key={order.id} className="overflow-hidden border-2 border-border hover:border-border transition-all duration-200 hover:shadow-lg">
                       <div className="p-6">
                         {/* Order Header */}
@@ -408,7 +413,7 @@ export default function OrderLookupResultsPage() {
 
                           {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
                             <>
-                              {!order.isStringServiceApplied ? (
+                              {!hasCompletedStringingApplication ? (
                                 <Button
                                   className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                                   onClick={() => router.push(`/services/apply?orderId=${order.id}`)}
@@ -422,7 +427,7 @@ export default function OrderLookupResultsPage() {
                                     <TooltipTrigger asChild>
                                       <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary cursor-default dark:bg-primary/20">
                                         <CheckCircle2 className="w-4 h-4 mr-2" />
-                                        스트링 신청 완료
+                                        교체 서비스 접수 완료
                                       </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="top" className="text-sm">
@@ -436,7 +441,7 @@ export default function OrderLookupResultsPage() {
                         </div>
                       </div>
                     </Card>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16">

@@ -243,12 +243,13 @@ export default function OrderList() {
         const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
         // 신청서 연결 여부(있으면 "교체 신청" 대신 "신청서 보기"로 유도)
         const hasLinkedApplication = Boolean(order.stringingApplicationId);
+        const hasCompletedStringingApplication = hasLinkedApplication || order.isStringServiceApplied === true;
 
         // 모바일 보조 CTA: "교체 신청" 또는 "신청서 보기" 중 하나라도 있으면 2버튼 레이아웃
-        const showMobileSecondCTA = (Boolean(order.shippingInfo?.withStringService) && !order.isStringServiceApplied && !hasLinkedApplication) || hasLinkedApplication;
+        const showMobileSecondCTA = (Boolean(order.shippingInfo?.withStringService) && !hasCompletedStringingApplication) || hasLinkedApplication;
 
         // "교체 신청"은 신청서가 아직 없을 때만 노출
-        const showMobileStringApply = Boolean(order.shippingInfo?.withStringService) && !order.isStringServiceApplied && !hasLinkedApplication;
+        const showMobileStringApply = Boolean(order.shippingInfo?.withStringService) && !hasCompletedStringingApplication;
 
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
@@ -388,7 +389,7 @@ export default function OrderList() {
                             <ArrowRight className="h-3 w-3" />
                           </Link>
                         </Button>
-                      ) : !order.isStringServiceApplied ? (
+                      ) : !hasCompletedStringingApplication ? (
                         <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200" asChild>
                           <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
                             스트링 교체 신청
@@ -484,21 +485,19 @@ export default function OrderList() {
                       ) : null}
 
                       {order.shippingInfo?.withStringService ? (
-                        order.isStringServiceApplied ? (
-                          order.stringingApplicationId ? (
-                            <DropdownMenuItem asChild>
-                              <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="flex items-center gap-2">
-                                <ArrowRight className="h-4 w-4" />
-                                신청서 보기
-                              </Link>
-                            </DropdownMenuItem>
-                          ) : (
-                            // (안전장치) 신청 완료 상태인데 ID가 없으면 기존처럼 완료만 표시
-                            <DropdownMenuItem disabled className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4" />
-                              교체 신청 완료
-                            </DropdownMenuItem>
-                          )
+                        order.stringingApplicationId ? (
+                          <DropdownMenuItem asChild>
+                            <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="flex items-center gap-2">
+                              <ArrowRight className="h-4 w-4" />
+                              신청서 보기
+                            </Link>
+                          </DropdownMenuItem>
+                        ) : hasCompletedStringingApplication ? (
+                          // (안전장치) 신청 완료 상태인데 ID가 없으면 완료만 표시
+                          <DropdownMenuItem disabled className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4" />
+                            교체 신청 완료
+                          </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem asChild>
                             <Link href={`/services/apply?orderId=${order.id}`} className="flex items-center gap-2">
