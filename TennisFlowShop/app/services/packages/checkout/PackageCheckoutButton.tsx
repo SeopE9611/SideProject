@@ -1,13 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect, useRef } from 'react';
+import type { PackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import type { User } from '@/app/store/authStore';
+import { Button } from '@/components/ui/button';
 import { getMyInfo } from '@/lib/auth.client';
 import { showErrorToast } from '@/lib/toast';
 import { CreditCard, Loader2 } from 'lucide-react';
-import type { PackageVariant } from '@/app/services/packages/_lib/packageVariant';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 // 제출 직전 최종 가드(우회 방지)용 유효성
 // - PackageCheckoutClient에서 disabled로 1차 차단을 하지만,
@@ -175,6 +175,9 @@ export default function PackageCheckoutButton({
       }
     }
 
+    // 성공 시에는 페이지 이동이 끝날 때까지 로딩을 유지하기 위한 플래그
+    let success = false;
+
     // 검증 통과 후에만 제출 플래그 ON
     submittingRef.current = true;
     setIsSubmitting(true);
@@ -236,6 +239,7 @@ export default function PackageCheckoutButton({
       if (data?.packageOrderId) {
         // 성공 시에는 다음 주문을 위해 제거
         clearIdemKey();
+
         // 주문 성공 후에만 (선택적으로) 회원 정보 저장
         if (user && saveInfo) {
           try {
@@ -256,6 +260,8 @@ export default function PackageCheckoutButton({
             // 저장 실패는 주문 성공을 막지 않음(UX 우선)
           }
         }
+
+        success = true; // 성공했으므로 현재 페이지에서 로딩을 풀지 않음
         router.push(`/services/packages/success?packageOrderId=${data.packageOrderId}`);
         router.refresh();
         return;
@@ -265,8 +271,12 @@ export default function PackageCheckoutButton({
     } catch (e) {
       showErrorToast('패키지 주문 처리 중 오류가 발생했습니다.');
     } finally {
-      submittingRef.current = false;
-      setIsSubmitting(false);
+      // 실패한 경우에만 잠금 해제
+      // 성공한 경우는 success 페이지로 이동하는 동안 로딩 유지
+      if (!success) {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
     }
   };
 
