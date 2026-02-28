@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import bcrypt from 'bcryptjs';
-import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { getDb } from '@/lib/mongodb';
+import bcrypt from 'bcryptjs';
 import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
 // POST /api/account/password/change
 export async function POST(req: Request) {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       { _id },
       {
         $set: {
-          passwordHash: hash,
+          hashedPassword: hash,
           passwordMustChange: false, // 강제 변경 종료
           updatedAt: new Date(),
         },
