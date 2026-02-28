@@ -180,7 +180,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     </p>
                   )}
                   {hasSubmittedApplication ? (
-                    <p className="text-sm text-muted-foreground">별도 신청서 작성 없이 현재 주문에 포함되어 처리됩니다.</p>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <p>별도 신청서 작성 없이 현재 주문에 포함되어 처리됩니다.</p>
+                      <p>추가 요청/장착 정보도 주문과 함께 저장되었습니다.</p>
+                    </div>
                   ) : (
                     <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
                       <Link href={appHref} className="flex items-center gap-2">

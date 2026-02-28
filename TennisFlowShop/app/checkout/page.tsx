@@ -810,22 +810,22 @@ export default function CheckoutPage() {
 
                 <li className="text-muted-foreground">→</li>
 
-                {/* 2) 결제: 현재 페이지(현재 단계) */}
+                {/* 2) 결제/장착 정보: 현재 페이지(현재 단계) */}
                 <li className="flex items-center gap-2">
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-foreground text-xs font-semibold">2</span>
-                  <span className="font-medium text-foreground">결제</span>
+                  <span className="font-medium text-foreground">결제·장착 정보</span>
                 </li>
 
                 <li className="text-muted-foreground">→</li>
 
-                {/* 3) 신청서 자동 이동: 결제 완료 후 success 페이지에서 자동 이동 */}
+                {/* 3) 접수 완료: 결제와 함께 서비스 신청이 함께 접수됨 */}
                 <li className="flex items-center gap-2">
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground text-xs font-semibold">3</span>
-                  <span className="font-medium">신청서</span>
+                  <span className="font-medium">접수 완료</span>
                 </li>
               </ol>
 
-              <p className="mt-2 text-xs text-muted-foreground">결제 후 신청서로 바로 넘어가요.</p>
+              <p className="mt-2 text-xs text-muted-foreground">결제와 함께 교체 서비스 신청이 접수되며, 별도 신청서 작성 없이 현재 주문에 포함됩니다.</p>
             </nav>
           )}
 
@@ -968,7 +968,7 @@ export default function CheckoutPage() {
                   {lockServiceMode && (
                     <div className="ml-6 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span>
-                        지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제하면 신청서로 바로 넘어가요.
+                        지금은 <span className="font-semibold text-foreground">교체 서비스 포함</span> 모드예요. 결제와 함께 교체 서비스 정보가 접수되며 장착 정보와 추가 요청도 현재 주문에 함께 저장됩니다.
                       </span>
 
                       {/* '상품만 결제'로 바꾸고 싶을 때의 명시적 전환 버튼 */}
