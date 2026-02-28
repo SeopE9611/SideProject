@@ -1,5 +1,6 @@
 'use client';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
+import CheckoutStringingServiceSections from '@/app/checkout/_components/CheckoutStringingServiceSections';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { CartItem, useCartStore } from '@/app/store/cartStore';
@@ -1053,6 +1054,24 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
+            <CheckoutStringingServiceSections
+              section="mounting"
+              withStringService={withStringService}
+              orderItems={orderItems}
+              mountingFeeByProductId={mountingFeeByProductId}
+              serviceTargetIds={serviceTargetIds}
+              name={name}
+              email={email}
+              phone={phone}
+              postalCode={postalCode}
+              address={address}
+              addressDetail={addressDetail}
+              depositor={depositor}
+              selectedBank={selectedBank}
+              servicePickupMethod={servicePickupMethod}
+              isMember={!!user}
+            />
+
             {/* 결제 정보 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-card p-4 bp-sm:p-6">
@@ -1132,6 +1151,24 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <CheckoutStringingServiceSections
+              section="final"
+              withStringService={withStringService}
+              orderItems={orderItems}
+              mountingFeeByProductId={mountingFeeByProductId}
+              serviceTargetIds={serviceTargetIds}
+              name={name}
+              email={email}
+              phone={phone}
+              postalCode={postalCode}
+              address={address}
+              addressDetail={addressDetail}
+              depositor={depositor}
+              selectedBank={selectedBank}
+              servicePickupMethod={servicePickupMethod}
+              isMember={!!user}
+            />
 
             {/* 주문자 동의 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
