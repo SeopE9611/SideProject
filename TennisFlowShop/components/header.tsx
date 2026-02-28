@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 import { ChevronDown, ChevronRight, Gift, Grid2X2, Loader2, Mail, Menu, MessageSquare, MessageSquareText, ShoppingCart, UserIcon } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -730,7 +731,7 @@ const Header = () => {
         <header ref={headerRef as any} data-scrolled={isScrolled} className={`app-header fixed top-0 inset-x-0 z-[40] w-full isolate transition-[height] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'}`}>
           <div aria-hidden="true" className={`absolute left-0 right-0 top-0 z-0 pointer-events-none transition-[height,background] duration-300 ${isScrolled ? 'h-[56px]' : 'h-[72px]'} bg-background/70 backdrop-blur-md border-b border-border`} />
           <SiteContainer
-            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:pl-64 bp-lg:pr-8 2xl:pl-72 2xl:pr-16 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
+            className="bp-lg:mx-0 bp-lg:max-w-none bp-lg:px-6 xl:px-8 2xl:px-10 h-full flex items-center justify-between overflow-visible transition-transform duration-300"
             style={{
               transform: isScrolled ? 'scale(0.96)' : 'scale(1)',
               transformOrigin: 'top center',
@@ -758,14 +759,25 @@ const Header = () => {
                 </Link>
               </div>
             </div>
+            <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-1 bp-lg:gap-2">
+              <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="테니스 플로우 홈">
+                {/* 로고 마크: 가로형 비율 + 라이트/다크 자동 교체 */}
+                <div className="relative h-8 w-16 shrink-0 overflow-hidden">
+                  {/* 라이트 모드 */}
+                  <Image src="/tennisflowmark-light.png" alt="" aria-hidden="true" fill className="object-contain dark:hidden" priority />
 
-            <div className="hidden bp-lg:flex items-center w-full min-w-0 gap-3 bp-lg:gap-4">
-              <Link href="/" className="flex flex-col group" aria-label="테니스 플로우 홈">
-                <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">테니스 플로우</div>
-                <div className="text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">TENNIS FLOW SHOP</div>
+                  {/* 다크 모드 */}
+                  <Image src="/tennisflowmark-dark.png" alt="" aria-hidden="true" fill className="hidden object-contain dark:block" priority />
+                </div>
+
+                {/* 텍스트 로고 */}
+                <div className="flex flex-col leading-none">
+                  <div className="font-black text-lg bp-lg:text-xl tracking-tight text-foreground group-hover:text-foreground transition-colors">테니스 플로우</div>
+                  <div className="mt-1 text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">TENNIS FLOW SHOP</div>
+                </div>
               </Link>
 
-              <nav ref={navRef} className="hidden bp-lg:flex items-center gap-1.5 ml-2 whitespace-nowrap flex-1 min-w-0 overflow-hidden">
+              <nav ref={navRef} className="hidden bp-lg:flex items-center gap-1.5 ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden xl:justify-center xl:pr-8 2xl:pr-10">
                 {primaryMenuItems.map((item) => {
                   const active = isActiveMenu(item);
                   return (
