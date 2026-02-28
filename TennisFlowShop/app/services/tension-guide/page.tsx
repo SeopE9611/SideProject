@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, ArrowRight, BarChart3, CheckCircle2, ChevronRight, CloudRain, Gauge, Info, Layers, Lightbulb, Settings2, Shield, Sun, Target, Thermometer, TrendingUp, Users, Wind, Zap } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BarChart3, CheckCircle2, ChevronRight, Gauge, Info, Layers, Lightbulb, Settings2, Shield, Sun, Target, Thermometer, TrendingUp, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
@@ -124,7 +124,7 @@ export default function TensionGuidePage() {
       characteristics: '최고의 느낌과 파워를 제공하는 프리미엄 스트링입니다.',
       pros: ['최상의 타구감', '뛰어난 파워', '텐션 유지력 최고', '팔에 부드러움'],
       cons: ['높은 가격', '습기에 약함', '관리 필요'],
-      adjustment: '표준 텐션보다 2-4LB 낮게 시작하세요',
+      adjustment: '표준 텐션보다 2-4LB 높게 시작하세요',
       bestFor: '최고의 퍼포먼스를 원하는 분, 프로 선수',
       color: 'bg-primary/10 dark:bg-primary/20',
     },
@@ -144,20 +144,6 @@ export default function TensionGuidePage() {
       adjustment: '-2~4LB',
       reason: '추위로 스트링이 딱딱해지므로 텐션을 낮춰야 합니다',
       color: 'text-primary',
-    },
-    {
-      factor: '습한 환경',
-      icon: CloudRain,
-      adjustment: '+2LB',
-      reason: '습기가 스트링에 영향을 미쳐 탄성이 변합니다',
-      color: 'text-primary',
-    },
-    {
-      factor: '고도가 높은 곳',
-      icon: Wind,
-      adjustment: '+2~4LB',
-      reason: '공기 저항이 적어 볼 스피드가 빨라집니다',
-      color: 'text-muted-foreground',
     },
   ];
 
@@ -221,23 +207,7 @@ export default function TensionGuidePage() {
               <br />
               <span className="text-primary">최적의 텐션</span>을 찾아보세요
             </h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 bp-md:mb-8 text-pretty px-2">플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션 가이드로 최고의 퍼포먼스를 경험하세요</p>
-
-            {/* Quick Stats */}
-            <div className="flex flex-wrap justify-center gap-4 bp-sm:gap-6 bp-md:gap-12 text-center">
-              <div className="bg-card dark:bg-muted/80 rounded-xl px-4 py-3 bp-sm:px-6 bp-sm:py-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
-                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">44-71LB</div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">일반 텐션 범위</div>
-              </div>
-              <div className="bg-card dark:bg-muted/80 rounded-xl px-4 py-3 bp-sm:px-6 bp-sm:py-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
-                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">55-57LB</div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">가장 많이 사용</div>
-              </div>
-              <div className="bg-card dark:bg-muted/80 rounded-xl px-4 py-3 bp-sm:px-6 bp-sm:py-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default">
-                <div className="text-2xl bp-sm:text-3xl bp-md:text-4xl font-bold text-foreground">10-15%</div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">24시간 내 텐션 손실</div>
-              </div>
-            </div>
+            <p className="text-base bp-sm:text-lg bp-md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 bp-md:mb-8text-pretty px-2">플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션 가이드로 최고의 퍼포먼스를 경험하세요</p>
           </div>
         </div>
       </div>
@@ -280,6 +250,22 @@ export default function TensionGuidePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6 bp-md:space-y-8">
+                    {/* 스윙 스피드 선택 */}
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-3">스윙 스피드</label>
+                      <div className="grid grid-cols-3 gap-2 bp-sm:gap-3">
+                        {swingSpeedOptions.map((option) => (
+                          <button
+                            key={option.id}
+                            onClick={() => setSwingSpeed(option.id as SwingSpeed)}
+                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
+                          >
+                            <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
+                            <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     {/* 스트링 타입 선택 */}
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-3">스트링 타입</label>
@@ -311,23 +297,6 @@ export default function TensionGuidePage() {
                             className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${playStyle === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
                           >
                             <div className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
-                            <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 스윙 스피드 선택 */}
-                    <div>
-                      <label className="block text-sm font-semibold text-foreground mb-3">스윙 스피드</label>
-                      <div className="grid grid-cols-3 gap-2 bp-sm:gap-3">
-                        {swingSpeedOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            onClick={() => setSwingSpeed(option.id as SwingSpeed)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-all duration-200 ${swingSpeed === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
-                          >
-                            <div className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
                             <div className="text-[10px] bp-sm:text-xs text-muted-foreground mt-1 hidden bp-sm:block">{option.desc}</div>
                           </button>
                         ))}
@@ -498,9 +467,6 @@ export default function TensionGuidePage() {
                         </div>
                         {string.name}
                       </CardTitle>
-                      <Badge variant="outline" className="text-xs bp-sm:text-sm bg-transparent">
-                        {string.recommendedTension}
-                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3 bp-md:space-y-4">
