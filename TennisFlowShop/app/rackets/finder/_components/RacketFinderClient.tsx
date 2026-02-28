@@ -457,6 +457,12 @@ export default function RacketFinderClient() {
               <RangeField label="헤드 사이즈" value={draft.headSize} min={80} max={120} step={1} suffix=" sq.in" onChange={(v) => setDraft((p) => ({ ...p, headSize: v }))} />
               <RangeField label="무게" value={draft.weight} min={200} max={380} step={1} suffix="g" onChange={(v) => setDraft((p) => ({ ...p, weight: v }))} />
             </div>
+            <div className="space-y-4">
+              <RangeField label="밸런스" value={draft.balance} min={280} max={380} step={1} suffix="mm" onChange={(v) => setDraft((p) => ({ ...p, balance: v }))} />
+              <RangeField label="길이" value={draft.lengthIn} min={25} max={29} step={0.1} suffix=" in" onChange={(v) => setDraft((p) => ({ ...p, lengthIn: v }))} />
+              <RangeField label="강성 (RA)" value={draft.stiffnessRa} min={45} max={80} step={1} suffix="" onChange={(v) => setDraft((p) => ({ ...p, stiffnessRa: v }))} />
+              <RangeField label="스윙웨이트 (SW)" value={draft.swingWeight} min={250} max={390} step={1} suffix="" onChange={(v) => setDraft((p) => ({ ...p, swingWeight: v }))} />
+            </div>
 
             {/* 스트링 패턴 */}
             <div className="space-y-3">
@@ -509,13 +515,6 @@ export default function RacketFinderClient() {
                 </div>
                 {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
               </label>
-
-              <div className="space-y-4">
-                <RangeField label="밸런스" value={draft.balance} min={280} max={380} step={1} suffix="mm" onChange={(v) => setDraft((p) => ({ ...p, balance: v }))} />
-                <RangeField label="길이" value={draft.lengthIn} min={25} max={29} step={0.1} suffix=" in" onChange={(v) => setDraft((p) => ({ ...p, lengthIn: v }))} />
-                <RangeField label="강성 (RA)" value={draft.stiffnessRa} min={45} max={80} step={1} suffix="" onChange={(v) => setDraft((p) => ({ ...p, stiffnessRa: v }))} />
-                <RangeField label="스윙웨이트 (SW)" value={draft.swingWeight} min={250} max={390} step={1} suffix="" onChange={(v) => setDraft((p) => ({ ...p, swingWeight: v }))} />
-              </div>
             </div>
 
             {/* 검색 버튼 */}
