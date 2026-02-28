@@ -1,5 +1,7 @@
 'use client';
 import CheckoutButton from '@/app/checkout/CheckoutButton';
+import CheckoutStringingServiceSections from '@/app/checkout/_components/CheckoutStringingServiceSections';
+import useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
 import { CartItem, useCartStore } from '@/app/store/cartStore';
@@ -394,6 +396,7 @@ export default function CheckoutPage() {
   const [deliveryRequest, setDeliveryRequest] = useState('');
   const [depositor, setDepositor] = useState('');
 
+
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
@@ -416,6 +419,24 @@ export default function CheckoutPage() {
   const { logout } = useAuthStore();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const checkoutStringingAdapter = useCheckoutStringingServiceAdapter({
+    withStringService,
+    orderItems,
+    mountingFeeByProductId,
+    serviceTargetIds,
+    name,
+    email,
+    phone,
+    postalCode,
+    address,
+    addressDetail,
+    depositor,
+    selectedBank,
+    servicePickupMethod,
+    isMember: !!user,
+  });
+
 
   // 포인트(적립금) 상태
   // - balance: 원장 기준 총 잔액(캐시)
@@ -1053,6 +1074,12 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
+            <CheckoutStringingServiceSections
+              section="mounting"
+              withStringService={withStringService}
+              adapter={checkoutStringingAdapter}
+            />
+
             {/* 결제 정보 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-card p-4 bp-sm:p-6">
@@ -1132,6 +1159,12 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <CheckoutStringingServiceSections
+              section="final"
+              withStringService={withStringService}
+              adapter={checkoutStringingAdapter}
+            />
 
             {/* 주문자 동의 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
