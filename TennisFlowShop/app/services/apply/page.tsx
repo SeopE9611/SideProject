@@ -131,6 +131,21 @@ export default function StringServiceApplyPage() {
   const isOrderBased = Boolean(orderId);
   const isRentalBased = Boolean(rentalId);
 
+  // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
+  const orderStringService = (order as any)?.stringService as
+    | {
+        totalSlots?: number;
+        usedSlots?: number;
+        remainingSlots?: number;
+      }
+    | undefined;
+
+  // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
+  const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
+  const orderUsedSlots = typeof orderStringService?.usedSlots === 'number' ? orderStringService.usedSlots : 0;
+  const hasOrderApplicationHistory = orderUsedSlots > 0;
+  const isOrderSlotBlocked = !!(orderId && typeof orderRemainingSlots === 'number' && orderRemainingSlots <= 0);
+
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
   const pdpProductId = isOrderBased ? null : (searchParams.get('productId') ?? searchParams.get('stringId'));
 
@@ -203,7 +218,13 @@ export default function StringServiceApplyPage() {
 
   // 2) by-order로 신청서 id 조회
   useEffect(() => {
+    if (loading) return;
     if (!orderId) return;
+    if (isOrderSlotBlocked) {
+      setApplicationId(null);
+      return;
+    }
+
     (async () => {
       try {
         const res = await fetch(`/api/applications/stringing/by-order/${orderId}`, {
@@ -220,7 +241,7 @@ export default function StringServiceApplyPage() {
         console.error('[apply] fetch by-order id failed:', e);
       }
     })();
-  }, [orderId]);
+  }, [loading, orderId, isOrderSlotBlocked]);
 
   // 2-0) 주문 상세를 조회해 현재 신청 가능 상태(남은 슬롯/신청 이력)를 안내에 반영
   useEffect(() => {
@@ -366,12 +387,15 @@ export default function StringServiceApplyPage() {
   // 초안 보장: 주문 기반 진입 시, 진행 중 신청서(draft/received)를 "항상" 1개로 맞춘다.
   // - 이미 있으면 재사용(reused=true), 없으면 자동 생성
   // - UI에는 영향 없음(프리필/흐름 그대로), 서버/DB 일관성만 강화
-  const draftBootRef = useRef(false);
+  const draftBootOrderIdRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (loading) return;
     if (!orderId) return;
-    if (draftBootRef.current) return; // StrictMode 중복 가드
-    draftBootRef.current = true;
+    if (isOrderSlotBlocked) return;
+    if (draftBootOrderIdRef.current === orderId) return; // StrictMode/동일 orderId 중복 가드
+    draftBootOrderIdRef.current = orderId;
+
     (async () => {
       try {
         const draftUrl = orderId && orderId.trim() ? `/api/applications/stringing/drafts?orderId=${encodeURIComponent(orderId)}` : `/api/applications/stringing/drafts`;
@@ -405,7 +429,7 @@ export default function StringServiceApplyPage() {
         } catch {}
       }
     })();
-  }, [orderId]);
+  }, [loading, orderId, isOrderSlotBlocked, applicationId]);
 
   // 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환)
   const validateStep = (step: number, silent = false): boolean => {
@@ -1015,20 +1039,6 @@ export default function StringServiceApplyPage() {
   }, [visitDurationMinutesUi, setVisitDurationMinutesUi]);
 
 
-  // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
-  const orderStringService = (order as any)?.stringService as
-    | {
-        totalSlots?: number;
-        usedSlots?: number;
-        remainingSlots?: number;
-      }
-    | undefined;
-
-  // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
-  const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
-  const orderUsedSlots = typeof orderStringService?.usedSlots === 'number' ? orderStringService.usedSlots : 0;
-  const hasOrderApplicationHistory = orderUsedSlots > 0;
-  const isOrderSlotBlocked = !!(orderId && typeof orderRemainingSlots === 'number' && orderRemainingSlots <= 0);
   const isSingleApplyMode = mode === 'single' && !isOrderBased && !isRentalBased;
 
   const entryBanner = useMemo(() => {
@@ -1121,6 +1131,11 @@ export default function StringServiceApplyPage() {
   const doSubmit = async () => {
     // 마지막 단계(4단계)가 아니면 제출하지 않음
     if (currentStep !== steps.length) return;
+
+    if (isOrderSlotBlocked) {
+      showErrorToast('이 주문은 추가 신청 가능한 대상이 없습니다. 주문 상세에서 현재 접수 상태를 확인해주세요.');
+      return;
+    }
 
     // 마지막 단계 직전까지 전부 재검증: 실패 스텝으로 이동
     for (let idx = 1; idx <= totalSteps - 1; idx++) {
