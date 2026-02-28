@@ -8,124 +8,154 @@ import { AlertTriangle, ArrowRight, BarChart3, CheckCircle2, ChevronRight, Gauge
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
-type PlayStyle = 'baseline' | 'allcourt' | 'servevolley';
+type Gender = 'female' | 'male';
+type PlayStyle = 'soft' | 'control' | 'spinPower';
 type SwingSpeed = 'slow' | 'medium' | 'fast';
-type StringType = 'poly' | 'multi' | 'hybrid' | 'natural';
+type StringType = 'softPoly' | 'controlPoly' | 'spinPoly' | 'syntheticGut' | 'naturalGut';
+
+type TensionRange = {
+  min: number;
+  max: number;
+  base: number;
+};
 
 export default function TensionGuidePage() {
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
-  const [playStyle, setPlayStyle] = useState<PlayStyle>('allcourt');
+  const [gender, setGender] = useState<Gender>('male');
+  const [playStyle, setPlayStyle] = useState<PlayStyle>('control');
   const [swingSpeed, setSwingSpeed] = useState<SwingSpeed>('medium');
-  const [stringType, setStringType] = useState<StringType>('poly');
-  const [tensionValue, setTensionValue] = useState([55]);
+  const [stringType, setStringType] = useState<StringType>('softPoly');
   const [activeSection, setActiveSection] = useState<string>('calculator');
 
+  // 수준별 가이드는 남/녀 범위를 분리해서 명확히 보여주도록 데이터 구조를 변경합니다.
   const playerTypes = [
     {
-      type: '초보자',
+      type: '초급자',
       level: 1,
       icon: Users,
-      tension: '49-57LB',
-      tensionRange: [49, 57],
-      description: '편안한 플레이와 부상 방지를 위한 낮은 텐션',
+      femaleTension: '42~46LB',
+      maleTension: '48~52LB',
+      femaleRange: [42, 46],
+      maleRange: [48, 52],
+      description: '컨트롤과 파워의 균형을 맞춘 텐션',
       characteristics: ['파워 증가', '편안한 느낌', '부상 위험 감소', '넓은 스윗스팟'],
-      recommended: '처음 시작하시는 분들께는 53LB를 권장합니다',
+      recommended: '기본 세팅은 여자 44LB / 남자 50LB를 기준으로 시작해 보세요',
       color: 'bg-primary/10 dark:bg-primary/20',
-      bgColor: 'bg-primary/10 dark:bg-primary/20',
-      borderColor: 'border-border',
     },
     {
       type: '중급자',
       level: 2,
       icon: Target,
-      tension: '53-62LB',
-      tensionRange: [53, 62],
-      description: '컨트롤과 파워의 균형을 맞춘 중간 텐션',
+      femaleTension: '42~46LB',
+      maleTension: '48~52LB',
+      femaleRange: [42, 46],
+      maleRange: [48, 52],
+      description: '컨트롤과 파워의 균형을 맞춘 텐션',
       characteristics: ['균형잡힌 플레이', '적당한 컨트롤', '다양한 샷 구사', '스핀 생성 용이'],
-      recommended: '균형 잡힌 플레이를 원하시면 57LB가 적합합니다',
+      recommended: '안정적인 경기 운영을 위해 여자 44LB / 남자 50LB를 먼저 테스트해 보세요',
       color: 'bg-primary/10 dark:bg-primary/20',
-      bgColor: 'bg-primary/10 dark:bg-primary/20',
-      borderColor: 'border-border',
     },
     {
       type: '상급자',
       level: 3,
       icon: Zap,
-      tension: '57-66LB',
-      tensionRange: [57, 66],
-      description: '정밀한 컨트롤과 스핀을 위한 높은 텐션',
+      femaleTension: '44~48LB',
+      maleTension: '50~54LB',
+      femaleRange: [44, 48],
+      maleRange: [50, 54],
+      description: '경기 운영의 정밀도를 높이기 위한 텐션',
       characteristics: ['정밀한 컨트롤', '강한 스핀', '빠른 스윙 활용', '일관된 타구감'],
-      recommended: '빠른 스윙을 가지신 분은 62LB를 권장합니다',
+      recommended: '강한 스윙을 쓰는 경우 여자 46LB / 남자 52LB 전후가 안정적입니다',
       color: 'bg-primary/10 dark:bg-primary/20',
-      bgColor: 'bg-primary/10 dark:bg-primary/20',
-      borderColor: 'border-border',
     },
     {
       type: '프로/투어',
       level: 4,
       icon: TrendingUp,
-      tension: '62-71LB',
-      tensionRange: [62, 71],
-      description: '최고 수준의 컨트롤과 정확성을 위한 고텐션',
+      femaleTension: '46~50LB',
+      maleTension: '52~56LB',
+      femaleRange: [46, 50],
+      maleRange: [52, 56],
+      description: '투어 레벨의 타점 재현성과 정확도를 위한 텐션',
       characteristics: ['최고 컨트롤', '정확한 플레이스먼트', '프로 수준 스핀', '정교한 터치'],
-      recommended: '프로 수준의 파워가 있다면 66LB 이상을 고려하세요',
+      recommended: '실전 매치 기준으로 여자 48LB / 남자 54LB 세팅부터 미세 조정해 보세요',
       color: 'bg-primary/10 dark:bg-primary/20',
-      bgColor: 'bg-muted/50 dark:bg-muted/40',
-      borderColor: 'border-border',
     },
   ];
 
+  // 스트링 타입은 요청사항에 맞춰 5개로 재구성하고, 성별별 추천 범위/기준점을 함께 보관합니다.
   const stringTypes = [
     {
-      id: 'poly',
-      name: '폴리에스터',
-      icon: Shield,
-      recommendedTension: '53-62LB',
-      tensionAdjust: -4,
-      characteristics: '내구성이 뛰어나고 스핀 생성에 유리합니다. 단단한 느낌으로 컨트롤이 좋습니다.',
-      pros: ['뛰어난 내구성', '스핀 생성 우수', '컨트롤 향상', '텐션 유지력 양호'],
-      cons: ['팔에 무리 가능', '파워 감소', '정기적 교체 필요'],
-      adjustment: '일반 텐션보다 4-7LB 낮게 시작하세요',
-      bestFor: '스핀 위주 플레이어, 스트링이 자주 끊어지는 분',
-      color: 'bg-muted/40',
-    },
-    {
-      id: 'multi',
-      name: '멀티필라멘트',
-      icon: Layers,
-      recommendedTension: '49-57LB',
-      tensionAdjust: 0,
-      characteristics: '부드러운 느낌과 뛰어난 파워를 제공합니다. 팔에 무리가 적습니다.',
-      pros: ['편안한 타구감', '파워 증가', '팔 부담 감소', '넓은 스윗스팟'],
-      cons: ['내구성 낮음', '텐션 손실 빠름', '가격이 높음'],
-      adjustment: '표준 텐션을 그대로 적용하세요',
-      bestFor: '팔꿈치 문제가 있는 분, 편안한 느낌을 원하는 분',
+      id: 'softPoly',
+      name: '소프트(폴리)',
+      icon: Sun,
+      characteristics: '부드러운 타구감과 편안함을 우선하면서도 폴리 특유의 안정감을 원하는 세팅입니다.',
+      pros: ['부상 방지 및 편안함', '높은 파워와 반발력', '부드러운 타구감', '우수한 컨트롤(특정 종류)'],
+      adjustment: '팔 부담을 줄이고 싶다면 기준점에서 시작해 1~2LB씩 올려보세요.',
+      bestFor: '엘보 이슈가 있거나 편안한 타구감을 중요하게 보는 플레이어',
+      helperText: '폴리에스터 공통 권장 범위: 여자 42~48LB / 남자 48~54LB',
+      ranges: {
+        female: { min: 42, max: 48, base: 42 },
+        male: { min: 48, max: 54, base: 48 },
+      },
       color: 'bg-primary/10 dark:bg-primary/20',
     },
     {
-      id: 'hybrid',
-      name: '하이브리드',
-      icon: Settings2,
-      recommendedTension: '메인: 57LB, 크로스: 53LB',
-      tensionAdjust: -2,
-      characteristics: '두 가지 스트링의 장점을 결합합니다. 맞춤형 설정이 가능합니다.',
-      pros: ['커스터마이징 가능', '균형 잡힌 성능', '비용 효율적', '다양한 조합'],
-      cons: ['설정이 복잡', '일관성 떨어질 수 있음'],
-      adjustment: '메인을 크로스보다 4LB 높게 설정하세요',
-      bestFor: '자신만의 세팅을 원하는 분, 다양한 실험을 좋아하는 분',
-      color: 'bg-warning/20 dark:bg-warning/25',
+      id: 'controlPoly',
+      name: '컨트롤(폴리)',
+      icon: Shield,
+      characteristics: '강한 스윙에서도 볼을 안정적으로 잡아 주는 컨트롤 중심 폴리 세팅입니다.',
+      pros: ['높은 정밀도', '볼 홀딩(Holding) 능력', '강한 스윙에 적합'],
+      adjustment: '공이 짧아지면 1~2LB 낮추고, 런치각이 높으면 1~2LB 높여 보세요.',
+      bestFor: '강한 스트로크에서 궤적 안정성과 정확도를 우선하는 플레이어',
+      helperText: '폴리에스터 공통 권장 범위: 여자 42~48LB / 남자 48~54LB',
+      ranges: {
+        female: { min: 42, max: 48, base: 48 },
+        male: { min: 48, max: 54, base: 54 },
+      },
+      color: 'bg-muted/40',
     },
     {
-      id: 'natural',
+      id: 'spinPoly',
+      name: '스핀(폴리)',
+      icon: Zap,
+      characteristics: '각진 단면과 빠른 스냅백을 활용해 회전량과 탄도 제어를 강화한 폴리 타입입니다.',
+      pros: ['최상급 스핀 성능', '우수한 컨트롤 및 홀딩력', '강력한 스냅백 효과', '슬라이스/탑스핀에 최적화'],
+      adjustment: '회전량은 충분한데 비거리가 부족하면 1LB씩 낮춰 탄성을 확보하세요.',
+      bestFor: '탑스핀/슬라이스 활용이 많고 볼의 궤적 제어가 중요한 플레이어',
+      helperText: '폴리에스터 공통 권장 범위: 여자 42~48LB / 남자 48~54LB',
+      ranges: {
+        female: { min: 42, max: 48, base: 46 },
+        male: { min: 48, max: 54, base: 52 },
+      },
+      color: 'bg-primary/10 dark:bg-primary/20',
+    },
+    {
+      id: 'syntheticGut',
+      name: '인조쉽',
+      icon: Layers,
+      characteristics: '부담 없이 쓰기 좋은 만능형 세팅으로, 반발력과 컨트롤의 균형이 좋습니다.',
+      pros: ['가성비가 좋고 세팅이 쉬움', '초중급자에게 무난한 타구감', '적당한 파워와 안정적인 구질'],
+      adjustment: '기준점에서 시작한 뒤 볼이 뜨면 +1LB, 짧으면 -1LB로 미세 조정하세요.',
+      bestFor: '연습량이 많고 관리가 쉬운 범용 세팅을 원하는 플레이어',
+      ranges: {
+        female: { min: 42, max: 46, base: 44 },
+        male: { min: 48, max: 52, base: 50 },
+      },
+      color: 'bg-muted/40',
+    },
+    {
+      id: 'naturalGut',
       name: '내추럴 거트',
       icon: Zap,
-      recommendedTension: '51-60LB',
-      tensionAdjust: -2,
-      characteristics: '최고의 느낌과 파워를 제공하는 프리미엄 스트링입니다.',
-      pros: ['최상의 타구감', '뛰어난 파워', '텐션 유지력 최고', '팔에 부드러움'],
-      cons: ['높은 가격', '습기에 약함', '관리 필요'],
-      adjustment: '표준 텐션보다 2-4LB 높게 시작하세요',
-      bestFor: '최고의 퍼포먼스를 원하는 분, 프로 선수',
+      characteristics: '풍부한 반발력과 깊은 포켓팅으로 프리미엄 타구감을 제공하는 고급 세팅입니다.',
+      pros: ['우수한 탄성과 편안함', '긴장 유지력이 좋아 안정적인 타구감', '섬세한 터치 플레이에 유리'],
+      adjustment: '비·습기에 민감하므로 보관 상태를 관리하고 범위 내에서 1LB 단위 조정하세요.',
+      bestFor: '손맛과 반발력, 텐션 유지력을 모두 챙기고 싶은 플레이어',
+      ranges: {
+        female: { min: 46, max: 50, base: 48 },
+        male: { min: 50, max: 55, base: 53 },
+      },
       color: 'bg-primary/10 dark:bg-primary/20',
     },
   ];
@@ -148,9 +178,9 @@ export default function TensionGuidePage() {
   ];
 
   const playStyleOptions = [
-    { id: 'baseline', label: '베이스라이너', adjust: 2, desc: '후방에서 랠리 중심 플레이' },
-    { id: 'allcourt', label: '올코트', adjust: 0, desc: '다양한 위치에서 균형 잡힌 플레이' },
-    { id: 'servevolley', label: '서브&발리', adjust: -2, desc: '네트 플레이 중심' },
+    { id: 'soft', label: '소프트', adjust: -2, desc: '편안함과 파워를 우선하는 플레이' },
+    { id: 'control', label: '컨트롤', adjust: 0, desc: '안정적인 탄도와 밸런스 중심' },
+    { id: 'spinPower', label: '스핀 파워', adjust: 2, desc: '회전과 구질 압박을 강화하는 플레이' },
   ];
 
   const swingSpeedOptions = [
@@ -159,30 +189,20 @@ export default function TensionGuidePage() {
     { id: 'fast', label: '빠름', adjust: 4, desc: '강력하고 빠른 스윙' },
   ];
 
-  // 추천 텐션 계산
+  const selectedString = stringTypes.find((st) => st.id === stringType) ?? stringTypes[0];
+
+  const selectedRange: TensionRange = selectedString.ranges[gender];
+  const oppositeGender: Gender = gender === 'female' ? 'male' : 'female';
+  const oppositeRange: TensionRange = selectedString.ranges[oppositeGender];
+
+  // 계산 공식: (성별 + 스트링 기준점) + 플레이 스타일 보정 + 스윙 스피드 보정 후, 선택 범위 내로 clamp
   const calculatedTension = useMemo(() => {
-    let baseTension = 55;
+    const styleAdjust = playStyleOptions.find((option) => option.id === playStyle)?.adjust ?? 0;
+    const speedAdjust = swingSpeedOptions.find((option) => option.id === swingSpeed)?.adjust ?? 0;
+    const value = selectedRange.base + styleAdjust + speedAdjust;
 
-    // 스트링 타입에 따른 조정
-    const selectedString = stringTypes.find((s) => s.id === stringType);
-    if (selectedString) {
-      baseTension += selectedString.tensionAdjust;
-    }
-
-    // 플레이 스타일에 따른 조정
-    const styleOption = playStyleOptions.find((o) => o.id === playStyle);
-    if (styleOption) {
-      baseTension += styleOption.adjust;
-    }
-
-    // 스윙 스피드에 따른 조정
-    const speedOption = swingSpeedOptions.find((o) => o.id === swingSpeed);
-    if (speedOption) {
-      baseTension += speedOption.adjust;
-    }
-
-    return Math.max(44, Math.min(71, baseTension));
-  }, [stringType, playStyle, swingSpeed]);
+    return Math.max(selectedRange.min, Math.min(selectedRange.max, value));
+  }, [playStyle, selectedRange, swingSpeed]);
 
   const getTensionFeedback = (value: number) => {
     if (value < 49) return { level: 'low', text: '매우 낮음 - 파워 중심', color: 'text-primary' };
@@ -250,6 +270,26 @@ export default function TensionGuidePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6 bp-md:space-y-8">
+                    {/* 성별 선택 */}
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground mb-3">성별</label>
+                      <div className="grid grid-cols-2 gap-2 bp-sm:gap-3">
+                        {[
+                          { id: 'female', label: '여자', desc: '여성 추천 범위 기준 계산' },
+                          { id: 'male', label: '남자', desc: '남성 추천 범위 기준 계산' },
+                        ].map((option) => (
+                          <button
+                            key={option.id}
+                            onClick={() => setGender(option.id as Gender)}
+                            className={`p-3 bp-sm:p-4 rounded-xl transition-all duration-200 text-left ${gender === option.id ? 'bg-primary/10 dark:bg-primary/20 ring-2 ring-ring shadow-sm' : 'bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm'}`}
+                          >
+                            <div className={`font-medium text-sm ${gender === option.id ? 'text-primary' : 'text-foreground'}`}>{option.label}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{option.desc}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     {/* 스윙 스피드 선택 */}
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-3">스윙 스피드</label>
@@ -280,7 +320,7 @@ export default function TensionGuidePage() {
                               <st.icon className={`h-4 w-4 ${stringType === st.id ? 'text-primary' : 'text-muted-foreground'}`} />
                               <span className={`font-medium text-sm ${stringType === st.id ? 'text-primary' : 'text-foreground'}`}>{st.name}</span>
                             </div>
-                            <span className="text-xs text-muted-foreground">{st.recommendedTension}</span>
+                            <span className="text-xs text-muted-foreground">여 {st.ranges.female.min}~{st.ranges.female.max}LB · 남 {st.ranges.male.min}~{st.ranges.male.max}LB</span>
                           </button>
                         ))}
                       </div>
@@ -343,11 +383,13 @@ export default function TensionGuidePage() {
                     <div className="bg-card/80 dark:bg-muted/80 backdrop-blur-sm rounded-xl p-4 mb-6">
                       <div className="flex items-center gap-2 mb-2">
                         <Info className="h-4 w-4 text-primary" />
-                        <span className="font-medium text-foreground">추천 범위</span>
+                        <span className="font-medium text-foreground">추천 범위 (선택 성별 기준)</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {calculatedTension - 2}LB ~ {calculatedTension + 2}LB 범위에서 시작하여 본인의 느낌에 따라 조절하세요.
-                      </p>
+                      <p className="text-sm text-muted-foreground">최종 추천 텐션 {calculatedTension}LB · {selectedRange.min}LB ~ {selectedRange.max}LB</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant="secondary" className="text-xs">{gender === 'female' ? '여자' : '남자'} {selectedRange.min}~{selectedRange.max}LB</Badge>
+                        <Badge variant="outline" className="text-xs">{oppositeGender === 'female' ? '여자' : '남자'} {oppositeRange.min}~{oppositeRange.max}LB</Badge>
+                      </div>
                     </div>
 
                     {/* <Button asChild className="w-full bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] text-primary-foreground transition-all duration-200">
@@ -401,9 +443,10 @@ export default function TensionGuidePage() {
                           </div>
                           <div>
                             <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-1 text-card-foreground">{player.type}</CardTitle>
-                            <Badge variant="secondary" className="text-sm bp-md:text-base px-2 bp-md:px-3 py-0.5 bp-md:py-1">
-                              {player.tension}
-                            </Badge>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="secondary" className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1">여자 {player.femaleTension}</Badge>
+                              <Badge variant="outline" className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1">남자 {player.maleTension}</Badge>
+                            </div>
                           </div>
                         </div>
                         <ChevronRight className={`h-4 w-4 bp-md:h-5 bp-md:w-5 text-muted-foreground transition-transform ${isSelected ? 'rotate-90' : ''}`} />
@@ -412,20 +455,39 @@ export default function TensionGuidePage() {
                     <CardContent>
                       <p className="text-sm bp-md:text-base text-muted-foreground mb-3 bp-md:mb-4">{player.description}</p>
 
-                      {/* 텐션 범위 시각화 */}
+                      {/* 텐션 범위 시각화: 여자/남자를 분리해 한눈에 비교할 수 있도록 표시 */}
                       <div className="mb-3 bp-md:mb-4">
-                        <div className="flex justify-between text-[10px] bp-sm:text-xs text-muted-foreground mb-1">
-                          <span>44LB</span>
-                          <span>71LB</span>
-                        </div>
-                        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="absolute h-full bg-primary/60 rounded-full"
-                            style={{
-                              left: `${((player.tensionRange[0] - 44) / 27) * 100}%`,
-                              width: `${((player.tensionRange[1] - player.tensionRange[0]) / 27) * 100}%`,
-                            }}
-                          />
+                        <div className="space-y-2">
+                          <div>
+                            <div className="flex items-center justify-between text-[10px] bp-sm:text-xs mb-1">
+                              <span className="text-muted-foreground">여자</span>
+                              <span className="text-muted-foreground">{player.femaleRange[0]}~{player.femaleRange[1]}LB</span>
+                            </div>
+                            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="absolute h-full bg-primary/60 rounded-full"
+                                style={{
+                                  left: `${((player.femaleRange[0] - 42) / 14) * 100}%`,
+                                  width: `${((player.femaleRange[1] - player.femaleRange[0]) / 14) * 100}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between text-[10px] bp-sm:text-xs mb-1">
+                              <span className="text-muted-foreground">남자</span>
+                              <span className="text-muted-foreground">{player.maleRange[0]}~{player.maleRange[1]}LB</span>
+                            </div>
+                            <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="absolute h-full bg-muted-foreground/40 rounded-full"
+                                style={{
+                                  left: `${((player.maleRange[0] - 48) / 8) * 100}%`,
+                                  width: `${((player.maleRange[1] - player.maleRange[0]) / 8) * 100}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
 
@@ -472,7 +534,14 @@ export default function TensionGuidePage() {
                   <CardContent className="space-y-3 bp-md:space-y-4">
                     <p className="text-sm text-muted-foreground">{string.characteristics}</p>
 
-                    <div className="grid grid-cols-2 gap-3 bp-md:gap-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="text-xs">여자 {string.ranges.female.min}~{string.ranges.female.max}LB</Badge>
+                      <Badge variant="outline" className="text-xs">남자 {string.ranges.male.min}~{string.ranges.male.max}LB</Badge>
+                    </div>
+
+                    {string.helperText && <p className="text-xs text-muted-foreground">{string.helperText}</p>}
+
+                    <div>
                       <div>
                         <h4 className="text-xs bp-md:text-sm font-semibold text-primary mb-2 flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4" /> 장점
@@ -482,19 +551,6 @@ export default function TensionGuidePage() {
                             <li key={i} className="text-[10px] bp-sm:text-xs text-muted-foreground flex items-center gap-1">
                               <div className="w-1 h-1 bg-primary/70 rounded-full flex-shrink-0" />
                               {pro}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h4 className="text-xs bp-md:text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4" /> 단점
-                        </h4>
-                        <ul className="space-y-1">
-                          {string.cons.map((con, i) => (
-                            <li key={i} className="text-[10px] bp-sm:text-xs text-muted-foreground flex items-center gap-1">
-                              <div className="w-1 h-1 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                              {con}
                             </li>
                           ))}
                         </ul>
@@ -542,7 +598,7 @@ export default function TensionGuidePage() {
                           <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">낮은 텐션 (44LB-53LB)</h4>
+                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">낮은 텐션</h4>
                           <p className="text-xs bp-md:text-sm text-muted-foreground">파워와 편안함 중심</p>
                         </div>
                       </div>
@@ -573,7 +629,7 @@ export default function TensionGuidePage() {
                           <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">높은 텐션 (62LB-71LB)</h4>
+                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">높은 텐션</h4>
                           <p className="text-xs bp-md:text-sm text-muted-foreground">컨트롤과 정밀함 중심</p>
                         </div>
                       </div>
