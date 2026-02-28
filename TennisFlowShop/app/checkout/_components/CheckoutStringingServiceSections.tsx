@@ -97,8 +97,9 @@ export default function CheckoutStringingServiceSections({ section, withStringSe
           handleInputChange={adapter.handleInputChange}
           orderId={adapter.previewOrderId}
           isMember={adapter.isMember}
-          usingPackage={false}
-          packageInsufficient={false}
+          usingPackage={adapter.usingPackage}
+          packageInsufficient={adapter.packageInsufficient}
+          context="checkout"
         />
       </CardContent>
     </Card>
