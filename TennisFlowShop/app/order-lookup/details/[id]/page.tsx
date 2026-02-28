@@ -23,6 +23,7 @@ interface OrderDetail {
     withStringService?: boolean;
   };
   isStringServiceApplied?: boolean;
+  stringingApplicationId?: string | null;
   paymentInfo?: {
     method: string;
     bank?: 'shinhan' | 'kookmin' | 'woori';
@@ -126,6 +127,8 @@ export default function OrderDetailPage() {
   const handleGoBack = () => {
     router.back();
   };
+
+  const hasCompletedStringingApplication = Boolean(order?.stringingApplicationId) || order?.isStringServiceApplied === true;
 
   // 금액 포맷팅 함수
   const formatCurrency = (amount: number) => {
@@ -254,14 +257,14 @@ export default function OrderDetailPage() {
           {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
             <Card className="mb-8 border-2 border-border bg-card">
               <CardContent className="p-6">
-                {!order.isStringServiceApplied ? (
+                {!hasCompletedStringingApplication ? (
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground mb-2">스트링 장착 서비스 신청 가능</h3>
-                      <p className="text-muted-foreground mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아래 버튼을 클릭하여 신청해주세요.</p>
+                      <p className="text-muted-foreground mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다.</p>
                       <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors">
                         <ShoppingBag className="w-4 h-4 mr-2" />
                         스트링 장착 서비스 신청하기
@@ -274,8 +277,8 @@ export default function OrderDetailPage() {
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="mb-1 font-semibold text-foreground">스트링 장착 서비스 신청 완료</h3>
-                      <p className="text-foreground">이 주문의 스트링 장착 서비스 신청이 완료되었습니다.</p>
+                      <h3 className="mb-1 font-semibold text-foreground">교체 서비스 접수 완료</h3>
+                      <p className="text-foreground">이미 신청이 접수된 주문입니다. 현재 화면에서는 추가 신청 버튼이 노출되지 않습니다.</p>
                     </div>
                   </div>
                 )}

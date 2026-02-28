@@ -195,6 +195,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 이 주문과 연결된 신청서 요약 리스트
   const linkedStringingApps = orderDetail?.stringingApplications ?? [];
   const hasLinkedStringingApps = linkedStringingApps.length > 0;
+  const hasSubmittedStringingApplication = hasLinkedStringingApps || Boolean(orderDetail?.stringingApplicationId) || orderDetail?.isStringServiceApplied === true;
 
   // 리뷰/링크에 사용할 대표 신청 ID
   // - 우선순위: 기존 필드(stringingApplicationId) → 요약 리스트의 첫 번째 신청
@@ -350,9 +351,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                         총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
                       </p>
                       {stringServiceItemCount > 1 && <p className="mt-1 text-xs text-warning">(상품 기준으로는 교체 서비스 대상 스트링이 {stringServiceItemCount}개 포함되어 있습니다.)</p>}
-                      {hasLinkedStringingApps && (
+                      {hasSubmittedStringingApplication && (
                         <p className="mt-1 text-xs text-warning">
-                          이 주문으로 이미 <span className="font-semibold">{linkedStringingApps.length}</span>건의 교체 서비스 신청을 완료했습니다.
+                          이미 교체 서비스 접수가 완료된 주문이며, 남은 대상에 한해 추가 신청이 가능합니다.
                         </p>
                       )}
                     </div>
@@ -360,7 +361,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <div className="flex justify-center bp-md:justify-end">
                     <Link className="w-full bp-sm:max-w-xs bp-md:w-auto" href={`/services/apply?orderId=${orderDetail._id}`}>
                       <Button variant="default" className="w-full shadow-lg">
-                        스트링 장착 서비스 추가 신청하기
+                        {hasSubmittedStringingApplication ? '스트링 장착 서비스 추가 신청하기' : '스트링 장착 서비스 신청하기'}
                       </Button>
                     </Link>
                   </div>
