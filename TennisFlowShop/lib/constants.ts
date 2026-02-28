@@ -70,9 +70,9 @@ export type GripSizeValue = (typeof GRIP_SIZE_OPTIONS)[number]['value'];
 
 // 자유입력으로 저장된 과거값을 최대한 살리기 위한 별칭 테이블
 const GRIP_SIZE_ALIASES: Record<GripSizeValue, readonly string[]> = {
-  G1: ['g1', '1grip', '1 grip', '4 1/8', '4-1/8', '4.125', '4⅛'],
-  G2: ['g2', '2grip', '2 grip', '4 1/4', '4-1/4', '4.25', '4¼'],
-  G3: ['g3', '3grip', '3 grip', '4 3/8', '4-3/8', '4.375', '4⅜'],
+  G1: ['g1', '1grip', '1 grip', '1그립', '1 그립', '1그립 4 1/8', '1 그립 4 1/8', '1그립4 1/8', '4 1/8', '4-1/8', '4.125', '4⅛'],
+  G2: ['g2', '2grip', '2 grip', '2그립', '2 그립', '2그립 4 1/4', '2 그립 4 1/4', '2그립4 1/4', '4 1/4', '4-1/4', '4.25', '4¼'],
+  G3: ['g3', '3grip', '3 grip', '3그립', '3 그립', '3그립 4 3/8', '3 그립 4 3/8', '3그립4 3/8', '4 3/8', '4-3/8', '4.375', '4⅜'],
 };
 
 const STRING_PATTERN_SET = new Set<StringPatternValue>(STRING_PATTERNS);
