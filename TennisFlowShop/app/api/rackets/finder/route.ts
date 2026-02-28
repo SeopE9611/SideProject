@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { GRIP_SIZE_OPTIONS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, normalizeGripSize } from '@/lib/constants';
 import clientPromise from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
@@ -16,8 +17,42 @@ function range(min: number | null, max: number | null) {
   return Object.keys(q).length ? q : null;
 }
 
-function normalizePattern(p: string) {
-  return p.replace(/\s+/g, '').replace(/×/g, 'x').toLowerCase();
+// 과거 자유입력 데이터까지 최대한 검색되도록 value + 대표 별칭을 함께 매칭
+function buildPatternCandidates(patterns: string[]) {
+  const values = new Set<string>();
+  for (const pattern of patterns) {
+    const normalized = normalizeAndValidateStringPattern(pattern);
+    if (!normalized) continue;
+    values.add(normalized);
+    values.add(normalized.toUpperCase());
+    values.add(normalized.replace('x', 'X'));
+  }
+  return Array.from(values);
+}
+
+function buildGripSizeCandidates(gripSizes: string[]) {
+  const values = new Set<string>();
+  for (const gripSize of gripSizes) {
+    const normalized = normalizeAndValidateGripSize(gripSize);
+    if (!normalized) continue;
+
+    values.add(normalized);
+    values.add(normalized.toLowerCase());
+
+    // G1/G2/G3 value에 대응하는 화면 label도 검색 후보로 포함
+    const label = GRIP_SIZE_OPTIONS.find((option) => option.value === normalized)?.label;
+    if (label) {
+      values.add(label);
+      values.add(label.replace(/\s+/g, ''));
+    }
+
+    // 문자열 숫자 표기(예: 4 1/8) 일부도 후보에 추가
+    if (normalized === 'G1') values.add('4 1/8');
+    if (normalized === 'G2') values.add('4 1/4');
+    if (normalized === 'G3') values.add('4 3/8');
+  }
+
+  return Array.from(values).map((value) => normalizeGripSize(value));
 }
 
 function normalizeRental(r: any) {
@@ -110,7 +145,13 @@ export async function GET(req: Request) {
   // multi patterns (pattern=16x19&pattern=18x20 ...)
   const patternsRaw = sp
     .getAll('pattern')
-    .map((p) => normalizePattern(p))
+    .map((pattern) => normalizeAndValidateStringPattern(pattern))
+    .filter(Boolean);
+
+  // multi grip size (gripSize=G1&gripSize=G2 ...)
+  const gripSizesRaw = sp
+    .getAll('gripSize')
+    .map((gripSize) => normalizeAndValidateGripSize(gripSize))
     .filter(Boolean);
 
   // numeric ranges
@@ -150,7 +191,15 @@ export async function GET(req: Request) {
   if (c6) specClauses.push(c6);
   if (specClauses.length) match.$and = [...(match.$and ?? []), ...specClauses];
 
-  if (patternsRaw.length) match['spec.pattern'] = { $in: patternsRaw };
+  if (patternsRaw.length) {
+    // 서버 저장 value 기준 + 과거 자유입력 형태를 함께 커버
+    match['spec.pattern'] = { $in: buildPatternCandidates(patternsRaw) };
+  }
+
+  if (gripSizesRaw.length) {
+    // 신규 value(G1/G2/G3) 기준 + 과거 자유입력 표기를 함께 커버
+    match['spec.gripSize'] = { $in: buildGripSizeCandidates(gripSizesRaw) };
+  }
 
   const col = db.collection('used_rackets');
   const total = await col.countDocuments(match);
