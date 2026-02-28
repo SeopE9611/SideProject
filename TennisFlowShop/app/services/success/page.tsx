@@ -90,15 +90,40 @@ export default async function StringServiceSuccessPage(props: Props) {
   }
 
   const client = await clientPromise;
-  const db = client.db();
 
-  const application = await db.collection('stringing_applications').findOne({ _id: new ObjectId(applicationId) });
+  /**
+   * 배포 환경에서 기본 DB 선택이 꼬일 수 있으므로
+   * MONGODB_DB가 있으면 명시적으로 그 DB를 사용합니다.
+   */
+  const dbName = process.env.MONGODB_DB?.trim();
+  const db = dbName ? client.db(dbName) : client.db();
+
+  const application = await db.collection('stringing_applications').findOne({
+    _id: new ObjectId(applicationId),
+  });
 
   // applicationId는 유효하지만, 실제 문서가 없으면 404 처리
   if (!application) return notFound();
 
+  /**
+   * 중첩 필드 방어
+   * - stringDetails / shippingInfo 가 없거나
+   * - 예전 문서 shape 가 달라도
+   * 페이지가 죽지 않게 기본값을 만듭니다.
+   */
+  const stringDetails = application.stringDetails && typeof application.stringDetails === 'object' ? application.stringDetails : {};
+
+  const shippingInfo = application.shippingInfo && typeof application.shippingInfo === 'object' ? application.shippingInfo : {};
+
+  /**
+   * createdAt 이 비어 있거나 이상한 값이어도
+   * 화면에서 안전하게 표시하기 위한 라벨입니다.
+   */
+  const createdAtDate = application.createdAt ? new Date(application.createdAt) : null;
+  const createdAtLabel = createdAtDate && !Number.isNaN(createdAtDate.getTime()) ? createdAtDate.toLocaleDateString('ko-KR') : '-';
+
   // 수거 방식 표준화
-  const rawMethod = application?.shippingInfo?.collectionMethod ?? application?.collectionMethod ?? null; // (레거시 대비)
+  const rawMethod = shippingInfo?.collectionMethod ?? application?.collectionMethod ?? null; // (레거시 대비)
   const cm = normalizeCollection(typeof rawMethod === 'string' ? rawMethod : 'self_ship'); // 'visit' | 'self_ship' | 'courier_pickup'
   const isVisit = cm === 'visit';
   const isSelfShip = cm === 'self_ship';
@@ -106,7 +131,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   // 방문 예약 희망 일시 라벨
   const visitTimeLabel = isVisit
-    ? formatVisitTimeRange(application?.stringDetails?.preferredDate, application?.stringDetails?.preferredTime, (application as any)?.visitDurationMinutes ?? null, (application as any)?.visitSlotCount ?? null)
+    ? formatVisitTimeRange(stringDetails?.preferredDate, stringDetails?.preferredTime, (application as any)?.visitDurationMinutes ?? null, (application as any)?.visitSlotCount ?? null)
     : `예약 불필요${isSelfShip || isCourierPickup ? ' (자가발송/기사 수거)' : ''}`;
 
   // 패키지 정보 조회
@@ -118,7 +143,7 @@ export default async function StringServiceSuccessPage(props: Props) {
   }
 
   // 여러 개 선택/커스텀 이름까지 합쳐 표시용 이름 랜더
-  const stringTypes: string[] = application?.stringDetails?.stringTypes ?? [];
+  const stringTypes: string[] = Array.isArray(stringDetails?.stringTypes) ? stringDetails.stringTypes : [];
 
   const productIds = stringTypes.filter((id: string) => id && id !== 'custom' && ObjectId.isValid(id)).map((id: string) => new ObjectId(id));
 
@@ -135,14 +160,14 @@ export default async function StringServiceSuccessPage(props: Props) {
   }
 
   // 커스텀 이름이 포함되어 있다면 맨 앞에 붙임
-  if (stringTypes.includes('custom') && application?.stringDetails?.customStringName) {
-    stringNames.unshift(application.stringDetails.customStringName);
+  if (stringTypes.includes('custom') && stringDetails?.customStringName) {
+    stringNames.unshift(String(stringDetails.customStringName));
   }
 
   // 최종 표시 문자열 (여러 개면 " + "로 연결)
   const stringDisplay = stringNames.join(' + ') || '-';
 
-  const racketLines = Array.isArray(application?.stringDetails?.racketLines) ? application.stringDetails.racketLines : [];
+  const racketLines = Array.isArray(stringDetails?.racketLines) ? stringDetails.racketLines : [];
 
   // (통합결제) 주문 금액(라켓+스트링)까지 함께 보여주기 위한 주문 조회
   const orderObjectId = application.orderId && ObjectId.isValid(String(application.orderId)) ? new ObjectId(String(application.orderId)) : null;
@@ -181,8 +206,8 @@ export default async function StringServiceSuccessPage(props: Props) {
   const orderBankKey = (order as any)?.payment?.bank ?? (order as any)?.paymentInfo?.bank ?? null;
   const orderDepositor = (order as any)?.payment?.depositor ?? (order as any)?.paymentInfo?.depositor ?? null;
 
-  const bankKey = rental?.payment?.bank ?? orderBankKey ?? application.shippingInfo?.bank ?? null;
-  const depositor = rental?.payment?.depositor ?? orderDepositor ?? application.shippingInfo?.depositor ?? null; // 신청서에도 depositor가 있으면 보조
+  const bankKey = rental?.payment?.bank ?? orderBankKey ?? shippingInfo?.bank ?? null;
+  const depositor = rental?.payment?.depositor ?? orderDepositor ?? shippingInfo?.depositor ?? null; // 신청서에도 depositor가 있으면 보조신청서에도 depositor가 있으면 보조
   const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
 
   // 로그인 여부 확인
@@ -218,7 +243,7 @@ export default async function StringServiceSuccessPage(props: Props) {
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">테니스 플로우에서 확인 후 빠르게 연락드리겠습니다</p>
             <div className="mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
               <Calendar className="h-5 w-5" />
-              <span className="text-sm font-medium">신청일: {new Date(application.createdAt).toLocaleDateString('ko-KR')}</span>
+              <span className="text-sm font-medium">신청일: {createdAtLabel}</span>
             </div>
           </div>
 
@@ -277,7 +302,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       <Calendar className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">신청일자</h3>
                     </div>
-                    <p className="text-2xl font-bold text-primary">{new Date(application.createdAt).toLocaleDateString('ko-KR')}</p>
+                    <p className="text-2xl font-bold text-primary">{createdAtLabel}</p>
                   </div>
 
                   <div className="bg-muted p-6 rounded-xl">
@@ -529,7 +554,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <div className="mt-4 p-4 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
                           <div className="flex items-center">
                             <Zap className="h-5 w-5 text-destructive mr-2" />
-                            <p className="font-semibold text-destructive">입금 기한: {new Date(application.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+                            <p className="font-semibold text-destructive">입금 기한: {createdAtLabel} 23:59까지</p>
                           </div>
                         </div>
                       </div>
@@ -578,12 +603,12 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <div className="space-y-4">
                       <div className="p-4 bg-card rounded-lg">
                         <p className="text-sm text-muted-foreground mb-1">주소</p>
-                        <p className="font-semibold text-foreground">{application.shippingInfo?.address}</p>
-                        {application.shippingInfo?.addressDetail && <p className="text-foreground mt-1">{application.shippingInfo.addressDetail}</p>}
+                        <p className="font-semibold text-foreground">{shippingInfo?.address ?? '-'}</p>
+                        {shippingInfo?.addressDetail && <p className="text-foreground mt-1">{shippingInfo.addressDetail}</p>}
                       </div>
                       <div className="p-4 bg-card rounded-lg">
                         <p className="text-sm text-muted-foreground mb-1">우편번호</p>
-                        <p className="font-semibold text-foreground">{application.shippingInfo?.postalCode}</p>
+                        <p className="font-semibold text-foreground">{shippingInfo?.postalCode ?? '-'}</p>
                       </div>
                     </div>
                   </div>
@@ -612,13 +637,13 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div>
  </div> */}
 
-                  {application.stringDetails.requirements && (
+                  {stringDetails?.requirements && (
                     <div className="p-6 bg-muted rounded-xl">
                       <div className="flex items-start mb-3">
                         <FileText className="h-5 w-5 text-primary mr-2 mt-0.5" />
                         <p className="text-sm font-medium text-muted-foreground">요청사항</p>
                       </div>
-                      <p className="text-foreground leading-relaxed">{application.stringDetails.requirements}</p>
+                      <p className="text-foreground leading-relaxed">{String(stringDetails.requirements)}</p>
                     </div>
                   )}
                 </div>
@@ -657,7 +682,12 @@ export default async function StringServiceSuccessPage(props: Props) {
               <CardFooter className="bg-card rounded-b-lg p-8">
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <Button variant="default" className="flex-1 h-12 transition-all duration-200" asChild>
-                    <Link href={`/mypage?${new URLSearchParams({ tab: 'applications', id: String(application._id) }).toString()}`}>
+                    <Link
+                      href={`/mypage?${new URLSearchParams({
+                        tab: 'applications',
+                        applicationId: String(application._id),
+                      }).toString()}`}
+                    >
                       <FileText className="h-5 w-5 mr-2" />
                       신청 내역 보기
                     </Link>

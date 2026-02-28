@@ -1,19 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import clientPromise, { getDb } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db';
-import { cookies } from 'next/headers';
-import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
-import { getStringingServicePrice } from '@/lib/stringing-prices';
-import { OrderItem } from '@/lib/types/order';
-import { normalizeEmail } from '@/lib/claims';
-import { consumePass, findOneActivePassForUser, revertConsumption } from '@/lib/passes.service';
-import { onApplicationSubmitted, onStatusUpdated, onScheduleConfirmed, onScheduleUpdated, onApplicationCanceled, onScheduleCanceled } from '@/app/features/notifications/triggers/stringing';
-import { calcStringingTotal } from '@/lib/pricing';
+import { onApplicationCanceled, onApplicationSubmitted, onScheduleConfirmed, onScheduleUpdated, onStatusUpdated } from '@/app/features/notifications/triggers/stringing';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { ServicePassConsumption } from '@/lib/types/pass';
 import { buildSlotSummaryForDate, loadStringingSettings, validateBookingWindow } from '@/app/features/stringing-applications/lib/slotEngine';
+import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
+import { normalizeEmail } from '@/lib/claims';
+import clientPromise, { getDb } from '@/lib/mongodb';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { consumePass, findOneActivePassForUser, revertConsumption } from '@/lib/passes.service';
+import { calcStringingTotal } from '@/lib/pricing';
+import { getStringingServicePrice } from '@/lib/stringing-prices';
+import { ServicePassConsumption } from '@/lib/types/pass';
+import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db';
+import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
 function mapCourierLabel(raw?: string | null): string {
@@ -1663,6 +1662,33 @@ export async function handleSubmitStringingApplication(req: Request) {
     const db = await getDb();
 
     /**
+     * bodyAppId가 넘어온 경우:
+     * 1) ObjectId 형식인지
+     * 2) 실제 문서가 존재하는지
+     * 먼저 확인합니다.
+     *
+     * 이유:
+     * 지금 코드는 bodyAppId만 있으면 무조건 update 경로로 들어가는데,
+     * 대상 문서가 없더라도 matchedCount를 확인하지 않아서
+     * "성공 응답은 갔는데 실제 업데이트는 안 된 상태"가 될 수 있습니다.
+     */
+    let explicitAppObjectId: ObjectId | null = null;
+
+    if (typeof bodyAppId === 'string' && bodyAppId.trim()) {
+      if (!ObjectId.isValid(bodyAppId)) {
+        return NextResponse.json({ message: '유효하지 않은 applicationId입니다.' }, { status: 400 });
+      }
+
+      explicitAppObjectId = new ObjectId(bodyAppId);
+
+      const explicitAppDoc = await db.collection('stringing_applications').findOne({ _id: explicitAppObjectId }, { projection: { _id: 1, status: 1 } });
+
+      if (!explicitAppDoc) {
+        return NextResponse.json({ message: '신청서 초안을 찾을 수 없습니다. 다시 신청서를 열어주세요.' }, { status: 409 });
+      }
+    }
+
+    /**
      * rentalId 기반 제출 권한/존재 검증
      * - 회원 대여: rental.userId === 현재 로그인 userId 여야 함
      * - 비회원 대여(guestInfo): 입력 email/phone이 guestInfo와 일치할 때만 허용(최소 방어)
@@ -2146,7 +2172,13 @@ export async function handleSubmitStringingApplication(req: Request) {
           })
         : null;
 
-    const applicationId = bodyAppId ? new ObjectId(bodyAppId) : draftDoc?._id ? draftDoc._id : new ObjectId();
+    /**
+     * 최종 applicationId 결정
+     * - bodyAppId가 있으면 그 문서를 사용
+     * - 없으면 같은 주문의 draft 재사용
+     * - 그것도 없으면 신규 생성
+     */
+    const applicationId = explicitAppObjectId ?? (draftDoc?._id ? draftDoc._id : new ObjectId());
 
     // 패키지 자동 차감 (멱등 로그 id = 최종 applicationId)
     let packageApplied = false;
@@ -2206,14 +2238,18 @@ export async function handleSubmitStringingApplication(req: Request) {
       userSnapshot: userId ? { name, email } : null,
     };
 
-    if (draftDoc || bodyAppId) {
-      // 기존 draft 업데이트: createdAt 유지, _id는 $set 금지
-      await db.collection('stringing_applications').updateOne(
+    if (draftDoc || explicitAppObjectId) {
+      /**
+       * 기존 draft 업데이트
+       * - createdAt 유지
+       * - _id는 변경하지 않음
+       * - stringItems / updatedAt도 함께 갱신
+       */
+      const updateResult = await db.collection('stringing_applications').updateOne(
         { _id: applicationId },
         {
           $unset: {
-            // draft 생성 시 TTL 만료를 위해 설정했던 expireAt은 제출 시 제거해야 한다.
-            // expireAt이 남아있으면, 제출된 신청서가 TTL에 의해 삭제될 수 있음
+            // draft 생성 시 TTL 만료용 expireAt 제거
             expireAt: '',
           },
           $set: {
@@ -2227,6 +2263,14 @@ export async function handleSubmitStringingApplication(req: Request) {
             shippingInfo: baseDoc.shippingInfo,
             collectionMethod: baseDoc.collectionMethod,
             stringDetails: baseDoc.stringDetails,
+
+            /**
+             * 중요:
+             * success 이후 조회/API에서 top-level stringItems를 기대할 수 있으므로
+             * update 경로에서도 반드시 같이 저장합니다.
+             */
+            stringItems: baseDoc.stringItems,
+
             totalPrice: baseDoc.totalPrice,
             serviceFeeBefore: baseDoc.serviceFeeBefore,
             serviceAmount: baseDoc.serviceAmount,
@@ -2242,15 +2286,58 @@ export async function handleSubmitStringingApplication(req: Request) {
             guestEmail: baseDoc.guestEmail,
             guestPhone: baseDoc.guestPhone,
             userSnapshot: baseDoc.userSnapshot,
+
+            /**
+             * 수정 시각도 같이 남겨둡니다.
+             * 나중에 디버깅할 때 매우 중요합니다.
+             */
+            updatedAt: new Date(),
           },
         },
       );
+
+      /**
+       * matchedCount 체크가 핵심입니다.
+       * 기존 코드는 updateOne 결과를 확인하지 않아,
+       * 문서가 없어도 성공 응답으로 끝날 수 있었습니다.
+       */
+      if (updateResult.matchedCount === 0) {
+        /**
+         * 패키지를 이미 차감했다면 복구 시도
+         * - update 실패했는데 패키지만 차감되면 데이터 불일치가 생깁니다.
+         */
+        if (packageApplied && packagePassId) {
+          try {
+            await revertConsumption(db, packagePassId, applicationId);
+          } catch (revertError) {
+            console.error('[POST stringing_application] revertConsumption failed after stale applicationId', {
+              applicationId: String(applicationId),
+              packagePassId: String(packagePassId),
+              revertError,
+            });
+          }
+        }
+
+        console.error('[POST stringing_application] stale applicationId', {
+          bodyAppId,
+          applicationId: String(applicationId),
+          orderId: orderObjectId ? String(orderObjectId) : null,
+          rentalId: rentalObjectId ? String(rentalObjectId) : null,
+        });
+
+        return NextResponse.json({ message: '신청서 초안이 유실되었거나 만료되었습니다. 다시 시도해주세요.' }, { status: 409 });
+      }
     } else {
-      // 새 문서 삽입 (createdAt 추가)
+      /**
+       * 신규 문서 삽입
+       * - createdAt / updatedAt 모두 저장
+       */
       await db.collection('stringing_applications').insertOne({
         ...baseDoc,
         createdAt: new Date(),
-        // 신규 제출 생성 케이스(주문 기반 draft 없이 바로 생성)에서도 필드 일관성 확보
+        updatedAt: new Date(),
+
+        // 신규 제출 생성 케이스에서도 필드 일관성 확보
         servicePaid: false,
         serviceAmount: baseDoc.serviceAmount,
       });
