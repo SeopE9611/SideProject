@@ -129,6 +129,10 @@ export default function TensionGuidePage() {
           title: '부드러운 타구감',
           description: '타구 시 이질감이 덜하고 손에 전해지는 느낌이 편안해 장시간 플레이에도 부담이 적습니다.',
         },
+        {
+          title: '우수한 컨트롤',
+          description: '부드러운 폴리 스트링의 둥근 구조는 공에 힘을 싣기 좋고, 코트 침투력을 높여주는 컨트롤에 유리합니다.',
+        },
       ],
       adjustment: '팔 부담을 줄이고 싶다면 기준점에서 시작해 1~2LB씩 올려보세요.',
       bestFor: '엘보 이슈가 있거나 편안한 타구감을 중요하게 보는 플레이어',
@@ -249,9 +253,9 @@ export default function TensionGuidePage() {
   ];
 
   const swingSpeedOptions = [
-    { id: 'slow', label: '느림', adjust: -4, desc: '컴팩트한 스윙' },
+    { id: 'slow', label: '느림', adjust: -2, desc: '컴팩트한 스윙' },
     { id: 'medium', label: '보통', adjust: 0, desc: '평균적인 스윙 스피드' },
-    { id: 'fast', label: '빠름', adjust: 4, desc: '강력하고 빠른 스윙' },
+    { id: 'fast', label: '빠름', adjust: 2, desc: '강력하고 빠른 스윙' },
   ];
 
   const selectedString = stringTypes.find((st) => st.id === stringType) ?? stringTypes[0];
@@ -261,13 +265,25 @@ export default function TensionGuidePage() {
   const oppositeRange: TensionRange = selectedString.ranges[oppositeGender];
   const styleAdjust = playStyleOptions.find((option) => option.id === playStyle)?.adjust ?? 0;
   const speedAdjust = swingSpeedOptions.find((option) => option.id === swingSpeed)?.adjust ?? 0;
+  const rawTensionValue = selectedRange.base + styleAdjust + speedAdjust;
+
+  const clampReason = useMemo(() => {
+    if (rawTensionValue < selectedRange.min) {
+      return { label: '추천 범위 하한 적용', value: selectedRange.min };
+    }
+
+    if (rawTensionValue > selectedRange.max) {
+      return { label: '추천 범위 상한 적용', value: selectedRange.max };
+    }
+
+    return { label: '범위 내 계산값', value: rawTensionValue };
+  }, [rawTensionValue, selectedRange.max, selectedRange.min]);
 
   // 계산 공식: (성별 + 스트링 기준점) + 플레이 스타일 보정 + 스윙 스피드 보정 후, 선택 범위 내로 clamp
+  // 중간 계산값과 범위 제한 결과를 분리해서 보여줘야 사용자가 최종값 산출 과정을 이해할 수 있다.
   const calculatedTension = useMemo(() => {
-    const value = selectedRange.base + styleAdjust + speedAdjust;
-
-    return Math.max(selectedRange.min, Math.min(selectedRange.max, value));
-  }, [selectedRange, speedAdjust, styleAdjust]);
+    return Math.max(selectedRange.min, Math.min(selectedRange.max, rawTensionValue));
+  }, [rawTensionValue, selectedRange]);
 
   const gaugePosition = useMemo(() => {
     const clampedValue = Math.max(tensionAxis.min, Math.min(tensionAxis.max, calculatedTension));
@@ -451,8 +467,8 @@ export default function TensionGuidePage() {
                       </div>
                       <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                         <div
-                          className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
-                          style={{ left: `calc(${gaugePosition}% - 12px)` }}
+                          className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-4 ring-ring rounded-full shadow-lg transition-all duration-500 ease-out"
+                          style={{ left: `${gaugePosition}%` }}
                         />
                       </div>
                       <div className="flex justify-between text-xs mt-2">
@@ -492,6 +508,14 @@ export default function TensionGuidePage() {
                         <li className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">스윙 스피드 보정</span>
                           <span className="font-medium text-foreground">{speedAdjust > 0 ? `+${speedAdjust}` : speedAdjust}LB</span>
+                        </li>
+                        <li className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">중간 계산값 (raw value)</span>
+                          <span className="font-medium text-foreground">{rawTensionValue}LB</span>
+                        </li>
+                        <li className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">{clampReason.label}</span>
+                          <span className="font-medium text-foreground">{clampReason.value}LB</span>
                         </li>
                         <li className="pt-2 border-t border-border flex items-center justify-between text-sm">
                           <span className="text-foreground font-medium">최종 추천</span>
