@@ -3,6 +3,7 @@
 import type React from 'react';
 
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import useStringingApplySharedState, { type ApplicationLine, type ApplyFormData, type CollectionMethod } from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
 import ApplyHero from '@/app/services/apply/_components/ApplyHero';
 import { ApplyPriceSummaryDesktop, ApplyPriceSummaryMobile } from '@/app/services/apply/_components/ApplyPriceSummary';
 import { APPLY_STEPS } from '@/app/services/apply/_components/applySteps';
@@ -25,51 +26,6 @@ import { File, Grid2X2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MdSportsTennis } from 'react-icons/md';
-
-type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
-
-// 앞으로 "라켓 1자루 + 사용할 스트링 1개"를 나타낼 라인 단위 타입
-type ApplicationLine = {
-  id: string; // 프론트에서 key 용으로 사용할 임시 ID (uuid 등)
-  racketType: string; // 라켓 종류/모델명
-  stringProductId: string; // 사용할 스트링 상품 ID ('custom' 포함)
-  stringName: string; // 화면 표시용 스트링 이름
-  tensionMain: string; // 메인 텐션
-  tensionCross: string; // 크로스 텐션
-  note: string; // 라켓별 요청사항(선택)
-  mountingFee: number; // 이 라인에 대한 장착비
-};
-
-interface FormData {
-  name: string;
-  email: string;
-  phone: string;
-  racketType: string;
-  stringTypes: string[];
-  customStringType: string;
-  stringUseCounts: Record<string, number>;
-  preferredDate: string;
-  preferredTime: string;
-  requirements: string;
-  shippingName: string;
-  shippingPhone: string;
-  shippingEmail: string;
-  shippingAddress: string;
-  shippingAddressDetail: string;
-  shippingPostcode: string;
-  shippingDepositor: string;
-  shippingRequest: string;
-  shippingBank: string;
-  packageOptOut: boolean;
-  collectionMethod: CollectionMethod;
-  pickupDate: string;
-  pickupTime: string;
-  pickupNote: string;
-  lines: ApplicationLine[];
-  pdpMountingFee?: number; // PDP에서 넘어온 장착비 (임시)
-  defaultMainTension?: string;
-  defaultCrossTension?: string;
-}
 
 interface PdpMiniProduct {
   name: string;
@@ -615,32 +571,30 @@ export default function StringServiceApplyPage() {
     return true;
   };
 
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    phone: '',
-    racketType: '',
-    stringTypes: [] as string[],
-    customStringType: '',
-    stringUseCounts: {},
-    preferredDate: '',
-    preferredTime: '',
-    requirements: '',
-    shippingName: '',
-    shippingPhone: '',
-    shippingEmail: '',
-    shippingAddress: '',
-    shippingAddressDetail: '',
-    shippingPostcode: '',
-    shippingDepositor: '',
-    shippingRequest: '',
-    shippingBank: '',
-    packageOptOut: false,
-    collectionMethod: 'self_ship', // 'self_ship' | 'courier_pickup' | 'visit'
-    pickupDate: '',
-    pickupTime: '',
-    pickupNote: '',
-    lines: [],
+  const {
+    formData,
+    setFormData,
+    handleInputChange,
+    handleStringTypesChange,
+    handleCustomInputChange,
+    handleUseQtyChange,
+    handleLineFieldChange,
+    linesForSubmit,
+    lineCount,
+    visitTimeRange,
+    setVisitDurationMinutesUi,
+    maxNonOrderQty,
+  } = useStringingApplySharedState({
+    fromPDP,
+    orderId,
+    rentalId,
+    order,
+    pdpProductId,
+    pdpProduct,
+    pdpMountingFee,
+    lockedStringStock,
+    lockedRacketQuantity,
+    isRentalBased,
   });
 
   // ---- 이탈(탭 닫기/새로고침) 보호: 입력 중 실수로 나가는 케이스 방지 ----
@@ -741,7 +695,7 @@ export default function StringServiceApplyPage() {
   })();
 
   // 예약 슬롯(마감 시간) 조회/캐시 로직 분리
-  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate, refetchDisabledTimesFor } = useReservedSlots<FormData>({
+  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate, refetchDisabledTimesFor } = useReservedSlots<ApplyFormData>({
     preferredDate: formData.preferredDate,
     preferredTime: formData.preferredTime,
     requiredPassCount,
@@ -758,19 +712,6 @@ export default function StringServiceApplyPage() {
   // 실제로 이번 신청에서 패키지를 사용하는지 여부(옵트아웃까지 반영)
   const usingPackage = !!(!isRentalBased && canApplyPackage && !formData.packageOptOut);
 
-  // (비-주문 기반) 실제로 허용 가능한 최대 수량
-  // - 기준이 2개면 min() (예: 스트링 재고 3, 라켓 수량 2 → max=2)
-  const maxNonOrderQty = useMemo(() => {
-    // 주문 기반이면 기존 로직(주문수량/remainingSlots)이 상한이므로 여기선 사용 X
-    if (orderId && order) return null;
-
-    const candidates: number[] = [];
-    if (typeof lockedStringStock === 'number' && lockedStringStock > 0) candidates.push(lockedStringStock);
-    if (isRentalBased && typeof lockedRacketQuantity === 'number' && lockedRacketQuantity > 0) candidates.push(lockedRacketQuantity);
-
-    if (!candidates.length) return null; // 상한 정보를 못 얻으면(= manageStock false 등) 제한을 강제하지 않음
-    return Math.max(1, Math.min(...candidates));
-  }, [orderId, order, lockedStringStock, lockedRacketQuantity, isRentalBased]);
 
   // 재고/수량 정보가 로딩된 뒤, 현재 입력값이 상한을 넘으면 강제로 보정(clamp)
   useEffect(() => {
@@ -858,156 +799,6 @@ export default function StringServiceApplyPage() {
     return found ?? null;
   }, [orderId, order, formData.stringTypes]);
 
-  // 이 신청에서 실제로 전송할 "라인" 목록
-  const linesForSubmit: ApplicationLine[] = useMemo(() => {
-    // 1) 이미 라인이 세팅되어 있으면 그대로 사용
-    if (Array.isArray(formData.lines) && formData.lines.length > 0) {
-      return formData.lines;
-    }
-
-    const stringIds = (formData.stringTypes || []).filter(Boolean);
-    if (!stringIds.length) {
-      return [];
-    }
-
-    const baseFee = priceView.base ?? 0;
-    const isOrderMode = !!orderId && !!order;
-
-    // PDP 통합(번들) 주문도 포함해서, 실제 전송 라인은 stringUseCounts를 기준으로 만든다.
-    // - 번들 주문에서 수량 잠금 여부는 Step2에서 remainingSlots를 보고 결정한다.
-    //   (잠김 상태면 stringUseCounts가 주문 수량과 자동 동기화됨)
-    const isBundleOrder = (() => {
-      if (!isOrderMode || !order) return false;
-      const items = (order as any)?.items;
-      if (!Array.isArray(items)) return false;
-
-      const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
-      const hasMountableString = items.some((it: any) => it?.kind === 'product' && typeof it?.mountingFee === 'number' && it.mountingFee > 0);
-
-      return hasRacket && hasMountableString;
-    })();
-
-    const getStringName = (prodId: string): string => {
-      if (isOrderMode && order) {
-        const found = order.items.find((it) => it.id === prodId);
-        if (found?.name) return found.name;
-      }
-      if (prodId === pdpProductId && pdpProduct?.name) {
-        return pdpProduct.name; // PDP 상품 이름 사용
-      }
-      if (prodId === 'custom') {
-        return formData.customStringType || '커스텀 스트링';
-      }
-      return '선택한 스트링';
-    };
-
-    // 장착비 가져오는 헬퍼 함수 추가
-    const getMountingFee = (prodId: string): number => {
-      if (prodId === 'custom') {
-        return 15000;
-      }
-
-      // 주문 아이템에서 찾기
-      if (isOrderMode && order) {
-        const found = order.items.find((it) => it.id === prodId);
-        if (found?.mountingFee != null) {
-          return found.mountingFee;
-        }
-      }
-
-      // PDP에서 넘어온 경우
-      if (prodId === pdpProductId && Number.isFinite(pdpMountingFee)) {
-        return pdpMountingFee;
-      }
-
-      // 기본값
-      return baseFee || 35000;
-    };
-
-    const lines: ApplicationLine[] = [];
-
-    // 주문 안에서 라켓/중고라켓 하나만 있다면 그 이름을 기본값으로 사용 (라인별 기본 라켓명 프리필용)
-    let racketNameFromOrder: string | undefined;
-    if (isOrderMode && order) {
-      const items = (order as any)?.items;
-      if (Array.isArray(items)) {
-        const racketItems = items.filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
-        if (racketItems.length === 1) {
-          const r = racketItems[0] as any;
-          racketNameFromOrder = (r.name ?? r.productName ?? '').trim() || undefined;
-        }
-      }
-    }
-
-    stringIds.forEach((prodId, index) => {
-      const stringName = getStringName(prodId);
-      const lineFee = getMountingFee(prodId);
-
-      if (prodId === 'custom') {
-        // 커스텀 stringUseCounts['custom']만큼 라인을 만들어 requiredPassCount/예약 슬롯(cap)/패키지 검증과 일치
-        const useQtyRaw = formData.stringUseCounts['custom'];
-        const useQty = typeof useQtyRaw === 'number' ? useQtyRaw : 1;
-
-        for (let i = 0; i < Math.max(useQty, 0); i++) {
-          lines.push({
-            id: `custom-${index}-${i}`,
-            racketType: '',
-            stringProductId: prodId,
-            stringName,
-            tensionMain: '',
-            tensionCross: '',
-            note: formData.requirements,
-            mountingFee: lineFee,
-          });
-        }
-
-        return;
-      }
-
-      // 주문 기반(orderId)인 경우: 주문 수량(or 사용자가 조절한 수량)만큼 라인을 만든다.
-      if (isOrderMode && order) {
-        const found = order.items.find((it) => it.id === prodId);
-        const orderQty = found?.quantity ?? 1;
-        const useQty = formData.stringUseCounts[prodId] ?? orderQty;
-
-        for (let i = 0; i < useQty; i++) {
-          const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
-
-          lines.push({
-            id: `${prodId}-${i}`,
-            racketType: alias,
-            stringProductId: prodId,
-            stringName,
-            tensionMain: '',
-            tensionCross: '',
-            note: formData.requirements,
-            mountingFee: lineFee,
-          });
-        }
-        return;
-      }
-
-      // 단독/PDP 경로: 선택한 스트링 1개 기준 1라인
-      const useQty = formData.stringUseCounts[prodId] ?? 1;
-
-      for (let i = 0; i < useQty; i++) {
-        const alias = (formData.racketType || '').trim() || `라켓 ${lines.length + 1}`;
-
-        lines.push({
-          id: `${prodId}-${i}`,
-          racketType: alias,
-          stringProductId: prodId,
-          stringName,
-          tensionMain: '',
-          tensionCross: '',
-          note: formData.requirements,
-          mountingFee: lineFee,
-        });
-      }
-      return;
-    });
-    return lines;
-  }, [formData.lines, formData.stringTypes, formData.stringUseCounts, formData.racketType, formData.requirements, priceView.base, order, orderId, pdpProductId, pdpProduct, pdpMountingFee]);
 
   // 4. 디버깅 콘솔 로그 (개발 환경에서만)
   useEffect(() => {
@@ -1023,9 +814,6 @@ export default function StringServiceApplyPage() {
       fromPDP,
     });
   }, [pdpProductId, pdpMountingFee, orderId, order, formData.stringTypes, linesForSubmit, fromPDP]);
-
-  // 이번 신청에서 라켓/스트링 라인 개수
-  const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
 
   // 라켓 금액: orderId 기반 주문에서 가져오기
   const racketPrice = useMemo(() => {
@@ -1162,16 +950,6 @@ export default function StringServiceApplyPage() {
     return h * 60 + m;
   };
 
-  const formatMinutesToTime = (minutes: number) => {
-    if (!Number.isFinite(minutes)) return '';
-    // 24시간 넘어가도 안전하게 모듈로 처리
-    const total = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
-    const h = Math.floor(total / 60);
-    const m = total % 60;
-    const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
-    return `${pad(h)}:${pad(m)}`;
-  };
-
   // 현재 슬롯 리스트(timeSlots)에서 간격(분)을 추정
   // - /admin 설정에서 interval 을 바꿔도 자동으로 따라가도록 UI 에서도 계산
   const slotIntervalMinutes = useMemo(() => {
@@ -1192,17 +970,10 @@ export default function StringServiceApplyPage() {
     return slotIntervalMinutes * visitSlotCountUi;
   }, [slotIntervalMinutes, visitSlotCountUi]);
 
-  // 선택된 시작/종료 시간 텍스트 (예: 11:30 ~ 12:30)
-  const visitTimeRange = useMemo(() => {
-    if (!formData.preferredTime || !visitDurationMinutesUi) return null;
-    const startMin = parseTimeToMinutes(formData.preferredTime);
-    if (startMin == null) return null;
-    const endMin = startMin + visitDurationMinutesUi;
-    return {
-      start: formData.preferredTime,
-      end: formatMinutesToTime(endMin),
-    };
-  }, [formData.preferredTime, visitDurationMinutesUi]);
+  useEffect(() => {
+    setVisitDurationMinutesUi(visitDurationMinutesUi);
+  }, [visitDurationMinutesUi, setVisitDurationMinutesUi]);
+
 
   // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
   const orderStringService = (order as any)?.stringService as
@@ -1216,464 +987,6 @@ export default function StringServiceApplyPage() {
   // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
   const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
   const isOrderSlotBlocked = !!(orderId && typeof orderRemainingSlots === 'number' && orderRemainingSlots <= 0);
-
-  // 라켓/스트링 선택 체크박스 변화 콜백
-  const handleStringTypesChange = (ids: string[]) => {
-    // PDP에서 넘어온 경우: 상품 상세에서 이미 스트링을 확정하고 넘어온 상황이므로 잠금
-    // 단, 주문 기반(orderId) 진입이면 주문 품목에서 고르는 UX가 필요하므로 잠금 해제
-    if (fromPDP && !orderId && !rentalId) return;
-
-    setFormData((prev) => {
-      // 기존 카운트 복사
-      const nextUseCounts: Record<string, number> = { ...prev.stringUseCounts };
-
-      // 선택되지 않은 스트링은 카운트에서 제거
-      const selectedSet = new Set(ids);
-      Object.keys(nextUseCounts).forEach((key) => {
-        if (!selectedSet.has(key)) {
-          delete nextUseCounts[key];
-        }
-      });
-
-      if (orderId && order) {
-        // 이 주문에서 아직 남은 전체 교체 가능 횟수
-        let remaining: number | undefined = typeof orderRemainingSlots === 'number' ? orderRemainingSlots : undefined;
-
-        ids.forEach((id) => {
-          // 직접 입력 스트링
-          if (id === 'custom') {
-            if (nextUseCounts[id] == null) {
-              // 커스텀은 기본 1자루, 단 남은 슬롯이 있으면 그 안에서만 허용
-              const base = remaining != null ? Math.min(1, Math.max(remaining, 0)) : 1;
-              nextUseCounts[id] = base;
-              if (remaining != null) remaining -= base;
-            }
-            return;
-          }
-
-          const item = order.items.find((it) => it.id === id);
-          const orderQty = item?.quantity ?? 1;
-
-          const current = nextUseCounts[id];
-
-          // 기존 값이 없거나, 주문 수량보다 큰 값은 보정
-          if (current == null || current > orderQty) {
-            let base = orderQty;
-
-            // 남은 슬롯 정보가 있으면, 주문 수량과 남은 슬롯 중 더 작은 값으로 기본값 설정
-            if (remaining != null) {
-              const allowedForThis = Math.min(orderQty, Math.max(remaining, 0));
-              base = allowedForThis;
-              remaining -= allowedForThis;
-            }
-
-            nextUseCounts[id] = base;
-          }
-        });
-
-        // 선택된 항목은 최소 1개 이상 사용하도록 보정 (0개는 검증/라인 생성 불일치의 원인이 됨)
-        ids.forEach((id) => {
-          const v = nextUseCounts[id];
-          if (typeof v !== 'number' || v <= 0) nextUseCounts[id] = 1;
-        });
-      } else {
-        // 주문 없는 경우(PDP/단독): 각 스트링 1개 기준
-        ids.forEach((id) => {
-          if (nextUseCounts[id] == null) {
-            nextUseCounts[id] = 1;
-          }
-        });
-      }
-
-      return {
-        ...prev,
-        stringTypes: ids,
-        stringUseCounts: nextUseCounts,
-      };
-    });
-  };
-
-  // 라켓/라인 에디터: 라켓별 텐션/메모 등 변경 핸들러
-  const handleLineFieldChange = <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
-    setFormData((prev) => {
-      const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
-
-      const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
-
-      // 첫 번째 라인의 텐션을 "기본값"으로 들고 가고 싶을 때 (선택)
-      const next: FormData = { ...prev, lines: nextLines };
-      if (index === 0 && field === 'tensionMain') {
-        next.defaultMainTension = String(value ?? '');
-      }
-      if (index === 0 && field === 'tensionCross') {
-        next.defaultCrossTension = String(value ?? '');
-      }
-      return next;
-    });
-  };
-
-  // 특정 스트링(productId)에 대해 "이번 신청에서 사용할 개수"를 수정하는 헬퍼
-  const handleUseQtyChange = (id: string, value: number) => {
-    // 번들(라켓+스트링) 주문이라도 remainingSlots < 주문수량(=부분 사용/재신청)이면 수량 조절이 필요하므로 잠금하지 않는다.
-    // - remainingSlots 정보가 없으면(구버전/예외) 기존처럼 잠금
-    if (orderId && order && isCombinedPdpMode) {
-      if (typeof orderRemainingSlots !== 'number') return;
-
-      const ids = (formData.stringTypes ?? []).filter((t) => t && t !== 'custom');
-      const sumOrderQty = ids.reduce((sum, sid) => {
-        const found = order.items.find((it) => it.id === sid);
-        const q = Number((found as any)?.quantity ?? 0);
-        return sum + (Number.isFinite(q) ? q : 0);
-      }, 0);
-
-      // 주문 수량을 못 구하면 안전하게 잠금
-      if (!Number.isFinite(sumOrderQty) || sumOrderQty <= 0) return;
-
-      // remainingSlots가 주문 수량과 동일할 때만 잠금
-      if (orderRemainingSlots === sumOrderQty) return;
-    }
-
-    const raw = Number.isFinite(value) ? value : 0;
-    const min = 0;
-    let max: number;
-
-    // 1) 주문 기반
-    if (orderId && order) {
-      if (id === 'custom') {
-        max = 99;
-      } else {
-        const item = order.items.find((it) => it.id === id);
-        max = item?.quantity ?? 1;
-      }
-
-      if (typeof orderRemainingSlots === 'number') {
-        const otherTotal = Object.entries(formData.stringUseCounts)
-          .filter(([key]) => key !== id)
-          .reduce((sum, [, v]) => sum + (typeof v === 'number' ? v : 0), 0);
-        const remainForThis = Math.max(orderRemainingSlots - otherTotal, 0);
-        max = Math.min(max, remainForThis);
-      }
-    }
-    // 2) 비-주문 기반(PDP/대여): "관리자 재고/수량" 기반 상한 적용
-    else {
-      if (id === 'custom') {
-        max = 99; // 커스텀은 재고 개념이 없으니 기존 유지
-      } else {
-        // maxNonOrderQty가 있으면 그게 절대 상한
-        max = typeof maxNonOrderQty === 'number' ? maxNonOrderQty : 99;
-      }
-    }
-
-    const safe = Math.min(Math.max(raw, min), max);
-
-    setFormData((prev) => {
-      // "선택된 상태에서 0개"는 requiredPassCount/라인 생성/검증 로직과 불일치가 생기기 쉬움
-      //    → 0개 이하로 내려가면 해당 스트링은 "선택 해제"로 처리한다.
-      if (safe <= 0) {
-        const nextTypes = prev.stringTypes.filter((t) => t !== id);
-        const { [id]: _removed, ...restCounts } = prev.stringUseCounts;
-        return {
-          ...prev,
-          stringTypes: nextTypes,
-          stringUseCounts: restCounts,
-        };
-      }
-
-      return {
-        ...prev,
-        stringUseCounts: {
-          ...prev.stringUseCounts,
-          [id]: safe,
-        },
-      };
-    });
-  };
-
-  const handleCustomInputChange = (val: string) => setFormData((prev) => ({ ...prev, customStringType: val }));
-
-  useEffect(() => {
-    // linesForSubmit를 기준으로 교체비 총합을 다시 계산한다.
-    // - 주문 기반(orderId) + 다자루일 때: 각 라켓 라인에 mountingFee가 세팅되어 있음
-    // - PDP 경로: 선택된 스트링 1자루 기준 라인에 mountingFee(pdpMountingFee 등)가 세팅됨
-    // - 단독 신청: 커스텀/보유 스트링도 동일하게 1라인 1회 작업비로 표현됨
-    if (!linesForSubmit.length) {
-      setPrice(0);
-      return;
-    }
-
-    const total = linesForSubmit.reduce((sum, line) => {
-      const fee = typeof line.mountingFee === 'number' ? line.mountingFee : 0;
-      return sum + fee;
-    }, 0);
-
-    setPrice(total);
-  }, [linesForSubmit]);
-
-  // 주문서 없는 단독 신청일 경우만 실행
-  useEffect(() => {
-    if (orderId) return;
-
-    const checkUser = async () => {
-      setIsUserLoading(true);
-      setRentalRacketId(null);
-      setRentalDays(null);
-      try {
-        const res = await fetch('/api/users/me', { credentials: 'include' });
-        const user = await res.json();
-
-        if (user?.email) {
-          setIsMember(true);
-          setFormData((prev) => ({
-            ...prev,
-            name: user.name ?? '',
-            email: user.email ?? '',
-            phone: user.phone ?? '',
-            shippingName: user.name ?? '',
-            shippingEmail: user.email ?? '',
-            shippingPhone: user.phone ?? '',
-            shippingAddress: user.address ?? '',
-            shippingAddressDetail: user.addressDetail ?? '',
-            shippingPostcode: user.postalCode ?? '',
-          }));
-        } else {
-          setIsMember(false);
-        }
-      } catch {
-        setIsMember(false);
-      } finally {
-        setIsUserLoading(false);
-      }
-    };
-
-    checkUser();
-  }, [orderId]);
-
-  // 주문 데이터 신청자 정보 불러오기
-  useEffect(() => {
-    if (!orderId) return;
-
-    const fetchOrder = async () => {
-      setIsUserLoading(true);
-      setRentalRacketId(null);
-      setRentalDays(null);
-      try {
-        const orderRes = await fetch(`/api/orders/${orderId}`, { credentials: 'include' });
-        const orderData = await orderRes.json();
-        setOrder(orderData);
-
-        // 주문 데이터 신청자 정보 불러온 후, 수거 방식 기본값 결정
-        setFormData((prev) => {
-          // 1) 체크아웃에서 넘긴 servicePickupMethod가 있으면 최우선
-          const spm = (orderData as any).servicePickupMethod as 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | undefined;
-
-          let collectionMethod: 'self_ship' | 'courier_pickup' | 'visit' = prev.collectionMethod;
-
-          const isVisitDelivery2 = (orderData?.shippingInfo as any)?.deliveryMethod === '방문수령' || orderData?.shippingInfo?.shippingMethod === 'visit';
-
-          if (spm === 'SHOP_VISIT' || isVisitDelivery2) {
-            collectionMethod = 'visit';
-            // } else if (spm === 'COURIER_VISIT') {
-            //   collectionMethod = 'courier_pickup';
-          } else if (spm === 'COURIER_VISIT') {
-            // 기사 방문 수거 UI는 비노출 → 안전하게 자가발송으로 치환
-            collectionMethod = 'self_ship';
-          } else {
-            collectionMethod = 'self_ship';
-          }
-
-          return { ...prev, collectionMethod };
-        });
-
-        // accessToken 꺼내기
-        const userRes = await fetch('/api/users/me', { credentials: 'include' });
-        const userData = await userRes.json();
-
-        setFormData((prev) => ({
-          ...prev,
-          name: orderData.shippingInfo?.name ?? '',
-          phone: orderData.shippingInfo?.phone ?? '',
-          email: userData?.email ?? orderData?.guestInfo?.email ?? '',
-          shippingName: orderData.shippingInfo?.name ?? '',
-          shippingPhone: orderData.shippingInfo?.phone ?? '',
-          shippingEmail: userData?.email ?? orderData?.guestInfo?.email ?? '',
-          shippingAddress: orderData.shippingInfo?.address ?? '',
-          shippingAddressDetail: orderData.shippingInfo?.addressDetail ?? '',
-          shippingPostcode: orderData.shippingInfo?.postalCode ?? '',
-          shippingDepositor: orderData.shippingInfo?.depositor ?? '',
-          shippingBank: orderData.paymentInfo?.bank ?? '',
-          shippingRequest: orderData.shippingInfo?.deliveryRequest ?? '',
-        }));
-      } catch (err) {
-        console.error('정보 fetch 실패:', err);
-      } finally {
-        setIsUserLoading(false);
-      }
-    };
-
-    fetchOrder();
-  }, [orderId]);
-
-  /**
-   * 대여 기반(rentalId) 프리필
-   * - /api/rentals/[id]에서 선택 스트링(stringing.stringId)을 읽어와 stringTypes를 세팅
-   * - /api/products/[id]/mini로 mountingFee를 가져와 pdpMountingFee에 저장
-   *   (※ apply 페이지의 기존 가격 계산 로직은 "orderId가 없을 때 pdpMountingFee"를 우선 사용하므로
-   *    rental 기반에서도 교체비가 정확히 계산.)
-   *
-   * 주의:
-   * - orderId 기반 프리필과 충돌하지 않도록 orderId가 있으면 실행X
-   * - 로그인 회원은 아래 "주문서 없는 단독 신청" 훅(/api/users/me)이 이미 주소까지 채워줄 수 있으므로,
-   *   rental 프리필은 필수 항목(스트링 선택/신청자 정보) 위주로만 안전하게 보완.
-   */
-  useEffect(() => {
-    if (!rentalId) return;
-    if (orderId) return; // orderId가 있으면 order 기반이 우선
-
-    let cancelled = false;
-
-    (async () => {
-      setIsUserLoading(true);
-      setRentalRacketId(null);
-      setRentalDays(null);
-      try {
-        const res = await fetch(`/api/rentals/${encodeURIComponent(rentalId)}`, {
-          credentials: 'include',
-          cache: 'no-store',
-        });
-        if (!res.ok) return;
-
-        const rental = await res.json().catch(() => ({}) as any);
-        setRentalAmount((rental as any)?.amount ?? null);
-
-        // 대여 라켓/기간 정보는 '스트링 변경' CTA 링크에 사용
-        const rid = String((rental as any)?.racketId ?? (rental as any)?.racket?._id ?? '');
-        setRentalRacketId(rid && rid !== 'undefined' ? rid : null);
-        const daysNum = Number((rental as any)?.days);
-        setRentalDays(Number.isFinite(daysNum) && daysNum > 0 ? daysNum : null);
-        if (cancelled) return;
-
-        // 라켓 수량(대여 기반에서 수량 상한 계산용)
-        // rental 응답 구조가 다를 수 있어 방어적으로 탐색
-        const rq = Number((rental as any)?.racket?.quantity) || Number((rental as any)?.racketQuantity) || Number((rental as any)?.quantity) || 1;
-        setLockedRacketQuantity(Number.isFinite(rq) && rq > 0 ? rq : 1);
-
-        // 수거 방식(교체 신청서용) 프리필
-        // - 대여 체크아웃에서 방문수령(매장 픽업)이면, 교체 신청서도 'visit' 기본값으로 맞춘다
-        // - apply 페이지의 방문시간(step2)은 collectionMethod='visit' 일 때만 자연스럽게 열리므로, 여기서 먼저 정렬
-        setFormData((prev) => {
-          // 사용자가 이미 수거 방식을 바꿨다면(= 기본값이 아닌 상태), 서버/프리필로 덮어쓰지 않는다
-          if (prev.collectionMethod !== 'self_ship') return prev;
-
-          const rentalShippingMethod = String((rental as any)?.shipping?.shippingMethod ?? '');
-          const rentalPickupMethod = String((rental as any)?.servicePickupMethod ?? '');
-
-          const isVisit =
-            // 대여 주문에 pickup(매장수령)로 저장된 경우
-            rentalShippingMethod === 'pickup' ||
-            // 일부 흐름에서 visit로 저장되는 경우까지 방어
-            rentalShippingMethod === 'visit' ||
-            // rental_orders.servicePickupMethod가 pickup or SHOP_VISIT로 저장된 경우까지 방어
-            rentalPickupMethod === 'pickup' ||
-            rentalPickupMethod === 'SHOP_VISIT';
-
-          if (!isVisit) return prev;
-          return { ...prev, collectionMethod: 'visit' };
-        });
-
-        // 라켓 타입 프리필 (대여 라켓 brand/model 기반)
-        const rentalRacketType = [rental?.brand, rental?.model].filter(Boolean).join(' ').trim();
-        if (rentalRacketType) {
-          setFormData((prev) => (prev.racketType ? prev : { ...prev, racketType: rentalRacketType }));
-        }
-
-        // 1) 신청자 정보(가능한 범위에서만 보완)
-        if (rental?.user?.email) {
-          setIsMember(true);
-          setFormData((prev) => ({
-            ...prev,
-            // 비어있을 때만 채우기(사용자 입력/기존 프리필을 덮어쓰지 않기)
-            name: prev.name || rental.user.name || '',
-            email: prev.email || rental.user.email || '',
-            phone: prev.phone || rental.user.phone || '',
-            shippingName: prev.shippingName || rental.user.name || '',
-            shippingEmail: prev.shippingEmail || rental.user.email || '',
-            shippingPhone: prev.shippingPhone || rental.user.phone || '',
-          }));
-        }
-
-        // 2) 스트링 선택 프리필
-        const sid = rental?.stringing?.requested ? rental?.stringing?.stringId : null;
-        if (!sid) return;
-
-        const stringId = String(sid);
-        setFormData((prev) => {
-          // 이미 선택되어 있으면 그대로 유지
-          if (prev.stringTypes.includes(stringId)) return prev;
-          return {
-            ...prev,
-            stringTypes: [stringId],
-            // 수량/라인 로직은 기존 방식 유지 (기본 1회)
-            stringUseCounts: { ...prev.stringUseCounts, [stringId]: prev.stringUseCounts[stringId] ?? 1 },
-          };
-        });
-
-        // 3) mountingFee 확보(교체비 계산 근거) + 미니 상품 정보 세팅
-        setIsLoadingPdpProduct(true);
-        try {
-          const miniRes = await fetch(`/api/products/${encodeURIComponent(stringId)}/mini`, { cache: 'no-store' });
-          const mini = await miniRes.json().catch(() => ({}) as any);
-          if (!cancelled && mini?.ok) {
-            setPdpProduct({
-              name: mini.name,
-              image: mini.image ?? null,
-              price: typeof mini.price === 'number' ? mini.price : undefined,
-            });
-            if (typeof mini.mountingFee === 'number') {
-              setFormData((prev) => ({ ...prev, pdpMountingFee: mini.mountingFee }));
-            }
-            // 현재 가용 재고(관리자 설정 stock) 기억
-            setLockedStringStock(typeof mini.stock === 'number' ? mini.stock : null);
-          }
-        } finally {
-          if (!cancelled) setIsLoadingPdpProduct(false);
-        }
-      } catch (e) {
-        console.error('[apply][rental prefill] failed:', e);
-      } finally {
-        if (!cancelled) setIsUserLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [rentalId, orderId]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name } = e.target;
-    const rawValue = e.target.value;
-
-    // 연락처는 입력 UX를 위해 자동 포맷(010 0000 0000) 적용
-    const value = name === 'phone' || name === 'shippingPhone' ? formatPhoneForDisplay(rawValue) : rawValue;
-
-    setFormData((prev) => {
-      /**
-       * 주의/의도:
-       * - 현재 Step1 UI는 신청자(name/email/phone)만 직접 입력받고,
-       *   제출 payload는 shippingInfo.name/phone/email을 별도로 사용.
-       * - 비회원/비주문 기반 진입에서는 shippingName/Phone/Email이 비어갈 수 있으므로,
-       *   신청자 입력값을 shippingInfo에도 동기화해서 데이터 정합성을 보장
-       * - 추후 shippingName/Phone/Email을 별도 입력 UI로 분리할 경우, 이 동기화 로직은 재검토가 필요
-       */
-      const next: any = { ...prev, [name]: value };
-
-      if (name === 'name') next.shippingName = value;
-      if (name === 'email') next.shippingEmail = value;
-      if (name === 'phone') next.shippingPhone = value;
-
-      return next;
-    });
-  };
 
   const handleOpenPostcode = () => {
     if (!window?.daum?.Postcode) {
