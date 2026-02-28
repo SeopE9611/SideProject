@@ -6,6 +6,7 @@ import type { DBOrder } from '@/lib/types/order-db';
 import { findUserSnapshot, fetchCombinedOrders } from './db';
 import clientPromise from '@/lib/mongodb';
 import { createStringingApplicationFromOrder } from '@/app/features/stringing-applications/api/create-from-order';
+import { submitStringingApplicationCore, type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import { deductPoints } from '@/lib/points.service';
 import { getShippingBadge } from '@/lib/badge-style';
 import { z } from 'zod';
@@ -131,6 +132,7 @@ const CreateOrderBodySchema = z
     // 기타(추가 필드들은 유지하되, 스키마가 걸러내지 않도록 passthrough)
     servicePickupMethod: z.any().optional(),
     isStringServiceApplied: z.any().optional(),
+    stringingApplicationInput: z.any().optional(),
   })
   .passthrough();
 
@@ -216,6 +218,7 @@ export async function createOrder(req: Request): Promise<Response> {
 
     // 클라 금액은 절대 신뢰하지 않음(참고 로그용만)
     const { items: rawItems, shippingInfo, guestInfo } = body;
+    const stringingApplicationInput = body?.stringingApplicationInput as StringingApplicationInput | undefined;
     const clientTotalPrice = body?.totalPrice;
     const clientShippingFee = body?.shippingFee;
     const clientServiceFee = body?.serviceFee;
@@ -276,6 +279,8 @@ export async function createOrder(req: Request): Promise<Response> {
     // 트랜잭션: 재고 차감 + 주문 생성 + (옵션) 신청서 생성
     const session = client.startSession();
     let createdOrderId: ObjectId | null = null;
+    let createdStringingApplicationId: ObjectId | null = null;
+    let stringingSubmitted = false;
 
     try {
       await session.withTransaction(async () => {
@@ -617,7 +622,19 @@ export async function createOrder(req: Request): Promise<Response> {
           }
         }
         // 주문 기반 신청서 자동 생성(옵션)
-        if (shippingInfo?.withStringService === true) {
+        if (shippingInfo?.withStringService === true && stringingApplicationInput) {
+          const submitResult = await submitStringingApplicationCore({
+            db,
+            userId: order.userId ?? null,
+            session,
+            input: {
+              ...stringingApplicationInput,
+              orderId: String(createdOrderId),
+            },
+          });
+          createdStringingApplicationId = submitResult.applicationId;
+          stringingSubmitted = submitResult.stringingSubmitted;
+        } else if (shippingInfo?.withStringService === true) {
           const app = await createStringingApplicationFromOrder(
             {
               _id: createdOrderId,
@@ -632,6 +649,7 @@ export async function createOrder(req: Request): Promise<Response> {
           const createdAppId = app?._id ?? null;
 
           if (createdAppId) {
+            createdStringingApplicationId = createdAppId;
             await ordersCol.updateOne({ _id: createdOrderId }, { $set: { isStringServiceApplied: true, stringingApplicationId: String(createdAppId) } }, { session });
           }
         }
@@ -648,7 +666,15 @@ export async function createOrder(req: Request): Promise<Response> {
       return NextResponse.json({ success: false, error: '주문 생성 실패(트랜잭션 결과 누락)' }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, orderId: String(createdOrderId) }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        orderId: String(createdOrderId),
+        stringingApplicationId: createdStringingApplicationId ? String(createdStringingApplicationId) : null,
+        stringingSubmitted,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     if (error && typeof error === 'object' && (error as any).status && (error as any).body) {
       return NextResponse.json((error as any).body, { status: (error as any).status });

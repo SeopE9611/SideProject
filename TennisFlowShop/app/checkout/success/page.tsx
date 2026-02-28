@@ -83,8 +83,11 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
   const orderDetailHref = isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id.toString()}`;
+  const withStringService = order.shippingInfo?.withStringService === true;
+  const hasSubmittedApplication = !!order.stringingApplicationId;
+  const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
   // autoApply=1 + withStringService=true 인 경우: 성공페이지 대신 "핸드오프 화면"만 보여주기
-  const isHandoff = autoApply && order.shippingInfo?.withStringService === true;
+  const isHandoff = autoApply && shouldShowApplyCta;
 
   if (isHandoff) {
     return (
@@ -159,8 +162,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
             </div>
 
-            {/* 서비스 ON이면 항상 노출 */}
-            {order.shippingInfo?.withStringService && (
+            {withStringService && (
               <div className="mt-8 max-w-2xl mx-auto">
                 <div className="rounded-xl border border-border bg-card/10 p-6 text-center backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-3 mb-4">
@@ -170,16 +172,23 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <h3 className="text-xl font-bold text-foreground">스트링 장착 서비스 포함</h3>
                   </div>
                   {/* 문구 분기: 방문/택배 */}
-                  <p className="mb-4 text-muted-foreground">
-                    {order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
-                  </p>
-                  <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
-                    {/* 신청서로 곧바로 이동 (자동 생성 전제) */}
-                    <Link href={appHref} className="flex items-center gap-2">
-                      장착 서비스 신청서 작성하기
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  {hasSubmittedApplication ? (
+                    <p className="mb-1 text-muted-foreground">교체 서비스 신청이 함께 접수되었습니다.</p>
+                  ) : (
+                    <p className="mb-4 text-muted-foreground">
+                      {order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
+                    </p>
+                  )}
+                  {hasSubmittedApplication ? (
+                    <p className="text-sm text-muted-foreground">별도 신청서 작성 없이 현재 주문에 포함되어 처리됩니다.</p>
+                  ) : (
+                    <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
+                      <Link href={appHref} className="flex items-center gap-2">
+                        장착 서비스 신청서 작성하기
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  )}
                   {/* <AutoRedirectToApply enabled={autoApply} href={appHref} seconds={5} /> */}
                 </div>
               </div>
