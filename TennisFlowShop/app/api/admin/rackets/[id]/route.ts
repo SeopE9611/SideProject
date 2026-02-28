@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { normalizeStringPattern, RACKET_BRANDS } from '@/lib/constants';
+import { RACKET_BRANDS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern } from '@/lib/constants';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
@@ -64,8 +64,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       lengthIn: numOrNull(body.spec?.lengthIn),
       swingWeight: numOrNull(body.spec?.swingWeight),
       stiffnessRa: numOrNull(body.spec?.stiffnessRa),
-      pattern: normalizeStringPattern(body.spec?.pattern ?? ''),
-      gripSize: String(body.spec?.gripSize ?? '').trim(),
+      // 서버에서도 value 검증/정규화 수행(클라이언트 우회 요청 방어)
+      pattern: normalizeAndValidateStringPattern(body.spec?.pattern ?? ''),
+      gripSize: normalizeAndValidateGripSize(body.spec?.gripSize ?? ''),
     },
     condition: body.condition ?? 'B',
     price: Number(body.price ?? 0),
@@ -88,6 +89,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   if (!set.brand || !set.model) {
     return NextResponse.json({ message: '브랜드/모델은 필수입니다.' }, { status: 400 });
+  }
+
+  if (!set.spec.pattern) {
+    return NextResponse.json({ message: '스트링 패턴 값이 유효하지 않습니다.' }, { status: 400 });
+  }
+  if (!set.spec.gripSize) {
+    return NextResponse.json({ message: '그립 사이즈 값이 유효하지 않습니다.' }, { status: 400 });
   }
 
   const brandOk = RACKET_BRANDS.some((b) => b.value === set.brand);

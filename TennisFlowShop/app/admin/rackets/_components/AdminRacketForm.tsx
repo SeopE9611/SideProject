@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Package, DollarSign, Settings, ImageIcon, Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import ImageUploader from '@/components/admin/ImageUploader';
-import { RACKET_BRANDS, racketBrandLabel, type RacketBrand } from '@/lib/constants';
+import { GRIP_SIZE_OPTIONS, RACKET_BRANDS, STRING_PATTERN_OPTIONS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, racketBrandLabel, type RacketBrand } from '@/lib/constants';
 import { Textarea } from '@/components/ui/textarea';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { asRecord, safeNumber } from '@/lib/admin/parsers';
@@ -22,7 +22,6 @@ type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
 const MODEL_MIN = 2;
 const MODEL_MAX = 80;
 const PRICE_MIN = 1; // "가격 필수" 라벨이므로 0원 저장은 기본적으로 막는 편이 안전
-const PATTERN_RE = /^\s*\d{1,2}\s*[xX×]\s*\d{1,2}\s*$/; // 예: 16x19, 18×20
 
 const isFiniteNumber = (v: unknown) => Number.isFinite(safeNumber(v, Number.NaN));
 const nonNegative = (v: unknown) => isFiniteNumber(v) && safeNumber(v) >= 0;
@@ -53,6 +52,16 @@ type RacketCondition = RacketForm['condition'];
 type RacketStatus = RacketForm['status'];
 const RACKET_CONDITIONS: readonly RacketCondition[] = ['A', 'B', 'C'];
 const RACKET_STATUSES: readonly RacketStatus[] = ['available', 'rented', 'sold', 'inactive'];
+
+function getInitialPattern(value: unknown) {
+  // 기존 자유입력 데이터도 가능한 경우 value(16x19 등)로 맞춰서 Select에 표시
+  return normalizeAndValidateStringPattern(String(value ?? ''));
+}
+
+function getInitialGripSize(value: unknown) {
+  // 기존 자유입력 데이터도 가능한 경우 value(G1/G2/G3)로 맞춰서 Select에 표시
+  return normalizeAndValidateGripSize(String(value ?? ''));
+}
 
 function toCondition(value: unknown): RacketCondition {
   return RACKET_CONDITIONS.includes(value as RacketCondition) ? (value as RacketCondition) : 'B';
@@ -89,8 +98,8 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       lengthIn: toNullableNumber(asRecord(initial?.spec).lengthIn),
       swingWeight: toNullableNumber(asRecord(initial?.spec).swingWeight),
       stiffnessRa: toNullableNumber(asRecord(initial?.spec).stiffnessRa),
-      pattern: initial?.spec?.pattern ?? '',
-      gripSize: initial?.spec?.gripSize ?? '',
+      pattern: getInitialPattern(initial?.spec?.pattern),
+      gripSize: getInitialGripSize(initial?.spec?.gripSize),
     },
     rental: {
       enabled: initial?.rental?.enabled ?? false,
@@ -159,6 +168,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     // 1) 제출 직전 최종 유효성 검사(관리자 입력 실수 방지)
     const modelTrim = (form.model ?? '').trim();
     const patternTrim = (form.spec?.pattern ?? '').trim();
+    const gripSizeTrim = (form.spec?.gripSize ?? '').trim();
 
     if (!form.brand) {
       showErrorToast('브랜드를 선택하세요.');
@@ -206,9 +216,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     if (!positiveOrNull(form.spec.swingWeight)) return showErrorToast('스윙웨이트(swingWeight)는 1 이상 숫자만 입력하세요.');
     if (!positiveOrNull(form.spec.stiffnessRa)) return showErrorToast('강성(stiffnessRa)은 1 이상 숫자만 입력하세요.');
 
-    // 패턴: 빈값은 허용, 입력했으면 16x19 형식만 허용
-    if (patternTrim && !PATTERN_RE.test(patternTrim)) {
-      showErrorToast('스트링 패턴은 16x19 형식으로 입력하세요.');
+    // 패턴/그립: Select 기반 value만 허용(운영자 자유입력으로 인한 검색 파손 방지)
+    const normalizedPattern = normalizeAndValidateStringPattern(patternTrim);
+    const normalizedGripSize = normalizeAndValidateGripSize(gripSizeTrim);
+
+    if (!normalizedPattern) {
+      showErrorToast('스트링 패턴을 선택하세요.');
+      return;
+    }
+    if (!normalizedGripSize) {
+      showErrorToast('그립 사이즈를 선택하세요.');
       return;
     }
 
@@ -241,9 +258,9 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
           lengthIn: form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
           swingWeight: form.spec.swingWeight != null ? Number(form.spec.swingWeight) : null,
           stiffnessRa: form.spec.stiffnessRa != null ? Number(form.spec.stiffnessRa) : null,
-          // 표준화: 공백 제거 + 소문자 + × -> x
-          pattern: (patternTrim || '').toLowerCase().replace(/\s+/g, '').replace(/[×]/g, 'x'),
-          gripSize: form.spec.gripSize,
+          // 서버/DB 저장값은 value 기준으로 통일(패턴: 16x19, 그립: G2 등)
+          pattern: normalizedPattern,
+          gripSize: normalizedGripSize,
         },
         rental: {
           enabled: !!form.rental.enabled,
@@ -490,11 +507,33 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="pattern">스트링 패턴</Label>
-                  <Input id="pattern" placeholder="예: 16x19" value={form.spec.pattern} onChange={(e) => setForm({ ...form, spec: { ...form.spec, pattern: e.target.value } })} />
+                  <Select value={form.spec.pattern || undefined} onValueChange={(value) => setForm({ ...form, spec: { ...form.spec, pattern: value } })}>
+                    <SelectTrigger id="pattern">
+                      <SelectValue placeholder="스트링 패턴 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STRING_PATTERN_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="gripSize">그립 사이즈</Label>
-                  <Input id="gripSize" placeholder="예: G2, 4 3/8" value={form.spec.gripSize} onChange={(e) => setForm({ ...form, spec: { ...form.spec, gripSize: e.target.value } })} />
+                  <Select value={form.spec.gripSize || undefined} onValueChange={(value) => setForm({ ...form, spec: { ...form.spec, gripSize: value } })}>
+                    <SelectTrigger id="gripSize">
+                      <SelectValue placeholder="그립 사이즈 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GRIP_SIZE_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardContent>

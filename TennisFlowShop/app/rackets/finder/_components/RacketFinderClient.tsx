@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
-import { RACKET_BRANDS, racketBrandLabel, STRING_PATTERNS } from '@/lib/constants';
+import { GRIP_SIZE_OPTIONS, RACKET_BRANDS, racketBrandLabel, STRING_PATTERN_OPTIONS, gripSizeLabel, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, stringPatternLabel } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, Filter, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -32,6 +32,7 @@ type Filters = {
   headSize: Range;
   weight: Range;
   patterns: string[];
+  gripSizes: string[];
   balance: Range;
   lengthIn: Range;
   stiffnessRa: Range;
@@ -60,6 +61,7 @@ const DEFAULT: Filters = {
   headSize: [80, 120],
   weight: [200, 380],
   patterns: [],
+  gripSizes: [],
   balance: [280, 380],
   lengthIn: [25, 29],
   stiffnessRa: [45, 80],
@@ -153,6 +155,10 @@ function buildQuery(f: Filters, page: number, pageSize: number) {
   sp.set('maxSwingWeight', String(f.swingWeight[1]));
 
   for (const p of f.patterns) sp.append('pattern', normalizePattern(p));
+  for (const gripSize of f.gripSizes) {
+    const normalizedGrip = normalizeAndValidateGripSize(gripSize);
+    if (normalizedGrip) sp.append('gripSize', normalizedGrip);
+  }
   return sp.toString();
 }
 
@@ -251,8 +257,18 @@ export default function RacketFinderClient() {
     const q = sp.get('q');
     if (q) next.q = q;
 
-    const patterns = sp.getAll('pattern').map(normalizePattern).filter(Boolean);
+    // URL 쿼리값도 서버 저장 형식(value) 기준으로 정규화해서 복구
+    const patterns = sp
+      .getAll('pattern')
+      .map((pattern) => normalizeAndValidateStringPattern(pattern))
+      .filter(Boolean);
     if (patterns.length) next.patterns = patterns;
+
+    const gripSizes = sp
+      .getAll('gripSize')
+      .map((gripSize) => normalizeAndValidateGripSize(gripSize))
+      .filter(Boolean);
+    if (gripSizes.length) next.gripSizes = gripSizes;
 
     const sort = sp.get('sort');
     if (sort) {
@@ -375,8 +391,15 @@ export default function RacketFinderClient() {
       });
 
     for (const p of applied.patterns) {
-      const display = STRING_PATTERNS.find((x) => normalizePattern(x) === p) ?? p;
+      const display = stringPatternLabel(p);
       add(`pattern:${p}`, `패턴: ${display}`, { ...applied, patterns: applied.patterns.filter((x) => x !== p) });
+    }
+
+    for (const gripSize of applied.gripSizes) {
+      add(`gripSize:${gripSize}`, `그립: ${gripSizeLabel(gripSize)}`, {
+        ...applied,
+        gripSizes: applied.gripSizes.filter((x) => x !== gripSize),
+      });
     }
 
     return list;
@@ -468,12 +491,12 @@ export default function RacketFinderClient() {
             <div className="space-y-3">
               <SectionLabel>스트링 패턴</SectionLabel>
               <div className="grid grid-cols-2 gap-2">
-                {STRING_PATTERNS.map((p) => {
-                  const key = normalizePattern(p);
+                {STRING_PATTERN_OPTIONS.map((patternOption) => {
+                  const key = normalizePattern(patternOption.value);
                   const checked = draft.patterns.includes(key);
                   return (
                     <label
-                      key={p}
+                      key={patternOption.value}
                       className={cn(
                         'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all',
                         'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
@@ -491,7 +514,40 @@ export default function RacketFinderClient() {
                           });
                         }}
                       />
-                      <span className={cn(checked && 'font-medium text-primary')}>{p}</span>
+                      <span className={cn(checked && 'font-medium text-primary')}>{patternOption.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 그립 사이즈 */}
+            <div className="space-y-3">
+              <SectionLabel>그립 사이즈</SectionLabel>
+              <div className="grid grid-cols-1 gap-2">
+                {GRIP_SIZE_OPTIONS.map((gripOption) => {
+                  const checked = draft.gripSizes.includes(gripOption.value);
+                  return (
+                    <label
+                      key={gripOption.value}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all',
+                        'bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50',
+                        checked && 'bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30',
+                      )}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={(v) => {
+                          setDraft((prev) => {
+                            const set = new Set(prev.gripSizes);
+                            if (v) set.add(gripOption.value);
+                            else set.delete(gripOption.value);
+                            return { ...prev, gripSizes: Array.from(set) };
+                          });
+                        }}
+                      />
+                      <span className={cn(checked && 'font-medium text-primary')}>{gripOption.label}</span>
                     </label>
                   );
                 })}
