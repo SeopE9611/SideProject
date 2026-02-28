@@ -222,6 +222,46 @@ export default function StringServiceApplyPage() {
     })();
   }, [orderId]);
 
+  // 2-0) 주문 상세를 조회해 현재 신청 가능 상태(남은 슬롯/신청 이력)를 안내에 반영
+  useEffect(() => {
+    if (!orderId) {
+      setOrder(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, {
+          cache: 'no-store',
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          if (!cancelled) setOrder(null);
+          return;
+        }
+
+        const data = await res.json();
+        if (!cancelled) {
+          setOrder(data);
+        }
+      } catch (e) {
+        console.error('[apply] fetch order failed:', e);
+        if (!cancelled) setOrder(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId]);
+
   /**
    * 2-1) by-rental로 신청서(draft) id 조회
    * - 대여 기반(rentalId) 제출은 서버가 draft를 rentalId로 자동 재사용하지 않음
@@ -986,7 +1026,59 @@ export default function StringServiceApplyPage() {
 
   // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
   const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
+  const orderUsedSlots = typeof orderStringService?.usedSlots === 'number' ? orderStringService.usedSlots : 0;
+  const hasOrderApplicationHistory = orderUsedSlots > 0;
   const isOrderSlotBlocked = !!(orderId && typeof orderRemainingSlots === 'number' && orderRemainingSlots <= 0);
+  const isSingleApplyMode = mode === 'single' && !isOrderBased && !isRentalBased;
+
+  const entryBanner = useMemo(() => {
+    if (isRentalBased) {
+      return {
+        title: '대여 주문에 연결된 교체 서비스 신청입니다.',
+        body: '대여 결제 기준으로 신청 내용을 확인하고 접수해주세요.',
+      };
+    }
+
+    if (isSingleApplyMode) {
+      return {
+        title: '단독 교체 서비스 신청입니다.',
+        body: '주문 연결 없이 직접 신청서를 작성하는 경로입니다.',
+      };
+    }
+
+    if (!orderId) {
+      return {
+        title: '추가/단독 교체 서비스 신청 페이지입니다.',
+        body: '일반적인 서비스 포함 주문은 체크아웃에서 함께 접수되며, 이 페이지는 기존 주문 연결·추가 신청·단독 신청에 사용됩니다.',
+      };
+    }
+
+    if (loading) {
+      return {
+        title: '주문 신청 가능 상태를 확인하고 있습니다.',
+        body: '남은 신청 가능 대상을 확인한 뒤 이어서 진행해주세요.',
+      };
+    }
+
+    if (hasOrderApplicationHistory && isOrderSlotBlocked) {
+      return {
+        title: '이 주문의 교체 서비스 신청 가능 대상은 모두 사용되었습니다.',
+        body: '추가 신청은 필요하지 않습니다. 주문 상세 또는 기존 신청 내역에서 접수 상태를 확인해주세요.',
+      };
+    }
+
+    if (hasOrderApplicationHistory) {
+      return {
+        title: '이미 일부 접수가 완료된 주문입니다.',
+        body: '남은 대상에 한해 교체 서비스 추가 신청을 진행할 수 있습니다.',
+      };
+    }
+
+    return {
+      title: '이 주문에 연결된 교체 서비스 신청을 진행할 수 있습니다.',
+      body: '주문과 연결된 대상 기준으로 신청 내용을 확인해주세요.',
+    };
+  }, [isRentalBased, isSingleApplyMode, orderId, loading, hasOrderApplicationHistory, isOrderSlotBlocked]);
 
   const handleOpenPostcode = () => {
     if (!window?.daum?.Postcode) {
@@ -1302,7 +1394,7 @@ export default function StringServiceApplyPage() {
 
               {/* Content */}
               <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">스트링 구매하고 신청</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">스트링 결제 후 신청서가 자동으로 연결돼요</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">체크아웃에서 서비스 포함 주문을 완료한 뒤, 연결된 주문으로 신청을 이어갈 수 있어요</p>
 
               {/* Arrow indicator */}
               <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foregroundgroup-hover:text-foreground transition-colors">
@@ -1385,9 +1477,7 @@ export default function StringServiceApplyPage() {
               <svg className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
               </svg>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                결제(주문) 이후 신청으로 진행하면 <span className="font-medium text-foreground">금액·결제정보가 자동 반영</span>되어 실수 가능성이 줄어들어요.
-              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">일반적인 서비스 포함 주문은 체크아웃에서 함께 접수됩니다. 이 페이지는 기존 주문 연결, 남은 대상 추가 신청, 단독 신청에 사용됩니다.</p>
             </div>
           </div>
 
@@ -1462,6 +1552,24 @@ export default function StringServiceApplyPage() {
             <div className="mx-auto w-full md:w-[800px]">
               <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
                 <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
+                  <div className={`mb-5 rounded-xl border p-4 ${isOrderSlotBlocked ? 'border-border bg-muted/40' : 'border-border bg-background/60'}`}>
+                    <p className="text-sm font-semibold text-foreground">{entryBanner.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{entryBanner.body}</p>
+
+                    {isOrderSlotBlocked ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => router.push('/mypage?tab=orders')}
+                          className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors"
+                        >
+                          주문 상세에서 확인
+                        </button>
+                        <span className="px-3 py-2 text-xs text-muted-foreground">신청 내역은 주문 상세에서 확인할 수 있습니다.</span>
+                      </div>
+                    ) : null}
+                  </div>
+
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
 
