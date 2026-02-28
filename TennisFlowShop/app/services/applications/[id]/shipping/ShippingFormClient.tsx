@@ -2,20 +2,20 @@
 
 import type React from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import useSWR, { mutate as globalMutate } from 'swr';
-import { useEffect, useMemo, useState } from 'react';
-import { z } from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, Truck, Loader2, Check, Package, Calendar, FileText, ArrowLeft, Clock } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { Textarea } from '@/components/ui/textarea';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { AlertTriangle, ArrowLeft, Calendar, Check, Clock, FileText, Loader2, Package, Truck } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useMemo, useRef, useState } from 'react';
+import useSWR, { mutate as globalMutate } from 'swr';
+import { z } from 'zod';
 
 // ──────────────────────────────────────────────────────────────
 // 타입
@@ -200,6 +200,7 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
 function SelfShipForm({ applicationId, application, returnTo }: { applicationId: string; application: Application; returnTo?: string }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // 초기값은 항상 계산 (훅 순서 고정)
@@ -237,7 +238,6 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
     if (ok) go();
   };
 
-
   const onChange = (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const v = e.target.value;
     setForm((prev) => ({ ...prev, [k]: v }));
@@ -249,6 +249,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (submittingRef.current || submitting) return;
 
     const parsed = FormSchema.safeParse(form);
     if (!parsed.success) {
@@ -267,8 +269,12 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
       return;
     }
 
+    let success = false;
+
     try {
+      submittingRef.current = true;
       setSubmitting(true);
+
       const res = await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -279,30 +285,35 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
       showSuccessToast('운송장 정보가 저장되었습니다.');
       // 1) 마이페이지 목록 캐시 무효화(페이지네이션 포함)
+
       try {
         await globalMutate((key: any) => typeof key === 'string' && key.startsWith('/api/applications/me'));
       } catch {}
-
       // Activity 탭 캐시도 같이 갱신해야 "운송장 등록 → 수정" 라벨이 즉시 반영됨
       // (ActivityFeed는 /api/mypage/activity?page=... 를 사용)
       try {
         await globalMutate((key) => typeof key === 'string' && key.startsWith('/api/mypage/activity'));
       } catch {}
-
       // 2) 돌아갈 경로 우선 사용
       if (returnTo) {
+        success = true;
         router.replace(returnTo);
         router.refresh();
         return;
       }
       // 3) fallback: 신청 상세(마이페이지)로 이동
       const mypageUrlFinal = `/mypage?${new URLSearchParams({ tab: 'applications', id: applicationId }).toString()}`;
+      success = true;
       router.replace(mypageUrlFinal);
       router.refresh();
+      return;
     } catch (err: any) {
       showErrorToast(err.message || '저장 중 오류가 발생했습니다.');
     } finally {
-      setSubmitting(false);
+      if (!success) {
+        submittingRef.current = false;
+        setSubmitting(false);
+      }
     }
   };
 
@@ -448,23 +459,11 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
           <Card className="border-border shadow-lg">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => confirmLeaveIfDirty(() => history.back())}
-                  disabled={submitting}
-                  className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
-                >
+                <Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(() => history.back())} disabled={submitting} className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => confirmLeaveIfDirty(() => router.push(applyUrl))}
-                  disabled={submitting}
-                  className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
-                >
+                <Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(() => router.push(applyUrl))} disabled={submitting} className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card">
                   <Clock className="w-4 h-4 mr-2" />
                   나중에 등록할게요
                 </Button>

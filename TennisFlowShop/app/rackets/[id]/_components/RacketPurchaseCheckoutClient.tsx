@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { showErrorToast } from '@/lib/toast';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { calcShippingFee } from '@/lib/shipping-fee';
+import { showErrorToast } from '@/lib/toast';
+import { useRouter } from 'next/navigation';
+import { useMemo, useRef, useState } from 'react';
 
 type RacketView = {
   id: string;
@@ -79,6 +79,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const shippingFee = useMemo(() => {
     return calcShippingFee({
@@ -107,7 +108,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
   async function onSubmit() {
     // 0) 중복 클릭 방지
-    if (submitting) return;
+    if (submittingRef.current || submitting) return;
 
     // 1) disabled 우회 방지: devtools로 버튼을 강제로 눌러도 여기서 차단
     if (!canSubmit) {
@@ -159,7 +160,10 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       return;
     }
 
+    let success = false;
+
     try {
+      submittingRef.current = true;
       setSubmitting(true);
 
       const payload = {
@@ -198,14 +202,20 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
         showErrorToast(json?.error ?? '주문 생성 실패');
         return;
       }
+
       // 성공 시에는 다음 주문을 위해 제거
       clearIdemKey();
 
+      success = true;
       router.push(`/racket-orders/${json.orderId}/select-string`);
+      return;
     } catch (e) {
       showErrorToast('주문 처리 중 오류가 발생했습니다.');
     } finally {
-      setSubmitting(false);
+      if (!success) {
+        submittingRef.current = false;
+        setSubmitting(false);
+      }
     }
   }
 
