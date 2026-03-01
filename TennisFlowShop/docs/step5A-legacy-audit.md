@@ -5,7 +5,7 @@
 
 ## 1) 검토한 파일 목록
 - `app/checkout/success/page.tsx`
-- `app/checkout/success/_components/CheckoutApplyHandoffClient.tsx`
+- `app/checkout/success/_components/AutoRedirectToApply.tsx`
 - `app/checkout/CheckoutButton.tsx`
 - `app/services/apply/page.tsx`
 - `app/api/applications/stringing/by-order/[orderId]/route.ts`
@@ -54,38 +54,41 @@
   - `/services/apply?orderId=...` 진입 CTA가 실제로 다수 경로에서 유지됨.
 - 결론: 통합 이후 UX의 현재 표준 진입점이므로 **유지 필요**.
 
-### A-4. `CheckoutApplyHandoffClient.tsx`
+### A-4. success 페이지 주문완료 정보/CTA 경로
 - 파일/경로
-  - `app/checkout/success/_components/CheckoutApplyHandoffClient.tsx`
   - `app/checkout/success/page.tsx`
 - 근거
-  - success 페이지가 `isHandoff`일 때 해당 컴포넌트를 실제 렌더하고, 컴포넌트는 countdown 후 `/services/apply`로 push 수행.
-- 결론: dead code가 아니라, `autoApply`가 들어오는 시나리오를 위한 **실사용 경로**.
+  - success 페이지는 `orderId` 기반 주문 정보 렌더와 `/services/apply?orderId=...` CTA만 유지됨.
+  - 과거 `autoApply` 핸드오프/리다이렉트 분기는 제거되어 현재 checkout 성공 플로우와 정합성이 맞음.
+- 결론: 현재 success의 핵심 경로는 **유지 필요**.
 
 ---
 
 ## 3) 제거 후보 항목 (B)
 
-### B-1. `autoApply` 생성 부재 대비 잔여 분기
+### B-1. `CheckoutApplyHandoffClient.tsx` 정리 완료
 - 파일/경로
-  - `app/checkout/success/page.tsx`의 `autoApply` 분기
-  - `app/checkout/success/_components/CheckoutApplyHandoffClient.tsx` (간접)
+  - `app/checkout/success/_components/CheckoutApplyHandoffClient.tsx` (삭제 완료)
+- 근거
+  - success 페이지에서 `autoApply` 기반 핸드오프를 더 이상 사용하지 않도록 정리되었고,
+  - 컴포넌트 파일도 코드베이스에서 제거됨.
+- 결론: 제거 후보가 아니라 **정리 완료 항목**.
+
+### B-2. `autoApply` 관련 분기 정리 완료
+- 파일/경로
+  - `app/checkout/success/page.tsx`
   - `app/checkout/CheckoutButton.tsx`
 - 근거
-  - success 페이지는 `autoApply=1`을 읽어 핸드오프로 분기하지만,
-  - 현재 checkout 버튼은 성공 이동 시 `orderId`만 붙여 이동하며 `autoApply`를 생성하지 않음.
-  - 코드베이스 내 검색 기준, `autoApply=1`을 세팅하는 활성 경로가 확인되지 않음.
-- 제거 시 영향도
-  - **중간**: 외부 링크/구형 북마크/다른 미검토 경로에서 `autoApply`를 붙여 호출할 가능성이 완전히 배제되지 않음.
-- 결론: 즉시 삭제보다 "실사용 로그 확인 후 제거"가 적절.
+  - success는 `orderId`만 사용하며 `autoApply` 파라미터를 읽지 않음.
+  - checkout 성공 이동도 `orderId` 중심으로 동작해, `autoApply` 생성/소비 경로가 제거됨.
+- 결론: `autoApply` 잔여 분기는 **정리 완료**.
 
-### B-2. success 페이지 내 주석 처리된 자동리다이렉트 잔재
+### B-3. `AutoRedirectToApply.tsx` 파일 정리
 - 파일/경로
-  - `app/checkout/success/page.tsx` (`AutoRedirectToApply` 주석)
+  - `app/checkout/success/_components/AutoRedirectToApply.tsx` (삭제 완료)
 - 근거
-  - 이미 `CheckoutApplyHandoffClient`를 사용 중이고 주석 라인은 비활성 상태.
-- 제거 시 영향도
-  - **낮음**: 주석 정리 성격.
+  - 코드베이스 검색 기준 컴포넌트 참조가 0건이며 파일 단독 정의만 존재.
+- 결론: dead file로 판단되어 **삭제 완료**.
 
 ---
 
@@ -105,24 +108,24 @@
   - 화면 설명은 현재 fallback 역할(주문 연결/추가 신청/단독 신청)을 반영하지만, 일부 주석은 과거 전환 맥락(옵션 A)이 강하게 남아 있음.
   - 기능과 맞지 않는 단정 문구(예: 주문 기반 only와 단독신청 CTA 병존)는 코드 정리 시점에 함께 정합성 검토 필요.
 
-### C-3. `CheckoutApplyHandoffClient` 자체 제거 여부
+### C-3. success 화면 UX 리라이팅 여부
 - 파일/경로
-  - `app/checkout/success/_components/CheckoutApplyHandoffClient.tsx`
+  - `app/checkout/success/page.tsx`
 - 보류 이유
-  - 현재 autoApply 생성이 없더라도, success는 파라미터를 읽고 핸드오프를 정상 처리함.
-  - 즉시 삭제 시 외부 deep-link/운영 중 수동 링크 시나리오가 깨질 수 있어 로그 근거 후 결정 권장.
+  - 현재 확인 기준, handoff/autoApply 관련 잔여 주석·분기는 정리된 상태.
+  - 이번 단계는 dead code 정리 범위로 마감하고, 화면 카피/레이아웃 리디자인은 별도 단계에서 검토 권장.
 
 ---
 
 ## 5) 핵심 포인트별 결론
 
 ### (1) `autoApply` 흔적
-- 읽기: 있음 (`/checkout/success`)
-- 생성: 현재 checkout 제출 경로에서는 없음 (`CheckoutButton`은 `orderId`만 전달)
-- 판정: **제거 후보(B)이나, 외부 호출 가능성 때문에 보류성 확인 필요**
+- 읽기: 없음 (success 페이지 분기 제거)
+- 생성: 없음 (checkout 성공 이동은 `orderId`만 전달)
+- 판정: **정리 완료(B)**
 
 ### (2) `CheckoutApplyHandoffClient.tsx`
-- 판정: **현재 코드상 실사용(A)** (단, 트리거 파라미터 유입 빈도는 별도 검증 필요)
+- 판정: **삭제 완료(B)**
 
 ### (3) `by-order` / `drafts` route
 - 판정: **둘 다 현재 `/services/apply` fallback의 필수 축(A)**
@@ -140,10 +143,9 @@
 
 ## 6) 다음 실제 정리 작업 우선순위 제안
 
-1. **1순위: `autoApply` 실사용 로그 기반 검증 후 정리 결정**
-   - 최근 N일 쿼리 파라미터 유입(log/analytics) 확인 → 0에 수렴 시 success의 `autoApply` 분기/핸드오프 컴포넌트 정리 후보 확정.
+1. **1순위: success 화면 UX 리라이팅 필요성 검토**
+   - dead code 정리는 완료되었으므로, 이후 변경은 기능 정합성 유지 전제에서 UI/카피 개선 단위로 분리 검토.
 2. **2순위: `/services/apply` 주석/가이드 문구 정합성 리라이팅**
    - fallback 목적(기존 주문 연결·추가 신청·단독 신청) 중심으로 주석/문구를 현재 정책과 1:1 정렬.
 3. **3순위: `by-order`/`drafts` API 역할 축소 가능성 탐색**
    - 장애복구(bootstrap 실패 시 재조회) 요구를 만족하는지 검증 후, 통합 가능한 최소 API 구조 설계.
-
