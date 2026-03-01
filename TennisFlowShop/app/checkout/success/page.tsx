@@ -13,7 +13,6 @@ import { bankLabelMap } from '@/lib/constants';
 import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard';
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
-import CheckoutApplyHandoffClient from '@/app/checkout/success/_components/CheckoutApplyHandoffClient';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import LoginGate from '@/components/system/LoginGate';
@@ -37,10 +36,9 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
-export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string; autoApply?: string }> }) {
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
   const sp = await searchParams;
   const orderId = sp.orderId;
-  const autoApply = sp.autoApply === '1';
 
   if (!orderId || !ObjectId.isValid(orderId)) return notFound();
 
@@ -55,7 +53,6 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
     if (!payload?.sub) {
       const qs = new URLSearchParams();
       qs.set('orderId', orderId);
-      if (sp.autoApply) qs.set('autoApply', sp.autoApply);
       const next = `/checkout/success?${qs.toString()}`;
       return <LoginGate next={next} variant="checkout" />;
     }
@@ -86,34 +83,6 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const withStringService = order.shippingInfo?.withStringService === true;
   const hasSubmittedApplication = !!order.stringingApplicationId;
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
-  // autoApply=1 + withStringService=true 인 경우: 성공페이지 대신 "핸드오프 화면"만 보여주기
-  const isHandoff = autoApply && shouldShowApplyCta;
-
-  if (isHandoff) {
-    return (
-      <>
-        <BackButtonGuard />
-        <ClearCartOnMount />
-        <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
-
-        <div className="min-h-full bg-background text-foreground">
-          <SiteContainer variant="wide" className="py-12">
-            <div data-cy="checkout-handoff">
-              <CheckoutApplyHandoffClient href={appHref} orderId={order._id.toString()} seconds={5} />
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <Button variant="outline" asChild>
-                <Link href={orderDetailHref} target="_blank" rel="noopener noreferrer">
-                  주문 상세 보기(새 탭)
-                </Link>
-              </Button>
-            </div>
-          </SiteContainer>
-        </div>
-      </>
-    );
-  }
 
   // 안전한 가격 표시 함수
   const formatPrice = (price: NumericLike): string => {
@@ -192,7 +161,6 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       </Link>
                     </Button>
                   )}
-                  {/* <AutoRedirectToApply enabled={autoApply} href={appHref} seconds={5} /> */}
                 </div>
               </div>
             )}
