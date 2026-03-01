@@ -107,7 +107,13 @@ export function normalizeAndValidateStringPattern(p: string): StringPatternValue
 }
 
 export function stringPatternLabel(v?: string) {
-  return STRING_PATTERN_OPTIONS.find((option) => option.value === v)?.label ?? v ?? '';
+  // 화면 렌더링 단계에서도 한 번 더 정규화해서
+  // '16X19', '16 x 19' 같은 과거/혼합 표기를 최대한 동일 라벨로 보여준다.
+  const normalized = normalizeAndValidateStringPattern(String(v ?? ''));
+  if (normalized) {
+    return STRING_PATTERN_OPTIONS.find((option) => option.value === normalized)?.label ?? normalized;
+  }
+  return v ?? '';
 }
 
 // 그립 사이즈 자유입력값을 최대한 G1/G2/G3로 정규화
@@ -130,5 +136,11 @@ export function normalizeAndValidateGripSize(v: string): GripSizeValue | '' {
 }
 
 export function gripSizeLabel(v?: string) {
-  return GRIP_SIZE_OPTIONS.find((option) => option.value === v)?.label ?? v ?? '';
+  // 표시할 때도 정규화/별칭 매핑을 적용해서
+  // g2, G2, 2그립 4 1/4 같은 값을 모두 같은 라벨로 통일한다.
+  const normalized = normalizeAndValidateGripSize(String(v ?? ''));
+  if (normalized) {
+    return GRIP_SIZE_OPTIONS.find((option) => option.value === normalized)?.label ?? normalized;
+  }
+  return v ?? '';
 }

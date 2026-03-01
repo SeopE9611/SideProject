@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { racketBrandLabel } from '@/lib/constants';
+import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from '@/lib/constants';
 import { racketStockBadgeVariant } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowLeft, Calendar, Check, ChevronLeft, ChevronRight, FileText, Pencil, Scale, Settings, Shield, ShoppingCart, Star, Truck } from 'lucide-react';
@@ -273,6 +273,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         swingWeight: toNum(racket?.spec?.swingWeight),
         stiffnessRa: toNum(racket?.spec?.stiffnessRa),
         pattern: racket?.spec?.pattern,
+        // 상세 페이지에서 비교 담기를 눌렀을 때도 그립 정보가 빠지지 않도록 포함
+        gripSize: racket?.spec?.gripSize,
       },
     };
   }, [racketId, racket, images]);
@@ -601,7 +603,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary">패턴</span>
-                          <span className="text-foreground font-medium">{racket.spec.pattern}</span>
+                          {/* raw value(g2/16x19 등)를 그대로 노출하지 않고 공통 라벨로 통일 */}
+                          <span className="text-foreground font-medium">{stringPatternLabel(String(racket.spec.pattern))}</span>
                         </div>
                       </div>
                     )}
@@ -609,7 +612,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       <div className="bg-muted p-4 rounded-lg border border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-primary">그립</span>
-                          <span className="text-foreground font-medium">{racket.spec.gripSize}</span>
+                          {/* g2/G2/별칭 입력값이 와도 사용자에게는 읽기 쉬운 라벨로 표시 */}
+                          <span className="text-foreground font-medium">{gripSizeLabel(String(racket.spec.gripSize))}</span>
                         </div>
                       </div>
                     )}
