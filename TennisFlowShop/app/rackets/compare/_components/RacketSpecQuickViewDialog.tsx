@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { racketBrandLabel } from '@/lib/constants';
+import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from '@/lib/constants';
 
 import type { CompareRacketItem } from '@/app/store/racketCompareStore';
 
@@ -41,6 +41,7 @@ const SPEC_HINTS: Record<string, string> = {
   swingWeight: '스윙웨이트가 높을수록 임팩트 안정감/플로우스루가 늘지만, 휘두르기 무거울 수 있습니다.',
   stiffnessRa: 'RA가 높을수록 단단(파워)하지만 충격이 커질 수 있고, 낮을수록 편안한 편입니다.',
   pattern: '패턴이 오픈(예: 16x19)이면 스핀/파워, 덴스(예: 18x20)이면 컨트롤/내구성 경향이 있습니다.',
+  gripSize: '그립 사이즈는 손 크기/그립 두께와 관련이 있어, 편안한 스윙과 부상 예방에 중요합니다.',
   price: '가격은 등록/업데이트 시점에 따라 변동될 수 있습니다.',
 };
 
@@ -52,6 +53,7 @@ const SPEC_ICONS: Record<string, typeof Circle> = {
   swingWeight: Activity,
   stiffnessRa: Activity,
   pattern: Grid3X3,
+  gripSize: Scale,
   price: Tag,
 };
 
@@ -110,7 +112,9 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
       { key: 'lengthIn', label: 'Length', value: fmtNum(racket.spec?.lengthIn, ' in', 1) },
       { key: 'swingWeight', label: 'SwingWeight', value: fmtNum(racket.spec?.swingWeight, '', 0) },
       { key: 'stiffnessRa', label: 'Stiffness(RA)', value: fmtNum(racket.spec?.stiffnessRa, '', 0) },
-      { key: 'pattern', label: 'Pattern', value: racket.spec?.pattern ? String(racket.spec.pattern) : '-' },
+      // 패턴/그립은 공통 라벨 함수로 렌더링해서 raw value 노출을 막는다.
+      { key: 'pattern', label: 'Pattern', value: racket.spec?.pattern ? stringPatternLabel(String(racket.spec.pattern)) : '-' },
+      { key: 'gripSize', label: 'Grip', value: racket.spec?.gripSize ? gripSizeLabel(String(racket.spec.gripSize)) : '-' },
       { key: 'price', label: 'Price', value: racket.price ? `${Math.round(racket.price).toLocaleString()}원` : '-' },
     ],
     [racket],

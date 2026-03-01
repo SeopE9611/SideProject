@@ -7,7 +7,7 @@ import { X, ArrowLeft, Trash2, Info, Scale, AlertCircle, ChevronRight } from 'lu
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { racketBrandLabel } from '@/lib/constants';
+import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from '@/lib/constants';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import RacketSpecQuickViewDialog from '@/app/rackets/compare/_components/RacketSpecQuickViewDialog';
@@ -163,8 +163,17 @@ export default function RacketCompareClient() {
         key: 'pattern',
         label: 'Pattern',
         kind: 'text',
-        get: (r) => (r.spec?.pattern ? String(r.spec?.pattern) : '-'),
+        // 비교 표도 raw 값 대신 공통 라벨 함수로 표시 방식 통일
+        get: (r) => (r.spec?.pattern ? stringPatternLabel(String(r.spec?.pattern)) : '-'),
         hint: '오픈(16x19)=스핀 경향, 덴스(18x20)=컨트롤 경향.',
+      },
+      {
+        key: 'gripSize',
+        label: 'Grip',
+        kind: 'text',
+        // g2/G2/과거 자유입력값이 와도 사람이 읽기 쉬운 라벨로 노출
+        get: (r) => (r.spec?.gripSize ? gripSizeLabel(String(r.spec?.gripSize)) : '-'),
+        hint: '그립 두께(사이즈) 비교 항목입니다.',
       },
     ],
     [],

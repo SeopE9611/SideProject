@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { racketBrandLabel } from '@/lib/constants';
+import { racketBrandLabel, stringPatternLabel } from '@/lib/constants';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racketCompareStore';
@@ -21,6 +21,7 @@ type RacketSpec = {
   swingWeight?: number | null;
   stiffnessRa?: number | null;
   pattern?: string | null;
+  gripSize?: string | null;
 };
 
 type RentalInfo = {
@@ -110,6 +111,8 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
         swingWeight: spec.swingWeight ?? null,
         stiffnessRa: spec.stiffnessRa ?? null,
         pattern: spec.pattern ?? null,
+        // 비교 스냅샷 누락 방지: Finder에서 담을 때도 gripSize를 반드시 포함한다.
+        gripSize: spec.gripSize ?? null,
       },
     }),
     [racket.id, racket.brand, racket.model, racket.year, racket.price, racket.condition, img, spec]
@@ -160,7 +163,8 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               <SpecItem label="SW" value={fmt(spec.swingWeight, '')} />
               <SpecItem label="Length" value={fmt(spec.lengthIn, 'in')} />
               <SpecItem label="RA" value={fmt(spec.stiffnessRa, '')} />
-              <SpecItem label="Pattern" value={spec.pattern ? String(spec.pattern) : '-'} />
+              {/* 화면 표시는 공통 라벨 함수로 통일(과거 raw 값도 최대한 사람이 읽기 쉽게) */}
+              <SpecItem label="Pattern" value={spec.pattern ? stringPatternLabel(String(spec.pattern)) : '-'} />
               <SpecItem label="Price" value={racket.price ? `${(racket.price / 10000).toFixed(0)}만` : '-'} />
             </div>
 

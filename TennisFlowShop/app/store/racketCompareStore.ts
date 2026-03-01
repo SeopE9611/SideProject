@@ -18,6 +18,9 @@ export type CompareRacketSpec = {
   swingWeight?: number | null;
   stiffnessRa?: number | null;
   pattern?: string | null;
+  // 그립 사이즈는 비교 표/빠른 보기/상세 페이지 어디서든 재사용되므로
+  // 스냅샷에 함께 저장해둔다.
+  gripSize?: string | null;
 };
 
 export type CompareRacketItem = {
