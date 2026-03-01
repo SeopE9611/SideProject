@@ -33,6 +33,33 @@ const mapPickupToCollectionMethod = (pickup: ServicePickup) => {
   return 'self_ship' as const;
 };
 
+const sameStringArray = (a: string[] | undefined, b: string[] | undefined) => {
+  if (a === b) return true;
+  if (!a || !b) return !a && !b;
+  if (a.length !== b.length) return false;
+
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+
+  return true;
+};
+
+const sameCountMap = (a: Record<string, number> | undefined, b: Record<string, number> | undefined) => {
+  if (a === b) return true;
+  if (!a || !b) return !a && !b;
+
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) return false;
+
+  for (const key of aKeys) {
+    if (a[key] !== b[key]) return false;
+  }
+
+  return true;
+};
+
 export default function useCheckoutStringingServiceAdapter({ withStringService, orderItems, mountingFeeByProductId, serviceTargetIds, name, email, phone, postalCode, address, addressDetail, depositor, selectedBank, servicePickupMethod, isMember }: Params) {
   const [packagePreview, setPackagePreview] = useState<{
     has: boolean;
@@ -120,21 +147,40 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
 
     const collectionMethod = mapPickupToCollectionMethod(servicePickupMethod);
 
-    setFormData((prev) => ({
-      ...prev,
-      name,
-      email,
-      phone,
-      shippingName: name,
-      shippingEmail: email,
-      shippingPhone: phone,
-      shippingPostcode: postalCode,
-      shippingAddress: address,
-      shippingAddressDetail: addressDetail,
-      shippingDepositor: depositor,
-      shippingBank: selectedBank,
-      collectionMethod,
-    }));
+    setFormData((prev) => {
+      if (
+        prev.name === name
+        && prev.email === email
+        && prev.phone === phone
+        && prev.shippingName === name
+        && prev.shippingEmail === email
+        && prev.shippingPhone === phone
+        && prev.shippingPostcode === postalCode
+        && prev.shippingAddress === address
+        && prev.shippingAddressDetail === addressDetail
+        && prev.shippingDepositor === depositor
+        && prev.shippingBank === selectedBank
+        && prev.collectionMethod === collectionMethod
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        name,
+        email,
+        phone,
+        shippingName: name,
+        shippingEmail: email,
+        shippingPhone: phone,
+        shippingPostcode: postalCode,
+        shippingAddress: address,
+        shippingAddressDetail: addressDetail,
+        shippingDepositor: depositor,
+        shippingBank: selectedBank,
+        collectionMethod,
+      };
+    });
   }, [withStringService, servicePickupMethod, name, email, phone, postalCode, address, addressDetail, depositor, selectedBank, setFormData]);
 
   useEffect(() => {
@@ -149,11 +195,17 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
       nextCounts[id] = Number.isFinite(qty) && qty > 0 ? qty : 1;
     });
 
-    setFormData((prev) => ({
-      ...prev,
-      stringTypes: selectedIds,
-      stringUseCounts: nextCounts,
-    }));
+    setFormData((prev) => {
+      if (sameStringArray(prev.stringTypes, selectedIds) && sameCountMap(prev.stringUseCounts, nextCounts)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        stringTypes: selectedIds,
+        stringUseCounts: nextCounts,
+      };
+    });
   }, [withStringService, serviceTargetIds, previewOrder.items, setFormData]);
 
   const orderRemainingSlots = (previewOrder.stringService.totalSlots ?? 0) - (previewOrder.stringService.usedSlots ?? 0);
