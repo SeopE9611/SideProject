@@ -94,14 +94,14 @@ const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, '.');
 // 대여 상태는 프로젝트마다 다를 수 있어서 “넓게” 커버(한글/영문 혼합 대응)
 const rentalStatusColors: Record<string, string> = {
   pending: 'bg-muted text-muted-foreground border border-border',
-  paid: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
+  paid: 'bg-info/15 text-info border border-info/45 dark:bg-info/24 dark:border-info/55',
   out: 'bg-secondary text-foreground border border-border',
-  returned: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
+  returned: 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55',
   canceled: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
 
   대기중: 'bg-muted text-muted-foreground border border-border',
   대여중: 'bg-secondary text-foreground border border-border',
-  반납완료: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
+  반납완료: 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55',
   취소: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
 };
 
@@ -225,7 +225,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className: 'border border-primary/20 bg-primary/10 text-primary text-xs font-semibold dark:bg-primary/20',
+        className: 'border border-info/45 bg-info/15 text-info text-xs font-semibold dark:bg-info/24 dark:border-info/55',
       });
     }
   }
@@ -236,7 +236,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (typeof days === 'number') {
       pills.push({
         text: `${days}일 대여`,
-        className: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+        className: 'bg-info/15 text-info border border-info/45 dark:bg-info/24 dark:border-info/55',
       });
     }
   }
@@ -250,7 +250,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (needs) {
       pills.push({
         text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: linked.hasTracking ? 'bg-success/10 text-success dark:bg-success/15 ' : 'bg-warning/10 text-warning dark:bg-warning/15 ',
+        className: linked.hasTracking ? 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55' : 'bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55',
       });
     }
   }
@@ -265,7 +265,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       if (needs) {
         pills.push({
           text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-          className: app.hasTracking ? 'bg-success/10 text-success dark:bg-success/15 ' : 'bg-warning/10 text-warning dark:bg-warning/15 ',
+          className: app.hasTracking ? 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55' : 'bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55',
         });
       }
     }
@@ -679,11 +679,11 @@ export default function ActivityFeed() {
                           <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
+                              <Badge className={cn('text-xs rounded-md', statusBadgeClass(g))}>
                                 {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                               </Badge>
                               {g.kind !== 'application' && app && (
-                                <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                <Badge className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
                                   교체 {app.status}
                                 </Badge>
                               )}
@@ -799,11 +799,11 @@ export default function ActivityFeed() {
                         <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
+                            <Badge className={cn('text-xs rounded-md', statusBadgeClass(g))}>
                               {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                             </Badge>
                             {g.kind !== 'application' && app && (
-                              <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                              <Badge className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
                                 교체 {app.status}
                               </Badge>
                             )}
@@ -902,7 +902,7 @@ export default function ActivityFeed() {
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                                     </Badge>
                                     {g.kind !== 'application' && app && (
-                                      <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                      <Badge className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
                                         교체 {app.status}
                                       </Badge>
                                     )}

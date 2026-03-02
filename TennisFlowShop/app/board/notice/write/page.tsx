@@ -531,7 +531,7 @@ export default function NoticeWritePage() {
                   <SelectContent>
                     <SelectItem value="general">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-border dark:bg-primary/20">
+                        <Badge variant="info">
                           일반
                         </Badge>
                         <span>일반적인 공지사항</span>
@@ -539,7 +539,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="event">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-success/10 text-success border-border dark:bg-success/15">
+                        <Badge variant="success">
                           이벤트
                         </Badge>
                         <span>할인, 프로모션 등 이벤트</span>
@@ -547,7 +547,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="academy">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-muted text-foreground border-border">
+                        <Badge variant="neutral">
                           아카데미
                         </Badge>
                         <span>레슨, 프로그램 관련</span>
@@ -555,7 +555,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="maintenance">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="bg-warning/10 text-warning border-border dark:bg-warning/15">
+                        <Badge variant="warning">
                           점검
                         </Badge>
                         <span>시스템 점검, 휴무 안내</span>
@@ -563,7 +563,7 @@ export default function NoticeWritePage() {
                     </SelectItem>
                     <SelectItem value="urgent">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15">
+                        <Badge variant="danger">
                           긴급
                         </Badge>
                         <span>긴급 공지사항</span>

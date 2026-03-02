@@ -374,7 +374,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <p className="text-sm text-muted-foreground mb-1">대여 라켓</p>
                         <p className="font-semibold text-foreground">{rental.brand ? `${racketBrandLabel(rental.brand)} ${rental.model ?? ''}` : '라켓 정보 없음'}</p>
                         <div className="mt-2 flex items-center gap-2">
-                          <Badge className="border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">대여 {Number(rental.days ?? 0)}일</Badge>
+                          <Badge variant="info">대여 {Number(rental.days ?? 0)}일</Badge>
                         </div>
                       </div>
 
@@ -467,7 +467,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-primary">교체 패키지가 자동 적용되었습니다.</span>
-                            <Badge className="bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20">입금 불필요</Badge>
+                            <Badge variant="info">입금 불필요</Badge>
                           </div>
 
                           <p className="mt-1 text-sm text-foreground">
@@ -476,10 +476,10 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                           {/* 잔여/만료 pill */}
                           <div className="mt-3 flex flex-wrap gap-2">
-                            <Badge variant="outline" className="border-border text-primary">
+                            <Badge variant="neutral">
                               잔여 {appliedPass?.remainingCount ?? '-'}회
                             </Badge>
-                            <Badge variant="outline" className="border-border text-primary">
+                            <Badge variant="neutral">
                               만료일 {appliedPass?.expiresAt ? new Date(appliedPass.expiresAt).toLocaleDateString('ko-KR') : '-'}
                             </Badge>
                           </div>
