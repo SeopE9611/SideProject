@@ -509,9 +509,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       const stringingApplicationId = typeof json?.stringingApplicationId === 'string' && json.stringingApplicationId.trim() ? String(json.stringingApplicationId) : '';
 
       /**
-       * 구매 UX와 동일한 흐름
-       * 1) 결제(대여 신청) 완료 → 항상 대여 성공 페이지로 이동
-       * 2) 스트링이 선택되어 있었다면(success 페이지에서) 신청서 작성(/services/apply?rentalId=...)로 자연스럽게 이어주 ...
+       * 결제 완료 후에는 항상 대여 성공 페이지로 이동한다.
+       * - 신규 통합 제출(stringingSubmitted=1): 성공 페이지에서 통합 접수 완료 안내만 노출
+       * - 레거시/예외 경로: 기존 handoff 분기 유지
        */
       const qs = new URLSearchParams();
       qs.set('id', rentalId);
@@ -616,7 +616,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <RadioGroupItem value="방문수령" id="rentals-delivery-visit" />
                     <Label htmlFor="rentals-delivery-visit" className="flex-1 cursor-pointer font-medium">
                       오프라인 매장 방문 (테니스 플로우 샵에서 직접 수령)
-                      <div className="text-xs text-muted-foreground mt-1">스트링 교체 신청 시 신청서에서 "방문 시간" 선택 흐름으로 이어집니다.</div>
+                      <div className="text-xs text-muted-foreground mt-1">스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.</div>
                     </Label>
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
@@ -628,7 +628,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <div className="space-y-1">
                       <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
                       <p className="text-sm text-foreground">
-                        {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 교체가 진행됩니다. (신청서에서 방문 시간 선택)' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다.'}
+                        {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 교체가 진행됩니다.' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다.'}
                       </p>
                     </div>
 
@@ -646,7 +646,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                           {selectedString.price.toLocaleString()}원 + 교체 {selectedString.mountingFee.toLocaleString()}원
                         </div>
 
-                        <div className="mt-2 text-xs text-muted-foreground">* 대여 결제 완료 후, 스트링 교체 신청서(/services/apply) 초안이 자동 생성되어 이어집니다.</div>
+                        <div className="mt-2 text-xs text-muted-foreground">* 대여 결제 시 입력한 교체 서비스 정보가 함께 접수됩니다. (구형/예외 건만 별도 신청서 이동)</div>
                       </div>
                     ) : (
                       <div className="text-sm text-muted-foreground">
