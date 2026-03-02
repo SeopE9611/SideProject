@@ -39,9 +39,13 @@ export default function RentalsSuccessClient({ data }: Props) {
   const rentalId = String((data as any)?.id ?? (data as any)?._id ?? '');
   const searchParams = useSearchParams();
   const withService = searchParams.get('withService') === '1';
+  const stringingSubmitted = searchParams.get('stringingSubmitted') === '1';
+  const stringingApplicationId = searchParams.get('stringingApplicationId') ?? '';
+  const shouldShowHandoff = withService && !stringingSubmitted;
 
   useEffect(() => {
-    if (withService) return;
+    // legacy handoff 화면은 자체적으로 안내/자동 이동을 처리하므로 뒤로가기 가드는 일반 success에서만 유지
+    if (shouldShowHandoff) return;
 
     try {
       sessionStorage.setItem('rentals-success', '1');
@@ -56,12 +60,12 @@ export default function RentalsSuccessClient({ data }: Props) {
         sessionStorage.removeItem('rentals-success');
       };
     } catch {}
-  }, [withService]);
+  }, [shouldShowHandoff]);
 
   // withService=1 인 경우: 성공 페이지에서 상세(대여 정보/계좌/요약)를 보여주지 않고,
   // 교체 서비스 신청서 작성으로만 안내/이동
   // (최종 결제/계산서/계좌 안내는 신청서 제출 후 success 페이지에서 노출)
-  if (withService) {
+  if (shouldShowHandoff) {
     return (
       <div className="min-h-[70vh] bg-muted dark:bg-card">
         <SiteContainer variant="wide" className="py-12">
@@ -104,6 +108,28 @@ export default function RentalsSuccessClient({ data }: Props) {
 
       <SiteContainer variant="wide" className="py-8">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/*
+            Step 3: 대여+교체서비스가 checkout에서 이미 통합 제출된 경우에는
+            /services/apply handoff를 건너뛰고 현재 success에서 "접수 완료"를 확정 안내한다.
+          */}
+          {withService && stringingSubmitted && (
+            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border border-border shadow-xl">
+              <CardHeader className="bg-muted/30">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  교체 서비스 통합 접수 완료
+                </CardTitle>
+                <CardDescription>별도 신청서 작성 없이 현재 대여 건에 함께 접수되었습니다.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 text-sm text-muted-foreground space-y-2">
+                <p>• 교체 서비스 신청이 함께 접수되었습니다.</p>
+                <p>• 별도 신청서 작성 없이 현재 대여에 포함되어 처리됩니다.</p>
+                <p>• 추가 요청/장착 정보가 함께 저장되었습니다.</p>
+                {stringingApplicationId ? <p className="font-mono text-xs">신청서 ID: {stringingApplicationId}</p> : null}
+              </CardContent>
+            </Card>
+          )}
+
           {/* 스트링 교체 서비스 신청서로 이어가기 */}
 
           {/* 대여 정보 카드 */}
