@@ -80,15 +80,24 @@ const RentalsCreateBodySchema = z
       .optional(),
 
     /**
-     * [Step 1 - 서버 통합 준비]
-     * 일반 주문(/api/orders)과 동일하게 "체크아웃 1회 제출" 입력을 받을 수 있도록 필드만 먼저 열어둔다.
-     * - 현재 대여 체크아웃 UI는 아직 이 값을 보내지 않으므로(기존 동작 유지)
-     *   값이 없으면 기존 createStringingApplicationFromRental fallback으로 동작한다.
-     * - 이후 Step 2에서 프론트가 이 필드를 전송하면, 본 라우트가 submit-core로 직접 제출한다.
+     * 통합 교체서비스 입력(선택)
+     * - 대여 체크아웃에서 입력이 충분하면 submit-core 경로로 즉시 제출한다.
+     * - 입력이 비어 있거나 최소 필수 항목이 부족하면 기존 create-from-rental fallback을 유지한다.
      */
     stringingApplicationInput: z.any().optional(),
   })
   .passthrough();
+
+/**
+ * submit-core 호출 전에 최소 필수값만 선검증한다.
+ * - 목적: "입력이 일부만 온 경우"에는 대여 생성 자체를 실패시키지 않고 레거시 fallback을 유지
+ * - 주의: 상세 검증은 submit-core가 수행하므로 여기서는 분기 판단용 최소 조건만 본다.
+ */
+function hasEnoughStringingInputForSubmitCore(input: unknown): input is StringingApplicationInput {
+  if (!input || typeof input !== 'object') return false;
+  const candidate = input as StringingApplicationInput;
+  return Boolean(candidate.name?.trim()) && Boolean(candidate.phone?.trim()) && Array.isArray(candidate.stringTypes) && candidate.stringTypes.length > 0;
+}
 
 export async function POST(req: Request) {
   const raw = await req.text();
@@ -354,13 +363,9 @@ export async function POST(req: Request) {
         if (stringingSnap?.requested) {
           const normalizedInput = stringingApplicationInput as StringingApplicationInput | undefined;
 
-          /**
-           * [Step 1 핵심]
-           * - 신규 통합 입력이 들어오면 submit-core를 재사용해 "즉시 제출" 경로를 탄다.
-           * - 입력이 없으면 기존 대여 draft 자동생성(fallback)을 유지한다.
-           * => 기존 흐름을 깨지 않으면서, 다음 단계(프론트 통합) 준비를 끝낸다.
-           */
-          if (normalizedInput) {
+          // 입력이 "충분한 경우"에만 submit-core를 호출하고,
+          // 그렇지 않으면 레거시 fallback(create-from-rental)로 안전하게 내려간다.
+          if (hasEnoughStringingInputForSubmitCore(normalizedInput)) {
             const submitResult = await submitStringingApplicationCore({
               db,
               userId: userObjectId,
