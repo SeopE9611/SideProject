@@ -165,9 +165,9 @@ export default function RentalsList() {
 
                     {/* 교체 신청서가 연결된 대여임을 한눈에 표시 */}
                     {r.stringingApplicationId ? (
-                      <span className="shrink-0 rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary/20 dark:text-primary">신청서 연결됨</span>
+                      <Badge variant="info" className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">신청서 연결됨</Badge>
                     ) : r.withStringService ? (
-                      <span className="shrink-0 rounded-full border border-border bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary dark:border-border dark:bg-primary/20 dark:text-primary">교체 서비스 포함</span>
+                      <Badge variant="brand" className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">교체 서비스 포함</Badge>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">

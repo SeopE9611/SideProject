@@ -381,7 +381,7 @@ export default function ApplicationsClient() {
                         </div>
                       )}
 
-                      {collectionLabel && <div className="mt-1 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground dark:bg-card dark:text-muted-foreground">{collectionLabel}</div>}
+                      {collectionLabel && <Badge variant="neutral" className="mt-1 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{collectionLabel}</Badge>}
                     </div>
                   </div>
 

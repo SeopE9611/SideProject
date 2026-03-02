@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -36,7 +37,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             )}
 
             <div className="mt-4">
-              <span className="inline-block rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-xs font-medium text-destructive dark:bg-destructive/15">일시적인 오류일 수 있습니다</span>
+              <Badge variant="warning" className="px-2.5 py-1 text-xs font-medium">일시적인 오류일 수 있습니다</Badge>
             </div>
           </CardContent>
 

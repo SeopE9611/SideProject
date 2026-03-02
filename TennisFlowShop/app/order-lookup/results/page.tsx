@@ -8,7 +8,9 @@ import { Separator } from '@/components/ui/separator';
 import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft, Package, Search, CheckCircle2, Clock, Truck, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import LoginGate from '@/components/system/LoginGate';
+import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -50,21 +52,6 @@ const getStatusIcon = (status: string) => {
       return <Clock className="w-4 h-4" />;
     default:
       return <Package className="w-4 h-4" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case '배송완료':
-      return 'bg-muted text-foreground border-border';
-    case '배송중':
-      return 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20';
-    case '배송준비중':
-      return 'bg-muted text-foreground border-border';
-    case '주문취소':
-      return 'bg-muted text-foreground border-border';
-    default:
-      return 'bg-muted text-foreground border-border';
   }
 };
 
@@ -361,10 +348,10 @@ export default function OrderLookupResultsPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className={`inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-full border font-medium ${getStatusColor(order.status)}`}>
+                            <Badge variant={badgeToneVariant(getOrderStatusTone(order.status))} className="gap-1 px-3 py-1.5 text-sm font-medium">
                               {getStatusIcon(order.status)}
                               {order.status}
-                            </span>
+                            </Badge>
                           </div>
                         </div>
 

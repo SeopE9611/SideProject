@@ -765,10 +765,10 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       </div>
                       <span className="text-sm font-medium text-foreground">{line.racketType?.trim() || `라켓 ${index + 1}`}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 dark:bg-primary/20">
-                      <div className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                      <span className="text-xs font-medium text-primary truncate max-w-[200px]">{line.stringName}</span>
-                    </div>
+                    <Badge variant="brand" className="flex max-w-[200px] items-center gap-1.5 px-2.5 py-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      <span className="truncate text-xs font-medium">{line.stringName}</span>
+                    </Badge>
                   </div>
 
                   {/* 라켓 이름 + 텐션 */}

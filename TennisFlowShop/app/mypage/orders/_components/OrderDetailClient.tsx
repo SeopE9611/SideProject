@@ -12,7 +12,7 @@ import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, paymentStatusColors } from '@/lib/badge-style';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import Link from 'next/link';
@@ -387,7 +387,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           {linkedStringingApps.map((app) => (
                             <div key={app.id} className="flex flex-wrap items-center justify-between gap-2">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="px-1.5 py-0.5 rounded-full bg-success/10 dark:bg-success/15 text-[11px] font-medium">{app.status ?? '상태 미정'}</span>
+                                <Badge variant={badgeToneVariant(getApplicationStatusTone(app.status))} className="px-1.5 py-0.5 text-[11px] font-medium">{app.status ?? '상태 미정'}</Badge>
                                 {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
                                 <span>라켓 {app.racketCount ?? 0}개</span>
                               </div>

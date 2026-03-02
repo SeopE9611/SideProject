@@ -5,11 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
 import Image from 'next/image';
 import LoginGate from '@/components/system/LoginGate';
+import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -62,21 +64,6 @@ const getStatusIcon = (status: string) => {
       return <Clock className="w-5 h-5" />;
     default:
       return <Package className="w-5 h-5" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case '배송완료':
-      return 'bg-muted text-foreground border-border';
-    case '배송중':
-      return 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20';
-    case '배송준비중':
-      return 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15';
-    case '주문취소':
-      return 'bg-muted text-foreground border-border';
-    default:
-      return 'bg-muted text-foreground border-border';
   }
 };
 
@@ -234,10 +221,10 @@ export default function OrderDetailPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4"><span className="text-primary">주문</span> 상세 정보</h1>
             <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>
             <div className="mt-4">
-              <span className={`inline-flex items-center gap-2 text-lg px-4 py-2 rounded-full border-2 font-semibold ${getStatusColor(order.status)} bg-card/20 backdrop-blur-sm border-border/30 text-foreground`}>
+              <Badge variant={badgeToneVariant(getOrderStatusTone(order.status))} className="gap-2 px-4 py-2 text-lg font-semibold">
                 {getStatusIcon(order.status)}
                 {order.status}
-              </span>
+              </Badge>
             </div>
           </div>
         </div>

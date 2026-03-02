@@ -287,10 +287,10 @@ export default async function StringServiceSuccessPage(props: Props) {
                     </CardDescription>
                   </div>
                   <div className="text-right">
-                    <div className="inline-flex items-center rounded-full border border-success/30 bg-success/10 px-4 py-2 text-sm font-medium text-success dark:bg-success/15">
+                    <Badge variant="success" className="px-4 py-2 text-sm font-medium">
                       <CheckCircle className="h-4 w-4 mr-2" />
                       접수 완료
-                    </div>
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
