@@ -6,6 +6,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { deductPoints, getPointsSummary } from '@/lib/points.service';
 import { createStringingApplicationFromRental } from '@/app/features/stringing-applications/api/create-from-rental';
 import { ensureStringingTTLIndexes } from '@/app/features/stringing-applications/api/indexes';
+import { submitStringingApplicationCore, type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
@@ -77,6 +78,15 @@ const RentalsCreateBodySchema = z
       })
       .passthrough()
       .optional(),
+
+    /**
+     * [Step 1 - 서버 통합 준비]
+     * 일반 주문(/api/orders)과 동일하게 "체크아웃 1회 제출" 입력을 받을 수 있도록 필드만 먼저 열어둔다.
+     * - 현재 대여 체크아웃 UI는 아직 이 값을 보내지 않으므로(기존 동작 유지)
+     *   값이 없으면 기존 createStringingApplicationFromRental fallback으로 동작한다.
+     * - 이후 Step 2에서 프론트가 이 필드를 전송하면, 본 라우트가 submit-core로 직접 제출한다.
+     */
+    stringingApplicationInput: z.any().optional(),
   })
   .passthrough();
 
@@ -111,7 +121,7 @@ export async function POST(req: Request) {
 
   body = parsed.data;
 
-  const { racketId, days, payment, shipping, refundAccount, stringing, pointsToUse, servicePickupMethod } = body as z.infer<typeof RentalsCreateBodySchema>;
+  const { racketId, days, payment, shipping, refundAccount, stringing, pointsToUse, servicePickupMethod, stringingApplicationInput } = body as z.infer<typeof RentalsCreateBodySchema>;
 
   const client = await clientPromise;
   const db = client.db();
@@ -324,6 +334,7 @@ export async function POST(req: Request) {
     // 스트링 교체 신청서(stringing_application) 연결용
     // - requested=true인 경우에만 채워짐
     let stringingApplicationId: string | null = null;
+    let stringingSubmitted = false;
 
     // TransientTransactionError / NoSuchTransaction(251) 발생 시, 전체 트랜잭션을 짧게 재시도
     const isTransientTxnError = (e: any) => {
@@ -339,23 +350,50 @@ export async function POST(req: Request) {
         insertedId = res.insertedId;
         const rentalIdStr = String(res.insertedId);
 
-        // --- (2단계) 대여 기반 신청서 초안 자동 생성 + rental_orders에 연결 저장 ---
+        // --- (2단계) 대여 기반 신청서 처리 ---
         if (stringingSnap?.requested) {
-          const app = await createStringingApplicationFromRental(
-            {
-              _id: res.insertedId,
-              userId: userObjectId ?? undefined,
-              createdAt: now,
-              servicePickupMethod: pickupMethod,
-              shipping: shipping ?? undefined,
-              stringing: stringingSnap ?? undefined,
-              serviceFeeHint: (doc as any)?.amount?.stringingFee ?? 0,
-            },
-            { db, session },
-          );
-          stringingApplicationId = String(app._id);
+          const normalizedInput = stringingApplicationInput as StringingApplicationInput | undefined;
+
+          /**
+           * [Step 1 핵심]
+           * - 신규 통합 입력이 들어오면 submit-core를 재사용해 "즉시 제출" 경로를 탄다.
+           * - 입력이 없으면 기존 대여 draft 자동생성(fallback)을 유지한다.
+           * => 기존 흐름을 깨지 않으면서, 다음 단계(프론트 통합) 준비를 끝낸다.
+           */
+          if (normalizedInput) {
+            const submitResult = await submitStringingApplicationCore({
+              db,
+              userId: userObjectId,
+              session,
+              input: {
+                ...normalizedInput,
+                rentalId: rentalIdStr,
+              },
+            });
+            stringingApplicationId = String(submitResult.applicationId);
+            stringingSubmitted = submitResult.stringingSubmitted;
+          } else {
+            const app = await createStringingApplicationFromRental(
+              {
+                _id: res.insertedId,
+                userId: userObjectId ?? undefined,
+                createdAt: now,
+                servicePickupMethod: pickupMethod,
+                shipping: shipping ?? undefined,
+                stringing: stringingSnap ?? undefined,
+                serviceFeeHint: (doc as any)?.amount?.stringingFee ?? 0,
+              },
+              { db, session },
+            );
+            stringingApplicationId = String(app._id);
+          }
+
           if (stringingApplicationId) {
-            await db.collection('rental_orders').updateOne({ _id: res.insertedId }, { $set: { stringingApplicationId, updatedAt: new Date() } }, { session });
+            await db.collection('rental_orders').updateOne(
+              { _id: res.insertedId },
+              { $set: { stringingApplicationId, isStringServiceApplied: true, updatedAt: new Date() } },
+              { session },
+            );
           }
         }
 
@@ -389,7 +427,7 @@ export async function POST(req: Request) {
     }
 
     if (!insertedId) throw new Error('RENTAL_INSERT_FAILED');
-    return NextResponse.json({ ok: true, id: String(insertedId) });
+    return NextResponse.json({ ok: true, id: String(insertedId), stringingApplicationId, stringingSubmitted });
   } catch (e: any) {
     const msg = e instanceof Error ? e.message : 'UNKNOWN_ERROR';
     // deductPoints가 던지는 대표 에러 메시지를 그대로 프론트로 전달
