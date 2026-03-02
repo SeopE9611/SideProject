@@ -1,6 +1,10 @@
 'use client';
 
 import SiteContainer from '@/components/layout/SiteContainer';
+import FinalRequestSection from '@/app/features/stringing-applications/components/apply-shared/FinalRequestSection';
+import MountingInfoSection from '@/app/features/stringing-applications/components/apply-shared/MountingInfoSection';
+import { type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
+import useRentalCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -147,6 +151,31 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   const [prefillReady, setPrefillReady] = useState(false);
 
+  const rentalStringingAdapter = useRentalCheckoutStringingServiceAdapter({
+    withStringService: requestStringing,
+    rentalId: initial.racketId,
+    rentalRacketId: initial.racketId,
+    rentalDays: initial.period,
+    stringProduct: selectedString
+      ? {
+          id: selectedString.id,
+          name: selectedString.name,
+          image: selectedString.image,
+          mountingFee: selectedString.mountingFee,
+        }
+      : null,
+    name,
+    email,
+    phone,
+    postalCode,
+    address,
+    addressDetail,
+    deliveryRequest,
+    depositor,
+    selectedBank,
+    servicePickupMethod,
+  });
+
   const fingerprint = useMemo(
     () =>
       JSON.stringify({
@@ -170,8 +199,10 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         agreeTerms,
         agreePrivacy,
         agreeRefund,
+        // 교체 서비스 신청 입력도 이탈 방지 기준에 포함한다.
+        stringingFormData: requestStringing ? rentalStringingAdapter.formData : null,
       }),
-    [deliveryMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, selectedBank, pointsInput, pointsToUse, useAllPoints, refundBank, refundAccount, refundHolder, agreeAll, agreeTerms, agreePrivacy, agreeRefund],
+    [deliveryMethod, name, phone, email, postalCode, address, addressDetail, deliveryRequest, depositor, selectedBank, pointsInput, pointsToUse, useAllPoints, refundBank, refundAccount, refundHolder, agreeAll, agreeTerms, agreePrivacy, agreeRefund, requestStringing, rentalStringingAdapter.formData],
   );
   const baselineRef = useRef<string | null>(null);
   const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
@@ -264,6 +295,51 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       setPointsInput(String(v));
     }
   }, [maxPointsToUse]);
+
+  const stringingApplicationInput = useMemo<StringingApplicationInput | undefined>(() => {
+    if (!requestStringing) return undefined;
+
+    const form = rentalStringingAdapter.formData;
+    const stringTypes = (form.stringTypes ?? []).filter(Boolean);
+    const lines = (rentalStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
+
+    if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
+      return undefined;
+    }
+
+    return {
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      shippingInfo: {
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        addressDetail: addressDetail.trim(),
+        postalCode: postalCode.trim(),
+        depositor: depositor.trim(),
+        bank: selectedBank,
+        deliveryRequest: deliveryRequest.trim(),
+        collectionMethod: form.collectionMethod,
+      },
+      stringTypes,
+      customStringName: form.customStringType?.trim() || undefined,
+      preferredDate: form.preferredDate,
+      preferredTime: form.preferredTime,
+      requirements: form.requirements,
+      packageOptOut: true,
+      lines: lines.map((line) => ({
+        racketType: line.racketType,
+        stringProductId: line.stringProductId,
+        stringName: line.stringName,
+        tensionMain: line.tensionMain,
+        tensionCross: line.tensionCross,
+        note: line.note,
+        mountingFee: line.mountingFee,
+      })),
+    };
+  }, [requestStringing, rentalStringingAdapter.formData, rentalStringingAdapter.linesForSubmit, name, phone, email, address, addressDetail, postalCode, depositor, selectedBank, deliveryRequest]);
 
   // 우편번호 검색기
   const openPostcode = () => {
@@ -406,6 +482,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             // requestStringing이 false면 stringId는 보내지 않아 서버가 무시하도록 함
             stringId: requestStringing ? selectedString?.id : undefined,
           },
+          // Step 2: checkout 내 입력이 충분하면 core 제출 경로로 바로 전달
+          stringingApplicationInput,
         }),
       });
 
@@ -543,7 +621,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     </Button>
                   </div>
 
-                  <div className="mt-3 rounded-lg border border-border p-4 bg-card/70 dark:bg-card/40">
+                <div className="mt-3 rounded-lg border border-border p-4 bg-card/70 dark:bg-card/40">
                     {selectedString ? (
                       <div className="space-y-1">
                         <div className="text-xs text-muted-foreground">선택된 스트링</div>
@@ -561,6 +639,89 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     )}
                   </div>
                 </div>
+
+                {requestStringing && (
+                  <div className="space-y-4">
+                    <Card className="bg-card/60 border border-border shadow-none">
+                      <div className="bg-card p-4 border-b border-border">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Package className="h-4 w-4 text-primary" />
+                          교체 서비스 장착 정보
+                        </CardTitle>
+                        <CardDescription className="mt-1">대여 checkout에서 바로 신청서 핵심 항목을 입력합니다.</CardDescription>
+                      </div>
+                      <CardContent className="p-4">
+                        <MountingInfoSection
+                          formData={rentalStringingAdapter.formData}
+                          setFormData={rentalStringingAdapter.setFormData}
+                          handleInputChange={rentalStringingAdapter.handleInputChange}
+                          fromPDP={false}
+                          orderId={null}
+                          rentalId={initial.racketId}
+                          rentalRacketId={initial.racketId}
+                          rentalDays={initial.period}
+                          pdpProductId={selectedString?.id ?? null}
+                          isLoadingPdpProduct={false}
+                          pdpProduct={selectedString}
+                          orderRemainingSlots={null}
+                          orderStringService={null}
+                          isOrderSlotBlocked={false}
+                          order={null}
+                          lineCount={rentalStringingAdapter.lineCount}
+                          price={rentalStringingAdapter.price}
+                          priceView={rentalStringingAdapter.priceView}
+                          handleStringTypesChange={rentalStringingAdapter.handleStringTypesChange}
+                          handleCustomInputChange={rentalStringingAdapter.handleCustomInputChange}
+                          handleUseQtyChange={rentalStringingAdapter.handleUseQtyChange}
+                          lockedStringStock={null}
+                          lockedRacketQuantity={1}
+                          maxNonOrderQty={1}
+                          selectedOrderItem={null}
+                          isCombinedPdpMode={false}
+                          pdpStringPrice={selectedString?.price ?? 0}
+                          racketPrice={null}
+                          won={(n) => `${n.toLocaleString('ko-KR')}원`}
+                          packagePreview={null}
+                          canApplyPackage={false}
+                          packageInsufficient={false}
+                          packageRemaining={0}
+                          requiredPassCount={0}
+                          linesForSubmit={rentalStringingAdapter.linesForSubmit}
+                          handleLineFieldChange={rentalStringingAdapter.handleLineFieldChange}
+                          timeSlots={[]}
+                          disabledTimes={[]}
+                          slotsLoading={false}
+                          hasCacheForDate={false}
+                          slotsError={null}
+                          visitSlotCountUi={rentalStringingAdapter.lineCount}
+                          visitDurationMinutesUi={null}
+                          visitTimeRange={rentalStringingAdapter.visitTimeRange}
+                        />
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-card/60 border border-border shadow-none">
+                      <div className="bg-card p-4 border-b border-border">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          교체 서비스 추가 요청
+                        </CardTitle>
+                      </div>
+                      <CardContent className="p-4">
+                        <FinalRequestSection
+                          formData={rentalStringingAdapter.formData}
+                          setFormData={rentalStringingAdapter.setFormData}
+                          handleInputChange={rentalStringingAdapter.handleInputChange}
+                          orderId={null}
+                          isMember={!!userId}
+                          usingPackage={false}
+                          packageInsufficient={false}
+                          context="checkout"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
