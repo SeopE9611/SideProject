@@ -1,5 +1,5 @@
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { getStringingMaterialSummaries } from '@/app/services/_lib/stringingPricingView';
+import { getStringingPricingView } from '@/app/services/_lib/stringingPricingView';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { ArrowRight, Award, Calendar, CheckCircle, Clock, HelpCircle, PhoneCall,
 import Link from 'next/link';
 
 export default async function ServicesPage() {
-  const materialSummaries = await getStringingMaterialSummaries();
+  const { primarySummaries, otherSummary, hybridGuide } = await getStringingPricingView();
   // 스트링 유형 데이터
   const stringTypes = [
     {
@@ -408,7 +408,7 @@ export default async function ServicesPage() {
           </div>
 
           <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {materialSummaries.map((cat) => (
+            {primarySummaries.map((cat) => (
               <Card key={cat.key} className="bg-card/95 dark:bg-card/95">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">{cat.label}</CardTitle>
@@ -418,6 +418,25 @@ export default async function ServicesPage() {
                 </CardContent>
               </Card>
             ))}
+            <Card className="bg-card/95 dark:bg-card/95 border-dashed md:col-span-2">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">하이브리드 조합 안내</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground space-y-1">
+                <p>하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질 가격대와 분리해 안내합니다.</p>
+                <p>등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개</p>
+              </CardContent>
+            </Card>
+            {otherSummary?.count ? (
+              <Card className="bg-card/95 dark:bg-card/95 border-dashed md:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{otherSummary.label} (보조 분류)</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  상품가 {otherSummary.minPrice?.toLocaleString() ?? '-'}~{otherSummary.maxPrice?.toLocaleString() ?? '-'}원 / 장착비 {otherSummary.minMountingFee?.toLocaleString() ?? '-'}~{otherSummary.maxMountingFee?.toLocaleString() ?? '-'}원
+                </CardContent>
+              </Card>
+            ) : null}
           </div>
 
           {/* 추가 서비스 */}
