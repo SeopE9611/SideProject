@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
 import type { Order } from '@/lib/types/order';
 import { File, Grid2X2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -726,7 +727,7 @@ export default function StringServiceApplyPage() {
   const [price, setPrice] = useState<number>(0);
 
   // 수거비 상수
-  const PICKUP_FEE = 3000; // 기사 방문 수거 시 후정산 안내용
+  const PICKUP_FEE = COURIER_PICKUP_FEE; // 기사 방문 수거 시 후정산 안내용
 
   // === 패키지 사용에 필요한 횟수 계산 ===
   // useMemo 대신 즉시 실행 함수(IIFE)로 계산 (훅 순서 꼬임 방지)
@@ -817,7 +818,7 @@ export default function StringServiceApplyPage() {
 
     // 1) 커스텀/보유 스트링 선택 시: 항상 15,000
     if (formData.stringTypes.includes('custom')) {
-      base = 15000;
+      base = CUSTOM_STRING_MOUNTING_FEE;
     }
     // 2) 그 외 스트링 상품이 선택된 경우
     else if (formData.stringTypes.length > 0) {
@@ -835,9 +836,9 @@ export default function StringServiceApplyPage() {
       if (!base && Number.isFinite((formData as any).pdpMountingFee)) {
         base = Number((formData as any).pdpMountingFee);
       }
-      // 2-3) 그 외(완전 단독 신청 등): 기존 35,000 fallback 유지
+      // 2-3) 표시용 fallback은 0원 처리(실제 정산은 서버에서 상품 mountingFee 기준으로 확정)
       if (!base) {
-        base = 35000;
+        base = 0;
       }
     }
 

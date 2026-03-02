@@ -243,7 +243,7 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
           return Number(data.pdpMountingFee);
         }
 
-        return 35000;
+        return 0;
       }
 
       return 0;
@@ -294,7 +294,7 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
         return pdpMountingFee;
       }
 
-      return baseFee || 35000;
+      return baseFee || 0;
     };
 
     const lines: ApplicationLine[] = [];
