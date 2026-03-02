@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, LayoutDashboard, Settings, UserIcon, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,7 +11,6 @@ import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 import { Badge } from '@/components/ui/badge';
 
 type UserNavProps = {
-  /** Header에서 unreadCount를 전달하는 경우(중복 폴링 방지) */
   unreadCount?: number;
 };
 
@@ -58,25 +56,13 @@ export function UserNav({ unreadCount }: UserNavProps) {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <div className="flex items-center gap-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground px-2 py-1.5 rounded-md transition min-w-0">
-          {/* <Avatar className="h-6 w-6">
-            <AvatarImage src={user.image || '/placeholder.svg'} />
-            <AvatarFallback>{user.name?.charAt(0) ?? 'U'}</AvatarFallback>
-          </Avatar> */}
-
           <div className="flex items-center gap-1 min-w-0">
-            <span
-              className="text-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"
-              title={`${user.name} 님`}
-            >
+            <span className="text-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis" title={`${user.name} 님`}>
               {user.name} 님
             </span>
 
             {isAdmin && (
-              <span
-                className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1.5 py-[2px] rounded border border-success/20 bg-success/10 text-success dark:bg-success/15"
-              >
-                관리자
-              </span>
+              <Badge variant="info" className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1.5 py-[2px]">관리자</Badge>
             )}
           </div>
         </div>
@@ -88,8 +74,8 @@ export function UserNav({ unreadCount }: UserNavProps) {
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
-                  {hasKakao && <Badge className="pointer-events-none h-5 px-2 text-[11px] bg-primary text-primary-foreground hover:bg-primary/90">카카오</Badge>}
-                  {hasNaver && <Badge className="pointer-events-none h-5 px-2 text-[11px] border border-success/20 bg-success/10 text-success dark:bg-success/15 hover:bg-success/15">네이버</Badge>}
+                  {hasKakao && <Badge variant="brand" className="pointer-events-none h-5 px-2 text-[11px]">카카오</Badge>}
+                  {hasNaver && <Badge variant="success" className="pointer-events-none h-5 px-2 text-[11px]">네이버</Badge>}
                 </div>
               </div>
             </div>

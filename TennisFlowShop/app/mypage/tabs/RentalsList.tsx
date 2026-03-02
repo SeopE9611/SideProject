@@ -36,18 +36,18 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const getStatusBadgeColor = (status: string) => {
+const getStatusBadgeVariant = (status: string) => {
   switch (status) {
     case 'returned':
-      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
+      return 'success';
     case 'out':
-      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
+      return 'info';
     case 'paid':
-      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
+      return 'neutral';
     case 'canceled':
-      return 'bg-destructive/10 text-destructive dark:bg-destructive/15';
+      return 'danger';
     default:
-      return 'bg-muted text-foreground dark:bg-card dark:text-foreground';
+      return 'neutral';
   }
 };
 
@@ -167,7 +167,7 @@ export default function RentalsList() {
                     {r.stringingApplicationId ? (
                       <Badge variant="info" className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">신청서 연결됨</Badge>
                     ) : r.withStringService ? (
-                      <Badge variant="brand" className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">교체 서비스 포함</Badge>
+                      <Badge variant="info" className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">교체 서비스 포함</Badge>
                     ) : null}
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -179,8 +179,8 @@ export default function RentalsList() {
 
               <div className="flex items-center gap-2">
                 {getStatusIcon(r.status)}
-                <Badge className={`px-3 py-1 text-xs font-medium ${getStatusBadgeColor(r.status)}`}>{getStatusLabel(r.status)}</Badge>
-                {r.cancelStatus === 'requested' && <Badge className="bg-warning/10 text-warning border border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40">취소 요청됨</Badge>}
+                <Badge variant={getStatusBadgeVariant(r.status)} className="px-3 py-1 text-xs font-medium">{getStatusLabel(r.status)}</Badge>
+                {r.cancelStatus === 'requested' && <Badge variant="warning">취소 요청됨</Badge>}
               </div>
             </div>
 
@@ -214,7 +214,7 @@ export default function RentalsList() {
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-lg font-bold text-foreground">총 {((r.amount?.fee ?? 0) + (r.amount?.deposit ?? 0)).toLocaleString()}원</span>
-                {r.hasReturnShipping ? <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/20 dark:text-primary">반납 운송장 등록됨</Badge> : <Badge variant="secondary">반납 운송장 미등록</Badge>}
+                {r.hasReturnShipping ? <Badge variant="info">반납 운송장 등록됨</Badge> : <Badge variant="neutral">반납 운송장 미등록</Badge>}
               </div>
 
               {/* Desktop (sm 이상): 기존 동작 유지 */}

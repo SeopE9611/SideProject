@@ -13,7 +13,7 @@ interface UserNavMobileProps {
 
 export function UserNavMobile({ setOpen }: UserNavMobileProps) {
   const router = useRouter();
-  const { user, loading, refresh } = useCurrentUser();
+  const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
   const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
 
@@ -35,7 +35,6 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
     );
   }
 
-  // 소셜 로그인 제공자(카카오/네이버) 배지 표시용
   const socialProviders = user.socialProviders ?? [];
   const hasKakao = socialProviders.includes('kakao');
   const hasNaver = socialProviders.includes('naver');
@@ -49,29 +48,15 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         <div className="flex flex-col items-center gap-1">
           <p className="text-xs text-muted-foreground">소셜 로그인</p>
           <div className="flex flex-wrap justify-center gap-1">
-            {hasKakao && <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">카카오</Badge>}
-            {hasNaver && <Badge className="bg-success/10 text-success border border-success/20 dark:bg-success/15 hover:bg-success/15">네이버</Badge>}
+            {hasKakao && <Badge variant="brand">카카오</Badge>}
+            {hasNaver && <Badge variant="success">네이버</Badge>}
           </div>
         </div>
       )}
-      <Button
-        variant="outline"
-        className="w-full justify-center"
-        onClick={() => {
-          setOpen(false);
-          router.push('/mypage');
-        }}
-      >
+      <Button variant="outline" className="w-full justify-center" onClick={() => { setOpen(false); router.push('/mypage'); }}>
         마이페이지
       </Button>
-      <Button
-        variant="outline"
-        className="w-full justify-center"
-        onClick={() => {
-          setOpen(false);
-          router.push('/messages');
-        }}
-      >
+      <Button variant="outline" className="w-full justify-center" onClick={() => { setOpen(false); router.push('/messages'); }}>
         쪽지함{unreadCount > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
       </Button>
       <Button
