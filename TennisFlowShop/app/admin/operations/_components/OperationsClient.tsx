@@ -705,7 +705,7 @@ export default function OperationsClient() {
             <div>
               <CardTitle>필터 및 검색</CardTitle>
               <CardDescription className="text-xs mt-1">ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.</CardDescription>
-              {activeFilterCount > 0 && <Badge className={cn(badgeBase, badgeSizeSm, 'mt-2 bg-primary/10 text-primary dark:bg-primary/20')}>적용된 필터 {activeFilterCount}개</Badge>}
+              {activeFilterCount > 0 && <Badge className={cn(badgeBase, badgeSizeSm, 'mt-2 ' + badgeToneClass('brand'))}>적용된 필터 {activeFilterCount}개</Badge>}
             </div>
 
             <Button variant="outline" size="sm" onClick={reset} className="shrink-0 bg-transparent">
@@ -936,7 +936,7 @@ export default function OperationsClient() {
             )}
 
             <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-border pt-2.5">
-              <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info dark:bg-info/20')}>저장된 뷰 링크</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('info'))}>저장된 뷰 링크</Badge>
               <p className="text-xs text-muted-foreground">현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에 공유하세요.</p>
               <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">{shareViewHref}</code>
             </div>
@@ -946,12 +946,12 @@ export default function OperationsClient() {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">범례</span>
                 <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>문서유형</Badge>
-                <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>통합여부</Badge>
-                <Badge className={cn(badgeBase, badgeSizeSm, 'bg-warning/10 text-warning dark:bg-warning/15 border-warning/30')}>
+                <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>통합여부</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('warning'))}>
                   <AlertTriangle className="h-3 w-3" aria-hidden="true" />
                   주의(실제 오류)
                 </Badge>
-                <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요(운영 확인)</Badge>
+                <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>검수필요(운영 확인)</Badge>
                 <span>결제 라벨 `패키지차감/주문결제포함/대여결제포함/확인필요`는 정책 파생 결과입니다.</span>
               </div>
 
@@ -984,7 +984,7 @@ export default function OperationsClient() {
               <>
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base font-medium">업무 목록</CardTitle>
-                  {activePresetKey && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary dark:bg-primary/20')}>{PRESET_CONFIG[activePresetKey].label}</Badge>}
+                  {activePresetKey && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>{PRESET_CONFIG[activePresetKey].label}</Badge>}
                 </div>
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
@@ -1069,9 +1069,9 @@ export default function OperationsClient() {
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="flex flex-wrap items-center gap-1">
                                 <div className="flex items-center gap-1">
-                                  <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
-                                  {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
-                                  {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info border-info/30')}>참고/파생(조치없음)</Badge>}
+                                  <Badge className={cn(badgeBase, badgeSizeSm, warn ? badgeToneClass('warning') : badgeToneClass('neutral'))}>{warn ? '주의' : '정상'}</Badge>
+                                  {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>검수필요</Badge>}
+                                  {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('info'))}>참고/파생(조치없음)</Badge>}
                                 </div>
                                 {!warn && g.reviewLevel === 'action' && reviewReasons.length > 0 && <div className="w-full text-[11px] text-primary/90">사유 {reviewReasons.length}건 · 펼쳐서 확인</div>}
                                 {!warn && g.reviewLevel === 'info' && <div className="w-full text-[11px] text-info">정상 파생 · 조치 필요 없음</div>}
@@ -1100,7 +1100,7 @@ export default function OperationsClient() {
                               <div className="flex flex-col items-start gap-1">
                                 <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
                                 {g.anchor.paymentLabel ? (
-                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? 'bg-card text-muted-foreground')}>{g.anchor.paymentLabel}</Badge>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? badgeToneClass('neutral'))}>{g.anchor.paymentLabel}</Badge>
 ) : (
                                   <span className="text-xs text-muted-foreground">결제정보 없음(문서 미기입)</span>
                                 )}
@@ -1231,9 +1231,9 @@ export default function OperationsClient() {
                       <CardContent className="p-3 space-y-2">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1">
-                            <Badge className={cn(badgeBase, badgeSizeSm, warn ? 'bg-warning/10 text-warning border-warning/30' : 'bg-muted text-muted-foreground')}>{warn ? '주의' : '정상'}</Badge>
-                            {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-primary/10 text-primary border-primary/30')}>검수필요</Badge>}
-                                  {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, 'bg-info/10 text-info border-info/30')}>참고/파생(조치없음)</Badge>}
+                            <Badge className={cn(badgeBase, badgeSizeSm, warn ? badgeToneClass('warning') : badgeToneClass('neutral'))}>{warn ? '주의' : '정상'}</Badge>
+                            {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>검수필요</Badge>}
+                                  {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('info'))}>참고/파생(조치없음)</Badge>}
                           </div>
                           <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
                         </div>

@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
-import { badgeBase, badgeSizeSm, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneClass, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -779,7 +779,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground">
               <Truck className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">수령/배송(주문)</span>
-              <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? 'bg-destructive/10 text-destructive dark:bg-destructive/15'}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
+              <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass('danger')}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
             </div>
           )}
 

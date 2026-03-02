@@ -54,7 +54,9 @@ html body[data-scroll-locked] {
   --accent-active: 152.3 30.7% 20%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 152.3 30.7% 24.9%;
+  --info: 213 86% 43%;
+  --info-foreground: 210 40% 98%;
+  --success: 146 62% 36%;
   --success-foreground: 120 100% 99%;
   --warning: 38 92% 46%;
   --warning-foreground: 32 100% 15%;
@@ -118,7 +120,9 @@ html body[data-scroll-locked] {
   --accent-active: 152.3 30.7% 52%;
 
   /* System feedback (toast/badge/banner) */
-  --success: 152.3 30.7% 44%;
+  --info: 210 90% 66%;
+  --info-foreground: 222 47% 11%;
+  --success: 146 58% 52%;
   --success-foreground: 120 100% 99%;
   --warning: 40 94% 54%;
   --warning-foreground: 30 90% 8%;

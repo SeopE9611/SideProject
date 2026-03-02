@@ -672,8 +672,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </>
                 )}
                 <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex gap-1.5 sm:gap-2">
-                  <Badge className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary text-xs">NEW</Badge>
-                  <Badge className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary text-xs">정품</Badge>
+                  <Badge variant="brand" className="text-xs">NEW</Badge>
+                  <Badge variant="info" className="text-xs">정품</Badge>
                 </div>
               </div>
             </Card>
@@ -697,7 +697,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-3 sm:space-y-4">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <Badge variant="outline" className="mb-2 text-xs text-primary border-border dark:text-primary dark:border-border">
+                    <Badge variant="brand" className="mb-2 text-xs">
                       {BRAND_MAP[(product?.brand ?? '').toLowerCase()] ?? product.brand}
                     </Badge>
                     <h1 className="text-xl sm:text-2xl bp-lg:text-3xl font-bold bg-muted/30 text-foreground leading-tight">{product.name}</h1>
@@ -719,7 +719,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       {product.originalPrice && product.originalPrice > product.price && (
                         <>
                           <span className="text-base sm:text-lg text-muted-foreground line-through">{product.originalPrice.toLocaleString()}원</span>
-                          <Badge className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
+                          <Badge variant="warning" className="text-xs">{Math.round((1 - product.price / product.originalPrice) * 100)}% 할인</Badge>
                         </>
                       )}
                     </div>
