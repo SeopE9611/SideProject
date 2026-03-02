@@ -5,12 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Briefcase, Eye, ShoppingCart } from 'lucide-react';
 import useSWR from 'swr';
 import { racketBrandLabel } from '@/lib/constants';
 import StatusBadge from '@/components/badges/StatusBadge';
 import { useRouter } from 'next/navigation';
 import RentDialog from '@/app/rackets/[id]/_components/RentDialog';
+import { badgeToneVariant } from '@/lib/badge-style';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
@@ -53,36 +55,36 @@ function RacketAvailBadge({ id }: { id: string }) {
 
   // 로딩 중에 1/1 같은 가짜 값이 보이는 깜빡임 방지
   if (!ready) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-foreground dark:bg-card dark:text-foreground whitespace-nowrap animate-pulse">수량 확인중</div>;
+    return <Badge variant={badgeToneVariant('neutral')} className="px-2 py-1 text-xs font-medium whitespace-nowrap animate-pulse">수량 확인중</Badge>;
   }
 
   // 판매 완료(보유 0)
   if (isSold) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-foreground dark:bg-card dark:text-foreground whitespace-nowrap">판매 완료 (재고 0)</div>;
+    return <Badge variant={badgeToneVariant('neutral')} className="px-2 py-1 text-xs font-medium whitespace-nowrap">판매 완료 (재고 0)</Badge>;
   }
 
   // 전량 대여중
   if (isAllRented) {
     return (
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive whitespace-nowrap">
+      <Badge variant={badgeToneVariant('danger')} className="px-2 py-1 text-xs font-medium whitespace-nowrap">
         전량 대여중 ({rentedCount}/{qty})
-      </div>
+      </Badge>
     );
   }
 
   // “대여중 0”이면 19/19 같은 표기가 어색하므로 “재고 n개”로 표현
   if (rentedCount === 0) {
-    return <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary whitespace-nowrap">재고 {qty}개</div>;
+    return <Badge variant={badgeToneVariant('brand')} className="px-2 py-1 text-xs font-medium whitespace-nowrap">재고 {qty}개</Badge>;
   }
 
   // 대여중이 있으면 분수(가용/보유) + 대여중 배지로 정보량 확보
   return (
     <div className="flex items-center gap-1.5">
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary whitespace-nowrap">
+      <Badge variant={badgeToneVariant('brand')} className="px-2 py-1 text-xs font-medium whitespace-nowrap">
         가용 {avail}/{qty}
-      </div>
+      </Badge>
 
-      <div className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground whitespace-nowrap">대여중 {rentedCount}</div>
+      <Badge variant={badgeToneVariant('neutral')} className="px-2 py-1 text-xs font-medium whitespace-nowrap">대여중 {rentedCount}</Badge>
     </div>
   );
 }

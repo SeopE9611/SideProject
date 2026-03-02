@@ -5,10 +5,12 @@
 import KpiCard from '@/app/admin/settlements/_components/KpiCard';
 import { makeCsvFilename } from '@/app/admin/settlements/_lib/settlementExport';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
+import { badgeToneVariant, type BadgeSemanticTone } from '@/lib/badge-style';
 import { formatKRWCard, formatKRWFull } from '@/lib/money';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import type { SettlementDiff, SettlementLiveResponse, SettlementSnapshot } from '@/types/admin/settlements';
@@ -20,6 +22,12 @@ import { firstDayOfMonth_KST, fmtYMD_KST, monthEdges, prevMonthRange_KST } from 
 import { useInitialYyyymmFromQuery } from './hooks/useInitialYyyymmFromQuery';
 import { sortSettlementRows, type SortDirection, type SortField } from './table/settlementSort';
 import { buildAllSettlementSelection, getSettlementCacheKey, isSettlementMatched, toggleYyyymmSelection, validateYyyymmClient } from './utils/settlementClientTransforms';
+
+const settlementStatusToneMap: Record<'checking' | 'ok' | 'stale', BadgeSemanticTone> = {
+  checking: 'neutral',
+  ok: 'brand',
+  stale: 'danger',
+};
 
 export default function SettlementsClient() {
   const router = useRouter();
@@ -622,22 +630,22 @@ export default function SettlementsClient() {
 
                             <div className="flex items-center justify-center">
                               {statusMap[String(row.yyyymm)] === 'checking' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-muted text-foreground dark:bg-card font-medium border border-border">
+                                <Badge variant={badgeToneVariant(settlementStatusToneMap.checking)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   검증 중
-                                </span>
+                                </Badge>
                               )}
                               {statusMap[String(row.yyyymm)] === 'ok' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border dark:bg-primary/25">
+                                <Badge variant={badgeToneVariant(settlementStatusToneMap.ok)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   최신
-                                </span>
+                                </Badge>
                               )}
                               {statusMap[String(row.yyyymm)] === 'stale' && (
-                                <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 dark:bg-destructive/20 text-destructive font-medium border border-destructive/40">
+                                <Badge variant={badgeToneVariant(settlementStatusToneMap.stale)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
                                   <AlertTriangle className="w-3.5 h-3.5" />
                                   갱신 필요
-                                </span>
+                                </Badge>
                               )}
                               {!statusMap[String(row.yyyymm)] && <span className="text-xs text-muted-foreground">-</span>}
                             </div>
@@ -992,22 +1000,22 @@ export default function SettlementsClient() {
 
                       <div className="mt-3 pt-3 border-t border-border">
                         {statusMap[String(row.yyyymm)] === 'checking' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-muted text-foreground dark:bg-card font-medium border border-border">
+                          <Badge variant={badgeToneVariant(settlementStatusToneMap.checking)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             검증 중
-                          </span>
+                          </Badge>
                         )}
                         {statusMap[String(row.yyyymm)] === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-primary/15 text-primary font-medium border border-border dark:bg-primary/25">
+                          <Badge variant={badgeToneVariant(settlementStatusToneMap.ok)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             최신
-                          </span>
+                          </Badge>
                         )}
                         {statusMap[String(row.yyyymm)] === 'stale' && (
-                          <span className="inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1.5 bg-destructive/15 dark:bg-destructive/20 text-destructive font-medium border border-destructive/40">
+                          <Badge variant={badgeToneVariant(settlementStatusToneMap.stale)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
                             <AlertTriangle className="w-3.5 h-3.5" />
                             갱신 필요
-                          </span>
+                          </Badge>
                         )}
                         {!statusMap[String(row.yyyymm)] && <span className="text-xs text-muted-foreground">-</span>}
                       </div>

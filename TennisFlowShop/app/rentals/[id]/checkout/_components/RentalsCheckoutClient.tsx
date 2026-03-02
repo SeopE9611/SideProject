@@ -6,6 +6,7 @@ import MountingInfoSection from '@/app/features/stringing-applications/component
 import { type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import useRentalCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
+import { badgeToneVariant } from '@/lib/badge-style';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -583,7 +585,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <div className="text-sm text-muted-foreground">중고 라켓</div>
                     <h3 className="font-semibold text-foreground">{initial.racket ? `${racketBrandLabel(initial.racket.brand)} ${initial.racket.model}` : ''}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-foreground">상태 {initial.racket?.condition}</span>
+                      <Badge variant={badgeToneVariant('neutral')} className="px-2 py-0.5 text-xs">상태 {initial.racket?.condition}</Badge>
                       <span className="text-xs text-muted-foreground">대여 기간 {initial.period}일</span>
                     </div>
                   </div>

@@ -4,10 +4,12 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCard, Undo2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
+import { badgeToneVariant } from '@/lib/badge-style';
 import SiteContainer from '@/components/layout/SiteContainer';
 import RentalApplyHandoffClient from './RentalApplyHandoffClient';
 
@@ -151,7 +153,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <div>
                       <p className="font-semibold text-foreground">{data.racket ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}` : '라켓 정보 없음'}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 dark:bg-primary/20 text-primary">상태 {data.racket?.condition}</span>
+                        <Badge variant={badgeToneVariant('brand')} className="px-2 py-0.5 text-xs">상태 {data.racket?.condition}</Badge>
                         <span className="text-sm text-muted-foreground">대여 기간: {data.period}일</span>
                       </div>
                     </div>

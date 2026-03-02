@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { APPLICATION_STATUSES } from '@/lib/application-status';
 import { useRouter } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { badgeToneVariant } from '@/lib/badge-style';
+import { badgeToneVariant, getApplicationStatusTone } from '@/lib/badge-style';
 
 interface Props {
   applicationId: string;
@@ -55,7 +55,7 @@ export function ApplicationStatusSelect({ applicationId, currentStatus, onUpdate
       <SelectContent>
         {APPLICATION_STATUSES.map((status) => (
           <SelectItem key={status} value={status}>
-            <Badge variant={badgeToneVariant(status === '교체완료' ? 'success' : status === '작업 중' ? 'brand' : status === '검토 중' ? 'warning' : 'info')} className="px-2 py-1 rounded text-xs">
+            <Badge variant={badgeToneVariant(getApplicationStatusTone(status))} className="px-2 py-1 rounded text-xs">
               {status}
             </Badge>
           </SelectItem>

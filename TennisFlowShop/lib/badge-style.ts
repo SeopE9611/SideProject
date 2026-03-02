@@ -207,6 +207,17 @@ export const applicationStatusColors = {
   default: SEMANTIC_BADGE.neutral,
 } as const;
 
+export function getApplicationStatusTone(status?: string | null): BadgeSemanticTone {
+  const normalized = String(status ?? '').trim();
+  if (!normalized) return 'neutral';
+  if (normalized === '교체완료') return 'success';
+  if (normalized === '작업 중') return 'brand';
+  if (normalized === '검토 중') return 'warning';
+  if (normalized === '접수완료') return 'info';
+  if (normalized.includes('취소')) return 'danger';
+  return 'neutral';
+}
+
 /** ---------------------- QnA 배지 (카테고리/답변 상태) ---------------------- */
 export const qnaCategoryColors: Record<QnaCategory, string> = {
   상품문의: SEMANTIC_BADGE.info,
