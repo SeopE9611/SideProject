@@ -293,7 +293,7 @@ export default function StringingSettingsPage() {
                 <div>
                   <div className="mb-4 flex items-center justify-between">
                     <Label className="text-sm font-medium text-foreground">{/* was: text-foreground */}동시 수용량</Label>
-                    <Badge className="bg-primary text-primary-foreground shadow-sm px-3 py-1">{capacity}명</Badge>
+                    <Badge variant="brand" className="shadow-sm px-3 py-1">{capacity}명</Badge>
                   </div>
                   <Slider value={[capacity]} onValueChange={(v) => setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))} min={1} max={10} step={1} className="mt-3" />
                   <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{/* was: text-muted-foreground */}예) 2로 저장하면 동일 시간대 최대 2건까지 접수됩니다.</p>

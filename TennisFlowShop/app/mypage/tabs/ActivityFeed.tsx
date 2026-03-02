@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { orderStatusColors, paymentStatusColors, applicationStatusColors } from '@/lib/badge-style';
+import { badgeToneClass, badgeToneVariant, getApplicationStatusTone, getOrderStatusTone, type BadgeSemanticTone, type BadgeSemanticVariant } from '@/lib/badge-style';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
@@ -92,17 +92,29 @@ const formatDate = (iso: string) => {
 const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, '.');
 
 // 대여 상태는 프로젝트마다 다를 수 있어서 “넓게” 커버(한글/영문 혼합 대응)
-const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-muted text-muted-foreground border border-border',
-  paid: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
-  out: 'bg-secondary text-foreground border border-border',
-  returned: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
-  canceled: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
+const rentalStatusToneMap: Record<string, BadgeSemanticTone> = {
+  pending: 'neutral',
+  paid: 'info',
+  out: 'info',
+  returned: 'success',
+  canceled: 'destructive',
 
-  대기중: 'bg-muted text-muted-foreground border border-border',
-  대여중: 'bg-secondary text-foreground border border-border',
-  반납완료: 'bg-primary/15 text-primary border border-border dark:bg-primary/25',
-  취소: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
+  대기중: 'neutral',
+  대여중: 'info',
+  반납완료: 'success',
+  취소: 'destructive',
+};
+
+const paymentStatusToneMap: Record<string, BadgeSemanticTone> = {
+  결제완료: 'success',
+  결제대기: 'warning',
+  결제실패: 'destructive',
+  결제취소: 'destructive',
+  패키지차감: 'info',
+  주문결제포함: 'success',
+  대여결제포함: 'success',
+  확인필요: 'warning',
+  환불: 'destructive',
 };
 
 function kindLabel(kind: ActivityKind) {
@@ -117,28 +129,32 @@ function kindIcon(kind: ActivityKind) {
   return <Briefcase className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
 }
 
-function statusBadgeClass(g: ActivityGroup) {
+function statusBadgeTone(g: ActivityGroup): BadgeSemanticTone {
   const kind = g.kind;
 
   if (kind === 'order') {
     const s = g.order?.status ?? '';
-    return orderStatusColors[s] ?? 'bg-muted text-muted-foreground border border-border';
+    return getOrderStatusTone(s);
   }
 
   if (kind === 'application') {
     const s = g.application?.status ?? '';
-    return (applicationStatusColors as any)[s] ?? applicationStatusColors.default;
+    return getApplicationStatusTone(s);
   }
 
   const s = g.rental?.status ?? '';
-  return rentalStatusColors[s] ?? 'bg-muted text-muted-foreground border border-border';
+  return rentalStatusToneMap[s] ?? 'neutral';
 }
 
-function paymentBadgeClass(g: ActivityGroup) {
+function paymentBadgeVariant(g: ActivityGroup): BadgeSemanticVariant | null {
   if (g.kind !== 'order') return null;
   const p = g.order?.paymentStatus ?? '';
   if (!p) return null;
-  return paymentStatusColors[p] ?? 'bg-muted text-muted-foreground border border-border';
+  return badgeToneVariant(paymentStatusToneMap[p] ?? 'neutral');
+}
+
+function applicationBadgeVariant(status?: string | null): BadgeSemanticVariant {
+  return badgeToneVariant(getApplicationStatusTone(status));
 }
 
 function groupTitle(g: ActivityGroup) {
@@ -225,7 +241,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className: 'border border-primary/20 bg-primary/10 text-primary text-xs font-semibold dark:bg-primary/20',
+        className: 'border border-info/45 bg-info/15 text-info text-xs font-semibold dark:bg-info/24 dark:border-info/55',
       });
     }
   }
@@ -236,7 +252,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (typeof days === 'number') {
       pills.push({
         text: `${days}일 대여`,
-        className: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
+        className: 'bg-info/15 text-info border border-info/45 dark:bg-info/24 dark:border-info/55',
       });
     }
   }
@@ -250,7 +266,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (needs) {
       pills.push({
         text: linked.hasTracking ? '운송장 등록' : '운송장 대기',
-        className: linked.hasTracking ? 'bg-success/10 text-success dark:bg-success/15 ' : 'bg-warning/10 text-warning dark:bg-warning/15 ',
+        className: linked.hasTracking ? 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55' : 'bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55',
       });
     }
   }
@@ -265,7 +281,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       if (needs) {
         pills.push({
           text: app.hasTracking ? '운송장 등록' : '운송장 대기',
-          className: app.hasTracking ? 'bg-success/10 text-success dark:bg-success/15 ' : 'bg-warning/10 text-warning dark:bg-warning/15 ',
+          className: app.hasTracking ? 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55' : 'bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55',
         });
       }
     }
@@ -679,11 +695,11 @@ export default function ActivityFeed() {
                           <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
+                              <Badge variant={badgeToneVariant(statusBadgeTone(g))} className="text-xs rounded-md">
                                 {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                               </Badge>
                               {g.kind !== 'application' && app && (
-                                <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                <Badge variant={applicationBadgeVariant(app.status)} className="text-xs rounded-md font-medium">
                                   교체 {app.status}
                                 </Badge>
                               )}
@@ -799,11 +815,11 @@ export default function ActivityFeed() {
                         <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className={cn('text-xs rounded-md', statusBadgeClass(g))}>
+                            <Badge variant={badgeToneVariant(statusBadgeTone(g))} className="text-xs rounded-md">
                               {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                             </Badge>
                             {g.kind !== 'application' && app && (
-                              <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                              <Badge variant={applicationBadgeVariant(app.status)} className="text-xs rounded-md font-medium">
                                 교체 {app.status}
                               </Badge>
                             )}
@@ -898,11 +914,11 @@ export default function ActivityFeed() {
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">{kindIcon(g.kind)}</span>
 
-                                    <Badge variant="outline" className={cn('text-xs rounded-md font-medium', statusBadgeClass(g))}>
+                                    <Badge variant={badgeToneVariant(statusBadgeTone(g))} className="text-xs rounded-md font-medium">
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                                     </Badge>
                                     {g.kind !== 'application' && app && (
-                                      <Badge variant="outline" className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                      <Badge variant={applicationBadgeVariant(app.status)} className="text-xs rounded-md font-medium">
                                         교체 {app.status}
                                       </Badge>
                                     )}
@@ -910,7 +926,7 @@ export default function ActivityFeed() {
                                     <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
 
                                     {hasAction && (
-                                      <Badge variant="outline" className="text-xs rounded-md bg-warning/10 text-warning border-warning/30 dark:bg-warning/15">
+                                      <Badge variant="warning" className="text-xs rounded-md">
                                         액션 필요
                                       </Badge>
                                     )}
@@ -921,7 +937,7 @@ export default function ActivityFeed() {
                                 </div>
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
-                                  <Badge variant="outline" className={cn('text-xs rounded-md font-medium shrink-0', paymentBadgeClass(g))}>
+                                  <Badge variant={paymentBadgeVariant(g) ?? 'neutral'} className="text-xs rounded-md font-medium shrink-0">
                                     {g.order.paymentStatus}
                                   </Badge>
                                 )}

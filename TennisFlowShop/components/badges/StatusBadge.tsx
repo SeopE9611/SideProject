@@ -1,6 +1,8 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { usedBadgeMeta, type UsedBadgeKind } from '@/lib/badge-style';
+import { cn } from '@/lib/utils';
 
 type Props = {
   kind: UsedBadgeKind; // 'rental' | 'condition'
@@ -10,8 +12,19 @@ type Props = {
 };
 
 export default function StatusBadge({ kind, state, className = '', as = 'span' }: Props) {
-  const Comp: any = as;
   const meta = usedBadgeMeta(kind, state);
 
-  return <Comp className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border shadow-sm ${meta.className} ${className}`}>{meta.label}</Comp>;
+  if (as === 'div') {
+    return (
+      <Badge variant={meta.variant} className={cn('rounded px-2 py-0.5 text-xs font-medium shadow-sm', className)}>
+        <div>{meta.label}</div>
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge variant={meta.variant} className={cn('rounded px-2 py-0.5 text-xs font-medium shadow-sm', className)}>
+      {meta.label}
+    </Badge>
+  );
 }

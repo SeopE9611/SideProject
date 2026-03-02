@@ -244,7 +244,7 @@ export default function RacketCompareClient() {
                               {r.model}
                             </Link>
                             {idx === 0 && (
-                              <Badge variant="secondary" className="h-4 px-1.5 text-[10px] bg-primary/10 text-primary dark:bg-primary/20">
+                              <Badge variant="info" className="h-4 px-1.5 text-[10px]">
                                 기준
                               </Badge>
                             )}
@@ -269,7 +269,7 @@ export default function RacketCompareClient() {
         ) : (
           <>
             <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="bg-primary/10 text-primary dark:bg-primary/20 rounded-lg px-3 py-1">
+              <Badge variant="info" className="rounded-lg px-3 py-1">
                 선택 {list.length} / 4
               </Badge>
               <span className="text-sm text-muted-foreground">각 열 상단의 X로 개별 제거 가능합니다.</span>
@@ -306,7 +306,7 @@ export default function RacketCompareClient() {
                                 }
                               />
                               {idx === 0 && (
-                                <Badge variant="secondary" className="h-5 px-2 text-[10px] bg-primary/10 text-primary dark:bg-primary/20">
+                                <Badge variant="info" className="h-5 px-2 text-[10px]">
                                   기준
                                 </Badge>
                               )}

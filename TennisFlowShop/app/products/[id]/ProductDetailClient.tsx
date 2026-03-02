@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
+import { getAnswerStatusVariant, getQnaCategoryVariant } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import {
   Activity,
@@ -1033,7 +1033,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                       <h3 className="text-xl sm:text-2xl font-bold text-foreground">고객 리뷰</h3>
                     </div>
-                    <Button asChild variant="outline" className="bg-primary/10 dark:bg-primary/20 border border-primary/20 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 shadow-lg text-xs sm:text-sm h-9 sm:h-10">
+                    <Button asChild variant="outline" className="shadow-lg text-xs sm:text-sm h-9 sm:h-10">
                       <Link href={`/reviews/write?productId=${product._id}`}>
                         <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                         리뷰 작성하기
@@ -1293,16 +1293,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   <div className="flex-1 min-w-0">
                                     <div className="space-y-1 min-w-0">
                                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(q.category)}`}>
+                                        <Badge variant={getQnaCategoryVariant(q.category)} className="px-2.5 py-0.5 text-xs leading-[1.05] rounded-md">
                                           {q.category ?? '상품문의'}
                                         </Badge>
                                         {q.isSecret && (
-                                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} bg-muted/50 text-muted-foreground border-border/40 dark:border-border shrink-0`}>
+                                          <Badge variant="neutral" className="px-2.5 py-0.5 text-xs leading-[1.05] rounded-md shrink-0">
                                             <Lock className="h-3 w-3 mr-1" />
                                             비밀글
                                           </Badge>
                                         )}
-                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!q.answer)} shrink-0`}>
+                                        <Badge variant={getAnswerStatusVariant(!!q.answer)} className="px-2.5 py-0.5 text-xs leading-[1.05] rounded-md shrink-0">
                                           {q.answer ? '답변 완료' : '답변 대기'}
                                         </Badge>
                                       </div>

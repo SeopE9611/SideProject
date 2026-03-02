@@ -29,6 +29,8 @@ const settlementStatusToneMap: Record<'checking' | 'ok' | 'stale', BadgeSemantic
   stale: 'danger',
 };
 
+const settlementStatusBadgeClass = 'gap-1.5 px-3 py-1.5 text-xs font-medium';
+
 export default function SettlementsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -630,19 +632,19 @@ export default function SettlementsClient() {
 
                             <div className="flex items-center justify-center">
                               {statusMap[String(row.yyyymm)] === 'checking' && (
-                                <Badge variant={badgeToneVariant(settlementStatusToneMap.checking)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
+                                <Badge variant={badgeToneVariant(settlementStatusToneMap.checking)} className={settlementStatusBadgeClass}>
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   검증 중
                                 </Badge>
                               )}
                               {statusMap[String(row.yyyymm)] === 'ok' && (
-                                <Badge variant={badgeToneVariant(settlementStatusToneMap.ok)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
+                                <Badge variant={badgeToneVariant(settlementStatusToneMap.ok)} className={settlementStatusBadgeClass}>
                                   <CheckCircle2 className="w-3.5 h-3.5" />
                                   최신
                                 </Badge>
                               )}
                               {statusMap[String(row.yyyymm)] === 'stale' && (
-                                <Badge variant={badgeToneVariant(settlementStatusToneMap.stale)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
+                                <Badge variant={badgeToneVariant(settlementStatusToneMap.stale)} className={settlementStatusBadgeClass}>
                                   <AlertTriangle className="w-3.5 h-3.5" />
                                   갱신 필요
                                 </Badge>
@@ -1000,19 +1002,19 @@ export default function SettlementsClient() {
 
                       <div className="mt-3 pt-3 border-t border-border">
                         {statusMap[String(row.yyyymm)] === 'checking' && (
-                          <Badge variant={badgeToneVariant(settlementStatusToneMap.checking)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
+                          <Badge variant={badgeToneVariant(settlementStatusToneMap.checking)} className={settlementStatusBadgeClass}>
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                             검증 중
                           </Badge>
                         )}
                         {statusMap[String(row.yyyymm)] === 'ok' && (
-                          <Badge variant={badgeToneVariant(settlementStatusToneMap.ok)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
+                          <Badge variant={badgeToneVariant(settlementStatusToneMap.ok)} className={settlementStatusBadgeClass}>
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             최신
                           </Badge>
                         )}
                         {statusMap[String(row.yyyymm)] === 'stale' && (
-                          <Badge variant={badgeToneVariant(settlementStatusToneMap.stale)} className="gap-1.5 px-3 py-1.5 text-xs font-medium">
+                          <Badge variant={badgeToneVariant(settlementStatusToneMap.stale)} className={settlementStatusBadgeClass}>
                             <AlertTriangle className="w-3.5 h-3.5" />
                             갱신 필요
                           </Badge>

@@ -148,7 +148,7 @@ function KpiCard({ title, value, sub, icon, trend, spark }: { title: string; val
         {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
         <div className="flex items-end justify-between gap-3">
           {trend && (
-            <Badge variant="secondary" className="text-xs font-normal">
+            <Badge variant="neutral" className="text-xs font-normal">
               {trend}
             </Badge>
           )}
@@ -448,7 +448,7 @@ export default function AdminDashboardClient() {
                         <p className="truncate text-xs text-muted-foreground">{p.brand || '-'}</p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="neutral" className="text-xs">
                           {formatAdminNumber(p.qty)}개
                         </Badge>
                         <span className="text-xs font-semibold">{formatAdminKRW(p.revenue)}</span>
@@ -490,7 +490,7 @@ export default function AdminDashboardClient() {
                           <p className="text-xs text-muted-foreground">판매량 및 매출</p>
                         </div>
                         <div className="flex shrink-0 flex-col items-end gap-1">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="neutral" className="text-xs">
                             {formatAdminNumber(b.qty)}개
                           </Badge>
                           <span className="text-xs font-semibold">{formatAdminKRW(b.revenue)}</span>
@@ -531,7 +531,7 @@ export default function AdminDashboardClient() {
                           {it.name}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="neutral" className="text-xs">
                             {it.kind}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
@@ -567,7 +567,7 @@ export default function AdminDashboardClient() {
                           {it.name}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="neutral" className="text-xs">
                             {it.kind}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
@@ -601,7 +601,7 @@ export default function AdminDashboardClient() {
                           {it.name || '(이름 없음)'}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="neutral" className="text-xs">
                             {it.kind}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
@@ -637,13 +637,13 @@ export default function AdminDashboardClient() {
                           {it.name}
                         </Link>
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="neutral" className="text-xs">
                             {labelStringingStatus(it.status)}
                           </Badge>
                           <span className="text-xs text-muted-foreground">{it.ageDays}일 경과</span>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="shrink-0">
+                      <Badge variant="neutral" className="shrink-0">
                         {formatAdminKRW(it.totalPrice)}
                       </Badge>
                     </div>
@@ -707,7 +707,7 @@ export default function AdminDashboardClient() {
                           </Link>
                           <p className="text-xs text-muted-foreground">반납 기한: {formatIsoToKstShort(r.dueAt)}</p>
                         </div>
-                        <Badge variant="secondary" className="shrink-0">
+                        <Badge variant="neutral" className="shrink-0">
                           {badgeLabel}
                         </Badge>
                       </div>
@@ -741,7 +741,7 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">평균 평점</span>
-                <Badge variant="secondary" className="text-base font-bold">
+                <Badge variant="neutral" className="text-base font-bold">
                   {(Math.round((data.kpi.reviews.avg || 0) * 10) / 10).toFixed(1)}
                 </Badge>
               </div>
@@ -771,7 +771,7 @@ export default function AdminDashboardClient() {
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">지급</span>
-                <Badge variant="secondary">{formatAdminNumber(data.kpi.points.issued7d)}P</Badge>
+                <Badge variant="neutral">{formatAdminNumber(data.kpi.points.issued7d)}P</Badge>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2">
                 <span className="text-sm">사용</span>
@@ -901,10 +901,10 @@ export default function AdminDashboardClient() {
                       <p className="truncate text-sm font-medium">{o.name}</p>
                       <p className="text-xs text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
                       <div className="flex flex-wrap gap-1">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="neutral" className="text-xs">
                           {labelPaymentStatus(o.paymentStatus)}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="neutral" className="text-xs">
                           {labelOrderStatus(o.status)}
                         </Badge>
                       </div>
@@ -932,10 +932,10 @@ export default function AdminDashboardClient() {
                       <p className="truncate text-sm font-medium">{a.name}</p>
                       <p className="text-xs text-muted-foreground">{formatIsoToKstShort(a.createdAt)}</p>
                       <div className="flex flex-wrap gap-1">
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="neutral" className="text-xs">
                           {labelPaymentStatus(a.paymentStatus)}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="neutral" className="text-xs">
                           {labelStringingStatus(a.status)}
                         </Badge>
                       </div>

@@ -95,18 +95,18 @@ const getStatusIcon = (status: string) => {
   }
 };
 
-const getStatusBadgeColor = (status: string) => {
+const getStatusBadgeVariant = (status: string) => {
   switch (status) {
     case 'returned':
-      return 'bg-success/10 text-success dark:bg-success/20 dark:text-success';
+      return 'success';
     case 'out':
-      return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary';
+      return 'info';
     case 'paid':
-      return 'bg-success/10 text-success dark:bg-success/20 dark:text-success';
+      return 'success';
     case 'canceled':
-      return 'bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-destructive';
+      return 'danger';
     default:
-      return 'bg-muted text-foreground dark:bg-muted dark:text-foreground';
+      return 'neutral';
   }
 };
 
@@ -319,9 +319,9 @@ export default function RentalsDetailClient({ id }: { id: string }) {
                 <p className="text-muted-foreground">대여번호: {data.id}</p>
 
                 {data.stringingApplicationId ? (
-                  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/20 dark:text-primary">신청서 연결됨</Badge>
+                  <Badge variant="info">신청서 연결됨</Badge>
                 ) : withStringService ? (
-                  <Badge className="bg-primary/10 text-primary border border-border dark:bg-primary/20 dark:text-primary">교체 서비스 포함</Badge>
+                  <Badge variant="info">교체 서비스 포함</Badge>
                 ) : null}
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               {getStatusIcon(data.status)}
               <span className="text-sm font-medium text-muted-foreground">대여 상태</span>
             </div>
-            <Badge className={`px-3 py-1 text-sm font-medium ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
+            <Badge variant={getStatusBadgeVariant(data.status)} className="px-3 py-1 text-sm font-medium">{getStatusLabel(data.status)}</Badge>
           </div>
         </div>
       </div>
@@ -479,7 +479,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
               <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">상태</p>
-                  <Badge className={`mt-1 ${getStatusBadgeColor(data.status)}`}>{getStatusLabel(data.status)}</Badge>
+                  <Badge variant={getStatusBadgeVariant(data.status)} className="mt-1">{getStatusLabel(data.status)}</Badge>
                 </div>
               </div>
 

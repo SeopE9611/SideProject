@@ -272,7 +272,7 @@ export default function ServicesPage() {
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40" id="string-types">
         <div className="container">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
+            <Badge variant="info" className="mb-4">
               <Star className="w-4 h-4 mr-2" />
               프리미엄 스트링 컬렉션
             </Badge>
@@ -370,7 +370,7 @@ export default function ServicesPage() {
 
         <div className="container relative z-10">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-muted text-foreground border-border">
+            <Badge variant="neutral" className="mb-4">
               <Award className="w-4 h-4 mr-2" />
               투명한 가격 정책
             </Badge>
@@ -415,7 +415,7 @@ export default function ServicesPage() {
                       <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
-                    {service.free ? <Badge className="bg-primary/10 text-primary dark:bg-primary/20">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
+                    {service.free ? <Badge variant="info">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
                   </div>
                   <p className="text-sm text-muted-foreground">{service.description}</p>
                 </div>
@@ -429,7 +429,7 @@ export default function ServicesPage() {
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
         <div className="container">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary dark:bg-primary/20">
+            <Badge variant="info" className="mb-4">
               <Shield className="w-4 h-4 mr-2" />
               전문적인 프로세스
             </Badge>

@@ -354,7 +354,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         <span className="text-xs font-semibold text-primary">{rentalId ? '대여 신청에서 선택한 스트링' : '상품 상세에서 선택한 스트링'}</span>
 
                         {isRentalNonOrder && (
-                          <Badge variant={isLockedIdSelected ? 'secondary' : 'destructive'} className="h-5 px-2 text-[11px]">
+                          <Badge variant={isLockedIdSelected ? 'neutral' : 'danger'} className="h-5 px-2 text-[11px]">
                             {isLockedIdSelected ? '포함됨' : '미포함'}
                           </Badge>
                         )}
@@ -667,7 +667,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         <Badge variant="warning" className="h-5 text-xs font-medium">이번 구성에는 적용 불가</Badge>
                       )
                     ) : (
-                      <Badge variant="secondary" className="h-5 text-xs font-medium">보유 패키지 없음</Badge>
+                      <Badge variant="neutral" className="h-5 text-xs font-medium">보유 패키지 없음</Badge>
                     )}
                   </div>
 

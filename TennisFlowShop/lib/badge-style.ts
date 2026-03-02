@@ -40,6 +40,20 @@ export function badgeToneVariant(tone: BadgeSemanticTone): BadgeSemanticVariant 
   return SEMANTIC_BADGE_VARIANT[tone];
 }
 
+export type BadgeToken = {
+  tone: BadgeSemanticTone;
+  variant: BadgeSemanticVariant;
+  className: string;
+};
+
+export function badgeToneToken(tone: BadgeSemanticTone): BadgeToken {
+  return {
+    tone,
+    variant: badgeToneVariant(tone),
+    className: badgeToneClass(tone),
+  };
+}
+
 export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type OrderKindBadgeState = 'order' | 'stringing_application' | 'rental_order' | 'rental';
 export type OrderLinkBadgeState = 'integrated' | 'standalone' | 'linked_order' | 'rental' | 'error';
@@ -94,16 +108,20 @@ export function getUserStatusBadge(isDeleted: boolean) {
   };
 }
 
-export const orderStatusColors: Record<string, string> = {
-  대기중: SEMANTIC_BADGE.warning,
-  처리중: SEMANTIC_BADGE.info,
-  결제완료: SEMANTIC_BADGE.success,
-  배송중: SEMANTIC_BADGE.info,
-  배송완료: SEMANTIC_BADGE.success,
-  구매확정: SEMANTIC_BADGE.success,
-  취소: SEMANTIC_BADGE.destructive,
-  환불: SEMANTIC_BADGE.destructive,
+const ORDER_STATUS_TONE: Record<string, BadgeSemanticTone> = {
+  대기중: 'warning',
+  처리중: 'info',
+  결제완료: 'success',
+  배송중: 'info',
+  배송완료: 'success',
+  구매확정: 'success',
+  취소: 'destructive',
+  환불: 'destructive',
 };
+
+export const orderStatusColors: Record<string, string> = Object.fromEntries(Object.entries(ORDER_STATUS_TONE).map(([status, tone]) => [status, badgeToneClass(tone)]));
+
+export const orderStatusVariants: Record<string, BadgeSemanticVariant> = Object.fromEntries(Object.entries(ORDER_STATUS_TONE).map(([status, tone]) => [status, badgeToneVariant(tone)]));
 
 
 export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
@@ -115,17 +133,21 @@ export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
   return 'neutral';
 }
 
-export const paymentStatusColors: Record<string, string> = {
-  결제완료: SEMANTIC_BADGE.success,
-  결제대기: SEMANTIC_BADGE.warning,
-  결제실패: SEMANTIC_BADGE.destructive,
-  결제취소: SEMANTIC_BADGE.destructive,
-  패키지차감: SEMANTIC_BADGE.info,
-  주문결제포함: SEMANTIC_BADGE.success,
-  대여결제포함: SEMANTIC_BADGE.success,
-  확인필요: SEMANTIC_BADGE.warning,
-  환불: SEMANTIC_BADGE.destructive,
+const PAYMENT_STATUS_TONE: Record<string, BadgeSemanticTone> = {
+  결제완료: 'success',
+  결제대기: 'warning',
+  결제실패: 'destructive',
+  결제취소: 'destructive',
+  패키지차감: 'info',
+  주문결제포함: 'success',
+  대여결제포함: 'success',
+  확인필요: 'warning',
+  환불: 'destructive',
 };
+
+export const paymentStatusColors: Record<string, string> = Object.fromEntries(Object.entries(PAYMENT_STATUS_TONE).map(([status, tone]) => [status, badgeToneClass(tone)]));
+
+export const paymentStatusVariants: Record<string, BadgeSemanticVariant> = Object.fromEntries(Object.entries(PAYMENT_STATUS_TONE).map(([status, tone]) => [status, badgeToneVariant(tone)]));
 
 export const orderTypeColors: Record<string, string> = {
   상품: SEMANTIC_BADGE.info,
@@ -208,14 +230,18 @@ export function getTrackingBadge(order: Order) {
   return { label, color: trackingStatusColors[label] };
 }
 
-export const applicationStatusColors = {
-  접수완료: SEMANTIC_BADGE.info,
-  '검토 중': SEMANTIC_BADGE.warning,
-  '작업 중': SEMANTIC_BADGE.brand,
-  교체완료: SEMANTIC_BADGE.success,
-  취소: SEMANTIC_BADGE.destructive,
-  default: SEMANTIC_BADGE.neutral,
-} as const;
+const APPLICATION_STATUS_TONE = {
+  접수완료: 'info',
+  '검토 중': 'warning',
+  '작업 중': 'brand',
+  교체완료: 'success',
+  취소: 'destructive',
+  default: 'neutral',
+} as const satisfies Record<string, BadgeSemanticTone>;
+
+export const applicationStatusColors = Object.fromEntries(Object.entries(APPLICATION_STATUS_TONE).map(([status, tone]) => [status, badgeToneClass(tone)])) as Record<keyof typeof APPLICATION_STATUS_TONE, string>;
+
+export const applicationStatusVariants = Object.fromEntries(Object.entries(APPLICATION_STATUS_TONE).map(([status, tone]) => [status, badgeToneVariant(tone)])) as Record<keyof typeof APPLICATION_STATUS_TONE, BadgeSemanticVariant>;
 
 export function getApplicationStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? '').trim();
@@ -229,16 +255,20 @@ export function getApplicationStatusTone(status?: string | null): BadgeSemanticT
 }
 
 /** ---------------------- QnA 배지 (카테고리/답변 상태) ---------------------- */
-export const qnaCategoryColors: Record<QnaCategory, string> = {
-  상품문의: SEMANTIC_BADGE.info,
-  '주문/결제': SEMANTIC_BADGE.brand,
-  배송: SEMANTIC_BADGE.warning,
-  '환불/교환': SEMANTIC_BADGE.destructive,
-  서비스: SEMANTIC_BADGE.success,
-  아카데미: SEMANTIC_BADGE.brand,
-  회원: SEMANTIC_BADGE.warning,
-  일반문의: SEMANTIC_BADGE.neutral,
+const QNA_CATEGORY_TONE: Record<QnaCategory, BadgeSemanticTone> = {
+  상품문의: 'info',
+  '주문/결제': 'brand',
+  배송: 'warning',
+  '환불/교환': 'destructive',
+  서비스: 'success',
+  아카데미: 'brand',
+  회원: 'warning',
+  일반문의: 'neutral',
 };
+
+export const qnaCategoryColors: Record<QnaCategory, string> = Object.fromEntries(Object.entries(QNA_CATEGORY_TONE).map(([label, tone]) => [label, badgeToneClass(tone)])) as Record<QnaCategory, string>;
+
+export const qnaCategoryVariants: Record<QnaCategory, BadgeSemanticVariant> = Object.fromEntries(Object.entries(QNA_CATEGORY_TONE).map(([label, tone]) => [label, badgeToneVariant(tone)])) as Record<QnaCategory, BadgeSemanticVariant>;
 
 /** 안전 헬퍼: 잘못된 값이 와도 기본 회색으로 */
 export function getQnaCategoryColor(label?: QnaCategory | string | null) {
@@ -246,37 +276,64 @@ export function getQnaCategoryColor(label?: QnaCategory | string | null) {
   return (qnaCategoryColors as Record<string, string>)[label] ?? qnaCategoryColors['일반문의'];
 }
 
+export function getQnaCategoryVariant(label?: QnaCategory | string | null): BadgeSemanticVariant {
+  if (!label) return qnaCategoryVariants['일반문의'];
+  return (qnaCategoryVariants as Record<string, BadgeSemanticVariant>)[label] ?? qnaCategoryVariants['일반문의'];
+}
+
 /** 답변 상태 배지 색상 */
 export function getAnswerStatusColor(answered: boolean) {
   return answered ? SEMANTIC_BADGE.success : SEMANTIC_BADGE.neutral;
+}
+
+export function getAnswerStatusVariant(answered: boolean): BadgeSemanticVariant {
+  return answered ? badgeToneVariant('success') : badgeToneVariant('neutral');
 }
 
 /** ---------------------- Notice / Review 전용 배지 ---------------------- */
 export const noticePinColor = SEMANTIC_BADGE.brand;
 
 export type ReviewType = 'product' | 'service' | 'etc';
-export const reviewTypeColors: Record<ReviewType, string> = {
-  product: SEMANTIC_BADGE.info,
-  service: SEMANTIC_BADGE.brand,
-  etc: SEMANTIC_BADGE.neutral,
+const REVIEW_TYPE_TONE: Record<ReviewType, BadgeSemanticTone> = {
+  product: 'info',
+  service: 'brand',
+  etc: 'neutral',
 };
+
+export const reviewTypeColors: Record<ReviewType, string> = Object.fromEntries(Object.entries(REVIEW_TYPE_TONE).map(([type, tone]) => [type, badgeToneClass(tone)])) as Record<ReviewType, string>;
+
+export const reviewTypeVariants: Record<ReviewType, BadgeSemanticVariant> = Object.fromEntries(Object.entries(REVIEW_TYPE_TONE).map(([type, tone]) => [type, badgeToneVariant(tone)])) as Record<ReviewType, BadgeSemanticVariant>;
 export function getReviewTypeColor(t?: string | null) {
   const key = t === 'product' || t === 'service' ? (t as ReviewType) : 'etc';
   return reviewTypeColors[key];
 }
 
+export function getReviewTypeVariant(t?: string | null): BadgeSemanticVariant {
+  const key = t === 'product' || t === 'service' ? (t as ReviewType) : 'etc';
+  return reviewTypeVariants[key];
+}
+
 /** ---------------------- Notice 카테고리 & 첨부 배지 ---------------------- */
-export const noticeCategoryColors: Record<string, string> = {
-  일반: SEMANTIC_BADGE.neutral,
-  이벤트: SEMANTIC_BADGE.success,
-  아카데미: SEMANTIC_BADGE.info,
-  점검: SEMANTIC_BADGE.neutral,
-  긴급: SEMANTIC_BADGE.destructive,
+const NOTICE_CATEGORY_TONE: Record<string, BadgeSemanticTone> = {
+  일반: 'neutral',
+  이벤트: 'success',
+  아카데미: 'info',
+  점검: 'neutral',
+  긴급: 'destructive',
 };
+
+export const noticeCategoryColors: Record<string, string> = Object.fromEntries(Object.entries(NOTICE_CATEGORY_TONE).map(([label, tone]) => [label, badgeToneClass(tone)]));
+
+export const noticeCategoryVariants: Record<string, BadgeSemanticVariant> = Object.fromEntries(Object.entries(NOTICE_CATEGORY_TONE).map(([label, tone]) => [label, badgeToneVariant(tone)]));
 
 export function getNoticeCategoryColor(label?: string | null) {
   if (!label) return noticeCategoryColors['일반'];
   return noticeCategoryColors[label] ?? noticeCategoryColors['일반'];
+}
+
+export function getNoticeCategoryVariant(label?: string | null): BadgeSemanticVariant {
+  if (!label) return noticeCategoryVariants['일반'];
+  return noticeCategoryVariants[label] ?? noticeCategoryVariants['일반'];
 }
 
 /** 첨부(이미지/파일) 배지 색 */
@@ -286,28 +343,29 @@ export const attachFileColor = SEMANTIC_BADGE.neutral;
 /** ---------------------- Used Rackets 배지(대여/상태) ---------------------- */
 export type UsedBadgeKind = 'rental' | 'condition';
 
-const USED_BADGE_META: Record<UsedBadgeKind, Record<string, { label: string; className: string }>> = {
+const USED_BADGE_META: Record<UsedBadgeKind, Record<string, { label: string; tone: BadgeSemanticTone }>> = {
   rental: {
-    available: { label: '대여 가능', className: SEMANTIC_BADGE.success },
-    unavailable: { label: '대여 불가', className: SEMANTIC_BADGE.destructive },
-    rented: { label: '대여 중', className: SEMANTIC_BADGE.neutral },
-    pending: { label: '예약 대기', className: SEMANTIC_BADGE.info },
+    available: { label: '대여 가능', tone: 'success' },
+    unavailable: { label: '대여 불가', tone: 'destructive' },
+    rented: { label: '대여 중', tone: 'neutral' },
+    pending: { label: '예약 대기', tone: 'info' },
   },
   condition: {
-    A: { label: '최상', className: SEMANTIC_BADGE.success },
-    B: { label: '양호', className: SEMANTIC_BADGE.info },
-    C: { label: '보통', className: SEMANTIC_BADGE.neutral },
-    D: { label: '하', className: SEMANTIC_BADGE.destructive },
+    A: { label: '최상', tone: 'success' },
+    B: { label: '양호', tone: 'info' },
+    C: { label: '보통', tone: 'neutral' },
+    D: { label: '하', tone: 'destructive' },
   },
 };
 
 export function usedBadgeMeta(kind: UsedBadgeKind, state: string) {
-  return (
-    USED_BADGE_META[kind]?.[state] ?? {
-      label: state,
-      className: SEMANTIC_BADGE.neutral,
-    }
-  );
+  const resolved = USED_BADGE_META[kind]?.[state] ?? { label: state, tone: 'neutral' as const };
+  return {
+    label: resolved.label,
+    tone: resolved.tone,
+    variant: badgeToneVariant(resolved.tone),
+    className: badgeToneClass(resolved.tone),
+  };
 }
 
 

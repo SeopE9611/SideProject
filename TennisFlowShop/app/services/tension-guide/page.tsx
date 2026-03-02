@@ -485,8 +485,8 @@ export default function TensionGuidePage() {
                       </div>
                       <p className="text-sm text-muted-foreground">최종 추천 텐션 {calculatedTension}LB · {selectedRange.min}LB ~ {selectedRange.max}LB</p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="text-xs">{gender === 'female' ? '여자' : '남자'} {selectedRange.min}~{selectedRange.max}LB</Badge>
-                        <Badge variant="outline" className="text-xs">{oppositeGender === 'female' ? '여자' : '남자'} {oppositeRange.min}~{oppositeRange.max}LB</Badge>
+                        <Badge variant="info" className="text-xs">{gender === 'female' ? '여자' : '남자'} {selectedRange.min}~{selectedRange.max}LB</Badge>
+                        <Badge variant="neutral" className="text-xs">{oppositeGender === 'female' ? '여자' : '남자'} {oppositeRange.min}~{oppositeRange.max}LB</Badge>
                       </div>
                     </div>
 
@@ -576,8 +576,8 @@ export default function TensionGuidePage() {
                           <div>
                             <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-1 text-card-foreground">{player.type}</CardTitle>
                             <div className="flex flex-wrap gap-2">
-                              <Badge variant="secondary" className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1">여자 {player.femaleTension}</Badge>
-                              <Badge variant="outline" className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1">남자 {player.maleTension}</Badge>
+                              <Badge variant="info" className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1">여자 {player.femaleTension}</Badge>
+                              <Badge variant="neutral" className="text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1">남자 {player.maleTension}</Badge>
                             </div>
                           </div>
                         </div>
@@ -669,8 +669,8 @@ export default function TensionGuidePage() {
                     <p className="text-sm text-muted-foreground">{string.characteristics}</p>
 
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="text-xs">여자 {string.ranges.female.min}~{string.ranges.female.max}LB</Badge>
-                      <Badge variant="outline" className="text-xs">남자 {string.ranges.male.min}~{string.ranges.male.max}LB</Badge>
+                      <Badge variant="info" className="text-xs">여자 {string.ranges.female.min}~{string.ranges.female.max}LB</Badge>
+                      <Badge variant="neutral" className="text-xs">남자 {string.ranges.male.min}~{string.ranges.male.max}LB</Badge>
                     </div>
 
                     {string.helperText && <p className="text-xs text-muted-foreground">{string.helperText}</p>}

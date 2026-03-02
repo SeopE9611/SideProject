@@ -50,9 +50,7 @@ export default function PaymentInfoSection({ formData, setFormData, handleInputC
               {/* 헤더: 제목 + 상태 배지 */}
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className={packageInsufficient ? 'text-sm font-semibold text-foreground' : 'text-sm font-semibold text-primary'}>패키지 자동 적용</h3>
-                <Badge
-                  className={packageInsufficient ? 'border border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15' : 'border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20'}
-                >
+                <Badge variant={packageInsufficient ? 'danger' : 'info'}>
                   {packageInsufficient ? '적용 불가' : usingPackage ? '사용 중' : '사용 가능'}
                 </Badge>
               </div>
@@ -76,16 +74,10 @@ export default function PaymentInfoSection({ formData, setFormData, handleInputC
 
               {/* 숫자 요약 뱃지들 */}
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                <Badge variant="outline" className="border-border text-primary">
-                  필요 {requiredPassCount}회
-                </Badge>
-                <Badge variant="outline" className="border-border text-primary">
-                  잔여 {packagePreview.remaining}회
-                </Badge>
+                <Badge variant="info">필요 {requiredPassCount}회</Badge>
+                <Badge variant="info">잔여 {packagePreview.remaining}회</Badge>
                 {packagePreview.expiresAt && (
-                  <Badge variant="outline" className="border-border text-primary">
-                    만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}
-                  </Badge>
+                  <Badge variant="neutral">만료일 {new Date(packagePreview.expiresAt).toLocaleDateString('ko-KR')}</Badge>
                 )}
               </div>
 
