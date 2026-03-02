@@ -662,12 +662,12 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
                     {packagePreview?.has ? (
                       canApplyPackage ? (
-                        <Badge className="h-5 rounded-full border-border bg-muted text-xs font-medium text-foreground dark:bg-muted dark:text-foreground">자동 적용 대상</Badge>
+                        <Badge variant="success" className="h-5 text-xs font-medium">자동 적용 대상</Badge>
                       ) : (
-                        <Badge className="h-5 rounded-full border-border/60 bg-muted text-xs font-medium text-foreground dark:bg-muted dark:text-foreground">이번 구성에는 적용 불가</Badge>
+                        <Badge variant="warning" className="h-5 text-xs font-medium">이번 구성에는 적용 불가</Badge>
                       )
                     ) : (
-                      <Badge className="h-5 rounded-full border-border bg-muted text-xs font-medium text-foreground dark:bg-card/40 dark:text-foreground">보유 패키지 없음</Badge>
+                      <Badge variant="secondary" className="h-5 text-xs font-medium">보유 패키지 없음</Badge>
                     )}
                   </div>
 

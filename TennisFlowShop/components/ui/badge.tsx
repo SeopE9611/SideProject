@@ -6,21 +6,21 @@ import { cn } from '@/lib/utils';
 const badgeVariants = cva('inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2', {
   variants: {
     variant: {
-      neutral: 'border-border bg-card text-foreground',
-      info: 'border-primary/40 bg-primary/20 text-primary dark:border-primary/50 dark:bg-primary/25',
-      success: 'border-success/40 bg-success/20 text-success dark:border-success/50 dark:bg-success/25',
-      warning: 'border-warning/40 bg-warning/20 text-warning dark:border-warning/50 dark:bg-warning/25',
-      danger: 'border-destructive/40 bg-destructive/20 text-destructive dark:border-destructive/50 dark:bg-destructive/25',
-      brand: 'border-primary/40 bg-primary/20 text-primary dark:border-primary/50 dark:bg-primary/25',
+      neutral: 'border-border bg-card text-foreground dark:bg-card/90',
+      info: 'border-info/45 bg-info/15 text-info dark:border-info/55 dark:bg-info/22',
+      success: 'border-success/45 bg-success/15 text-success dark:border-success/55 dark:bg-success/24',
+      warning: 'border-warning/45 bg-warning/15 text-warning dark:border-warning/55 dark:bg-warning/26',
+      danger: 'border-destructive/45 bg-destructive/15 text-destructive dark:border-destructive/55 dark:bg-destructive/24',
+      brand: 'border-primary/45 bg-primary/15 text-primary dark:border-primary/55 dark:bg-primary/24',
+      secondary: 'border-border/80 bg-muted/80 text-muted-foreground dark:bg-muted/55 dark:text-foreground',
       outline: 'border-border bg-background text-foreground',
 
       // Legacy aliases kept for gradual migration.
-      default: 'border-border bg-card text-foreground',
-      highlight: 'border-primary/40 bg-primary/20 text-primary dark:border-primary/50 dark:bg-primary/25',
-      secondary: 'border-transparent bg-secondary text-brand-text bg-secondary/80',
-      destructive: 'border-destructive/40 bg-destructive/20 text-destructive dark:border-destructive/50 dark:bg-destructive/25',
-      product: 'border-primary/40 bg-primary/20 text-primary dark:border-primary/50 dark:bg-primary/25',
-      service: 'border-primary/40 bg-primary/20 text-primary dark:border-primary/50 dark:bg-primary/25',
+      default: 'border-border bg-card text-foreground dark:bg-card/90',
+      highlight: 'border-primary/45 bg-primary/15 text-primary dark:border-primary/55 dark:bg-primary/24',
+      destructive: 'border-destructive/45 bg-destructive/15 text-destructive dark:border-destructive/55 dark:bg-destructive/24',
+      product: 'border-info/45 bg-info/15 text-info dark:border-info/55 dark:bg-info/22',
+      service: 'border-warning/45 bg-warning/15 text-warning dark:border-warning/55 dark:bg-warning/26',
     },
   },
   defaultVariants: {

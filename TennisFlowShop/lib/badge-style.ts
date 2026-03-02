@@ -8,12 +8,13 @@ export const badgeBase = 'inline-flex items-center gap-1 font-normal';
 export const badgeBaseOutlined = `${badgeBase} border border-border bg-background`;
 
 const SEMANTIC_BADGE = {
-  success: 'bg-success/20 text-success border border-success/40 dark:bg-success/25 dark:border-success/50',
-  warning: 'bg-warning/20 text-warning border border-warning/40 dark:bg-warning/25 dark:border-warning/50',
-  info: 'bg-primary/20 text-primary border border-primary/40 dark:bg-primary/25 dark:border-primary/50',
-  neutral: 'bg-card text-foreground border border-border',
-  danger: 'bg-destructive/20 text-destructive border border-destructive/40 dark:bg-destructive/25 dark:border-destructive/50',
-  destructive: 'bg-destructive/20 text-destructive border border-destructive/40 dark:bg-destructive/25 dark:border-destructive/50',
+  neutral: 'bg-card text-foreground border border-border dark:bg-card/90',
+  info: 'bg-info/15 text-info border border-info/45 dark:bg-info/22 dark:border-info/55',
+  success: 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55',
+  warning: 'bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55',
+  danger: 'bg-destructive/15 text-destructive border border-destructive/45 dark:bg-destructive/24 dark:border-destructive/55',
+  brand: 'bg-primary/15 text-primary border border-primary/45 dark:bg-primary/24 dark:border-primary/55',
+  destructive: 'bg-destructive/15 text-destructive border border-destructive/45 dark:bg-destructive/24 dark:border-destructive/55',
 } as const;
 
 export type BadgeSemanticTone = keyof typeof SEMANTIC_BADGE;
@@ -29,6 +30,7 @@ export const SEMANTIC_BADGE_VARIANT = {
   success: 'success',
   warning: 'warning',
   danger: 'danger',
+  brand: 'brand',
   destructive: 'danger',
 } as const;
 
@@ -117,14 +119,14 @@ export const paymentStatusColors: Record<string, string> = {
 
 export const orderTypeColors: Record<string, string> = {
   상품: SEMANTIC_BADGE.info,
-  서비스: SEMANTIC_BADGE.info,
-  클래스: SEMANTIC_BADGE.info,
+  서비스: SEMANTIC_BADGE.brand,
+  클래스: SEMANTIC_BADGE.warning,
 };
 
 export const shippingStatusColors: Record<string, string> = {
   등록됨: SEMANTIC_BADGE.success,
   미등록: SEMANTIC_BADGE.destructive,
-  방문수령: SEMANTIC_BADGE.info,
+  방문수령: SEMANTIC_BADGE.brand,
   퀵배송: SEMANTIC_BADGE.info,
   미입력: SEMANTIC_BADGE.neutral,
 };
@@ -197,9 +199,9 @@ export function getTrackingBadge(order: Order) {
 }
 
 export const applicationStatusColors = {
-  접수완료: SEMANTIC_BADGE.success,
+  접수완료: SEMANTIC_BADGE.info,
   '검토 중': SEMANTIC_BADGE.warning,
-  '작업 중': SEMANTIC_BADGE.info,
+  '작업 중': SEMANTIC_BADGE.brand,
   교체완료: SEMANTIC_BADGE.success,
   취소: SEMANTIC_BADGE.destructive,
   default: SEMANTIC_BADGE.neutral,
@@ -207,13 +209,13 @@ export const applicationStatusColors = {
 
 /** ---------------------- QnA 배지 (카테고리/답변 상태) ---------------------- */
 export const qnaCategoryColors: Record<QnaCategory, string> = {
-  상품문의: SEMANTIC_BADGE.success,
-  '주문/결제': SEMANTIC_BADGE.info,
-  배송: SEMANTIC_BADGE.info,
+  상품문의: SEMANTIC_BADGE.info,
+  '주문/결제': SEMANTIC_BADGE.brand,
+  배송: SEMANTIC_BADGE.warning,
   '환불/교환': SEMANTIC_BADGE.destructive,
-  서비스: SEMANTIC_BADGE.neutral,
-  아카데미: SEMANTIC_BADGE.neutral,
-  회원: SEMANTIC_BADGE.neutral,
+  서비스: SEMANTIC_BADGE.success,
+  아카데미: SEMANTIC_BADGE.brand,
+  회원: SEMANTIC_BADGE.warning,
   일반문의: SEMANTIC_BADGE.neutral,
 };
 
@@ -229,12 +231,12 @@ export function getAnswerStatusColor(answered: boolean) {
 }
 
 /** ---------------------- Notice / Review 전용 배지 ---------------------- */
-export const noticePinColor = SEMANTIC_BADGE.info;
+export const noticePinColor = SEMANTIC_BADGE.brand;
 
 export type ReviewType = 'product' | 'service' | 'etc';
 export const reviewTypeColors: Record<ReviewType, string> = {
   product: SEMANTIC_BADGE.info,
-  service: SEMANTIC_BADGE.info,
+  service: SEMANTIC_BADGE.brand,
   etc: SEMANTIC_BADGE.neutral,
 };
 export function getReviewTypeColor(t?: string | null) {
