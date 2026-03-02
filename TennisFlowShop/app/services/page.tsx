@@ -1,12 +1,15 @@
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
+import { getStringingMaterialSummaries } from '@/app/services/_lib/stringingPricingView';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
 import { ArrowRight, Award, Calendar, CheckCircle, Clock, HelpCircle, PhoneCall, Shield, Star, Target, Trophy, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const materialSummaries = await getStringingMaterialSummaries();
   // 스트링 유형 데이터
   const stringTypes = [
     {
@@ -47,25 +50,25 @@ export default function ServicesPage() {
   // 서비스 가격 정보
   const pricingInfo = [
     {
-      service: '스트링 장착 (스트링 미포함)',
-      price: 12000,
-      description: '자신의 스트링 또는 별도 구매한 스트링 장착 서비스',
+      service: '보유/커스텀 스트링 장착',
+      priceLabel: `${CUSTOM_STRING_MOUNTING_FEE.toLocaleString()}원`,
+      description: '보유 스트링 또는 직접 입력 스트링 기준 교체비',
       icon: <Clock className="h-6 w-6" />,
       duration: '30-45분',
       popular: false,
     },
     {
-      service: '스트링 장착 (스트링 포함)',
-      price: 35000,
-      description: '테니스 플로우의 추천 스트링 포함 가격',
+      service: '스트링 상품 선택 장착',
+      priceLabel: '상품별 상이',
+      description: '선택 상품 mountingFee 기준으로 교체비 계산',
       icon: <Shield className="h-6 w-6" />,
       duration: '30-45분',
       popular: true,
     },
     {
-      service: '하이브리드 장착',
-      price: 13000,
-      description: '메인과 크로스에 서로 다른 스트링 조합 장착 (스트링 미포함)',
+      service: '패키지 적용 신청',
+      priceLabel: '교체비 0원',
+      description: '패키지 잔여 횟수 충족 시 교체비 0원 처리',
       icon: <Award className="h-6 w-6" />,
       duration: '45-60분',
       popular: false,
@@ -84,21 +87,21 @@ export default function ServicesPage() {
   const additionalServices = [
     {
       title: '장력 추천 서비스',
-      description: '플레이 스타일과 라켓에 맞는 최적의 장력을 추천해 드립니다.',
+      description: '플레이 스타일과 라켓에 맞는 장력 추천을 무료로 안내합니다.',
       free: true,
       icon: <Target className="h-5 w-5" />,
     },
     {
       title: '스트링 추천 서비스',
-      description: '개인의 플레이 스타일에 맞는 최적의 스트링과 장력 조합을 추천해 드립니다.',
+      description: '개인의 플레이 스타일에 맞는 스트링/장력 조합을 무료로 안내합니다.',
       free: true,
       icon: <Award className="h-5 w-5" />,
     },
     {
       title: '라켓 그립 교체',
-      description: '새로운 베이스 그립 또는 오버그립 교체 서비스입니다.',
+      description: '부자재/작업 범위에 따라 비용이 달라져 별도 문의가 필요합니다.',
       free: false,
-      price: 5000,
+      priceLabel: '별도 문의',
       icon: <Shield className="h-5 w-5" />,
     },
   ];
@@ -393,12 +396,25 @@ export default function ServicesPage() {
                 <CardHeader className="text-center pb-4">
                   <div className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${item.popular ? 'bg-primary/10 dark:bg-primary/20 text-primary' : 'bg-primary/10 dark:bg-primary/20 text-primary'}`}>{item.icon}</div>
                   <CardTitle className={`text-lg font-bold ${item.popular ? 'text-foreground' : ''}`}>{item.service}</CardTitle>
-                  <div className={`text-3xl font-bold ${item.popular ? 'text-foreground' : 'text-foreground'}`}>{item.price.toLocaleString()}원</div>
+                  <div className={`text-3xl font-bold ${item.popular ? 'text-foreground' : 'text-foreground'}`}>{item.priceLabel}</div>
                   <div className={`text-sm ${item.popular ? 'text-muted-foreground' : 'text-muted-foreground'}`}>소요시간: {item.duration}</div>
                 </CardHeader>
 
                 <CardContent>
                   <p className="text-sm text-center text-muted-foreground">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {materialSummaries.map((cat) => (
+              <Card key={cat.key} className="bg-card/95 dark:bg-card/95">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{cat.label}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  {cat.count === 0 ? '등록된 상품 데이터 없음' : `상품가 ${cat.minPrice?.toLocaleString() ?? '-'}~${cat.maxPrice?.toLocaleString() ?? '-'}원 / 장착비 ${cat.minMountingFee?.toLocaleString() ?? '-'}~${cat.maxMountingFee?.toLocaleString() ?? '-'}원`}
                 </CardContent>
               </Card>
             ))}
@@ -415,11 +431,15 @@ export default function ServicesPage() {
                       <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
                       <h4 className="font-bold">{service.title}</h4>
                     </div>
-                    {service.free ? <Badge variant="info">무료</Badge> : <span className="font-bold text-foreground">{(service.price ?? 0).toLocaleString()}원</span>}
+                    {service.free ? <Badge variant="info">무료</Badge> : <span className="font-bold text-foreground">{service.priceLabel ?? '별도 안내'}</span>}
                   </div>
                   <p className="text-sm text-muted-foreground">{service.description}</p>
                 </div>
               ))}
+            </div>
+            <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground space-y-1">
+              <p>• 기사 방문 수거비는 {COURIER_PICKUP_FEE.toLocaleString()}원이며 후정산으로 안내됩니다.</p>
+              <p>• 스트링 상품 선택 시 교체비는 상품별 mountingFee 기준으로 달라질 수 있습니다.</p>
             </div>
           </div>
         </div>

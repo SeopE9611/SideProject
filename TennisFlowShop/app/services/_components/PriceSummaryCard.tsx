@@ -97,7 +97,7 @@ export default function PriceSummaryCard({
               <BadgeDollarSign className="h-4 w-4 text-muted-foreground" />
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">교체비</p>
-                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 교체비만' : stringIncluded ? '스트링 상품: 주문/대여로 확보됨' : '스트링 상품: 별도 구매 필요'}</p>
+                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 교체비만' : stringIncluded ? '스트링 상품: 주문/대여 결제 내역 우선' : '스트링 상품: 선택 상품의 장착비 기준'}</p>
               </div>
             </div>
 
