@@ -505,6 +505,8 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       } catch {}
 
       const rentalId = String(json?.id ?? '');
+      const stringingSubmitted = json?.stringingSubmitted === true;
+      const stringingApplicationId = typeof json?.stringingApplicationId === 'string' && json.stringingApplicationId.trim() ? String(json.stringingApplicationId) : '';
 
       /**
        * 구매 UX와 동일한 흐름
@@ -514,6 +516,20 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       const qs = new URLSearchParams();
       qs.set('id', rentalId);
       if (requestStringing) qs.set('withService', '1');
+      /**
+       * Step 3: success 페이지에서 분기를 재현 가능하게 만들기 위해
+       * API 응답의 "통합 제출 완료 여부"를 query로 명시적으로 전달한다.
+       *
+       * - stringingSubmitted=1: checkout에서 이미 submit-core까지 완료된 신규 통합 제출
+       * - 값 없음: legacy fallback(create-from-rental) 경로
+       */
+      if (requestStringing && stringingSubmitted) {
+        qs.set('stringingSubmitted', '1');
+      }
+      // 선택값: 서버가 stringingApplicationId를 내려준 경우 success에서 추적/디버깅에 활용 가능
+      if (requestStringing && stringingApplicationId) {
+        qs.set('stringingApplicationId', stringingApplicationId);
+      }
       router.push(`/rentals/success?${qs.toString()}`);
     } catch (e) {
       showErrorToast('결제 처리 중 오류가 발생했습니다.');
