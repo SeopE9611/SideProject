@@ -5,6 +5,7 @@ import { mutate as globalMutate } from 'swr';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -268,7 +269,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 </div>
                               </div>
 
-                              {isUnread && <span className="shrink-0 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold leading-none px-2 py-1">NEW</span>}
+                              {isUnread && <Badge variant="brand" className="shrink-0 px-2 py-1 text-[10px] font-semibold leading-none">NEW</Badge>}
                             </div>
                           </button>
                         );

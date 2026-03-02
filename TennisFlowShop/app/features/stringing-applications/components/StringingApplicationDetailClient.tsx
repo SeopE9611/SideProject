@@ -1099,8 +1099,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground">스트링 {stringTypeCount}종</span>
-                  <span className="inline-flex items-center rounded-full bg-card/90 dark:bg-card px-3 py-1 text-xs sm:text-sm font-medium text-foreground">라켓 {racketCount}자루</span>
+                  <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">스트링 {stringTypeCount}종</Badge>
+                  <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">라켓 {racketCount}자루</Badge>
                 </div>
 
                 <div className="text-xs sm:text-sm font-semibold text-primary">총 장착비 {totalPrice.toLocaleString()}원</div>
@@ -1135,9 +1135,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                               {line.racketType ? ` · ${line.racketType}` : ''}
                             </p>
                             {(line.tensionMain || line.tensionCross) && (
-                              <span className="inline-flex items-center rounded-full px-2 py-1 text-xs bg-muted text-foreground dark:bg-card">
+                              <Badge variant="info" className="px-2 py-1 text-xs">
                                 텐션 {line.tensionMain ? `${line.tensionMain}LB` : '-'} / {line.tensionCross ? `${line.tensionCross}LB` : '-'}
-                              </span>
+                              </Badge>
                             )}
                           </div>
 

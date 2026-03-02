@@ -14,6 +14,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import WishlistSidebar from '@/app/cart/_components/WishlistSidebar';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { calcShippingFee } from '@/lib/shipping-fee';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 
@@ -404,9 +405,9 @@ export default function CartPageClient() {
                               </div>
                               {highlightCleanupTarget && (
                                 <>
-                                  <span className="mt-1 inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-foreground ring-1 ring-inset ring-ring dark:bg-muted dark:text-foreground dark:ring-ring">
+                                  <Badge variant="warning" className="mt-1 px-2 py-0.5 text-[11px] font-medium">
                                     장착 대상 스트링(정리 필요)
-                                  </span>
+                                  </Badge>
                                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] leading-snug text-foreground/90 dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />

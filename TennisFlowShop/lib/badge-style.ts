@@ -105,6 +105,16 @@ export const orderStatusColors: Record<string, string> = {
   환불: SEMANTIC_BADGE.destructive,
 };
 
+
+export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
+  const normalized = String(status ?? '').trim();
+  if (!normalized) return 'neutral';
+  if (normalized === '결제완료' || normalized === '배송완료' || normalized === '구매확정') return 'success';
+  if (normalized === '배송중' || normalized === '처리중') return 'info';
+  if (normalized === '대기중' || normalized === '배송준비중' || normalized.includes('취소')) return 'warning';
+  return 'neutral';
+}
+
 export const paymentStatusColors: Record<string, string> = {
   결제완료: SEMANTIC_BADGE.success,
   결제대기: SEMANTIC_BADGE.warning,

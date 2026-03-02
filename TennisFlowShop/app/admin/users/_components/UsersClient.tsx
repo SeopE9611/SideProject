@@ -647,23 +647,23 @@ export default function UsersClient() {
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {canSuspend && canUnsuspend && (
                 <>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary">
+                  <Badge variant="info" className="gap-1 px-2 py-1">
                     <UserCheck className="h-3.5 w-3.5" />
                     활성화 가능 {selectedRows.filter((u) => !u.isDeleted && u.isSuspended).length}건
-                  </span>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-1 text-primary">
+                  </Badge>
+                  <Badge variant="brand" className="gap-1 px-2 py-1">
                     <UserX className="h-3.5 w-3.5" />
                     비활성화 가능 {selectedRows.filter((u) => !u.isDeleted && !u.isSuspended).length}건
-                  </span>
+                  </Badge>
                 </>
               )}
 
               {/* 삭제 선택 시: 경고 칩 */}
               {hasDeletedSelected && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-2 py-1 text-foreground">
+                <Badge variant="warning" className="gap-1 px-2 py-1">
                   <AlertCircle className="h-3.5 w-3.5" />
                   삭제(탈퇴)된 회원은 복구할 수 없습니다. 재가입만 가능합니다.
-                </span>
+                </Badge>
               )}
             </div>
           )}
