@@ -1,4 +1,4 @@
-import { getStringingMaterialSummaries } from '@/app/services/_lib/stringingPricingView';
+import { getStringingPricingView } from '@/app/services/_lib/stringingPricingView';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import Link from 'next/link';
 const won = (n: number | null) => (n == null ? '데이터 없음' : `${n.toLocaleString('ko-KR')}원`);
 
 export default async function PricingPage() {
-  const summaries = await getStringingMaterialSummaries();
+  const { primarySummaries, otherSummary, hybridGuide } = await getStringingPricingView();
 
   const basicServices = [
     {
@@ -95,7 +95,7 @@ export default async function PricingPage() {
         <section>
           <h2 className="text-2xl font-bold mb-6 text-center">스트링 가격대별 안내</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {summaries.map((category) => (
+            {primarySummaries.map((category) => (
               <Card key={category.key}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -118,6 +118,34 @@ export default async function PricingPage() {
               </Card>
             ))}
           </div>
+          {otherSummary?.count ? (
+            <Card className="mt-5 border-dashed">
+              <CardHeader>
+                <CardTitle className="text-base">{otherSummary.label} (보조 분류)</CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                상품가 <b>{won(otherSummary.minPrice)}</b> ~ <b>{won(otherSummary.maxPrice)}</b> / 장착비 <b>{won(otherSummary.minMountingFee)}</b> ~ <b>{won(otherSummary.maxMountingFee)}</b>
+              </CardContent>
+            </Card>
+          ) : null}
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold mb-6 text-center">하이브리드 조합 안내</h2>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                하이브리드는 조합 방식으로 안내합니다
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p className="text-muted-foreground">하이브리드는 단일 재질이 아닌 메인/크로스 스트링의 조합 방식입니다. 가격 비교는 단일 재질(폴리에스터, 인조쉽/멀티필라멘트, 내추럴 거트)을 먼저 확인해 주세요.</p>
+              <p>등록된 하이브리드 상품 수: <b>{hybridGuide.count.toLocaleString('ko-KR')}개</b></p>
+              <p className="text-muted-foreground">대표 조합 표기: {hybridGuide.representativeMaterials.length ? hybridGuide.representativeMaterials.join(', ') : '데이터 없음'}</p>
+              <p className="text-muted-foreground">대표 상품: {hybridGuide.representativeProducts.length ? hybridGuide.representativeProducts.join(', ') : '데이터 없음'}</p>
+            </CardContent>
+          </Card>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
