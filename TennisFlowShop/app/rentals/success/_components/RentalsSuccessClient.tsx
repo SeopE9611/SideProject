@@ -62,9 +62,8 @@ export default function RentalsSuccessClient({ data }: Props) {
     } catch {}
   }, [shouldShowHandoff]);
 
-  // withService=1 인 경우: 성공 페이지에서 상세(대여 정보/계좌/요약)를 보여주지 않고,
-  // 교체 서비스 신청서 작성으로만 안내/이동
-  // (최종 결제/계산서/계좌 안내는 신청서 제출 후 success 페이지에서 노출)
+  // withService=1 + stringingSubmitted!=1 인 경우에만 legacy handoff를 유지한다.
+  // (신규 통합 제출은 shouldShowHandoff=false 이므로 현재 success 화면을 그대로 노출)
   if (shouldShowHandoff) {
     return (
       <div className="min-h-[70vh] bg-muted dark:bg-card">
@@ -129,8 +128,6 @@ export default function RentalsSuccessClient({ data }: Props) {
               </CardContent>
             </Card>
           )}
-
-          {/* 스트링 교체 서비스 신청서로 이어가기 */}
 
           {/* 대여 정보 카드 */}
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">

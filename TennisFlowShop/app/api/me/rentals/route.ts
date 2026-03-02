@@ -57,7 +57,10 @@ export async function GET(req: Request) {
        * - 일반적으로 stringing.requested=true면 신청서가 자동 생성되어 stringingApplicationId가 채워지지만,
        *   레거시/예외 케이스에서 ID가 비어 있을 수 있어 boolean을 함께 내려준다.
        */
-      withStringService: Boolean(d?.stringing?.requested) || Boolean(d?.stringingApplicationId),
+      withStringService: Boolean(d?.stringing?.requested) || Boolean(d?.isStringServiceApplied) || Boolean(d?.stringingApplicationId),
+
+      // 상세 API와 동일한 호환 필드(구형 데이터 보강용)
+      isStringServiceApplied: Boolean(d?.isStringServiceApplied),
 
       brand: d.brand,
       model: d.model,
