@@ -7,10 +7,12 @@ import { findUserSnapshot, fetchCombinedOrders } from './db';
 import clientPromise from '@/lib/mongodb';
 import { createStringingApplicationFromOrder } from '@/app/features/stringing-applications/api/create-from-order';
 import { submitStringingApplicationCore, type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
+import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
 import { deductPoints } from '@/lib/points.service';
 import { getShippingBadge } from '@/lib/badge-style';
 import { z } from 'zod';
 import { calcShippingFee } from '@/lib/shipping-fee';
+import { findOneActivePassForUser } from '@/lib/passes.service';
 
 /**
  * 서버 최종 유효성 검사 스키마(주문 생성)
@@ -501,7 +503,7 @@ export async function createOrder(req: Request): Promise<Response> {
           return sum + (Number(it.price) || 0) * (Number(it.quantity) || 0);
         }, 0);
 
-        const computedServiceFee = shippingInfo?.withStringService
+        const baseServiceFee = shippingInfo?.withStringService
           ? itemsWithSnapshot.reduce((sum, it) => {
               if (it.kind !== 'product') return sum;
               const mf = Number((it as any).mountingFee || 0);
@@ -509,6 +511,22 @@ export async function createOrder(req: Request): Promise<Response> {
               return sum + mf * (Number(it.quantity) || 0);
             }, 0)
           : 0;
+
+        const requiredPassCount = resolveRequiredPassCountFromInput({
+          lines: stringingApplicationInput?.lines,
+          stringTypes: stringingApplicationInput?.stringTypes,
+        });
+
+        const packageOptOut = !!stringingApplicationInput?.packageOptOut;
+        const pass = userId && shippingInfo?.withStringService ? await findOneActivePassForUser(db, new ObjectId(userId)) : null;
+        const packageUsage = resolvePackageUsage({
+          hasPackage: !!pass,
+          packageRemaining: Number(pass?.remainingCount ?? 0),
+          requiredPassCount,
+          packageOptOut,
+        });
+
+        const computedServiceFee = shippingInfo?.withStringService ? applyPackageToServiceFee(baseServiceFee, packageUsage) : 0;
 
         const computedShippingFee = calcShippingFee({
           subtotal: computedSubtotal,

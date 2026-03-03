@@ -2,6 +2,7 @@ import type { ClientSession, Db, ObjectId } from 'mongodb';
 import { ObjectId as MongoObjectId } from 'mongodb';
 
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
 import { normalizeEmail } from '@/lib/claims';
 import { calcStringingTotal } from '@/lib/pricing';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
@@ -145,14 +146,24 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
 
   const serviceFeeBefore = usingLines ? normalizedLines.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0) : await calcStringingTotal(db, stringTypes);
 
-  const packageUseCount = usingLines ? normalizedLines.length : Math.max(1, stringTypes.length);
+  const packageUseCount = resolveRequiredPassCountFromInput({
+    lines: normalizedLines,
+    stringTypes,
+  });
   let packageApplied = false;
   let packagePassId: ObjectId | null = null;
   let packageRedeemedAt: Date | null = null;
 
-  if (!packageOptOut && userId) {
+  if (userId) {
     const pass = await findOneActivePassForUser(db, userId);
-    if (pass && Number(pass.remainingCount ?? 0) >= packageUseCount) {
+    const packageUsage = resolvePackageUsage({
+      hasPackage: !!pass,
+      packageRemaining: Number(pass?.remainingCount ?? 0),
+      requiredPassCount: packageUseCount,
+      packageOptOut: !!packageOptOut,
+    });
+
+    if (pass && packageUsage.usingPackage) {
       await consumePass(db, pass._id, applicationId, packageUseCount);
       packageApplied = true;
       packagePassId = pass._id;
@@ -160,7 +171,7 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     }
   }
 
-  const totalPrice = packageApplied ? 0 : serviceFeeBefore;
+  const totalPrice = applyPackageToServiceFee(serviceFeeBefore, { usingPackage: packageApplied });
 
   const updateDoc = {
     orderId: orderObjectId,
