@@ -53,8 +53,8 @@ const RentalsCreateBodySchema = z
       .object({
         name: z.string().trim().min(2),
         phone: z.preprocess(toDigits, z.string().min(10).max(11)),
-        postalCode: z.preprocess(toDigits, z.string().regex(POSTAL_RE)),
-        address: z.string().trim().min(1),
+        postalCode: z.preprocess(toDigits, z.string()).optional(),
+        address: z.string().trim().optional(),
         addressDetail: z.string().trim().optional(),
         deliveryRequest: z.string().trim().optional(),
         // 레거시/하위호환
@@ -86,7 +86,24 @@ const RentalsCreateBodySchema = z
      */
     stringingApplicationInput: z.any().optional(),
   })
-  .passthrough();
+  .passthrough()
+  .superRefine((data, ctx) => {
+    const pickup = data.servicePickupMethod;
+    const shippingMethod = data.shipping?.shippingMethod;
+    const isPickup = pickup === 'SHOP_VISIT' || pickup === 'pickup' || shippingMethod === 'pickup';
+
+    if (isPickup) return;
+
+    const postalDigits = toDigits(data.shipping?.postalCode ?? '');
+    const address = toTrimmedString(data.shipping?.address);
+
+    if (!POSTAL_RE.test(postalDigits)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'INVALID_POSTAL', path: ['shipping', 'postalCode'] });
+    }
+    if (!address) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'REQUIRED_ADDRESS', path: ['shipping', 'address'] });
+    }
+  });
 
 /**
  * submit-core 호출 전에 최소 필수값만 선검증한다.
@@ -210,6 +227,15 @@ export async function POST(req: Request) {
   } else {
     return NextResponse.json({ ok: false, message: 'INVALID_PICKUP_METHOD' }, { status: 400 });
   }
+
+  const normalizedShipping = {
+    ...shipping,
+    postalCode: pickupMethod === 'SHOP_VISIT' ? '' : toDigits(shipping?.postalCode ?? ''),
+    address: pickupMethod === 'SHOP_VISIT' ? '' : toTrimmedString(shipping?.address),
+    addressDetail: pickupMethod === 'SHOP_VISIT' ? '' : toTrimmedString(shipping?.addressDetail),
+    deliveryRequest: toTrimmedString(shipping?.deliveryRequest),
+    shippingMethod: pickupMethod === 'SHOP_VISIT' ? ('pickup' as const) : ('delivery' as const),
+  };
 
   // (2) 포인트: 숫자/정수/단위(100P) 정규화
   const requestedPointsRaw = Number(pointsToUse ?? 0);
@@ -351,7 +377,7 @@ export async function POST(req: Request) {
     // dueAt,
     userId: userObjectId, // 로그인 사용자면 ObjectId, 아니면 null
     payment: payment ?? null, // 무통장 입금 은행/입금자
-    shipping: shipping ?? null, // 배송지 정보
+    shipping: normalizedShipping ?? null, // 배송/수령 정보
     refundAccount: refundAccount ?? null, // 보증금 환불 계좌
     ...(stringingSnap ? { stringing: stringingSnap } : {}),
   };
@@ -412,7 +438,7 @@ export async function POST(req: Request) {
                 userId: userObjectId ?? undefined,
                 createdAt: now,
                 servicePickupMethod: pickupMethod,
-                shipping: shipping ?? undefined,
+                shipping: normalizedShipping ?? undefined,
                 stringing: stringingSnap ?? undefined,
                 serviceFeeHint: (doc as any)?.amount?.stringingFee ?? 0,
               },

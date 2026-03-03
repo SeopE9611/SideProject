@@ -45,6 +45,7 @@ export default function RentalsSuccessClient({ data }: Props) {
   const stringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
   const stringingApplied = Boolean(data.isStringServiceApplied) || Boolean(stringingApplicationId);
   const shouldShowHandoff = withService && !stringingApplied;
+  const stringingApplicationHref = stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
 
   useEffect(() => {
     // legacy handoff 화면은 자체적으로 안내/자동 이동을 처리하므로 뒤로가기 가드는 일반 success에서만 유지
@@ -242,6 +243,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
+                {stringingApplicationHref ? (
+                  <Button className="flex-1 h-12 bg-muted/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
+                    <Link href={stringingApplicationHref} className="flex items-center gap-2">
+                      교체 서비스 신청 내역 보기
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                ) : null}
                 <Button className="flex-1 h-12 bg-muted/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
                   <Link href="/rackets" className="flex items-center gap-2">
                     다른 라켓 보기
