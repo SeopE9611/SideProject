@@ -116,6 +116,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   // --- 수령 방식(택배/방문수령) ---
   type DeliveryMethod = '택배수령' | '방문수령';
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('택배수령');
+  const isVisitPickup = deliveryMethod === '방문수령';
 
   /**
    * 스트링 교체 신청서(/services/apply)에서 기본 수거/방문 방식을 결정하는 값
@@ -416,8 +417,12 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       const refundHolderTrim = refundHolder.trim();
 
       // 필수 입력
-      if (!nameTrim || !phoneDigits || !postalDigits || !addressTrim) {
+      if (!nameTrim || !phoneDigits) {
         showErrorToast('필수 정보를 모두 입력해주세요.');
+        return;
+      }
+      if (!isVisitPickup && (!postalDigits || !addressTrim)) {
+        showErrorToast('택배 수령 시 주소 정보를 모두 입력해주세요.');
         return;
       }
       if (nameTrim.length < 2) {
@@ -428,7 +433,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
         return;
       }
-      if (!POSTAL_RE.test(postalDigits)) {
+      if (!isVisitPickup && !POSTAL_RE.test(postalDigits)) {
         showErrorToast('우편번호(5자리)를 확인해주세요.');
         return;
       }
@@ -506,11 +511,11 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           shipping: {
             name: nameTrim,
             phone: phoneDigits,
-            postalCode: postalDigits,
-            address: addressTrim,
-            addressDetail: addressDetailTrim,
+            postalCode: isVisitPickup ? '' : postalDigits,
+            address: isVisitPickup ? '' : addressTrim,
+            addressDetail: isVisitPickup ? '' : addressDetailTrim,
             deliveryRequest: deliveryRequestTrim,
-            shippingMethod: deliveryMethod === '방문수령' ? 'pickup' : 'delivery',
+            shippingMethod: isVisitPickup ? 'pickup' : 'delivery',
           },
           refundAccount: {
             bank: refundBankValue,
@@ -551,31 +556,11 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       } catch {}
 
       const rentalId = String(json?.id ?? '');
-      const stringingSubmitted = json?.stringingSubmitted === true;
-      const stringingApplicationId = typeof json?.stringingApplicationId === 'string' && json.stringingApplicationId.trim() ? String(json.stringingApplicationId) : '';
 
-      /**
-       * 결제 완료 후에는 항상 대여 성공 페이지로 이동한다.
-       * - 신규 통합 제출(stringingSubmitted=1): 성공 페이지에서 통합 접수 완료 안내만 노출
-       * - 레거시/예외 경로: 기존 handoff 분기 유지
-       */
+      // 성공 분기는 success 페이지에서 DB 상태를 기준으로 판단한다.
+      // legacy query 플래그(withService/stringingSubmitted/stringingApplicationId)는 더 이상 전달하지 않는다.
       const qs = new URLSearchParams();
       qs.set('id', rentalId);
-      if (requestStringing) qs.set('withService', '1');
-      /**
-       * Step 3: success 페이지에서 분기를 재현 가능하게 만들기 위해
-       * API 응답의 "통합 제출 완료 여부"를 query로 명시적으로 전달한다.
-       *
-       * - stringingSubmitted=1: checkout에서 이미 submit-core까지 완료된 신규 통합 제출
-       * - 값 없음: legacy fallback(create-from-rental) 경로
-       */
-      if (requestStringing && stringingSubmitted) {
-        qs.set('stringingSubmitted', '1');
-      }
-      // 선택값: 서버가 stringingApplicationId를 내려준 경우 success에서 추적/디버깅에 활용 가능
-      if (requestStringing && stringingApplicationId) {
-        qs.set('stringingApplicationId', stringingApplicationId);
-      }
       router.push(`/rentals/success?${qs.toString()}`);
     } catch (e) {
       showErrorToast('결제 처리 중 오류가 발생했습니다.');
@@ -596,7 +581,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             </div>
             <div>
               <h1 className="text-4xl font-bold mb-2">라켓 대여 결제</h1>
-              <p className="text-muted-foreground">배송 정보를 입력하고 대여를 완료하세요</p>
+              <p className="text-muted-foreground">{isVisitPickup ? '수령/연락 정보를 입력하고 대여를 완료하세요' : '배송 정보를 입력하고 대여를 완료하세요'}</p>
             </div>
           </div>
         </SiteContainer>
@@ -792,9 +777,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
               <div className="bg-card p-6">
                 <CardTitle className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-foreground" />
-                  배송 정보
+                  {isVisitPickup ? '수령/연락 정보' : '배송 정보'}
                 </CardTitle>
-                <CardDescription className="mt-2">라켓을 받으실 배송지 정보를 입력해주세요.</CardDescription>
+                <CardDescription className="mt-2">{isVisitPickup ? '매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요.' : '라켓을 받으실 배송지 정보를 입력해주세요.'}</CardDescription>
               </div>
               <CardContent className="p-6">
                 <div className="space-y-6">
@@ -821,33 +806,43 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                       <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="연락처를 입력하세요 ('-' 제외)" className="border-2 focus:border-primary transition-colors" />
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="postal" className="flex items-center gap-2">
-                        <Home className="h-4 w-4 text-foreground" />
-                        우편번호
-                      </Label>
-                      <Button variant="outline" size="sm" onClick={openPostcode} className="bg-primary text-primary-foreground border-0 hover:bg-primary/90">
-                        우편번호 찾기
-                      </Button>
-                    </div>
-                    <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-muted cursor-not-allowed max-w-[200px] border-2" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address-main">기본 주소</Label>
-                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-muted cursor-not-allowed border-2" />
-                  </div>
+                  {!isVisitPickup && (
+                    <>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="postal" className="flex items-center gap-2">
+                            <Home className="h-4 w-4 text-foreground" />
+                            우편번호
+                          </Label>
+                          <Button variant="outline" size="sm" onClick={openPostcode} className="bg-primary text-primary-foreground border-0 hover:bg-primary/90">
+                            우편번호 찾기
+                          </Button>
+                        </div>
+                        <Input id="postal" readOnly value={postalCode} placeholder="우편번호" className="bg-muted cursor-not-allowed max-w-[200px] border-2" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address-main">기본 주소</Label>
+                        <Input id="address-main" readOnly value={address} placeholder="기본 주소" className="bg-muted cursor-not-allowed border-2" />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="address-detail">상세 주소</Label>
-                    <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-border transition-colors" />
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address-detail">상세 주소</Label>
+                        <Input id="address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="동/호수 등" className="border-2 focus:border-border transition-colors" />
+                      </div>
+                    </>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="request" className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-foreground" />
-                      배송 요청사항
+                      {isVisitPickup ? '방문 수령 요청사항' : '배송 요청사항'}
                     </Label>
-                    <Textarea id="request" value={deliveryRequest} onChange={(e) => setRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
+                    <Textarea
+                      id="request"
+                      value={deliveryRequest}
+                      onChange={(e) => setRequest(e.target.value)}
+                      placeholder={isVisitPickup ? '방문 수령 시 요청사항을 입력하세요' : '배송 시 요청사항을 입력하세요'}
+                      className="border-2 focus:border-border transition-colors"
+                    />
                   </div>
                 </div>
               </CardContent>
