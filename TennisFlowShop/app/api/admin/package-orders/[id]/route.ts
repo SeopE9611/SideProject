@@ -87,30 +87,52 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
     /**
      * 주문/결제 상태에 따라 연결된 패스 상태 동기화
-     * - 결제완료가 아니면: suspended
-     * - 결제완료이면: active (단, 잔여/만료 체크)
+     * - 결제완료가 아니면: paused(결제취소는 cancelled)
+     * - 결제완료이면: 남은 유효기간 기준 active 복구
      */
     try {
-      const passCol = db.collection('service_passes');
+      const passCol = db.collection<ServicePass>('service_passes');
       const now = new Date();
 
-      // 이 주문과 연결된 패스(보통 1개)
       const passDoc = await passCol.findOne({ orderId: _id });
 
       if (passDoc) {
-        // '결제완료' 이외(결제대기/결제취소/주문 취소 등)는 모두 suspended로 본다
-        const shouldSuspend = statusStr !== '결제완료';
+        const hasPositiveRemaining = (passDoc.remainingCount ?? 0) > 0;
+        const legacyRemaining = typeof passDoc.remainingValidityMs === 'number' && passDoc.remainingValidityMs >= 0
+          ? passDoc.remainingValidityMs
+          : null;
+        const computedRemaining = passDoc.expiresAt instanceof Date
+          ? Math.max(0, passDoc.expiresAt.getTime() - now.getTime())
+          : null;
+        const remainingValidityMs = legacyRemaining ?? computedRemaining;
 
-        if (shouldSuspend) {
-          if (passDoc.status !== 'suspended') {
-            await passCol.updateOne({ _id: passDoc._id }, { $set: { status: 'suspended', updatedAt: now } });
+        if (statusStr !== '결제완료') {
+          const nextStatus = statusStr === '결제취소' || statusStr === '취소' ? 'cancelled' : 'paused';
+          const updateDoc: Partial<ServicePass> & { updatedAt: Date } = {
+            status: nextStatus,
+            updatedAt: now,
+            remainingValidityMs,
+          } as any;
+          if (nextStatus === 'paused') {
+            updateDoc.expiresAt = null;
           }
-        } else {
-          // 결제완료인 경우에만 active로 복구 (잔여 & 미만료일 때)
-          const stillValid = (passDoc.remainingCount ?? 0) > 0 && (!passDoc.expiresAt || passDoc.expiresAt > now);
-
-          if (stillValid && passDoc.status !== 'active') {
-            await passCol.updateOne({ _id: passDoc._id }, { $set: { status: 'active', updatedAt: now } });
+          await passCol.updateOne({ _id: passDoc._id }, { $set: updateDoc });
+        } else if (hasPositiveRemaining) {
+          const shouldActivate = passDoc.status !== 'cancelled';
+          if (shouldActivate) {
+            const nextExpiry = (remainingValidityMs ?? 0) > 0 ? new Date(now.getTime() + (remainingValidityMs as number)) : null;
+            await passCol.updateOne(
+              { _id: passDoc._id },
+              {
+                $set: {
+                  status: 'active',
+                  activatedAt: passDoc.activatedAt ?? now,
+                  expiresAt: nextExpiry,
+                  remainingValidityMs: remainingValidityMs,
+                  updatedAt: now,
+                },
+              }
+            );
           }
         }
       }
@@ -157,19 +179,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             packageType: { $concat: [{ $toString: '$packageInfo.sessions' }, '회권'] },
 
             // 구매일/만료일 계산: 패스 값 우선
-            _calcExpiry: {
-              $ifNull: [
-                '$passDoc.expiresAt',
-                {
-                  $dateAdd: {
-                    startDate: { $ifNull: ['$passDoc.purchasedAt', '$createdAt'] },
-                    unit: 'day',
-                    amount: '$packageInfo.validityPeriod',
-                  },
-                },
-              ],
-            },
-            expiryDate: '$_calcExpiry',
+            _calcExpiry: '$passDoc.expiresAt',
+            expiryDate: '$passDoc.expiresAt',
 
             serviceType: {
               $cond: [{ $regexMatch: { input: { $ifNull: ['$serviceInfo.serviceMethod', '방문'] }, regex: '출장', options: 'i' } }, '출장', '방문'],
@@ -333,14 +344,16 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
                 in: {
                   $switch: {
                     branches: [
-                      // 결제 취소면 무조건 '취소'
-                      { case: { $eq: ['$paymentStatus', '결제취소'] }, then: '취소' },
-                      // 만료일이 지났으면 '만료' (표시용 우선)
-                      { case: { $lte: ['$$exp', '$$NOW'] }, then: '만료' },
-                      // 결제 완료면 '활성'
+                      // 결제취소 또는 패스 취소
+                      { case: { $or: [{ $eq: ['$paymentStatus', '결제취소'] }, { $eq: ['$passDoc.status', 'cancelled'] }] }, then: '취소' },
+                      // 패스 미발급이면 대기
+                      { case: { $not: ['$passDoc'] }, then: '대기' },
+                      // 일시정지/legacy suspended 또는 결제미완료
+                      { case: { $or: [{ $in: ['$passDoc.status', ['paused', 'suspended']] }, { $ne: ['$paymentStatus', '결제완료'] }] }, then: '일시정지' },
+                      // 활성 패스 만료
+                      { case: { $and: [{ $eq: ['$passDoc.status', 'active'] }, { $ne: ['$$exp', null] }, { $lte: ['$$exp', '$$NOW'] }] }, then: '만료' },
                       { case: { $eq: ['$paymentStatus', '결제완료'] }, then: '활성' },
                     ],
-                    // 그 외는 '대기'(= 비활성)
                     default: '대기',
                   },
                 },
@@ -415,8 +428,8 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             remainingSessions: '$passRemaining',
             usedSessions: '$passUsed',
             price: '$totalPrice',
-            purchaseDate: { $ifNull: ['$passDoc.purchasedAt', '$createdAt'] },
-            expiryDate: { $ifNull: ['$expiryDate', '$_calcExpiry'] },
+            purchaseDate: '$createdAt',
+            expiryDate: '$expiryDate',
             status: '$status',
             paymentStatus: '$paymentStatus',
             serviceType: '$serviceType',

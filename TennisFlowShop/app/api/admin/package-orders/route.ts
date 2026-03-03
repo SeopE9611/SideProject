@@ -90,10 +90,8 @@ export async function GET(req: Request) {
           passRemaining: { $ifNull: ['$passDoc.remainingCount', '$packageInfo.sessions'] },
           packageType: { $concat: [{ $toString: '$packageInfo.sessions' }, '회권'] },
 
-          purchaseDate: { $ifNull: ['$passDoc.purchasedAt', '$createdAt'] },
-          _calcExpiry: {
-            $ifNull: ['$passDoc.expiresAt', { $dateAdd: { startDate: '$createdAt', unit: 'day', amount: { $ifNull: ['$packageInfo.validityPeriod', 0] } } }],
-          },
+          purchaseDate: '$createdAt',
+          _calcExpiry: '$passDoc.expiresAt',
 
           serviceType: {
             $cond: [{ $regexMatch: { input: { $ifNull: ['$serviceInfo.serviceMethod', '방문'] }, regex: '출장', options: 'i' } }, '출장', '방문'],
@@ -110,14 +108,16 @@ export async function GET(req: Request) {
               in: {
                 $switch: {
                   branches: [
-                    // 1) 만료 최우선
-                    { case: { $lte: ['$$exp', '$$NOW'] }, then: '만료' },
-                    // 2) 결제취소 또는 패스 취소
+                    // 1) 결제취소 또는 패스 취소
                     { case: { $or: [{ $eq: ['$paymentStatus', '결제취소'] }, { $eq: ['$passDoc.status', 'cancelled'] }] }, then: '취소' },
-                    // 3) 일시정지 또는 결제미완료 → 비활성
-                    { case: { $or: [{ $eq: ['$passDoc.status', 'paused'] }, { $ne: ['$paymentStatus', '결제완료'] }] }, then: '비활성' },
+                    // 2) 패스 미발급이면 대기(활성 전)
+                    { case: { $not: ['$passDoc'] }, then: '대기' },
+                    // 3) 일시정지/레거시 suspended, 결제미완료 → 비활성
+                    { case: { $or: [{ $in: ['$passDoc.status', ['paused', 'suspended']] }, { $ne: ['$paymentStatus', '결제완료'] }] }, then: '비활성' },
+                    // 4) 활성 패스의 만료 우선
+                    { case: { $and: [{ $eq: ['$passDoc.status', 'active'] }, { $ne: ['$$exp', null] }, { $lte: ['$$exp', '$$NOW'] }] }, then: '만료' },
                   ],
-                  // 4) 그 외는 활성
+                  // 5) 그 외는 활성
                   default: '활성',
                 },
               },
