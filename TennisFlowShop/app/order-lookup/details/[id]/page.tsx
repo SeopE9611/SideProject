@@ -116,7 +116,7 @@ export default function OrderDetailPage() {
     router.back();
   };
 
-  const hasCompletedStringingApplication = Boolean(order?.stringingApplicationId) || order?.isStringServiceApplied === true;
+  const hasCompletedStringingApplication = order?.isStringServiceApplied === true;
 
   // 금액 포맷팅 함수
   const formatCurrency = (amount: number) => {

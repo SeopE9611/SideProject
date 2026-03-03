@@ -331,7 +331,7 @@ export default function OrderLookupResultsPage() {
               {orders && orders.length > 0 ? (
                 <div className="space-y-6">
                   {orders.map((order, index) => {
-                    const hasCompletedStringingApplication = Boolean(order.stringingApplicationId) || order.isStringServiceApplied === true;
+                    const hasCompletedStringingApplication = order.isStringServiceApplied === true;
                     const normalizedDeliveryMethod = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '');
                     const isVisitPickup = normalizedDeliveryMethod === '방문수령';
 
