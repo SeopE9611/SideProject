@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Search, Filter, Grid3X3, List } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { FilterPanel } from '@/app/products/components/FilterPanel';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
 import ProductCard from '@/app/products/components/ProductCard';
+import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
+import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { Filter, Grid3X3, List, Search } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 // 브랜드 리스트
 const brands = [
   { label: '럭실론', value: 'luxilon' },
@@ -550,20 +550,10 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
               {/* 뷰 모드 토글 */}
               <div className="flex items-center border border-border rounded-lg p-1 bg-card">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className="h-8 w-9 p-0"
-                >
+                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="h-8 w-9 p-0">
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className="h-8 w-9 p-0"
-                >
+                <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="h-8 w-9 p-0">
                   <List className="w-4 h-4" />
                 </Button>
               </div>
@@ -585,7 +575,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
           {/* 콘텐츠 */}
           {isInitialLikeLoading ? (
-            <div data-cy="products-initial-loading" className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-3' : 'grid-cols-1')}>
+            <div data-cy="products-initial-loading" className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3' : 'grid-cols-1')}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonProductCard key={i} />
               ))}
@@ -593,9 +583,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
           ) : error ? (
             <div className="text-center py-16">
               <p className="text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
-              <Button onClick={() => loadMore()} >
-                다시 시도
-              </Button>
+              <Button onClick={() => loadMore()}>다시 시도</Button>
             </div>
           ) : loadedCount === 0 ? (
             <div className="text-center py-16">
@@ -610,7 +598,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             </div>
           ) : (
             <>
-              <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-lg:grid-cols-3' : 'grid-cols-1')}>
+              <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3' : 'grid-cols-1')}>
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
 import { Eye, Heart, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -42,6 +43,24 @@ const keyMap: Record<string, string> = {
   control: '컨트롤',
   comfort: '편안함',
 };
+
+// - Object.entries 순서에 UI가 흔들리지 않게 하기 위해
+// - 항상 같은 순서(반발력/컨트롤/스핀/내구성/편안함)로 보여주기 위해서 표시 순서를 고정.
+const FEATURE_ORDER = ['power', 'control', 'spin', 'durability', 'comfort'] as const;
+
+function getFeatureEntries(features?: Record<string, number>) {
+  return FEATURE_ORDER.map((key) => {
+    // 0~5 범위로 안전하게 보정
+    const rawValue = Number(features?.[key] ?? 0);
+    const value = Math.max(0, Math.min(5, rawValue));
+
+    return {
+      key,
+      label: keyMap[key],
+      value,
+    };
+  }).filter((item) => item.value > 0);
+}
 
 function RatingStars({ avg, starClassName = 'w-3 h-3' }: { avg: number; starClassName?: string }) {
   const safe = Math.max(0, Math.min(5, Number(avg) || 0)); // 0~5 고정
@@ -88,6 +107,7 @@ const ProductCard = React.memo(
     const isSoldOut = status === 'outofstock' || (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
     const stockForItem = typeof stockRaw === 'number' ? stockRaw : undefined;
     const canCheckoutWithService = typeof product.mountingFee === 'number' && product.mountingFee > 0;
+    const featureEntries = getFeatureEntries(product.features);
 
     const detailHref = isApplyFlow ? `/products/${product._id}?from=apply` : `/products/${product._id}`;
 
@@ -189,20 +209,20 @@ const ProductCard = React.memo(
                 </div>
                 <div className="flex items-baseline gap-2">
                   <div className="text-xl sm:text-2xl font-bold text-primary">{product.price.toLocaleString()}원</div>
-                  <div className="text-sm text-muted-foreground line-through">{Math.round(product.price * 1.2).toLocaleString()}원</div>
                 </div>
               </div>
 
-              {product.features && (
+              {featureEntries.length > 0 && (
                 <div className="mb-4">
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {Object.entries(product.features)
-                      .slice(0, 3)
-                      .map(([k, v]) => (
-                        <span key={k} className="px-2 py-1 rounded-md bg-primary text-primary-foreground">
-                          {keyMap[k as keyof typeof keyMap] || k}: {v}/5
-                        </span>
-                      ))}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {featureEntries.map((feature, index) => (
+                      <div key={feature.key} className={cn('rounded-md border border-border/60 bg-muted/30 px-2.5 py-2', featureEntries.length % 2 === 1 && index === featureEntries.length - 1 && 'col-span-2')}>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-muted-foreground font-medium">{feature.label}</span>
+                          <span className="font-semibold text-primary">{feature.value}/5</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -220,8 +240,8 @@ const ProductCard = React.memo(
                 </Button>
 
                 {canCheckoutWithService && (
-                  <Button type="button" size="sm" variant="secondary" onClick={handleStringServiceApply} disabled={isSoldOut} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1">
-                    교체 서비스 포함 즉시 결제
+                  <Button type="button" size="sm" variant="outline" onClick={handleStringServiceApply} disabled={isSoldOut} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1 whitespace-normal leading-tight">
+                    교체 서비스 포함 결제
                   </Button>
                 )}
 
@@ -273,17 +293,23 @@ const ProductCard = React.memo(
                 NEW
               </Badge>
             )}
-            <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="flex gap-2">
-                <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-lg" onClick={(e) => e.stopPropagation()}>
+                <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-lg backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
                   <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
-                  보기
+                  상세보기
                 </Button>
 
                 <Button
-                  size="sm"
+                  size="icon"
                   variant="outline"
-                  className={`h-8 sm:h-9 shadow-lg ${inWish ? 'border-destructive text-destructive dark:border-destructive dark:text-destructive' : ''}`}
+                  className={cn(
+                    // 기본 스타일: 배경색 고정을 풀고 hover 시 accent 색상이 나타나도록 수정
+                    'h-8 w-8 sm:h-9 sm:w-9 p-0 shadow-lg border-border/90 bg-background transition-all duration-200',
+                    'hover:scale-105 active:scale-95', // 호버 시 살짝 커지고 클릭 시 작아지는 효과
+
+                    inWish ? 'border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive' : 'hover:bg-accent hover:text-accent-foreground',
+                  )}
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -296,7 +322,7 @@ const ProductCard = React.memo(
                   }}
                   title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
                 >
-                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'text-destructive fill-current' : ''}`} />
+                  <Heart className={cn('w-3 h-3 sm:w-4 sm:h-4 transition-transform', inWish && 'text-destructive fill-current')} />
                 </Button>
               </div>
             </div>
@@ -311,54 +337,40 @@ const ProductCard = React.memo(
               <span className="text-xs text-muted-foreground">({ratingCount})</span>
             </div>
 
-            <div className="hidden sm:block space-y-1.5 mb-3 text-xs">
-              {product.features &&
-                Object.entries(product.features)
-                  .slice(0, 3)
-                  .map(([key, value]) => (
-                    <div key={key} className="flex justify-between items-center p-1.5 rounded-md bg-muted/30">
-                      <span className="text-muted-foreground font-medium">{keyMap[key as keyof typeof keyMap] || key}:</span>
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < value ? 'bg-primary' : 'bg-muted'}`} />
-                        ))}
-                      </div>
+            {featureEntries.length > 0 && (
+              <div className="mb-3 grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
+                {featureEntries.map((feature, index) => (
+                  <div
+                    key={feature.key}
+                    className={cn(
+                      'flex items-center justify-between rounded-md bg-muted/30 px-2 py-1.5',
+                      // 5개일 때 마지막 1개는 전체 너비 사용
+                      featureEntries.length % 2 === 1 && index === featureEntries.length - 1 && 'col-span-2',
+                    )}
+                  >
+                    <span className="text-muted-foreground font-medium">{feature.label}</span>
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < feature.value ? 'bg-primary' : 'bg-muted'}`} />
+                      ))}
                     </div>
-                  ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="flex justify-end">
               <div className="font-bold text-base sm:text-lg text-primary">{product.price.toLocaleString()}원</div>
             </div>
           </CardContent>
 
-          <CardFooter className={isApplyFlow ? 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex flex-col items-stretch gap-1.5 bp-sm:gap-2 bp-xl:flex-row' : 'p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 flex gap-1.5 bp-sm:gap-2 bp-xxs:flex-col'}>
-            <Button
-              type="button"
-              variant="outline"
-              className={
-                isApplyFlow
-                  ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center bp-xl:flex-1 bp-xl:w-auto bp-xl:h-8 bp-xl:sm:h-9 bp-xl:min-h-0 bp-xl:py-0 bp-xl:whitespace-nowrap bp-xl:leading-normal'
-                  : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
-              }
-              onClick={handleStringSingleBuy}
-              disabled={isSoldOut}
-            >
+          <CardFooter className="p-2.5 bp-sm:p-3 bp-md:p-4 pt-0 grid grid-cols-1 gap-2">
+            <Button type="button" variant="outline" className="w-full rounded-lg h-10 px-3 text-[11px] sm:text-xs whitespace-nowrap text-center" onClick={handleStringSingleBuy} disabled={isSoldOut}>
               {isApplyFlow ? '단품만 구매' : '단품 구매'}
             </Button>
 
             {canCheckoutWithService && (
-              <Button
-                type="button"
-                variant="outline"
-                className={
-                  isApplyFlow
-                    ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center bp-xl:flex-1 bp-xl:w-auto bp-xl:h-8 bp-xl:sm:h-9 bp-xl:min-h-0 bp-xl:py-0 bp-xl:whitespace-nowrap bp-xl:leading-normal'
-                    : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
-                }
-                onClick={handleStringServiceApply}
-                disabled={isSoldOut}
-              >
-                교체 서비스 포함 즉시 결제
+              <Button type="button" variant="outline" className="w-full rounded-lg h-10 px-3 text-[11px] sm:text-xs whitespace-nowrap text-center" onClick={handleStringServiceApply} disabled={isSoldOut}>
+                교체 서비스 포함 결제
               </Button>
             )}
           </CardFooter>
