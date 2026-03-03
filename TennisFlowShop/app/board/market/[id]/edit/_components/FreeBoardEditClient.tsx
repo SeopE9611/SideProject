@@ -121,15 +121,18 @@ export default function FreeBoardEditClient({ id }: Props) {
       const nextImages = Array.isArray(item.images) ? item.images : [];
       const nextCategory = ((data.item.category as any) ?? 'racket') as any;
       const nextBrand = typeof item.brand === 'string' ? item.brand : '';
-      const nextMarketMeta = (item as any).marketMeta ?? { price: null, saleStatus: 'selling', conditionGrade: 'B', conditionNote: '', racketSpec: null, stringSpec: null };
+      const defaultMarketMeta: MarketMeta = { price: null, saleStatus: 'selling', conditionGrade: 'B', conditionNote: '', racketSpec: null, stringSpec: null };
+      const nextMarketMeta = (item as any).marketMeta ?? defaultMarketMeta;
       const normalizedMarketMeta = normalizeMarketMeta(nextCategory, nextMarketMeta);
+      // baseline과 화면 state 기준을 맞춰 edit 진입 직후 비교 오차를 줄인다.
+      const initialMarketMeta = normalizedMarketMeta ?? defaultMarketMeta;
 
       setTitle(nextTitle);
       setContent(nextContent);
       setImages(nextImages);
       setCategory(nextCategory);
       setBrand(nextBrand);
-      setMarketMeta(nextMarketMeta);
+      setMarketMeta(initialMarketMeta);
       setClientSeenDate(item.updatedAt ?? null);
 
       // 최초 1회만 baseline 저장 (초기 로드 값 기준으로 dirty 판단)
@@ -140,7 +143,7 @@ export default function FreeBoardEditClient({ id }: Props) {
           category: String(nextCategory),
           brand: nextBrand,
           imagesJson: JSON.stringify(nextImages),
-          marketMetaJson: JSON.stringify(normalizedMarketMeta),
+          marketMetaJson: JSON.stringify(initialMarketMeta),
         };
       }
 
