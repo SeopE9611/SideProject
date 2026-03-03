@@ -70,6 +70,12 @@ type OrderListItem = {
   // 교체 서비스 관련(프런트 CTA/배너 제어용)
   isStringServiceApplied: boolean;
   stringingApplicationId: string | null;
+  stringService?: {
+    totalSlots: number;
+    usedSlots: number;
+    remainingSlots: number;
+  };
+  canApplyMoreStringService?: boolean;
   // 취소 요청 요약 정보(마이페이지 카드용)
   cancelStatus?: string; // 'none' | 'requested' | 'approved' | 'rejected' 등
   cancelReasonSummary?: string | null;
@@ -152,10 +158,27 @@ export async function GET(req: NextRequest) {
     const orderIds = orders.map((o) => o._id);
     const apps = await db
       .collection('stringing_applications')
-      .find({ userId, orderId: { $in: orderIds }, status: { $ne: 'draft' } }, { projection: { _id: 1, orderId: 1 } })
+      .find({ userId, orderId: { $in: orderIds }, status: { $ne: '취소' } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.racketLines': 1 } })
       .toArray();
-    const appByOrderId = new Map<string, string>();
-    for (const a of apps) appByOrderId.set(String(a.orderId), String(a._id));
+    const stringServiceByOrderId = new Map<
+      string,
+      {
+        submittedApplicationId: string | null;
+        usedSlots: number;
+      }
+    >();
+    for (const app of apps as any[]) {
+      const orderId = String(app.orderId);
+      const prev = stringServiceByOrderId.get(orderId) ?? { submittedApplicationId: null, usedSlots: 0 };
+
+      const racketLines = Array.isArray(app?.stringDetails?.racketLines) ? app.stringDetails.racketLines.length : 0;
+      const submittedApplicationId = prev.submittedApplicationId ?? (app.status !== 'draft' ? String(app._id) : null);
+
+      stringServiceByOrderId.set(orderId, {
+        submittedApplicationId,
+        usedSlots: prev.usedSlots + racketLines,
+      });
+    }
 
     // 각 주문별 리뷰 진행상태 계산
     const list: OrderListItem[] = [];
@@ -190,6 +213,13 @@ export async function GET(req: NextRequest) {
 
       // 총액 계산
       const totalPrice = calcOrderTotal(order);
+      const totalSlots = items
+        .filter((it) => resolveListItemKind(it) === 'string')
+        .reduce((sum, it) => sum + (it?.quantity ?? it?.qty ?? it?.count ?? 1), 0);
+      const stringServiceSummary = stringServiceByOrderId.get(String(order._id));
+      const usedSlots = stringServiceSummary?.usedSlots ?? 0;
+      const remainingSlots = Math.max(totalSlots - usedSlots, 0);
+      const canApplyMoreStringService = Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0;
 
       // 취소 요청 정보 정리
       const cancel: any = (order as any).cancelRequest ?? {};
@@ -231,8 +261,14 @@ export async function GET(req: NextRequest) {
         unreviewedCount,
         reviewNextTargetProductId,
         // 실제 신청 여부/ID
-        isStringServiceApplied: appByOrderId.has(String(order._id)),
-        stringingApplicationId: appByOrderId.get(String(order._id)) ?? null,
+        isStringServiceApplied: Boolean(stringServiceSummary?.submittedApplicationId),
+        stringingApplicationId: stringServiceSummary?.submittedApplicationId ?? null,
+        stringService: {
+          totalSlots,
+          usedSlots,
+          remainingSlots,
+        },
+        canApplyMoreStringService,
 
         // 취소 요청 요약(마이페이지용)
         cancelStatus: rawCancelStatus,
