@@ -241,7 +241,7 @@ export default function AdminRacketsClient() {
               ) : !filteredItems.length ? (
                 <div className="flex flex-col items-center gap-2">
                   <Search className="h-8 w-8 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">불러올 주문이 없습니다.</p>
+                  <p className="text-sm text-muted-foreground">불러올 라켓이 없습니다.</p>
                 </div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">
