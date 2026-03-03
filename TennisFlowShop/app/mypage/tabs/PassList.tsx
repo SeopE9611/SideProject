@@ -99,14 +99,10 @@ export default function PassList() {
               </div>
               <div className="text-sm text-muted-foreground">구매일 {new Date(p.purchasedAt).toLocaleDateString()}</div>
               {/* 대기/종료 상태에서 오해를 줄이기 위한 안내 문구 */}
-              {p.status === 'pending_activation' && (
-                <div className="text-sm text-muted-foreground">입금 확인 후 패키지가 활성화되며, 이후 사용 가능한 상태로 표시됩니다.</div>
-              )}
+              {p.status === 'pending_activation' && <div className="text-sm text-muted-foreground">구매하신 패키지는 현재 활성화 대기 중입니다. 처리 완료 후 사용 가능한 상태로 표시됩니다.</div>}
               {p.status === 'pending_payment' && <div className="text-sm text-muted-foreground">구매하신 패키지가 입금 확인 중입니다.</div>}
               {(p.status === 'expired' || p.status === 'cancelled') && <div className="text-sm text-muted-foreground">현재는 사용이 종료된 패키지입니다.</div>}
-              {p.status === 'active' && p.expiresAt && (
-                <div className="text-sm text-muted-foreground">만료일 {new Date(p.expiresAt).toLocaleDateString()}</div>
-              )}
+              {p.status === 'active' && p.expiresAt && <div className="text-sm text-muted-foreground">만료일 {new Date(p.expiresAt).toLocaleDateString()}</div>}
             </div>
           </div>
           <div className="flex items-center gap-2">
