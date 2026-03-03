@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
+import { getReservedEmailLocalPartErrorMessage } from '@/lib/reserved-email-localpart';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2, Lock, Mail, MapPin, Phone, Shield, User } from 'lucide-react';
 import Image from 'next/image';
@@ -381,6 +382,15 @@ export default function LoginPageClient() {
       return;
     }
 
+    const reservedEmailError = getReservedEmailLocalPartErrorMessage(emailVal);
+    if (reservedEmailError) {
+      setRegisterFormError(reservedEmailError);
+      setRegisterFieldErrors((prev) => ({ ...prev, emailId: reservedEmailError }));
+      setIsEmailAvailable(false);
+      focusFirst(['register-email-id']);
+      return;
+    }
+
     try {
       setCheckingEmail(true);
 
@@ -506,7 +516,11 @@ export default function LoginPageClient() {
     if (!idTrim || !domainTrim) nextErrors.emailId = '이메일을 입력해주세요.';
     else if (!emailIdRegex.test(idTrim)) nextErrors.emailId = '아이디는 영문 소문자와 숫자 조합으로 4자 이상 입력해주세요.';
     else if (!emailRegex.test(emailVal)) nextErrors.emailId = '유효한 이메일 형식이 아닙니다.';
-    else if (isEmailAvailable !== true) nextErrors.emailId = '이메일 중복 확인을 진행해주세요.';
+    else {
+      const reservedEmailError = getReservedEmailLocalPartErrorMessage(emailVal);
+      if (reservedEmailError) nextErrors.emailId = reservedEmailError;
+      else if (isEmailAvailable !== true) nextErrors.emailId = '이메일 중복 확인을 진행해주세요.';
+    }
 
     if (!password) nextErrors.password = '비밀번호를 입력해주세요.';
     else if (password.length < 8) nextErrors.password = '비밀번호는 8자 이상이어야 합니다.';

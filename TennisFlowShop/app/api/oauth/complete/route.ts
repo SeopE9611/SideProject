@@ -8,6 +8,7 @@ import { Collection } from 'mongodb';
 import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
 import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
+import { getReservedEmailLocalPartErrorMessage } from '@/lib/reserved-email-localpart';
 
 type PendingDoc = {
   _id: string; // token
@@ -57,6 +58,13 @@ export async function POST(req: NextRequest) {
   if (!pendingEmail) {
     await pendings.deleteOne({ _id: pending._id }).catch(() => {});
     return NextResponse.json({ error: 'pending signup invalid (missing email)' }, { status: 400 });
+  }
+
+
+  const reservedEmailError = getReservedEmailLocalPartErrorMessage(pendingEmail);
+  if (reservedEmailError) {
+    await pendings.deleteOne({ _id: pending._id }).catch(() => {});
+    return NextResponse.json({ error: reservedEmailError, code: 'RESERVED_EMAIL_LOCALPART' }, { status: 400 });
   }
 
   //  사용자가 입력한 이름을 우선(없으면 pending.name fallback)

@@ -6,6 +6,7 @@ import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/l
 import { grantPoints } from '@/lib/points.service';
 import { z } from 'zod';
 import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
+import { getReservedEmailLocalPartErrorMessage } from '@/lib/reserved-email-localpart';
 
 /**
  * POST /api/register
@@ -80,6 +81,11 @@ export async function POST(req: Request) {
   const reservedNameError = getReservedDisplayNameErrorMessage(name);
   if (reservedNameError) {
     return NextResponse.json({ message: reservedNameError, error: 'RESERVED_DISPLAY_NAME' }, { status: 400 });
+  }
+
+  const reservedEmailError = getReservedEmailLocalPartErrorMessage(email);
+  if (reservedEmailError) {
+    return NextResponse.json({ message: reservedEmailError, error: 'RESERVED_EMAIL_LOCALPART' }, { status: 400 });
   }
 
   // 2) 비밀번호 정책
