@@ -11,56 +11,39 @@ const IMPERSONATION_EXACT = new Set([
   'administrator',
   'root',
   'superadmin',
-  'owner',
-  'master',
-  'staff',
-  'moderator',
-  'mod',
   'support',
   'official',
   'system',
   'bot',
-  'security',
-  'helpdesk',
-  'cs',
-  'operator',
-  'ops',
   '관리자',
   '운영자',
   '운영진',
-  '운영팀',
-  '관리자팀',
-  '스태프',
   '공식',
   '고객센터',
-  '문의센터',
-  '지원팀',
-  '보안팀',
   '시스템',
-  '시스템봇',
-  '운영봇',
-  '관리자봇',
+  'test',
+  'anonymous',
+  'guest',
 ]);
 
-const IMPERSONATION_STRONG_CONTAINS = [
+const IMPERSONATION_PREFIX = [
   'admin',
   'administrator',
   'superadmin',
   'official',
-  'support',
   'helpdesk',
-  'security',
-  'operator',
   '관리자',
   '운영자',
-  '운영진',
-  '운영팀',
-  '관리자팀',
-  '공식',
+];
+
+const IMPERSONATION_EXPLICIT_CONTAINS = [
   '고객센터',
   '문의센터',
   '지원팀',
   '보안팀',
+  '운영팀',
+  '관리자팀',
+  'supportteam',
   '시스템봇',
   '운영봇',
   '관리자봇',
@@ -111,7 +94,7 @@ const SYSTEM_ROUTE_EXACT = new Set([
   '마이페이지',
 ]);
 
-const CONFUSING_EXACT = new Set(['null', 'undefined', 'unknown', 'anonymous', 'guest', 'deleted', 'test', 'systemuser']);
+const CONFUSING_EXACT = new Set(['null', 'undefined', 'unknown', 'deleted', 'systemuser']);
 
 export function getReservedDisplayNameReason(name: string): ReservedCategory | null {
   const normalized = normalizeDisplayNameInput(name);
@@ -123,18 +106,11 @@ export function getReservedDisplayNameReason(name: string): ReservedCategory | n
     return 'impersonation';
   }
 
-  if (
-    IMPERSONATION_STRONG_CONTAINS.some((keyword) => {
-      const normalizedKeyword = normalizeDisplayNameInput(keyword);
-      const compactKeyword = normalizeDisplayNameForComparison(keyword);
-      return (
-        normalized.startsWith(normalizedKeyword) ||
-        compact.startsWith(compactKeyword) ||
-        normalized.includes(normalizedKeyword) ||
-        compact.includes(compactKeyword)
-      );
-    })
-  ) {
+  if (IMPERSONATION_PREFIX.some((keyword) => normalized.startsWith(keyword) || compact.startsWith(normalizeDisplayNameForComparison(keyword)))) {
+    return 'impersonation';
+  }
+
+  if (IMPERSONATION_EXPLICIT_CONTAINS.some((keyword) => normalized.includes(keyword) || compact.includes(normalizeDisplayNameForComparison(keyword)))) {
     return 'impersonation';
   }
 
@@ -161,4 +137,3 @@ export function getReservedDisplayNameErrorMessage(name: string): string | null 
   if (!isReservedDisplayName(name)) return null;
   return RESERVED_DISPLAY_NAME_MESSAGE;
 }
-
