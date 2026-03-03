@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { notFound } from 'next/navigation';
+import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
@@ -196,7 +197,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="flex-1">
  <div className="flex items-center gap-2 mb-2">
  <h3 className="text-2xl font-bold">{packageInfo.title}</h3>
- {packageInfo.id.includes('30') && <Badge className="bg-primary/15 text-primary border border-primary/20 dark:bg-primary/25">인기</Badge>}
+ {packageInfo.id.includes('30') && <Badge variant={getMerchandisingBadgeSpec('popular').variant}>인기</Badge>}
  </div>
  <p className="text-muted-foreground">구매하신 스트링 교체 패키지입니다.</p>
  </div>

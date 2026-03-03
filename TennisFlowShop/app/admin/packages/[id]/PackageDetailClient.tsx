@@ -15,32 +15,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import useSWR from 'swr';
 import { parseISO, isValid, format } from 'date-fns';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import type { AdminPackageDetailDto, AdminPackageOperationHistoryDto, AdminPackagePassStatusDetail, AdminPackagePaymentStatus } from '@/types/admin/packages';
+import type { AdminPackageDetailDto, AdminPackageOperationHistoryDto } from '@/types/admin/packages';
 
 import PackagePaymentStatusSelect from '@/app/features/packages/components/PackagePaymentStatusSelect';
 import PackagePassStatusSelect from '@/app/features/packages/components/PackagePassStatusSelect';
 import PackageCurrentStatusSelect from '@/app/features/packages/components/PackageCurrentStatusSelect';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { getMerchandisingBadgeSpec, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 
 type PackageDetail = AdminPackageDetailDto;
 type OperationsHistoryItem = AdminPackageOperationHistoryDto;
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-
-// 배지 색상(라이트/다크 모두 대비 높임)
-const passStatusColors: Record<AdminPackagePassStatusDetail, string> = {
-  활성: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
-  만료: 'bg-destructive/10 text-destructive border-border dark:bg-destructive/15 dark:text-destructive dark:border-border',
-  일시정지: 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40',
-  취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
-  대기: 'bg-background text-foreground border-border dark:bg-card dark:text-foreground dark:border-border',
-};
-
-const payStatusColors: Record<AdminPackagePaymentStatus, string> = {
-  결제완료: 'bg-primary/10 text-primary border-border dark:bg-primary/20 dark:text-primary dark:border-border',
-  결제대기: 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40',
-  결제취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:border-destructive/40',
-};
 
 const toDateSafe = (v: string | Date | null | undefined) => {
   if (!v) return null;
@@ -414,7 +400,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
                 <div className="flex items-center justify-between p-3 rounded-lg bg-card">
                   <span className="text-sm text-muted-foreground">결제 상태</span>
-                  <Badge className={payStatusColors[data.paymentStatus ?? '결제대기']}>{data.paymentStatus ?? '결제대기'}</Badge>
+                  <Badge variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? '결제대기').variant}>{data.paymentStatus ?? '결제대기'}</Badge>
                 </div>
 
                 <div className="p-3 rounded-lg bg-card">
@@ -483,7 +469,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                               <Badge variant="outline" className="text-xs">
                                 신청서 ID: {u.applicationId}
                               </Badge>
-                              <Badge className="text-xs bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive">-{u.sessionsUsed}회 차감</Badge>
+                              <Badge variant={getMerchandisingBadgeSpec('discount').variant} className="text-xs">-{u.sessionsUsed}회 차감</Badge>
                             </div>
                             <p className="font-medium mb-1">{u.description}</p>
                             <p className="text-sm text-muted-foreground">{new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(u.date))}</p>

@@ -54,6 +54,39 @@ export function badgeStyleSpec(tone: BadgeSemanticTone): BadgeStyleSpec {
   };
 }
 
+export type SocialProviderBadgeKind = 'kakao' | 'naver' | 'other';
+
+export function getSocialProviderBadgeSpec(provider?: string | null) {
+  const normalized = String(provider ?? '').trim().toLowerCase();
+  if (normalized === 'kakao') return badgeStyleSpec('warning');
+  if (normalized === 'naver') return badgeStyleSpec('success');
+  return badgeStyleSpec('neutral');
+}
+
+export type MerchandisingBadgeKind = 'popular' | 'recommended' | 'new' | 'genuine' | 'discount';
+
+export function getMerchandisingBadgeSpec(kind: MerchandisingBadgeKind) {
+  if (kind === 'genuine') return badgeStyleSpec('info');
+  return badgeStyleSpec('brand');
+}
+
+export type WorkflowMetaBadgeKind = 'action_required' | 'cancel_requested' | 'application_linked' | 'replacement_service_included';
+
+export function getWorkflowMetaBadgeSpec(kind: WorkflowMetaBadgeKind) {
+  if (kind === 'action_required' || kind === 'cancel_requested') return badgeStyleSpec('warning');
+  if (kind === 'application_linked') return badgeStyleSpec('info');
+  return badgeStyleSpec('brand');
+}
+
+export type AuxiliaryMetaBadgeKind = 'attached' | 'pinned' | 'owned' | 'linked' | 'integrated';
+
+export function getAuxiliaryMetaBadgeSpec(kind: AuxiliaryMetaBadgeKind) {
+  if (kind === 'pinned') return badgeStyleSpec('brand');
+  if (kind === 'owned') return badgeStyleSpec('success');
+  if (kind === 'linked' || kind === 'integrated') return badgeStyleSpec('info');
+  return badgeStyleSpec('neutral');
+}
+
 export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type OrderKindBadgeState = 'order' | 'stringing_application' | 'rental_order' | 'rental';
 export type OrderLinkBadgeState = 'integrated' | 'standalone' | 'linked_order' | 'rental' | 'error';
