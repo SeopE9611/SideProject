@@ -7,7 +7,21 @@ import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
 
+function normalizePassStatus(status: ServicePass['status']): 'active' | 'paused' | 'cancelled' | 'expired' {
+  if (status === 'suspended') return 'paused';
+  return status;
+}
+
 function toRemainingValidityMs(pass: ServicePass, now: Date): number {
+  const status = normalizePassStatus(pass.status);
+
+  // active 상태는 expiresAt - now 기준만 사용(stale remainingValidityMs 무시)
+  if (status === 'active') {
+    if (pass.expiresAt instanceof Date) return Math.max(0, pass.expiresAt.getTime() - now.getTime());
+    return 0;
+  }
+
+  // 비활성 계열은 저장된 remainingValidityMs를 우선 사용
   if (typeof pass.remainingValidityMs === 'number' && pass.remainingValidityMs >= 0) return pass.remainingValidityMs;
   if (pass.expiresAt instanceof Date) return Math.max(0, pass.expiresAt.getTime() - now.getTime());
   return 0;
@@ -72,8 +86,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     } else if (next === 'active') {
       const resumeMs = currentRemainingMs > 0 ? currentRemainingMs : 0;
       setPatch.activatedAt = pass.activatedAt ?? now;
-      setPatch.remainingValidityMs = resumeMs;
       setPatch.expiresAt = resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null;
+      // active 복귀 직후 stale remainingValidityMs 정리
+      setPatch.remainingValidityMs = null;
     } else if (next === 'cancelled') {
       setPatch.remainingValidityMs = currentRemainingMs;
       setPatch.expiresAt = null;

@@ -73,7 +73,8 @@ export async function issuePassesForPaidOrder(db: Db, order: any) {
       purchasedAt: now,
       activatedAt: now,
       expiresAt,
-      remainingValidityMs: expiresAt ? Math.max(0, expiresAt.getTime() - now.getTime()) : null,
+      // active 상태에서는 remainingValidityMs를 신뢰하지 않도록 null로 유지
+      remainingValidityMs: null,
       redemptions: [],
       meta: {
         planId: meta.planId,
@@ -254,7 +255,8 @@ export async function issuePassesForPaidPackageOrder(db: Db, packageOrder: any) 
     purchasedAt: now,
     activatedAt: now,
     expiresAt,
-    remainingValidityMs: expiresAt ? Math.max(0, expiresAt.getTime() - now.getTime()) : null,
+    // active 상태에서는 remainingValidityMs를 신뢰하지 않도록 null로 유지
+    remainingValidityMs: null,
     redemptions: [],
     meta: { planId, planTitle },
     createdAt: now,

@@ -7,6 +7,30 @@ import { ServicePass } from '@/lib/types/pass';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
+
+function normalizePassStatus(status: ServicePass['status']): 'active' | 'paused' | 'cancelled' | 'expired' {
+  if (status === 'suspended') return 'paused';
+  return status;
+}
+
+function getCurrentRemainingForPause(passDoc: ServicePass, now: Date): number {
+  const status = normalizePassStatus(passDoc.status);
+  if (status === 'active') {
+    if (passDoc.expiresAt instanceof Date) return Math.max(0, passDoc.expiresAt.getTime() - now.getTime());
+    return 0;
+  }
+
+  if (typeof passDoc.remainingValidityMs === 'number' && passDoc.remainingValidityMs >= 0) return passDoc.remainingValidityMs;
+  if (passDoc.expiresAt instanceof Date) return Math.max(0, passDoc.expiresAt.getTime() - now.getTime());
+  return 0;
+}
+
+function getStoredRemainingForResume(passDoc: ServicePass, now: Date): number {
+  if (typeof passDoc.remainingValidityMs === 'number' && passDoc.remainingValidityMs >= 0) return passDoc.remainingValidityMs;
+  if (passDoc.expiresAt instanceof Date) return Math.max(0, passDoc.expiresAt.getTime() - now.getTime());
+  return 0;
+}
+
 //* 테스트 데이터 */
 // 원하는 만료일로 직접 설정
 // db.service_passes.updateOne(
@@ -98,16 +122,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       if (passDoc) {
         const hasPositiveRemaining = (passDoc.remainingCount ?? 0) > 0;
-        const legacyRemaining = typeof passDoc.remainingValidityMs === 'number' && passDoc.remainingValidityMs >= 0
-          ? passDoc.remainingValidityMs
-          : null;
-        const computedRemaining = passDoc.expiresAt instanceof Date
-          ? Math.max(0, passDoc.expiresAt.getTime() - now.getTime())
-          : null;
-        const remainingValidityMs = legacyRemaining ?? computedRemaining;
 
         if (statusStr !== '결제완료') {
           const nextStatus = statusStr === '결제취소' || statusStr === '취소' ? 'cancelled' : 'paused';
+          const remainingValidityMs = getCurrentRemainingForPause(passDoc, now);
           const updateDoc: Partial<ServicePass> & { updatedAt: Date } = {
             status: nextStatus,
             updatedAt: now,
@@ -118,9 +136,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           }
           await passCol.updateOne({ _id: passDoc._id }, { $set: updateDoc });
         } else if (hasPositiveRemaining) {
-          const shouldActivate = passDoc.status !== 'cancelled';
+          const normalizedStatus = normalizePassStatus(passDoc.status);
+          const shouldActivate = normalizedStatus !== 'cancelled';
           if (shouldActivate) {
-            const nextExpiry = (remainingValidityMs ?? 0) > 0 ? new Date(now.getTime() + (remainingValidityMs as number)) : null;
+            const resumeMs = getStoredRemainingForResume(passDoc, now);
+            const nextExpiry = normalizedStatus === 'active'
+              ? passDoc.expiresAt
+              : (resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null);
+
             await passCol.updateOne(
               { _id: passDoc._id },
               {
@@ -128,7 +151,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
                   status: 'active',
                   activatedAt: passDoc.activatedAt ?? now,
                   expiresAt: nextExpiry,
-                  remainingValidityMs: remainingValidityMs,
+                  // active 전환 이후 stale remainingValidityMs 정리
+                  remainingValidityMs: null,
                   updatedAt: now,
                 },
               }
@@ -179,8 +203,12 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
             packageType: { $concat: [{ $toString: '$packageInfo.sessions' }, '회권'] },
 
             // 구매일/만료일 계산: 패스 값 우선
-            _calcExpiry: '$passDoc.expiresAt',
-            expiryDate: '$passDoc.expiresAt',
+            _calcExpiry: {
+              $cond: [{ $in: ['$passDoc.status', ['active', 'expired']] }, '$passDoc.expiresAt', null],
+            },
+            expiryDate: {
+              $cond: [{ $in: ['$passDoc.status', ['active', 'expired']] }, '$passDoc.expiresAt', null],
+            },
 
             serviceType: {
               $cond: [{ $regexMatch: { input: { $ifNull: ['$serviceInfo.serviceMethod', '방문'] }, regex: '출장', options: 'i' } }, '출장', '방문'],
