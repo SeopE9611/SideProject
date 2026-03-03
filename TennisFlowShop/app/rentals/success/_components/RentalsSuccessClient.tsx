@@ -10,7 +10,6 @@ import { Separator } from '@/components/ui/separator';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import { badgeToneVariant } from '@/lib/badge-style';
 import SiteContainer from '@/components/layout/SiteContainer';
-import RentalApplyHandoffClient from './RentalApplyHandoffClient';
 
 type Props = {
   data: {
@@ -40,17 +39,12 @@ type Props = {
 };
 
 export default function RentalsSuccessClient({ data }: Props) {
-  const rentalId = String((data as any)?.id ?? (data as any)?._id ?? '');
   const withService = Boolean(data.withStringService);
   const stringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
   const stringingApplied = Boolean(data.isStringServiceApplied) || Boolean(stringingApplicationId);
-  const shouldShowHandoff = withService && !stringingApplied;
   const stringingApplicationHref = stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
 
   useEffect(() => {
-    // legacy handoff 화면은 자체적으로 안내/자동 이동을 처리하므로 뒤로가기 가드는 일반 success에서만 유지
-    if (shouldShowHandoff) return;
-
     try {
       sessionStorage.setItem('rentals-success', '1');
       const onPop = (e: PopStateEvent) => {
@@ -64,21 +58,7 @@ export default function RentalsSuccessClient({ data }: Props) {
         sessionStorage.removeItem('rentals-success');
       };
     } catch {}
-  }, [shouldShowHandoff]);
-
-  // DB 상태상 교체 서비스 신청이 아직 연결되지 않은 경우에만 legacy handoff를 유지한다.
-  // (신청서 ID/적용 플래그가 있으면 shouldShowHandoff=false)
-  if (shouldShowHandoff) {
-    return (
-      <div className="min-h-[70vh] bg-muted dark:bg-card">
-        <SiteContainer variant="wide" className="py-12">
-          <div className="mx-auto max-w-2xl">
-            <RentalApplyHandoffClient rentalId={rentalId} />
-          </div>
-        </SiteContainer>
-      </div>
-    );
-  }
+  }, []);
 
   const total = typeof data.total === 'number' ? data.total : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
   const bankKeyFromServer = data.payment?.bank || '';
