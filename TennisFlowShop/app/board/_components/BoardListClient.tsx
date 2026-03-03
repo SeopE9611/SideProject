@@ -76,6 +76,18 @@ type MarketFilterDraft = Record<MarketFilterKey, string>;
 
 const EMPTY_MARKET_FILTER_DRAFT: MarketFilterDraft = MARKET_FILTER_KEYS.reduce((acc, key) => ({ ...acc, [key]: '' }), {} as MarketFilterDraft);
 
+const PRICE_FILTER_KEYS = new Set<MarketFilterKey>(['minPrice', 'maxPrice']);
+
+const stripNonDigits = (value: string) => value.replace(/[^\d]/g, '');
+
+const formatPriceInput = (value: string) => {
+  const digitsOnly = stripNonDigits(value);
+  if (!digitsOnly) return '';
+  return Number(digitsOnly).toLocaleString('ko-KR');
+};
+
+const normalizePriceQueryValue = (value: string) => stripNonDigits(value);
+
 const fmtDateTime = (v: string | Date) =>
   new Date(v).toLocaleString('ko-KR', {
     year: 'numeric',
@@ -197,7 +209,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     if (config.boardType !== 'market') return;
     const nextDraft: MarketFilterDraft = { ...EMPTY_MARKET_FILTER_DRAFT };
     MARKET_FILTER_KEYS.forEach((key) => {
-      nextDraft[key] = searchParams.get(key) ?? '';
+      const rawValue = searchParams.get(key) ?? '';
+      nextDraft[key] = PRICE_FILTER_KEYS.has(key) ? formatPriceInput(rawValue) : rawValue;
     });
     setMarketFilterDraft(nextDraft);
   }, [config.boardType, searchParams]);
@@ -229,7 +242,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const applyMarketFilters = () => {
     const sp = new URLSearchParams(searchParams.toString());
     MARKET_FILTER_KEYS.forEach((key) => {
-      const value = marketFilterDraft[key].trim();
+      const rawValue = marketFilterDraft[key].trim();
+      const value = PRICE_FILTER_KEYS.has(key) ? normalizePriceQueryValue(rawValue) : rawValue;
       if (value) sp.set(key, value);
       else sp.delete(key);
     });
@@ -524,8 +538,18 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             </option>
                           ))}
                         </select>
-                        <input placeholder="최소가격" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.minPrice} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, minPrice: e.target.value }))} />
-                        <input placeholder="최대가격" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.maxPrice} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, maxPrice: e.target.value }))} />
+                        <input
+                          placeholder="최소가격"
+                          className="rounded border bg-background px-2 py-1"
+                          value={marketFilterDraft.minPrice}
+                          onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, minPrice: formatPriceInput(e.target.value) }))}
+                        />
+                        <input
+                          placeholder="최대가격"
+                          className="rounded border bg-background px-2 py-1"
+                          value={marketFilterDraft.maxPrice}
+                          onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, maxPrice: formatPriceInput(e.target.value) }))}
+                        />
                       </div>
 
                       {category === 'racket' && (

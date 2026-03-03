@@ -4,6 +4,7 @@ import { API_VERSION } from '@/lib/board.repository';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 import { getBoardList } from '@/lib/boards.queries';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { getValidCommunityUserObjectIds, resolveCommunityDisplayName } from '@/lib/community-display-name';
 import { getMarketBrandOptions, isBrandRequiredCategory, normalizeMarketMeta } from '@/lib/market';
 import { verifyCommunityCsrf } from '@/lib/community/security';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
@@ -270,14 +271,35 @@ export async function GET(req: NextRequest) {
       .skip((page - 1) * limit)
       .limit(limit)
       .toArray();
-    const items: CommunityPostListItemDto[] = (docs as CommunityPostMongoDoc[]).map((d) => ({
+    const communityDocs = docs as CommunityPostMongoDoc[];
+    const userObjectIds = getValidCommunityUserObjectIds(communityDocs.map((doc) => doc.userId ?? null));
+    const users = userObjectIds.length
+      ? await db
+          .collection('users')
+          .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
+          .toArray()
+      : [];
+    const userMap = new Map(users.map((user) => [String(user._id), user as { _id: ObjectId; name?: string; nickname?: string }]));
+
+    const items: CommunityPostListItemDto[] = communityDocs.map((d) => {
+      const userId = d.userId ? String(d.userId) : null;
+      const user = userId ? userMap.get(userId) : undefined;
+      const displayName = resolveCommunityDisplayName({
+        userName: user?.name,
+        userNickname: user?.nickname,
+        authorName: d.authorName,
+        nickname: d.nickname,
+        authorEmail: d.authorEmail,
+      });
+
+      return {
       id: String(d._id),
       type: d.type,
       title: d.title,
       content: d.content,
       category: d.category ?? 'general',
-      userId: d.userId ? String(d.userId) : null,
-      nickname: d.nickname ?? '회원',
+      userId,
+      nickname: displayName,
       status: d.status ?? 'public',
       views: d.views ?? 0,
       likes: d.likes ?? 0,
@@ -289,7 +311,8 @@ export async function GET(req: NextRequest) {
       brand: d.brand ?? null,
       marketMeta: d.marketMeta ?? null,
       postNo: d.postNo,
-    }));
+      };
+    });
     const response: CommunityListResponseDto = { ok: true, version: API_VERSION, items, total, page, limit };
     return NextResponse.json(response);
   }
@@ -454,6 +477,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const userDoc = await db.collection('users').findOne({ _id: new ObjectId(String(payload.sub)) }, { projection: { name: 1, nickname: 1 } });
+    const displayName = resolveCommunityDisplayName({
+      userName: userDoc?.name,
+      userNickname: userDoc?.nickname,
+      authorName: payload?.name,
+      nickname: payload?.nickname,
+      authorEmail: payload?.email,
+    });
+
     const doc: Omit<CommunityPostMongoDoc, '_id'> = {
       type: body.type,
       title: body.title,
@@ -465,7 +497,9 @@ export async function POST(req: NextRequest) {
       attachments: safeAttachments,
       postNo,
       userId: new ObjectId(String(payload.sub)),
-      nickname: payload?.name ?? payload?.nickname ?? payload?.email?.split('@')?.[0] ?? '회원',
+      authorName: displayName,
+      authorEmail: payload?.email,
+      nickname: displayName,
       status: 'public',
       views: 0,
       likes: 0,
