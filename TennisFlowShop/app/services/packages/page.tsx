@@ -85,6 +85,7 @@ export default function StringPackagesPage() {
   const [packages, setPackages] = useState<PackageCardData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [ownershipBlockedMessage, setOwnershipBlockedMessage] = useState<string | null>(null);
+  const cardBlockedHelperText = '기존 패키지 이용 종료 후 다시 구매할 수 있습니다.';
 
   useEffect(() => {
     let mounted = true;
@@ -301,7 +302,9 @@ export default function StringPackagesPage() {
               <br />
               모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
             </p>
-            {ownershipBlockedMessage && <p className="mt-6 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">{ownershipBlockedMessage}</p>}
+            {ownershipBlockedMessage && (
+              <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">현재 보유 중인 패키지가 있어 추가 구매가 제한됩니다.</p>
+            )}
           </div>
 
           <div className="flex flex-wrap justify-center gap-8">
@@ -314,6 +317,7 @@ export default function StringPackagesPage() {
                 ctaHref={`/services/packages/checkout?package=${pkg.id}`}
                 ctaLabel={ownershipBlockedMessage ? '추가 구매 불가' : '패키지 선택'}
                 ctaDisabled={!!ownershipBlockedMessage}
+                ctaHelperText={ownershipBlockedMessage ? cardBlockedHelperText : undefined}
               />
             ))}
           </div>

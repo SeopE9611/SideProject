@@ -29,11 +29,22 @@ interface UnifiedPackageCardProps {
   ctaHref?: string;
   ctaLabel?: string;
   ctaDisabled?: boolean;
+  ctaHelperText?: string;
   showTotalPrice?: boolean;
   className?: string;
 }
 
-export default function UnifiedPackageCard({ pkg, selected = false, onSelect, ctaHref, ctaLabel, ctaDisabled, showTotalPrice, className }: UnifiedPackageCardProps) {
+export default function UnifiedPackageCard({
+  pkg,
+  selected = false,
+  onSelect,
+  ctaHref,
+  ctaLabel,
+  ctaDisabled,
+  ctaHelperText,
+  showTotalPrice,
+  className,
+}: UnifiedPackageCardProps) {
   const Icon = iconByVariant[pkg.variant] ?? Target;
 
   return (
@@ -111,19 +122,22 @@ export default function UnifiedPackageCard({ pkg, selected = false, onSelect, ct
         </div>
 
         {ctaHref && ctaLabel && (
-          <Button className={`w-full border-0 shadow-lg transition-all hover:shadow-xl ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`} asChild disabled={ctaDisabled}>
-            <Link
-              href={ctaDisabled ? '#' : ctaHref}
-              aria-disabled={ctaDisabled}
-              onClick={(e) => {
-                if (!ctaDisabled) return;
-                e.preventDefault();
-              }}
-            >
-              <Package className="mr-2 h-4 w-4" />
-              {ctaLabel}
-            </Link>
-          </Button>
+          <div className="space-y-2">
+            <Button className={`w-full border-0 shadow-lg transition-all hover:shadow-xl ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`} asChild disabled={ctaDisabled}>
+              <Link
+                href={ctaDisabled ? '#' : ctaHref}
+                aria-disabled={ctaDisabled}
+                onClick={(e) => {
+                  if (!ctaDisabled) return;
+                  e.preventDefault();
+                }}
+              >
+                <Package className="mr-2 h-4 w-4" />
+                {ctaLabel}
+              </Link>
+            </Button>
+            {ctaHelperText ? <p className="text-center text-xs text-muted-foreground">{ctaHelperText}</p> : null}
+          </div>
         )}
       </CardContent>
     </Card>
