@@ -264,21 +264,21 @@ export default function OrderList() {
         const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
         // 신청서 연결 여부(있으면 "교체 신청" 대신 "신청서 보기"로 유도)
         const hasLinkedApplication = Boolean(order.stringingApplicationId);
-        const hasCompletedStringingApplication = hasLinkedApplication || order.isStringServiceApplied === true;
         const totalSlots = order.stringService?.totalSlots ?? 0;
         const usedSlots = order.stringService?.usedSlots ?? 0;
         const remainingSlots = order.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
         const canApplyMoreStringService = order.canApplyMoreStringService ?? (Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0);
+        const hasSubmittedStringingApplication = hasLinkedApplication || order.isStringServiceApplied === true || usedSlots > 0;
 
         const stringServiceCTAKind: 'apply' | 'add' | 'view' | 'done' | null = !order.shippingInfo?.withStringService
           ? null
           : canApplyMoreStringService
-            ? hasCompletedStringingApplication || usedSlots > 0
+            ? hasSubmittedStringingApplication
               ? 'add'
               : 'apply'
             : hasLinkedApplication
               ? 'view'
-              : hasCompletedStringingApplication || totalSlots > 0
+              : hasSubmittedStringingApplication
                 ? 'done'
                 : 'apply';
 
