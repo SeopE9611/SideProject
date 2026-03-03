@@ -1,11 +1,9 @@
 import Link from 'next/link';
-import { CheckCircle, CreditCard, MapPin, Package, Clock, ArrowRight, Star, Shield, Phone, Calendar, Gift, Target, Award } from 'lucide-react';
+import { CheckCircle, CreditCard, MapPin, Package, Clock, ArrowRight, Star, Shield, Phone, Calendar, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { notFound } from 'next/navigation';
-import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
@@ -15,17 +13,9 @@ import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton
 import { verifyAccessToken } from '@/lib/auth.utils';
 import LoginGate from '@/components/system/LoginGate';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-
-const Trophy = ({ className }: { className: string }) => (
- <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
- <path
- strokeLinecap="round"
- strokeLinejoin="round"
- strokeWidth={2}
- d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"
- />
- </svg>
-);
+import UnifiedPackageCard from '@/app/services/packages/_components/UnifiedPackageCard';
+import { normalizePackageCardData } from '@/app/services/packages/_lib/packageCard';
+import { toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
@@ -115,8 +105,18 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  const serviceInfo = packageOrder.serviceInfo;
  const paymentInfo = packageOrder.paymentInfo;
 
- // 회당 가격 (안전 계산: 0/NaN 방지)
- const perSessionPrice = packageInfo.sessions > 0 && packageInfo.price > 0 ? Math.round(packageInfo.price / packageInfo.sessions) : 0;
+ const packageCard = normalizePackageCardData({
+  id: String(packageInfo.id ?? ''),
+  title: String(packageInfo.title ?? ''),
+  sessions: Number(packageInfo.sessions ?? 0),
+  price: Number(packageInfo.price ?? 0),
+  variant: toPackageVariant(packageInfo.variant),
+  description: '구매하신 스트링 교체 패키지입니다.',
+  validityPeriod: packageInfo.validityPeriod,
+  features: Array.isArray(packageInfo.features) ? packageInfo.features : undefined,
+  benefits: Array.isArray(packageInfo.benefits) ? packageInfo.benefits : undefined,
+  popular: Number(packageInfo.sessions) === 30,
+});
 
  return (
  <div className="min-h-full bg-muted/30">
@@ -185,43 +185,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <CardContent className="p-6">
  {/* 패키지 정보 */}
  <div className="mb-8">
- <div
- className="p-6 bg-muted rounded-xl border-2 border-border"
- >
- <div className="flex items-center gap-4 mb-6">
- <div
- className="w-16 h-16 rounded-full bg-background flex items-center justify-center text-foreground shadow-lg"
- >
- {packageInfo.id.includes('10') ? <Target className="h-8 w-8" /> : packageInfo.id.includes('30') ? <Star className="h-8 w-8" /> : packageInfo.id.includes('50') ? <Award className="h-8 w-8" /> : <Trophy className="h-8 w-8" />}
- </div>
- <div className="flex-1">
- <div className="flex items-center gap-2 mb-2">
- <h3 className="text-2xl font-bold">{packageInfo.title}</h3>
- {packageInfo.id.includes('30') && <Badge variant={getMerchandisingBadgeSpec('popular').variant}>인기</Badge>}
- </div>
- <p className="text-muted-foreground">구매하신 스트링 교체 패키지입니다.</p>
- </div>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
- <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-primary">{packageInfo.sessions}회</div>
- <div className="text-sm text-muted-foreground">스트링 교체</div>
- </div>
- <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-primary">{packageInfo.validityPeriod}</div>
- <div className="text-sm text-muted-foreground">유효기간</div>
- </div>
- <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-primary">{perSessionPrice.toLocaleString()}원</div>
- <div className="text-sm text-muted-foreground">회당 가격</div>
- </div>
- <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
- <div className="text-2xl font-bold text-primary">{formatPrice(packageInfo.price)}원</div>
- <div className="text-sm text-muted-foreground">총 금액</div>
- </div>
- </div>
- </div>
+ <UnifiedPackageCard pkg={packageCard} showTotalPrice className="shadow-none" />
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -381,7 +345,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <Star className="h-5 w-5 text-primary mt-0.5" />
  <div>
  <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
- <p className="text-sm text-muted-foreground">패키지는 {packageInfo.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
+ <p className="text-sm text-muted-foreground">패키지는 {packageCard.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
  </div>
  </div>
  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">

@@ -1,9 +1,10 @@
 'use client';
 
-import { PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant, type PackageVariant } from '@/app/services/packages/_lib/packageVariant';
+import UnifiedPackageCard from '@/app/services/packages/_components/UnifiedPackageCard';
+import { normalizePackageCardData, type PackageCardData } from '@/app/services/packages/_lib/packageCard';
+import { getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { FullPageSpinner } from '@/components/system/PageLoading';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,8 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
-import { Award, Building2, Calendar, CheckCircle, CreditCard, Gift, Mail, MapPin, MessageSquare, Package, Phone, Shield, Star, Target, UserIcon } from 'lucide-react';
+import { Building2, Calendar, CheckCircle, CreditCard, Mail, MapPin, MessageSquare, Package, Phone, Shield, Star, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -42,111 +42,64 @@ declare global {
   }
 }
 
-interface PackageInfo {
-  id: string;
-  title: string;
-  sessions: number;
-  price: number;
-  originalPrice?: number;
-  discount?: number;
-  popular?: boolean;
-  features: string[];
-  benefits: string[];
-  variant: PackageVariant;
-  description: string;
-  validityPeriod: string;
-}
-
-type PackageOption = {
-  id: string;
-  title: string;
-  sessions: number;
-  price: number;
-  originalPrice?: number;
-  discount?: number;
-  features: string[];
-  benefits: string[];
-  validityPeriod: string;
+const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
+  '10-sessions': normalizePackageCardData({
+    id: '10-sessions',
+    title: '스타터 패키지',
+    sessions: 10,
+    price: 100000,
+    originalPrice: 120000,
+    features: ['10회 스트링 교체', '무료 장력 상담', '기본 스트링 포함'],
+    benefits: ['2만원 절약'],
+    variant: 'primary',
+    description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
+    validityPeriod: '3개월',
+  }),
+  '30-sessions': normalizePackageCardData({
+    id: '30-sessions',
+    title: '레귤러 패키지',
+    sessions: 30,
+    price: 300000,
+    originalPrice: 360000,
+    popular: true,
+    features: ['30회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약'],
+    benefits: ['6만원 절약', '우선 예약 혜택'],
+    variant: 'accent',
+    description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
+    validityPeriod: '6개월',
+  }),
+  '50-sessions': normalizePackageCardData({
+    id: '50-sessions',
+    title: '프로 패키지',
+    sessions: 50,
+    price: 500000,
+    originalPrice: 600000,
+    features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
+    benefits: ['10만원 절약', '그립 교체 혜택'],
+    variant: 'muted',
+    description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
+    validityPeriod: '9개월',
+  }),
+  '100-sessions': normalizePackageCardData({
+    id: '100-sessions',
+    title: '챔피언 패키지',
+    sessions: 100,
+    price: 1000000,
+    originalPrice: 1200000,
+    features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회'],
+    benefits: ['20만원 절약', '전용 서비스'],
+    variant: 'success',
+    description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
+    validityPeriod: '12개월',
+  }),
 };
-
-const STATIC_PACKAGES: PackageOption[] = [
-  // 기존에 쓰던 더미 패키지 4개가 있다면 그대로 옮겨 두세요
-  // (서버에서 설정 못 불러올 때만 fallback 용으로 사용)
-];
-
-const Trophy = ({ className }: { className: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z"
-    />
-  </svg>
-);
 
 export default function PackageCheckoutClient({ initialUser, initialQuery }: { initialUser: UserLite; initialQuery?: { package?: string } }) {
   const searchParams = useSearchParams();
   const packageId = searchParams.get('package') ?? initialQuery?.package ?? null;
 
-  const TEMPLATE_PACKAGES: Record<string, PackageInfo> = {
-    '10-sessions': {
-      id: '10-sessions',
-      title: '스타터 패키지',
-      sessions: 10,
-      price: 100000,
-      originalPrice: 120000,
-      discount: 17,
-      features: ['10회 스트링 교체', '무료 장력 상담', '기본 스트링 포함'],
-      benefits: ['회당 10,000원', '2만원 절약', '3개월 유효'],
-      variant: 'primary',
-      description: '테니스를 시작하는 분들에게 적합한 기본 패키지',
-      validityPeriod: '12개월',
-    },
-    '30-sessions': {
-      id: '30-sessions',
-      title: '레귤러 패키지',
-      sessions: 30,
-      price: 300000,
-      originalPrice: 360000,
-      discount: 17,
-      popular: true,
-      features: ['30회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약'],
-      benefits: ['회당 10,000원', '6만원 절약', '6개월 유효', '우선 예약 혜택'],
-      variant: 'accent',
-      description: '정기적으로 테니스를 즐기는 분들을 위한 인기 패키지',
-      validityPeriod: '12개월',
-    },
-    '50-sessions': {
-      id: '50-sessions',
-      title: '프로 패키지',
-      sessions: 50,
-      price: 500000,
-      originalPrice: 600000,
-      discount: 17,
-      features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
-      benefits: ['회당 10,000원', '10만원 절약', '9개월 유효', '그립 교체 혜택'],
-      variant: 'muted',
-      description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
-      validityPeriod: '12개월',
-    },
-    '100-sessions': {
-      id: '100-sessions',
-      title: '챔피언 패키지',
-      sessions: 100,
-      price: 1000000,
-      originalPrice: 1200000,
-      discount: 17,
-      features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회', '전용 상담사 배정'],
-      benefits: ['회당 10,000원', '20만원 절약', '12개월 유효', '전용 서비스'],
-      variant: 'success',
-      description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
-      validityPeriod: '12개월',
-    },
-  };
-
-  // 선택된 패키지 정보 (DB 설정 + 템플릿 병합 결과)
-  const [selectedPackage, setSelectedPackage] = useState<PackageInfo | null>(() => {
+    // 선택된 패키지 정보 (DB 설정 + 템플릿 병합 결과)
+  const [selectedPackage, setSelectedPackage] = useState<PackageCardData | null>(() => {
     if (!packageId) return null;
     // 옛날 URL (?package=10-sessions)로 들어올 수도 있으니 일단 템플릿에서 한 번 찾아봄
     return TEMPLATE_PACKAGES[packageId] ?? null;
@@ -276,68 +229,23 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
           const price = Number(config.price || 0);
           const originalPrice = Number(config.originalPrice != null ? config.originalPrice : price);
 
-          const discount = originalPrice > 0 && price > 0 ? Math.round((1 - price / originalPrice) * 100) : undefined;
-
-          // 유효기간(일) → "X개월 Y일" 문자열로 변환
-          const validityDays = Number(config.validityDays || 0);
-          const months = Math.floor(validityDays / 30);
-          const days = validityDays % 30;
-          let validityPeriod = '';
-          if (months > 0) validityPeriod += `${months}개월`;
-          if (days > 0) validityPeriod += (validityPeriod ? ' ' : '') + `${days}일`;
-          if (!validityPeriod) validityPeriod = '유효기간 설정 없음';
-
-          // 세션 수(10/30/50/100)에 따라 기존 템플릿(색상, 아이콘, 기본 문구)을 찾아서 병합
           const templateKey = sessions === 10 ? '10-sessions' : sessions === 30 ? '30-sessions' : sessions === 50 ? '50-sessions' : sessions === 100 ? '100-sessions' : undefined;
-
           const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
           const variant = toPackageVariant(config.variant, base?.variant ?? getPackageVariantByIndex(configIndex));
 
-          const merged: PackageInfo = {
-            // 색상 / 아이콘 / 레이아웃 등은 템플릿 우선
-            ...(base ?? {
-              id: config.id,
-              title: config.name,
-              sessions,
-              price,
-              originalPrice,
-              discount,
-              features: [],
-              benefits: [],
-              variant: 'primary',
-              description: '',
-              validityPeriod,
-            }),
-            // 숫자·텍스트 정보는 DB 설정으로 덮어쓰기
+          const merged = normalizePackageCardData({
             id: config.id,
             title: config.name || base?.title || '',
             sessions,
             price,
             originalPrice,
-            discount,
+            popular: Boolean(config.isPopular ?? base?.popular),
             description: config.description || base?.description || '',
-            validityPeriod,
+            validityPeriod: config.validityDays,
             variant,
-            // 특징 리스트는 설정에 있으면 그걸 쓰고, 없으면 템플릿 사용
             features: Array.isArray(config.features) && config.features.length > 0 ? config.features : (base?.features ?? []),
-            // 혜택은 "회당 가격 / 할인율"을 앞에 붙이고, 템플릿에서 겹치지 않는 문구만 뒤에 추가
-            benefits: (() => {
-              const result: string[] = [];
-              if (sessions && price) {
-                result.push(`회당 ${Math.round(price / sessions).toLocaleString()}원`);
-              }
-              if (discount) {
-                result.push(`${discount}% 할인`);
-              }
-              const baseBenefits = base?.benefits ?? [];
-              for (const b of baseBenefits) {
-                if (!result.includes(b)) {
-                  result.push(b);
-                }
-              }
-              return result;
-            })(),
-          };
+            benefits: base?.benefits ?? [],
+          });
 
           setSelectedPackage(merged);
         } else {
@@ -542,74 +450,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                 <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
               </div>
               <CardContent className="p-6">
-                <div className={`p-6 rounded-xl border-2 border-border ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}>
-                      {selectedPackage.variant === 'primary' ? (
-                        <Target className="h-8 w-8" />
-                      ) : selectedPackage.variant === 'accent' ? (
-                        <Star className="h-8 w-8" />
-                      ) : selectedPackage.variant === 'muted' ? (
-                        <Award className="h-8 w-8" />
-                      ) : (
-                        <Trophy className="h-8 w-8" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-2xl font-bold">{selectedPackage.title}</h3>
-                        {selectedPackage.popular && <Badge variant={getMerchandisingBadgeSpec('popular').variant}>인기</Badge>}
-                      </div>
-                      <p className="text-muted-foreground">{selectedPackage.description}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{selectedPackage.sessions}회</div>
-                      <div className="text-sm text-muted-foreground">스트링 교체</div>
-                    </div>
-                    <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
-                      <div className="text-2xl font-bold text-foreground">{selectedPackage.validityPeriod}</div>
-                      <div className="text-sm text-muted-foreground">유효기간</div>
-                    </div>
-                    <div className="text-center p-4 bg-card/50 dark:bg-card rounded-lg">
-                      <div className="text-2xl font-bold text-primary">{perSessionPrice.toLocaleString()}원</div>
-                      <div className="text-sm text-muted-foreground">회당 가격</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-3 flex items-center">
-                        <CheckCircle className="w-4 h-4 mr-2 text-foreground" />
-                        포함 서비스
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {selectedPackage.features.map((feature, idx) => (
-                          <div key={idx} className="flex items-start text-sm">
-                            <div className={`w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0 bg-primary ${PACKAGE_VARIANT_TONE_CLASS[selectedPackage.variant]}`}></div>
-                            <span>{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold mb-3 flex items-center">
-                        <Gift className="w-4 h-4 mr-2 text-warning" />
-                        혜택
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {selectedPackage.benefits.map((benefit, idx) => (
-                          <div key={idx} className="text-sm font-medium text-foreground">
-                            • {benefit}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
               </CardContent>
             </Card>
 
