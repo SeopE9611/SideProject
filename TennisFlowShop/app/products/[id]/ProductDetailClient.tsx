@@ -232,6 +232,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const unitPrice = Number(product?.price ?? 0);
   const qtyTotal = unitPrice * quantity;
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
+  const canCheckoutWithService = typeof product?.mountingFee === 'number' && product.mountingFee > 0;
 
   // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
   type DetailTab = 'description' | 'specifications' | 'reviews' | 'qna';
@@ -548,6 +549,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 즉시 구매 + 교체 서비스 포함 핸들러
   const handleBuyNowWithService = () => {
     if (loading) return;
+    if (!canCheckoutWithService) return;
 
     // 재고 검증
     if (quantity > stock) {
@@ -781,14 +783,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             즉시 구매하기
                           </Button>
 
-                          <Button
-                            className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-                            disabled={loading || quantity > stock}
-                            onClick={handleBuyNowWithService}
-                          >
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            교체 서비스 포함 즉시 결제
-                          </Button>
+                          {canCheckoutWithService && (
+                            <Button
+                              className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                              disabled={loading || quantity > stock}
+                              onClick={handleBuyNowWithService}
+                            >
+                              <CreditCard className="mr-2 h-4 w-4" />
+                              교체 서비스 포함 즉시 결제
+                            </Button>
+                          )}
 
                           <Button variant="outline" className="w-full h-10 sm:h-11 text-sm bg-transparent" onClick={handleAddToCart} disabled={loading || quantity > stock}>
                             <ShoppingCart className="mr-2 h-4 w-4" />
@@ -1552,14 +1556,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   <CreditCard className="h-4 w-4" />
                   즉시 구매하기
                 </button>
-                <button
-                  type="button"
-                  onClick={handleBuyNowWithService}
-                  className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-                >
-                  <CreditCard className="h-4 w-4" />
-                  교체 포함 결제
-                </button>
+                {canCheckoutWithService && (
+                  <button
+                    type="button"
+                    onClick={handleBuyNowWithService}
+                    className="flex-1 h-12 rounded-lg border border-border bg-card dark:bg-muted hover:bg-muted/50 dark:hover:bg-muted active:bg-muted dark:active:bg-muted text-foreground font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    교체 서비스 포함 즉시 결제
+                  </button>
+                )}
               </div>
             </SiteContainer>
           </div>
