@@ -23,9 +23,13 @@ type OrderDoc = {
   totalPrice?: number;
   items: Array<{
     productId?: ObjectId | string;
+    kind?: 'product' | 'racket' | string;
     name?: string;
+    category?: string;
+    type?: string;
     price?: number;
     quantity?: number;
+    mountingFee?: number;
     imageUrl?: string | null;
     unitPrice?: number;
     qty?: number;
@@ -50,7 +54,13 @@ type OrderListItem = {
   status: string;
   total: number; // 합계(하위호환)
   totalPrice: number; // 합계(UI가 쓰는 필드)
-  items: Array<{ name: string; price: number; quantity: number; imageUrl?: string | null }>;
+  items: Array<{
+    name: string;
+    price: number;
+    quantity: number;
+    imageUrl?: string | null;
+    kind: 'racket' | 'string' | 'product';
+  }>;
   shippingInfo: any;
   paymentStatus: string;
   // 리뷰 관련
@@ -83,6 +93,23 @@ function calcOrderTotal(o: any): number {
     const line = it.total ?? unit * qty;
     return sum + (typeof line === 'number' ? line : 0);
   }, 0);
+}
+
+function resolveListItemKind(item: any): 'racket' | 'string' | 'product' {
+  const rawKind = typeof item?.kind === 'string' ? item.kind.toLowerCase() : '';
+  if (rawKind === 'racket' || rawKind === 'used_racket') return 'racket';
+
+  const mountingFee = Number(item?.mountingFee ?? 0);
+  if (Number.isFinite(mountingFee) && mountingFee > 0) return 'string';
+
+  const categoryToken = [item?.category, item?.type]
+    .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
+    .join(' ')
+    .toLowerCase();
+
+  if (categoryToken.includes('string') || categoryToken.includes('스트링')) return 'string';
+
+  return 'product';
 }
 
 export async function GET(req: NextRequest) {
@@ -190,6 +217,7 @@ export async function GET(req: NextRequest) {
           price: it.price ?? it.unitPrice ?? 0,
           quantity: it.quantity ?? it.qty ?? it.count ?? 1,
           imageUrl: it.imageUrl ?? it.image ?? it.thumbnail ?? it.thumbnailUrl ?? (Array.isArray(it.images) && it.images[0]) ?? null,
+          kind: resolveListItemKind(it),
         })),
 
         shippingInfo: {
