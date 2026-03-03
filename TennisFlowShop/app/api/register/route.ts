@@ -5,6 +5,7 @@ import { hash } from 'bcryptjs';
 import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
 import { z } from 'zod';
+import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 
 /**
  * POST /api/register
@@ -75,6 +76,11 @@ export async function POST(req: Request) {
   const address = parsed.data.address ?? null;
   const addressDetail = parsed.data.addressDetail ?? null;
   const postalCode = parsed.data.postalCode ?? null;
+
+  const reservedNameError = getReservedDisplayNameErrorMessage(name);
+  if (reservedNameError) {
+    return NextResponse.json({ message: reservedNameError, error: 'RESERVED_DISPLAY_NAME' }, { status: 400 });
+  }
 
   // 2) 비밀번호 정책
   const isPasswordValid = (pw: string) => {

@@ -5,6 +5,7 @@ import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { appendAudit } from '@/lib/audit';
 import { adminValidationError, zodIssuesToDetails } from '@/lib/admin/adminApiError';
+import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 
 const userIdParamsSchema = z.object({
   id: z.string().trim().min(1).refine(ObjectId.isValid, { message: '유효한 사용자 ID(ObjectId)가 아닙니다.' }),
@@ -75,6 +76,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const allowed = ['name', 'email', 'phone', 'address', 'addressDetail', 'postalCode', 'role', 'isSuspended', 'isDeleted'] as const;
   const payload = parsedBody.data;
+
+  if (typeof payload.name === 'string') {
+    const reservedNameError = getReservedDisplayNameErrorMessage(payload.name);
+    if (reservedNameError) {
+      return NextResponse.json({ message: reservedNameError, error: 'RESERVED_DISPLAY_NAME' }, { status: 400 });
+    }
+  }
 
   const $set: Record<string, any> = {};
   for (const k of allowed) {

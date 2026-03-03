@@ -7,6 +7,7 @@ import { autoLinkStringingByEmail } from '@/lib/claims';
 import { Collection } from 'mongodb';
 import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
+import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 
 type PendingDoc = {
   _id: string; // token
@@ -60,6 +61,8 @@ export async function POST(req: NextRequest) {
 
   //  사용자가 입력한 이름을 우선(없으면 pending.name fallback)
   const incomingName = typeof body.name === 'string' ? body.name.trim() : '';
+  const fallbackName = String(pending.name ?? '').trim() || pendingEmail.split('@')[0];
+  const finalSignupName = incomingName || fallbackName;
 
   const users = db.collection('users');
 
@@ -78,6 +81,12 @@ export async function POST(req: NextRequest) {
     }
 
     const shouldUpdateName = !!incomingName && (!user?.name || String(user.name).trim() === '');
+    if (shouldUpdateName) {
+      const reservedNameError = getReservedDisplayNameErrorMessage(incomingName);
+      if (reservedNameError) {
+        return NextResponse.json({ error: reservedNameError, code: 'RESERVED_DISPLAY_NAME' }, { status: 400 });
+      }
+    }
 
     await users.updateOne(
       { _id: user._id },
@@ -97,9 +106,14 @@ export async function POST(req: NextRequest) {
   } else {
     // 2) 신규 생성
     isNewUser = true;
+    const reservedNameError = getReservedDisplayNameErrorMessage(finalSignupName);
+    if (reservedNameError) {
+      return NextResponse.json({ error: reservedNameError, code: 'RESERVED_DISPLAY_NAME' }, { status: 400 });
+    }
+
     const insertRes = await users.insertOne({
       email: pendingEmail,
-      name: incomingName || pending.name || pendingEmail.split('@')[0],
+      name: finalSignupName,
       role: 'user',
       isDeleted: false,
       isSuspended: false,
