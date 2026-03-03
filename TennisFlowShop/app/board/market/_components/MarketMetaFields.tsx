@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,137 +32,262 @@ const onNum = (v: string) => {
   return Number.isFinite(n) ? n : null;
 };
 
+const selectCls = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50';
+
 export default function MarketMetaFields({ category, value, onChange, disabled }: Props) {
- const hasValidPrice = typeof value.price === 'number' && value.price > 0;
- const priceGuideText =
-   typeof value.price === 'number' && value.price > 0
-     ? `입력 가격: ${value.price.toLocaleString('ko-KR')}원`
-     : '가격은 숫자만 입력해 주세요.';
+  const hasValidPrice = typeof value.price === 'number' && value.price > 0;
+  const priceDisplay = typeof value.price === 'number' && value.price > 0 ? `${value.price.toLocaleString('ko-KR')}원` : null;
 
   return (
-    <Card className="border border-border bg-muted/20">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm">상세 스펙 입력</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* 공통 거래 정보: market 글이라면 항상 받는 핵심 필드 */}
-        <div className="grid gap-3 md:grid-cols-3">
+    <div className="space-y-6">
+      {/* ── 섹션 1: 거래 핵심 정보 ── */}
+      <div className="rounded-xl border border-border bg-card shadow-sm">
+        <div className="border-b border-border px-5 py-4 md:px-6">
+          <h3 className="text-sm font-semibold text-foreground">거래 핵심 정보</h3>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">구매자가 가장 먼저 확인하는 판매 조건입니다.</p>
+        </div>
+
+        <div className="px-5 py-5 md:px-6 space-y-5">
+          {/* 판매가 - 가장 강조 */}
           <div className="space-y-2">
-            <Label>
-              판매가 * <span className="text-xs font-normal text-muted-foreground">희망 판매가를 입력해 주세요.</span>
+            <Label className="text-sm font-semibold">
+              판매가 <span className="text-destructive">*</span>
             </Label>
-            <Input type="number" min={1} placeholder="예: 35000" value={value.price ?? ''} onChange={(e) => onChange({ ...value, price: onNum(e.target.value) })} disabled={disabled} />
-            <p className={`text-[11px] ${hasValidPrice ? 'text-muted-foreground' : 'text-destructive'}`}>{priceGuideText}</p>
+            <div className="relative">
+              <Input type="number" min={1} placeholder="350000" value={value.price ?? ''} onChange={(e) => onChange({ ...value, price: onNum(e.target.value) })} disabled={disabled} className="h-12 text-lg font-semibold pr-10" />
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">원</span>
+            </div>
+            <p className={`text-xs ${hasValidPrice ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
+              {priceDisplay ? (
+                <>
+                  입력 가격: <span className="font-semibold text-foreground">{priceDisplay}</span>
+                </>
+              ) : (
+                '숫자만 입력하세요. 목록과 상세에서 원 단위로 표시됩니다.'
+              )}
+            </p>
           </div>
-          <div className="space-y-2">
-            <Label>판매 상태 *</Label>
-            <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.saleStatus} onChange={(e) => onChange({ ...value, saleStatus: e.target.value as any })} disabled={disabled}>
-              {MARKET_SALE_STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+
+          {/* 판매 상태 / 상태 등급 - 2열 */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="text-sm">
+                판매 상태 <span className="text-destructive">*</span>
+              </Label>
+              <select className={selectCls} value={value.saleStatus} onChange={(e) => onChange({ ...value, saleStatus: e.target.value as any })} disabled={disabled}>
+                {MARKET_SALE_STATUS_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm">
+                상태 등급 <span className="text-destructive">*</span>
+              </Label>
+              <select className={selectCls} value={value.conditionGrade} onChange={(e) => onChange({ ...value, conditionGrade: e.target.value as any })} disabled={disabled}>
+                {MARKET_CONDITION_GRADE_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {/* 상태 메모 - 독립 블록 */}
           <div className="space-y-2">
-            <Label>상태 등급 *</Label>
-            <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.conditionGrade} onChange={(e) => onChange({ ...value, conditionGrade: e.target.value as any })} disabled={disabled}>
-              {MARKET_CONDITION_GRADE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+            <Label className="text-sm">상태 설명</Label>
+            <Textarea
+              value={value.conditionNote ?? ''}
+              onChange={(e) => onChange({ ...value, conditionNote: e.target.value })}
+              disabled={disabled}
+              className="min-h-[100px] resize-y"
+              placeholder="예: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
+            />
+            <p className="text-[11px] text-muted-foreground">실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.</p>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label>상태 메모</Label>
-          <Textarea value={value.conditionNote ?? ''} onChange={(e) => onChange({ ...value, conditionNote: e.target.value })} disabled={disabled} className="min-h-[80px]" />
-          <p className="text-[11px] text-muted-foreground">예: 프레임 상단 미세 스크래치, 그립 교체 필요, 시타 1회</p>
-        </div>
+      {/* ── 섹션 2: 라켓 상세 스펙 ── */}
+      {category === 'racket' && (
+        <div className="rounded-xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border px-5 py-4 md:px-6">
+            <h3 className="text-sm font-semibold text-foreground">라켓 상세 정보</h3>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.</p>
+          </div>
 
-        {category === 'racket' && (
-          <div className="space-y-3 rounded-md border border-border p-3">
-            <p className="text-xs font-semibold text-muted-foreground">라켓 스펙</p>
-            <p className="text-[11px] text-muted-foreground">모델명/가격/상태는 핵심 입력 항목이며, 무게·밸런스 등 세부 스펙은 모르면 비워둘 수 있습니다.</p>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>모델명 *</Label>
-                <Input
-                  placeholder="예: EZONE 98 2024, PRO STAFF 97 V14"
-                  value={value.racketSpec?.modelName ?? ''}
-                  onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), modelName: e.target.value }, stringSpec: null })}
-                  disabled={disabled}
-                />
-              </div>
-              {(['weight', 'balance', 'headSize', 'lengthIn', 'swingWeight', 'stiffnessRa'] as const).map((k) => (
-                <div className="space-y-2" key={k}>
-                  <Label>{getMarketRacketFieldLabel(k)}</Label>
+          <div className="px-5 py-5 md:px-6 space-y-6">
+            {/* 핵심 스펙 */}
+            <div>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">핵심 스펙</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label className="text-sm">
+                    모델명 <span className="text-destructive">*</span>
+                  </Label>
                   <Input
-                    type="number"
-                    value={(value.racketSpec as any)?.[k] ?? ''}
-                    onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), [k]: onNum(e.target.value) }, stringSpec: null })}
+                    placeholder="예: EZONE 98 2024, PRO STAFF 97 V14"
+                    value={value.racketSpec?.modelName ?? ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...value,
+                        racketSpec: { ...(value.racketSpec ?? { modelName: '' }), modelName: e.target.value },
+                        stringSpec: null,
+                      })
+                    }
                     disabled={disabled}
                   />
                 </div>
-              ))}
-              <div className="space-y-2">
-                <Label>스트링 패턴</Label>
-                <select
-                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-                  value={value.racketSpec?.pattern ?? ''}
-                  onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), pattern: e.target.value || null }, stringSpec: null })}
-                  disabled={disabled}
-                >
-                  <option value="">선택 안함</option>
-                  {MARKET_RACKET_PATTERN_OPTIONS.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
+                {(
+                  [
+                    { key: 'weight' as const, ph: '300' },
+                    { key: 'balance' as const, ph: '320' },
+                    { key: 'headSize' as const, ph: '98' },
+                  ] as const
+                ).map(({ key, ph }) => (
+                  <div className="space-y-2" key={key}>
+                    <Label className="text-sm">{getMarketRacketFieldLabel(key)}</Label>
+                    <Input
+                      type="number"
+                      placeholder={ph}
+                      value={(value.racketSpec as any)?.[key] ?? ''}
+                      onChange={(e) =>
+                        onChange({
+                          ...value,
+                          racketSpec: { ...(value.racketSpec ?? { modelName: '' }), [key]: onNum(e.target.value) },
+                          stringSpec: null,
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="space-y-2">
-                <Label>그립 사이즈</Label>
-                <select
-                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-                  value={value.racketSpec?.gripSize ?? ''}
-                  onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), gripSize: e.target.value || null }, stringSpec: null })}
-                  disabled={disabled}
-                >
-                  <option value="">선택 안함</option>
-                  {MARKET_RACKET_GRIP_SIZE_OPTIONS.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
-                    </option>
-                  ))}
-                </select>
+            </div>
+
+            {/* 구분선 */}
+            <div className="border-t border-border" />
+
+            {/* 선택 스펙 */}
+            <div>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">선택 스펙</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {(
+                  [
+                    { key: 'lengthIn' as const, ph: '27' },
+                    { key: 'swingWeight' as const, ph: '320' },
+                    { key: 'stiffnessRa' as const, ph: '68' },
+                  ] as const
+                ).map(({ key, ph }) => (
+                  <div className="space-y-2" key={key}>
+                    <Label className="text-sm">{getMarketRacketFieldLabel(key)}</Label>
+                    <Input
+                      type="number"
+                      placeholder={ph}
+                      value={(value.racketSpec as any)?.[key] ?? ''}
+                      onChange={(e) =>
+                        onChange({
+                          ...value,
+                          racketSpec: { ...(value.racketSpec ?? { modelName: '' }), [key]: onNum(e.target.value) },
+                          stringSpec: null,
+                        })
+                      }
+                      disabled={disabled}
+                    />
+                  </div>
+                ))}
+                <div className="space-y-2">
+                  <Label className="text-sm">스트링 패턴</Label>
+                  <select
+                    className={selectCls}
+                    value={value.racketSpec?.pattern ?? ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...value,
+                        racketSpec: { ...(value.racketSpec ?? { modelName: '' }), pattern: e.target.value || null },
+                        stringSpec: null,
+                      })
+                    }
+                    disabled={disabled}
+                  >
+                    <option value="">선택 안함</option>
+                    {MARKET_RACKET_PATTERN_OPTIONS.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">그립 사이즈</Label>
+                  <select
+                    className={selectCls}
+                    value={value.racketSpec?.gripSize ?? ''}
+                    onChange={(e) =>
+                      onChange({
+                        ...value,
+                        racketSpec: { ...(value.racketSpec ?? { modelName: '' }), gripSize: e.target.value || null },
+                        stringSpec: null,
+                      })
+                    }
+                    disabled={disabled}
+                  >
+                    <option value="">선택 안함</option>
+                    {MARKET_RACKET_GRIP_SIZE_OPTIONS.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {category === 'string' && (
-          <div className="space-y-3 rounded-md border border-border p-3">
-            <p className="text-xs font-semibold text-muted-foreground">스트링 스펙</p>
-            <p className="text-[11px] text-muted-foreground">모델명/가격/상태를 우선 입력해 주세요. 세부 옵션은 아는 범위에서만 작성해도 됩니다.</p>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>모델명 *</Label>
+      {/* ── 섹션 2: 스트링 상세 스펙 ── */}
+      {category === 'string' && (
+        <div className="rounded-xl border border-border bg-card shadow-sm">
+          <div className="border-b border-border px-5 py-4 md:px-6">
+            <h3 className="text-sm font-semibold text-foreground">스트링 상세 정보</h3>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.</p>
+          </div>
+
+          <div className="px-5 py-5 md:px-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="text-sm">
+                  모델명 <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   placeholder="예: ALU POWER 125, POLYTOUR PRO 1.25"
                   value={value.stringSpec?.modelName ?? ''}
-                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), modelName: e.target.value }, racketSpec: null })}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      stringSpec: { ...(value.stringSpec ?? { modelName: '' }), modelName: e.target.value },
+                      racketSpec: null,
+                    })
+                  }
                   disabled={disabled}
                 />
               </div>
               <div className="space-y-2">
-                <Label>재질</Label>
+                <Label className="text-sm">재질</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  className={selectCls}
                   value={value.stringSpec?.material ?? ''}
-                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), material: e.target.value || null }, racketSpec: null })}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      stringSpec: { ...(value.stringSpec ?? { modelName: '' }), material: e.target.value || null },
+                      racketSpec: null,
+                    })
+                  }
                   disabled={disabled}
                 >
                   <option value="">선택 안함</option>
@@ -175,11 +299,17 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>게이지</Label>
+                <Label className="text-sm">게이지</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  className={selectCls}
                   value={value.stringSpec?.gauge ?? ''}
-                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), gauge: e.target.value || null }, racketSpec: null })}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      stringSpec: { ...(value.stringSpec ?? { modelName: '' }), gauge: e.target.value || null },
+                      racketSpec: null,
+                    })
+                  }
                   disabled={disabled}
                 >
                   <option value="">선택 안함</option>
@@ -191,11 +321,17 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>색상</Label>
+                <Label className="text-sm">색상</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  className={selectCls}
                   value={value.stringSpec?.color ?? ''}
-                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), color: e.target.value || null }, racketSpec: null })}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      stringSpec: { ...(value.stringSpec ?? { modelName: '' }), color: e.target.value || null },
+                      racketSpec: null,
+                    })
+                  }
                   disabled={disabled}
                 >
                   <option value="">선택 안함</option>
@@ -207,11 +343,17 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>길이</Label>
+                <Label className="text-sm">길이</Label>
                 <select
-                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  className={selectCls}
                   value={value.stringSpec?.length ?? ''}
-                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), length: e.target.value || null }, racketSpec: null })}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      stringSpec: { ...(value.stringSpec ?? { modelName: '' }), length: e.target.value || null },
+                      racketSpec: null,
+                    })
+                  }
                   disabled={disabled}
                 >
                   <option value="">선택 안함</option>
@@ -223,10 +365,9 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                 </select>
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground">숫자만 입력하면 됩니다. 등록 후 목록/상세에서는 원 단위로 표시됩니다.</p>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }
