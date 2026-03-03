@@ -14,13 +14,13 @@ import { opsKindBadgeTone, opsKindLabel, type OpsBadgeTone, type OpsKind } from 
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
   success: 'bg-success/10 text-success border-success/30 dark:bg-success/15',
   warning: 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15',
-  destructive: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
-  muted: 'bg-muted text-muted-foreground',
+  danger: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
+  neutral: 'bg-muted text-muted-foreground',
   info: 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20',
 };
 
 function opsBadgeToneClass(tone: OpsBadgeTone) {
-  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
+  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.neutral;
 }
 
 /**

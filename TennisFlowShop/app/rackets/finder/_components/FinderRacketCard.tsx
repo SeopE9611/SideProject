@@ -146,9 +146,9 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {rentalEnabled ? (
-                  <Badge className="bg-primary/10 text-primary ring-1 ring-ring hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20">대여 가능</Badge>
+                  <Badge variant={badgeToneVariant('success')}>대여 가능</Badge>
                 ) : (
-                  <Badge variant="secondary" className="bg-muted/80 text-muted-foreground">
+                  <Badge variant={badgeToneVariant('danger')}>
                     대여 불가
                   </Badge>
                 )}

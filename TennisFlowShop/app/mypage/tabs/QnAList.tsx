@@ -7,6 +7,7 @@ import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from 
 import Link from 'next/link';
 import { useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
+import { getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from '@/lib/badge-style';
 
 type Qna = {
   id: string;
@@ -107,18 +108,14 @@ export default function QnAList() {
                   <MessageCircleQuestion className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <Badge variant="outline" className="mb-2 border-border text-primary dark:border-border dark:text-primary">
-                    {qna.category}
-                  </Badge>
+                  {(() => { const c = getQnaCategoryBadgeSpec(qna.category); return <Badge variant={c.variant} className="mb-2">{qna.category}</Badge>; })()}
                   <h3 className="font-semibold text-foreground line-clamp-2">{qna.title}</h3>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 {qna.status === '답변 완료' ? <CheckCircle className="h-5 w-5 text-success" /> : <Clock className="h-5 w-5 text-warning" />}
-                <Badge variant={qna.status === '답변 완료' ? 'default' : 'secondary'} className={qna.status === '답변 완료' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}>
-                  {qna.status}
-                </Badge>
+                {(() => { const st = getAnswerStatusBadgeSpec(qna.status === '답변 완료'); return <Badge variant={st.variant}>{qna.status}</Badge>; })()}
               </div>
             </div>
 

@@ -9,7 +9,7 @@ import { ArrowLeft, Calendar, CreditCard, LinkIcon, Mail, MapPin, Package, Penci
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { badgeBase, badgeSizeSm, getShippingMethodBadge, orderStatusColors, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import AdminCancelOrderDialog from '@/app/features/orders/components/AdminCancelOrderDialog';
 import OrderHistory from '@/app/features/orders/components/OrderHistory';
 import Loading from '@/app/admin/orders/[id]/loading';
@@ -527,7 +527,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Package className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">주문 상태</span>
  </div>
- <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground dark:bg-primary/20')}>{localStatus}</Badge>
+ {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{localStatus}</Badge>; })()}
  </div>
 
  <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
@@ -535,14 +535,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  <User className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">결제 상태</span>
  </div>
- <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
+ {(() => { const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus); return <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{orderDetail.paymentStatus}</Badge>; })()}
  </div>
  <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">수령/배송</span>
  </div>
- <Badge className={cn(badgeBase, badgeSizeSm, shippingMethodBadge.color)}>{shippingMethodBadge.label}</Badge>
+ <Badge variant={shippingMethodBadge.variant} className={cn(badgeBase, badgeSizeSm)}>{shippingMethodBadge.label}</Badge>
  {isShippingManagedByApplication && <p className="mt-1 text-[11px] text-muted-foreground">운송장/배송 등록은 신청서에서 관리</p>}
  </div>
  </div>
@@ -567,7 +567,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardHeader className="bg-muted/30 border-b pb-3">
  <div className="flex items-center justify-between">
  <CardTitle>주문 상태 관리</CardTitle>
- <Badge className={cn(badgeBase, badgeSizeSm, orderStatusColors[localStatus] ?? 'bg-primary/10 text-muted-foreground dark:bg-primary/20')}>{localStatus}</Badge>
+ {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{localStatus}</Badge>; })()}
  </div>
  <CardDescription>
  {formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.
@@ -890,14 +890,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  >
  <div>
  <p className="text-sm text-muted-foreground">결제 상태</p>
- <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
+ {(() => { const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus); return <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{orderDetail.paymentStatus}</Badge>; })()}
  </div>
  {/* <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
  <div className="flex items-center space-x-2 mb-2">
  <Truck className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">수령/배송</span>
  </div>
- <Badge className={cn(badgeBase, badgeSizeSm, shippingMethodBadge.color)}>{shippingMethodBadge.label}</Badge>
+ <Badge variant={shippingMethodBadge.variant} className={cn(badgeBase, badgeSizeSm)}>{shippingMethodBadge.label}</Badge>
  {isShippingManagedByApplication && <p className="mt-1 text-[11px] text-muted-foreground">운송장/배송 등록은 신청서에서 관리</p>}
  </div> */}
  </div>

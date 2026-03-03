@@ -304,13 +304,13 @@ const stickyActionHeadClass = 'sticky right-0 z-20 bg-muted/50 text-right shadow
 const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
   success: badgeToneClass('success'),
   warning: badgeToneClass('warning'),
-  destructive: badgeToneClass('destructive'),
-  muted: badgeToneClass('neutral'),
+  danger: badgeToneClass('danger'),
+  neutral: badgeToneClass('neutral'),
   info: badgeToneClass('info'),
 };
 
 function opsBadgeToneClass(tone: OpsBadgeTone) {
-  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.muted;
+  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.neutral;
 }
 
 export default function OperationsClient() {
