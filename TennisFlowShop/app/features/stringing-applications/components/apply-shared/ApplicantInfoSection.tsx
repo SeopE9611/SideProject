@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { collectionVisitNotice } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
@@ -207,7 +208,7 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
       <div className="space-y-3">
         {isVisitSelected ? (
           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-            방문 접수는 주소 입력이 필요하지 않습니다.
+            {collectionVisitNotice}
           </div>
         ) : (
           <>

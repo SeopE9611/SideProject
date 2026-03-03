@@ -2,6 +2,7 @@
 
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { collectionMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -321,11 +322,9 @@ export default function ApplicationsClient() {
               ? null
               : !inboundRequired
                 ? '접수 방식: 입고 불필요(주문/대여 기반)'
-                : cm === 'self_ship'
-                  ? '접수 방식: 자가 발송(택배)'
-                  : cm === 'visit'
-                    ? '접수 방식: 매장 방문 접수'
-                    : '접수 방식: 기타';
+                : cm === 'self_ship' || cm === 'courier_pickup' || cm === 'visit'
+                  ? `접수 방식: ${collectionMethodLabel(cm)}`
+                  : '접수 방식: 기타';
 
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;

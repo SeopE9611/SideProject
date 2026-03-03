@@ -1,4 +1,5 @@
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { getStringingAddressReadLabels, withAddressValue, withPostalValue } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import BackButtonGuard from '@/app/services/_components/BackButtonGuard';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import LoginGate from '@/components/system/LoginGate';
@@ -129,11 +130,12 @@ export default async function StringServiceSuccessPage(props: Props) {
   const isSelfShip = cm === 'self_ship';
   const isCourierPickup = cm === 'courier_pickup';
 
-  const shippingSectionTitle = isVisit ? '방문 접수 정보' : '배송지 정보';
-  const shippingPrimaryLabel = isVisit ? '접수 방식' : '주소';
-  const shippingPrimaryValue = isVisit ? '매장 방문 접수 (주소 입력 불필요)' : shippingInfo?.address?.trim() || '-';
-  const shippingSecondaryLabel = isVisit ? '안내' : '우편번호';
-  const shippingSecondaryValue = isVisit ? '방문 접수는 주소 입력이 필요하지 않습니다.' : shippingInfo?.postalCode?.trim() || '-';
+  const shippingReadLabels = getStringingAddressReadLabels(cm);
+  const shippingSectionTitle = shippingReadLabels.sectionTitle;
+  const shippingPrimaryLabel = shippingReadLabels.primaryLabel;
+  const shippingPrimaryValue = withAddressValue(cm, shippingInfo?.address);
+  const shippingSecondaryLabel = shippingReadLabels.secondaryLabel;
+  const shippingSecondaryValue = withPostalValue(cm, shippingInfo?.postalCode);
 
   // 방문 예약 희망 일시 라벨
   const visitTimeLabel = isVisit

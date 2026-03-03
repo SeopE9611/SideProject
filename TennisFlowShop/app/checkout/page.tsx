@@ -3,6 +3,7 @@ import CheckoutButton from '@/app/checkout/CheckoutButton';
 import CheckoutStringingPaymentAddon from '@/app/checkout/_components/CheckoutStringingPaymentAddon';
 import CheckoutStringingServiceSections from '@/app/checkout/_components/CheckoutStringingServiceSections';
 import useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
+import { collectionMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import type { StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import { useAuthStore, type User } from '@/app/store/authStore';
 import { useBuyNowStore } from '@/app/store/buyNowStore';
@@ -989,7 +990,7 @@ export default function CheckoutPage() {
                       (deliveryMethod === '방문수령' ? (
                         // 방문 수령: 매장 방문 접수 고정(선택 불가 안내)
                         <div className="ml-7 mt-2 text-sm">
-                          <span className="px-2 py-1 rounded bg-primary text-primary-foreground">매장 방문 접수로 진행됩니다.</span>
+                          <span className="px-2 py-1 rounded bg-primary text-primary-foreground">{collectionMethodLabel('visit')}로 진행됩니다.</span>
                         </div>
                       ) : (
                         // 택배 수령: **선택지는 자가 발송만** 노출

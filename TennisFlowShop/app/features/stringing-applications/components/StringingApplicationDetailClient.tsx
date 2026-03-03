@@ -10,6 +10,7 @@ import StringInfoEditForm from '@/app/features/stringing-applications/components
 import StringingApplicationDetailSkeleton from '@/app/features/stringing-applications/components/StringingApplicationDetailSkeleton';
 import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
 import { useStringingStore } from '@/app/store/stringingStore';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
@@ -605,10 +606,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const cm = normalizeCollection(collectionMethodRaw ?? 'self_ship');
   const isSelfShip = cm === 'self_ship';
   const isVisit = cm === 'visit';
-  const customerAddressLabel = isVisit ? '접수 방식' : '주소';
-  const customerAddressValue = isVisit ? '매장 방문 접수 (주소 입력 불필요)' : data.customer?.address?.trim() || '정보 없음';
-  const customerAddressSubLabel = isVisit ? '안내' : '우편번호';
-  const customerAddressSubValue = isVisit ? '방문 접수는 주소 입력이 필요하지 않습니다.' : data.customer?.postalCode?.trim() || null;
+  const customerAddressReadLabels = getStringingAddressReadLabels(cm);
+  const customerAddressLabel = customerAddressReadLabels.primaryLabel;
+  const customerAddressValue = isVisit ? customerAddressReadLabels.primaryValue : data.customer?.address?.trim() || '정보 없음';
+  const customerAddressSubLabel = customerAddressReadLabels.secondaryLabel;
+  const customerAddressSubValue = isVisit ? customerAddressReadLabels.secondaryValue : data.customer?.postalCode?.trim() || null;
 
   // 서버에서 내려준 값 우선 사용 (라켓 구매/대여 연결이면 false로 내려옴)
   const inboundRequired = data.inboundRequired ?? true;
@@ -1332,7 +1334,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         </>
                       ) : (
                         <>
-                          <p>배송 방식: {shippingMethod === 'quick' ? '퀵배송' : shippingMethod === 'visit' ? '매장 방문 수령' : shippingMethod === 'delivery' ? '택배' : '미입력'}</p>
+                          <p>배송 방식: {shippingMethod ? orderShippingMethodLabel(shippingMethod) : '미입력'}</p>
                           <p>예정일: {data.shippingInfo?.estimatedDate ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString('ko-KR') : '-'}</p>
                           <p className="text-xs text-muted-foreground">운송장 번호는 발급되지 않는 배송 방식입니다.</p>
                         </>
