@@ -59,15 +59,18 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
     const postcodeTrim = String(formData?.shippingPostcode || '').trim();
     const addrTrim = String(formData?.shippingAddress || '').trim();
     const method = formData?.collectionMethod as CollectionMethod | undefined;
+    const isVisitCollection = normalizeCollection(method) === 'visit';
 
     if (!nameTrim) next.name = '이름을 입력해주세요.';
     if (!emailTrim) next.email = '이메일을 입력해주세요.';
     if (!phoneVal.trim()) next.phone = '연락처를 입력해주세요.';
     else if (!isValid010Phone(phoneVal)) next.phone = '올바른 연락처 형식으로 입력해주세요. (01012345678)';
 
-    // 주소는 우편번호 찾기(주소 검색)로 등록되는 UX를 전제로 안내
-    if (!postcodeTrim) next.shippingPostcode = '우편번호 찾기를 통해 주소를 등록해주세요.';
-    if (!addrTrim) next.shippingAddress = '우편번호 찾기를 통해 주소를 등록해주세요.';
+    // 방문 접수는 주소 입력이 비필수, 그 외 방식은 주소를 필수로 유지
+    if (!isVisitCollection) {
+      if (!postcodeTrim) next.shippingPostcode = '우편번호 찾기를 통해 주소를 등록해주세요.';
+      if (!addrTrim) next.shippingAddress = '우편번호 찾기를 통해 주소를 등록해주세요.';
+    }
 
     if (!method) next.collectionMethod = '수거 방식을 선택해주세요.';
     if (method === 'courier_pickup') {
@@ -88,6 +91,7 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
 
   // 방문 수령(주문 기반)일 땐 방문 접수 외 선택을 막는 용도
   const lockVisit = lockCollection || isVisitDelivery;
+  const isVisitSelected = normalizeCollection(formData.collectionMethod) === 'visit';
   const courierPickupDisabled = true; // false로 변경하면 기사방문 선택가능
 
   // 정상 프리필되면 잠그고 비어있는경우 풀림
@@ -173,60 +177,68 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
       </div>
 
       <div className="space-y-3">
-        <div className="space-y-1">
-          <Label htmlFor="shippingPostcode" className="text-sm font-medium">
-            우편번호 <span className="text-destructive">*</span>
-          </Label>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <Input
-              id="shippingPostcode"
-              name="shippingPostcode"
-              value={formData.shippingPostcode}
-              onBlur={() => markTouched('shippingPostcode')}
-              readOnly={postcodeAddressReadOnly}
-              className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
-              placeholder=""
-            />
-            {!orderId && !isMember && (
-              <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap transition-colors duration-200">
-                <MapPin className="h-4 w-4 mr-2" />
-                우편번호 검색
-              </Button>
-            )}
+        {isVisitSelected ? (
+          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            방문 접수는 주소 입력이 필요하지 않습니다.
           </div>
-          {errorText('shippingPostcode') ? <p className={errCls}>{errorText('shippingPostcode')}</p> : null}
-        </div>
+        ) : (
+          <>
+            <div className="space-y-1">
+              <Label htmlFor="shippingPostcode" className="text-sm font-medium">
+                우편번호 <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                <Input
+                  id="shippingPostcode"
+                  name="shippingPostcode"
+                  value={formData.shippingPostcode}
+                  onBlur={() => markTouched('shippingPostcode')}
+                  readOnly={postcodeAddressReadOnly}
+                  className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
+                  placeholder=""
+                />
+                {!orderId && !isMember && (
+                  <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap transition-colors duration-200">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    우편번호 검색
+                  </Button>
+                )}
+              </div>
+              {errorText('shippingPostcode') ? <p className={errCls}>{errorText('shippingPostcode')}</p> : null}
+            </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="shippingAddress" className="text-sm font-medium">
-            주소 <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="shippingAddress"
-            name="shippingAddress"
-            value={formData.shippingAddress}
-            onBlur={() => markTouched('shippingAddress')}
-            readOnly={postcodeAddressReadOnly}
-            className={`transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
-            placeholder=""
-          />
-          {errorText('shippingAddress') ? <p className={errCls}>{errorText('shippingAddress')}</p> : null}
-        </div>
+            <div className="space-y-1">
+              <Label htmlFor="shippingAddress" className="text-sm font-medium">
+                주소 <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="shippingAddress"
+                name="shippingAddress"
+                value={formData.shippingAddress}
+                onBlur={() => markTouched('shippingAddress')}
+                readOnly={postcodeAddressReadOnly}
+                className={`transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
+                placeholder=""
+              />
+              {errorText('shippingAddress') ? <p className={errCls}>{errorText('shippingAddress')}</p> : null}
+            </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="shippingAddressDetail" className="text-sm font-medium">
-            상세 주소
-          </Label>
-          <Input
-            id="shippingAddressDetail"
-            name="shippingAddressDetail"
-            value={formData.shippingAddressDetail}
-            onChange={handleInputChange}
-            readOnly={lockAddressFields}
-            className={`transition-all duration-200 ${lockAddressFields ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
-            placeholder="상세 주소를 입력해주세요"
-          />
-        </div>
+            <div className="space-y-1">
+              <Label htmlFor="shippingAddressDetail" className="text-sm font-medium">
+                상세 주소
+              </Label>
+              <Input
+                id="shippingAddressDetail"
+                name="shippingAddressDetail"
+                value={formData.shippingAddressDetail}
+                onChange={handleInputChange}
+                readOnly={lockAddressFields}
+                className={`transition-all duration-200 ${lockAddressFields ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
+                placeholder="상세 주소를 입력해주세요"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-3">
@@ -276,6 +288,9 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
               if (normalizeCollection(v) === 'visit') {
                 (next as any).preferredDate = '';
                 (next as any).preferredTime = '';
+                (next as any).shippingPostcode = '';
+                (next as any).shippingAddress = '';
+                (next as any).shippingAddressDetail = '';
               }
               return next;
             })

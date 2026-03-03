@@ -445,10 +445,13 @@ export default function StringServiceApplyPage() {
       if (!formData.phone.trim()) return (toast('연락처를 입력해주세요.'), false);
       if (!isValidPhone(formData.phone)) return (toast('올바른 연락처 형식(01012345678)으로 입력해주세요.'), false);
 
-      if (!formData.shippingPostcode.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
-      if (!formData.shippingAddress.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
-
       if (!formData.collectionMethod) return (toast('수거 방식을 선택해주세요.'), false);
+
+      const normalizedCollection = normalizeCollection(formData.collectionMethod);
+      if (normalizedCollection !== 'visit') {
+        if (!formData.shippingPostcode.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
+        if (!formData.shippingAddress.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
+      }
       if (formData.collectionMethod === 'courier_pickup') {
         if (!formData.pickupDate) return (toast('수거 희망일을 입력해주세요.'), false);
         if (!formData.pickupTime) return (toast('수거 시간대를 입력해주세요.'), false);
@@ -558,10 +561,13 @@ export default function StringServiceApplyPage() {
         if (!formData.phone.trim()) return { id: 'phone' };
         if (!isValidPhone(formData.phone)) return { id: 'phone' };
 
-        if (!formData.shippingPostcode.trim()) return { id: 'shippingPostcode' };
-        if (!formData.shippingAddress.trim()) return { id: 'shippingPostcode' };
-
         if (!formData.collectionMethod) return { selector: 'input[name="collectionMethod"]' };
+
+        const normalizedCollection = normalizeCollection(formData.collectionMethod);
+        if (normalizedCollection !== 'visit') {
+          if (!formData.shippingPostcode.trim()) return { id: 'shippingPostcode' };
+          if (!formData.shippingAddress.trim()) return { id: 'shippingPostcode' };
+        }
 
         if (formData.collectionMethod === 'courier_pickup') {
           if (!formData.pickupDate) return { id: 'pickupDate' };
@@ -1160,6 +1166,9 @@ export default function StringServiceApplyPage() {
     setIsSubmitting(true);
     // 이하 payload 생성/POST 로직은 그대로 유지
 
+    const normalizedCollectionMethod = normalizeCollection(formData.collectionMethod);
+    const isVisitCollection = normalizedCollectionMethod === 'visit';
+
     const payload = {
       /**
        * 중요:
@@ -1185,13 +1194,13 @@ export default function StringServiceApplyPage() {
         name: shippingName,
         phone: shippingPhone,
         email: shippingEmail,
-        address: formData.shippingAddress,
-        addressDetail: formData.shippingAddressDetail,
-        postalCode: formData.shippingPostcode,
+        address: isVisitCollection ? '' : formData.shippingAddress,
+        addressDetail: isVisitCollection ? '' : formData.shippingAddressDetail,
+        postalCode: isVisitCollection ? '' : formData.shippingPostcode,
         depositor: usingPackage ? undefined : formData.shippingDepositor,
         bank: usingPackage ? undefined : formData.shippingBank,
         deliveryRequest: formData.shippingRequest,
-        collectionMethod: formData.collectionMethod, // 'self_ship' | 'courier_pickup' | 'visit'
+        collectionMethod: normalizedCollectionMethod, // 'self_ship' | 'courier_pickup' | 'visit'
         pickup:
           formData.collectionMethod === 'courier_pickup'
             ? {

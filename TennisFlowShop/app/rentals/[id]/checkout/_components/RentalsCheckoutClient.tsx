@@ -335,6 +335,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
     if (!requestStringing) return undefined;
 
     const form = rentalStringingAdapter.formData;
+    const isVisitCollection = form.collectionMethod === 'visit';
     const stringTypes = (form.stringTypes ?? []).filter(Boolean);
     const lines = (rentalStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
 
@@ -350,9 +351,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim(),
-        address: address.trim(),
-        addressDetail: addressDetail.trim(),
-        postalCode: postalCode.trim(),
+        address: isVisitCollection ? '' : address.trim(),
+        addressDetail: isVisitCollection ? '' : addressDetail.trim(),
+        postalCode: isVisitCollection ? '' : postalCode.trim(),
         depositor: depositor.trim(),
         bank: selectedBank,
         deliveryRequest: deliveryRequest.trim(),

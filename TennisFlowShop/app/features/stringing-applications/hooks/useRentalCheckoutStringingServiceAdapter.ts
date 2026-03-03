@@ -71,6 +71,7 @@ export default function useRentalCheckoutStringingServiceAdapter({
     if (!withStringService) return;
 
     const collectionMethod = mapPickupToCollectionMethod(servicePickupMethod);
+    const isVisit = collectionMethod === 'visit';
 
     setFormData((prev) => ({
       ...prev,
@@ -80,9 +81,9 @@ export default function useRentalCheckoutStringingServiceAdapter({
       shippingName: name,
       shippingEmail: email,
       shippingPhone: phone,
-      shippingPostcode: postalCode,
-      shippingAddress: address,
-      shippingAddressDetail: addressDetail,
+      shippingPostcode: isVisit ? '' : postalCode,
+      shippingAddress: isVisit ? '' : address,
+      shippingAddressDetail: isVisit ? '' : addressDetail,
       shippingDepositor: depositor,
       shippingBank: selectedBank,
       shippingRequest: deliveryRequest,
