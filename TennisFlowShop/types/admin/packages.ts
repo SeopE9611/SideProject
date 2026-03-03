@@ -74,7 +74,7 @@ export interface AdminPackageDetailDto {
   usedSessions: number;
   price: number;
   purchaseDate: string;
-  expiryDate: string;
+  expiryDate: string | null;
   passStatus: AdminPackagePassStatusDetail;
   paymentStatus: AdminPackagePaymentStatus;
   serviceType: AdminPackageServiceType;

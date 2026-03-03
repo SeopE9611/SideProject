@@ -1,6 +1,6 @@
 import type { ObjectId } from 'mongodb';
 
-export type ServicePassStatus = 'active' | 'expired' | 'suspended';
+export type ServicePassStatus = 'active' | 'paused' | 'cancelled' | 'expired' | 'suspended';
 
 export interface ServicePass {
   _id: ObjectId;
@@ -10,9 +10,11 @@ export interface ServicePass {
   packageSize: number; // 10 | 30 | 50 | 100
   usedCount: number; // 사용된 횟수
   remainingCount: number; // 남은 횟수
-  status: ServicePassStatus; // active/expired/suspended
-  purchasedAt: Date; // 결제 완료 시각
-  expiresAt: Date; // purchasedAt + 365d
+  status: ServicePassStatus; // active/paused/cancelled/expired/(legacy)suspended
+  purchasedAt: Date; // 주문 결제완료(구매) 시각
+  activatedAt?: Date; // 관리자 활성화(패스 시작) 시각
+  expiresAt: Date | null; // activatedAt + validityPeriod
+  remainingValidityMs?: number | null; // 일시정지 시점 남은 유효기간(ms)
   redemptions: Array<{
     applicationId: ObjectId; // 차감된 신청서 ID
     usedAt: Date;

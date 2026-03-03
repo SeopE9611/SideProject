@@ -6,6 +6,13 @@ import type { ServicePass } from '@/lib/types/pass';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 
+
+function toRemainingValidityMs(pass: ServicePass, now: Date): number {
+  if (typeof pass.remainingValidityMs === 'number' && pass.remainingValidityMs >= 0) return pass.remainingValidityMs;
+  if (pass.expiresAt instanceof Date) return Math.max(0, pass.expiresAt.getTime() - now.getTime());
+  return 0;
+}
+
 type PassHistoryItem = {
   _id: OID;
   type: 'status_change';
@@ -51,10 +58,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!pass) return NextResponse.json({ error: 'service pass not found for this order' }, { status: 404 });
 
     const now = new Date();
-    const prev = (pass.status ?? 'active') as 'active' | 'paused' | 'cancelled';
+    const prev = ((pass.status === 'suspended' ? 'paused' : pass.status) ?? 'active') as 'active' | 'paused' | 'cancelled';
+    const currentRemainingMs = toRemainingValidityMs(pass, now);
+
+    const setPatch: Partial<ServicePass> & { status: 'active' | 'paused' | 'cancelled'; updatedAt: Date } = {
+      status: next,
+      updatedAt: now,
+    } as any;
+
+    if (next === 'paused') {
+      setPatch.remainingValidityMs = currentRemainingMs;
+      setPatch.expiresAt = null;
+    } else if (next === 'active') {
+      const resumeMs = currentRemainingMs > 0 ? currentRemainingMs : 0;
+      setPatch.activatedAt = pass.activatedAt ?? now;
+      setPatch.remainingValidityMs = resumeMs;
+      setPatch.expiresAt = resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null;
+    } else if (next === 'cancelled') {
+      setPatch.remainingValidityMs = currentRemainingMs;
+      setPatch.expiresAt = null;
+    }
+
     // 패스 상태 업데이트 + 이력
     await passes.updateOne({ _id: pass._id }, {
-      $set: { status: next, updatedAt: now },
+      $set: setPatch,
       $push: {
         history: {
           $each: [

@@ -11,11 +11,16 @@ import type { Db, ObjectId } from 'mongodb';
 import { ObjectId as OID } from 'mongodb';
 import type { ServicePass, ServicePassConsumption } from '@/lib/types/pass';
 
-// 365일 더하기 유틸
+// 일수 더하기 유틸
 function addDays(date: Date, days: number) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   return d;
+}
+
+function normalizeValidityDays(raw: unknown): number {
+  const days = Number(raw ?? 0);
+  return Number.isFinite(days) && days > 0 ? Math.floor(days) : 0;
 }
 
 // findOneAndUpdate 반환값에서 실제 문서를 안전하게 꺼내는 헬퍼
@@ -53,6 +58,9 @@ export async function issuePassesForPaidOrder(db: Db, order: any) {
     const packageSize = Number(meta.packageSize || 0);
     if (!packageSize) continue;
 
+    const validityDays = normalizeValidityDays(meta.validityPeriod);
+    const expiresAt = validityDays > 0 ? addDays(now, validityDays) : null;
+
     const passDoc: ServicePass = {
       _id: new OID(),
       userId,
@@ -63,7 +71,9 @@ export async function issuePassesForPaidOrder(db: Db, order: any) {
       remainingCount: packageSize,
       status: 'active',
       purchasedAt: now,
-      expiresAt: addDays(now, 365),
+      activatedAt: now,
+      expiresAt,
+      remainingValidityMs: expiresAt ? Math.max(0, expiresAt.getTime() - now.getTime()) : null,
       redemptions: [],
       meta: {
         planId: meta.planId,
@@ -220,6 +230,7 @@ export async function issuePassesForPaidPackageOrder(db: Db, packageOrder: any) 
   const orderId = typeof packageOrder._id === 'string' ? new OID(packageOrder._id) : packageOrder._id;
   const userId = typeof packageOrder.userId === 'string' ? new OID(packageOrder.userId) : packageOrder.userId;
   const sessions = Number(packageOrder?.packageInfo?.sessions || 0);
+  const validityDays = normalizeValidityDays(packageOrder?.packageInfo?.validityPeriod);
   const planId = packageOrder?.packageInfo?.id ?? `sessions-${sessions}`;
   const planTitle = packageOrder?.packageInfo?.title ?? '교체 서비스 패키지';
 
@@ -228,6 +239,8 @@ export async function issuePassesForPaidPackageOrder(db: Db, packageOrder: any) 
   const orderItemId = `package:${planId}:${sessions}`;
   const existing = await passes.findOne({ orderId, orderItemId });
   if (existing) return;
+
+  const expiresAt = validityDays > 0 ? addDays(now, validityDays) : null;
 
   const passDoc: ServicePass = {
     _id: new OID(),
@@ -239,7 +252,9 @@ export async function issuePassesForPaidPackageOrder(db: Db, packageOrder: any) 
     remainingCount: sessions,
     status: 'active',
     purchasedAt: now,
-    expiresAt: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
+    activatedAt: now,
+    expiresAt,
+    remainingValidityMs: expiresAt ? Math.max(0, expiresAt.getTime() - now.getTime()) : null,
     redemptions: [],
     meta: { planId, planTitle },
     createdAt: now,
