@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { shortenId } from '@/lib/shorten';
-import { badgeBase, badgeSizeSm, flowBadgeClass, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass, orderStatusColors, orderTypeColors, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneVariant, flowBadgeClass, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass, orderTypeColors } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
 import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
 import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
@@ -669,11 +669,11 @@ export default function OrdersClient() {
                           <TableCell className="w-36 truncate whitespace-nowrap">{formatDate(order.date)}</TableCell>
                           {/* 상태 셀 */}
                           <TableCell className={tdClasses}>
-                            {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', orderStatusColors[order.status])}>{order.status}</Badge>}
+                            {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : (() => { const st = getOrderStatusBadgeSpec(order.status); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{order.status}</Badge>; })()}
                           </TableCell>
                           {/* 결제 상태 셀 */}
                           <TableCell className={tdClasses}>
-                            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[order.paymentStatus])}>{order.paymentStatus}</Badge>
+                            {(() => { const pay = getPaymentStatusBadgeSpec(order.paymentStatus); return <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{order.paymentStatus}</Badge>; })()}
                           </TableCell>
                           {/* 수령방식 셀 */}
                           <TableCell className={tdClasses}>
@@ -683,7 +683,7 @@ export default function OrdersClient() {
                               const methodSource = order.__type === 'stringing_application' && anchorOrder && (order as any).linkedOrderId ? (anchorOrder as any) : (order as any);
                               const m = getShippingMethodBadge(methodSource);
                               return (
-                                <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', m.color)} title={`수령방식 코드: ${String(m.code ?? 'null')}`}>
+                                <Badge variant={m.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')} title={`수령방식 코드: ${String(m.code ?? 'null')}`}>
                                   {m.label}
                                 </Badge>
                               );
@@ -700,7 +700,7 @@ export default function OrdersClient() {
 
                               const t = getTrackingBadge(order);
                               return (
-                                <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', t.color)} title="택배인 경우만 운송장 등록/미등록 의미가 있습니다.">
+                                <Badge variant={t.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')} title="택배인 경우만 운송장 등록/미등록 의미가 있습니다.">
                                   {t.label}
                                 </Badge>
                               );
@@ -708,7 +708,7 @@ export default function OrdersClient() {
                           </TableCell>
                           {/* 유형 셀 */}
                           <TableCell className={tdClasses}>
-                            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', order.__type === 'stringing_application' ? orderTypeColors['서비스'] : orderTypeColors['상품'])}>{order.type}</Badge>
+                            <Badge variant={badgeToneVariant(order.__type === 'stringing_application' ? 'brand' : 'info')} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{order.type}</Badge>
                           </TableCell>
                           {/* 금액 셀 */}
                           <TableCell className={tdClasses}>{formatCurrency(order.total)}</TableCell>

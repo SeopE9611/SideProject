@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { getCurrentSessionBadgeSpec, getSessionDeviceBadgeSpec, getUserRoleBadgeSpec } from '@/lib/badge-style';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -505,9 +506,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-xl md:text-2xl font-bold tracking-tight">{user.name ?? '(이름없음)'}</h1>
-                    <Badge variant="secondary" className={user.role === 'admin' ? 'bg-muted text-foreground' : 'bg-background text-foreground'}>
-                      {user.role === 'admin' ? '관리자' : '일반'}
-                    </Badge>
+                    {(() => { const roleSpec = getUserRoleBadgeSpec(user.role); return <Badge variant={roleSpec.variant}>{user.role === 'admin' ? '관리자' : '일반'}</Badge>; })()}
                     <StatusBadge status={statusKey(user)} />
                   </div>
 
@@ -845,8 +844,8 @@ function SessionRow({ s, highlight = false }: { s: { at: string; ip: string; os:
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-sm font-medium truncate">
           {s.browser} · {s.os}
-          {highlight && <Badge className="border-0 bg-primary/10 text-primary dark:bg-primary/20">현재</Badge>}
-          <Badge className={cn('border-0 hidden sm:inline-block', s.isMobile ? 'bg-muted text-foreground' : 'bg-muted text-foreground')}>{s.isMobile ? '모바일' : '데스크탑'}</Badge>
+          {highlight && (() => { const currentSpec = getCurrentSessionBadgeSpec(true); return <Badge variant={currentSpec.variant}>현재</Badge>; })()}
+          {(() => { const deviceSpec = getSessionDeviceBadgeSpec(s.isMobile ? 'mobile' : 'desktop'); return <Badge variant={deviceSpec.variant} className="hidden sm:inline-block">{s.isMobile ? '모바일' : '데스크탑'}</Badge>; })()}
         </div>
         <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
           <code className="rounded bg-background px-1.5 py-0.5 dark:bg-card">{normalizeIp(s.ip)}</code>

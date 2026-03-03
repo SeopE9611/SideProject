@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneVariant, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
@@ -78,17 +78,17 @@ export default function AdminRentalsClient() {
    * - 운영자가 “이 대여가 단독인지 / 교체서비스 포함인지 / 신청서 연결인지”를 한눈에 확인.
    */
   function getKindBadge() {
-    return { label: '대여', className: 'bg-muted text-foreground dark:bg-muted dark:text-foreground' };
+    return { label: '대여', variant: 'success' as const };
   }
   function getServiceBadge(r: RentalRow) {
     if (r.withStringService) {
-      return { label: '교체서비스 포함', className: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary' };
+      return { label: '교체서비스 포함', variant: badgeToneVariant('brand') };
     }
-    return { label: '단독', className: 'bg-background text-foreground' };
+    return { label: '단독', variant: 'outline' as const };
   }
   function getLinkBadge(r: RentalRow) {
     if (r.stringingApplicationId) {
-      return { label: '신청서 연결', className: 'bg-muted text-foreground dark:bg-muted dark:text-foreground' };
+      return { label: '신청서 연결', variant: badgeToneVariant('info') };
     }
     return null;
   }
@@ -102,21 +102,21 @@ export default function AdminRentalsClient() {
     6: 'F6 대여',
     7: 'F7 대여+신청',
   };
-  const FLOW_BADGE_CLASS: Record<Flow, string> = {
-    6: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
-    7: 'bg-muted text-foreground dark:bg-muted dark:text-foreground',
+  const FLOW_BADGE_VARIANT: Record<Flow, ReturnType<typeof badgeToneVariant>> = {
+    6: badgeToneVariant('neutral'),
+    7: badgeToneVariant('info'),
   };
 
   function getFlowBadge(r: RentalRow) {
     // 대여 페이지에서는 “신청서 연결(또는 교체서비스 포함)”이면 통합(F7), 아니면 단독 대여(F6)로 취급
     const isIntegrated = !!r.stringingApplicationId || !!r.withStringService;
     const flow: Flow = isIntegrated ? 7 : 6;
-    return { flow, shortLabel: FLOW_SHORT[flow], label: FLOW_LABEL[flow], className: FLOW_BADGE_CLASS[flow] };
+    return { flow, shortLabel: FLOW_SHORT[flow], label: FLOW_LABEL[flow], variant: FLOW_BADGE_VARIANT[flow] };
   }
 
   function getSettlementBadge() {
     // 대여 화면의 정산 앵커는 항상 “대여”
-    return { label: '정산: 대여', className: 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground' };
+    return { label: '정산: 대여', variant: badgeToneVariant('neutral') };
   }
 
   const router = useRouter();
@@ -403,11 +403,8 @@ export default function AdminRentalsClient() {
 
   function PaymentBadge({ item }: { item: RentalRow }) {
     const paymentLabel = item.paymentStatusLabel ?? (derivePaymentStatus(item) === 'paid' ? '결제완료' : '결제대기');
-    return (
-      <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', paymentStatusColors[paymentLabel])}>
-        {paymentLabel}
-      </Badge>
-    );
+    const pay = getPaymentStatusBadgeSpec(paymentLabel);
+    return <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{paymentLabel}</Badge>;
   }
 
   function ShippingBadge({ item }: { item: RentalRow }) {
@@ -592,13 +589,13 @@ export default function AdminRentalsClient() {
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getKindBadge().className)}>{getKindBadge().label}</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-background text-foreground')}>단독</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary')}>교체서비스 포함</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', 'bg-muted text-foreground dark:bg-muted dark:text-foreground')}>신청서 연결</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[6])}>{FLOW_SHORT[6]}</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', FLOW_BADGE_CLASS[7])}>{FLOW_SHORT[7]}</Badge>
-            <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', getSettlementBadge().className)}>{getSettlementBadge().label}</Badge>
+            <Badge variant={getKindBadge().variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{getKindBadge().label}</Badge>
+            <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>단독</Badge>
+            <Badge variant="brand" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>교체서비스 포함</Badge>
+            <Badge variant="info" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>신청서 연결</Badge>
+            <Badge variant={FLOW_BADGE_VARIANT[6]} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{FLOW_SHORT[6]}</Badge>
+            <Badge variant={FLOW_BADGE_VARIANT[7]} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{FLOW_SHORT[7]}</Badge>
+            <Badge variant={getSettlementBadge().variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{getSettlementBadge().label}</Badge>
             <span className="ml-1">• 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다</span>
           </div>
         </CardHeader>

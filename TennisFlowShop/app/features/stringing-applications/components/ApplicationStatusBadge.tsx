@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { applicationStatusColors, badgeBase, badgeSizeSm } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getApplicationStatusBadgeSpec } from '@/lib/badge-style';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function ApplicationStatusBadge({ status }: Props) {
-  const colorClass = applicationStatusColors[status as keyof typeof applicationStatusColors] ?? applicationStatusColors.default;
+  const spec = getApplicationStatusBadgeSpec(status);
 
-  return <Badge className={cn(badgeBase, badgeSizeSm, colorClass)}>{status}</Badge>;
+  return <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>{status}</Badge>;
 }

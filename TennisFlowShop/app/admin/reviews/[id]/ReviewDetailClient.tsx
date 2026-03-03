@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { getReviewTypeBadgeSpec } from '@/lib/badge-style';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 // 리뷰 데이터 타입 정의
@@ -112,15 +113,16 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
   // 리뷰 타입에 따른 배지
   const getReviewTypeBadge = (type: Review['type']) => {
+    const spec = getReviewTypeBadgeSpec(type);
     switch (type) {
       case 'lesson':
-        return <Badge className="bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20">레슨 리뷰</Badge>;
+        return <Badge variant={spec.variant}>레슨 리뷰</Badge>;
       case 'stringing':
-        return <Badge className="bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20">스트링 서비스 리뷰</Badge>;
+        return <Badge variant={spec.variant}>스트링 서비스 리뷰</Badge>;
       case 'product':
-        return <Badge className="bg-muted text-foreground hover:bg-muted">상품 리뷰</Badge>;
+        return <Badge variant={spec.variant}>상품 리뷰</Badge>;
       default:
-        return <Badge className="bg-background text-foreground hover:bg-muted">기타 리뷰</Badge>;
+        return <Badge variant={spec.variant}>기타 리뷰</Badge>;
     }
   };
 

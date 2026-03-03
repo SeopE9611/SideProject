@@ -4,7 +4,7 @@
  * - 주의: 여기서는 “표시(UI)” 규칙만. 정산(금액 산정) 정책은 settlementPolicy가 기준.
  */
 export type OpsKind = 'order' | 'stringing_application' | 'rental';
-export type OpsBadgeTone = 'success' | 'warning' | 'destructive' | 'muted' | 'info';
+export type OpsBadgeTone = 'success' | 'warning' | 'danger' | 'neutral' | 'info' | 'brand';
 export type OpsSignalType = 'status' | 'payment';
 
 export function opsKindLabel(kind: OpsKind) {
@@ -20,7 +20,7 @@ const opsKindColors: Record<OpsKind, OpsBadgeTone> = {
 };
 
 export function opsKindBadgeTone(kind: OpsKind): OpsBadgeTone {
-  return opsKindColors[kind] ?? 'muted';
+  return opsKindColors[kind] ?? 'neutral';
 }
 
 const orderStatusColors: Record<string, OpsBadgeTone> = {
@@ -30,16 +30,16 @@ const orderStatusColors: Record<string, OpsBadgeTone> = {
   배송중: 'info',
   배송완료: 'success',
   구매확정: 'success',
-  취소: 'destructive',
-  환불: 'destructive',
+  취소: 'danger',
+  환불: 'danger',
 };
 
 const applicationStatusColors: Record<string, OpsBadgeTone> = {
-  접수완료: 'success',
+  접수완료: 'info',
   '검토 중': 'warning',
-  '작업 중': 'info',
+  '작업 중': 'warning',
   교체완료: 'success',
-  취소: 'destructive',
+  취소: 'danger',
 };
 
 /**
@@ -51,21 +51,22 @@ const rentalStatusColors: Record<string, OpsBadgeTone> = {
   결제완료: 'info',
   대여중: 'warning',
   반납완료: 'success',
-  취소됨: 'destructive',
+  취소됨: 'danger',
 };
 
 export function opsStatusBadgeTone(kind: OpsKind, label: string): OpsBadgeTone {
-  if (kind === 'order') return orderStatusColors[label] ?? 'muted';
-  if (kind === 'stringing_application') return applicationStatusColors[label] ?? 'muted';
-  return rentalStatusColors[label] ?? 'muted';
+  if (kind === 'order') return orderStatusColors[label] ?? 'neutral';
+  if (kind === 'stringing_application') return applicationStatusColors[label] ?? 'neutral';
+  return rentalStatusColors[label] ?? 'neutral';
 }
 
 const SIGNAL_PRIORITY: Record<OpsBadgeTone, number> = {
-  destructive: 5,
+  danger: 5,
   warning: 4,
+  brand: 3,
   info: 3,
   success: 2,
-  muted: 1,
+  neutral: 1,
 };
 
 /**

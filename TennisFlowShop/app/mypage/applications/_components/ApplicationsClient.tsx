@@ -16,6 +16,7 @@ import { useSWRConfig } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import CancelStringingDialog from './CancelStringingDialog';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
+import { badgeToneVariant, getApplicationStatusBadgeSpec } from '@/lib/badge-style';
 
 export interface Application {
   id: string;
@@ -361,7 +362,7 @@ export default function ApplicationsClient() {
                       {hasOrderLink && orderId && (
                         <div className="mt-1 flex items-center gap-2">
                           <Link href={`/mypage?tab=orders&orderId=${orderId}`}>
-                            <Badge variant="outline" className="border-border bg-muted/80 text-[11px] font-medium text-foreground dark:border-border dark:bg-card/40 dark:text-foreground hover:bg-muted dark:hover:bg-card">
+                            <Badge variant="neutral" className="text-[11px] font-medium">
                               원 주문 상세 보기
                             </Badge>
                           </Link>
@@ -373,7 +374,7 @@ export default function ApplicationsClient() {
                       {hasRentalLink && rentalId && (
                         <div className="mt-1 flex items-center gap-2">
                           <Link href={`/mypage?tab=rentals&rentalId=${rentalId}`}>
-                            <Badge variant="outline" className="border-border text-foreground hover:bg-muted">
+                            <Badge variant="outline">
                               원 대여 상세 보기
                             </Badge>
                           </Link>
@@ -381,7 +382,7 @@ export default function ApplicationsClient() {
                         </div>
                       )}
 
-                      {collectionLabel && <Badge variant="neutral" className="mt-1 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{collectionLabel}</Badge>}
+                      {collectionLabel && <Badge variant="neutral" className="mt-1 px-2 py-0.5 text-[11px] font-medium">{collectionLabel}</Badge>}
                     </div>
                   </div>
 
@@ -395,7 +396,7 @@ export default function ApplicationsClient() {
                       if (!isRequested) return null;
 
                       return (
-                        <Badge variant="outline" className="ml-1 border-warning/30 bg-warning/10 text-[11px] font-medium text-warning dark:bg-warning/15 dark:text-warning">
+                        <Badge variant="warning" className="ml-1 text-[11px] font-medium">
                           취소 요청됨
                         </Badge>
                       );

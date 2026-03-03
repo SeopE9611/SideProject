@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { badgeToneVariant } from '@/lib/badge-style';
 import type { AdminOutboxDetailResponseDto } from '@/types/admin/notifications';
 
 type OutboxDetailViewModel = {
@@ -104,18 +105,8 @@ function safeFmt(iso?: string | null) {
 
 function StatusBadge({ status }: { status?: string }) {
   const s = status ?? 'unknown';
-  const cls =
-    s === 'failed'
-      ? 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15'
-      : s === 'sent'
-      ? 'bg-success/10 text-success border-border dark:bg-success/15'
-      : s === 'queued'
-      ? 'bg-warning/10 text-warning border-border dark:bg-warning/15'
-      : s === 'processing'
-      ? 'bg-primary/10 text-primary border-border dark:bg-primary/20'
-      : 'bg-muted text-muted-foreground border-border/40';
-
-  return <Badge className={`border ${cls}`}>{s}</Badge>;
+  const tone = s === 'failed' ? 'danger' : s === 'sent' ? 'success' : s === 'queued' ? 'warning' : s === 'processing' ? 'info' : 'neutral';
+  return <Badge variant={badgeToneVariant(tone)}>{s}</Badge>;
 }
 
 export default function OutboxDetailClient({ id }: { id: string }) {
@@ -201,7 +192,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
           <div className="flex items-center gap-2">
             <StatusBadge status={vm?.status} />
-            {vm?.eventType && <Badge className="border border-border/40 bg-muted text-muted-foreground">{vm.eventType}</Badge>}
+            {vm?.eventType && <Badge variant="outline">{vm.eventType}</Badge>}
           </div>
         </div>
 
@@ -349,7 +340,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
                     <div key={`${idx}-${ch?.channel}-${ch?.to}`} className="space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <Badge className="border border-border/40 bg-muted text-muted-foreground">{ch?.channel ?? 'channel'}</Badge>
+                          <Badge variant="outline">{ch?.channel ?? 'channel'}</Badge>
                           <span className="text-sm font-medium">{ch?.to ?? '-'}</span>
                         </div>
 
