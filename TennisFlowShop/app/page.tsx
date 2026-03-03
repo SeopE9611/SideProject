@@ -389,7 +389,7 @@ export default function Home() {
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교�� 서비스 신청</h3>
                 <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">라켓/스트링 선택 후 한 번에</p>
               </div>
             </Link>
@@ -450,9 +450,13 @@ export default function Home() {
       </section>
 
       {/* 공지사항/중고거래 섹션 */}
-      <section className="py-6 bp-sm:py-8">
+      <section className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
-          <div className="grid gap-6 bp-sm:gap-8 bp-lg:grid-cols-2">
+          <div className="mb-6 bp-sm:mb-8 text-center">
+            <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">소식 & 커뮤니티</h2>
+            <p className="mt-1.5 bp-sm:mt-2 text-xs bp-sm:text-sm text-muted-foreground">공지사항과 중고 거래 최신 소식을 확인하세요</p>
+          </div>
+          <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
             <HomeNoticePreview />
             <HomeMarketPreview />
           </div>
