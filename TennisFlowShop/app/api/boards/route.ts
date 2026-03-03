@@ -4,7 +4,7 @@ import { API_VERSION } from '@/lib/board.repository';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 import { getBoardList } from '@/lib/boards.queries';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
-import { normalizeMarketMeta } from '@/lib/market';
+import { getMarketBrandOptions, isBrandRequiredCategory, normalizeMarketMeta } from '@/lib/market';
 import { verifyCommunityCsrf } from '@/lib/community/security';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getDb } from '@/lib/mongodb';
@@ -170,6 +170,9 @@ const createSchema = z.object({
   productRef: productRefSchema,
   isSecret: z.boolean().optional(),
   isPinned: z.boolean().optional(), // notice에서만 사용
+  brand: z.string().max(100, '브랜드명은 100자 이내로 입력해 주세요.').optional().nullable(),
+  // marketMeta의 세부 검증은 normalizeMarketMeta + type별 후속 검증에서 수행
+  marketMeta: z.any().optional(),
   images: z.array(z.string().url()).max(10).optional(),
   attachments: z
     .array(
@@ -421,13 +424,43 @@ export async function POST(req: NextRequest) {
     const safeImages = Array.isArray(body.images) ? body.images.filter((u) => isAllowedHttpUrl(u)) : [];
     const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
 
+    // market 생성 계약 보정:
+    // - createSchema에서 brand/marketMeta를 실제로 받되,
+    // - 저장 직전에 category/brand/marketMeta 정합성을 한 번 더 검증합니다.
+    let normalizedBrand: string | null = null;
+    let normalizedMarketMeta = null;
+
+    if (body.type === 'market') {
+      const marketCategory = (body as any).category ?? null;
+      const rawBrand = typeof (body as any).brand === 'string' ? (body as any).brand.trim() : '';
+      const brandOptions = getMarketBrandOptions(marketCategory);
+      const isValidBrand = brandOptions.some((option) => option.value === rawBrand);
+
+      if (isBrandRequiredCategory(marketCategory) && !isValidBrand) {
+        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['brand'], message: '라켓/스트링 글은 브랜드를 필수로 선택해 주세요.' }] }, { status: 400 });
+      }
+
+      normalizedBrand = isBrandRequiredCategory(marketCategory) ? rawBrand : null;
+      normalizedMarketMeta = normalizeMarketMeta(marketCategory, (body as any).marketMeta);
+
+      if (!normalizedMarketMeta || !normalizedMarketMeta.price || normalizedMarketMeta.price <= 0) {
+        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['marketMeta', 'price'], message: '판매가는 1원 이상이어야 합니다.' }] }, { status: 400 });
+      }
+      if (marketCategory === 'racket' && !(normalizedMarketMeta.racketSpec?.modelName ?? '').trim()) {
+        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['marketMeta', 'racketSpec', 'modelName'], message: '라켓 모델명을 입력해 주세요.' }] }, { status: 400 });
+      }
+      if (marketCategory === 'string' && !(normalizedMarketMeta.stringSpec?.modelName ?? '').trim()) {
+        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['marketMeta', 'stringSpec', 'modelName'], message: '스트링 모델명을 입력해 주세요.' }] }, { status: 400 });
+      }
+    }
+
     const doc: Omit<CommunityPostMongoDoc, '_id'> = {
       type: body.type,
       title: body.title,
       content: body.content,
       category: body.category ?? 'general',
-      brand: body.type === 'market' ? ((body as any).brand ?? null) : null,
-      marketMeta: body.type === 'market' ? normalizeMarketMeta((body as any).category ?? null, (body as any).marketMeta) : null,
+      brand: body.type === 'market' ? normalizedBrand : null,
+      marketMeta: body.type === 'market' ? normalizedMarketMeta : null,
       images: safeImages,
       attachments: safeAttachments,
       postNo,
