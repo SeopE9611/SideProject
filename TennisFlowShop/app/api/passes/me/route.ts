@@ -30,14 +30,30 @@ export async function GET() {
     const db = client.db();
     const now = new Date();
 
+    const userObjectId = new ObjectId(userId);
+
     const passes = await db
       .collection('service_passes')
-      .find({ userId: new ObjectId(userId) })
+      .find({ userId: userObjectId })
       .sort({ expiresAt: 1 })
       .limit(100)
       .toArray();
 
-    const data = passes.map((p: any) => ({
+    const packageOrders = await db
+      .collection('packageOrders')
+      .find({ userId: userObjectId })
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(100)
+      .toArray();
+
+    const issuedOrderIdSet = new Set(
+      passes
+        .map((p: any) => p.orderId)
+        .filter(Boolean)
+        .map((id: any) => String(id))
+    );
+
+    const passItems = passes.map((p: any) => ({
       id: p._id.toString(),
       packageSize: p.packageSize,
       usedCount: p.usedCount,
@@ -53,9 +69,38 @@ export async function GET() {
         usedAt: r.usedAt,
         reverted: !!r.reverted,
       })),
+      source: 'pass',
     }));
 
-    return NextResponse.json({ items: data });
+    const pendingOrHistoryItems = packageOrders
+      .filter((order: any) => !issuedOrderIdSet.has(String(order._id)))
+      .map((order: any) => {
+        const paymentStatus = String(order.paymentStatus ?? '').trim();
+        const orderStatus = String(order.status ?? '').trim();
+
+        // 사용자 화면에서는 운영/결제 상태를 단순화해 이해 가능한 상태로 보여준다.
+        let status: 'pending_payment' | 'pending_activation' | 'cancelled' = 'pending_activation';
+        if (paymentStatus === '결제대기') status = 'pending_payment';
+        else if (paymentStatus === '결제취소' || paymentStatus === '환불' || orderStatus === '취소' || orderStatus === '환불') status = 'cancelled';
+
+        return {
+          id: `order:${order._id.toString()}`,
+          packageSize: Number(order.packageInfo?.sessions ?? 0),
+          usedCount: 0,
+          remainingCount: Number(order.packageInfo?.sessions ?? 0),
+          status,
+          purchasedAt: order.createdAt,
+          expiresAt: null,
+          planId: order.packageInfo?.id ?? null,
+          planTitle: order.packageInfo?.title ?? null,
+          isExpiringSoon: false,
+          recentUsages: [],
+          source: 'order',
+          paymentStatus,
+        };
+      });
+
+    return NextResponse.json({ items: [...passItems, ...pendingOrHistoryItems] });
   } catch (e) {
     console.error('[GET /api/passes/me] error', e);
     return NextResponse.json({ error: '서버 오류' }, { status: 500 });
