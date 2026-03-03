@@ -32,6 +32,12 @@ interface Order {
   shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
   isStringServiceApplied?: boolean;
   stringingApplicationId?: string | null; // 연결된 교체 서비스 신청서 ID(있으면 '신청서 보기' CTA로 연결)
+  stringService?: {
+    totalSlots?: number;
+    usedSlots?: number;
+    remainingSlots?: number;
+  };
+  canApplyMoreStringService?: boolean;
   reviewAllDone?: boolean;
   unreviewedCount?: number;
   reviewNextTargetProductId?: string | null;
@@ -259,12 +265,28 @@ export default function OrderList() {
         // 신청서 연결 여부(있으면 "교체 신청" 대신 "신청서 보기"로 유도)
         const hasLinkedApplication = Boolean(order.stringingApplicationId);
         const hasCompletedStringingApplication = hasLinkedApplication || order.isStringServiceApplied === true;
+        const totalSlots = order.stringService?.totalSlots ?? 0;
+        const usedSlots = order.stringService?.usedSlots ?? 0;
+        const remainingSlots = order.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
+        const canApplyMoreStringService = order.canApplyMoreStringService ?? (Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0);
+
+        const stringServiceCTAKind: 'apply' | 'add' | 'view' | 'done' | null = !order.shippingInfo?.withStringService
+          ? null
+          : canApplyMoreStringService
+            ? hasCompletedStringingApplication || usedSlots > 0
+              ? 'add'
+              : 'apply'
+            : hasLinkedApplication
+              ? 'view'
+              : hasCompletedStringingApplication || totalSlots > 0
+                ? 'done'
+                : 'apply';
+
+        const stringServiceCTAHref = stringServiceCTAKind === 'view' && order.stringingApplicationId ? `/mypage?tab=applications&applicationId=${order.stringingApplicationId}` : stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? `/services/apply?orderId=${order.id}` : null;
+        const stringServiceCTALabel = stringServiceCTAKind === 'add' ? '추가 신청' : stringServiceCTAKind === 'view' ? '신청서 보기' : stringServiceCTAKind === 'done' ? '교체 신청 완료' : '교체 신청';
 
         // 모바일 보조 CTA: "교체 신청" 또는 "신청서 보기" 중 하나라도 있으면 2버튼 레이아웃
-        const showMobileSecondCTA = (Boolean(order.shippingInfo?.withStringService) && !hasCompletedStringingApplication) || hasLinkedApplication;
-
-        // "교체 신청"은 신청서가 아직 없을 때만 노출
-        const showMobileStringApply = Boolean(order.shippingInfo?.withStringService) && !hasCompletedStringingApplication;
+        const showMobileSecondCTA = Boolean(stringServiceCTAHref);
 
         return (
           <Card key={order.id} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 bp-sm:hover:shadow-xl bp-sm:hover:-translate-y-1">
@@ -395,19 +417,10 @@ export default function OrderList() {
 
                   <TooltipProvider>
                     {order.shippingInfo?.withStringService ? (
-                      // 신청서 ID가 있으면 무조건 "신청서 보기"
-                      order.stringingApplicationId ? (
-                        <Button size="sm" variant="outline" className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent" asChild>
-                          {/* 성공페이지(/services/success) 대신 "마이페이지 신청내역 상세"로 보내는게 더 자연스러움 */}
-                          <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex items-center gap-1">
-                            신청서 보기
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
-                        </Button>
-                      ) : !hasCompletedStringingApplication ? (
-                        <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200" asChild>
-                          <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex items-center gap-1">
-                            스트링 교체 신청
+                      stringServiceCTAHref ? (
+                        <Button size="sm" variant={stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? 'default' : 'outline'} className={stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200' : 'border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent'} asChild>
+                          <Link href={stringServiceCTAHref} className="inline-flex items-center gap-1">
+                            {stringServiceCTALabel}
                             <ArrowRight className="h-3 w-3" />
                           </Link>
                         </Button>
@@ -416,7 +429,7 @@ export default function OrderList() {
                           <TooltipTrigger asChild>
                             <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-muted px-4 py-2 text-sm font-semibold text-foreground dark:border-border">
                               <CheckCircle className="mr-1 h-3 w-3" />
-                              교체 신청 완료
+                              {stringServiceCTALabel}
                             </div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-sm">
@@ -450,17 +463,17 @@ export default function OrderList() {
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
-                  {order.stringingApplicationId ? (
+                  {stringServiceCTAKind === 'view' && stringServiceCTAHref ? (
                     <Button size="sm" variant="outline" asChild className="col-span-5 w-full whitespace-nowrap hover:border-border dark:hover:bg-primary/20 bg-transparent">
-                      <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="inline-flex w-full items-center justify-center gap-1">
-                        신청서 보기
+                      <Link href={stringServiceCTAHref} className="inline-flex w-full items-center justify-center gap-1">
+                        {stringServiceCTALabel}
                         <ArrowRight className="h-3 w-3" />
                       </Link>
                     </Button>
-                  ) : showMobileStringApply ? (
+                  ) : stringServiceCTAHref ? (
                     <Button size="sm" className="col-span-5 w-full whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-                      <Link href={`/services/apply?orderId=${order.id}`} className="inline-flex w-full items-center justify-center gap-1">
-                        교체 신청
+                      <Link href={stringServiceCTAHref} className="inline-flex w-full items-center justify-center gap-1">
+                        {stringServiceCTALabel}
                         <ArrowRight className="h-3 w-3" />
                       </Link>
                     </Button>
@@ -500,24 +513,24 @@ export default function OrderList() {
                       ) : null}
 
                       {order.shippingInfo?.withStringService ? (
-                        order.stringingApplicationId ? (
+                        stringServiceCTAHref ? (
                           <DropdownMenuItem asChild>
-                            <Link href={`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`} className="flex items-center gap-2">
+                            <Link href={stringServiceCTAHref} className="flex items-center gap-2">
                               <ArrowRight className="h-4 w-4" />
-                              신청서 보기
+                              {stringServiceCTALabel}
                             </Link>
                           </DropdownMenuItem>
-                        ) : hasCompletedStringingApplication ? (
+                        ) : stringServiceCTAKind === 'done' ? (
                           // (안전장치) 신청 완료 상태인데 ID가 없으면 완료만 표시
                           <DropdownMenuItem disabled className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4" />
-                            교체 신청 완료
+                            {stringServiceCTALabel}
                           </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem asChild>
                             <Link href={`/services/apply?orderId=${order.id}`} className="flex items-center gap-2">
                               <ArrowRight className="h-4 w-4" />
-                              스트링 교체 신청
+                              교체 신청
                             </Link>
                           </DropdownMenuItem>
                         )
