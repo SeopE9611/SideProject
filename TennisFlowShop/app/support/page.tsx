@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare, Lock } from 'lucide-react';
-import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor, getNoticeCategoryColor, noticePinColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec } from '@/lib/badge-style';
 import { useState } from 'react';
 
 // ---------------------- 공통 유틸 ----------------------
@@ -133,13 +133,13 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {!!notice.category && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} shrink-0`} title={notice.category ?? undefined}>
+                          <Badge variant={getNoticeCategoryBadgeSpec(notice.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
                             {notice.category}
                           </Badge>
                         )}
 
                         {notice.isPinned && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor} shrink-0`}>
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                             고정
                           </Badge>
                         )}
@@ -245,7 +245,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                       {/* 제목 줄 */}
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="flex items-center gap-2 flex-wrap min-w-0">
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category ?? undefined)} shrink-0`} title={qna.category ?? undefined}>
+                          <Badge variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={qna.category ?? undefined}>
                             {qna.category ?? '일반문의'}
                           </Badge>
 
@@ -261,7 +261,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
 
                         {/* 답변완료/대기 뱃지는 그대로 유지 */}
                         <div className="shrink-0">
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
+                          <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
                             {qna.answer ? '답변 완료' : '답변 대기'}
                           </Badge>
                         </div>

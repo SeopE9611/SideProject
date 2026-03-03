@@ -8,19 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { shortenId } from '@/lib/shorten';
 import { showSuccessToast } from '@/lib/toast';
-import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneVariant } from '@/lib/badge-style';
 import { opsKindBadgeTone, opsKindLabel, type OpsBadgeTone, type OpsKind } from '@/lib/admin-ops-taxonomy';
 
-const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
-  success: 'bg-success/10 text-success border-success/30 dark:bg-success/15',
-  warning: 'bg-warning/10 text-warning border-warning/30 dark:bg-warning/15',
-  danger: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
-  neutral: 'bg-muted text-muted-foreground',
-  info: 'bg-primary/10 text-primary border-primary/20 dark:bg-primary/20',
-};
-
-function opsBadgeToneClass(tone: OpsBadgeTone) {
-  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.neutral;
+function opsBadgeVariant(tone: OpsBadgeTone) {
+  return badgeToneVariant(tone);
 }
 
 /**
@@ -107,14 +99,14 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
           <div className="space-y-2">
             {list.map((d) => {
               const kindLabel = opsKindLabel(d.kind);
-              const badgeClass = opsBadgeToneClass(opsKindBadgeTone(d.kind));
+              const badgeVariant = opsBadgeVariant(opsKindBadgeTone(d.kind));
               const short = shortenId(String(d.id));
 
               return (
                 <div key={`${d.kind}:${d.id}`} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge className={`${badgeBase} ${badgeSizeSm} ${badgeClass}`}>{kindLabel}</Badge>
+                      <Badge variant={badgeVariant} className={`${badgeBase} ${badgeSizeSm}`}>{kindLabel}</Badge>
                       <p className="text-sm text-muted-foreground">주문번호 : ({short})</p>
                     </div>
                   </div>

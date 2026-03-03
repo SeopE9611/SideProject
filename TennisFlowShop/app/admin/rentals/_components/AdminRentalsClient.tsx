@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { badgeBase, badgeSizeSm, badgeToneVariant, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneVariant, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
@@ -54,13 +54,6 @@ function mapApiToViewModel(response?: AdminRentalsListResponseDto): { items: Ren
 }
 
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
-
-const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-card text-muted-foreground dark:bg-card',
-  paid: 'bg-primary/10 text-primary dark:bg-primary/20',
-  out: 'bg-muted text-foreground dark:bg-muted',
-  returned: 'bg-success/10 text-success dark:bg-success/15',
-};
 
 const rentalStatusLabels: Record<string, string> = {
   pending: '대기중',
@@ -758,7 +751,14 @@ export default function AdminRentalsClient() {
                       <TableCell className="w-36 truncate whitespace-nowrap">{r.createdAt ? formatDate(r.createdAt) : '-'}</TableCell>
                       <TableCell className={tdClasses}>{r.days}일</TableCell>
                       <TableCell className={tdClasses}>
-                        <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', rentalStatusColors[r.status])}>{rentalStatusLabels[r.status] || r.status}</Badge>
+                        {(() => {
+                          const spec = getRentalStatusBadgeSpec(r.status);
+                          return (
+                            <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+                              {rentalStatusLabels[r.status] || r.status}
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell className={tdClasses}>
                         <div className="flex flex-col items-center gap-1">

@@ -256,10 +256,25 @@ export function getTrackingBadge(order: Order) {
   return { label, tone, variant: badgeToneVariant(tone), color: trackingStatusColors[label] };
 }
 
+export function getRentalStatusTone(status?: string | null): BadgeSemanticTone {
+  const normalized = String(status ?? '').trim().toLowerCase();
+  if (!normalized) return 'neutral';
+  if (normalized === 'paid' || normalized === '결제완료') return 'success';
+  if (normalized === 'out' || normalized === '대여중') return 'info';
+  if (normalized === 'returned' || normalized === '반납완료') return 'neutral';
+  if (normalized === 'pending' || normalized === '대기중') return 'warning';
+  if (normalized === 'canceled' || normalized === '취소' || normalized === '취소됨') return 'danger';
+  return 'neutral';
+}
+
+export function getRentalStatusBadgeSpec(status?: string | null) {
+  return badgeStyleSpec(getRentalStatusTone(status));
+}
+
 export const applicationStatusColors = {
   접수완료: SEMANTIC_BADGE.info,
   '검토 중': SEMANTIC_BADGE.warning,
-  '작업 중': SEMANTIC_BADGE.brand,
+  '작업 중': SEMANTIC_BADGE.warning,
   교체완료: SEMANTIC_BADGE.success,
   취소: SEMANTIC_BADGE.destructive,
   default: SEMANTIC_BADGE.neutral,
@@ -294,8 +309,7 @@ export const qnaCategoryColors: Record<QnaCategory, string> = {
 
 /** 안전 헬퍼: 잘못된 값이 와도 기본 회색으로 */
 export function getQnaCategoryColor(label?: QnaCategory | string | null) {
-  if (!label) return qnaCategoryColors['일반문의'];
-  return (qnaCategoryColors as Record<string, string>)[label] ?? qnaCategoryColors['일반문의'];
+  return getQnaCategoryBadgeSpec(label).className;
 }
 
 export function getQnaCategoryTone(label?: QnaCategory | string | null): BadgeSemanticTone {
@@ -314,7 +328,7 @@ export function getQnaCategoryBadgeSpec(label?: QnaCategory | string | null) {
 
 /** 답변 상태 배지 색상 */
 export function getAnswerStatusColor(answered: boolean) {
-  return answered ? SEMANTIC_BADGE.success : SEMANTIC_BADGE.neutral;
+  return getAnswerStatusBadgeSpec(answered).className;
 }
 
 export function getAnswerStatusTone(answered: boolean): BadgeSemanticTone {
@@ -335,8 +349,7 @@ export const reviewTypeColors: Record<ReviewType, string> = {
   etc: SEMANTIC_BADGE.neutral,
 };
 export function getReviewTypeColor(t?: string | null) {
-  const key = t === 'product' || t === 'service' ? (t as ReviewType) : 'etc';
-  return reviewTypeColors[key];
+  return getReviewTypeBadgeSpec(t).className;
 }
 
 export function getReviewTypeTone(t?: string | null): BadgeSemanticTone {
@@ -347,6 +360,19 @@ export function getReviewTypeTone(t?: string | null): BadgeSemanticTone {
 
 export function getReviewTypeBadgeSpec(t?: string | null) {
   return badgeStyleSpec(getReviewTypeTone(t));
+}
+
+export function getNoticeCategoryTone(label?: string | null): BadgeSemanticTone {
+  const normalized = String(label ?? '').trim();
+  if (!normalized) return 'neutral';
+  if (normalized === '이벤트') return 'success';
+  if (normalized === '아카데미') return 'info';
+  if (normalized === '긴급') return 'danger';
+  return 'neutral';
+}
+
+export function getNoticeCategoryBadgeSpec(label?: string | null) {
+  return badgeStyleSpec(getNoticeCategoryTone(label));
 }
 
 export function getUserRoleBadgeSpec(role?: string | null) {
@@ -373,8 +399,7 @@ export const noticeCategoryColors: Record<string, string> = {
 };
 
 export function getNoticeCategoryColor(label?: string | null) {
-  if (!label) return noticeCategoryColors['일반'];
-  return noticeCategoryColors[label] ?? noticeCategoryColors['일반'];
+  return getNoticeCategoryBadgeSpec(label).className;
 }
 
 /** 첨부(이미지/파일) 배지 색 */

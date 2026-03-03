@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       to: email,
       subject: '[테니스 플로우] 비밀번호 재설정 안내',
       html: `
-        <div style="max-width:560px;margin:0 auto;padding:24px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.6;color:#111827;">
+        <div style="max-width:560px;margin:0 auto;padding:24px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.6;color:black;">
           <h2 style="margin:0 0 16px;">비밀번호 재설정</h2>
           <p style="margin:0 0 12px;">
             안녕하세요. 테니스 플로우 계정의 비밀번호 재설정 요청이 접수되었습니다.
@@ -88,19 +88,19 @@ export async function POST(req: Request) {
 
           <a
             href="${resetUrl}"
-            style="display:inline-block;padding:12px 20px;border-radius:10px;background:#00704A;color:#ffffff;text-decoration:none;font-weight:700;"
+            style="display:inline-block;padding:12px 20px;border-radius:10px;background:green;color:white;text-decoration:none;font-weight:700;"
           >
             비밀번호 재설정하기
           </a>
 
-          <p style="margin:20px 0 8px;font-size:14px;color:#4b5563;">
+          <p style="margin:20px 0 8px;font-size:14px;color:gray;">
             버튼이 동작하지 않는다면 아래 링크를 복사해서 브라우저에 붙여 넣어주세요.
           </p>
-          <p style="margin:0 0 16px;font-size:14px;word-break:break-all;color:#2563eb;">
+          <p style="margin:0 0 16px;font-size:14px;word-break:break-all;color:blue;">
             ${resetUrl}
           </p>
 
-          <p style="margin:0;font-size:13px;color:#6b7280;">
+          <p style="margin:0;font-size:13px;color:gray;">
             이 링크는 30분 후 만료됩니다.
           </p>
         </div>

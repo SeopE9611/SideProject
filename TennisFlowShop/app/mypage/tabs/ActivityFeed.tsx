@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { orderStatusColors, paymentStatusColors, applicationStatusColors } from '@/lib/badge-style';
+import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
@@ -92,18 +92,6 @@ const formatDate = (iso: string) => {
 const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, '.');
 
 // 대여 상태는 프로젝트마다 다를 수 있어서 “넓게” 커버(한글/영문 혼합 대응)
-const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-muted text-muted-foreground border border-border',
-  paid: 'bg-info/15 text-info border border-info/45 dark:bg-info/24 dark:border-info/55',
-  out: 'bg-secondary text-foreground border border-border',
-  returned: 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55',
-  canceled: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
-
-  대기중: 'bg-muted text-muted-foreground border border-border',
-  대여중: 'bg-secondary text-foreground border border-border',
-  반납완료: 'bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55',
-  취소: 'bg-destructive/15 text-destructive border border-border dark:bg-destructive/20',
-};
 
 function kindLabel(kind: ActivityKind) {
   if (kind === 'order') return '주문';
@@ -117,28 +105,25 @@ function kindIcon(kind: ActivityKind) {
   return <Briefcase className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
 }
 
-function statusBadgeClass(g: ActivityGroup) {
+function statusBadgeSpec(g: ActivityGroup) {
   const kind = g.kind;
 
   if (kind === 'order') {
-    const s = g.order?.status ?? '';
-    return orderStatusColors[s] ?? 'bg-muted text-muted-foreground border border-border';
+    return getOrderStatusBadgeSpec(g.order?.status);
   }
 
   if (kind === 'application') {
-    const s = g.application?.status ?? '';
-    return (applicationStatusColors as any)[s] ?? applicationStatusColors.default;
+    return getApplicationStatusBadgeSpec(g.application?.status);
   }
 
-  const s = g.rental?.status ?? '';
-  return rentalStatusColors[s] ?? 'bg-muted text-muted-foreground border border-border';
+  return getRentalStatusBadgeSpec(g.rental?.status);
 }
 
-function paymentBadgeClass(g: ActivityGroup) {
+function paymentBadgeSpec(g: ActivityGroup) {
   if (g.kind !== 'order') return null;
   const p = g.order?.paymentStatus ?? '';
   if (!p) return null;
-  return paymentStatusColors[p] ?? 'bg-muted text-muted-foreground border border-border';
+  return getPaymentStatusBadgeSpec(p);
 }
 
 function groupTitle(g: ActivityGroup) {
@@ -679,11 +664,11 @@ export default function ActivityFeed() {
                           <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <Badge className={cn('text-xs rounded-md', statusBadgeClass(g))}>
+                              <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md">
                                 {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                               </Badge>
                               {g.kind !== 'application' && app && (
-                                <Badge className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
                                   교체 {app.status}
                                 </Badge>
                               )}
@@ -799,11 +784,11 @@ export default function ActivityFeed() {
                         <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge className={cn('text-xs rounded-md', statusBadgeClass(g))}>
+                            <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md">
                               {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                             </Badge>
                             {g.kind !== 'application' && app && (
-                              <Badge className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                              <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
                                 교체 {app.status}
                               </Badge>
                             )}
@@ -898,11 +883,11 @@ export default function ActivityFeed() {
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">{kindIcon(g.kind)}</span>
 
-                                    <Badge variant="outline" className={cn('text-xs rounded-md font-medium', statusBadgeClass(g))}>
+                                    <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md font-medium">
                                       {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                                     </Badge>
                                     {g.kind !== 'application' && app && (
-                                      <Badge className={cn('text-xs rounded-md font-medium', (applicationStatusColors as any)[app.status] ?? applicationStatusColors.default)}>
+                                      <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
                                         교체 {app.status}
                                       </Badge>
                                     )}
@@ -921,7 +906,7 @@ export default function ActivityFeed() {
                                 </div>
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
-                                  <Badge variant="outline" className={cn('text-xs rounded-md font-medium shrink-0', paymentBadgeClass(g))}>
+                                  <Badge variant={paymentBadgeSpec(g)?.variant ?? 'neutral'} className="text-xs rounded-md font-medium shrink-0">
                                     {g.order.paymentStatus}
                                   </Badge>
                                 )}
