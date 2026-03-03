@@ -38,6 +38,9 @@ async function getData(id: string) {
     stringingFee,
     total,
     status: r.status,
+    withStringService: Boolean((r as any)?.stringing?.requested) || Boolean((r as any)?.isStringServiceApplied) || Boolean((r as any)?.stringingApplicationId),
+    isStringServiceApplied: Boolean((r as any)?.isStringServiceApplied),
+    stringingApplicationId: (r as any)?.stringingApplicationId ? String((r as any).stringingApplicationId) : null,
     racket: rk ? { brand: rk.brand, model: rk.model, condition: rk.condition } : null,
     payment: r.payment
       ? {

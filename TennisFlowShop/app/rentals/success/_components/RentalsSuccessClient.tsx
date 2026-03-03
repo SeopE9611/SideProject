@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCard, Undo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,9 @@ type Props = {
     stringingFee: number;
     total: number;
     status: string;
+    withStringService?: boolean;
+    isStringServiceApplied?: boolean;
+    stringingApplicationId?: string | null;
     racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
     payment?: {
       method?: string;
@@ -39,11 +41,10 @@ type Props = {
 
 export default function RentalsSuccessClient({ data }: Props) {
   const rentalId = String((data as any)?.id ?? (data as any)?._id ?? '');
-  const searchParams = useSearchParams();
-  const withService = searchParams.get('withService') === '1';
-  const stringingSubmitted = searchParams.get('stringingSubmitted') === '1';
-  const stringingApplicationId = searchParams.get('stringingApplicationId') ?? '';
-  const shouldShowHandoff = withService && !stringingSubmitted;
+  const withService = Boolean(data.withStringService);
+  const stringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
+  const stringingApplied = Boolean(data.isStringServiceApplied) || Boolean(stringingApplicationId);
+  const shouldShowHandoff = withService && !stringingApplied;
 
   useEffect(() => {
     // legacy handoff 화면은 자체적으로 안내/자동 이동을 처리하므로 뒤로가기 가드는 일반 success에서만 유지
@@ -64,8 +65,8 @@ export default function RentalsSuccessClient({ data }: Props) {
     } catch {}
   }, [shouldShowHandoff]);
 
-  // withService=1 + stringingSubmitted!=1 인 경우에만 legacy handoff를 유지한다.
-  // (신규 통합 제출은 shouldShowHandoff=false 이므로 현재 success 화면을 그대로 노출)
+  // DB 상태상 교체 서비스 신청이 아직 연결되지 않은 경우에만 legacy handoff를 유지한다.
+  // (신청서 ID/적용 플래그가 있으면 shouldShowHandoff=false)
   if (shouldShowHandoff) {
     return (
       <div className="min-h-[70vh] bg-muted dark:bg-card">
@@ -113,7 +114,7 @@ export default function RentalsSuccessClient({ data }: Props) {
             Step 3: 대여+교체서비스가 checkout에서 이미 통합 제출된 경우에는
             /services/apply handoff를 건너뛰고 현재 success에서 "접수 완료"를 확정 안내한다.
           */}
-          {withService && stringingSubmitted && (
+          {withService && stringingApplied && (
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border border-border shadow-xl">
               <CardHeader className="bg-muted/30">
                 <CardTitle className="flex items-center gap-3 text-xl">
