@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { CartItem } from '@/app/store/cartStore';
 import useStringingApplySharedState from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
+import { resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
 
 type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
 
@@ -210,20 +211,23 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
   }, [withStringService, serviceTargetIds, previewOrder.items, setFormData]);
 
   const orderRemainingSlots = (previewOrder.stringService.totalSlots ?? 0) - (previewOrder.stringService.usedSlots ?? 0);
-  const requiredPassCount = useMemo(() => {
-    const ids = (shared.formData.stringTypes ?? []).filter(Boolean);
-    if (!ids.length) return 0;
-
-    return ids.reduce((sum, id) => {
-      const count = shared.formData.stringUseCounts?.[id];
-      return sum + (typeof count === 'number' && count > 0 ? count : 1);
-    }, 0);
-  }, [shared.formData.stringTypes, shared.formData.stringUseCounts]);
+  const requiredPassCount = useMemo(
+    () =>
+      resolveRequiredPassCountFromInput({
+        lines: shared.linesForSubmit,
+        stringTypes: shared.formData.stringTypes,
+      }),
+    [shared.linesForSubmit, shared.formData.stringTypes],
+  );
 
   const packageRemaining = Math.max(0, packagePreview?.remaining ?? 0);
-  const canApplyPackage = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
-  const packageInsufficient = !!(packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
-  const usingPackage = !!(canApplyPackage && !shared.formData.packageOptOut);
+  const packageUsage = resolvePackageUsage({
+    hasPackage: !!packagePreview?.has,
+    packageRemaining,
+    requiredPassCount,
+    packageOptOut: !!shared.formData.packageOptOut,
+  });
+  const { canApplyPackage, packageInsufficient, usingPackage } = packageUsage;
 
   useEffect(() => {
     if (packageInsufficient && !shared.formData.packageOptOut) {

@@ -3,6 +3,7 @@ import CheckoutButton from '@/app/checkout/CheckoutButton';
 import CheckoutStringingPaymentAddon from '@/app/checkout/_components/CheckoutStringingPaymentAddon';
 import CheckoutStringingServiceSections from '@/app/checkout/_components/CheckoutStringingServiceSections';
 import useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
+import { applyPackageToServiceFee, resolvePackageUsage } from '@/app/features/stringing-applications/lib/package-pricing';
 import { collectionMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import type { StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import { useAuthStore, type User } from '@/app/store/authStore';
@@ -292,7 +293,7 @@ export default function CheckoutPage() {
   }, [withStringService, mountingFeeLoading, mountingFeeIdsToResolve, mountingFeeByProductId]);
 
   // serviceFee 계산을 “URL”이 아니라 “mountingFeeByProductId” 기반으로
-  const serviceFee = withStringService
+  const baseServiceFee = withStringService
     ? orderItems.reduce((sum, it) => {
         if (!isServiceFeeTarget(it)) return sum;
 
@@ -366,9 +367,6 @@ export default function CheckoutPage() {
     return { invalid, racketKinds, mountableStringKinds };
   }, [orderItemsKey, withStringService, serviceTargetIds]);
 
-  // 최종 결제 금액 = 상품 + 배송 + 서비스
-  const total = subtotal + shippingFee + serviceFee;
-
   const [selectedBank, setSelectedBank] = useState('shinhan');
 
   // 장착 서비스 수거방식(신청서 Step1과 1:1 매핑)
@@ -439,6 +437,25 @@ export default function CheckoutPage() {
     servicePickupMethod,
     isMember: !!user,
   });
+
+  const checkoutPackageUsage = useMemo(
+    () =>
+      resolvePackageUsage({
+        hasPackage: !!checkoutStringingAdapter.packagePreview?.has,
+        packageRemaining: checkoutStringingAdapter.packageRemaining,
+        requiredPassCount: checkoutStringingAdapter.requiredPassCount,
+        packageOptOut: !!checkoutStringingAdapter.formData.packageOptOut,
+      }),
+    [checkoutStringingAdapter.packagePreview?.has, checkoutStringingAdapter.packageRemaining, checkoutStringingAdapter.requiredPassCount, checkoutStringingAdapter.formData.packageOptOut],
+  );
+
+  const serviceFee = useMemo(() => {
+    if (!withStringService) return 0;
+    return applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage);
+  }, [withStringService, baseServiceFee, checkoutPackageUsage]);
+
+  // 최종 결제 금액 = 상품 + 배송 + 서비스
+  const total = subtotal + shippingFee + serviceFee;
 
 
   // 포인트(적립금) 상태
