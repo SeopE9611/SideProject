@@ -154,11 +154,11 @@ export async function GET(req: NextRequest) {
     // 내 주문 조회 (최신순)
     const [orders, total] = await Promise.all([db.collection<OrderDoc>('orders').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(), db.collection('orders').countDocuments({ userId })]);
 
-    // 주문들에 연결된 '실제 신청서'를 한 번에 조회(draft 제외)
+    // 주문들에 연결된 '실제 제출 완료 신청서'를 한 번에 조회(draft/취소 제외)
     const orderIds = orders.map((o) => o._id);
     const apps = await db
       .collection('stringing_applications')
-      .find({ userId, orderId: { $in: orderIds }, status: { $ne: '취소' } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.racketLines': 1 } })
+      .find({ userId, orderId: { $in: orderIds }, status: { $nin: ['draft', '취소'] } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.racketLines': 1 } })
       .toArray();
     const stringServiceByOrderId = new Map<
       string,
@@ -172,7 +172,7 @@ export async function GET(req: NextRequest) {
       const prev = stringServiceByOrderId.get(orderId) ?? { submittedApplicationId: null, usedSlots: 0 };
 
       const racketLines = Array.isArray(app?.stringDetails?.racketLines) ? app.stringDetails.racketLines.length : 0;
-      const submittedApplicationId = prev.submittedApplicationId ?? (app.status !== 'draft' ? String(app._id) : null);
+      const submittedApplicationId = prev.submittedApplicationId ?? String(app._id);
 
       stringServiceByOrderId.set(orderId, {
         submittedApplicationId,
