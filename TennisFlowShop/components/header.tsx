@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
+import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { ChevronDown, ChevronRight, Gift, Grid2X2, Loader2, Mail, Menu, MessageSquare, MessageSquareText, ShoppingCart, UserIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -619,11 +620,11 @@ const Header = () => {
                       {(hasKakao || hasNaver) && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {hasKakao && (
-                            <Badge variant="info" className="border-0 text-[10px] h-5 px-2">
+                            <Badge variant={getSocialProviderBadgeSpec('kakao').variant} className="border-0 text-[10px] h-5 px-2">
                               카카오
                             </Badge>
                           )}
-                          {hasNaver && <Badge className="border border-success/20 bg-success/10 text-success dark:bg-success/15 text-[10px] h-5 px-2">네이버</Badge>}
+                          {hasNaver && <Badge variant={getSocialProviderBadgeSpec('naver').variant} className="border-0 text-[10px] h-5 px-2">네이버</Badge>}
                         </div>
                       )}
                     </div>

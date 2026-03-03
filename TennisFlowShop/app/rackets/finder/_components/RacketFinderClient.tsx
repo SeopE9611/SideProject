@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Slider } from '@/components/ui/slider';
 import { GRIP_SIZE_OPTIONS, RACKET_BRANDS, racketBrandLabel, STRING_PATTERN_OPTIONS, gripSizeLabel, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, stringPatternLabel } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 import { ChevronLeft, ChevronRight, Filter, RotateCcw, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -600,7 +601,7 @@ export default function RacketFinderClient() {
             <div className="flex items-center gap-3">
               {hasSearched ? (
                 <>
-                  <Badge variant="secondary" className="rounded-lg bg-primary/10 text-primary dark:bg-primary/20 px-3 py-1 font-semibold">
+                  <Badge variant={getMerchandisingBadgeSpec('recommended').variant} className="rounded-lg px-3 py-1 font-semibold">
                     {total.toLocaleString()}개
                   </Badge>
                   <span className="text-sm text-muted-foreground">

@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
+import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
@@ -895,7 +895,7 @@ export default function ActivityFeed() {
                                     <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
 
                                     {hasAction && (
-                                      <Badge variant="outline" className="text-xs rounded-md bg-warning/10 text-warning border-warning/30 dark:bg-warning/15">
+                                      <Badge variant={getWorkflowMetaBadgeSpec('action_required').variant} className="text-xs rounded-md">
                                         액션 필요
                                       </Badge>
                                     )}

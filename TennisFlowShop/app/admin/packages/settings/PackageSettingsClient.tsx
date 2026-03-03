@@ -18,6 +18,7 @@ import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/use
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 
 type PackageSettingsResponse = {
   packageConfigs?: PackageConfig[];
@@ -248,7 +249,7 @@ export default function PackageSettingsClient() {
                             <div className="flex items-center space-x-2">
                               <Package className="h-5 w-5 text-primary" />
                               <CardTitle className="text-lg">{pkg.name}</CardTitle>
-                              {pkg.isPopular && <Badge className="bg-warning/10 text-warning dark:bg-warning/15">인기</Badge>}
+                              {pkg.isPopular && <Badge variant={getMerchandisingBadgeSpec('popular').variant}>인기</Badge>}
                               {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
                             </div>
                             <div className="flex items-center space-x-2">

@@ -9,6 +9,7 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 import { Badge } from '@/components/ui/badge';
+import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 
 type UserNavProps = {
   unreadCount?: number;
@@ -74,8 +75,8 @@ export function UserNav({ unreadCount }: UserNavProps) {
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
-                  {hasKakao && <Badge variant="brand" className="pointer-events-none h-5 px-2 text-[11px]">카카오</Badge>}
-                  {hasNaver && <Badge variant="success" className="pointer-events-none h-5 px-2 text-[11px]">네이버</Badge>}
+                  {hasKakao && <Badge variant={getSocialProviderBadgeSpec('kakao').variant} className="pointer-events-none h-5 px-2 text-[11px]">카카오</Badge>}
+                  {hasNaver && <Badge variant={getSocialProviderBadgeSpec('naver').variant} className="pointer-events-none h-5 px-2 text-[11px]">네이버</Badge>}
                 </div>
               </div>
             </div>

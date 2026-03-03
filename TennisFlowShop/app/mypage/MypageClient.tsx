@@ -25,6 +25,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
+import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast } from '@/lib/toast';
@@ -201,12 +202,12 @@ export default function MypageClient({ user }: Props) {
                           {user.oauthProviders?.length ? (
                             <>
                               {user.oauthProviders.includes('kakao') && (
-                                <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/15 dark:text-warning text-xs py-0 px-2 h-5">
+                                <Badge variant={getSocialProviderBadgeSpec('kakao').variant} className="text-xs py-0 px-2 h-5">
                                   카카오
                                 </Badge>
                               )}
                               {user.oauthProviders.includes('naver') && (
-                                <Badge variant="outline" className="border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary text-xs py-0 px-2 h-5">
+                                <Badge variant={getSocialProviderBadgeSpec('naver').variant} className="text-xs py-0 px-2 h-5">
                                   네이버
                                 </Badge>
                               )}
