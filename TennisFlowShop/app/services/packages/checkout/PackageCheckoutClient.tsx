@@ -205,6 +205,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const [agreeRefund, setAgreeRefund] = useState(false);
 
   const [prefillDone, setPrefillDone] = useState(false);
+  const [ownershipBlockedMessage, setOwnershipBlockedMessage] = useState<string | null>(null);
 
   const fingerprint = useMemo(
     () =>
@@ -404,6 +405,31 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     };
   }, [user]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchOwnership = async () => {
+      try {
+        const res = await fetch('/api/packages/ownership', { cache: 'no-store', credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data?.hasBlockingPackage) {
+          setOwnershipBlockedMessage(data?.message ?? '이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.');
+          return;
+        }
+        setOwnershipBlockedMessage(null);
+      } catch {
+        // UX 보조용 조회 실패는 치명 오류로 보지 않음
+      }
+    };
+
+    fetchOwnership();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // 필드별 에러 계산
   const fieldErrors = useMemo<CheckoutFieldErrors>(() => {
     const errs: CheckoutFieldErrors = {};
@@ -437,7 +463,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   }, [name, email, phone, depositor, serviceMethod, postalCode, address, addressDetail]);
 
   const isFormValid = Object.keys(fieldErrors).length === 0;
-  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid;
+  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid && !ownershipBlockedMessage;
 
   if (loading || isPackageLoading) {
     return <FullPageSpinner label="패키지 결제 화면 준비 중..." />;
@@ -967,9 +993,11 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                   </div>
                 </CardContent>
                 <div className="flex flex-col gap-4 p-6">
+                  {ownershipBlockedMessage && <p className="text-sm rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive">{ownershipBlockedMessage}</p>}
                   {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-destructive">필수 입력칸을 확인해주세요. (이름/이메일/연락처/입금자명)</p>}
                   <PackageCheckoutButton
                     disabled={!canSubmit}
+                    ownershipBlockedMessage={ownershipBlockedMessage}
                     packageInfo={selectedPackage}
                     name={name}
                     phone={phone}

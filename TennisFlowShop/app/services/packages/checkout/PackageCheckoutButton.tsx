@@ -70,6 +70,7 @@ interface PackageInfo {
 
 export default function PackageCheckoutButton({
   disabled,
+  ownershipBlockedMessage,
   packageInfo,
   name,
   phone,
@@ -84,6 +85,7 @@ export default function PackageCheckoutButton({
   serviceMethod,
 }: {
   disabled: boolean;
+  ownershipBlockedMessage: string | null;
   packageInfo: PackageInfo;
   name: string;
   phone: string;
@@ -124,7 +126,7 @@ export default function PackageCheckoutButton({
     // 2) disabled 우회 방지: devtools로 버튼 활성화/직접 호출해도 여기서 막힘
     //    - disabled에는 약관 동의 + 필수값 검증(canSubmit)이 들어가 있음
     if (disabled) {
-      showErrorToast('필수 입력값/약관 동의를 확인해주세요.');
+      showErrorToast(ownershipBlockedMessage ?? '필수 입력값/약관 동의를 확인해주세요.');
       return;
     }
 
@@ -232,6 +234,10 @@ export default function PackageCheckoutButton({
 
       // 서버가 실패를 반환했으면 즉시 종료
       if (!res.ok) {
+        if (res.status === 409 && data?.code === 'PACKAGE_ALREADY_OWNED') {
+          showErrorToast(data?.error ?? '이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.');
+          return;
+        }
         showErrorToast(data?.error ?? '패키지 주문 실패: 서버 오류');
         return;
       }

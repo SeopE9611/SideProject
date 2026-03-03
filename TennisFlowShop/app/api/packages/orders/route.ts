@@ -4,6 +4,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { getPackagePricingInfo } from '@/app/features/packages/api/db';
+import { findBlockingPackageOrderByUserId } from '@/lib/package-order-ownership';
 
 
 function safeVerifyAccessToken(token?: string | null) {
@@ -140,6 +141,25 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, packageOrderId: exist._id.toString(), reused: true }, { status: 201 });
       }
       doc.meta.idemKey = idem; // 최초 생성 시에만 세팅
+    }
+
+    // 중복 구매 하드 차단:
+    // - 결제대기 / 결제완료 / 비활성(일시중지 포함) 등 "종료되지 않은" 패키지 주문이 하나라도 있으면 차단
+    // - 관리자 취소/결제취소/환불 등 실제 종료 건만 재구매 허용
+    const blockingOrder = await findBlockingPackageOrderByUserId(String(user.sub));
+    if (blockingOrder) {
+      return NextResponse.json(
+        {
+          error: '이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지를 취소 또는 정리한 뒤 다시 시도해주세요.',
+          code: 'PACKAGE_ALREADY_OWNED',
+          blockingOrder: {
+            id: blockingOrder._id.toString(),
+            status: String(blockingOrder.status ?? ''),
+            paymentStatus: String(blockingOrder.paymentStatus ?? ''),
+          },
+        },
+        { status: 409 }
+      );
     }
 
     const ins = await col.insertOne(doc as any);

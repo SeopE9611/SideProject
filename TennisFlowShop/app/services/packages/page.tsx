@@ -115,6 +115,7 @@ export default function StringPackagesPage() {
   // 처음에는 비어있는 상태 + 로딩 중
   const [packages, setPackages] = useState<PackageOption[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [ownershipBlockedMessage, setOwnershipBlockedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -242,6 +243,31 @@ export default function StringPackagesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchOwnership = async () => {
+      try {
+        const res = await fetch('/api/packages/ownership', { cache: 'no-store', credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        if (data?.hasBlockingPackage) {
+          setOwnershipBlockedMessage(data?.message ?? '이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.');
+          return;
+        }
+        setOwnershipBlockedMessage(null);
+      } catch {
+        // UX 보조용 조회 실패는 무시 (최종 차단은 서버)
+      }
+    };
+
+    fetchOwnership();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const additionalBenefits: Array<{ icon: React.ReactNode; title: string; description: string; variant: PackageVariant }> = [
     {
       icon: <Shield className="h-6 w-6" />,
@@ -365,6 +391,7 @@ export default function StringPackagesPage() {
               <br />
               모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
             </p>
+            {ownershipBlockedMessage && <p className="mt-6 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">{ownershipBlockedMessage}</p>}
           </div>
 
           <div className="flex flex-wrap justify-center gap-8">
@@ -427,10 +454,21 @@ export default function StringPackagesPage() {
                     </div>
                   </div>
 
-                  <Button className={`w-full border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`} asChild>
-                    <Link href={`/services/packages/checkout?package=${pkg.id}`}>
+                  <Button
+                    className={`w-full border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}
+                    asChild
+                    disabled={!!ownershipBlockedMessage}
+                  >
+                    <Link
+                      href={ownershipBlockedMessage ? '#' : `/services/packages/checkout?package=${pkg.id}`}
+                      aria-disabled={!!ownershipBlockedMessage}
+                      onClick={(e) => {
+                        if (!ownershipBlockedMessage) return;
+                        e.preventDefault();
+                      }}
+                    >
                       <Package className="w-4 h-4 mr-2" />
-                      패키지 선택
+                      {ownershipBlockedMessage ? '추가 구매 불가' : '패키지 선택'}
                     </Link>
                   </Button>
                 </CardContent>
