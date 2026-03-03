@@ -18,6 +18,8 @@ import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCate
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import MarketMetaFields from '@/app/board/market/_components/MarketMetaFields';
+import type { MarketMeta } from '@/lib/market';
 
 export const CATEGORY_OPTIONS = [
   { value: 'racket', label: '라켓' },
@@ -42,6 +44,7 @@ const scrollIntoViewOpts: ScrollIntoViewOptions = { behavior: 'smooth', block: '
 export default function FreeBoardWriteClient() {
   const router = useRouter();
   const [brand, setBrand] = useState<string>('');
+  const [marketMeta, setMarketMeta] = useState<MarketMeta>({ price: null, saleStatus: 'selling', conditionGrade: 'B', conditionNote: '', racketSpec: null, stringSpec: null });
 
   // 폼 상태
   const [title, setTitle] = useState('');
@@ -152,6 +155,13 @@ export default function FreeBoardWriteClient() {
     if (brand && !isValidMarketBrandForCategory(category, brand)) setBrand('');
   }, [category, brand]);
 
+  // 카테고리 전환 시 불필요한 spec은 즉시 정리
+  useEffect(() => {
+    if (category === 'racket') setMarketMeta((prev) => ({ ...prev, stringSpec: null }));
+    else if (category === 'string') setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
+    else setMarketMeta((prev) => ({ ...prev, racketSpec: null, stringSpec: null }));
+  }, [category]);
+
   // 제출 직전 최종 유효성 검증(우회 방지)
   const validateBeforeSubmit = (): FieldErrors => {
     const errs: FieldErrors = {};
@@ -169,6 +179,9 @@ export default function FreeBoardWriteClient() {
       if (!brand) errs.brand = '브랜드를 선택해 주세요.';
       else if (!isValidMarketBrandForCategory(category, brand)) errs.brand = '선택한 브랜드가 분류에 맞지 않습니다.';
     }
+    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0) errs.category = '판매가는 1원 이상 입력해 주세요.';
+    if (category === 'racket' && !(marketMeta.racketSpec?.modelName ?? '').trim()) errs.brand = '라켓 모델명을 입력해 주세요.';
+    if (category === 'string' && !(marketMeta.stringSpec?.modelName ?? '').trim()) errs.brand = '스트링 모델명을 입력해 주세요.';
 
     // 제목/내용 기본 + min/max 길이
     if (!t) errs.title = '제목을 입력해 주세요.';
@@ -342,12 +355,13 @@ export default function FreeBoardWriteClient() {
         images,
         category,
         brand: isMarketBrandCategory(category) ? brand : null,
+        marketMeta,
       };
       if (attachments && attachments.length > 0) {
         payload.attachments = attachments;
       }
 
-const res = await communityFetch('/api/boards', {
+const res = await communityFetch('/api/community/posts', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(payload),
@@ -475,6 +489,10 @@ const res = await communityFetch('/api/boards', {
                   <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
                 </div>
               )}
+
+              {/* market 전용 상세 스펙: 모달 대신 인라인 카드/아코디언형 UI로 확장 */}
+              <MarketMetaFields category={category} value={marketMeta} onChange={setMarketMeta} disabled={isSubmitting} />
+
 
               {/* 제목 입력 */}
               <div className="space-y-2">

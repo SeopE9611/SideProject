@@ -1237,6 +1237,19 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             </CardHeader>
 
             <CardContent className="p-6">
+
+              {config.boardType === 'market' && item.marketMeta && (
+                <div className="mb-4 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+                  {/* 중고거래 핵심 정보는 본문 앞에서 먼저 확인할 수 있도록 별도 카드로 노출 */}
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <div><span className="text-muted-foreground">판매가</span> <span className="font-semibold">{item.marketMeta.price?.toLocaleString?.() ?? '-'}원</span></div>
+                    <div><span className="text-muted-foreground">판매상태</span> <span className="font-semibold">{item.marketMeta.saleStatus}</span></div>
+                    <div><span className="text-muted-foreground">상태등급</span> <span className="font-semibold">{item.marketMeta.conditionGrade}</span></div>
+                    <div><span className="text-muted-foreground">브랜드</span> <span className="font-semibold">{item.brand ?? '-'}</span></div>
+                    <div><span className="text-muted-foreground">모델명</span> <span className="font-semibold">{item.marketMeta.racketSpec?.modelName ?? item.marketMeta.stringSpec?.modelName ?? '-'}</span></div>
+                  </div>
+                </div>
+              )}
               {/* 이미지 영역 - 인라인 표시 + 클릭 시 새창에서 원본 보기 */}
               {item.images && item.images.length > 0 && (
                 <div className="mb-6 space-y-4">

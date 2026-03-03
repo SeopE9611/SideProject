@@ -1,4 +1,4 @@
-import { MARKET_BRANDS_BY_CATEGORY, MARKET_BRAND_LABEL_MAP } from '@/app/board/market/_components/market.constants';
+import { MARKET_BRANDS_BY_CATEGORY, MARKET_BRAND_LABEL_MAP } from '@/lib/market';
 
 export type BoardType = 'free' | 'market' | 'gear';
 

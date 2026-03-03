@@ -49,6 +49,14 @@ export async function ensureBoardIndexes(db: Db) {
   await ensureIndex(db, 'board_view_dedupe', { postId: 1, viewerKey: 1 }, { name: 'board_view_dedupe_unique', unique: true });
   await ensureIndex(db, 'board_view_dedupe', { createdAt: 1 }, { name: 'board_view_dedupe_ttl_30m', expireAfterSeconds: 60 * 30 });
 
+
+  // community_posts 중고거래 목록/필터 인덱스
+  await ensureIndex(db, 'community_posts', { type: 1, category: 1, brand: 1, createdAt: -1 }, { name: 'community_posts_type_category_brand_created' });
+  await ensureIndex(db, 'community_posts', { type: 1, category: 1, 'marketMeta.saleStatus': 1, createdAt: -1 }, { name: 'community_posts_market_sale_status_created' });
+  await ensureIndex(db, 'community_posts', { type: 1, category: 1, 'marketMeta.price': 1 }, { name: 'community_posts_market_price' });
+  await ensureIndex(db, 'community_posts', { type: 1, category: 1, 'marketMeta.racketSpec.gripSize': 1 }, { name: 'community_posts_market_racket_grip' });
+  await ensureIndex(db, 'community_posts', { type: 1, category: 1, 'marketMeta.stringSpec.material': 1 }, { name: 'community_posts_market_string_material' });
+
   // 커뮤니티 좋아요 중복 방지 (postId + userId 1회)
   await ensureIndex(db, 'community_likes', { postId: 1, userId: 1 }, { name: 'community_likes_post_user_unique', unique: true });
 

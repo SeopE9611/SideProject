@@ -2,6 +2,7 @@ import type { ObjectId } from 'mongodb';
 import type { BoardType, QnaCategory } from '@/lib/types/board';
 import type { BoardListItem } from '@/lib/boards.queries';
 import type { CommunityBoardType } from '@/lib/types/community';
+import type { MarketMeta } from '@/lib/market';
 
 export type AccessTokenPayload = {
   sub?: string;
@@ -18,6 +19,7 @@ export interface CommunityPostMongoDoc {
   content: string;
   category?: string | null;
   brand?: string | null;
+  marketMeta?: MarketMeta | null;
   images?: string[];
   attachments?: Array<{ name?: string; url?: string; size?: number }>;
   postNo?: number;
@@ -50,6 +52,7 @@ export interface CommunityPostListItemDto {
   attachments: Array<{ name?: string; url?: string; size?: number }>;
   images: string[];
   brand: string | null;
+  marketMeta?: MarketMeta | null;
   postNo?: number;
   authorName?: string;
   authorEmail?: string;

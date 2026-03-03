@@ -1,4 +1,5 @@
 import type { BoardAttachment, BoardPostBase } from '@/lib/types/board-domain';
+import type { MarketMeta } from '@/lib/market';
 
 /** 커뮤니티 글 노출 상태 */
 export type CommunityStatus = 'public' | 'hidden' | 'deleted';
@@ -41,6 +42,9 @@ export interface CommunityPost extends Omit<BoardPostBase, 'kind' | '_id' | 'cre
    * - 그 외 게시판에서는 null 또는 undefined
    */
   brand?: string | null;
+
+  /** market 게시판 전용 거래 메타 */
+  marketMeta?: MarketMeta | null;
 
   /**
    * 게시판 내 노출용 글 번호
