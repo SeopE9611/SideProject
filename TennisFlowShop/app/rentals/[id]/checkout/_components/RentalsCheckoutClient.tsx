@@ -47,6 +47,37 @@ const isValidAccountDigits = (v: string) => {
   return d.length >= 8 && d.length <= 20;
 };
 
+const RENTAL_IDEM_STORE_KEY = 'rentals.checkout.idem.v1';
+const RENTAL_IDEM_TTL_MS = 15 * 60 * 1000;
+
+const buildRentalCheckoutSignature = (params: { racketId: string; days: number; requestStringing: boolean; selectedStringId?: string | null }) => {
+  return [params.racketId, String(params.days), params.requestStringing ? '1' : '0', params.selectedStringId ? String(params.selectedStringId) : ''].join('|');
+};
+
+const getOrCreateRentalIdemKey = (signature: string) => {
+  if (typeof window === 'undefined') return crypto.randomUUID();
+  try {
+    const raw = window.sessionStorage.getItem(RENTAL_IDEM_STORE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { key?: string; signature?: string; ts?: number };
+      const fresh = typeof parsed.ts === 'number' && Date.now() - parsed.ts < RENTAL_IDEM_TTL_MS;
+      if (fresh && parsed.signature === signature && typeof parsed.key === 'string' && parsed.key) return parsed.key;
+    }
+    const key = crypto.randomUUID();
+    window.sessionStorage.setItem(RENTAL_IDEM_STORE_KEY, JSON.stringify({ key, signature, ts: Date.now() }));
+    return key;
+  } catch {
+    return crypto.randomUUID();
+  }
+};
+
+const clearRentalIdemKey = () => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(RENTAL_IDEM_STORE_KEY);
+  } catch {}
+};
+
 type Initial = {
   racketId: string;
   period: 7 | 15 | 30;
@@ -71,6 +102,7 @@ type Initial = {
 
 export default function RentalsCheckoutClient({ initial }: { initial: Initial }) {
   const router = useRouter();
+  const submitIdemKeyRef = useRef<string | null>(null);
   /**
    * 구매 플로우와 동일한 규칙
    * - "스트링 교체 신청 여부"는 체크박스 토글이 아니라 **선택된 스트링(stringId) 유무**로 결정한다.
@@ -446,9 +478,18 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
       setLoading(true);
 
+      const submitSignature = buildRentalCheckoutSignature({
+        racketId: initial.racketId,
+        days: initial.period,
+        requestStringing,
+        selectedStringId: selectedString?.id,
+      });
+      const idemKey = submitIdemKeyRef.current ?? getOrCreateRentalIdemKey(submitSignature);
+      submitIdemKeyRef.current = idemKey;
+
       const res = await fetch('/api/rentals', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
         body: JSON.stringify({
           racketId: initial.racketId,
           days: initial.period,
@@ -495,6 +536,9 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         showErrorToast(json?.message ?? '결제 처리에 실패했습니다.');
         return;
       }
+
+      clearRentalIdemKey();
+      submitIdemKeyRef.current = null;
 
       // 성공 페이지에서 안내를 위해(기존 로직 유지)
       try {

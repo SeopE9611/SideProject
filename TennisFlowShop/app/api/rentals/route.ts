@@ -100,6 +100,9 @@ function hasEnoughStringingInputForSubmitCore(input: unknown): input is Stringin
 }
 
 export async function POST(req: Request) {
+  const idemKeyRaw = req.headers.get('Idempotency-Key');
+  const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw.trim() : undefined;
+
   const raw = await req.text();
   if (!raw) return NextResponse.json({ ok: false, message: 'EMPTY_BODY' }, { status: 400 });
   let body: any;
@@ -134,6 +137,25 @@ export async function POST(req: Request) {
 
   const client = await clientPromise;
   const db = client.db();
+  const rentalOrders = db.collection('rental_orders');
+
+  await rentalOrders.createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+
+  if (idemKey) {
+    const existing = await rentalOrders.findOne({ idemKey });
+    if (existing) {
+      const existingStringingApplicationId =
+        (existing as any)?.stringingApplicationId && String((existing as any).stringingApplicationId).trim()
+          ? String((existing as any).stringingApplicationId)
+          : null;
+      return NextResponse.json({
+        ok: true,
+        id: String(existing._id),
+        stringingApplicationId: existingStringingApplicationId,
+        stringingSubmitted: Boolean((existing as any)?.isStringServiceApplied || existingStringingApplicationId),
+      });
+    }
+  }
 
   // Ensure stringing_applications indexes are correct before starting a transaction.
   // (Fixes legacy uniq_draft_per_order partial filter that can collide on orderId=null for rental drafts.)
@@ -355,7 +377,13 @@ export async function POST(req: Request) {
       try {
         await session.startTransaction();
 
-        const res = await db.collection('rental_orders').insertOne(doc, { session });
+        const res = await rentalOrders.insertOne(
+          {
+            ...doc,
+            ...(idemKey ? { idemKey } : {}),
+          },
+          { session },
+        );
         insertedId = res.insertedId;
         const rentalIdStr = String(res.insertedId);
 
@@ -434,6 +462,22 @@ export async function POST(req: Request) {
     if (!insertedId) throw new Error('RENTAL_INSERT_FAILED');
     return NextResponse.json({ ok: true, id: String(insertedId), stringingApplicationId, stringingSubmitted });
   } catch (e: any) {
+    if (e?.code === 11000 && idemKey) {
+      const existing = await rentalOrders.findOne({ idemKey });
+      if (existing) {
+        const existingStringingApplicationId =
+          (existing as any)?.stringingApplicationId && String((existing as any).stringingApplicationId).trim()
+            ? String((existing as any).stringingApplicationId)
+            : null;
+        return NextResponse.json({
+          ok: true,
+          id: String(existing._id),
+          stringingApplicationId: existingStringingApplicationId,
+          stringingSubmitted: Boolean((existing as any)?.isStringServiceApplied || existingStringingApplicationId),
+        });
+      }
+    }
+
     const msg = e instanceof Error ? e.message : 'UNKNOWN_ERROR';
     // deductPoints가 던지는 대표 에러 메시지를 그대로 프론트로 전달
     // - INSUFFICIENT_POINTS
