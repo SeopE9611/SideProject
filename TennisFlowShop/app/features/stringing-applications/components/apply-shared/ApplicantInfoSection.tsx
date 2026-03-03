@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -45,6 +45,16 @@ const format010Phone = (v: string) => {
 const isValid010Phone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
 export default function ApplicantInfoSection({ formData, setFormData, handleInputChange, handleOpenPostcode, orderId, isMember, isVisitDelivery, lockCollection, applicationId, isUserLoading }: ApplicantInfoSectionProps) {
+
+  const shippingAddressSnapshotRef = useRef<{
+    shippingPostcode: string;
+    shippingAddress: string;
+    shippingAddressDetail: string;
+  }>({
+    shippingPostcode: '',
+    shippingAddress: '',
+    shippingAddressDetail: '',
+  });
 
   // Step1에서 제출 전 기본 검증 + 인라인 에러를 제공하기 위한 상태
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -103,6 +113,24 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
   // - 값 세팅은 handleOpenPostcode 내부에서 setFormData로만 들어오게 유지
   const lockAutoAddressInputs = true;
   const postcodeAddressReadOnly = lockAutoAddressInputs || lockAddressFields;
+  const canOpenPostcodeSearch = !lockCollection && !lockAddressFields;
+
+  // visit 전환 이전의 주소를 보존해두고, 다시 비-visit으로 돌아오면 복원 가능하게 유지
+  useEffect(() => {
+    if (isVisitSelected) return;
+
+    const postcode = String(formData?.shippingPostcode || '');
+    const address = String(formData?.shippingAddress || '');
+    const addressDetail = String(formData?.shippingAddressDetail || '');
+
+    if (!postcode.trim() && !address.trim() && !addressDetail.trim()) return;
+
+    shippingAddressSnapshotRef.current = {
+      shippingPostcode: postcode,
+      shippingAddress: address,
+      shippingAddressDetail: addressDetail,
+    };
+  }, [isVisitSelected, formData?.shippingPostcode, formData?.shippingAddress, formData?.shippingAddressDetail]);
 
   // 에러 텍스트는 "있을 때만" 렌더 (불필요한 상시 여백 제거)
   const errorText = (key: string) => (touched[key] && fieldErrors[key] ? fieldErrors[key] : '');
@@ -197,7 +225,7 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
                   className={`w-full md:w-[180px] transition-all duration-200 ${postcodeAddressReadOnly ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'focus:ring-2 focus:ring-ring'}`}
                   placeholder=""
                 />
-                {!orderId && !isMember && (
+                {canOpenPostcodeSearch && (
                   <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap transition-colors duration-200">
                     <MapPin className="h-4 w-4 mr-2" />
                     우편번호 검색
@@ -283,14 +311,26 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
               if (lockCollection) return prev;
               //  비활성화된 옵션은 선택 자체를 막는다(혹시 UI에서 클릭 이벤트가 들어와도 방어)
               if (v === 'courier_pickup' && courierPickupDisabled) return prev;
+              const prevCollection = normalizeCollection(prev.collectionMethod);
+              const nextCollection = normalizeCollection(v as CollectionMethod);
               const next = { ...prev, collectionMethod: v as CollectionMethod };
               // 방문 접수 시, 날짜/시간 필드는 초기화 (기존에 선택된게 있다면)
-              if (normalizeCollection(v) === 'visit') {
+              if (nextCollection === 'visit') {
+                shippingAddressSnapshotRef.current = {
+                  shippingPostcode: String(prev.shippingPostcode || ''),
+                  shippingAddress: String(prev.shippingAddress || ''),
+                  shippingAddressDetail: String(prev.shippingAddressDetail || ''),
+                };
                 (next as any).preferredDate = '';
                 (next as any).preferredTime = '';
                 (next as any).shippingPostcode = '';
                 (next as any).shippingAddress = '';
                 (next as any).shippingAddressDetail = '';
+              } else if (prevCollection === 'visit') {
+                const snapshot = shippingAddressSnapshotRef.current;
+                (next as any).shippingPostcode = String(prev.shippingPostcode || '').trim() ? prev.shippingPostcode : snapshot.shippingPostcode;
+                (next as any).shippingAddress = String(prev.shippingAddress || '').trim() ? prev.shippingAddress : snapshot.shippingAddress;
+                (next as any).shippingAddressDetail = String(prev.shippingAddressDetail || '').trim() ? prev.shippingAddressDetail : snapshot.shippingAddressDetail;
               }
               return next;
             })
