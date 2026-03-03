@@ -20,7 +20,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
-import { badgeBase, badgeSizeSm, badgeToneClass, getShippingMethodBadge, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -975,7 +975,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
               </CardTitle>
               <div className="flex items-center space-x-2">
-                <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[paymentStatus])}>{paymentStatus}</Badge>
+                {(() => {
+                  const pay = getPaymentStatusBadgeSpec(paymentStatus);
+                  return (
+                    <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{paymentStatus}</Badge>
+                  );
+                })()}
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
               </div>
             </CardHeader>

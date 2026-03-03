@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { getNoticeCategoryColor, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
+import { getNoticeCategoryBadgeSpec, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 
@@ -117,6 +117,7 @@ export default function NoticeDetailPage() {
   };
 
   const attachments = Array.isArray(notice?.attachments) ? notice!.attachments : [];
+  const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice?.category);
   const imageAtts = attachments.filter((att: any) => {
     const url = typeof att === 'string' ? att : att?.url;
     const mime = (att?.mime || '') as string;
@@ -198,7 +199,7 @@ export default function NoticeDetailPage() {
                             고정
                           </Badge>
                         )}
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} font-medium`}>
+                        <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
                           {notice.category || '일반'}
                         </Badge>
                         {imageAtts.length > 0 && (

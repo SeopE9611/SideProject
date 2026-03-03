@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getNoticeCategoryColor, noticePinColor } from '@/lib/badge-style';
+import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec, noticePinColor } from '@/lib/badge-style';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -226,9 +226,12 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
             <div className="space-y-4 sm:space-y-5">
               {error && <ErrorBox message={listError.message} status={listError.status} fallbackMessage="공지 목록을 불러오지 못했습니다." />}
               {!isBusy && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>}
-              {items.map((notice) => (
-                <Link key={notice._id} href={`/board/notice/${notice._id}`}>
-                  <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
+              {items.map((notice) => {
+                const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
+
+                return (
+                  <Link key={notice._id} href={`/board/notice/${notice._id}`}>
+                    <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
                     <CardContent className="p-5 sm:p-6 md:p-7">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
@@ -240,7 +243,11 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                               </Badge>
                             )}
 
-                            {notice.category && <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)}`}>{notice.category}</Badge>}
+                            {notice.category && (
+                              <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                                {notice.category}
+                              </Badge>
+                            )}
 
                             <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
 
@@ -277,9 +284,10 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                </Link>
-              ))}
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">
