@@ -1,4 +1,5 @@
 import clientPromise from '@/lib/mongodb';
+import { isReservedEmailLocalPart } from '@/lib/reserved-email-localpart';
 
 // GET 요청 처리
 export async function GET(req: Request) {
@@ -10,6 +11,13 @@ export async function GET(req: Request) {
   if (!email) {
     return new Response(JSON.stringify({ error: '이메일을 입력해주세요.' }), {
       status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (isReservedEmailLocalPart(email)) {
+    return new Response(JSON.stringify({ isAvailable: false }), {
+      status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   }
