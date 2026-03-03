@@ -142,11 +142,18 @@ export default function RentalsList() {
 
   return (
     <div className="space-y-6">
-      {flat.map((r: any) => (
-        <Card
-          key={r.id}
-          className={`group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring' : ''}`}
-        >
+      {flat.map((r: any) => {
+        const fee = r.amount?.fee ?? 0;
+        const deposit = r.amount?.deposit ?? 0;
+        const stringPrice = r.amount?.stringPrice ?? 0;
+        const stringingFee = r.amount?.stringingFee ?? 0;
+        const total = r.amount?.total ?? fee + deposit + stringPrice + stringingFee;
+
+        return (
+          <Card
+            key={r.id}
+            className={`group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${r.stringingApplicationId || r.withStringService ? 'ring-1 ring-ring' : ''}`}
+          >
           <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
@@ -197,7 +204,7 @@ export default function RentalsList() {
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <div className="text-xs text-muted-foreground uppercase tracking-wide">대여 수수료</div>
-                  <div className="font-medium text-foreground">{r.amount?.fee?.toLocaleString() ?? 0}원</div>
+                  <div className="font-medium text-foreground">{fee.toLocaleString()}원</div>
                 </div>
               </div>
 
@@ -205,15 +212,35 @@ export default function RentalsList() {
                 <Package className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <div className="text-xs text-muted-foreground uppercase tracking-wide">보증금</div>
-                  <div className="font-medium text-foreground">{r.amount?.deposit?.toLocaleString() ?? 0}원</div>
+                  <div className="font-medium text-foreground">{deposit.toLocaleString()}원</div>
                 </div>
               </div>
+
+              {stringPrice > 0 && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide">스트링 상품</div>
+                    <div className="font-medium text-foreground">{stringPrice.toLocaleString()}원</div>
+                  </div>
+                </div>
+              )}
+
+              {stringingFee > 0 && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <div className="text-xs text-muted-foreground uppercase tracking-wide">교체 서비스</div>
+                    <div className="font-medium text-foreground">{stringingFee.toLocaleString()}원</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border/60 dark:border-border/60">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span className="text-lg font-bold text-foreground">총 {((r.amount?.fee ?? 0) + (r.amount?.deposit ?? 0)).toLocaleString()}원</span>
+                <span className="text-lg font-bold text-foreground">총 {total.toLocaleString()}원</span>
                 {r.hasReturnShipping ? <Badge variant="info">반납 운송장 등록됨</Badge> : <Badge variant="neutral">반납 운송장 미등록</Badge>}
               </div>
 
@@ -311,8 +338,9 @@ export default function RentalsList() {
               </div>
             </div>
           </CardContent>
-        </Card>
-      ))}
+          </Card>
+        );
+      })}
 
       <div className="flex justify-center pt-4">
         {hasMore ? (
