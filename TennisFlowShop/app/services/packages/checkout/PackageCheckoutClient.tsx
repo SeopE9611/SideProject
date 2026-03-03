@@ -16,18 +16,17 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { Building2, Calendar, CheckCircle, CreditCard, Mail, MapPin, MessageSquare, Package, Phone, Shield, Star, UserIcon } from 'lucide-react';
+import { Building2, Calendar, CheckCircle, CreditCard, Mail, MessageSquare, Package, Phone, Shield, Star, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PackageCheckoutButton from './PackageCheckoutButton';
 
 // 클라이언트 유효성(UX용)
-type CheckoutField = 'name' | 'email' | 'phone' | 'depositor' | 'postalCode' | 'address' | 'addressDetail';
+type CheckoutField = 'name' | 'email' | 'phone' | 'depositor';
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
 const isValidKoreanPhone = (v: string) => {
   const d = onlyDigits(v);
@@ -35,12 +34,6 @@ const isValidKoreanPhone = (v: string) => {
 };
 
 type UserLite = { id: string; name?: string; email?: string };
-
-declare global {
-  interface Window {
-    daum: any;
-  }
-}
 
 const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
   '10-sessions': normalizePackageCardData({
@@ -108,14 +101,9 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   // 패키지 설정 로딩 상태
   const [isPackageLoading, setIsPackageLoading] = useState(true);
   const [selectedBank, setSelectedBank] = useState('shinhan');
-  const [serviceMethod, setServiceMethod] = useState<'방문이용' | '출장서비스'>('방문이용');
-
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [address, setAddress] = useState('');
-  const [addressDetail, setAddressDetail] = useState('');
   const [serviceRequest, setServiceRequest] = useState('');
   const [depositor, setDepositor] = useState('');
 
@@ -127,24 +115,6 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const inputClass = (base: string, field: CheckoutField, errs: CheckoutFieldErrors) => {
     if (!hasInteracted) return base;
     return errs[field] ? `${base} border-destructive focus:border-destructive` : base;
-  };
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
-
-  const handleFindPostcode = () => {
-    new window.daum.Postcode({
-      oncomplete: (data: any) => {
-        const fullAddress = data.address;
-        const zonecode = data.zonecode;
-        setPostalCode(zonecode);
-        setAddress(fullAddress);
-      },
-    }).open();
   };
 
   const [saveInfo, setSaveInfo] = useState(false);
@@ -163,13 +133,9 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const fingerprint = useMemo(
     () =>
       JSON.stringify({
-        serviceMethod,
         name,
         phone,
         email,
-        postalCode,
-        address,
-        addressDetail,
         serviceRequest,
         depositor,
         selectedBank,
@@ -178,7 +144,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
         agreePrivacy,
         saveInfo,
       }),
-    [serviceMethod, name, phone, email, postalCode, address, addressDetail, serviceRequest, depositor, selectedBank, agreeAll, agreeTerms, agreePrivacy, saveInfo],
+    [name, phone, email, serviceRequest, depositor, selectedBank, agreeAll, agreeTerms, agreePrivacy, saveInfo],
   );
   const baselineRef = useRef<string | null>(null);
   const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
@@ -300,9 +266,6 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
         setName(data.name || '');
         setPhone(data.phone || '');
         setEmail(data.email || '');
-        setPostalCode(data.postalCode || '');
-        setAddress(data.address || '');
-        setAddressDetail(data.addressDetail || '');
       } finally {
         if (!cancelled) setPrefillDone(true);
       }
@@ -358,17 +321,8 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     if (!depositorTrim) errs.depositor = '입금자명은 필수입니다.';
     else if (depositorTrim.length < 2) errs.depositor = '입금자명은 2자 이상 입력해주세요.';
 
-    // 현재는 출장서비스 비활성화지만, 향후 활성화될 때를 대비해 검증을 같이 둠
-    if (serviceMethod === '출장서비스') {
-      const postalTrim = postalCode.trim();
-      if (!postalTrim) errs.postalCode = '우편번호는 필수입니다.';
-      else if (!POSTAL_RE.test(postalTrim)) errs.postalCode = '우편번호(5자리)를 확인해주세요.';
-      if (!address.trim()) errs.address = '기본 주소는 필수입니다.';
-      if (!addressDetail.trim()) errs.addressDetail = '상세 주소는 필수입니다.';
-    }
-
     return errs;
-  }, [name, email, phone, depositor, serviceMethod, postalCode, address, addressDetail]);
+  }, [name, email, phone, depositor]);
 
   const isFormValid = Object.keys(fieldErrors).length === 0;
   const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid && !ownershipBlockedMessage;
@@ -533,74 +487,23 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
               </CardContent>
             </Card>
 
-            {/* 서비스 이용 방식 */}
+            {/* 서비스 이용 안내 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
               <div className="bg-muted/50 dark:bg-muted/40 p-6">
                 <CardTitle className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  서비스 이용 방식
+                  <Shield className="h-5 w-5 text-primary" />
+                  서비스 이용 안내
                 </CardTitle>
-                <CardDescription className="mt-2">스트링 교체 서비스를 어떻게 이용하실지 선택해주세요.</CardDescription>
+                <CardDescription className="mt-2">패키지 주문 전 꼭 확인해주세요.</CardDescription>
               </div>
               <CardContent className="p-6 space-y-4">
-                <RadioGroup
-                  value={serviceMethod}
-                  onValueChange={(value) => {
-                    if (value === '출장서비스') return; // 클릭 무시
-                    setServiceMethod(value as '방문이용' | '출장서비스');
-                    touch();
-                  }}
-                >
-                  {/* 매장 방문 */}
-                  <div className="flex items-center space-x-3 p-4 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/20">
-                    <RadioGroupItem value="방문이용" id="방문이용" />
-                    <Label htmlFor="방문이용" className="flex-1 cursor-pointer font-medium">
-                      매장 방문 (테니스 플로우 방문)
-                    </Label>
-                    <Building2 className="h-5 w-5 text-primary" />
-                  </div>
-
-                  {/* 출장 서비스 – 비활성화 */}
-                  <div className="flex items-center space-x-3 p-4 bg-muted/40 dark:bg-muted/30 rounded-lg border border-border opacity-50 cursor-not-allowed" aria-disabled="true" onClick={(e) => e.preventDefault()}>
-                    <RadioGroupItem value="출장서비스" id="출장서비스" disabled />
-                    <Label htmlFor="출장서비스" className="flex-1 font-medium">
-                      출장 서비스 (지정 장소로 방문)
-                      <span className="ml-1 text-destructive">— 현재 이용하실 수 없습니다</span>
-                    </Label>
-                    <MapPin className="h-5 w-5 text-primary" />
-                  </div>
-                </RadioGroup>
-
-                {serviceMethod === '출장서비스' && (
-                  <div className="space-y-4 mt-6 p-4 bg-muted/40 dark:bg-muted/30 rounded-lg border border-border">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="service-postal" className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-warning" />
-                          우편번호
-                        </Label>
-                        <Button variant="secondary" size="sm" onClick={handleFindPostcode}>
-                          우편번호 찾기
-                        </Button>
-                      </div>
-                      <Input id="service-postal" readOnly value={postalCode} placeholder="우편번호" className="bg-card cursor-not-allowed max-w-[200px] border-2" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="service-address">서비스 주소</Label>
-                      <Input id="service-address" readOnly value={address} placeholder="기본 주소" className="bg-card cursor-not-allowed border-2" />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="service-address-detail">상세 주소</Label>
-                      <Input id="service-address-detail" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} placeholder="상세 주소를 입력하세요" className="border-2 focus:border-border transition-colors" />
-                    </div>
-
-                    <div className="bg-muted/40 dark:bg-muted/30 p-3 rounded-lg border border-border">
-                      <p className="text-sm text-warning font-medium">출장 서비스는 서울/경기 지역에 한해 제공되며, 별도의 출장비가 발생할 수 있습니다.</p>
-                    </div>
-                  </div>
-                )}
+                <div className="rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20 p-4 space-y-2 text-sm text-foreground">
+                  <p>• 입금 확인 후 관리자가 패키지를 활성화해드려요.</p>
+                  <p>• 활성화 완료 후부터 패키지를 사용할 수 있어요.</p>
+                  <p>• 교체 서비스 신청이 완료되면 이용 횟수가 1회 차감돼요.</p>
+                  <p>• 패키지가 비활성화된 동안에는 서비스를 이용할 수 없어요.</p>
+                  <p>• 비활성화 상태에서는 유효기간 카운트가 일시 정지돼요.</p>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="service-request" className="flex items-center gap-2">
@@ -843,14 +746,10 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     name={name}
                     phone={phone}
                     email={email}
-                    postalCode={postalCode}
-                    address={address}
-                    addressDetail={addressDetail}
                     depositor={depositor}
                     selectedBank={selectedBank}
                     serviceRequest={serviceRequest}
                     saveInfo={saveInfo}
-                    serviceMethod={serviceMethod}
                   />
                   <Button variant="outline" className="w-full border-2" asChild>
                     <Link href="/services/packages" onClick={onLeavePageClick}>

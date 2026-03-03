@@ -81,18 +81,16 @@ export async function POST(req: Request) {
     const planId = config?.id || rawPlanId || `${sessions}-sessions`;
 
     const planTitle = config?.name || str(pkg?.title) || str(body?.packageTitle) || `${sessions}회권`;
-    const serviceMethod = str(body?.serviceInfo?.serviceMethod ?? body?.serviceMethod ?? '방문이용');
-    if (/출장/.test(serviceMethod)) {
+    const requestedServiceMethod = str(body?.serviceInfo?.serviceMethod ?? body?.serviceMethod ?? '방문이용');
+    if (/출장/.test(requestedServiceMethod)) {
       return NextResponse.json({ error: '현재 출장 서비스는 이용하실 수 없습니다.' }, { status: 400 });
     }
+    const serviceMethod = '방문이용';
 
     const serviceInfo = {
       depositor: str(body?.serviceInfo?.depositor ?? body?.depositor),
       serviceRequest: str(body?.serviceInfo?.serviceRequest),
       serviceMethod,
-      address: str(body?.serviceInfo?.address),
-      addressDetail: str(body?.serviceInfo?.addressDetail),
-      postalCode: str(body?.serviceInfo?.postalCode),
       name: str(body?.serviceInfo?.name),
       phone: str(body?.serviceInfo?.phone),
       email: str(body?.serviceInfo?.email ?? user?.email),

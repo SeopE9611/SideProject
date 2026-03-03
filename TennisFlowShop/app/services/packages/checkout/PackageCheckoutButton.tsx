@@ -14,7 +14,6 @@ import { useEffect, useRef, useState } from 'react';
 //   devtools로 disabled를 무시하거나 handleSubmit을 직접 호출할 수 있으니
 //   버튼 컴포넌트에서도 최종 검증실시.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
 const isValidKoreanPhone = (v: string) => {
   const d = onlyDigits(v);
@@ -75,14 +74,10 @@ export default function PackageCheckoutButton({
   name,
   phone,
   email,
-  postalCode,
-  address,
-  addressDetail,
   depositor,
   selectedBank,
   serviceRequest,
   saveInfo,
-  serviceMethod,
 }: {
   disabled: boolean;
   ownershipBlockedMessage: string | null;
@@ -90,14 +85,10 @@ export default function PackageCheckoutButton({
   name: string;
   phone: string;
   email: string;
-  postalCode: string;
-  address: string;
-  addressDetail: string;
   depositor: string;
   selectedBank: string;
   serviceRequest: string;
   saveInfo: boolean;
-  serviceMethod: '방문이용' | '출장서비스';
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -160,23 +151,6 @@ export default function PackageCheckoutButton({
       showErrorToast('입금 은행을 선택해주세요.');
       return;
     }
-
-    if (serviceMethod === '출장서비스') {
-      const postalTrim = postalCode.trim();
-      if (!postalTrim || !POSTAL_RE.test(postalTrim)) {
-        showErrorToast('우편번호(5자리)를 확인해주세요.');
-        return;
-      }
-      if (!address.trim()) {
-        showErrorToast('기본 주소를 입력해주세요.');
-        return;
-      }
-      if (!addressDetail.trim()) {
-        showErrorToast('상세 주소를 입력해주세요.');
-        return;
-      }
-    }
-
     // 성공 시에는 페이지 이동이 끝날 때까지 로딩을 유지하기 위한 플래그
     let success = false;
 
@@ -189,12 +163,8 @@ export default function PackageCheckoutButton({
         name: nameTrim,
         phone: phoneDigits,
         email: emailTrim,
-        address: serviceMethod === '출장서비스' ? address : '',
-        addressDetail: serviceMethod === '출장서비스' ? addressDetail : '',
-        postalCode: serviceMethod === '출장서비스' ? postalCode : '',
         depositor: depositorTrim,
         serviceRequest,
-        serviceMethod,
       };
 
       const packageOrderData = {
@@ -257,9 +227,6 @@ export default function PackageCheckoutButton({
                 name: nameTrim,
                 phone: phoneDigits,
                 email: emailTrim,
-                address: serviceMethod === '출장서비스' ? address : undefined,
-                postalCode: serviceMethod === '출장서비스' ? postalCode : undefined,
-                addressDetail: serviceMethod === '출장서비스' ? addressDetail : undefined,
               }),
             });
           } catch {
