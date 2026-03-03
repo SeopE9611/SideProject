@@ -1,4 +1,4 @@
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { normalizeCollection } from './collection';
 
 export type OrderShippingMethod = 'delivery' | 'quick' | 'visit';
 

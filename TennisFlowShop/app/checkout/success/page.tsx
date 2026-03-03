@@ -81,7 +81,11 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
   const orderDetailHref = isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id.toString()}`;
   const withStringService = order.shippingInfo?.withStringService === true;
-  const hasSubmittedApplication = !!order.stringingApplicationId;
+  const stringingApplicationId =
+    typeof order.stringingApplicationId === 'string' && order.stringingApplicationId.trim() ? order.stringingApplicationId.trim() : null;
+  const hasSubmittedApplication = Boolean(stringingApplicationId);
+  const stringingApplicationHref =
+    isLoggedIn && stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
 
   // 안전한 가격 표시 함수
@@ -149,9 +153,17 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     </p>
                   )}
                   {hasSubmittedApplication ? (
-                    <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="space-y-3 text-sm text-muted-foreground">
                       <p>별도 신청서 작성 없이 현재 주문에 포함되어 처리됩니다.</p>
                       <p>추가 요청/장착 정보도 주문과 함께 저장되었습니다.</p>
+                      {stringingApplicationHref ? (
+                        <Button variant="outline" className="bg-background/80" asChild>
+                          <Link href={stringingApplicationHref} className="flex items-center gap-2">
+                            교체 서비스 신청 내역 보기
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : null}
                     </div>
                   ) : (
                     <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
