@@ -91,7 +91,9 @@ export async function GET(req: Request) {
           packageType: { $concat: [{ $toString: '$packageInfo.sessions' }, '회권'] },
 
           purchaseDate: '$createdAt',
-          _calcExpiry: '$passDoc.expiresAt',
+          _calcExpiry: {
+            $cond: [{ $in: ['$passDoc.status', ['active', 'expired']] }, '$passDoc.expiresAt', null],
+          },
 
           serviceType: {
             $cond: [{ $regexMatch: { input: { $ifNull: ['$serviceInfo.serviceMethod', '방문'] }, regex: '출장', options: 'i' } }, '출장', '방문'],
