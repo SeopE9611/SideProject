@@ -1,366 +1,352 @@
-import Link from 'next/link';
-import { CheckCircle, CreditCard, MapPin, Package, Clock, ArrowRight, Star, Shield, Phone, Calendar, Gift } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
-import { bankLabelMap } from '@/lib/constants';
-import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import LoginGate from '@/components/system/LoginGate';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import UnifiedPackageCard from '@/app/services/packages/_components/UnifiedPackageCard';
 import { normalizePackageCardData } from '@/app/services/packages/_lib/packageCard';
 import { toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
+import DevMarkPaidButton from '@/app/services/packages/success/DevMarkPaidButton';
+import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
+import LoginGate from '@/components/system/LoginGate';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { bankLabelMap } from '@/lib/constants';
+import clientPromise from '@/lib/mongodb';
+import jwt from 'jsonwebtoken';
+import { ArrowRight, Calendar, CheckCircle, Clock, CreditCard, Gift, MapPin, Package, Phone, Shield, Star } from 'lucide-react';
+import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
- if (!token) return null;
- try {
- return verifyAccessToken(token);
- } catch {
- return null;
- }
+  if (!token) return null;
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
 }
 
 export default async function PackageSuccessPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
- const sp = await searchParams;
- const packageOrderId = Array.isArray(sp.packageOrderId) ? sp.packageOrderId[0] : sp.packageOrderId ?? '';
+  const sp = await searchParams;
+  const packageOrderId = Array.isArray(sp.packageOrderId) ? sp.packageOrderId[0] : (sp.packageOrderId ?? '');
 
- if (!packageOrderId || !ObjectId.isValid(packageOrderId)) return notFound();
+  if (!packageOrderId || !ObjectId.isValid(packageOrderId)) return notFound();
 
- // 비회원 주문/신청 차단 모드면, 패키지 success 페이지도 로그인 필수로 막는다.
- // (packageOrderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
- const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
- const allowGuestCheckout = guestOrderMode === 'on';
- if (!allowGuestCheckout) {
- const gateCookieStore = await cookies();
- const token = gateCookieStore.get('accessToken')?.value;
- const payload = safeVerifyAccessToken(token);
- if (!payload?.sub) {
- const qs = new URLSearchParams();
- qs.set('packageOrderId', String(packageOrderId));
- const next = `/services/packages/success?${qs.toString()}`;
- return <LoginGate next={next} variant="checkout" />;
- }
- }
+  // 비회원 주문/신청 차단 모드면, 패키지 success 페이지도 로그인 필수로 막는다.
+  // (packageOrderId만으로 주문 정보가 렌더링되는 것을 DB 조회 전에 차단)
+  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
+  const allowGuestCheckout = guestOrderMode === 'on';
+  if (!allowGuestCheckout) {
+    const gateCookieStore = await cookies();
+    const token = gateCookieStore.get('accessToken')?.value;
+    const payload = safeVerifyAccessToken(token);
+    if (!payload?.sub) {
+      const qs = new URLSearchParams();
+      qs.set('packageOrderId', String(packageOrderId));
+      const next = `/services/packages/success?${qs.toString()}`;
+      return <LoginGate next={next} variant="checkout" />;
+    }
+  }
 
- const client = await clientPromise;
- const db = client.db();
- const packageOrder = await db.collection('packageOrders').findOne({ _id: new ObjectId(packageOrderId) });
+  const client = await clientPromise;
+  const db = client.db();
+  const packageOrder = await db.collection('packageOrders').findOne({ _id: new ObjectId(packageOrderId) });
 
- if (!packageOrder) return notFound();
+  if (!packageOrder) return notFound();
 
- const cookieStore = await cookies();
- const refreshToken = cookieStore.get('refreshToken')?.value;
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get('refreshToken')?.value;
 
- let isLoggedIn = false;
- if (refreshToken) {
- try {
- jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
- isLoggedIn = true;
- } catch {}
- }
+  let isLoggedIn = false;
+  if (refreshToken) {
+    try {
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
+      isLoggedIn = true;
+    } catch {}
+  }
 
- // --- 관리자 판별 ---
- const cookieStore2 = await cookies();
- const accessToken = cookieStore2.get('accessToken')?.value;
+  // --- 관리자 판별 ---
+  const cookieStore2 = await cookies();
+  const accessToken = cookieStore2.get('accessToken')?.value;
 
- let authPayload: any = null;
- try {
- if (accessToken) authPayload = verifyAccessToken(accessToken);
- } catch {}
- if (!authPayload && refreshToken) {
- try {
- authPayload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
- } catch {}
- }
+  let authPayload: any = null;
+  try {
+    if (accessToken) authPayload = verifyAccessToken(accessToken);
+  } catch {}
+  if (!authPayload && refreshToken) {
+    try {
+      authPayload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
+    } catch {}
+  }
 
- // 토큰 페이로드 기반
- const tokenIsAdmin = authPayload?.role === 'admin' || authPayload?.roles?.includes?.('admin') || authPayload?.isAdmin === true;
+  // 토큰 페이로드 기반
+  const tokenIsAdmin = authPayload?.role === 'admin' || authPayload?.roles?.includes?.('admin') || authPayload?.isAdmin === true;
 
- // 이메일 화이트리스트(옵션)
- const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
- .split(',')
- .map((s) => s.trim().toLowerCase())
- .filter(Boolean);
- const emailIsAdmin = ADMIN_EMAILS.includes((authPayload?.email ?? '').toLowerCase());
+  // 이메일 화이트리스트(옵션)
+  const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const emailIsAdmin = ADMIN_EMAILS.includes((authPayload?.email ?? '').toLowerCase());
 
- const isAdmin = tokenIsAdmin || emailIsAdmin;
+  const isAdmin = tokenIsAdmin || emailIsAdmin;
 
- // 운영 긴급 노출 스위치
- const showDevBtn = isAdmin || process.env.NEXT_PUBLIC_SHOW_DEV_BUTTON === '1';
+  // 운영 긴급 노출 스위치
+  const showDevBtn = isAdmin || process.env.NEXT_PUBLIC_SHOW_DEV_BUTTON === '1';
 
- // 안전한 가격 표시 함수
- const formatPrice = (price: any): string => {
- const numPrice = Number(price);
- return isNaN(numPrice) || numPrice === null || numPrice === undefined ? '0' : numPrice.toLocaleString();
- };
+  // 안전한 가격 표시 함수
+  const formatPrice = (price: any): string => {
+    const numPrice = Number(price);
+    return isNaN(numPrice) || numPrice === null || numPrice === undefined ? '0' : numPrice.toLocaleString();
+  };
 
- const packageInfo = packageOrder.packageInfo;
- const serviceInfo = packageOrder.serviceInfo;
- const paymentInfo = packageOrder.paymentInfo;
+  const packageInfo = packageOrder.packageInfo;
+  const serviceInfo = packageOrder.serviceInfo;
+  const paymentInfo = packageOrder.paymentInfo;
 
- const packageCard = normalizePackageCardData({
-  id: String(packageInfo.id ?? ''),
-  title: String(packageInfo.title ?? ''),
-  sessions: Number(packageInfo.sessions ?? 0),
-  price: Number(packageInfo.price ?? 0),
-  variant: toPackageVariant(packageInfo.variant),
-  description: '구매하신 스트링 교체 패키지입니다.',
-  validityPeriod: packageInfo.validityPeriod,
-  features: Array.isArray(packageInfo.features) ? packageInfo.features : undefined,
-  benefits: Array.isArray(packageInfo.benefits) ? packageInfo.benefits : undefined,
-  popular: Number(packageInfo.sessions) === 30,
-});
+  const packageCard = normalizePackageCardData({
+    id: String(packageInfo.id ?? ''),
+    title: String(packageInfo.title ?? ''),
+    sessions: Number(packageInfo.sessions ?? 0),
+    price: Number(packageInfo.price ?? 0),
+    variant: toPackageVariant(packageInfo.variant),
+    description: '구매하신 스트링 교체 패키지입니다.',
+    validityPeriod: packageInfo.validityPeriod,
+    features: Array.isArray(packageInfo.features) ? packageInfo.features : undefined,
+    benefits: Array.isArray(packageInfo.benefits) ? packageInfo.benefits : undefined,
+    popular: Number(packageInfo.sessions) === 30,
+  });
 
- return (
- <div className="min-h-full bg-muted/30">
- {/* Hero Section */}
- <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
- <div className="absolute inset-0 bg-overlay/20"></div>
- <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
- <div className="relative container py-16">
- <div className="text-center">
- <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
- <CheckCircle className="h-12 w-12 text-foreground" />
- </div>
- <h1 className="text-4xl md:text-5xl font-bold mb-4">패키지 구매가 완료되었습니다!</h1>
- <p className="mb-6 text-xl text-muted-foreground">스트링 교체 패키지를 구매해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+  return (
+    <div className="min-h-full bg-muted/30">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
+        <div className="absolute inset-0 bg-overlay/20"></div>
+        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
+        <div className="relative container py-16">
+          <div className="text-center">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
+              <CheckCircle className="h-12 w-12 text-foreground" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">패키지 구매가 완료되었습니다!</h1>
+            <p className="mb-6 text-xl text-muted-foreground">스트링 교체 패키지를 구매해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
 
- <div className="flex flex-wrap justify-center gap-6 text-sm">
- <div className="flex items-center gap-2">
- <Shield className="h-4 w-4 text-success" />
- <span>안전한 결제 완료</span>
- </div>
- <div className="flex items-center gap-2">
- <Calendar className="h-4 w-4 text-primary" />
- <span>패키지 활성화 대기</span>
- </div>
- <div className="flex items-center gap-2">
- <Star className="h-4 w-4 text-primary" />
- <span>프리미엄 서비스</span>
- </div>
- </div>
- </div>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-success" />
+                <span>안전한 결제 완료</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span>패키지 활성화 대기</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-primary" />
+                <span>프리미엄 서비스</span>
+              </div>
+            </div>
+          </div>
 
- {/* 패키지 활성화 안내 */}
- <div className="mt-8 max-w-2xl mx-auto">
- <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
- <div className="flex items-center justify-center gap-3 mb-4">
- <div className="p-2 bg-primary/10 rounded-full dark:bg-primary/20">
- <Package className="h-6 w-6 text-primary" />
- </div>
- <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
- </div>
- <p className="text-muted-foreground mb-4">입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다.</p>
- <Button variant="default" className="font-semibold shadow-lg" asChild>
- <Link href="/services" className="flex items-center gap-2">
- 서비스 예약하기
- <ArrowRight className="h-4 w-4" />
- </Link>
- </Button>
- </div>
- </div>
- </div>
- </div>
+          {/* 패키지 활성화 안내 */}
+          <div className="mt-8 max-w-2xl mx-auto">
+            <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-full dark:bg-primary/20">
+                  <Package className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
+              </div>
+              <p className="text-muted-foreground mb-4">입금 확인 후 패키지가 활성화되며, 스트링 교체 서비스 예약이 가능합니다.</p>
+              <Button variant="default" className="font-semibold shadow-lg" asChild>
+                <Link href="/services" className="flex items-center gap-2">
+                  서비스 예약하기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
- <div className="container py-8">
- <div className="max-w-4xl mx-auto space-y-6">
- {/* 패키지 주문 정보 카드 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
- <div className="bg-muted/60 p-6">
- <CardTitle className="flex items-center gap-3 text-2xl">
- <Package className="h-6 w-6 text-primary" />
- 패키지 주문 정보
- </CardTitle>
- <CardDescription className="mt-2 text-lg">
- 주문 번호: <span className="font-mono font-semibold text-primary">{packageOrder._id.toString()}</span>
- </CardDescription>
- </div>
- <CardContent className="p-6">
- {/* 패키지 정보 */}
- <div className="mb-8">
- <UnifiedPackageCard pkg={packageCard} showTotalPrice className="shadow-none" />
- </div>
+      <div className="container py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* 패키지 주문 정보 카드 */}
+          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
+            <div className="bg-muted/60 p-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <Package className="h-6 w-6 text-primary" />
+                패키지 주문 정보
+              </CardTitle>
+              <CardDescription className="mt-2 text-lg">
+                주문 번호: <span className="font-mono font-semibold text-primary">{packageOrder._id.toString()}</span>
+              </CardDescription>
+            </div>
+            <CardContent className="p-6">
+              {/* 패키지 정보 */}
+              <div className="mb-8">
+                <UnifiedPackageCard pkg={packageCard} showTotalPrice className="shadow-none" />
+              </div>
 
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
- <div className="space-y-4">
- <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
- <Clock className="h-5 w-5 text-primary" />
- <div>
- <p className="text-sm text-muted-foreground">주문일자</p>
- <p className="font-semibold text-foreground">
- {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR', {
- year: 'numeric',
- month: 'long',
- day: 'numeric',
- weekday: 'short',
- })}
- </p>
- </div>
- </div>
- <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
- <CreditCard className="h-5 w-5 text-primary" />
- <div>
- <p className="text-sm text-muted-foreground">결제 방법</p>
- <p className="font-semibold text-foreground">무통장입금</p>
- </div>
- </div>
- </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">주문일자</p>
+                      <p className="font-semibold text-foreground">
+                        {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          weekday: 'short',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">결제 방법</p>
+                      <p className="font-semibold text-foreground">무통장입금</p>
+                    </div>
+                  </div>
+                </div>
 
- <div className="bg-muted p-6 rounded-xl border border-border">
- <div className="flex items-center gap-2 mb-4">
- <CreditCard className="h-5 w-5 text-primary" />
- <h3 className="font-bold text-primary">입금 계좌 정보</h3>
- </div>
- {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
- <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
- <div className="font-semibold text-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
- <div className="font-mono text-lg font-bold text-primary">{bankLabelMap[paymentInfo.bank].account}</div>
- <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
- </div>
- ) : (
- <p className="text-muted-foreground">선택된 은행 없음</p>
- )}
- <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
- <p className="text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
- </div>
- </div>
- </div>
+                <div className="bg-muted p-6 rounded-xl border border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <h3 className="font-bold text-primary">입금 계좌 정보</h3>
+                  </div>
+                  {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
+                    <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
+                      <div className="font-semibold text-foreground">{bankLabelMap[paymentInfo.bank].label}</div>
+                      <div className="font-mono text-lg font-bold text-primary">{bankLabelMap[paymentInfo.bank].account}</div>
+                      <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[paymentInfo.bank].holder}</div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">선택된 은행 없음</p>
+                  )}
+                  <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
+                    <p className="text-destructive font-semibold text-sm">⏰ 입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+                  </div>
+                </div>
+              </div>
 
- <Separator className="my-6" />
+              <Separator className="my-6" />
 
- {/* 신청자 정보 */}
- <div className="mb-6">
- <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground">
- <MapPin className="h-5 w-5 text-primary" />
- 신청자 정보
- </h3>
- <div className="bg-muted p-4 rounded-lg border border-border space-y-2">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div>
- <span className="text-sm text-muted-foreground">신청자:</span>
- <span className="ml-2 font-semibold text-foreground">{serviceInfo?.name || '정보 없음'}</span>
- </div>
- <div>
- <span className="text-sm text-muted-foreground">연락처:</span>
- <span className="ml-2 font-semibold text-foreground">{serviceInfo?.phone || '정보 없음'}</span>
- </div>
- </div>
- <div>
- <span className="text-sm text-muted-foreground">이메일:</span>
- <span className="ml-2 font-semibold text-foreground">{serviceInfo?.email || '정보 없음'}</span>
- </div>
- <div>
- <span className="text-sm text-muted-foreground">서비스 방식:</span>
- <span className="ml-2 font-semibold text-foreground">{serviceInfo?.serviceMethod || '정보 없음'}</span>
- </div>
- {serviceInfo?.serviceMethod === '출장서비스' && serviceInfo?.address && (
- <div>
- <span className="text-sm text-muted-foreground">서비스 주소:</span>
- <span className="ml-2 font-semibold text-foreground">
- {serviceInfo.address} {serviceInfo.addressDetail}
- </span>
- </div>
- )}
- {serviceInfo?.serviceRequest && (
- <div>
- <span className="text-sm text-muted-foreground">서비스 요청사항:</span>
- <span className="ml-2 font-semibold text-foreground">{serviceInfo.serviceRequest}</span>
- </div>
- )}
- </div>
- </div>
+              {/* 신청자 정보 */}
+              <div className="mb-6">
+                <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  신청자 정보
+                </h3>
+                <div className="bg-muted p-4 rounded-lg border border-border space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm text-muted-foreground">신청자:</span>
+                      <span className="ml-2 font-semibold text-foreground">{serviceInfo?.name || '정보 없음'}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm text-muted-foreground">연락처:</span>
+                      <span className="ml-2 font-semibold text-foreground">{serviceInfo?.phone || '정보 없음'}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">이메일:</span>
+                    <span className="ml-2 font-semibold text-foreground">{serviceInfo?.email || '정보 없음'}</span>
+                  </div>
 
- <Separator className="my-6" />
+                  {serviceInfo?.serviceRequest && (
+                    <div>
+                      <span className="text-sm text-muted-foreground">서비스 요청사항:</span>
+                      <span className="ml-2 font-semibold text-foreground">{serviceInfo.serviceRequest}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
- {/* 결제 금액 */}
- <div className="bg-muted p-6 rounded-xl border border-border">
- <div className="flex justify-between items-center text-2xl font-bold">
- <span className="text-foreground">총 결제 금액</span>
- <span className="text-primary">{formatPrice(packageOrder.totalPrice)}원</span>
- </div>
- <p className="text-sm text-muted-foreground mt-2">패키지 이용료 (입금 확인 후 활성화)</p>
- </div>
- </CardContent>
+              <Separator className="my-6" />
 
- <CardFooter className="bg-muted/40 p-6">
- <div className="flex flex-col sm:flex-row gap-4 w-full">
- <Button
- variant="default" className="flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
- asChild
- >
- <Link href={isLoggedIn ? '/mypage?tab=passes' : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
- <Package className="h-5 w-5" />
- 패키지 내역 확인
- <ArrowRight className="h-4 w-4" />
- </Link>
- </Button>
- <Button variant="outline" className="flex-1 h-12 border-2" asChild>
- <Link href="/services/packages" className="flex items-center gap-2">
- <Gift className="h-5 w-5" />
- 다른 패키지 보기
- </Link>
- </Button>
- </div>
- </CardFooter>
- <div className="px-6">
- <DevMarkPaidButton orderId={packageOrder._id.toString()} show={showDevBtn} />
- </div>
- </Card>
+              {/* 결제 금액 */}
+              <div className="bg-muted p-6 rounded-xl border border-border">
+                <div className="flex justify-between items-center text-2xl font-bold">
+                  <span className="text-foreground">총 결제 금액</span>
+                  <span className="text-primary">{formatPrice(packageOrder.totalPrice)}원</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">패키지 이용료 (입금 확인 후 활성화)</p>
+              </div>
+            </CardContent>
 
- {/* 안내사항 */}
- <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
- <CardHeader className="bg-muted/40">
- <CardTitle className="flex items-center gap-3">
- <Shield className="h-5 w-5 text-primary" />
- 패키지 이용 안내사항
- </CardTitle>
- </CardHeader>
- <CardContent className="p-6">
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="space-y-4">
- <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
- <CreditCard className="h-5 w-5 text-primary mt-0.5" />
- <div>
- <h4 className="font-semibold text-primary mb-1">입금 안내</h4>
- <p className="text-sm text-muted-foreground">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화됩니다.</p>
- </div>
- </div>
- <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
- <Calendar className="h-5 w-5 text-primary mt-0.5" />
- <div>
- <h4 className="font-semibold text-primary mb-1">예약 안내</h4>
- <p className="text-sm text-muted-foreground">패키지 활성화 후 전화 또는 온라인으로 서비스 예약이 가능합니다.</p>
- </div>
- </div>
- </div>
- <div className="space-y-4">
- <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
- <Star className="h-5 w-5 text-primary mt-0.5" />
- <div>
- <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
- <p className="text-sm text-muted-foreground">패키지는 {packageCard.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
- </div>
- </div>
- <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
- <Phone className="h-5 w-5 text-primary mt-0.5" />
- <div>
- <h4 className="font-semibold text-primary mb-1">고객 지원</h4>
- <p className="text-sm text-muted-foreground">패키지 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
- </div>
- </div>
- </div>
- </div>
- </CardContent>
- </Card>
- </div>
- </div>
- </div>
- );
+            <CardFooter className="bg-muted/40 p-6">
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <Button variant="default" className="flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
+                  <Link href={isLoggedIn ? '/mypage?tab=passes' : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    패키지 내역 확인
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button variant="outline" className="flex-1 h-12 border-2" asChild>
+                  <Link href="/services/packages" className="flex items-center gap-2">
+                    <Gift className="h-5 w-5" />
+                    다른 패키지 보기
+                  </Link>
+                </Button>
+              </div>
+            </CardFooter>
+            <div className="px-6">
+              <DevMarkPaidButton orderId={packageOrder._id.toString()} show={showDevBtn} />
+            </div>
+          </Card>
+
+          {/* 안내사항 */}
+          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
+            <CardHeader className="bg-muted/40">
+              <CardTitle className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-primary" />
+                패키지 이용 안내사항
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <CreditCard className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-primary mb-1">입금 안내</h4>
+                      <p className="text-sm text-muted-foreground">패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <Calendar className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-primary mb-1">사용 안내</h4>
+                      <p className="text-sm text-muted-foreground">활성화 완료 후부터 패키지를 사용할 수 있고 교체 서비스 신청이 완료되면 이용 횟수가 1회 차감돼요.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <Star className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
+                      <p className="text-sm text-muted-foreground">패키지는 {packageCard.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를 이용해주세요.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <Phone className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-primary mb-1">고객 지원</h4>
+                      <p className="text-sm text-muted-foreground">패키지 관련 문의사항은 고객센터(0507-1392-3493)로 연락주세요.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
 }
