@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, X, MessageSquareText, Trophy, Target } from 'lucide-react';
 import ReviewCard from './ReviewCard';
 import ReviewSkeleton from './ReviewSkeleton';
+import { getAuxiliaryMetaBadgeSpec } from '@/lib/badge-style';
 
 /** UI 상태 타입 명시 (실수 예방) */
 type RatingFilter = 'all' | '5' | '4' | '3' | '2' | '1';
@@ -169,7 +170,7 @@ export default function ReviewsClient() {
 
               {/* Filter summary and reset */}
               <div className="ml-auto flex items-center gap-3">
-                <Badge variant="secondary" className="gap-2 rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary px-3 py-1">
+                <Badge variant={getAuxiliaryMetaBadgeSpec('attached').variant} className="gap-2 rounded-full px-3 py-1">
                   <Target className="h-3.5 w-3.5" />
                   {summary}
                 </Badge>

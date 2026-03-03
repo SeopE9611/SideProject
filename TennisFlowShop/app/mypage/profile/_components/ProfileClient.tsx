@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import { MdSportsTennis } from 'react-icons/md';
 import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileForm';
 import { Badge } from '@/components/ui/badge';
+import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 제출 직전 최종 유효성 가드
@@ -393,12 +394,12 @@ export default function ProfileClient({ user }: Props) {
  {socialProviders.length ? (
  <>
  {socialProviders.includes('kakao') && (
- <Badge variant="outline" className="border-border bg-warning/10 text-warning dark:border-border dark:bg-warning/15 dark:text-warning">
+ <Badge variant={getSocialProviderBadgeSpec('kakao').variant}>
  카카오
  </Badge>
  )}
  {socialProviders.includes('naver') && (
- <Badge variant="outline" className="border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary">
+ <Badge variant={getSocialProviderBadgeSpec('naver').variant}>
  네이버
  </Badge>
  )}

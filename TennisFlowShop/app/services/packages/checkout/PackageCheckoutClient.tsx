@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 import { Award, Building2, Calendar, CheckCircle, CreditCard, Gift, Mail, MapPin, MessageSquare, Package, Phone, Shield, Star, Target, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -531,7 +532,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="text-2xl font-bold">{selectedPackage.title}</h3>
-                        {selectedPackage.popular && <Badge className="bg-primary/10 text-primary dark:bg-primary/20">인기</Badge>}
+                        {selectedPackage.popular && <Badge variant={getMerchandisingBadgeSpec('popular').variant}>인기</Badge>}
                       </div>
                       <p className="text-muted-foreground">{selectedPackage.description}</p>
                     </div>

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getOrderStatusBadgeSpec } from '@/lib/badge-style';
+import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, Ban, MoreVertical, MessageSquarePlus, Undo2 } from 'lucide-react';
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
@@ -270,7 +270,7 @@ export default function OrderList() {
 
                       {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                       {order.stringingApplicationId ? (
-                        <Badge variant="info" className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">신청서 연결됨</Badge>
+                        <Badge variant={getWorkflowMetaBadgeSpec('application_linked').variant} className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">신청서 연결됨</Badge>
                       ) : null}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">
@@ -287,7 +287,7 @@ export default function OrderList() {
 
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === 'requested' && (
-                    <Badge variant="outline" className="ml-1 border-warning/30 bg-warning/10 text-[11px] font-medium text-warning dark:bg-warning/15 dark:text-warning">
+                    <Badge variant={getWorkflowMetaBadgeSpec('cancel_requested').variant} className="ml-1 text-[11px] font-medium">
                       취소 요청됨
                     </Badge>
                   )}
