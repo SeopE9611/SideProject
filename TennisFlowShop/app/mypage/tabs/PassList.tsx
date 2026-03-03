@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import useSWR from 'swr';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Ticket, Clock } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, Ticket } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 
 type PassItem = {
   id: string;
@@ -58,7 +58,15 @@ export default function PassList() {
   return (
     <Card className="border-0">
       <CardContent className="space-y-4">
-        {items.length === 0 && <div className="text-muted-foreground">보유 중인 패키지 이용권이 없습니다.</div>}
+        {items.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12 bp-sm:py-16 px-4">
+            <div className="bg-muted/50 rounded-full p-4 mb-4">
+              <Ticket className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
+            </div>
+            <p className="text-base font-medium text-center mb-1">패키지 내역이 없습니다</p>
+            <p className="text-sm text-muted-foreground text-center">패키지를 구매하고 활성화 시 여기에 표시됩니다</p>
+          </div>
+        )}
         {items.map((p) => {
           const remainPct = Math.max(0, Math.min(100, (p.remainingCount / p.packageSize) * 100));
           const dday = now ? Math.ceil((new Date(p.expiresAt).getTime() - now) / 86400000) : null;
