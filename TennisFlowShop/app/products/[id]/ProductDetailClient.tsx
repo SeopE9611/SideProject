@@ -15,7 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import {
   Activity,
@@ -1293,7 +1293,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   <div className="flex-1 min-w-0">
                                     <div className="space-y-1 min-w-0">
                                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(q.category)}`}>
+                                        <Badge variant={getQnaCategoryBadgeSpec(q.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                                           {q.category ?? '상품문의'}
                                         </Badge>
                                         {q.isSecret && (
@@ -1302,7 +1302,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             비밀글
                                           </Badge>
                                         )}
-                                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!q.answer)} shrink-0`}>
+                                        <Badge variant={getAnswerStatusBadgeSpec(!!q.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                                           {q.answer ? '답변 완료' : '답변 대기'}
                                         </Badge>
                                       </div>

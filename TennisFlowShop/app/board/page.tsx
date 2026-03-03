@@ -7,7 +7,7 @@ import useSWR from 'swr';
 
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Skeleton } from '@/components/ui/skeleton';
-import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getBoardCategoryTone, getNoticeCategoryColor, getQnaCategoryColor, getReviewTypeColor, noticePinColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getBoardCategoryTone, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec, getReviewTypeBadgeSpec } from '@/lib/badge-style';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -303,14 +303,14 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {/* 카테고리 */}
                         {!!notice.category && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getNoticeCategoryColor(notice.category)} shrink-0`} title={notice.category ?? undefined}>
+                          <Badge variant={getNoticeCategoryBadgeSpec(notice.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
                             {notice.category}
                           </Badge>
                         )}
 
                         {/* 고정 */}
                         {notice.isPinned && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor} shrink-0`}>
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                             고정
                           </Badge>
                         )}
@@ -324,7 +324,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                       {/* 오른쪽: 첨부 뱃지들 */}
                       <div className="flex items-center gap-1 shrink-0">
                         {notice.hasImage && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`} title={typeof notice.imagesCount === 'number' ? `이미지 ${notice.imagesCount}개` : '이미지 첨부'}>
+                          <Badge variant="info" className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={typeof notice.imagesCount === 'number' ? `이미지 ${notice.imagesCount}개` : '이미지 첨부'}>
                             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
                               <rect x="3" y="3" width="18" height="14" rx="2" />
                               <path d="M3 13l4-4 5 5 3-3 6 6" />
@@ -333,7 +333,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                           </Badge>
                         )}
                         {notice.hasFile && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`} title={typeof notice.filesCount === 'number' ? `파일 ${notice.filesCount}개` : '파일 첨부'}>
+                          <Badge variant="neutral" className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={typeof notice.filesCount === 'number' ? `파일 ${notice.filesCount}개` : '파일 첨부'}>
                             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.88 17.05a2 2 0 01-2.83-2.83l8.48-8.48" />
                             </svg>
@@ -403,7 +403,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
                       {/* 왼쪽 */}
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {/* 카테고리 먼저 */}
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category)} shrink-0`} title={qna.category ?? undefined}>
+                        <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={qna.category ?? undefined}>
                           {qna.category ?? '일반문의'}
                         </Badge>
 
@@ -415,7 +415,7 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
 
                       {/* 오른쪽: 답변 상태 */}
                       <div className="shrink-0">
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
+                        <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
                           {qna.answer ? '답변 완료' : '답변 대기'}
                         </Badge>
                       </div>
@@ -478,7 +478,7 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1 min-w-0">
-                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getReviewTypeColor(review.type)}`}>
+                      <Badge variant={getReviewTypeBadgeSpec(review.type).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                         {review.type === 'product' ? '상품' : review.type === 'service' ? '서비스' : '기타'}
                       </Badge>
                       <Link href="/reviews" className="font-semibold text-foreground hover:text-foreground dark:hover:text-foreground transition-colors flex-1 min-w-0 truncate">

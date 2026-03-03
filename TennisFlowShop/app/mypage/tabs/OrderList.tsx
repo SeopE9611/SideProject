@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { orderStatusColors } from '@/lib/badge-style';
+import { getOrderStatusBadgeSpec } from '@/lib/badge-style';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, Ban, MoreVertical, MessageSquarePlus, Undo2 } from 'lucide-react';
 import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
@@ -283,7 +283,7 @@ export default function OrderList() {
                 {/* 상태/취소 관련 영역 */}
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                   {getStatusIcon(order.status)}
-                  <Badge className={`px-3 py-1 text-xs font-medium ${orderStatusColors[order.status]}`}>{order.status}</Badge>
+                  <Badge variant={getOrderStatusBadgeSpec(order.status).variant} className="px-3 py-1 text-xs font-medium">{order.status}</Badge>
 
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === 'requested' && (

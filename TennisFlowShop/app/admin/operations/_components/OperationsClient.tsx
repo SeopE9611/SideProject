@@ -17,7 +17,7 @@ import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone }
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
-import { badgeBase, badgeSizeSm, badgeToneClass, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneClass, badgeToneVariant, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from './actions/operationsActions';
@@ -301,16 +301,8 @@ const td = tdClasses;
 // 단, header 배경색은 thead의 bg-muted/50과 동일 톤을 써서 "액션"만 색이 달라 보이는 현상을 방지.
 const stickyActionHeadClass = 'sticky right-0 z-20 bg-muted/50 text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]';
 
-const OPS_BADGE_CLASS: Record<OpsBadgeTone, string> = {
-  success: badgeToneClass('success'),
-  warning: badgeToneClass('warning'),
-  danger: badgeToneClass('danger'),
-  neutral: badgeToneClass('neutral'),
-  info: badgeToneClass('info'),
-};
-
-function opsBadgeToneClass(tone: OpsBadgeTone) {
-  return OPS_BADGE_CLASS[tone] ?? OPS_BADGE_CLASS.neutral;
+function opsBadgeVariant(tone: OpsBadgeTone) {
+  return badgeToneVariant(tone);
 }
 
 export default function OperationsClient() {
@@ -596,7 +588,7 @@ export default function OperationsClient() {
         {shown.map((d) => (
           <div key={`${d.kind}:${d.id}`} className="flex items-center gap-1">
             <Link href={d.href} className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted/60" aria-label="연결 문서로 이동">
-              <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(d.kind)))}>{opsKindLabel(d.kind)}</Badge>
+              <Badge variant={opsBadgeVariant(opsKindBadgeTone(d.kind))} className={cn(badgeBase, badgeSizeSm)}>{opsKindLabel(d.kind)}</Badge>
               <span className="font-mono">{shortenId(d.id)}</span>
             </Link>
 
@@ -945,7 +937,7 @@ export default function OperationsClient() {
             <div className="mt-1 space-y-2 border-t border-border pt-2.5">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">범례</span>
-                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone('order')))}>문서유형</Badge>
+                <Badge variant={opsBadgeVariant(opsKindBadgeTone('order'))} className={cn(badgeBase, badgeSizeSm)}>문서유형</Badge>
                 <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>통합여부</Badge>
                 <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('warning'))}>
                   <AlertTriangle className="h-3 w-3" aria-hidden="true" />
@@ -1088,7 +1080,7 @@ export default function OperationsClient() {
                                       {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                                     </Button>
                                   )}
-                                  <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
+                                  <Badge variant={opsBadgeVariant(opsKindBadgeTone(g.anchor.kind))} className={cn(badgeBase, badgeSizeSm)}>{opsKindLabel(g.anchor.kind)}</Badge>
                                   <span className="font-medium text-sm">{shortenId(g.anchor.id)}</span>
                                 </div>
                                 <div className="text-sm">{g.anchor.customer?.name || '-'}</div>
@@ -1098,10 +1090,17 @@ export default function OperationsClient() {
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="flex flex-col items-start gap-1">
-                                <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel)))}>{g.anchor.statusLabel}</Badge>
+                                <Badge variant={opsBadgeVariant(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel))} className={cn(badgeBase, badgeSizeSm)}>{g.anchor.statusLabel}</Badge>
                                 {g.anchor.paymentLabel ? (
-                                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[g.anchor.paymentLabel] ?? badgeToneClass('neutral'))}>{g.anchor.paymentLabel}</Badge>
-) : (
+                                  (() => {
+                                    const pay = getPaymentStatusBadgeSpec(g.anchor.paymentLabel);
+                                    return (
+                                      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                                        {g.anchor.paymentLabel}
+                                      </Badge>
+                                    );
+                                  })()
+                                ) : (
                                   <span className="text-xs text-muted-foreground">결제정보 없음(문서 미기입)</span>
                                 )}
                               </div>
@@ -1235,7 +1234,7 @@ export default function OperationsClient() {
                             {!warn && g.reviewLevel === 'action' && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>검수필요</Badge>}
                                   {!warn && g.reviewLevel === 'info' && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('info'))}>참고/파생(조치없음)</Badge>}
                           </div>
-                          <Badge className={cn(badgeBase, badgeSizeSm, opsBadgeToneClass(opsKindBadgeTone(g.anchor.kind)))}>{opsKindLabel(g.anchor.kind)}</Badge>
+                          <Badge variant={opsBadgeVariant(opsKindBadgeTone(g.anchor.kind))} className={cn(badgeBase, badgeSizeSm)}>{opsKindLabel(g.anchor.kind)}</Badge>
                         </div>
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
                         <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>

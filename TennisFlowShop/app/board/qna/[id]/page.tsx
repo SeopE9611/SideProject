@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import useSWR from 'swr';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryColor, getAnswerStatusColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec } from '@/lib/badge-style';
 import type { BoardPost } from '@/lib/types/board';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
@@ -200,7 +200,7 @@ export default function QnaDetailPage() {
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category)} font-medium`}>
+                        <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
                           {qna.category ?? '일반문의'}
                         </Badge>
                         {qna.isSecret && (
@@ -216,7 +216,7 @@ export default function QnaDetailPage() {
                           </Link>
                         )}
                       </div>
-                      <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)} font-medium`}>
+                      <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
                         {qna.answer ? (
                           <>
                             <CheckCircle className="h-3 w-3 mr-1" />

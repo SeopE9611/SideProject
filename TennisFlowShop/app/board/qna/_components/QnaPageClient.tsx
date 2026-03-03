@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusColor, getQnaCategoryColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from '@/lib/badge-style';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import { ArrowLeft, Lock, MessageSquare, Plus, Search, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -520,7 +520,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-2">
-                              <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryColor(qna.category)}`}>
+                              <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                                 {qna.category ?? '일반문의'}
                               </Badge>
 
@@ -531,7 +531,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                                 </Badge>
                               )}
 
-                              <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusColor(!!qna.answer)}`}>
+                              <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                                 {qna.answer ? '답변 완료' : '답변 대기'}
                               </Badge>
                             </div>
