@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { MessageSquare, Plus, Eye, ThumbsUp, ImageIcon, Paperclip } from 'lucide-react';
+import { MessageSquare, Plus, Eye, ThumbsUp, ImageIcon, Paperclip, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,17 +21,20 @@ import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import ErrorBox from '@/app/board/_components/ErrorBox';
 import {
-  MARKET_CONDITION_GRADE_LABEL_MAP,
   MARKET_CONDITION_GRADE_OPTIONS,
   MARKET_RACKET_GRIP_SIZE_OPTIONS,
   MARKET_RACKET_PATTERN_OPTIONS,
-  MARKET_SALE_STATUS_LABEL_MAP,
   MARKET_SALE_STATUS_OPTIONS,
   MARKET_STRING_COLOR_OPTIONS,
   MARKET_STRING_GAUGE_OPTIONS,
   MARKET_STRING_LENGTH_OPTIONS,
   MARKET_STRING_MATERIAL_OPTIONS,
   getMarketBrandLabel,
+  getMarketConditionGradeLabel,
+  getMarketSaleStatusLabel,
+  getMarketStringColorLabel,
+  getMarketStringLengthLabel,
+  getMarketStringMaterialLabel,
 } from '@/lib/market';
 
 // API 응답 타입
@@ -43,6 +46,35 @@ type ListResponse = {
   page: number;
   limit: number;
 };
+
+const MARKET_FILTER_KEYS = [
+  'saleStatus',
+  'conditionGrade',
+  'minPrice',
+  'maxPrice',
+  'modelKeyword',
+  'gripSize',
+  'pattern',
+  'material',
+  'gauge',
+  'color',
+  'length',
+  'minWeight',
+  'maxWeight',
+  'minBalance',
+  'maxBalance',
+  'minHeadSize',
+  'maxHeadSize',
+  'minSwingWeight',
+  'maxSwingWeight',
+  'minStiffnessRa',
+  'maxStiffnessRa',
+] as const;
+
+type MarketFilterKey = (typeof MARKET_FILTER_KEYS)[number];
+type MarketFilterDraft = Record<MarketFilterKey, string>;
+
+const EMPTY_MARKET_FILTER_DRAFT: MarketFilterDraft = MARKET_FILTER_KEYS.reduce((acc, key) => ({ ...acc, [key]: '' }), {} as MarketFilterDraft);
 
 const fmtDateTime = (v: string | Date) =>
   new Date(v).toLocaleString('ko-KR', {
@@ -156,6 +188,20 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setSearchType(searchTypeParam);
   }, [qParam, searchTypeParam]);
 
+  const [isMarketFilterOpen, setIsMarketFilterOpen] = useState(false);
+  const [marketFilterDraft, setMarketFilterDraft] = useState<MarketFilterDraft>(EMPTY_MARKET_FILTER_DRAFT);
+
+  // market 필터는 controlled state로 동기화합니다.
+  // URL -> draft 동기화를 유지해 reset/apply 직후 입력값이 즉시 일치하도록 보장합니다.
+  useEffect(() => {
+    if (config.boardType !== 'market') return;
+    const nextDraft: MarketFilterDraft = { ...EMPTY_MARKET_FILTER_DRAFT };
+    MARKET_FILTER_KEYS.forEach((key) => {
+      nextDraft[key] = searchParams.get(key) ?? '';
+    });
+    setMarketFilterDraft(nextDraft);
+  }, [config.boardType, searchParams]);
+
   // 카테고리 선택 시 URL 바꾸는 핸들러
   const handleCategoryChange = (next: string) => {
     setPage(1);
@@ -171,25 +217,29 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     router.push(`${config.routePrefix}?${sp.toString()}`);
   };
 
-  // market 전용 쿼리 업데이트 공통 헬퍼
-  // - 기존 삼항식 부수효과(no-unused-expressions) 에러를 피하기 위해 if/else로 명시적으로 분기합니다.
-  // - 필터 변경 시 page=1로 고정해 사용자 기대(첫 페이지부터 보기)를 맞춥니다.
-  const pushMarketFilters = (sp: URLSearchParams) => {
+  // market 필터 적용 시 URL/page/local state를 동시에 맞춥니다.
+  // page=1 고정은 필터 변화 후 첫 페이지부터 결과를 보는 UX를 위한 계약입니다.
+  const pushMarketFilters = (sp: URLSearchParams, nextDraft?: MarketFilterDraft) => {
     sp.set('page', '1');
+    setPage(1);
+    if (nextDraft) setMarketFilterDraft(nextDraft);
     router.push(`${config.routePrefix}?${sp.toString()}`);
   };
 
-  const updateMarketQueryParam = (key: string, rawValue: string) => {
+  const applyMarketFilters = () => {
     const sp = new URLSearchParams(searchParams.toString());
-    const value = rawValue.trim();
+    MARKET_FILTER_KEYS.forEach((key) => {
+      const value = marketFilterDraft[key].trim();
+      if (value) sp.set(key, value);
+      else sp.delete(key);
+    });
+    pushMarketFilters(sp, marketFilterDraft);
+  };
 
-    if (value) {
-      sp.set(key, value);
-    } else {
-      sp.delete(key);
-    }
-
-    pushMarketFilters(sp);
+  const resetMarketFilters = () => {
+    const sp = new URLSearchParams(searchParams.toString());
+    MARKET_FILTER_KEYS.forEach((key) => sp.delete(key));
+    pushMarketFilters(sp, { ...EMPTY_MARKET_FILTER_DRAFT });
   };
 
   // 브랜드 변경 핸들러
@@ -237,7 +287,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   // market 전용 필터는 URLSearchParams를 그대로 API 쿼리에 전달
   if (config.boardType === 'market') {
-    ['saleStatus','conditionGrade','minPrice','maxPrice','modelKeyword','gripSize','pattern','material','gauge','color','length','minWeight','maxWeight','minBalance','maxBalance','minHeadSize','maxHeadSize','minSwingWeight','maxSwingWeight','minStiffnessRa','maxStiffnessRa'].forEach((k) => {
+    MARKET_FILTER_KEYS.forEach((k) => {
       const v = searchParams.get(k);
       if (v) qs.set(k, v);
     });
@@ -277,6 +327,10 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
+  const activeMarketFilterCount = useMemo(
+    () => MARKET_FILTER_KEYS.filter((key) => (searchParams.get(key) ?? '').trim() !== '').length,
+    [searchParams],
+  );
 
   // 전체 페이지 수 계산
   const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
@@ -442,113 +496,117 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 )}
 
                 {config.boardType === 'market' && (
-                  <div className="grid gap-2 rounded-md border border-border p-3 text-xs">
-                    <div className="grid gap-2 sm:grid-cols-4">
-                      <select className="rounded border bg-background px-2 py-1" value={searchParams.get('saleStatus') ?? ''} onChange={(e) => updateMarketQueryParam('saleStatus', e.target.value)}>
-                        <option value="">판매상태 전체</option>
-                        {MARKET_SALE_STATUS_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
-                      <select className="rounded border bg-background px-2 py-1" value={searchParams.get('conditionGrade') ?? ''} onChange={(e) => updateMarketQueryParam('conditionGrade', e.target.value)}>
-                        <option value="">등급 전체</option>
-                        {MARKET_CONDITION_GRADE_OPTIONS.map((o) => (
-                          <option key={o.value} value={o.value}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
-                      <input placeholder="최소가격" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('minPrice') ?? ''} onBlur={(e) => updateMarketQueryParam('minPrice', e.target.value)} />
-                      <input placeholder="최대가격" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('maxPrice') ?? ''} onBlur={(e) => updateMarketQueryParam('maxPrice', e.target.value)} />
+                  <div className="rounded-md border border-border p-3 text-xs">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="font-medium text-foreground">중고거래 상세 필터</div>
+                      <button type="button" className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] md:hidden" onClick={() => setIsMarketFilterOpen((prev) => !prev)}>
+                        {isMarketFilterOpen ? '필터 접기' : '필터 펼치기'}
+                        {isMarketFilterOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      </button>
                     </div>
 
-                    {category === 'racket' && (
+                    {/* 모바일에서는 기본 접힘으로 시작해 리스트보다 필터가 먼저 화면을 과점유하지 않도록 조정합니다. */}
+                    <div className={[isMarketFilterOpen ? 'block' : 'hidden', 'space-y-2 md:block'].join(' ')}>
                       <div className="grid gap-2 sm:grid-cols-4">
-                        <input placeholder="모델명 키워드" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('modelKeyword') ?? ''} onBlur={(e) => updateMarketQueryParam('modelKeyword', e.target.value)} />
-                        <select className="rounded border bg-background px-2 py-1" value={searchParams.get('gripSize') ?? ''} onChange={(e) => updateMarketQueryParam('gripSize', e.target.value)}>
-                          <option value="">그립사이즈 전체</option>
-                          {MARKET_RACKET_GRIP_SIZE_OPTIONS.map((grip) => (
-                            <option key={grip} value={grip}>
-                              {grip}
+                        <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.saleStatus} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, saleStatus: e.target.value }))}>
+                          <option value="">판매상태 전체</option>
+                          {MARKET_SALE_STATUS_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
                             </option>
                           ))}
                         </select>
-                        <select className="rounded border bg-background px-2 py-1" value={searchParams.get('pattern') ?? ''} onChange={(e) => updateMarketQueryParam('pattern', e.target.value)}>
-                          <option value="">패턴 전체</option>
-                          {MARKET_RACKET_PATTERN_OPTIONS.map((pattern) => (
-                            <option key={pattern} value={pattern}>
-                              {pattern}
+                        <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.conditionGrade} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, conditionGrade: e.target.value }))}>
+                          <option value="">등급 전체</option>
+                          {MARKET_CONDITION_GRADE_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
                             </option>
                           ))}
                         </select>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input placeholder="최소무게" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('minWeight') ?? ''} onBlur={(e) => updateMarketQueryParam('minWeight', e.target.value)} />
-                          <input placeholder="최대무게" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('maxWeight') ?? ''} onBlur={(e) => updateMarketQueryParam('maxWeight', e.target.value)} />
+                        <input placeholder="최소가격" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.minPrice} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, minPrice: e.target.value }))} />
+                        <input placeholder="최대가격" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.maxPrice} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, maxPrice: e.target.value }))} />
+                      </div>
+
+                      {category === 'racket' && (
+                        <div className="grid gap-2 sm:grid-cols-4">
+                          <input placeholder="모델명 키워드" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.modelKeyword} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, modelKeyword: e.target.value }))} />
+                          <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.gripSize} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, gripSize: e.target.value }))}>
+                            <option value="">그립사이즈 전체</option>
+                            {MARKET_RACKET_GRIP_SIZE_OPTIONS.map((grip) => (
+                              <option key={grip} value={grip}>
+                                {grip}
+                              </option>
+                            ))}
+                          </select>
+                          <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.pattern} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, pattern: e.target.value }))}>
+                            <option value="">패턴 전체</option>
+                            {MARKET_RACKET_PATTERN_OPTIONS.map((pattern) => (
+                              <option key={pattern} value={pattern}>
+                                {pattern}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input placeholder="최소무게" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.minWeight} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, minWeight: e.target.value }))} />
+                            <input placeholder="최대무게" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.maxWeight} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, maxWeight: e.target.value }))} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input placeholder="최소밸런스" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.minBalance} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, minBalance: e.target.value }))} />
+                            <input placeholder="최대밸런스" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.maxBalance} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, maxBalance: e.target.value }))} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input placeholder="최소헤드" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.minHeadSize} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, minHeadSize: e.target.value }))} />
+                            <input placeholder="최대헤드" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.maxHeadSize} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, maxHeadSize: e.target.value }))} />
+                          </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input placeholder="최소밸런스" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('minBalance') ?? ''} onBlur={(e) => updateMarketQueryParam('minBalance', e.target.value)} />
-                          <input placeholder="최대밸런스" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('maxBalance') ?? ''} onBlur={(e) => updateMarketQueryParam('maxBalance', e.target.value)} />
+                      )}
+
+                      {category === 'string' && (
+                        <div className="grid gap-2 sm:grid-cols-4">
+                          <input placeholder="모델명 키워드" className="rounded border bg-background px-2 py-1" value={marketFilterDraft.modelKeyword} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, modelKeyword: e.target.value }))} />
+                          <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.material} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, material: e.target.value }))}>
+                            <option value="">재질 전체</option>
+                            {MARKET_STRING_MATERIAL_OPTIONS.map((material) => (
+                              <option key={material} value={material}>
+                                {getMarketStringMaterialLabel(material)}
+                              </option>
+                            ))}
+                          </select>
+                          <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.gauge} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, gauge: e.target.value }))}>
+                            <option value="">게이지 전체</option>
+                            {MARKET_STRING_GAUGE_OPTIONS.map((gauge) => (
+                              <option key={gauge} value={gauge}>
+                                {gauge}
+                              </option>
+                            ))}
+                          </select>
+                          <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.color} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, color: e.target.value }))}>
+                            <option value="">색상 전체</option>
+                            {MARKET_STRING_COLOR_OPTIONS.map((color) => (
+                              <option key={color} value={color}>
+                                {getMarketStringColorLabel(color)}
+                              </option>
+                            ))}
+                          </select>
+                          <select className="rounded border bg-background px-2 py-1" value={marketFilterDraft.length} onChange={(e) => setMarketFilterDraft((prev) => ({ ...prev, length: e.target.value }))}>
+                            <option value="">길이 전체</option>
+                            {MARKET_STRING_LENGTH_OPTIONS.map((length) => (
+                              <option key={length} value={length}>
+                                {getMarketStringLengthLabel(length)}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input placeholder="최소헤드" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('minHeadSize') ?? ''} onBlur={(e) => updateMarketQueryParam('minHeadSize', e.target.value)} />
-                          <input placeholder="최대헤드" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('maxHeadSize') ?? ''} onBlur={(e) => updateMarketQueryParam('maxHeadSize', e.target.value)} />
+                      )}
+
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-[11px] text-muted-foreground">적용된 필터 {activeMarketFilterCount}개</p>
+                        <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" onClick={applyMarketFilters}>필터 적용</Button>
+                          <Button type="button" variant="ghost" size="sm" onClick={resetMarketFilters}>필터 초기화</Button>
                         </div>
                       </div>
-                    )}
-
-                    {category === 'string' && (
-                      <div className="grid gap-2 sm:grid-cols-4">
-                        <input placeholder="모델명 키워드" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('modelKeyword') ?? ''} onBlur={(e) => updateMarketQueryParam('modelKeyword', e.target.value)} />
-                        <select className="rounded border bg-background px-2 py-1" value={searchParams.get('material') ?? ''} onChange={(e) => updateMarketQueryParam('material', e.target.value)}>
-                          <option value="">재질 전체</option>
-                          {MARKET_STRING_MATERIAL_OPTIONS.map((material) => (
-                            <option key={material} value={material}>
-                              {material}
-                            </option>
-                          ))}
-                        </select>
-                        <select className="rounded border bg-background px-2 py-1" value={searchParams.get('gauge') ?? ''} onChange={(e) => updateMarketQueryParam('gauge', e.target.value)}>
-                          <option value="">게이지 전체</option>
-                          {MARKET_STRING_GAUGE_OPTIONS.map((gauge) => (
-                            <option key={gauge} value={gauge}>
-                              {gauge}
-                            </option>
-                          ))}
-                        </select>
-                        <select className="rounded border bg-background px-2 py-1" value={searchParams.get('color') ?? ''} onChange={(e) => updateMarketQueryParam('color', e.target.value)}>
-                          <option value="">색상 전체</option>
-                          {MARKET_STRING_COLOR_OPTIONS.map((color) => (
-                            <option key={color} value={color}>
-                              {color}
-                            </option>
-                          ))}
-                        </select>
-                        <select className="rounded border bg-background px-2 py-1" value={searchParams.get('length') ?? ''} onChange={(e) => updateMarketQueryParam('length', e.target.value)}>
-                          <option value="">길이 전체</option>
-                          {MARKET_STRING_LENGTH_OPTIONS.map((length) => (
-                            <option key={length} value={length}>
-                              {length}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          const sp = new URLSearchParams(searchParams.toString());
-                          ['saleStatus', 'conditionGrade', 'minPrice', 'maxPrice', 'modelKeyword', 'gripSize', 'pattern', 'material', 'gauge', 'color', 'length', 'minWeight', 'maxWeight', 'minBalance', 'maxBalance', 'minHeadSize', 'maxHeadSize', 'minSwingWeight', 'maxSwingWeight', 'minStiffnessRa', 'maxStiffnessRa'].forEach((k) => sp.delete(k));
-                          pushMarketFilters(sp);
-                        }}
-                      >
-                        필터 초기화
-                      </Button>
                     </div>
                   </div>
                 )}
@@ -612,15 +670,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             {config.categoryMap[post.category ?? ''] ? getCategoryBadgeText(config.categoryMap[post.category ?? '']) : '분류 없음'}
                           </Badge>
 
-                          {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-[11px] text-muted-foreground">{config.brandLabelMap?.[post.brand] ?? post.brand}</span> : null}
-
-                          {config.boardType === 'market' && post.marketMeta ? (
-                            <div className="mt-1 flex flex-wrap items-center justify-center gap-1 text-[10px]">
-                              <Badge variant="outline">{MARKET_SALE_STATUS_LABEL_MAP[post.marketMeta.saleStatus] ?? post.marketMeta.saleStatus}</Badge>
-                              <Badge variant="outline">{MARKET_CONDITION_GRADE_LABEL_MAP[post.marketMeta.conditionGrade] ?? post.marketMeta.conditionGrade}</Badge>
-                              <span>{post.marketMeta.price?.toLocaleString?.() ?? '-'}원</span>
-                            </div>
-                          ) : null}
+                          {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-[11px] text-muted-foreground">{getMarketBrandLabel(post.brand)}</span> : null}
                         </div>
 
                         {/* 제목  */}
@@ -639,8 +689,15 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {config.boardType === 'market' && post.marketMeta ? (
-                            <div className="mt-1 line-clamp-1 text-[11px] text-muted-foreground">
-                              {getMarketBrandLabel(post.brand ?? '') || '-'} · {(post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? '-')} · {MARKET_SALE_STATUS_LABEL_MAP[post.marketMeta.saleStatus] ?? post.marketMeta.saleStatus} · {MARKET_CONDITION_GRADE_LABEL_MAP[post.marketMeta.conditionGrade] ?? post.marketMeta.conditionGrade} · {post.marketMeta.price?.toLocaleString?.() ?? '-'}원
+                            <div className="mt-1 space-y-1">
+                              <div className="line-clamp-1 text-[11px] text-muted-foreground">
+                                {getMarketBrandLabel(post.brand ?? '') || '-'} · {(post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? '-')}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                                <Badge variant="outline">{getMarketSaleStatusLabel(post.marketMeta.saleStatus) || '-'}</Badge>
+                                <Badge variant="outline">{getMarketConditionGradeLabel(post.marketMeta.conditionGrade) || '-'}</Badge>
+                                <span className="font-semibold text-foreground">{post.marketMeta.price?.toLocaleString?.() ?? '-'}원</span>
+                              </div>
                             </div>
                           ) : null}
                         </div>
@@ -763,8 +820,15 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       </div>
 
                       {config.boardType === 'market' && post.marketMeta ? (
-                        <div className="mt-1 line-clamp-1 text-[11px] text-muted-foreground">
-                          {getMarketBrandLabel(post.brand ?? '') || '-'} · {(post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? '-')} · {MARKET_SALE_STATUS_LABEL_MAP[post.marketMeta.saleStatus] ?? post.marketMeta.saleStatus} · {MARKET_CONDITION_GRADE_LABEL_MAP[post.marketMeta.conditionGrade] ?? post.marketMeta.conditionGrade} · {post.marketMeta.price?.toLocaleString?.() ?? '-'}원
+                        <div className="mt-1 space-y-1">
+                          <div className="line-clamp-1 text-[11px] text-muted-foreground">
+                            {getMarketBrandLabel(post.brand ?? '') || '-'} · {(post.marketMeta.racketSpec?.modelName ?? post.marketMeta.stringSpec?.modelName ?? '-')}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                            <Badge variant="outline">{getMarketSaleStatusLabel(post.marketMeta.saleStatus) || '-'}</Badge>
+                            <Badge variant="outline">{getMarketConditionGradeLabel(post.marketMeta.conditionGrade) || '-'}</Badge>
+                            <span className="font-semibold text-foreground">{post.marketMeta.price?.toLocaleString?.() ?? '-'}원</span>
+                          </div>
                         </div>
                       ) : null}
 

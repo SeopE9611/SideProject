@@ -27,7 +27,15 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { CommunityComment, CommunityPost } from '@/lib/types/community';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MARKET_CONDITION_GRADE_LABEL_MAP, MARKET_SALE_STATUS_LABEL_MAP, getMarketBrandLabel } from '@/lib/market';
+import {
+  getMarketBrandLabel,
+  getMarketConditionGradeLabel,
+  getMarketRacketFieldLabel,
+  getMarketSaleStatusLabel,
+  getMarketStringColorLabel,
+  getMarketStringLengthLabel,
+  getMarketStringMaterialLabel,
+} from '@/lib/market';
 
 const LEVEL_LABEL: Record<string, string> = {
   '1.0': '1.0',
@@ -53,6 +61,10 @@ const STYLE_LABEL: Record<string, string> = {
 const v = (x: any) => (x === null || x === undefined || String(x).trim() === '' ? '-' : String(x));
 const label = (map: Record<string, string>, v?: string) => (v ? (map[v] ?? v) : '-');
 const marketText = (value?: string | null) => (typeof value === 'string' && value.trim() ? value : '-');
+const marketNumberText = (value?: number | null, unit?: string) => {
+  if (value === null || value === undefined) return '-';
+  return unit ? `${value}${unit}` : String(value);
+};
 
 type Props = {
   id: string;
@@ -1241,76 +1253,53 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <CardContent className="p-6">
 
               {config.boardType === 'market' && item.marketMeta && (
-                <div className="mb-4 rounded-lg border border-border bg-muted/30 p-4 text-sm">
-                  {/* 중고거래 핵심 정보는 본문 앞에서 먼저 확인할 수 있도록 별도 카드로 노출 */}
-                  <div className="mb-3 text-xs text-muted-foreground">거래/스펙 정보</div>
-                  <div className="grid gap-x-6 gap-y-2 md:grid-cols-2">
-                    <div>
-                      <span className="text-muted-foreground">판매가</span>{' '}
-                      <span className="font-semibold">{item.marketMeta.price?.toLocaleString?.() ?? '-'}원</span>
+                <div className="mb-4 space-y-3 text-sm">
+                  {/* 상단 거래 카드: 가격/상태/모델을 본문보다 먼저 강조해서 상품형 상세 읽기 흐름을 만듭니다. */}
+                  <div className="rounded-lg border border-border bg-muted/30 p-4">
+                    <div className="mb-1 text-xs text-muted-foreground">거래 핵심 정보</div>
+                    <div className="mb-3 text-2xl font-bold text-foreground">{item.marketMeta.price?.toLocaleString?.() ?? '-'}원</div>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">{getMarketSaleStatusLabel(item.marketMeta.saleStatus) || '-'}</Badge>
+                      <Badge variant="outline">{getMarketConditionGradeLabel(item.marketMeta.conditionGrade) || '-'}</Badge>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">판매상태</span>{' '}
-                      <span className="font-semibold">{MARKET_SALE_STATUS_LABEL_MAP[item.marketMeta.saleStatus] ?? item.marketMeta.saleStatus}</span>
+                    <div className="grid gap-2 text-sm md:grid-cols-2">
+                      <div><span className="text-muted-foreground">브랜드</span> <span className="font-semibold">{getMarketBrandLabel(item.brand) || '-'}</span></div>
+                      <div><span className="text-muted-foreground">모델명</span> <span className="font-semibold">{marketText(item.marketMeta.racketSpec?.modelName ?? item.marketMeta.stringSpec?.modelName)}</span></div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">상태등급</span>{' '}
-                      <span className="font-semibold">{MARKET_CONDITION_GRADE_LABEL_MAP[item.marketMeta.conditionGrade] ?? item.marketMeta.conditionGrade}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">브랜드</span> <span className="font-semibold">{getMarketBrandLabel(item.brand) || '-'}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">모델명</span>{' '}
-                      <span className="font-semibold">{marketText(item.marketMeta.racketSpec?.modelName ?? item.marketMeta.stringSpec?.modelName)}</span>
-                    </div>
-
-                    {item.category === 'racket' && (
-                      <>
-                        <div>
-                          <span className="text-muted-foreground">무게</span> <span className="font-semibold">{item.marketMeta.racketSpec?.weight ?? '-'} g</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">밸런스</span> <span className="font-semibold">{item.marketMeta.racketSpec?.balance ?? '-'} mm</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">헤드 사이즈</span> <span className="font-semibold">{item.marketMeta.racketSpec?.headSize ?? '-'} sq.in</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">길이</span> <span className="font-semibold">{item.marketMeta.racketSpec?.lengthIn ?? '-'} in</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">스윙웨이트</span> <span className="font-semibold">{item.marketMeta.racketSpec?.swingWeight ?? '-'}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">강성</span> <span className="font-semibold">{item.marketMeta.racketSpec?.stiffnessRa ?? '-'} RA</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">패턴</span> <span className="font-semibold">{marketText(item.marketMeta.racketSpec?.pattern)}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">그립사이즈</span> <span className="font-semibold">{marketText(item.marketMeta.racketSpec?.gripSize)}</span>
-                        </div>
-                      </>
-                    )}
-
-                    {item.category === 'string' && (
-                      <>
-                        <div>
-                          <span className="text-muted-foreground">재질</span> <span className="font-semibold">{marketText(item.marketMeta.stringSpec?.material)}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">게이지</span> <span className="font-semibold">{marketText(item.marketMeta.stringSpec?.gauge)}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">색상</span> <span className="font-semibold">{marketText(item.marketMeta.stringSpec?.color)}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">길이</span> <span className="font-semibold">{marketText(item.marketMeta.stringSpec?.length)}</span>
-                        </div>
-                      </>
-                    )}
                   </div>
+
+                  {/* conditionNote는 실제 상태 설명 핵심이므로 별도 영역으로 분리해 가시성을 높입니다. */}
+                  {item.marketMeta.conditionNote ? (
+                    <div className="rounded-lg border border-border bg-card p-3">
+                      <div className="mb-1 text-xs text-muted-foreground">상태 메모</div>
+                      <p className="whitespace-pre-wrap text-sm text-foreground">{item.marketMeta.conditionNote}</p>
+                    </div>
+                  ) : null}
+
+                  {(item.category === 'racket' || item.category === 'string') && (
+                    <div className="rounded-lg border border-border bg-card p-4">
+                      <div className="mb-3 text-xs text-muted-foreground">세부 스펙</div>
+                      {item.category === 'racket' ? (
+                        <div className="grid gap-x-6 gap-y-2 md:grid-cols-2">
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('weight')}</span> <span className="font-semibold">{marketNumberText(item.marketMeta.racketSpec?.weight, 'g')}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('balance')}</span> <span className="font-semibold">{marketNumberText(item.marketMeta.racketSpec?.balance, 'mm')}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('headSize')}</span> <span className="font-semibold">{marketNumberText(item.marketMeta.racketSpec?.headSize, 'sq.in')}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('lengthIn')}</span> <span className="font-semibold">{marketNumberText(item.marketMeta.racketSpec?.lengthIn, 'in')}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('swingWeight')}</span> <span className="font-semibold">{marketNumberText(item.marketMeta.racketSpec?.swingWeight)}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('stiffnessRa')}</span> <span className="font-semibold">{marketNumberText(item.marketMeta.racketSpec?.stiffnessRa, 'RA')}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('pattern')}</span> <span className="font-semibold">{marketText(item.marketMeta.racketSpec?.pattern)}</span></div>
+                          <div><span className="text-muted-foreground">{getMarketRacketFieldLabel('gripSize')}</span> <span className="font-semibold">{marketText(item.marketMeta.racketSpec?.gripSize)}</span></div>
+                        </div>
+                      ) : (
+                        <div className="grid gap-x-6 gap-y-2 md:grid-cols-2">
+                          <div><span className="text-muted-foreground">재질</span> <span className="font-semibold">{getMarketStringMaterialLabel(item.marketMeta.stringSpec?.material) || '-'}</span></div>
+                          <div><span className="text-muted-foreground">게이지</span> <span className="font-semibold">{marketText(item.marketMeta.stringSpec?.gauge)}</span></div>
+                          <div><span className="text-muted-foreground">색상</span> <span className="font-semibold">{getMarketStringColorLabel(item.marketMeta.stringSpec?.color) || '-'}</span></div>
+                          <div><span className="text-muted-foreground">길이</span> <span className="font-semibold">{getMarketStringLengthLabel(item.marketMeta.stringSpec?.length) || '-'}</span></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               {/* 이미지 영역 - 인라인 표시 + 클릭 시 새창에서 원본 보기 */}

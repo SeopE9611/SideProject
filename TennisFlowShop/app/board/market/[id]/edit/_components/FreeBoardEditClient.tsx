@@ -454,6 +454,11 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
 
           <CardContent className="p-6">
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* 수정 시에도 상품 핵심 정보 우선 입력을 유도해 목록/상세 비교성을 유지합니다. */}
+              <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                브랜드, 모델명, 가격, 상태 정보를 우선 점검해 주세요. 정확한 정보일수록 구매자가 빠르게 판단할 수 있습니다.
+              </div>
+
               {/* 분류 선택 */}
               <div className="space-y-2">
                 <Label>분류</Label>
