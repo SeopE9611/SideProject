@@ -73,7 +73,7 @@ export async function PUT(req: Request) {
       maxValidityDays: toNumberSafe(rawGeneral.maxValidityDays, DEFAULT_GENERAL_SETTINGS.maxValidityDays),
       minSessions: toNumberSafe(rawGeneral.minSessions, DEFAULT_GENERAL_SETTINGS.minSessions),
       maxSessions: toNumberSafe(rawGeneral.maxSessions, DEFAULT_GENERAL_SETTINGS.maxSessions),
-      defaultServiceType: rawGeneral.defaultServiceType === '출장' ? '출장' : '방문',
+      defaultServiceType: '방문',
       autoExpireNotificationDays: toNumberSafe(rawGeneral.autoExpireNotificationDays, DEFAULT_GENERAL_SETTINGS.autoExpireNotificationDays),
       allowExtension: !!rawGeneral.allowExtension,
       extensionFeePercentage: toNumberSafe(rawGeneral.extensionFeePercentage, DEFAULT_GENERAL_SETTINGS.extensionFeePercentage),
