@@ -249,7 +249,7 @@ export default function OrderDetailPage() {
           </div>
 
           {/* String Service Alert */}
-          {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
+          {order.shippingInfo?.withStringService && (
             <Card className="mb-8 border-2 border-border bg-card">
               <CardContent className="p-6">
                 {!hasCompletedStringingApplication ? (
@@ -259,10 +259,14 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground mb-2">스트링 장착 서비스 신청 가능</h3>
-                      <p className="text-muted-foreground mb-4">이 주문은 스트링 장착 서비스가 포함되어 있습니다. 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다.</p>
+                      <p className="text-muted-foreground mb-4">
+                        {isVisitPickup
+                          ? '이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다.'
+                          : '이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 수거/반송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다.'}
+                      </p>
                       <Link href={`/services/apply?orderId=${order._id}`} className="inline-flex items-center px-4 py-2 bg-muted hover:bg-muted text-foreground font-semibold rounded-lg transition-colors">
                         <ShoppingBag className="w-4 h-4 mr-2" />
-                        스트링 장착 서비스 신청하기
+                        {isVisitPickup ? '스트링 장착 서비스 신청하기' : '택배 장착 서비스 신청하기'}
                       </Link>
                     </div>
                   </div>
@@ -273,7 +277,11 @@ export default function OrderDetailPage() {
                     </div>
                     <div>
                       <h3 className="mb-1 font-semibold text-foreground">교체 서비스 접수 완료</h3>
-                      <p className="text-foreground">이미 신청이 접수된 주문입니다. 현재 화면에서는 추가 신청 버튼이 노출되지 않습니다.</p>
+                      <p className="text-foreground">
+                        {isVisitPickup
+                          ? '이미 신청이 접수된 주문입니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다.'
+                          : '이미 신청이 접수된 주문입니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다.'}
+                      </p>
                     </div>
                   </div>
                 )}

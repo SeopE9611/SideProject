@@ -332,6 +332,8 @@ export default function OrderLookupResultsPage() {
                 <div className="space-y-6">
                   {orders.map((order, index) => {
                     const hasCompletedStringingApplication = Boolean(order.stringingApplicationId) || order.isStringServiceApplied === true;
+                    const normalizedDeliveryMethod = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '');
+                    const isVisitPickup = normalizedDeliveryMethod === '방문수령';
 
                     return (
                     <Card key={order.id} className="overflow-hidden border-2 border-border hover:border-border transition-all duration-200 hover:shadow-lg">
@@ -398,16 +400,21 @@ export default function OrderLookupResultsPage() {
                             <ChevronRight className="ml-1 h-4 w-4" />
                           </Button>
 
-                          {order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령' && order.shippingInfo?.withStringService && (
+                          {order.shippingInfo?.withStringService && (
                             <>
                               {!hasCompletedStringingApplication ? (
-                                <Button
-                                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                                  onClick={() => router.push(`/services/apply?orderId=${order.id}`)}
-                                >
-                                  <ShoppingBag className="w-4 h-4 mr-2" />
-                                  스트링 장착 신청
-                                </Button>
+                                <div className="flex flex-col items-end gap-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    {isVisitPickup ? '방문수령 주문의 장착 신청이 가능합니다.' : '택배 기반 장착 서비스 신청이 가능합니다.'}
+                                  </p>
+                                  <Button
+                                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                    onClick={() => router.push(`/services/apply?orderId=${order.id}`)}
+                                  >
+                                    <ShoppingBag className="w-4 h-4 mr-2" />
+                                    {isVisitPickup ? '스트링 장착 신청' : '택배 장착 서비스 신청'}
+                                  </Button>
+                                </div>
                               ) : (
                                 <TooltipProvider>
                                   <Tooltip>
@@ -418,7 +425,7 @@ export default function OrderLookupResultsPage() {
                                       </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="top" className="text-sm">
-                                      이미 신청이 완료된 주문입니다
+                                      {isVisitPickup ? '방문수령 장착 신청이 이미 완료된 주문입니다.' : '택배 장착 서비스 신청이 이미 완료된 주문입니다.'}
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
