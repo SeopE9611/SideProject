@@ -12,6 +12,7 @@ import { verifyCommunityCsrf } from '@/lib/community/security';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
+import { normalizeMarketMeta } from '@/lib/market';
 import type {
   AccessTokenPayload,
   CommunityListResponseDto,
@@ -102,6 +103,9 @@ const createSchema = z.object({
       }),
     )
     .optional(),
+
+  // market 전용 메타(상세 스펙)는 런타임에서 normalizeMarketMeta로 정규화/검증
+  marketMeta: z.any().optional(),
 });
 
 function findFirstInvalidAssetUrl(input: { images?: string[]; attachments?: Array<{ url: string }> }) {
@@ -143,7 +147,7 @@ export async function GET(req: NextRequest) {
   const db = await getDb();
   const col = db.collection('community_posts');
 
-  const { typeParam, brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category } = parseCommunityListQuery(req);
+  const { typeParam, brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category, marketFilters } = parseCommunityListQuery(req);
 
   if (isQueryTooLong) {
     return NextResponse.json(
@@ -164,6 +168,7 @@ export async function GET(req: NextRequest) {
     escapedQ,
     authorObjectId,
     searchType,
+    marketFilters,
   });
   const sortOption = getCommunitySortOption(sort);
 
@@ -178,6 +183,7 @@ export async function GET(req: NextRequest) {
     title: d.title,
     content: d.content,
     brand: d.brand ?? null,
+    marketMeta: d.marketMeta ?? null,
 
     category: d.category ?? 'general',
     images: Array.isArray(d.images) ? d.images : [],
@@ -340,6 +346,7 @@ export async function POST(req: NextRequest) {
   }
   // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
   if (body.type === 'market') {
+    const normalizedMarketMeta = normalizeMarketMeta(body.category ?? null, body.marketMeta);
     const cat = body.category ?? null;
     const b = typeof body.brand === 'string' ? body.brand.trim() : '';
 
@@ -362,6 +369,18 @@ export async function POST(req: NextRequest) {
     } else {
       body.brand = b;
     }
+
+    if (!normalizedMarketMeta || !normalizedMarketMeta.price || normalizedMarketMeta.price <= 0) {
+      return NextResponse.json({ ok: false, error: 'validation_error', details: [{ path: ['marketMeta', 'price'], message: '판매가는 1원 이상이어야 합니다.' }] }, { status: 400 });
+    }
+    if (body.category === 'racket' && !(normalizedMarketMeta.racketSpec?.modelName ?? '').trim()) {
+      return NextResponse.json({ ok: false, error: 'validation_error', details: [{ path: ['marketMeta', 'racketSpec', 'modelName'], message: '라켓 모델명을 입력해 주세요.' }] }, { status: 400 });
+    }
+    if (body.category === 'string' && !(normalizedMarketMeta.stringSpec?.modelName ?? '').trim()) {
+      return NextResponse.json({ ok: false, error: 'validation_error', details: [{ path: ['marketMeta', 'stringSpec', 'modelName'], message: '스트링 모델명을 입력해 주세요.' }] }, { status: 400 });
+    }
+
+    body.marketMeta = normalizedMarketMeta;
   }
 
   const displayName = await resolveDisplayName(payload);
@@ -377,6 +396,8 @@ export async function POST(req: NextRequest) {
 
     // 자유 게시판 카테고리 (제목 머릿말)
     category: body.category ?? 'general',
+    // market 게시판 전용 구조화 메타 (다른 게시판은 null)
+    marketMeta: body.type === 'market' ? (body.marketMeta ?? null) : null,
 
     // 첨부 이미지 URL 배열 (없으면 빈 배열)
     images: Array.isArray(body.images) && body.images.length > 0 ? body.images : [],

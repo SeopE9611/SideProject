@@ -21,6 +21,8 @@ import { CATEGORY_OPTIONS } from '@/app/board/market/_components/FreeBoardWriteC
 import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import MarketMetaFields from '@/app/board/market/_components/MarketMetaFields';
+import type { MarketMeta } from '@/lib/market';
 
 type Props = {
   id: string;
@@ -46,6 +48,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [category, setCategory] = useState<'racket' | 'string' | 'equipment'>('racket');
 
   const [brand, setBrand] = useState<string>('');
+  const [marketMeta, setMarketMeta] = useState<MarketMeta>({ price: null, saleStatus: 'selling', conditionGrade: 'B', conditionNote: '', racketSpec: null, stringSpec: null });
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -115,12 +118,14 @@ export default function FreeBoardEditClient({ id }: Props) {
       const nextImages = Array.isArray(item.images) ? item.images : [];
       const nextCategory = ((data.item.category as any) ?? 'racket') as any;
       const nextBrand = typeof item.brand === 'string' ? item.brand : '';
+      const nextMarketMeta = (item as any).marketMeta ?? { price: null, saleStatus: 'selling', conditionGrade: 'B', conditionNote: '', racketSpec: null, stringSpec: null };
 
       setTitle(nextTitle);
       setContent(nextContent);
       setImages(nextImages);
       setCategory(nextCategory);
       setBrand(nextBrand);
+      setMarketMeta(nextMarketMeta);
       setClientSeenDate(item.updatedAt ?? null);
 
       // 최초 1회만 baseline 저장 (초기 로드 값 기준으로 dirty 판단)
@@ -155,11 +160,21 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 간단한 프론트 유효성 검증
   const validate = () => {
     if (isMarketBrandCategory(category) && !brand) return '브랜드를 선택해 주세요.';
+    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0) return '판매가는 1원 이상 입력해 주세요.';
+    if (category === 'racket' && !(marketMeta.racketSpec?.modelName ?? '').trim()) return '라켓 모델명을 입력해 주세요.';
+    if (category === 'string' && !(marketMeta.stringSpec?.modelName ?? '').trim()) return '스트링 모델명을 입력해 주세요.';
 
     if (!title.trim()) return '제목을 입력해 주세요.';
     if (!content.trim()) return '내용을 입력해 주세요.';
     return null;
   };
+
+  // 카테고리 변경 시 계약에 맞지 않는 spec은 제거
+  useEffect(() => {
+    if (category === 'racket') setMarketMeta((prev) => ({ ...prev, stringSpec: null }));
+    else if (category === 'string') setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
+    else setMarketMeta((prev) => ({ ...prev, racketSpec: null, stringSpec: null }));
+  }, [category]);
 
   // 파일 업로드 관련
 
@@ -279,6 +294,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         images,
         category,
         brand: isMarketBrandCategory(category) ? brand : null,
+        marketMeta,
         ...(clientSeenDate ? { clientSeenDate } : {}),
       };
 
@@ -466,6 +482,10 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
                   <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
                 </div>
               )}
+
+
+              {/* market 상세 스펙 공용 UI */}
+              <MarketMetaFields category={category} value={marketMeta} onChange={setMarketMeta} disabled={isSubmitting} />
 
               {/* 제목 */}
               <div className="space-y-2">

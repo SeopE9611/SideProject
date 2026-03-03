@@ -20,6 +20,7 @@ import { getCategoryBadgeText } from '@/app/board/_components/board-config';
 import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import ErrorBox from '@/app/board/_components/ErrorBox';
+import { MARKET_CONDITION_GRADE_OPTIONS, MARKET_SALE_STATUS_OPTIONS } from '@/lib/market';
 
 // API 응답 타입
 type ListResponse = {
@@ -199,6 +200,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   if (qParam) {
     qs.set('q', qParam);
     qs.set('searchType', searchTypeParam);
+  }
+
+  // market 전용 필터는 URLSearchParams를 그대로 API 쿼리에 전달
+  if (config.boardType === 'market') {
+    ['saleStatus','conditionGrade','minPrice','maxPrice','modelKeyword','gripSize','pattern','material','gauge','color','length','minWeight','maxWeight','minBalance','maxBalance','minHeadSize','maxHeadSize','minSwingWeight','maxSwingWeight','minStiffnessRa','maxStiffnessRa'].forEach((k) => {
+      const v = searchParams.get(k);
+      if (v) qs.set(k, v);
+    });
   }
   const handleSearchSubmit = (e: any) => {
     e.preventDefault();
@@ -398,6 +407,20 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     </select>
                   </div>
                 )}
+
+                {config.boardType === 'market' && (
+                  <div className="grid gap-2 rounded-md border border-border p-3 text-xs">
+                    <div className="grid gap-2 sm:grid-cols-4">
+                      <select className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('saleStatus') ?? ''} onChange={(e)=>{ const sp=new URLSearchParams(searchParams.toString()); e.target.value?sp.set('saleStatus',e.target.value):sp.delete('saleStatus'); sp.set('page','1'); router.push(`${config.routePrefix}?${sp.toString()}`);}}><option value="">판매상태 전체</option>{MARKET_SALE_STATUS_OPTIONS.map((o)=><option key={o.value} value={o.value}>{o.label}</option>)}</select>
+                      <select className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('conditionGrade') ?? ''} onChange={(e)=>{ const sp=new URLSearchParams(searchParams.toString()); e.target.value?sp.set('conditionGrade',e.target.value):sp.delete('conditionGrade'); sp.set('page','1'); router.push(`${config.routePrefix}?${sp.toString()}`);}}><option value="">등급 전체</option>{MARKET_CONDITION_GRADE_OPTIONS.map((o)=><option key={o.value} value={o.value}>{o.label}</option>)}</select>
+                      <input placeholder="최소가격" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('minPrice') ?? ''} onBlur={(e)=>{ const sp=new URLSearchParams(searchParams.toString()); e.target.value?sp.set('minPrice',e.target.value):sp.delete('minPrice'); sp.delete('page'); router.push(`${config.routePrefix}?${sp.toString()}`);}}/>
+                      <input placeholder="최대가격" className="rounded border bg-background px-2 py-1" defaultValue={searchParams.get('maxPrice') ?? ''} onBlur={(e)=>{ const sp=new URLSearchParams(searchParams.toString()); e.target.value?sp.set('maxPrice',e.target.value):sp.delete('maxPrice'); sp.delete('page'); router.push(`${config.routePrefix}?${sp.toString()}`);}}/>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button type="button" variant="ghost" size="sm" onClick={()=>{ const sp=new URLSearchParams(searchParams.toString()); ['saleStatus','conditionGrade','minPrice','maxPrice','modelKeyword','gripSize','pattern','material','gauge','color','length','minWeight','maxWeight','minBalance','maxBalance','minHeadSize','maxHeadSize','minSwingWeight','maxSwingWeight','minStiffnessRa','maxStiffnessRa'].forEach(k=>sp.delete(k)); sp.delete('page'); router.push(`${config.routePrefix}?${sp.toString()}`);}}>필터 초기화</Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {authorId && (
@@ -459,6 +482,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </Badge>
 
                           {config.brandOptionsByCategory?.[post.category ?? ''] && post.brand ? <span className="text-[11px] text-muted-foreground">{config.brandLabelMap?.[post.brand] ?? post.brand}</span> : null}
+
+                          {config.boardType === 'market' && post.marketMeta ? (
+                            <div className="mt-1 flex flex-wrap items-center justify-center gap-1 text-[10px]">
+                              <Badge variant="outline">{post.marketMeta.saleStatus}</Badge><Badge variant="outline">{post.marketMeta.conditionGrade}</Badge><span>{post.marketMeta.price?.toLocaleString?.() ?? '-'}원</span>
+                            </div>
+                          ) : null}
                         </div>
 
                         {/* 제목  */}
@@ -591,6 +620,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </span>
                         )}
                       </div>
+
+                      {config.boardType === 'market' && post.marketMeta ? <div className='mt-1 text-[11px] text-muted-foreground'>{post.marketMeta.price?.toLocaleString?.() ?? '-'}원 · {post.marketMeta.saleStatus} · {post.marketMeta.conditionGrade}</div> : null}
 
                       {/* 3줄: 작성자/날짜 + 카운트들(댓글/조회/추천) */}
                       <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">

@@ -12,6 +12,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 import { classifyBoardPatchFailure } from '@/lib/boards-patch-conflict';
+import { normalizeMarketMeta } from '@/lib/market';
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
@@ -116,6 +117,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     title: doc.title,
     content: doc.content,
     brand: doc.brand ?? null,
+    marketMeta: doc.marketMeta ?? null,
 
     userId: doc.userId ? String(doc.userId) : null,
 
@@ -196,8 +198,9 @@ const patchBodySchema = z
         }),
       )
       .optional(),
+    marketMeta: z.any().optional(),
   })
-  .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined || val.attachments !== undefined || val.brand !== undefined, { message: '수정할 필드가 없습니다.' });
+  .refine((val) => val.title !== undefined || val.content !== undefined || val.category !== undefined || val.images !== undefined || val.attachments !== undefined || val.brand !== undefined || val.marketMeta !== undefined, { message: '수정할 필드가 없습니다.' });
 
 function findFirstInvalidAssetUrl(input: { images?: string[]; attachments?: Array<{ url: string }> }) {
   // 1) 이미지 URL 배열 검증: 첫 실패 인덱스를 반환해 클라이언트 보정 포인트를 명확히 제공
@@ -361,6 +364,18 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
         { status: 400 },
       );
     }
+
+    const nextMetaRaw = body.marketMeta !== undefined ? body.marketMeta : (doc.marketMeta ?? null);
+    const nextMeta = normalizeMarketMeta(nextCategory, nextMetaRaw);
+    if (!nextMeta || nextMeta.price == null || nextMeta.price <= 0) {
+      return NextResponse.json({ ok: false, error: 'validation_error', details: [{ path: ['marketMeta', 'price'], message: '판매가는 1원 이상이어야 합니다.' }] }, { status: 400 });
+    }
+    if (nextCategory === 'racket' && !(nextMeta.racketSpec?.modelName ?? '').trim()) {
+      return NextResponse.json({ ok: false, error: 'validation_error', details: [{ path: ['marketMeta', 'racketSpec', 'modelName'], message: '라켓 모델명을 입력해 주세요.' }] }, { status: 400 });
+    }
+    if (nextCategory === 'string' && !(nextMeta.stringSpec?.modelName ?? '').trim()) {
+      return NextResponse.json({ ok: false, error: 'validation_error', details: [{ path: ['marketMeta', 'stringSpec', 'modelName'], message: '스트링 모델명을 입력해 주세요.' }] }, { status: 400 });
+    }
   }
 
   const update: any = {};
@@ -382,6 +397,8 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       // racket/string이면 brand 유지(또는 갱신)
       update.brand = typeof nextBrand === 'string' ? nextBrand.trim() : null;
     }
+    const normalizedMarketMeta = normalizeMarketMeta(nextCategory, body.marketMeta !== undefined ? body.marketMeta : (doc.marketMeta ?? null));
+    update.marketMeta = normalizedMarketMeta ?? null;
   }
 
   if (body.images !== undefined) update.images = body.images;

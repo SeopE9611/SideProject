@@ -4,6 +4,7 @@ import { API_VERSION } from '@/lib/board.repository';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 import { getBoardList } from '@/lib/boards.queries';
 import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
+import { normalizeMarketMeta } from '@/lib/market';
 import { verifyCommunityCsrf } from '@/lib/community/security';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { getDb } from '@/lib/mongodb';
@@ -221,7 +222,7 @@ export async function GET(req: NextRequest) {
   if (communityKind) {
     const db = await getDb();
     const col = db.collection('community_posts');
-    const { brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category } = parseCommunityListQuery(req, {
+    const { brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category, marketFilters } = parseCommunityListQuery(req, {
       queryKeys: ['q', 'keyword', 'query'],
     });
 
@@ -256,6 +257,7 @@ export async function GET(req: NextRequest) {
       escapedQ,
       authorObjectId,
       searchType,
+      marketFilters,
     });
 
     const total = await col.countDocuments(filter);
@@ -282,6 +284,7 @@ export async function GET(req: NextRequest) {
       attachments: d.attachments ?? [],
       images: d.images ?? [],
       brand: d.brand ?? null,
+      marketMeta: d.marketMeta ?? null,
       postNo: d.postNo,
     }));
     const response: CommunityListResponseDto = { ok: true, version: API_VERSION, items, total, page, limit };
@@ -423,7 +426,8 @@ export async function POST(req: NextRequest) {
       title: body.title,
       content: body.content,
       category: body.category ?? 'general',
-      brand: null,
+      brand: body.type === 'market' ? ((body as any).brand ?? null) : null,
+      marketMeta: body.type === 'market' ? normalizeMarketMeta((body as any).category ?? null, (body as any).marketMeta) : null,
       images: safeImages,
       attachments: safeAttachments,
       postNo,
