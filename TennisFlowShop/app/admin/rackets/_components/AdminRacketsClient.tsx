@@ -1,20 +1,19 @@
 'use client';
 
-import useSWR from 'swr';
-import Link from 'next/link';
-import { useState, useMemo } from 'react';
-import { Package, Search, MoreVertical, Edit, Eye, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MdSportsTennis } from 'react-icons/md';
-import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
-import { racketBrandLabel } from '@/lib/constants';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { racketBrandLabel } from '@/lib/constants';
+import { AlertTriangle, CheckCircle, Edit, Eye, MoreVertical, Package, Plus, Search, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { MdSportsTennis } from 'react-icons/md';
+import useSWR from 'swr';
 
 function StockChip({ id, total }: { id: string; total: number }) {
   const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, adminFetcher, { dedupingInterval: 5000 });
@@ -151,9 +150,7 @@ export default function AdminRacketsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary">라켓 목록</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  {filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 라켓이 없습니다.'}
-                </CardDescription>
+                <CardDescription className="text-muted-foreground">{filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 라켓이 없습니다.'}</CardDescription>
               </div>
               <Button
                 asChild
@@ -180,13 +177,7 @@ export default function AdminRacketsClient() {
                 <div className="w-full max-w-md">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder="브랜드, 모델 검색..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card"
-                    />
+                    <Input type="search" placeholder="브랜드, 모델 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card" />
                   </div>
                 </div>
 
@@ -248,12 +239,9 @@ export default function AdminRacketsClient() {
                   </div>
                 </div>
               ) : !filteredItems.length ? (
-                <div className="overflow-auto rounded-lg border border-border">
-                  <div className="p-12 text-center">
-                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <div className="text-sm font-medium text-foreground">조건에 맞는 라켓이 없습니다.</div>
-                    <div className="text-xs text-muted-foreground mt-2">필터를 초기화하거나 검색어를 수정해 보세요.</div>
-                  </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Search className="h-8 w-8 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">불러올 주문이 없습니다.</p>
                 </div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">

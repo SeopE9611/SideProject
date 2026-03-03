@@ -1,24 +1,24 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { MoreHorizontal, Search, Star, Trash2, Eye, EyeOff, Calendar, MessageSquare, TrendingUp, Award, Loader2, ThumbsUp } from 'lucide-react';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Switch } from '@/components/ui/switch';
-import Image from 'next/image';
 import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
+import { Switch } from '@/components/ui/switch';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from '@/types/admin/reviews';
+import { Award, Calendar, Eye, EyeOff, Loader2, MessageSquare, MoreHorizontal, Search, Star, ThumbsUp, Trash2, TrendingUp } from 'lucide-react';
+import Image from 'next/image';
 
 type Row = AdminReviewListItemDto;
 type Page = AdminReviewsListResponseDto;
@@ -80,7 +80,7 @@ export default function AdminReviewListClient() {
       if (showDeleted) p.set('withDeleted', '1');
       return `/api/admin/reviews?${p.toString()}`;
     },
-    [qDebounced, status, type, showDeleted]
+    [qDebounced, status, type, showDeleted],
   );
 
   const { data: rawData, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true, revalidateOnFocus: false });
@@ -196,7 +196,7 @@ export default function AdminReviewListClient() {
               items: p.items.map((r) => (selected.includes(r._id) ? { ...r, status: next } : r)),
             }))
           : pages,
-      false
+      false,
     );
 
     // 실제 서버 PATCH — 5개씩 동시 처리(서버 부하 방지)
@@ -213,7 +213,7 @@ export default function AdminReviewListClient() {
               body: JSON.stringify({ status: next }),
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          })
+          }),
         );
       }
       setSelected([]);
@@ -364,19 +364,10 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 검색/필터 + 전체선택 */}
-      <div
-        className="sticky top-0 z-10 -mt-2 mb-2 bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card border border-border rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3"
-      >
+      <div className="sticky top-0 z-10 -mt-2 mb-2 bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card border border-border rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="리뷰 검색…"
-            className="pl-10 h-9 text-sm border-border focus:border-border focus:ring-ring"
-            value={qRaw}
-            onChange={(e) => setQRaw(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && setSize(1)}
-          />
+          <Input type="search" placeholder="리뷰 검색…" className="pl-10 h-9 text-sm border-border focus:border-border focus:ring-ring" value={qRaw} onChange={(e) => setQRaw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && setSize(1)} />
         </div>
 
         <div className="flex items-center gap-2">
@@ -410,12 +401,10 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 리스트 카드 */}
-      <div className="rounded-lg ring-1 ring-ring bg-card shadow-sm">
+      <div className="bg-card shadow-sm">
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
           {/* 헤더 라벨 */}
-          <div
-            className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}
-          >
+          <div className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}>
             <div className="opacity-70">선택</div>
             <div>작성자</div>
             <div className="whitespace-nowrap">리뷰 내용</div>
@@ -431,7 +420,7 @@ export default function AdminReviewListClient() {
           ) : !data && isValidating ? (
             <div className="p-8 text-center text-muted-foreground">불러오는 중…</div>
           ) : rows.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">리뷰가 없습니다.</div>
+            <div className="p-8 text-center text-muted-foreground">불러올 리뷰가 없습니다.</div>
           ) : (
             sortedRows.map((r) => {
               const isSel = selected.includes(r._id);
@@ -511,9 +500,7 @@ export default function AdminReviewListClient() {
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
                       <span className="text-[13px] text-foreground">{r.rating}/5</span>
-                      <span
-                        className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border"
-                      >
+                      <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border">
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
                       </span>
@@ -583,26 +570,15 @@ export default function AdminReviewListClient() {
 
         {/* 선택 액션 바 */}
         <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
-          <div
-            className="w-full border-t border-border bg-primary/10 dark:bg-primary/20 px-4 py-2 flex items-center justify-between rounded-b-lg text-foreground"
-          >
+          <div className="w-full border-t border-border bg-primary/10 dark:bg-primary/20 px-4 py-2 flex items-center justify-between rounded-b-lg text-foreground">
             <span className="inline-flex items-center gap-2">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
-              <span
-                className="inline-flex items-center rounded-full bg-card ring-1 ring-ring text-primary font-semibold text-xs px-2 py-0.5"
-              >
-                {selected.length}개 선택됨
-              </span>
+              <span className="inline-flex items-center rounded-full bg-card ring-1 ring-ring text-primary font-semibold text-xs px-2 py-0.5">{selected.length}개 선택됨</span>
             </span>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelected([])}
-                className="h-8 px-3 border-border text-primary hover:bg-primary/10 dark:border-border dark:text-primary dark:hover:bg-primary/20"
-              >
+              <Button variant="outline" size="sm" onClick={() => setSelected([])} className="h-8 px-3 border-border text-primary hover:bg-primary/10 dark:border-border dark:text-primary dark:hover:bg-primary/20">
                 해제
               </Button>
 
@@ -628,9 +604,7 @@ export default function AdminReviewListClient() {
 
       {/* 상세 모달 */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent
-          className="sm:max-w-2xl border-0 ring-0 outline-none shadow-2xl bg-card"
-        >
+        <DialogContent className="sm:max-w-2xl border-0 ring-0 outline-none shadow-2xl bg-card">
           <DialogHeader>
             <DialogTitle>리뷰 상세</DialogTitle>
           </DialogHeader>

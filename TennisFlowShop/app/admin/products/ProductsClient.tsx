@@ -1,26 +1,26 @@
 'use client';
 
+import { AlertTriangle, ArrowDown, ArrowUp, ArrowUpDown, CheckCircle, CheckCircle2, MoreHorizontal, Package, Plus, Search, TriangleAlert, X, XCircle } from 'lucide-react';
+import Link from 'next/link';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import useSWR from 'swr';
-import { PlusCircle, Search, MoreHorizontal, Package, AlertTriangle, CheckCircle, X, CheckCircle2, TriangleAlert, XCircle, ArrowUp, ArrowUpDown, ArrowDown, Plus } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import BrandFilter from '@/app/admin/products/product-filters/BrandFilter';
 import MaterialFilter from '@/app/admin/products/product-filters/MaterialFilter';
 import StockStatusFilter from '@/app/admin/products/product-filters/StockStatusFilter';
-import { cn } from '@/lib/utils';
-import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import ProductsTableSkeleton from '@/app/admin/products/ProductsTableSkeleton';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { showErrorToast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
 
 type Product = {
   _id: string;
@@ -78,8 +78,8 @@ const MATERIAL_OPTIONS = [
 
 const BRAND_LABEL: Record<string, string> = Object.fromEntries(BRAND_OPTIONS.map((o) => [o.id, o.label]));
 const MATERIAL_LABEL: Record<string, string> = Object.fromEntries(MATERIAL_OPTIONS.map((o) => [o.id, o.label]));
-const brandLabel = (id?: string) => (id ? BRAND_LABEL[id] ?? id : '');
-const materialLabel = (id?: string) => (id ? MATERIAL_LABEL[id] ?? id : '');
+const brandLabel = (id?: string) => (id ? (BRAND_LABEL[id] ?? id) : '');
+const materialLabel = (id?: string) => (id ? (MATERIAL_LABEL[id] ?? id) : '');
 
 // 입력 디바운스
 function useDebounce<T>(value: T, delay = 250): T {
@@ -286,7 +286,7 @@ export default function ProductsClient() {
                   'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
                   // 색상(라이트/다크 모두 자연스러운 플랫)
                   'bg-primary text-primary-foreground hover:bg-primary/90',
-                                    // 경계/그림자: 지나치지 않게만
+                  // 경계/그림자: 지나치지 않게만
                   'border border-border/10 dark:border-border/10 shadow-sm hover:shadow',
                   // 포커스 접근성
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
@@ -331,20 +331,10 @@ export default function ProductsClient() {
                   <BrandFilter value={brandFilter} onChange={handleBrandFilterChange} options={BRAND_OPTIONS.map((o) => o.id)} />
                   <MaterialFilter value={materialFilter} onChange={handleMaterialFilterChange} options={MATERIAL_OPTIONS.map((o) => o.id)} />
                   <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={resetFilters}
-                    className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card"
-                  >
+                  <Button variant="outline" size="sm" onClick={resetFilters} className="w-full border-border hover:bg-muted dark:border-border dark:hover:bg-card">
                     필터 초기화
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full bg-transparent border-border hover:bg-muted dark:border-border dark:hover:bg-card"
-                    onClick={() => setSort(null)}
-                  >
+                  <Button variant="outline" size="sm" className="w-full bg-transparent border-border hover:bg-muted dark:border-border dark:hover:bg-card" onClick={() => setSort(null)}>
                     정렬 초기화
                   </Button>
                 </div>
@@ -355,28 +345,14 @@ export default function ProductsClient() {
             <div className="flex-1">
               <div className="overflow-auto rounded-lg border border-border">
                 <Table className="table-fixed [&_tr]:border-0">
-                  <TableHeader
-                    className="sticky top-0 z-10 backdrop-blur bg-muted supports-[backdrop-filter]:bg-muted dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-border"
-                  >
+                  <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted supports-[backdrop-filter]:bg-muted dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-border">
                     <TableRow className="border-b border-border">
-                      <TableHead className="w-[32%] text-left text-foreground">
-                        {renderSortButton({ field: 'name', children: '스트링명' })}
-                      </TableHead>
-                      <TableHead className="w-[12%] text-center text-foreground">
-                        {renderSortButton({ field: 'brand', align: 'center', children: '브랜드' })}
-                      </TableHead>
-                      <TableHead className="w-[10%] text-center text-foreground">
-                        {renderSortButton({ field: 'gauge', align: 'center', children: '게이지' })}
-                      </TableHead>
-                      <TableHead className="w-[14%] text-center text-foreground">
-                        {renderSortButton({ field: 'material', align: 'center', children: '재질' })}
-                      </TableHead>
-                      <TableHead className="w-[12%] text-right text-foreground">
-                        {renderSortButton({ field: 'price', align: 'right', children: '가격' })}
-                      </TableHead>
-                      <TableHead className="w-[10%] text-right text-foreground">
-                        {renderSortButton({ field: 'stock', align: 'right', children: '재고' })}
-                      </TableHead>
+                      <TableHead className="w-[32%] text-left text-foreground">{renderSortButton({ field: 'name', children: '스트링명' })}</TableHead>
+                      <TableHead className="w-[12%] text-center text-foreground">{renderSortButton({ field: 'brand', align: 'center', children: '브랜드' })}</TableHead>
+                      <TableHead className="w-[10%] text-center text-foreground">{renderSortButton({ field: 'gauge', align: 'center', children: '게이지' })}</TableHead>
+                      <TableHead className="w-[14%] text-center text-foreground">{renderSortButton({ field: 'material', align: 'center', children: '재질' })}</TableHead>
+                      <TableHead className="w-[12%] text-right text-foreground">{renderSortButton({ field: 'price', align: 'right', children: '가격' })}</TableHead>
+                      <TableHead className="w-[10%] text-right text-foreground">{renderSortButton({ field: 'stock', align: 'right', children: '재고' })}</TableHead>
                       <TableHead className="w-[10%] text-center text-foreground">상태</TableHead>
                       <TableHead className="w-[10%] text-right text-foreground">관리</TableHead>
                     </TableRow>
@@ -388,27 +364,10 @@ export default function ProductsClient() {
                       <ProductsTableSkeleton rows={PAGE_SIZE} />
                     ) : items.length === 0 ? (
                       <TableRow className="border-0">
-                        <TableCell colSpan={8} className="text-center" style={{ height: ROW_PX * PAGE_SIZE }}>
-                          <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="text-sm font-medium text-foreground">조건에 맞는 스트링이 없습니다.</div>
-                            <div className="text-xs text-muted-foreground">필터를 초기화하거나 검색어를 수정해 보세요.</div>
-                            <div className="mt-3 flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  resetFilters();
-                                }}
-                                className="border-border hover:bg-muted dark:hover:bg-muted"
-                              >
-                                필터 초기화
-                              </Button>
-                              {searchTerm && (
-                                <Button variant="ghost" size="sm" onClick={() => handleSearchChange('')} className="hover:bg-muted dark:hover:bg-muted">
-                                  검색어 지우기
-                                </Button>
-                              )}
-                            </div>
+                        <TableCell colSpan={8} className="py-16 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Search className="h-8 w-8 text-muted-foreground/50" />
+                            <p className="text-sm text-muted-foreground">등록된 상품이 없습니다.</p>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -417,10 +376,7 @@ export default function ProductsClient() {
                         const statusKey: StatusKey = (s.computedStatus ?? 'active') as StatusKey;
                         const S = STATUS_UI[statusKey];
                         return (
-                          <TableRow
-                            key={s._id}
-                            className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
-                          >
+                          <TableRow key={s._id} className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors">
                             <TableCell className="text-left align-middle py-3">
                               <Link href={`/products/${s._id}`} className="hover:text-foreground dark:hover:text-foreground">
                                 <div className="space-y-1">
@@ -431,10 +387,7 @@ export default function ProductsClient() {
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
-                              <Badge
-                                variant="secondary"
-                                className="px-2 py-0.5 rounded-full border bg-muted text-foreground border-border dark:bg-muted dark:text-foreground dark:border-border"
-                              >
+                              <Badge variant="secondary" className="px-2 py-0.5 rounded-full border bg-muted text-foreground border-border dark:bg-muted dark:text-foreground dark:border-border">
                                 {brandLabel(s.brand)}
                               </Badge>
                             </TableCell>

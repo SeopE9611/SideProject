@@ -648,7 +648,10 @@ export default function AdminRentalsClient() {
               ) : !data || data.items.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className={tdClasses}>
-                    불러올 대여가 없습니다.
+                    <div className="flex flex-col items-center gap-2">
+                      <Search className="h-8 w-8 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground">불러올 대여 주문이 없습니다.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : sortedRentals.length === 0 ? (

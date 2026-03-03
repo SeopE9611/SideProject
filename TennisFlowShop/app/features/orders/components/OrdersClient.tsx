@@ -1,35 +1,35 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
-import type { ApiResponse, OrderWithType } from '@/lib/types/order';
-import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { shortenId } from '@/lib/shorten';
-import { badgeBase, badgeSizeSm, badgeToneVariant, flowBadgeClass, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass } from '@/lib/badge-style';
 import CustomerTypeFilter from '@/app/features/orders/components/order-filters/CustomerTypeFilter';
+import { DateFilter } from '@/app/features/orders/components/order-filters/DateFilter';
 import { OrderStatusFilter } from '@/app/features/orders/components/order-filters/OrderStatusFilter';
+import { OrderTypeFilter } from '@/app/features/orders/components/order-filters/OrderTypeFilter';
 import { PaymentStatusFilter } from '@/app/features/orders/components/order-filters/PaymentStatusFilter';
 import { ShippingStatusFilter } from '@/app/features/orders/components/order-filters/ShippingStatusFilter';
-import { OrderTypeFilter } from '@/app/features/orders/components/order-filters/OrderTypeFilter';
-import { cn } from '@/lib/utils';
-import { DateFilter } from '@/app/features/orders/components/order-filters/DateFilter';
-import AuthGuard from '@/components/auth/AuthGuard';
-import { useRouter } from 'next/navigation';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useOrderStore } from '@/app/store/orderStore';
 import { useStringingStore } from '@/app/store/stringingStore';
 import { AdminBadgeRow } from '@/components/admin/AdminBadgeRow';
+import AuthGuard from '@/components/auth/AuthGuard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { badgeBase, badgeSizeSm, badgeToneVariant, flowBadgeClass, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass } from '@/lib/badge-style';
+import { shortenId } from '@/lib/shorten';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { adminRichTooltipClass } from '@/lib/tooltip-style';
+import type { ApiResponse, OrderWithType } from '@/lib/types/order';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import useSWR from 'swr';
 
 /** 데이터를 받아오는 fetcher 함수 */
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -289,9 +289,7 @@ export default function OrdersClient() {
     // - 주문 행: 항상 주문 앵커
     // - 신청서 행: 통합이면 주문 앵커 / 단독이면 신청서 앵커
     if (order.__type === 'stringing_application') {
-      return ctx.isIntegratedApp
-        ? { label: '정산: 주문', className: linkBadgeClass('integrated') }
-        : { label: '정산: 신청(단독)', className: linkBadgeClass('standalone') };
+      return ctx.isIntegratedApp ? { label: '정산: 주문', className: linkBadgeClass('integrated') } : { label: '정산: 신청(단독)', className: linkBadgeClass('standalone') };
     }
     if (order.__type === 'rental_order') {
       return { label: '정산: 대여', className: linkBadgeClass('rental') };
@@ -541,7 +539,10 @@ export default function OrdersClient() {
                 ) : data.items.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className={tdClasses}>
-                      불러올 주문이 없습니다.
+                      <div className="flex flex-col items-center gap-2">
+                        <Search className="h-8 w-8 text-muted-foreground/50" />
+                        <p className="text-sm text-muted-foreground">불러올 주문이 없습니다.</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : sortedOrders.length === 0 ? (
@@ -555,13 +556,7 @@ export default function OrdersClient() {
                     // 이 그룹이 "상품 주문 + 교체서비스 신청서" 묶음인지 체크
                     const hasStringingAppInGroup = group.some((o) => o.__type === 'stringing_application');
 
-                    const borderColors = [
-                      'border-border',
-                      'border-border',
-                      'border-border',
-                      'border-border',
-                      'border-border',
-                    ];
+                    const borderColors = ['border-border', 'border-border', 'border-border', 'border-border', 'border-border'];
                     const borderColor = borderColors[groupIdx % borderColors.length];
                     const isGrouped = group.length > 1;
 
@@ -592,7 +587,7 @@ export default function OrdersClient() {
                                     </div>
 
                                     {/* 운영자에게 가장 중요한 정보: “이게 주문인지/신청서인지 + 통합/단독인지” */}
-                                    {/* 
+                                    {/*
                                       테이블 난잡도 개선:
                                       - 테이블에서는 핵심 2개(종류/연결)만 우선 노출
                                       - 나머지(flow/정산)는 +N으로 접어서(hover title) 필요할 때만 확인
@@ -609,12 +604,7 @@ export default function OrdersClient() {
                                   </div>
                                 </TooltipTrigger>
 
-                                <TooltipContent
-                                  side="top"
-                                  align="center"
-                                  sideOffset={6}
-                                  className={adminRichTooltipClass}
-                                >
+                                <TooltipContent side="top" align="center" sideOffset={6} className={adminRichTooltipClass}>
                                   <div>
                                     <div className="flex items-center gap-2">
                                       <span className="font-mono">{order.id}</span>
@@ -669,11 +659,29 @@ export default function OrdersClient() {
                           <TableCell className="w-36 truncate whitespace-nowrap">{formatDate(order.date)}</TableCell>
                           {/* 상태 셀 */}
                           <TableCell className={tdClasses}>
-                            {order.__type === 'stringing_application' ? <ApplicationStatusBadge status={order.status} /> : (() => { const st = getOrderStatusBadgeSpec(order.status); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{order.status}</Badge>; })()}
+                            {order.__type === 'stringing_application' ? (
+                              <ApplicationStatusBadge status={order.status} />
+                            ) : (
+                              (() => {
+                                const st = getOrderStatusBadgeSpec(order.status);
+                                return (
+                                  <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+                                    {order.status}
+                                  </Badge>
+                                );
+                              })()
+                            )}
                           </TableCell>
                           {/* 결제 상태 셀 */}
                           <TableCell className={tdClasses}>
-                            {(() => { const pay = getPaymentStatusBadgeSpec(order.paymentStatus); return <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{order.paymentStatus}</Badge>; })()}
+                            {(() => {
+                              const pay = getPaymentStatusBadgeSpec(order.paymentStatus);
+                              return (
+                                <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+                                  {order.paymentStatus}
+                                </Badge>
+                              );
+                            })()}
                           </TableCell>
                           {/* 수령방식 셀 */}
                           <TableCell className={tdClasses}>
@@ -708,7 +716,9 @@ export default function OrdersClient() {
                           </TableCell>
                           {/* 유형 셀 */}
                           <TableCell className={tdClasses}>
-                            <Badge variant={badgeToneVariant(order.__type === 'stringing_application' ? 'brand' : 'info')} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{order.type}</Badge>
+                            <Badge variant={badgeToneVariant(order.__type === 'stringing_application' ? 'brand' : 'info')} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+                              {order.type}
+                            </Badge>
                           </TableCell>
                           {/* 금액 셀 */}
                           <TableCell className={tdClasses}>{formatCurrency(order.total)}</TableCell>
