@@ -44,32 +44,59 @@ const keyMap: Record<string, string> = {
   comfort: '편안함',
 };
 
-// - Object.entries 순서에 UI가 흔들리지 않게 하기 위해
-// - 항상 같은 순서(반발력/컨트롤/스핀/내구성/편안함)로 보여주기 위해서 표시 순서를 고정.
 const FEATURE_ORDER = ['power', 'control', 'spin', 'durability', 'comfort'] as const;
 
 function getFeatureEntries(features?: Record<string, number>) {
   return FEATURE_ORDER.map((key) => {
-    // 0~5 범위로 안전하게 보정
     const rawValue = Number(features?.[key] ?? 0);
     const value = Math.max(0, Math.min(5, rawValue));
-
-    return {
-      key,
-      label: keyMap[key],
-      value,
-    };
+    return { key, label: keyMap[key], value };
   }).filter((item) => item.value > 0);
 }
 
-function RatingStars({ avg, starClassName = 'w-3 h-3' }: { avg: number; starClassName?: string }) {
-  const safe = Math.max(0, Math.min(5, Number(avg) || 0)); // 0~5 고정
+// shadcn Button의 hover:bg-accent / hover:text-accent-foreground 간섭을 피하기 위해
+// 순수 <button>으로 구현한 위시리스트 토글 버튼
+function WishButton({ inWish, onToggle, size = 'md' }: { inWish: boolean; onToggle: (e: React.MouseEvent) => void; size?: 'sm' | 'md' }) {
+  const dim = size === 'sm' ? 'h-8 w-8 sm:h-9 sm:w-9' : 'h-9 w-9 sm:h-10 sm:w-10';
+  const iconDim = size === 'sm' ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4';
 
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
+      style={inWish ? { background: 'rgb(244 63 94)', borderColor: 'rgb(244 63 94)', color: '#fff' } : undefined}
+      className={cn(
+        dim,
+        'flex-shrink-0 rounded-md border shadow-md',
+        'transition-all duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        // 비활성 기본
+        !inWish && [
+          // 라이트
+          'border-border bg-white text-slate-500',
+          // 라이트 호버 → rose
+          'hover:border-rose-400 hover:bg-rose-50 hover:text-rose-500',
+          // 다크
+          'dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
+          // 다크 호버 → rose
+          'dark:hover:border-rose-500 dark:hover:bg-rose-950 dark:hover:text-rose-400',
+        ],
+        // 활성 hover
+        inWish && ['hover:opacity-90 active:opacity-80'],
+      )}
+    >
+      <Heart className={cn(iconDim, 'transition-all duration-200 mx-auto', inWish ? 'fill-current scale-110' : 'scale-100')} />
+    </button>
+  );
+}
+
+function RatingStars({ avg, starClassName = 'w-3 h-3' }: { avg: number; starClassName?: string }) {
+  const safe = Math.max(0, Math.min(5, Number(avg) || 0));
   return (
     <div className="flex items-center">
       {[0, 1, 2, 3, 4].map((i) => {
-        const fill = Math.max(0, Math.min(1, safe - i)); // i번째 별의 채움 비율(0~1)
-
+        const fill = Math.max(0, Math.min(1, safe - i));
         return (
           <span key={i} className={`relative inline-block ${starClassName}`}>
             <Star className={`${starClassName} text-warning`} />
@@ -111,7 +138,7 @@ const ProductCard = React.memo(
 
     const detailHref = isApplyFlow ? `/products/${product._id}?from=apply` : `/products/${product._id}`;
 
-    const setBuyNowItem = useBuyNowStore((s) => s.setItem); // buyNowStore에 맞는 setter 사용
+    const setBuyNowItem = useBuyNowStore((s) => s.setItem);
     const clearPdpBundle = usePdpBundleStore((s) => s.clear);
 
     const handleStringSingleBuy = (e: React.MouseEvent) => {
@@ -121,12 +148,8 @@ const ProductCard = React.memo(
         showErrorToast('품절된 상품입니다.');
         return;
       }
-
-      // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 단품 구매는 clear가 안전
       clearPdpBundle();
-
       const image = product.images?.[0] ?? '';
-
       setBuyNowItem({
         id: String(product._id),
         name: product.name,
@@ -136,27 +159,19 @@ const ProductCard = React.memo(
         stock: stockForItem,
         kind: 'product',
       });
-
       router.push('/checkout?mode=buynow');
     };
 
     const handleStringServiceApply = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!canCheckoutWithService) {
-        return;
-      }
+      if (!canCheckoutWithService) return;
       if (isSoldOut) {
         showErrorToast('품절된 상품입니다.');
         return;
       }
-
-      // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 서비스 포함 결제도 clear가 안전
       clearPdpBundle();
-
       const image = product.images?.[0] ?? '';
-
-      // Buy-Now 전용 상태에 현재 상품 1건만 저장
       setBuyNowItem({
         id: String(product._id),
         name: product.name,
@@ -166,31 +181,18 @@ const ProductCard = React.memo(
         stock: stockForItem,
         kind: 'product',
       });
-
-      const search = new URLSearchParams({
-        mode: 'buynow',
-        withService: '1',
-      });
-
+      const search = new URLSearchParams({ mode: 'buynow', withService: '1' });
       router.push(`/checkout?${search.toString()}`);
     };
 
     if (viewMode === 'list') {
       return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card/90 dark:bg-card backdrop-blur-sm border border-border hover:border-border dark:hover:border-border relative">
-          <div className="absolute inset-0 opacity-5 dark:opacity-10">
-            <svg className="w-full h-full" viewBox="0 0 400 200" fill="none">
-              <rect x="0" y="0" width="400" height="200" stroke="currentColor" strokeWidth="2" />
-              <line x1="200" y1="0" x2="200" y2="200" stroke="currentColor" strokeWidth="2" />
-              <rect x="50" y="50" width="300" height="100" stroke="currentColor" strokeWidth="1" />
-              <line x1="50" y1="100" x2="350" y2="100" stroke="currentColor" strokeWidth="1" />
-            </svg>
-          </div>
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-xl bg-card border border-border hover:border-border relative">
+          {/* 리스트뷰: 배경 장식 SVG 제거 */}
 
           <div className="flex flex-col bp-md:flex-row relative z-10">
             <div className="relative w-full bp-md:w-48 aspect-[4/3] bp-md:aspect-square flex-shrink-0 overflow-hidden">
               <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill sizes="(max-width: 768px) 100vw, 192px" className="object-cover" />
-              <Image src={(product.images?.[0] as string) || '/placeholder.svg?height=200&width=200&query=tennis+string'} alt={product.name} fill className="object-cover" />
               {product.isNew && (
                 <Badge variant="info" className="absolute right-2 top-2 shadow-sm">
                   NEW
@@ -245,11 +247,9 @@ const ProductCard = React.memo(
                   </Button>
                 )}
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className={`h-9 sm:h-10 ${inWish ? 'border-destructive text-destructive dark:border-destructive dark:text-destructive' : ''}`}
-                  onClick={async (e) => {
+                <WishButton
+                  inWish={inWish}
+                  onToggle={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     try {
@@ -257,17 +257,13 @@ const ProductCard = React.memo(
                       showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
                     } catch (e: any) {
                       if (e?.message === 'unauthorized') {
-                        const target = detailHref;
-                        router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
+                        router.push(`/login?redirectTo=${encodeURIComponent(detailHref)}`);
                       } else {
                         showErrorToast('처리 중 오류가 발생했습니다.');
                       }
                     }
                   }}
-                  title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
-                >
-                  <Heart className={`w-3 h-3 sm:w-4 sm:h-4 ${inWish ? 'text-destructive fill-current' : ''}`} />
-                </Button>
+                />
               </div>
             </div>
           </div>
@@ -275,11 +271,11 @@ const ProductCard = React.memo(
       );
     }
 
+    // ─── 그리드 뷰 ────────────────────────────────────────────────────────────
     return (
       <Link href={detailHref}>
-        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card/90 dark:bg-card backdrop-blur-sm border border-border hover:border-border dark:hover:border-border group relative">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
+        <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card border border-border hover:border-primary/40 dark:hover:border-primary/40 group relative">
+          {/* 이미지 영역 */}
           <div className="relative w-full aspect-[4/3] bp-md:aspect-square overflow-hidden">
             <Image
               src={(product.images?.[0] as string) || '/placeholder.svg?height=300&width=300&query=tennis+string'}
@@ -288,46 +284,55 @@ const ProductCard = React.memo(
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
+
             {product.isNew && (
-              <Badge variant="info" className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs shadow-sm">
+              <Badge variant="info" className="absolute right-2 sm:right-3 top-2 sm:top-3 text-xs shadow-sm z-10">
                 NEW
               </Badge>
             )}
-            <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/30 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <div className="flex gap-2">
-                <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-lg backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-                  <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
-                  상세보기
-                </Button>
 
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className={cn(
-                    // 기본 스타일: 배경색 고정을 풀고 hover 시 accent 색상이 나타나도록 수정
-                    'h-8 w-8 sm:h-9 sm:w-9 p-0 shadow-lg border-border/90 bg-background transition-all duration-200',
-                    'hover:scale-105 active:scale-95', // 호버 시 살짝 커지고 클릭 시 작아지는 효과
+            {/* ─── 호버 오버레이: 투명 없음, 단색 불투명 배경 ─────────────────
+                라이트: 흰색 베이스 / 다크: 짙은 카드색 베이스
+                opacity-0 → opacity-100 전환만 사용, bg-overlay 제거
+            ──────────────────────────────────────────────────────────────── */}
+            <div
+              className={cn(
+                'absolute inset-0 flex items-end justify-between px-3 pb-3 gap-2',
+                'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
+                // 라이트: 하단 흰 그라디언트 (이미지 가리지 않고 버튼 가독성 확보)
+                // 다크: 하단 짙은 그라디언트
+                'bg-gradient-to-t from-white/95 via-white/60 to-transparent',
+                'dark:from-zinc-900/95 dark:via-zinc-900/60 dark:to-transparent',
+              )}
+            >
+              {/* 상세보기 버튼 */}
+              <Button size="sm" variant="default" className="h-8 sm:h-9 text-xs sm:text-sm shadow-md flex-1" onClick={(e) => e.stopPropagation()}>
+                <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
+                상세보기
+              </Button>
 
-                    inWish ? 'border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive' : 'hover:bg-accent hover:text-accent-foreground',
-                  )}
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try {
-                      await toggle(product._id);
-                      showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
-                    } catch {
-                      showErrorToast('처리 중 오류가 발생했습니다.');
-                    }
-                  }}
-                  title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
-                >
-                  <Heart className={cn('w-3 h-3 sm:w-4 sm:h-4 transition-transform', inWish && 'text-destructive fill-current')} />
-                </Button>
-              </div>
+              {/* 위시리스트 버튼
+                  라이트: 기본은 흰 배경 + 테두리, 호버/활성화 시 rose 계열로 전환
+                  다크: 기본은 zinc 배경, 호버/활성화 시 rose 계열
+              */}
+              <WishButton
+                inWish={inWish}
+                onToggle={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    await toggle(product._id);
+                    showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
+                  } catch {
+                    showErrorToast('처리 중 오류가 발생했습니다.');
+                  }
+                }}
+                size="sm"
+              />
             </div>
           </div>
 
+          {/* 카드 콘텐츠 */}
           <CardContent className="p-3 sm:p-4">
             <div className="text-xs text-muted-foreground mb-1.5 font-medium">{brandLabel}</div>
             <CardTitle className="text-sm sm:text-base font-semibold mb-2 line-clamp-2 text-foreground group-hover:text-primary transition-colors min-h-[2.5rem] sm:min-h-[3rem]">{product.name}</CardTitle>
@@ -340,14 +345,7 @@ const ProductCard = React.memo(
             {featureEntries.length > 0 && (
               <div className="mb-3 grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
                 {featureEntries.map((feature, index) => (
-                  <div
-                    key={feature.key}
-                    className={cn(
-                      'flex items-center justify-between rounded-md bg-muted/30 px-2 py-1.5',
-                      // 5개일 때 마지막 1개는 전체 너비 사용
-                      featureEntries.length % 2 === 1 && index === featureEntries.length - 1 && 'col-span-2',
-                    )}
-                  >
+                  <div key={feature.key} className={cn('flex items-center justify-between rounded-md bg-muted/30 px-2 py-1.5', featureEntries.length % 2 === 1 && index === featureEntries.length - 1 && 'col-span-2')}>
                     <span className="text-muted-foreground font-medium">{feature.label}</span>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
@@ -358,6 +356,7 @@ const ProductCard = React.memo(
                 ))}
               </div>
             )}
+
             <div className="flex justify-end">
               <div className="font-bold text-base sm:text-lg text-primary">{product.price.toLocaleString()}원</div>
             </div>
