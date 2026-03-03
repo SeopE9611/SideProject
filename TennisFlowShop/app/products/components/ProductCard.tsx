@@ -87,6 +87,7 @@ const ProductCard = React.memo(
 
     const isSoldOut = status === 'outofstock' || (manageStock && (stockRaw ?? 0) <= 0 && !allowBackorder);
     const stockForItem = typeof stockRaw === 'number' ? stockRaw : undefined;
+    const canCheckoutWithService = typeof product.mountingFee === 'number' && product.mountingFee > 0;
 
     const detailHref = isApplyFlow ? `/products/${product._id}?from=apply` : `/products/${product._id}`;
 
@@ -122,12 +123,15 @@ const ProductCard = React.memo(
     const handleStringServiceApply = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      if (!canCheckoutWithService) {
+        return;
+      }
       if (isSoldOut) {
         showErrorToast('품절된 상품입니다.');
         return;
       }
 
-      // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 작업의뢰도 clear가 안전
+      // (중요) 이전 PDP 번들 흔적이 있으면 Checkout이 번들을 우선 사용함 → 서비스 포함 결제도 clear가 안전
       clearPdpBundle();
 
       const image = product.images?.[0] ?? '';
@@ -215,9 +219,11 @@ const ProductCard = React.memo(
                   {isApplyFlow ? '단품만 구매' : '단품 구매'}
                 </Button>
 
-                <Button type="button" size="sm" variant="secondary" onClick={handleStringServiceApply} disabled={isSoldOut} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1">
-                  {isApplyFlow ? '교체 서비스 포함 결제' : '작업 의뢰'}
-                </Button>
+                {canCheckoutWithService && (
+                  <Button type="button" size="sm" variant="secondary" onClick={handleStringServiceApply} disabled={isSoldOut} className="h-9 sm:h-10 text-xs sm:text-sm col-span-2 sm:col-span-1">
+                    교체 서비스 포함 즉시 결제
+                  </Button>
+                )}
 
                 <Button
                   size="sm"
@@ -340,19 +346,21 @@ const ProductCard = React.memo(
               {isApplyFlow ? '단품만 구매' : '단품 구매'}
             </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              className={
-                isApplyFlow
-                  ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center bp-xl:flex-1 bp-xl:w-auto bp-xl:h-8 bp-xl:sm:h-9 bp-xl:min-h-0 bp-xl:py-0 bp-xl:whitespace-nowrap bp-xl:leading-normal'
-                  : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
-              }
-              onClick={handleStringServiceApply}
-              disabled={isSoldOut}
-            >
-              {isApplyFlow ? '교체 서비스 포함 결제' : '작업의뢰'}
-            </Button>
+            {canCheckoutWithService && (
+              <Button
+                type="button"
+                variant="outline"
+                className={
+                  isApplyFlow
+                    ? 'w-full rounded-lg min-h-8 sm:min-h-9 h-auto px-2 py-2 text-[11px] sm:text-xs whitespace-normal leading-tight text-center bp-xl:flex-1 bp-xl:w-auto bp-xl:h-8 bp-xl:sm:h-9 bp-xl:min-h-0 bp-xl:py-0 bp-xl:whitespace-nowrap bp-xl:leading-normal'
+                    : 'flex-1 rounded-lg h-8 sm:h-9 text-[11px] sm:text-xs'
+                }
+                onClick={handleStringServiceApply}
+                disabled={isSoldOut}
+              >
+                교체 서비스 포함 즉시 결제
+              </Button>
+            )}
           </CardFooter>
         </Card>
       </Link>

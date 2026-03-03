@@ -16,6 +16,22 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
+
+type ServicePickupMethod = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
+
+function normalizeServicePickupMethod(raw: unknown): ServicePickupMethod | null {
+  if (raw === 'SELF_SEND' || raw === 'COURIER_VISIT' || raw === 'SHOP_VISIT') return raw;
+  if (raw === 'COURIER_PICKUP') return 'COURIER_VISIT';
+  if (raw === 'VISIT') return 'SHOP_VISIT';
+  return null;
+}
+
+function toCollectionMethodFromServicePickup(raw: unknown): 'self_ship' | 'courier_pickup' | 'visit' {
+  const pickup = normalizeServicePickupMethod(raw);
+  if (pickup === 'SHOP_VISIT') return 'visit';
+  if (pickup === 'COURIER_VISIT') return 'courier_pickup';
+  return 'self_ship';
+}
 function mapCourierLabel(raw?: string | null): string {
   if (!raw) return '택배사 미입력';
   const c = raw.toLowerCase();
@@ -146,7 +162,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
     const linkedOrderPickupMethod = (() => {
       if (!order) return null;
-      const pickup = (order as any).servicePickupMethod as 'SHOP_VISIT' | 'COURIER_VISIT' | 'SELF_SEND' | undefined;
+      const pickup = normalizeServicePickupMethod((order as any).servicePickupMethod);
       const codeFromPickup = pickup === 'SHOP_VISIT' ? 'visit' : pickup === 'COURIER_VISIT' || pickup === 'SELF_SEND' ? 'courier' : undefined;
 
       const shippingRaw = (order as any).shippingInfo?.shippingMethod ?? (order as any).shippingInfo?.deliveryMethod ?? null;
@@ -1719,7 +1735,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
     // 주문의 선택에 따라 기본 수거방식 결정
     const initialCollectionMethod: 'self_ship' | 'courier_pickup' | 'visit' =
-      (order as any)?.servicePickupMethod === 'COURIER_PICKUP' ? 'courier_pickup' : (order as any)?.servicePickupMethod === 'VISIT' || (order as any)?.shippingInfo?.deliveryMethod === '방문수령' ? 'visit' : 'self_ship';
+      (order as any)?.shippingInfo?.deliveryMethod === '방문수령' ? 'visit' : toCollectionMethodFromServicePickup((order as any)?.servicePickupMethod);
 
     // 없으면 초안 생성
     const now = new Date();
