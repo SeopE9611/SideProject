@@ -134,6 +134,15 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     lines: normalizedLines,
   };
 
+
+  const normalizedShippingInfo = {
+    ...(shippingInfo ?? {}),
+    collectionMethod: cm,
+    address: cm === 'visit' ? '' : shippingInfo?.address ?? '',
+    addressDetail: cm === 'visit' ? '' : shippingInfo?.addressDetail ?? '',
+    postalCode: cm === 'visit' ? '' : shippingInfo?.postalCode ?? '',
+  };
+
   const serviceFeeBefore = usingLines ? normalizedLines.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0) : await calcStringingTotal(db, stringTypes);
 
   const packageUseCount = usingLines ? normalizedLines.length : Math.max(1, stringTypes.length);
@@ -161,10 +170,7 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     email: email ?? '',
     contactEmail: normalizeEmail(email),
     contactPhone: phone.replace(/\D/g, '') || null,
-    shippingInfo: {
-      ...(shippingInfo ?? {}),
-      collectionMethod: cm,
-    },
+    shippingInfo: normalizedShippingInfo,
     collectionMethod: cm,
     stringDetails,
     stringItems: normalizedStringItems,

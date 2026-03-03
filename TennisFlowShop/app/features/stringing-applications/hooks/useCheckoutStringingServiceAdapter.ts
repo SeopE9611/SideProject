@@ -146,6 +146,7 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
     if (!withStringService) return;
 
     const collectionMethod = mapPickupToCollectionMethod(servicePickupMethod);
+    const isVisit = collectionMethod === 'visit';
 
     setFormData((prev) => {
       if (
@@ -155,9 +156,9 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
         && prev.shippingName === name
         && prev.shippingEmail === email
         && prev.shippingPhone === phone
-        && prev.shippingPostcode === postalCode
-        && prev.shippingAddress === address
-        && prev.shippingAddressDetail === addressDetail
+        && prev.shippingPostcode === (isVisit ? '' : postalCode)
+        && prev.shippingAddress === (isVisit ? '' : address)
+        && prev.shippingAddressDetail === (isVisit ? '' : addressDetail)
         && prev.shippingDepositor === depositor
         && prev.shippingBank === selectedBank
         && prev.collectionMethod === collectionMethod
@@ -173,9 +174,9 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
         shippingName: name,
         shippingEmail: email,
         shippingPhone: phone,
-        shippingPostcode: postalCode,
-        shippingAddress: address,
-        shippingAddressDetail: addressDetail,
+        shippingPostcode: isVisit ? '' : postalCode,
+        shippingAddress: isVisit ? '' : address,
+        shippingAddressDetail: isVisit ? '' : addressDetail,
         shippingDepositor: depositor,
         shippingBank: selectedBank,
         collectionMethod,
