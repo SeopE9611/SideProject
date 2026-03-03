@@ -24,7 +24,7 @@ export default async function PricingPage() {
       name: '스트링 상품 선택 장착',
       price: '상품별 상이',
       time: '30-60분',
-      description: '선택한 상품의 mountingFee를 기준으로 교체비가 계산됩니다.',
+      description: '선택한 상품의 상품별 장착비를 기준으로 교체비가 계산됩니다.',
       features: ['상품별 장착비 적용', '주문/대여 연계 시 기존 결제내역 우선', '최종 결제 금액은 신청 방식에 따라 상이'],
     },
     {
@@ -107,9 +107,19 @@ export default async function PricingPage() {
                   {category.count === 0 ? (
                     <p className="text-muted-foreground">현재 등록된 상품 데이터가 없습니다.</p>
                   ) : (
+                    // <>
+                    //   <p>상품가 범위: <b>{won(category.minPrice)}</b> ~ <b>{won(category.maxPrice)}</b></p>
+                    //   <p>장착비 범위: <b>{won(category.minMountingFee)}</b> ~ <b>{won(category.maxMountingFee)}</b></p>
+                    //   <p className="text-muted-foreground">대표 브랜드: {category.brands.length ? category.brands.join(', ') : '데이터 없음'}</p>
+                    //   <p className="text-muted-foreground">대표 상품: {category.productNames.length ? category.productNames.join(', ') : '데이터 없음'}</p>
+                    // </>
                     <>
-                      <p>상품가 범위: <b>{won(category.minPrice)}</b> ~ <b>{won(category.maxPrice)}</b></p>
-                      <p>장착비 범위: <b>{won(category.minMountingFee)}</b> ~ <b>{won(category.maxMountingFee)}</b></p>
+                      <p>
+                        상품가 범위: <b>0원</b> ~ <b>0원</b>
+                      </p>
+                      <p>
+                        장착비 범위: <b>0원</b> ~ <b>0원</b>
+                      </p>
                       <p className="text-muted-foreground">대표 브랜드: {category.brands.length ? category.brands.join(', ') : '데이터 없음'}</p>
                       <p className="text-muted-foreground">대표 상품: {category.productNames.length ? category.productNames.join(', ') : '데이터 없음'}</p>
                     </>
@@ -141,7 +151,9 @@ export default async function PricingPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <p className="text-muted-foreground">하이브리드는 단일 재질이 아닌 메인/크로스 스트링의 조합 방식입니다. 가격 비교는 단일 재질(폴리에스터, 인조쉽/멀티필라멘트, 내추럴 거트)을 먼저 확인해 주세요.</p>
-              <p>등록된 하이브리드 상품 수: <b>{hybridGuide.count.toLocaleString('ko-KR')}개</b></p>
+              <p>
+                등록된 하이브리드 상품 수: <b>{hybridGuide.count.toLocaleString('ko-KR')}개</b>
+              </p>
               <p className="text-muted-foreground">대표 조합 표기: {hybridGuide.representativeMaterials.length ? hybridGuide.representativeMaterials.join(', ') : '데이터 없음'}</p>
               <p className="text-muted-foreground">대표 상품: {hybridGuide.representativeProducts.length ? hybridGuide.representativeProducts.join(', ') : '데이터 없음'}</p>
             </CardContent>
@@ -168,7 +180,10 @@ export default async function PricingPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Truck className="h-5 w-5" />예약 / 수거 / 방문 정책</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Truck className="h-5 w-5" />
+                예약 / 수거 / 방문 정책
+              </CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-2 text-muted-foreground">
               <p>• 매장 방문 / 자가 발송 / 기사 방문 수거 중 선택 가능합니다.</p>
@@ -181,7 +196,10 @@ export default async function PricingPage() {
 
         <Card className="bg-muted/40">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Zap className="h-5 w-5" />주의사항 / FAQ</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              주의사항 / FAQ
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>• 스트링 포함 가격은 고정값이 아니며 선택 상품과 신청 방식에 따라 달라집니다.</p>
@@ -191,7 +209,9 @@ export default async function PricingPage() {
         </Card>
 
         <div className="text-center">
-          <Button asChild size="lg"><Link href="/services">장착 서비스 예약하러 가기</Link></Button>
+          <Button asChild size="lg">
+            <Link href="/services">장착 서비스 예약하러 가기</Link>
+          </Button>
         </div>
       </div>
     </div>
