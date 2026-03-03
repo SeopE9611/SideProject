@@ -1,32 +1,32 @@
 'use client';
 
-import useSWR from 'swr';
-import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck, X } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { badgeBase, badgeSizeSm, badgeToneVariant, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Package, Search, Truck } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import useSWR from 'swr';
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { racketBrandLabel } from '@/lib/constants';
 import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
-import { adminRichTooltipClass } from '@/lib/tooltip-style';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
-import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalsListResponseDto, AdminRentalShippingFilter } from '@/types/admin/rentals';
-import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { racketBrandLabel } from '@/lib/constants';
+import { adminRichTooltipClass } from '@/lib/tooltip-style';
+import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalShippingFilter, AdminRentalsListResponseDto } from '@/types/admin/rentals';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 type RentalRow = AdminRentalListItemDto & { id: string; createdAt: string; dueAt: string | null; depositRefundedAt: string | null };
 
@@ -397,7 +397,11 @@ export default function AdminRentalsClient() {
   function PaymentBadge({ item }: { item: RentalRow }) {
     const paymentLabel = item.paymentStatusLabel ?? (derivePaymentStatus(item) === 'paid' ? '결제완료' : '결제대기');
     const pay = getPaymentStatusBadgeSpec(paymentLabel);
-    return <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{paymentLabel}</Badge>;
+    return (
+      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+        {paymentLabel}
+      </Badge>
+    );
   }
 
   function ShippingBadge({ item }: { item: RentalRow }) {
@@ -582,13 +586,27 @@ export default function AdminRentalsClient() {
           </div>
           {/* “이 화면에서 무엇이 다른지”를 즉시 이해시키는 장치 */}
           <div className="px-6 -mt-2 mb-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-            <Badge variant={getKindBadge().variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{getKindBadge().label}</Badge>
-            <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>단독</Badge>
-            <Badge variant="brand" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>교체서비스 포함</Badge>
-            <Badge variant="info" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>신청서 연결</Badge>
-            <Badge variant={FLOW_BADGE_VARIANT[6]} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{FLOW_SHORT[6]}</Badge>
-            <Badge variant={FLOW_BADGE_VARIANT[7]} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{FLOW_SHORT[7]}</Badge>
-            <Badge variant={getSettlementBadge().variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>{getSettlementBadge().label}</Badge>
+            <Badge variant={getKindBadge().variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              {getKindBadge().label}
+            </Badge>
+            <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              단독
+            </Badge>
+            <Badge variant="brand" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              교체서비스 포함
+            </Badge>
+            <Badge variant="info" className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              신청서 연결
+            </Badge>
+            <Badge variant={FLOW_BADGE_VARIANT[6]} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              {FLOW_SHORT[6]}
+            </Badge>
+            <Badge variant={FLOW_BADGE_VARIANT[7]} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              {FLOW_SHORT[7]}
+            </Badge>
+            <Badge variant={getSettlementBadge().variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+              {getSettlementBadge().label}
+            </Badge>
             <span className="ml-1">• 신청서 연결이 있으면 신청서 상세로 바로 이동할 수 있습니다</span>
           </div>
         </CardHeader>
@@ -669,26 +687,21 @@ export default function AdminRentalsClient() {
                                 </div>
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
-                     {(() => {
+                                {(() => {
                                   // 테이블 난잡도 개선: badge 목록을 구성하고 AdminBadgeRow로 “접기” 처리
                                   const items: BadgeItem[] = [
-                                    { label: kind.label, className: kind.className, title: '문서 종류' },
-                                    { label: svc.label, className: svc.className, title: '교체서비스 포함 여부' },
-                                    ...(link ? [{ label: link.label, className: link.className, title: '신청서 연결 여부' }] : []),
-                                    { label: flow.shortLabel, className: flow.className, title: `시나리오: ${flow.label}` },
-                                    { label: settlement.label, className: settlement.className, title: '정산 앵커' },
+                                    { label: kind.label, variant: kind.variant, title: '문서 종류' },
+                                    { label: svc.label, variant: svc.variant, title: '교체서비스 포함 여부' },
+                                    ...(link ? [{ label: link.label, variant: link.variant, title: '신청서 연결 여부' }] : []),
+                                    { label: flow.shortLabel, variant: flow.variant, title: `시나리오: ${flow.label}` },
+                                    { label: settlement.label, variant: settlement.variant, title: '정산 앵커' },
                                   ];
                                   return <AdminBadgeRow maxVisible={3} items={items} />;
                                 })()}
                               </button>
                             </TooltipTrigger>
 
-                            <TooltipContent
-                              side="top"
-                              align="center"
-                              sideOffset={6}
-                              className={adminRichTooltipClass}
-                            >
+                            <TooltipContent side="top" align="center" sideOffset={6} className={adminRichTooltipClass}>
                               <div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-mono">{rid}</span>
@@ -803,8 +816,8 @@ export default function AdminRentalsClient() {
                                 </Link>
                               </DropdownMenuItem>
                             )}
-                          <DropdownMenuSeparator />
-                          {(r.status === 'paid' || r.status === 'out') && (
+                            <DropdownMenuSeparator />
+                            {(r.status === 'paid' || r.status === 'out') && (
                               <DropdownMenuItem onClick={() => setPendingAction({ type: 'return', rentalId: rid })} disabled={busyId === rid}>
                                 <Package className="mr-2 h-4 w-4" /> 반납 처리
                               </DropdownMenuItem>
@@ -882,13 +895,7 @@ export default function AdminRentalsClient() {
         }
         confirmText={pendingAction?.type === 'return' ? '반납 처리' : pendingAction?.type === 'refundMark' ? '환불 처리' : '환불 해제'}
         cancelText="취소"
-        eventKey={
-          pendingAction?.type === 'return'
-            ? 'admin-rentals-return-confirm'
-            : pendingAction?.type === 'refundMark'
-              ? 'admin-rentals-refund-mark-confirm'
-              : 'admin-rentals-refund-clear-confirm'
-        }
+        eventKey={pendingAction?.type === 'return' ? 'admin-rentals-return-confirm' : pendingAction?.type === 'refundMark' ? 'admin-rentals-refund-mark-confirm' : 'admin-rentals-refund-clear-confirm'}
         eventMeta={{ rentalId: pendingAction?.rentalId }}
       />
     </div>

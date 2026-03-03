@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
 import { adminTypography } from '@/components/admin/admin-typography';
+import { Badge, BadgeProps } from '@/components/ui/badge';
+import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
+import { cn } from '@/lib/utils';
 
 /**
  * 테이블에서 “뱃지 과다 노출”로 난잡해지는 문제를 막기 위한 공용 렌더러.
@@ -12,6 +12,7 @@ import { adminTypography } from '@/components/admin/admin-typography';
  */
 export type BadgeItem = {
   label: string; // 뱃지에 표시할 텍스트
+  variant?: BadgeProps['variant']; // shadcn Badge variant 기반 톤
   className?: string; // 색상/톤 클래스
   title?: string; // hover 시 의미를 보충(접힌 뱃지 목록에도 같이 사용)
   icon?: ReactNode; // 접근성 보강: 색상 외 아이콘으로 의미 전달
@@ -40,6 +41,7 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
       {visible.map((b, idx) => (
         <Badge
           key={`${b.label}-${idx}`}
+          variant={b.variant}
           title={b.title} // 각 뱃지의 의미를 hover로 보충
           className={cn(badgeBase, badgeSizeSm, adminTypography.badgeLabel, 'whitespace-nowrap', b.className)}
         >
