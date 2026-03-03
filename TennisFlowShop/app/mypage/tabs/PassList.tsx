@@ -63,7 +63,7 @@ export default function PassList() {
             <div className="bg-muted/50 rounded-full p-4 mb-4">
               <Ticket className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
             </div>
-            <p className="text-base font-medium text-center mb-1">패키지 내역이 없습니다</p>
+            <p className="text-base font-medium text-center mb-1">보유 중인 패키지 이용권이 없습니다.</p>
             <p className="text-sm text-muted-foreground text-center">패키지를 구매하고 활성화 시 여기에 표시됩니다</p>
           </div>
         )}
