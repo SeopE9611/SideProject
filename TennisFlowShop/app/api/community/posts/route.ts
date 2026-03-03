@@ -13,6 +13,7 @@ import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCo
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 import { normalizeMarketMeta } from '@/lib/market';
+import { getValidCommunityUserObjectIds, resolveCommunityDisplayName } from '@/lib/community-display-name';
 import type {
   AccessTokenPayload,
   CommunityListResponseDto,
@@ -37,40 +38,6 @@ async function getAuthPayload() {
   const subStr = payload?.sub ? String(payload.sub) : '';
   if (!subStr || !ObjectId.isValid(subStr)) return null;
   return payload ?? null;
-}
-
-/**
- * 표시용 작성자 이름 결정 로직
- * - users 컬렉션의 name/nickname → payload.name/nickname → email 앞부분
- */
-async function resolveDisplayName(payload: AccessTokenPayload | null): Promise<string> {
-  const db = await getDb();
-  let displayName: string | null = null;
-
-  try {
-    const subStr = payload?.sub ? String(payload.sub) : '';
-    if (subStr && ObjectId.isValid(subStr)) {
-      const u = await db.collection('users').findOne({
-        _id: new ObjectId(subStr),
-      });
-
-      // 현재 users 스키마 기준:
-      // 1) (나중에 nickname 필드가 생기면) u.nickname
-      // 2) u.name
-      // 3) 그 외는 fallback
-      const userDoc = u as { nickname?: string; name?: string } | null;
-      displayName = userDoc?.nickname ?? userDoc?.name ?? null;
-    }
-  } catch {
-    // 조회 실패해도 치명적이진 않으니 무시
-  }
-
-  // 아직도 못 정했으면 payload 기반 fallback
-  if (!displayName) {
-    displayName = payload?.nickname ?? payload?.name ?? payload?.email?.split('@')?.[0] ?? '회원';
-  }
-
-  return displayName ?? '회원';
 }
 
 // ----------------------------- Zod 스키마 ----------------------------------
@@ -177,7 +144,28 @@ export async function GET(req: NextRequest) {
   const total = await col.countDocuments(filter);
   const docs = await col.find(filter).sort(sortOption).skip(skip).limit(limit).toArray();
 
-  const items: CommunityPostListItemDto[] = (docs as CommunityPostMongoDoc[]).map((d) => ({
+  const communityDocs = docs as CommunityPostMongoDoc[];
+  const userObjectIds = getValidCommunityUserObjectIds(communityDocs.map((doc) => doc.userId ?? null));
+  const users = userObjectIds.length
+    ? await db
+        .collection('users')
+        .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
+        .toArray()
+    : [];
+  const userMap = new Map(users.map((user) => [String(user._id), user as { _id: ObjectId; name?: string; nickname?: string }]));
+
+  const items: CommunityPostListItemDto[] = communityDocs.map((d) => {
+    const userId = d.userId ? String(d.userId) : null;
+    const user = userId ? userMap.get(userId) : undefined;
+    const displayName = resolveCommunityDisplayName({
+      userName: user?.name,
+      userNickname: user?.nickname,
+      authorName: d.authorName,
+      nickname: d.nickname,
+      authorEmail: d.authorEmail,
+    });
+
+    return {
     id: String(d._id),
     type: d.type,
     title: d.title,
@@ -192,15 +180,16 @@ export async function GET(req: NextRequest) {
     authorName: d.authorName,
     authorEmail: d.authorEmail,
 
-    userId: d.userId ? String(d.userId) : null,
-    nickname: d.nickname ?? '회원',
+    userId,
+    nickname: displayName,
     status: d.status ?? 'public',
     views: d.views ?? 0,
     likes: d.likes ?? 0,
     commentsCount: d.commentsCount ?? 0,
     createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
     updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
-  }));
+    };
+  });
 
   // logInfo({
   //   msg: 'community:list',
@@ -383,7 +372,14 @@ export async function POST(req: NextRequest) {
     body.marketMeta = normalizedMarketMeta;
   }
 
-  const displayName = await resolveDisplayName(payload);
+  const userDoc = await db.collection('users').findOne({ _id: userId }, { projection: { name: 1, nickname: 1 } });
+  const displayName = resolveCommunityDisplayName({
+    userName: userDoc?.name,
+    userNickname: userDoc?.nickname,
+    authorName: payload?.name,
+    nickname: payload?.nickname,
+    authorEmail: payload?.email,
+  });
   const now = new Date();
 
   const doc: Omit<CommunityPostMongoDoc, '_id'> = {
@@ -409,6 +405,8 @@ export async function POST(req: NextRequest) {
     postNo,
 
     userId,
+    authorName: displayName,
+    authorEmail: payload?.email,
     nickname: displayName,
 
     status: 'public' as const,

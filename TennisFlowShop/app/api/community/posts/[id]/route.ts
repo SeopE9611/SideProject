@@ -13,6 +13,7 @@ import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from
 import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
 import { classifyBoardPatchFailure } from '@/lib/boards-patch-conflict';
 import { normalizeMarketMeta } from '@/lib/market';
+import { resolveCommunityDisplayName } from '@/lib/community-display-name';
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
@@ -111,6 +112,18 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     likedByMe = !!likeDoc;
   }
 
+  const userDoc =
+    doc.userId && ObjectId.isValid(String(doc.userId))
+      ? await db.collection('users').findOne({ _id: new ObjectId(String(doc.userId)) }, { projection: { name: 1, nickname: 1 } })
+      : null;
+  const displayName = resolveCommunityDisplayName({
+    userName: userDoc?.name,
+    userNickname: userDoc?.nickname,
+    authorName: doc.authorName,
+    nickname: doc.nickname,
+    authorEmail: doc.authorEmail,
+  });
+
   const item: CommunityPost = {
     id: String(doc._id),
     type: doc.type,
@@ -127,7 +140,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     attachments: Array.isArray(doc.attachments) ? doc.attachments : [],
     postNo: typeof doc.postNo === 'number' ? doc.postNo : null,
 
-    nickname: doc.nickname ?? '회원',
+    nickname: displayName,
     status: doc.status ?? 'public',
 
     // GET에서는 조회수 증가를 하지 않으므로, 저장된 값 그대로 반환

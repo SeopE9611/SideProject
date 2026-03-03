@@ -2,7 +2,7 @@ import { MARKET_BRANDS_BY_CATEGORY, MARKET_BRAND_LABEL_MAP } from '@/lib/market'
 
 export type BoardType = 'free' | 'market' | 'gear';
 
-type CategoryConfig = { value: string; label: string; semanticTag: string };
+type CategoryConfig = { value: string; label: string };
 
 export type BoardTypeConfig = {
   boardType: BoardType;
@@ -19,7 +19,7 @@ export type BoardTypeConfig = {
 };
 
 export function getCategoryBadgeText(category: CategoryConfig) {
-  return `${category.semanticTag} ${category.label}`;
+  return category.label;
 }
 
 function createCategoryMap(categories: CategoryConfig[]) {
@@ -42,11 +42,11 @@ export const FREE_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'etc', label: '기타' },
   ],
   categoryMap: createCategoryMap([
-    { value: 'general', label: '자유', semanticTag: '💬' },
-    { value: 'info', label: '정보', semanticTag: '📘' },
-    { value: 'qna', label: '질문', semanticTag: '❓' },
-    { value: 'tip', label: '노하우', semanticTag: '💡' },
-    { value: 'etc', label: '기타', semanticTag: '🏷️' },
+    { value: 'general', label: '자유' },
+    { value: 'info', label: '정보' },
+    { value: 'qna', label: '질문' },
+    { value: 'tip', label: '노하우' },
+    { value: 'etc', label: '기타' },
   ]),
 };
 
@@ -64,9 +64,9 @@ export const MARKET_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'equipment', label: '일반장비' },
   ],
   categoryMap: createCategoryMap([
-    { value: 'racket', label: '라켓', semanticTag: '🎾' },
-    { value: 'string', label: '스트링', semanticTag: '🧵' },
-    { value: 'equipment', label: '일반장비', semanticTag: '🧰' },
+    { value: 'racket', label: '라켓' },
+    { value: 'string', label: '스트링' },
+    { value: 'equipment', label: '일반장비' },
   ]),
   brandOptionsByCategory: MARKET_BRANDS_BY_CATEGORY,
   brandLabelMap: MARKET_BRAND_LABEL_MAP,
@@ -92,14 +92,14 @@ export const GEAR_BOARD_CONFIG: BoardTypeConfig = {
     { value: 'other', label: '기타' },
   ],
   categoryMap: createCategoryMap([
-    { value: 'racket', label: '라켓', semanticTag: '🎾' },
-    { value: 'string', label: '스트링', semanticTag: '🧵' },
-    { value: 'shoes', label: '테니스화', semanticTag: '👟' },
-    { value: 'bag', label: '가방', semanticTag: '👜' },
-    { value: 'apparel', label: '의류', semanticTag: '👕' },
-    { value: 'grip', label: '그립', semanticTag: '🖐️' },
-    { value: 'accessory', label: '악세서리', semanticTag: '🔧' },
-    { value: 'ball', label: '테니스볼', semanticTag: '🟡' },
-    { value: 'other', label: '기타', semanticTag: '🏷️' },
+    { value: 'racket', label: '라켓' },
+    { value: 'string', label: '스트링' },
+    { value: 'shoes', label: '테니스화' },
+    { value: 'bag', label: '가방' },
+    { value: 'apparel', label: '의류' },
+    { value: 'grip', label: '그립' },
+    { value: 'accessory', label: '악세서리' },
+    { value: 'ball', label: '테니스볼' },
+    { value: 'other', label: '기타' },
   ]),
 };

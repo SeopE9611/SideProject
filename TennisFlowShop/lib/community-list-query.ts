@@ -114,7 +114,9 @@ function escapeRegex(input: string): string {
 
 const parseNum = (v: string | null) => {
   if (!v) return null;
-  const n = Number(v);
+  const normalized = v.replace(/,/g, '').trim();
+  if (!normalized) return null;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 };
 
