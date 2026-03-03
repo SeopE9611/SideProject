@@ -4,6 +4,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { performance } from 'node:perf_hooks';
+import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 
 // 환경변수에서 JWT 비밀키 로딩
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
@@ -132,6 +133,10 @@ export async function PATCH(req: NextRequest) {
 
   // 선택 필드는 값이 들어왔을 때만 타입을 확인합니다.
   if (name != null && typeof name !== 'string') return NextResponse.json({ error: 'INVALID_NAME' }, { status: 400 });
+  if (typeof name === 'string') {
+    const reservedNameError = getReservedDisplayNameErrorMessage(name);
+    if (reservedNameError) return NextResponse.json({ error: 'RESERVED_DISPLAY_NAME', message: reservedNameError }, { status: 400 });
+  }
   if (phone != null && typeof phone !== 'string') return NextResponse.json({ error: 'INVALID_PHONE' }, { status: 400 });
   if (postalCode != null && typeof postalCode !== 'string') return NextResponse.json({ error: 'INVALID_POSTAL_CODE' }, { status: 400 });
   if (address != null && typeof address !== 'string') return NextResponse.json({ error: 'INVALID_ADDRESS' }, { status: 400 });

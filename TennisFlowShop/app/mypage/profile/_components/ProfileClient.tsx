@@ -19,6 +19,7 @@ import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileFor
 import { Badge } from '@/components/ui/badge';
 import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 
 // 제출 직전 최종 유효성 가드
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -169,6 +170,11 @@ export default function ProfileClient({ user }: Props) {
  // 필수값(화면에도 *로 표시되어 있음)
  if (!nameTrim || nameTrim.length < 2) {
  showErrorToast('이름을 확인해주세요. (2자 이상)');
+ return;
+ }
+ const reservedNameError = getReservedDisplayNameErrorMessage(nameTrim);
+ if (reservedNameError) {
+ showErrorToast(reservedNameError);
  return;
  }
  if (!emailTrim || !EMAIL_RE.test(emailTrim)) {

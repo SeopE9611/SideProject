@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2, Lock, Mail, MapPin, Phone, Shield, User } from 'lucide-react';
 import Image from 'next/image';
@@ -428,6 +429,10 @@ export default function LoginPageClient() {
     // 공통: 이름/연락처/주소는 반드시 입력
     const nextCommonErrors: Partial<Record<RegisterField, string>> = {};
     if (!nameTrim || nameTrim.length < 2) nextCommonErrors.name = '이름을 입력해주세요. (2자 이상)';
+    else {
+      const reservedNameError = getReservedDisplayNameErrorMessage(nameTrim);
+      if (reservedNameError) nextCommonErrors.name = reservedNameError;
+    }
     if (!phoneDigits) nextCommonErrors.phone = '연락처를 입력해주세요. (예: 01012345678)';
     else if (!isValidKoreanPhone(phoneDigits)) nextCommonErrors.phone = '올바른 연락처 형식으로 입력해주세요. (010 0000 0000)';
     if (!postalTrim || !addressTrim) nextCommonErrors.postalCode = '우편번호 찾기를 통해 주소를 등록해주세요.';
@@ -452,6 +457,7 @@ export default function LoginPageClient() {
           credentials: 'include',
           body: JSON.stringify({
             token: oauthToken,
+            name: nameTrim,
             phone: phoneDigits,
             postalCode: postalTrim,
             address: addressTrim,
@@ -1013,9 +1019,11 @@ export default function LoginPageClient() {
                           id="register-name"
                           value={name}
                           onChange={(e) => {
-                            setName(e.target.value);
-                            setRegisterFieldErrors((prev) => ({ ...prev, name: undefined }));
-                            setRegisterFormError('');
+                            const nextName = e.target.value;
+                            setName(nextName);
+                            const reservedNameError = getReservedDisplayNameErrorMessage(nextName.trim());
+                            setRegisterFieldErrors((prev) => ({ ...prev, name: reservedNameError ?? undefined }));
+                            setRegisterFormError(reservedNameError ?? '');
                           }}
                           placeholder="이름을 입력하세요"
                           className="pl-10 h-12 border-border focus:border-border dark:focus:border-border"
