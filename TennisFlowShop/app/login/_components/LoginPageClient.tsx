@@ -386,7 +386,7 @@ export default function LoginPageClient() {
     if (reservedEmailError) {
       setRegisterFormError(reservedEmailError);
       setRegisterFieldErrors((prev) => ({ ...prev, emailId: reservedEmailError }));
-      setIsEmailAvailable(false);
+      setIsEmailAvailable(null); // 중복확인 결과가 아니라 정책 에러이므로 null 유지
       focusFirst(['register-email-id']);
       return;
     }
