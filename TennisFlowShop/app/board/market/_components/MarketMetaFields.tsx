@@ -34,7 +34,11 @@ const onNum = (v: string) => {
 };
 
 export default function MarketMetaFields({ category, value, onChange, disabled }: Props) {
-  const priceGuideText = value.price && value.price > 0 ? `입력 가격: ${value.price.toLocaleString('ko-KR')}원` : '가격은 숫자만 입력해 주세요.';
+ const hasValidPrice = typeof value.price === 'number' && value.price > 0;
+ const priceGuideText =
+   typeof value.price === 'number' && value.price > 0
+     ? `입력 가격: ${value.price.toLocaleString('ko-KR')}원`
+     : '가격은 숫자만 입력해 주세요.';
 
   return (
     <Card className="border border-border bg-muted/20">
@@ -45,9 +49,11 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
         {/* 공통 거래 정보: market 글이라면 항상 받는 핵심 필드 */}
         <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-2">
-            <Label>판매가 * <span className="text-xs font-normal text-muted-foreground">희망 판매가를 입력해 주세요.</span></Label>
+            <Label>
+              판매가 * <span className="text-xs font-normal text-muted-foreground">희망 판매가를 입력해 주세요.</span>
+            </Label>
             <Input type="number" min={1} placeholder="예: 35000" value={value.price ?? ''} onChange={(e) => onChange({ ...value, price: onNum(e.target.value) })} disabled={disabled} />
-            <p className="text-[11px] text-muted-foreground">{priceGuideText}</p>
+            <p className={`text-[11px] ${hasValidPrice ? 'text-muted-foreground' : 'text-destructive'}`}>{priceGuideText}</p>
           </div>
           <div className="space-y-2">
             <Label>판매 상태 *</Label>
@@ -84,17 +90,32 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>모델명 *</Label>
-                <Input placeholder="예: EZONE 98 2024, PRO STAFF 97 V14" value={value.racketSpec?.modelName ?? ''} onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), modelName: e.target.value }, stringSpec: null })} disabled={disabled} />
+                <Input
+                  placeholder="예: EZONE 98 2024, PRO STAFF 97 V14"
+                  value={value.racketSpec?.modelName ?? ''}
+                  onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), modelName: e.target.value }, stringSpec: null })}
+                  disabled={disabled}
+                />
               </div>
               {(['weight', 'balance', 'headSize', 'lengthIn', 'swingWeight', 'stiffnessRa'] as const).map((k) => (
                 <div className="space-y-2" key={k}>
                   <Label>{getMarketRacketFieldLabel(k)}</Label>
-                  <Input type="number" value={(value.racketSpec as any)?.[k] ?? ''} onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), [k]: onNum(e.target.value) }, stringSpec: null })} disabled={disabled} />
+                  <Input
+                    type="number"
+                    value={(value.racketSpec as any)?.[k] ?? ''}
+                    onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), [k]: onNum(e.target.value) }, stringSpec: null })}
+                    disabled={disabled}
+                  />
                 </div>
               ))}
               <div className="space-y-2">
                 <Label>스트링 패턴</Label>
-                <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.racketSpec?.pattern ?? ''} onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), pattern: e.target.value || null }, stringSpec: null })} disabled={disabled}>
+                <select
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={value.racketSpec?.pattern ?? ''}
+                  onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), pattern: e.target.value || null }, stringSpec: null })}
+                  disabled={disabled}
+                >
                   <option value="">선택 안함</option>
                   {MARKET_RACKET_PATTERN_OPTIONS.map((o) => (
                     <option key={o} value={o}>
@@ -105,7 +126,12 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
               </div>
               <div className="space-y-2">
                 <Label>그립 사이즈</Label>
-                <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.racketSpec?.gripSize ?? ''} onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), gripSize: e.target.value || null }, stringSpec: null })} disabled={disabled}>
+                <select
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={value.racketSpec?.gripSize ?? ''}
+                  onChange={(e) => onChange({ ...value, racketSpec: { ...(value.racketSpec ?? { modelName: '' }), gripSize: e.target.value || null }, stringSpec: null })}
+                  disabled={disabled}
+                >
                   <option value="">선택 안함</option>
                   {MARKET_RACKET_GRIP_SIZE_OPTIONS.map((o) => (
                     <option key={o} value={o}>
@@ -125,34 +151,75 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>모델명 *</Label>
-                <Input placeholder="예: ALU POWER 125, POLYTOUR PRO 1.25" value={value.stringSpec?.modelName ?? ''} onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), modelName: e.target.value }, racketSpec: null })} disabled={disabled} />
+                <Input
+                  placeholder="예: ALU POWER 125, POLYTOUR PRO 1.25"
+                  value={value.stringSpec?.modelName ?? ''}
+                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), modelName: e.target.value }, racketSpec: null })}
+                  disabled={disabled}
+                />
               </div>
               <div className="space-y-2">
                 <Label>재질</Label>
-                <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.stringSpec?.material ?? ''} onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), material: e.target.value || null }, racketSpec: null })} disabled={disabled}>
+                <select
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={value.stringSpec?.material ?? ''}
+                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), material: e.target.value || null }, racketSpec: null })}
+                  disabled={disabled}
+                >
                   <option value="">선택 안함</option>
-                  {MARKET_STRING_MATERIAL_OPTIONS.map((o) => <option key={o} value={o}>{getMarketStringMaterialLabel(o)}</option>)}
+                  {MARKET_STRING_MATERIAL_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {getMarketStringMaterialLabel(o)}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <Label>게이지</Label>
-                <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.stringSpec?.gauge ?? ''} onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), gauge: e.target.value || null }, racketSpec: null })} disabled={disabled}>
+                <select
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={value.stringSpec?.gauge ?? ''}
+                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), gauge: e.target.value || null }, racketSpec: null })}
+                  disabled={disabled}
+                >
                   <option value="">선택 안함</option>
-                  {MARKET_STRING_GAUGE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {MARKET_STRING_GAUGE_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <Label>색상</Label>
-                <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.stringSpec?.color ?? ''} onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), color: e.target.value || null }, racketSpec: null })} disabled={disabled}>
+                <select
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={value.stringSpec?.color ?? ''}
+                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), color: e.target.value || null }, racketSpec: null })}
+                  disabled={disabled}
+                >
                   <option value="">선택 안함</option>
-                  {MARKET_STRING_COLOR_OPTIONS.map((o) => <option key={o} value={o}>{getMarketStringColorLabel(o)}</option>)}
+                  {MARKET_STRING_COLOR_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {getMarketStringColorLabel(o)}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <Label>길이</Label>
-                <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={value.stringSpec?.length ?? ''} onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), length: e.target.value || null }, racketSpec: null })} disabled={disabled}>
+                <select
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={value.stringSpec?.length ?? ''}
+                  onChange={(e) => onChange({ ...value, stringSpec: { ...(value.stringSpec ?? { modelName: '' }), length: e.target.value || null }, racketSpec: null })}
+                  disabled={disabled}
+                >
                   <option value="">선택 안함</option>
-                  {MARKET_STRING_LENGTH_OPTIONS.map((o) => <option key={o} value={o}>{getMarketStringLengthLabel(o)}</option>)}
+                  {MARKET_STRING_LENGTH_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {getMarketStringLengthLabel(o)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
