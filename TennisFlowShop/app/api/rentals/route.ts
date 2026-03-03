@@ -168,8 +168,8 @@ export async function POST(req: Request) {
       return NextResponse.json({
         ok: true,
         id: String(existing._id),
-        stringingApplicationId: existingStringingApplicationId,
-        stringingSubmitted: Boolean((existing as any)?.isStringServiceApplied || existingStringingApplicationId),
+        stringingApplicationId: (existing as any)?.isStringServiceApplied ? existingStringingApplicationId : null,
+        stringingSubmitted: Boolean((existing as any)?.isStringServiceApplied),
       });
     }
   }
@@ -432,7 +432,7 @@ export async function POST(req: Request) {
             stringingApplicationId = String(submitResult.applicationId);
             stringingSubmitted = submitResult.stringingSubmitted;
           } else {
-            const app = await createStringingApplicationFromRental(
+            await createStringingApplicationFromRental(
               {
                 _id: res.insertedId,
                 userId: userObjectId ?? undefined,
@@ -444,10 +444,11 @@ export async function POST(req: Request) {
               },
               { db, session },
             );
-            stringingApplicationId = String(app._id);
+            stringingApplicationId = null;
+            stringingSubmitted = false;
           }
 
-          if (stringingApplicationId) {
+          if (stringingSubmitted && stringingApplicationId) {
             await db.collection('rental_orders').updateOne(
               { _id: res.insertedId },
               { $set: { stringingApplicationId, isStringServiceApplied: true, updatedAt: new Date() } },
@@ -498,8 +499,8 @@ export async function POST(req: Request) {
         return NextResponse.json({
           ok: true,
           id: String(existing._id),
-          stringingApplicationId: existingStringingApplicationId,
-          stringingSubmitted: Boolean((existing as any)?.isStringServiceApplied || existingStringingApplicationId),
+          stringingApplicationId: (existing as any)?.isStringServiceApplied ? existingStringingApplicationId : null,
+          stringingSubmitted: Boolean((existing as any)?.isStringServiceApplied),
         });
       }
     }

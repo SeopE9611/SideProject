@@ -41,7 +41,7 @@ type Props = {
 export default function RentalsSuccessClient({ data }: Props) {
   const withService = Boolean(data.withStringService);
   const stringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
-  const stringingApplied = Boolean(data.isStringServiceApplied) || Boolean(stringingApplicationId);
+  const stringingApplied = Boolean(data.isStringServiceApplied);
   const stringingApplicationHref = stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
 
   useEffect(() => {

@@ -653,7 +653,7 @@ export async function createOrder(req: Request): Promise<Response> {
           createdStringingApplicationId = submitResult.applicationId;
           stringingSubmitted = submitResult.stringingSubmitted;
         } else if (shippingInfo?.withStringService === true) {
-          const app = await createStringingApplicationFromOrder(
+          await createStringingApplicationFromOrder(
             {
               _id: createdOrderId,
               userId: order.userId,
@@ -664,12 +664,9 @@ export async function createOrder(req: Request): Promise<Response> {
             { db, session },
           );
 
-          const createdAppId = app?._id ?? null;
-
-          if (createdAppId) {
-            createdStringingApplicationId = createdAppId;
-            await ordersCol.updateOne({ _id: createdOrderId }, { $set: { isStringServiceApplied: true, stringingApplicationId: String(createdAppId) } }, { session });
-          }
+          // fallback(create-from-order)는 초안(draft) 생성 경로다.
+          // 주문을 "접수 완료"로 보이게 만드는 필드는 submit-core(실제 제출)에서만 갱신한다.
+          createdStringingApplicationId = null;
         }
 
         // 조작 탐지 로그
