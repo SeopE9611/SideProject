@@ -12,6 +12,7 @@ import { bankLabelMap } from '@/lib/constants';
 import Image from 'next/image';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
+import { getOrderShippingReadLabels, normalizeOrderShippingMethod } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -208,10 +209,12 @@ export default function OrderDetailPage() {
     return null;
   }
 
-  const isVisitPickup = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령';
-  const shippingCardTitle = isVisitPickup ? '수령 정보' : '배송 정보';
-  const shippingAddressLabel = isVisitPickup ? '수령 방식' : '배송지';
-  const shippingAddressValue = isVisitPickup ? '매장 방문 수령 (주소 입력 불필요)' : order.shippingInfo.address;
+  const orderShippingMethod = normalizeOrderShippingMethod(order.shippingInfo?.deliveryMethod);
+  const isVisitPickup = orderShippingMethod === 'visit';
+  const orderShippingReadLabels = getOrderShippingReadLabels(orderShippingMethod);
+  const shippingCardTitle = orderShippingReadLabels.sectionTitle;
+  const shippingAddressLabel = orderShippingReadLabels.primaryLabel;
+  const shippingAddressValue = isVisitPickup ? orderShippingReadLabels.primaryValue : order.shippingInfo.address;
 
   return (
     <div className="min-h-full bg-background">

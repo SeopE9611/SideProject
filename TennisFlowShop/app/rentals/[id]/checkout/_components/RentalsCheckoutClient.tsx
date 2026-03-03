@@ -5,6 +5,7 @@ import FinalRequestSection from '@/app/features/stringing-applications/component
 import MountingInfoSection from '@/app/features/stringing-applications/components/apply-shared/MountingInfoSection';
 import { type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import useRentalCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter';
+import { collectionMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
@@ -660,7 +661,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <div className="space-y-1">
                       <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
                       <p className="text-sm text-foreground">
-                        {deliveryMethod === '방문수령' ? '방문 수령을 선택하면 매장 방문 접수로 교체가 진행됩니다.' : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다.'}
+                        {deliveryMethod === '방문수령' ? `방문 수령을 선택하면 ${collectionMethodLabel('visit')}로 교체가 진행됩니다.` : '택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다.'}
                       </p>
                     </div>
 
