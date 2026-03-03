@@ -7,6 +7,7 @@ import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { logInfo, reqMeta, startTimer } from '@/lib/logger';
 import { verifyCommunityCsrf } from '@/lib/community/security';
+import { getValidCommunityUserObjectIds, resolveCommunityDisplayName } from '@/lib/community-display-name';
 import type { CommunityComment } from '@/lib/types/community';
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
 
@@ -27,40 +28,6 @@ async function getAuthPayload() {
   const subStr = payload?.sub ? String(payload.sub) : '';
   if (!subStr || !ObjectId.isValid(subStr)) return null;
   return payload ?? null;
-}
-
-/**
- * 표시용 작성자 이름 결정 로직
- * - users 컬렉션의 name/nickname → payload.name/nickname → email 앞부분
- */
-async function resolveDisplayName(payload: any | null): Promise<string> {
-  const db = await getDb();
-  let displayName: string | null = null;
-
-  try {
-    // getAuthPayload에서 sub(ObjectId) 유효성은 보장되지만, 방어적으로 한 번 더 체크
-    if (payload?.sub && ObjectId.isValid(String(payload.sub))) {
-      const u = await db.collection('users').findOne({
-        _id: new ObjectId(String(payload.sub)),
-      });
-
-      // 현재 users 스키마 기준:
-      // 1) (나중에 nickname 필드가 생기면) u.nickname
-      // 2) u.name
-      // 3) 그 외는 fallback
-      const userDoc = u as { nickname?: string; name?: string } | null;
-      displayName = userDoc?.nickname ?? userDoc?.name ?? null;
-    }
-  } catch {
-    // 조회 실패해도 치명적이진 않으니 무시
-  }
-
-  // 아직도 못 정했으면 payload 기반 fallback
-  if (!displayName) {
-    displayName = payload?.nickname ?? payload?.name ?? payload?.email?.split('@')?.[0] ?? '회원';
-  }
-
-  return displayName ?? '회원';
 }
 
 // ----------------------------- Zod 스키마 ----------------------------------
@@ -150,19 +117,40 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
       : [];
 
   const docs = [...rootDocs, ...replyDocs];
-  const items: CommunityComment[] = docs.map((d: any) => ({
-    id: String(d._id),
-    postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
-    parentId: d.parentId instanceof ObjectId ? d.parentId.toString() : d.parentId ? String(d.parentId) : null,
-    userId: d.userId ? String(d.userId) : null,
-    nickname: d.nickname ?? '회원',
-    authorName: d.authorName,
-    authorEmail: d.authorEmail,
-    content: d.content ?? '',
-    status: d.status ?? 'public',
-    createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
-    updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
-  }));
+  const userObjectIds = getValidCommunityUserObjectIds(docs.map((doc: any) => doc.userId ?? null));
+  const users = userObjectIds.length
+    ? await db
+        .collection('users')
+        .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
+        .toArray()
+    : [];
+  const userMap = new Map(users.map((user) => [String(user._id), user as { _id: ObjectId; name?: string; nickname?: string }]));
+
+  const items: CommunityComment[] = docs.map((d: any) => {
+    const userId = d.userId ? String(d.userId) : null;
+    const user = userId ? userMap.get(userId) : undefined;
+    const displayName = resolveCommunityDisplayName({
+      userName: user?.name,
+      userNickname: user?.nickname,
+      authorName: d.authorName,
+      nickname: d.nickname,
+      authorEmail: d.authorEmail,
+    });
+
+    return {
+      id: String(d._id),
+      postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
+      parentId: d.parentId instanceof ObjectId ? d.parentId.toString() : d.parentId ? String(d.parentId) : null,
+      userId,
+      nickname: displayName,
+      authorName: d.authorName,
+      authorEmail: d.authorEmail,
+      content: d.content ?? '',
+      status: d.status ?? 'public',
+      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
+      updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
+    };
+  });
 
   return NextResponse.json(
     {
@@ -284,7 +272,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     }
   }
 
-  const displayName = await resolveDisplayName(payload);
+  const userDoc = await db.collection('users').findOne({ _id: userId }, { projection: { name: 1, nickname: 1 } });
+  const displayName = resolveCommunityDisplayName({
+    userName: userDoc?.name,
+    userNickname: userDoc?.nickname,
+    authorName: payload?.name,
+    nickname: payload?.nickname,
+    authorEmail: payload?.email,
+  });
   const now = new Date();
 
   const doc = {
@@ -292,6 +287,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     parentId: parentObjectId, // 루트 댓글이면 null, 대댓글이면 부모 댓글 ObjectId
     userId,
     nickname: displayName,
+    authorName: displayName,
+    authorEmail: payload?.email,
     content: sanitizedContent,
     status: 'public' as const,
     createdAt: now,

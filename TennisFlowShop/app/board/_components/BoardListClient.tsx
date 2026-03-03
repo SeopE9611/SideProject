@@ -241,6 +241,16 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   const applyMarketFilters = () => {
     const sp = new URLSearchParams(searchParams.toString());
+    const minPrice = Number(normalizePriceQueryValue(marketFilterDraft.minPrice));
+    const maxPrice = Number(normalizePriceQueryValue(marketFilterDraft.maxPrice));
+    const hasMinPrice = Number.isFinite(minPrice) && minPrice > 0;
+    const hasMaxPrice = Number.isFinite(maxPrice) && maxPrice > 0;
+
+    if (hasMinPrice && hasMaxPrice && minPrice > maxPrice) {
+      showErrorToast('최소가격은 최대가격보다 클 수 없습니다.');
+      return;
+    }
+
     MARKET_FILTER_KEYS.forEach((key) => {
       const rawValue = marketFilterDraft[key].trim();
       const value = PRICE_FILTER_KEYS.has(key) ? normalizePriceQueryValue(rawValue) : rawValue;

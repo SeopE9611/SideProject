@@ -120,6 +120,13 @@ const parseNum = (v: string | null) => {
   return Number.isFinite(n) ? n : null;
 };
 
+const normalizeRange = (min: number | null, max: number | null): [number | null, number | null] => {
+  if (min != null && max != null && min > max) {
+    return [max, min];
+  }
+  return [min, max];
+};
+
 export function getCommunitySortOption(sort: CommunityListSort): Record<string, 1 | -1> {
   switch (sort) {
     case 'views':
@@ -186,6 +193,13 @@ export function parseCommunityListQuery(req: NextRequest, options?: { queryKeys?
     minStiffnessRa: parseNum(url.searchParams.get('minStiffnessRa')),
     maxStiffnessRa: parseNum(url.searchParams.get('maxStiffnessRa')),
   };
+
+  [marketFilters.minPrice, marketFilters.maxPrice] = normalizeRange(marketFilters.minPrice, marketFilters.maxPrice);
+  [marketFilters.minWeight, marketFilters.maxWeight] = normalizeRange(marketFilters.minWeight, marketFilters.maxWeight);
+  [marketFilters.minBalance, marketFilters.maxBalance] = normalizeRange(marketFilters.minBalance, marketFilters.maxBalance);
+  [marketFilters.minHeadSize, marketFilters.maxHeadSize] = normalizeRange(marketFilters.minHeadSize, marketFilters.maxHeadSize);
+  [marketFilters.minSwingWeight, marketFilters.maxSwingWeight] = normalizeRange(marketFilters.minSwingWeight, marketFilters.maxSwingWeight);
+  [marketFilters.minStiffnessRa, marketFilters.maxStiffnessRa] = normalizeRange(marketFilters.minStiffnessRa, marketFilters.maxStiffnessRa);
 
   return { typeParam, brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorId, authorObjectId, searchType, category, marketFilters };
 }
