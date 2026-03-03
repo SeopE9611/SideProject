@@ -12,7 +12,7 @@ import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import Link from 'next/link';
@@ -611,7 +611,12 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                   <div>
                     <p className="text-sm text-muted-foreground">결제 상태</p>
-                    <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[orderDetail.paymentStatus])}>{orderDetail.paymentStatus}</Badge>
+                    {(() => {
+                      const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                      return (
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{orderDetail.paymentStatus}</Badge>
+                      );
+                    })()}
                   </div>
                 </div>
 

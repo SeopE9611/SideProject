@@ -12,7 +12,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
-import { badgeBase, badgeSizeSm, paymentStatusColors } from '@/lib/badge-style';
+import { badgeBase, badgeSizeSm, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import Link from 'next/link';
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
@@ -22,14 +22,6 @@ import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 
 const fetcher = (url: string) => adminFetcher<any>(url, { cache: 'no-store' });
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
-
-const rentalStatusColors: Record<string, string> = {
-  pending: 'bg-muted/10 text-muted-foreground dark:bg-muted/20',
-  paid: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
-  out: 'bg-muted text-foreground dark:bg-muted',
-  returned: 'bg-success/10 text-success dark:bg-success/15',
-  canceled: 'bg-destructive/10 text-destructive dark:bg-destructive/15',
-};
 
 const rentalStatusLabels: Record<string, string> = {
   pending: '대기중',
@@ -354,7 +346,13 @@ export default function AdminRentalDetailClient() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">대여 상태</span>
                 </div>
-                <Badge className={cn(badgeBase, badgeSizeSm, rentalStatusColors[data.status])}>{rentalStatusLabels[data.status] || data.status}</Badge>
+                {(() => {
+                  const rentalLabel = rentalStatusLabels[data.status] || data.status;
+                  const rentalSpec = getRentalStatusBadgeSpec(data.status);
+                  return (
+                    <Badge variant={rentalSpec.variant} className={cn(badgeBase, badgeSizeSm)}>{rentalLabel}</Badge>
+                  );
+                })()}
               </div>
 
               <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
@@ -618,7 +616,12 @@ export default function AdminRentalDetailClient() {
                   <span>결제 정보</span>
                 </CardTitle>
                 <div className="ml-auto flex flex-col items-end gap-1">
-                  <Badge className={cn(badgeBase, badgeSizeSm, paymentStatusColors[paymentLabel])}>{paymentLabel}</Badge>
+                  {(() => {
+                    const pay = getPaymentStatusBadgeSpec(paymentLabel);
+                    return (
+                      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{paymentLabel}</Badge>
+                    );
+                  })()}
                   {paymentSource === 'derived' && <span className="text-[11px] text-muted-foreground">대여 상태 기준 파생</span>}
                 </div>
               </CardHeader>

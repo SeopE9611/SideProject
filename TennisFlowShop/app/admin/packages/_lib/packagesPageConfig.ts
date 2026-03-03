@@ -39,11 +39,10 @@ export type PackagesResponse = AdminPackageListResponseDto;
 
 export const badgeSizeCls = 'px-2.5 py-0.5 text-xs leading-[1.05] rounded-md';
 
-export const paymentStatusColors: Record<PaymentStatus, string> = {
-  결제완료: 'bg-primary/10 text-primary border-border dark:bg-primary/20',
-  결제대기: 'bg-warning/10 text-warning border-border dark:bg-warning/15',
-  결제취소: 'bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15',
-};
+export function normalizePackagePaymentStatus(status?: string | null): PaymentStatus {
+  if (status === '결제완료' || status === '결제대기' || status === '결제취소') return status;
+  return '결제대기';
+}
 
 export const packageTypeColors: Record<PackageType, string> = {
   '10회권': 'bg-muted text-foreground border-border',

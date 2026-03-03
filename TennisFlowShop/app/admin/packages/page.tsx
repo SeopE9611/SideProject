@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import useSWR from 'swr';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -21,7 +22,7 @@ import { useDebouncedValue } from '@/app/admin/packages/_hooks/useDebouncedValue
 import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
-import { DEFAULT_PACKAGE_LIST_FILTERS, PASS_STATUS_LABELS, badgeSizeCls, fetcher, packageStatusColors, packageTypeColors, paymentStatusColors, type PackageListItem, type PackageMetrics, type PackageOrder, type PackageType, type PackagesResponse, type PassStatus, type PaymentStatus, type ServiceType, type SortKey } from '@/app/admin/packages/_lib/packagesPageConfig';
+import { DEFAULT_PACKAGE_LIST_FILTERS, PASS_STATUS_LABELS, badgeSizeCls, fetcher, normalizePackagePaymentStatus, packageStatusColors, packageTypeColors, type PackageListItem, type PackageMetrics, type PackageOrder, type PackageType, type PackagesResponse, type PassStatus, type PaymentStatus, type ServiceType, type SortKey } from '@/app/admin/packages/_lib/packagesPageConfig';
 
 function SkeletonBox({ className = '' }: { className?: string }) {
   return <div className={cn('animate-pulse rounded bg-muted dark:bg-card', className)} />;
@@ -907,9 +908,15 @@ export default function PackageOrdersClient() {
 
                               {/* 결제 배지 (xl 이상) */}
                               <TableCell className={cn(tdClasses, col.payment, 'whitespace-nowrap hidden xl:table-cell')}>
-                                <Badge className={cn('border', paymentStatusColors[pkg.paymentStatus === '결제완료' || pkg.paymentStatus === '결제대기' || pkg.paymentStatus === '결제취소' ? pkg.paymentStatus : '결제대기'], 'font-medium', badgeSizeCls)} aria-label={`결제상태 ${String(pkg.paymentStatus)}`}>
-                                  {pkg.paymentStatus}
-                                </Badge>
+                                {(() => {
+                                  const paymentLabel = normalizePackagePaymentStatus(pkg.paymentStatus);
+                                  const pay = getPaymentStatusBadgeSpec(paymentLabel);
+                                  return (
+                                    <Badge variant={pay.variant} className={cn('font-medium', badgeSizeCls)} aria-label={`결제상태 ${String(pkg.paymentStatus)}`}>
+                                      {pkg.paymentStatus}
+                                    </Badge>
+                                  );
+                                })()}
                               </TableCell>
 
                               {/* 금액 */}
