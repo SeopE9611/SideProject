@@ -19,7 +19,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 import MarketMetaFields from '@/app/board/market/_components/MarketMetaFields';
-import type { MarketMeta } from '@/lib/market';
+import { normalizeMarketMeta, type MarketMeta } from '@/lib/market';
 
 export const CATEGORY_OPTIONS = [
   { value: 'racket', label: '라켓' },
@@ -36,6 +36,44 @@ const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
 const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+
+
+
+// marketMeta 내부 값이 하나라도 채워졌는지 확인
+// - 기본값(selling/B 등)만 있는 상태는 dirty로 보지 않고,
+// - 가격/메모/스펙 입력이 시작되면 즉시 dirty 처리합니다.
+const hasMarketMetaInput = (category: CategoryValue, marketMeta: MarketMeta) => {
+  const normalized = normalizeMarketMeta(category, marketMeta);
+  if (!normalized) return false;
+
+  if (typeof normalized.price === 'number' && Number.isFinite(normalized.price)) return true;
+  if ((normalized.conditionNote ?? '').trim()) return true;
+
+  if (category === 'racket') {
+    const spec = normalized.racketSpec;
+    if (!spec) return false;
+    return Boolean(
+      (spec.modelName ?? '').trim() ||
+        spec.year != null ||
+        spec.weight != null ||
+        spec.balance != null ||
+        spec.headSize != null ||
+        spec.lengthIn != null ||
+        spec.swingWeight != null ||
+        spec.stiffnessRa != null ||
+        (spec.pattern ?? '').trim() ||
+        (spec.gripSize ?? '').trim(),
+    );
+  }
+
+  if (category === 'string') {
+    const spec = normalized.stringSpec;
+    if (!spec) return false;
+    return Boolean((spec.modelName ?? '').trim() || (spec.material ?? '').trim() || (spec.gauge ?? '').trim() || (spec.color ?? '').trim() || (spec.length ?? '').trim());
+  }
+
+  return false;
+};
 
 type FieldKey = 'category' | 'brand' | 'title' | 'content' | 'attachments';
 type FieldErrors = Partial<Record<FieldKey, string>>;
@@ -78,7 +116,7 @@ export default function FreeBoardWriteClient() {
   // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
   const submitRef = useRef(false);
 
-  // 입력 중(Dirty) 판단: 내용/제목/분류/첨부가 하나라도 있으면 true
+  // 입력 중(Dirty) 판단: marketMeta 핵심 입력(price/spec)도 반드시 반영
   const isDirty = useMemo(() => {
     const t = title.trim();
     const c = content.trim();
@@ -87,8 +125,9 @@ export default function FreeBoardWriteClient() {
     if (brand) return true;
     if (images.length > 0) return true;
     if (selectedFiles.length > 0) return true;
+    if (hasMarketMetaInput(category, marketMeta)) return true;
     return false;
-  }, [title, content, category, brand, images.length, selectedFiles.length]);
+  }, [title, content, category, brand, images.length, selectedFiles.length, marketMeta]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
   useUnsavedChangesGuard(isDirty && !isSubmitting);

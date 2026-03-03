@@ -22,7 +22,7 @@ import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCate
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 import MarketMetaFields from '@/app/board/market/_components/MarketMetaFields';
-import type { MarketMeta } from '@/lib/market';
+import { normalizeMarketMeta, type MarketMeta } from '@/lib/market';
 
 type Props = {
   id: string;
@@ -76,6 +76,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     category: string;
     brand: string;
     imagesJson: string;
+    marketMetaJson: string;
   };
   const baselineRef = useRef<Baseline | null>(null);
 
@@ -84,8 +85,10 @@ export default function FreeBoardEditClient({ id }: Props) {
     if (!b) return false;
 
     const imagesJson = JSON.stringify(images);
-    return title !== b.title || content !== b.content || String(category) !== b.category || brand !== b.brand || imagesJson !== b.imagesJson || selectedFiles.length > 0;
-  }, [title, content, category, brand, images, selectedFiles.length]);
+    // marketMeta는 객체 순서/빈 문자열 차이를 줄이기 위해 normalize 후 문자열 비교
+    const marketMetaJson = JSON.stringify(normalizeMarketMeta(category, marketMeta));
+    return title !== b.title || content !== b.content || String(category) !== b.category || brand !== b.brand || imagesJson !== b.imagesJson || marketMetaJson !== b.marketMetaJson || selectedFiles.length > 0;
+  }, [title, content, category, brand, images, selectedFiles.length, marketMeta]);
 
  useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
@@ -119,6 +122,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       const nextCategory = ((data.item.category as any) ?? 'racket') as any;
       const nextBrand = typeof item.brand === 'string' ? item.brand : '';
       const nextMarketMeta = (item as any).marketMeta ?? { price: null, saleStatus: 'selling', conditionGrade: 'B', conditionNote: '', racketSpec: null, stringSpec: null };
+      const normalizedMarketMeta = normalizeMarketMeta(nextCategory, nextMarketMeta);
 
       setTitle(nextTitle);
       setContent(nextContent);
@@ -136,6 +140,7 @@ export default function FreeBoardEditClient({ id }: Props) {
           category: String(nextCategory),
           brand: nextBrand,
           imagesJson: JSON.stringify(nextImages),
+          marketMetaJson: JSON.stringify(normalizedMarketMeta),
         };
       }
 
