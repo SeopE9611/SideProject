@@ -129,6 +129,12 @@ export default async function StringServiceSuccessPage(props: Props) {
   const isSelfShip = cm === 'self_ship';
   const isCourierPickup = cm === 'courier_pickup';
 
+  const shippingSectionTitle = isVisit ? '방문 접수 정보' : '배송지 정보';
+  const shippingPrimaryLabel = isVisit ? '접수 방식' : '주소';
+  const shippingPrimaryValue = isVisit ? '매장 방문 접수 (주소 입력 불필요)' : shippingInfo?.address?.trim() || '-';
+  const shippingSecondaryLabel = isVisit ? '안내' : '우편번호';
+  const shippingSecondaryValue = isVisit ? '방문 접수는 주소 입력이 필요하지 않습니다.' : shippingInfo?.postalCode?.trim() || '-';
+
   // 방문 예약 희망 일시 라벨
   const visitTimeLabel = isVisit
     ? formatVisitTimeRange(stringDetails?.preferredDate, stringDetails?.preferredTime, (application as any)?.visitDurationMinutes ?? null, (application as any)?.visitSlotCount ?? null)
@@ -598,17 +604,17 @@ export default async function StringServiceSuccessPage(props: Props) {
                   <div className="space-y-6">
                     <h3 className="text-xl font-bold text-foreground flex items-center">
                       <MapPin className="h-6 w-6 mr-3 text-foreground" />
-                      배송지 정보
+                      {shippingSectionTitle}
                     </h3>
                     <div className="space-y-4">
                       <div className="p-4 bg-card rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">주소</p>
-                        <p className="font-semibold text-foreground">{shippingInfo?.address ?? '-'}</p>
-                        {shippingInfo?.addressDetail && <p className="text-foreground mt-1">{shippingInfo.addressDetail}</p>}
+                        <p className="text-sm text-muted-foreground mb-1">{shippingPrimaryLabel}</p>
+                        <p className="font-semibold text-foreground">{shippingPrimaryValue}</p>
+                        {!isVisit && shippingInfo?.addressDetail && <p className="text-foreground mt-1">{shippingInfo.addressDetail}</p>}
                       </div>
                       <div className="p-4 bg-card rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">우편번호</p>
-                        <p className="font-semibold text-foreground">{shippingInfo?.postalCode ?? '-'}</p>
+                        <p className="text-sm text-muted-foreground mb-1">{shippingSecondaryLabel}</p>
+                        <p className="font-semibold text-foreground">{shippingSecondaryValue}</p>
                       </div>
                     </div>
                   </div>

@@ -605,6 +605,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const cm = normalizeCollection(collectionMethodRaw ?? 'self_ship');
   const isSelfShip = cm === 'self_ship';
   const isVisit = cm === 'visit';
+  const customerAddressLabel = isVisit ? '접수 방식' : '주소';
+  const customerAddressValue = isVisit ? '매장 방문 접수 (주소 입력 불필요)' : data.customer?.address?.trim() || '정보 없음';
+  const customerAddressSubLabel = isVisit ? '안내' : '우편번호';
+  const customerAddressSubValue = isVisit ? '방문 접수는 주소 입력이 필요하지 않습니다.' : data.customer?.postalCode?.trim() || null;
 
   // 서버에서 내려준 값 우선 사용 (라켓 구매/대여 연결이면 false로 내려옴)
   const inboundRequired = data.inboundRequired ?? true;
@@ -949,10 +953,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                     <div>
-                      <p className="text-sm text-muted-foreground">주소</p>
-                      <p className="font-semibold text-foreground">{data.customer?.address ?? '정보 없음'}</p>
-                      {data.customer?.addressDetail && <p className="text-sm text-muted-foreground mt-1">{data.customer.addressDetail}</p>}
-                      {data.customer?.postalCode && <p className="text-sm text-muted-foreground">우편번호: {data.customer.postalCode}</p>}
+                      <p className="text-sm text-muted-foreground">{customerAddressLabel}</p>
+                      <p className="font-semibold text-foreground">{customerAddressValue}</p>
+                      {!isVisit && data.customer?.addressDetail && <p className="text-sm text-muted-foreground mt-1">{data.customer.addressDetail}</p>}
+                      {customerAddressSubValue && (
+                        <p className="text-sm text-muted-foreground">
+                          {customerAddressSubLabel}: {customerAddressSubValue}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

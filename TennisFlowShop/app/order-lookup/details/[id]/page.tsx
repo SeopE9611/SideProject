@@ -208,6 +208,11 @@ export default function OrderDetailPage() {
     return null;
   }
 
+  const isVisitPickup = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '') === '방문수령';
+  const shippingCardTitle = isVisitPickup ? '수령 정보' : '배송 정보';
+  const shippingAddressLabel = isVisitPickup ? '수령 방식' : '배송지';
+  const shippingAddressValue = isVisitPickup ? '매장 방문 수령 (주소 입력 불필요)' : order.shippingInfo.address;
+
   return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
@@ -324,7 +329,7 @@ export default function OrderDetailPage() {
                     <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
                       <MapPin className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">배송 정보</CardTitle>
+                    <CardTitle className="text-xl font-bold">{shippingCardTitle}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -347,8 +352,8 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="space-y-4">
                       <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">배송지</p>
-                        <p className="font-semibold">{order.shippingInfo.address}</p>
+                        <p className="text-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
+                        <p className="font-semibold">{shippingAddressValue}</p>
                       </div>
                       {order.trackingNumber && (
                         <div className="flex items-center gap-3 p-3 border border-primary/20 bg-primary/10 dark:bg-primary/20 rounded-lg">
