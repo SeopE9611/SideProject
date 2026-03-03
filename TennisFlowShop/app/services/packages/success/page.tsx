@@ -152,7 +152,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  <div className="mt-8 max-w-2xl mx-auto">
  <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
  <div className="flex items-center justify-center gap-3 mb-4">
- <div className="p-2 bg-warning/15 rounded-full dark:bg-warning/20">
+ <div className="p-2 bg-primary/10 rounded-full dark:bg-primary/20">
  <Package className="h-6 w-6 text-primary" />
  </div>
  <h3 className="text-xl font-bold text-foreground">패키지 활성화 안내</h3>
@@ -215,8 +215,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
  <div className="bg-muted p-6 rounded-xl border border-border">
  <div className="flex items-center gap-2 mb-4">
- <CreditCard className="h-5 w-5 text-warning" />
- <h3 className="font-bold text-warning">입금 계좌 정보</h3>
+ <CreditCard className="h-5 w-5 text-primary" />
+ <h3 className="font-bold text-primary">입금 계좌 정보</h3>
  </div>
  {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
  <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
@@ -349,9 +349,9 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
  </div>
  </div>
  <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
- <Phone className="h-5 w-5 text-warning mt-0.5" />
+ <Phone className="h-5 w-5 text-primary mt-0.5" />
  <div>
- <h4 className="font-semibold text-warning mb-1">고객 지원</h4>
+ <h4 className="font-semibold text-primary mb-1">고객 지원</h4>
  <p className="text-sm text-muted-foreground">패키지 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
  </div>
  </div>

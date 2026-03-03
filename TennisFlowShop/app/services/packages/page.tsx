@@ -2,7 +2,7 @@
 
 import UnifiedPackageCard from '@/app/services/packages/_components/UnifiedPackageCard';
 import { normalizePackageCardData, type PackageCardData } from '@/app/services/packages/_lib/packageCard';
-import { type PackageVariant, PACKAGE_VARIANT_TONE_CLASS, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
+import { type PackageVariant, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import SiteContainer from '@/components/layout/SiteContainer';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { FullPageSpinner } from '@/components/system/PageLoading';
@@ -55,7 +55,7 @@ const STATIC_PACKAGES: PackageCardData[] = [
     discount: 17,
     features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
     benefits: ['10만원 절약', '그립 교체 혜택'],
-    variant: 'muted' as PackageVariant,
+    variant: 'primary' as PackageVariant,
     description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
     validityPeriod: '9개월',
     popular: false,
@@ -69,7 +69,7 @@ const STATIC_PACKAGES: PackageCardData[] = [
     discount: 17,
     features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회'],
     benefits: ['20만원 절약', '전용 서비스'],
-    variant: 'success' as PackageVariant,
+    variant: 'primary' as PackageVariant,
     description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
     validityPeriod: '12개월',
     popular: false,
@@ -121,7 +121,7 @@ export default function StringPackagesPage() {
           const price = Number(pkg.price || 0);
           const originalPrice = Number(pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0);
 
-          const variant: PackageVariant = toPackageVariant(pkg.variant, getPackageVariantByIndex(index));
+          const variant = toPackageVariant(pkg.variant, pkg.isPopular ? 'accent' : getPackageVariantByIndex(index));
           return normalizePackageCardData({
             id: pkg.id || `package-${index + 1}`,
             title: pkg.name || `${sessions}회 패키지`,
@@ -182,30 +182,26 @@ export default function StringPackagesPage() {
     };
   }, []);
 
-  const additionalBenefits: Array<{ icon: React.ReactNode; title: string; description: string; variant: PackageVariant }> = [
+  const additionalBenefits: Array<{ icon: React.ReactNode; title: string; description: string }> = [
     {
       icon: <Shield className="h-6 w-6" />,
       title: '품질 보장',
       description: '모든 스트링 교체에 대해 완벽한 품질을 보장합니다.',
-      variant: 'primary' as PackageVariant,
     },
     {
       icon: <Clock className="h-6 w-6" />,
       title: '빠른 서비스',
       description: '평균 30분 내 스트링 교체 완료',
-      variant: 'accent' as PackageVariant,
     },
     {
       icon: <Users className="h-6 w-6" />,
       title: '전문가 상담',
       description: '전문가가 직접 상담해드립니다.',
-      variant: 'muted' as PackageVariant,
     },
     {
       icon: <Gift className="h-6 w-6" />,
       title: '추가 혜택',
       description: '패키지 구매 시 다양한 부가 서비스 제공',
-      variant: 'success' as PackageVariant,
     },
   ];
 
@@ -341,7 +337,7 @@ export default function StringPackagesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {additionalBenefits.map((benefit, index) => (
               <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300 ${PACKAGE_VARIANT_TONE_CLASS[benefit.variant]}`}>{benefit.icon}</div>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">{benefit.icon}</div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>
                 <p className="text-muted-foreground text-center leading-relaxed">{benefit.description}</p>
               </div>

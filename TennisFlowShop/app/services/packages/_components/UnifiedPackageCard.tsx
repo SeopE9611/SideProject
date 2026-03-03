@@ -1,7 +1,12 @@
 'use client';
 
 import type { PackageCardData } from '@/app/services/packages/_lib/packageCard';
-import { PACKAGE_VARIANT_TONE_CLASS } from '@/app/services/packages/_lib/packageVariant';
+import {
+  PACKAGE_VARIANT_BUTTON_CLASS,
+  PACKAGE_VARIANT_DOT_CLASS,
+  PACKAGE_VARIANT_ICON_CLASS,
+  PACKAGE_VARIANT_TOP_BAR_CLASS,
+} from '@/app/services/packages/_lib/packageVariant';
 import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 import { Award, CheckCircle, Gift, Package, Star, Target, Trophy } from 'lucide-react';
 import Link from 'next/link';
@@ -39,10 +44,10 @@ export default function UnifiedPackageCard({ pkg, selected = false, onSelect, ct
       {pkg.popular && <div className="absolute right-0 top-0 rounded-bl-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">인기</div>}
       {pkg.discount && <div className="absolute left-0 top-0 rounded-br-lg bg-primary px-3 py-1 text-xs font-bold text-primary-foreground">{pkg.discount}% 할인</div>}
 
-      <div className={`h-2 ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`} />
+      <div className={`h-2 ${PACKAGE_VARIANT_TOP_BAR_CLASS[pkg.variant]}`} />
 
       <CardHeader className="pb-4 text-center">
-        <div className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full shadow-lg ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`}>
+        <div className={`mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full shadow-lg ${PACKAGE_VARIANT_ICON_CLASS[pkg.variant]}`}>
           <Icon className="h-8 w-8" />
         </div>
         <div className="mb-2 flex items-center justify-center gap-2">
@@ -86,7 +91,7 @@ export default function UnifiedPackageCard({ pkg, selected = false, onSelect, ct
           <ul className="space-y-2">
             {pkg.features.map((feature, idx) => (
               <li key={`${pkg.id}-feature-${idx}`} className="flex items-start text-sm">
-                <div className={`mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`} />
+                <div className={`mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full ${PACKAGE_VARIANT_DOT_CLASS[pkg.variant]}`} />
                 <span>{feature}</span>
               </li>
             ))}
@@ -106,7 +111,7 @@ export default function UnifiedPackageCard({ pkg, selected = false, onSelect, ct
         </div>
 
         {ctaHref && ctaLabel && (
-          <Button className={`w-full border-0 shadow-lg transition-all hover:shadow-xl ${PACKAGE_VARIANT_TONE_CLASS[pkg.variant]}`} asChild disabled={ctaDisabled}>
+          <Button className={`w-full border-0 shadow-lg transition-all hover:shadow-xl ${PACKAGE_VARIANT_BUTTON_CLASS[pkg.variant]}`} asChild disabled={ctaDisabled}>
             <Link
               href={ctaDisabled ? '#' : ctaHref}
               aria-disabled={ctaDisabled}
