@@ -69,7 +69,7 @@ const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
     originalPrice: 600000,
     features: ['50회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 5회'],
     benefits: ['10만원 절약', '그립 교체 혜택'],
-    variant: 'muted',
+    variant: 'primary',
     description: '진지한 테니스 플레이어를 위한 프리미엄 패키지',
     validityPeriod: '9개월',
   }),
@@ -81,7 +81,7 @@ const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
     originalPrice: 1200000,
     features: ['100회 스트링 교체', '무료 장력 상담', '프리미엄 스트링 선택', '우선 예약', '무료 그립 교체 10회'],
     benefits: ['20만원 절약', '전용 서비스'],
-    variant: 'success',
+    variant: 'primary',
     description: '프로 선수와 열정적인 플레이어를 위한 최고급 패키지',
     validityPeriod: '12개월',
   }),
@@ -197,7 +197,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
           const templateKey = sessions === 10 ? '10-sessions' : sessions === 30 ? '30-sessions' : sessions === 50 ? '50-sessions' : sessions === 100 ? '100-sessions' : undefined;
           const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
-          const variant = toPackageVariant(config.variant, base?.variant ?? getPackageVariantByIndex(configIndex));
+          const variant = toPackageVariant(config.variant, base?.variant ?? (config.isPopular ? 'accent' : getPackageVariantByIndex(configIndex)));
 
           const merged = normalizePackageCardData({
             id: config.id,

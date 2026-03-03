@@ -26,8 +26,8 @@ const DEFAULT_DESCRIPTIONS: Record<number, string> = {
 const DEFAULT_VARIANTS: Record<number, PackageVariant> = {
   10: 'primary',
   30: 'accent',
-  50: 'muted',
-  100: 'success',
+  50: 'primary',
+  100: 'primary',
 };
 
 const FEATURE_FALLBACK: Record<number, string[]> = Object.fromEntries(DEFAULT_PACKAGE_CONFIGS.map((config) => [config.sessions, config.features]));
