@@ -12,6 +12,7 @@ import { useRacketCompareStore, type CompareRacketItem } from '@/app/store/racke
 import { useMemo } from 'react';
 import { Scale, ShoppingCart, Info } from 'lucide-react';
 import RacketSpecQuickViewDialog from '@/app/rackets/compare/_components/RacketSpecQuickViewDialog';
+import { badgeToneVariant } from '@/lib/badge-style';
 
 type RacketSpec = {
   headSize?: number | null;
