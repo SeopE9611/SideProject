@@ -480,6 +480,11 @@ const res = await communityFetch('/api/community/posts', {
 
           <CardContent className="p-6">
             <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* 상품형 게시판답게 핵심 입력 포인트를 먼저 안내해 입력 품질을 높입니다. */}
+              <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                브랜드, 모델명, 가격, 상태 정보를 정확히 입력할수록 구매자가 더 쉽게 비교할 수 있습니다.
+              </div>
+
               {/* 분류 선택 */}
               <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
