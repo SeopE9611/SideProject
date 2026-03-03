@@ -316,7 +316,16 @@ export default function ApplicationsClient() {
             isStringService && isVisit && app.preferredDate && app.preferredTime ? formatVisitTimeRange(app.preferredDate, app.preferredTime, app.visitDurationMinutes ?? null, app.visitSlotCount ?? null).replace(/-/g, '.') : null;
 
           // 라벨 고증에 맞게 보정
-          const collectionLabel = !isStringService ? null : !inboundRequired ? '수령 방법: 입고 불필요(주문/대여 기반)' : cm === 'self_ship' ? '수령 방법: 자가 발송(택배)' : cm === 'visit' ? '수령 방법: 매장 방문' : '수령 방법: 기타';
+          const collectionLabel =
+            !isStringService
+              ? null
+              : !inboundRequired
+                ? '접수 방식: 입고 불필요(주문/대여 기반)'
+                : cm === 'self_ship'
+                  ? '접수 방식: 자가 발송(택배)'
+                  : cm === 'visit'
+                    ? '접수 방식: 매장 방문 접수'
+                    : '접수 방식: 기타';
 
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;
