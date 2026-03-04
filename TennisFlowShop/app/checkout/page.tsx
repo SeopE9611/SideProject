@@ -1242,7 +1242,7 @@ export default function CheckoutPage() {
                       </li>
                       <li className="flex items-center gap-2 text-base bp-sm:text-lg">
                         <CheckCircle className="h-4 w-4" />
-                        입금 확인 후 배송이 시작됩니다.
+                        {needsShippingAddress ? '입금 확인 후 배송이 시작됩니다.' : '입금 확인 후 매장 수령 준비가 시작됩니다.'}
                       </li>
                     </ul>
                   </div>
@@ -1464,7 +1464,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="text-sm text-foreground space-y-1">
                       <p>• 주문 완료 후 입금 대기 상태로 등록됩니다.</p>
-                      <p>• 입금 확인 후 배송이 시작됩니다.</p>
+                      <p>• {needsShippingAddress ? '입금 확인 후 배송이 시작됩니다.' : '입금 확인 후 매장 수령 준비가 시작됩니다.'}</p>
                       <p>• 24시간 이내 입금 부탁드립니다.</p>
                     </div>
                   </div>
