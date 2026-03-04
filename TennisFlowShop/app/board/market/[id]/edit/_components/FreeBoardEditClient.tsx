@@ -31,6 +31,16 @@ type Props = {
 type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
 
 type AttachmentItem = NonNullable<CommunityPost['attachments']>[number];
+type FieldKey = 'category' | 'brand' | 'price' | 'modelName' | 'title' | 'content' | 'attachments';
+type FieldErrors = Partial<Record<FieldKey, string>>;
+
+const TITLE_MIN = 4;
+const TITLE_MAX = 80;
+const CONTENT_MIN = 10;
+const CONTENT_MAX = 5000;
+const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const scrollIntoViewOpts: ScrollIntoViewOptions = { behavior: 'smooth', block: 'center' };
 
 const fetcher = async (url: string): Promise<DetailResponse> => {
   const res = await fetch(url, { credentials: 'include' });
@@ -64,8 +74,16 @@ export default function FreeBoardEditClient({ id }: Props) {
   // 상태 플래그
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [conflictOpen, setConflictOpen] = useState(false);
   const [clientSeenDate, setClientSeenDate] = useState<string | null>(null);
+  const categoryRef = useRef<HTMLDivElement | null>(null);
+  const brandRef = useRef<HTMLDivElement | null>(null);
+  const priceRef = useRef<HTMLInputElement | null>(null);
+  const modelNameRef = useRef<HTMLInputElement | null>(null);
+  const titleRef = useRef<HTMLInputElement | null>(null);
+  const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const attachmentsRef = useRef<HTMLDivElement | null>(null);
 
   // 기존 글 불러오기
   const { data, error, isLoading, mutate } = useSWR<DetailResponse>(`/api/community/posts/${id}?type=market`, fetcher);
@@ -164,16 +182,78 @@ export default function FreeBoardEditClient({ id }: Props) {
     if (brand && !isValidMarketBrandForCategory(category, brand)) setBrand('');
   }, [category, brand]);
 
-  // 간단한 프론트 유효성 검증
-  const validate = () => {
-    if (isMarketBrandCategory(category) && !brand) return '브랜드를 선택해 주세요.';
-    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0) return '판매가는 1원 이상 입력해 주세요.';
-    if (category === 'racket' && !(marketMeta.racketSpec?.modelName ?? '').trim()) return '라켓 모델명을 입력해 주세요.';
-    if (category === 'string' && !(marketMeta.stringSpec?.modelName ?? '').trim()) return '스트링 모델명을 입력해 주세요.';
+  const focusField = (key: FieldKey) => {
+    if (key === 'category') {
+      categoryRef.current?.scrollIntoView(scrollIntoViewOpts);
+      return;
+    }
+    if (key === 'brand') {
+      brandRef.current?.scrollIntoView(scrollIntoViewOpts);
+      return;
+    }
+    if (key === 'price') {
+      priceRef.current?.scrollIntoView(scrollIntoViewOpts);
+      priceRef.current?.focus();
+      return;
+    }
+    if (key === 'modelName') {
+      modelNameRef.current?.scrollIntoView(scrollIntoViewOpts);
+      modelNameRef.current?.focus();
+      return;
+    }
+    if (key === 'title') {
+      titleRef.current?.scrollIntoView(scrollIntoViewOpts);
+      titleRef.current?.focus();
+      return;
+    }
+    if (key === 'content') {
+      contentRef.current?.scrollIntoView(scrollIntoViewOpts);
+      contentRef.current?.focus();
+      return;
+    }
+    attachmentsRef.current?.scrollIntoView(scrollIntoViewOpts);
+  };
 
-    if (!title.trim()) return '제목을 입력해 주세요.';
-    if (!content.trim()) return '내용을 입력해 주세요.';
-    return null;
+  const setInlineError = (key: FieldKey, msg: string, formMsg = '입력값을 확인해 주세요.') => {
+    setFieldErrors((prev) => ({ ...prev, [key]: msg }));
+    setErrorMsg(formMsg);
+    requestAnimationFrame(() => focusField(key));
+  };
+
+  const validateBeforeSubmit = (): FieldErrors => {
+    const errs: FieldErrors = {};
+    const t = title.trim();
+    const c = content.trim();
+
+    if (isMarketBrandCategory(category)) {
+      if (!brand) errs.brand = '브랜드를 선택해 주세요.';
+      else if (!isValidMarketBrandForCategory(category, brand)) errs.brand = '선택한 브랜드가 분류에 맞지 않습니다.';
+    }
+    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0) errs.price = '판매가는 1원 이상 입력해 주세요.';
+    if (category === 'racket' && !(marketMeta.racketSpec?.modelName ?? '').trim()) errs.modelName = '라켓 모델명을 입력해 주세요.';
+    if (category === 'string' && !(marketMeta.stringSpec?.modelName ?? '').trim()) errs.modelName = '스트링 모델명을 입력해 주세요.';
+
+    if (!t) errs.title = '제목을 입력해 주세요.';
+    if (!c) errs.content = '내용을 입력해 주세요.';
+
+    if (!errs.title) {
+      if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+      else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+    }
+    if (!errs.content) {
+      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+      else if (c.length > CONTENT_MAX) errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+    }
+
+    if (!errs.title && hasScriptLike(t)) errs.title = '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
+    if (!errs.content && hasScriptLike(c)) errs.content = '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
+    if (!errs.title && hasHtmlLike(t)) errs.title = 'HTML 태그는 사용할 수 없습니다.';
+    if (!errs.content && hasHtmlLike(c)) errs.content = 'HTML 태그는 사용할 수 없습니다.';
+
+    if (images.length > 5) errs.attachments = '이미지는 최대 5장까지만 업로드할 수 있어요.';
+    if (totalAttachmentCount > MAX_FILES) errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
+
+    return errs;
   };
 
   // 카테고리 변경 시 계약에 맞지 않는 spec은 제거
@@ -182,6 +262,16 @@ export default function FreeBoardEditClient({ id }: Props) {
     else if (category === 'string') setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
     else setMarketMeta((prev) => ({ ...prev, racketSpec: null, stringSpec: null }));
   }, [category]);
+
+  // marketMeta 수정 시 에러 지우는 effect
+  useEffect(() => {
+    if (!fieldErrors.price && !fieldErrors.modelName) return;
+    setFieldErrors((prev) => ({
+      ...prev,
+      price: undefined,
+      modelName: undefined,
+    }));
+  }, [marketMeta.price, marketMeta.racketSpec?.modelName, marketMeta.stringSpec?.modelName]);
 
   // 파일 업로드 관련
 
@@ -227,22 +317,49 @@ export default function FreeBoardEditClient({ id }: Props) {
 
     // 개수 제한 (기존 attachments + 새로 선택한 파일)
     if (totalAttachmentCount + files.length > MAX_FILES) {
-      alert(`파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`);
+      setInlineError('attachments', `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`, '첨부 파일을 확인해 주세요.');
       return;
     }
 
     // 용량 제한
     const tooLarge = files.find((f) => f.size > MAX_SIZE_MB * 1024 * 1024);
     if (tooLarge) {
-      alert(`파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`);
+      setInlineError('attachments', `파일당 ${MAX_SIZE_MB}MB를 초과할 수 없어요.`, '첨부 파일을 확인해 주세요.');
       return;
     }
 
     // 이미지 파일 방지 (이미지는 이미지 탭에서만)
     const hasImage = files.some((f) => f.type?.startsWith('image/'));
     if (hasImage) {
-      alert('이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.');
+      setInlineError('attachments', '이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.', '첨부 파일을 확인해 주세요.');
       return;
+    }
+
+    // 문서 파일만 허용 (write 페이지와 동일 정책)
+    const extOk = (name: string) => /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|hwp|hwpx|txt)$/i.test(name);
+    const ALLOWED_MIME = new Set([
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
+    ]);
+    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
+    if (invalid) {
+      setInlineError('attachments', '문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.', '첨부 파일을 확인해 주세요.');
+      return;
+    }
+
+    // 성공 케이스: 첨부 관련 에러/폼 에러 해제
+    if (fieldErrors.attachments) {
+      setFieldErrors((prev) => ({ ...prev, attachments: undefined }));
+    }
+    if (errorMsg) {
+      setErrorMsg(null);
     }
 
     setSelectedFiles((prev) => [...prev, ...files]);
@@ -293,15 +410,20 @@ export default function FreeBoardEditClient({ id }: Props) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-
-    const msg = validate();
-    if (msg) {
-      setErrorMsg(msg);
+    setFieldErrors({});
+    const errs = validateBeforeSubmit();
+    if (Object.keys(errs).some((k) => Boolean(errs[k as FieldKey]))) {
+      setFieldErrors(errs);
+      setErrorMsg('입력값을 확인해 주세요.');
+      const order: FieldKey[] = ['category', 'brand', 'price', 'modelName', 'title', 'content', 'attachments'];
+      const first = order.find((k) => Boolean(errs[k]));
+      if (first) requestAnimationFrame(() => focusField(first));
       return;
     }
 
     if (isUploadingImages || isUploadingFiles) {
       setErrorMsg('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
+      requestAnimationFrame(() => focusField('attachments'));
       return;
     }
 
@@ -534,14 +656,17 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <CardContent className="space-y-6 p-6">
                   <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">브랜드, 모델명, 가격, 상태 정보를 우선 점검해 주세요. 정확한 정보일수록 구매자가 빠르게 판단할 수 있습니다.</div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2" ref={categoryRef}>
                     <Label>분류</Label>
-                    <div className="flex flex-wrap gap-2 text-xs">
+                    <div className={cn('flex flex-wrap gap-2 text-xs', fieldErrors.category ? 'rounded-lg border border-destructive/50 p-2' : '')}>
                       {CATEGORY_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           type="button"
-                          onClick={() => setCategory(opt.value)}
+                          onClick={() => {
+                            setCategory(opt.value);
+                            if (fieldErrors.category) setFieldErrors((prev) => ({ ...prev, category: undefined }));
+                          }}
                           className={cn(
                             'rounded-full border px-2 py-0.5 text-[11px]',
                             category === opt.value ? 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
@@ -554,9 +679,17 @@ export default function FreeBoardEditClient({ id }: Props) {
                   </div>
 
                   {isMarketBrandCategory(category) && (
-                    <div className="space-y-2">
+                    <div className="space-y-2" ref={brandRef}>
                       <Label>브랜드</Label>
-                      <select value={brand} onChange={(e) => setBrand(e.target.value)} disabled={isSubmitting} className="h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm">
+                      <select
+                        value={brand}
+                        onChange={(e) => {
+                          setBrand(e.target.value);
+                          if (fieldErrors.brand) setFieldErrors((prev) => ({ ...prev, brand: undefined }));
+                        }}
+                        disabled={isSubmitting}
+                        className={cn('h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm', fieldErrors.brand ? 'border-destructive focus:border-destructive' : '')}
+                      >
                         <option value="">브랜드를 선택해 주세요</option>
                         {getMarketBrandOptions(category).map((o) => (
                           <option key={o.value} value={o.value}>
@@ -565,6 +698,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         ))}
                       </select>
                       <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
+                      {fieldErrors.brand ? <p className="text-xs text-destructive">{fieldErrors.brand}</p> : null}
                     </div>
                   )}
                 </CardContent>
@@ -580,7 +714,18 @@ export default function FreeBoardEditClient({ id }: Props) {
                   <p className="text-sm text-muted-foreground">판매가, 상태, 세부 스펙을 최신 상태로 정리해 주세요.</p>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <MarketMetaFields category={category} value={marketMeta} onChange={setMarketMeta} disabled={isSubmitting} />
+                  <MarketMetaFields
+                    category={category}
+                    value={marketMeta}
+                    onChange={setMarketMeta}
+                    disabled={isSubmitting}
+                    fieldErrors={{
+                      price: fieldErrors.price,
+                      modelName: fieldErrors.modelName,
+                    }}
+                    priceRef={priceRef}
+                    modelNameRef={modelNameRef}
+                  />
                 </CardContent>
               </Card>
 
@@ -596,26 +741,45 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <CardContent className="space-y-6 p-6">
                   <div className="space-y-2">
                     <Label htmlFor="title">제목</Label>
-                    <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} placeholder="예: 윌슨 블레이드 98 16x19 판매합니다" />
+                    <Input
+                      id="title"
+                      ref={titleRef}
+                      value={title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: undefined }));
+                      }}
+                      disabled={isSubmitting}
+                      maxLength={TITLE_MAX}
+                      placeholder="예: 윌슨 블레이드 98 16x19 판매합니다"
+                      className={cn('placeholder:text-muted-foreground/60', fieldErrors.title ? 'border-destructive focus-visible:border-destructive' : '')}
+                    />
+                    {fieldErrors.title ? <p className="text-xs text-destructive">{fieldErrors.title}</p> : null}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="content">내용</Label>
                     <Textarea
                       id="content"
-                      className="min-h-[220px]"
+                      ref={contentRef}
+                      className={cn('min-h-[220px] placeholder:text-muted-foreground/60', fieldErrors.content ? 'border-destructive focus-visible:border-destructive' : '')}
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                      onChange={(e) => {
+                        setContent(e.target.value);
+                        if (fieldErrors.content) setFieldErrors((prev) => ({ ...prev, content: undefined }));
+                      }}
                       disabled={isSubmitting}
+                      maxLength={CONTENT_MAX}
                       placeholder="구매 시기, 사용 기간, 상태, 거래 방식(직거래/택배), 포함 구성품 등을 적어주세요."
                     />
+                    {fieldErrors.content ? <p className="text-xs text-destructive">{fieldErrors.content}</p> : null}
                     <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
                   </div>
                 </CardContent>
               </Card>
 
               {/* 판매 이미지 / 파일 카드 */}
-              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card" ref={attachmentsRef}>
                 <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
                   <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
                     <Upload className="h-4 w-4 text-success" />
@@ -642,6 +806,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                       <p className="mt-1 text-sm font-semibold text-foreground">{newAttachmentCount}개</p>
                     </div>
                   </div>
+                  {fieldErrors.attachments ? <p className="text-xs text-destructive">{fieldErrors.attachments}</p> : null}
+
                   <Tabs defaultValue="image" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
                       <TabsTrigger value="image">이미지 업로드</TabsTrigger>
@@ -764,8 +930,8 @@ export default function FreeBoardEditClient({ id }: Props) {
             </div>
 
             {/* ===== 오른쪽: sticky 수정 요약 카드 (lg+) ===== */}
-            <aside className="hidden flex-shrink-0 lg:block lg:w-[300px] xl:w-[320px]">
-              <div className="sticky top-24 space-y-4">
+            <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
+              <div className="space-y-4">
                 {/* 수정 요약 */}
                 <div className="rounded-xl border border-border bg-card shadow-sm">
                   <div className="border-b border-border px-5 py-3">
@@ -863,8 +1029,6 @@ export default function FreeBoardEditClient({ id }: Props) {
                   </Button>
                   <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">저장 버튼을 누르면 현재 수정 내용이 상세 페이지에 반영됩니다.</p>
                 </div>
-
-                {errorMsg && <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-destructive">{errorMsg}</div>}
               </div>
             </aside>
           </div>

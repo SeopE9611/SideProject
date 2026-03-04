@@ -18,12 +18,20 @@ import {
   getMarketStringLengthLabel,
   getMarketStringMaterialLabel,
 } from '@/lib/market';
+import { cn } from '@/lib/utils';
+import { RefObject } from 'react';
 
 type Props = {
   category: 'racket' | 'string' | 'equipment';
   value: MarketMeta;
   onChange: (next: MarketMeta) => void;
   disabled?: boolean;
+  fieldErrors?: {
+    price?: string;
+    modelName?: string;
+  };
+  priceRef?: RefObject<HTMLInputElement | null>;
+  modelNameRef?: RefObject<HTMLInputElement | null>;
 };
 
 const onNum = (v: string) => {
@@ -34,7 +42,7 @@ const onNum = (v: string) => {
 
 const selectCls = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50';
 
-export default function MarketMetaFields({ category, value, onChange, disabled }: Props) {
+export default function MarketMetaFields({ category, value, onChange, disabled, fieldErrors, priceRef, modelNameRef }: Props) {
   const hasValidPrice = typeof value.price === 'number' && value.price > 0;
   const priceDisplay = typeof value.price === 'number' && value.price > 0 ? `${value.price.toLocaleString('ko-KR')}원` : null;
 
@@ -54,9 +62,19 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
               판매가 <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
-              <Input type="number" min={1} placeholder="350000" value={value.price ?? ''} onChange={(e) => onChange({ ...value, price: onNum(e.target.value) })} disabled={disabled} className="h-12 text-lg font-semibold pr-10" />
+              <Input
+                ref={priceRef}
+                type="number"
+                min={1}
+                placeholder="금액을 입력하세요"
+                value={value.price ?? ''}
+                onChange={(e) => onChange({ ...value, price: onNum(e.target.value) })}
+                disabled={disabled}
+                className={cn('h-12 pr-10 text-lg font-semibold placeholder:text-muted-foreground/60', fieldErrors?.price ? 'border-destructive focus-visible:border-destructive' : '')}
+              />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">원</span>
             </div>
+            {fieldErrors?.price ? <p className="text-xs text-destructive">{fieldErrors.price}</p> : null}
             <p className={`text-xs ${hasValidPrice ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
               {priceDisplay ? (
                 <>
@@ -103,7 +121,7 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
               value={value.conditionNote ?? ''}
               onChange={(e) => onChange({ ...value, conditionNote: e.target.value })}
               disabled={disabled}
-              className="min-h-[100px] resize-y"
+              className="min-h-[100px] resize-y placeholder:text-muted-foreground/60"
               placeholder="예: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
             />
             <p className="text-[11px] text-muted-foreground">실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.</p>
@@ -129,6 +147,7 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                     모델명 <span className="text-destructive">*</span>
                   </Label>
                   <Input
+                    ref={modelNameRef}
                     placeholder="예: EZONE 98 2024, PRO STAFF 97 V14"
                     value={value.racketSpec?.modelName ?? ''}
                     onChange={(e) =>
@@ -139,7 +158,9 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                       })
                     }
                     disabled={disabled}
+                    className={cn('placeholder:text-muted-foreground/60', fieldErrors?.modelName ? 'border-destructive focus-visible:border-destructive' : '')}
                   />
+                  {fieldErrors?.modelName ? <p className="text-xs text-destructive">{fieldErrors.modelName}</p> : null}
                 </div>
                 {(
                   [
@@ -264,6 +285,7 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                   모델명 <span className="text-destructive">*</span>
                 </Label>
                 <Input
+                  ref={modelNameRef}
                   placeholder="예: ALU POWER 125, POLYTOUR PRO 1.25"
                   value={value.stringSpec?.modelName ?? ''}
                   onChange={(e) =>
@@ -274,7 +296,9 @@ export default function MarketMetaFields({ category, value, onChange, disabled }
                     })
                   }
                   disabled={disabled}
+                  className={cn('placeholder:text-muted-foreground/60', fieldErrors?.modelName ? 'border-destructive focus-visible:border-destructive' : '')}
                 />
+                {fieldErrors?.modelName ? <p className="text-xs text-destructive">{fieldErrors.modelName}</p> : null}
               </div>
               <div className="space-y-2">
                 <Label className="text-sm">재질</Label>

@@ -72,7 +72,7 @@ const hasMarketMetaInput = (category: CategoryValue, marketMeta: MarketMeta) => 
   return false;
 };
 
-type FieldKey = 'category' | 'brand' | 'title' | 'content' | 'attachments';
+type FieldKey = 'category' | 'brand' | 'price' | 'modelName' | 'title' | 'content' | 'attachments';
 type FieldErrors = Partial<Record<FieldKey, string>>;
 const scrollIntoViewOpts: ScrollIntoViewOptions = { behavior: 'smooth', block: 'center' };
 
@@ -93,6 +93,8 @@ export default function FreeBoardWriteClient() {
   // 포커스/스크롤 대상 refs (첫 오류로 이동)
   const categoryRef = useRef<HTMLDivElement | null>(null);
   const brandRef = useRef<HTMLDivElement | null>(null);
+  const priceRef = useRef<HTMLInputElement | null>(null);
+  const modelNameRef = useRef<HTMLInputElement | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
   const attachmentsRef = useRef<HTMLDivElement | null>(null);
@@ -166,6 +168,16 @@ export default function FreeBoardWriteClient() {
       contentRef.current?.focus();
       return;
     }
+    if (key === 'price') {
+      priceRef.current?.scrollIntoView(scrollIntoViewOpts);
+      priceRef.current?.focus();
+      return;
+    }
+    if (key === 'modelName') {
+      modelNameRef.current?.scrollIntoView(scrollIntoViewOpts);
+      modelNameRef.current?.focus();
+      return;
+    }
     attachmentsRef.current?.scrollIntoView(scrollIntoViewOpts);
   };
 
@@ -198,6 +210,16 @@ export default function FreeBoardWriteClient() {
     else setMarketMeta((prev) => ({ ...prev, racketSpec: null, stringSpec: null }));
   }, [category]);
 
+  // marketMeta 변경 시 price/modelName 에러를 지우기 위한 용도
+  useEffect(() => {
+    if (!fieldErrors.price && !fieldErrors.modelName) return;
+    setFieldErrors((prev) => ({
+      ...prev,
+      price: undefined,
+      modelName: undefined,
+    }));
+  }, [marketMeta.price, marketMeta.racketSpec?.modelName, marketMeta.stringSpec?.modelName]);
+
   // 제출 직전 최종 유효성 검증(우회 방지)
   const validateBeforeSubmit = (): FieldErrors => {
     const errs: FieldErrors = {};
@@ -215,9 +237,9 @@ export default function FreeBoardWriteClient() {
       if (!brand) errs.brand = '브랜드를 선택해 주세요.';
       else if (!isValidMarketBrandForCategory(category, brand)) errs.brand = '선택한 브랜드가 분류에 맞지 않습니다.';
     }
-    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0) errs.category = '판매가는 1원 이상 입력해 주세요.';
-    if (category === 'racket' && !(marketMeta.racketSpec?.modelName ?? '').trim()) errs.brand = '라켓 모델명을 입력해 주세요.';
-    if (category === 'string' && !(marketMeta.stringSpec?.modelName ?? '').trim()) errs.brand = '스트링 모델명을 입력해 주세요.';
+    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0) errs.price = '판매가는 1원 이상 입력해 주세요.';
+    if (category === 'racket' && !(marketMeta.racketSpec?.modelName ?? '').trim()) errs.modelName = '라켓 모델명을 입력해 주세요.';
+    if (category === 'string' && !(marketMeta.stringSpec?.modelName ?? '').trim()) errs.modelName = '스트링 모델명을 입력해 주세요.';
 
     // 제목/내용 기본 + min/max 길이
     if (!t) errs.title = '제목을 입력해 주세요.';
@@ -353,7 +375,8 @@ export default function FreeBoardWriteClient() {
       setFieldErrors(errs);
       setErrorMsg('입력값을 확인해 주세요.');
 
-      const order: FieldKey[] = ['category', 'brand', 'title', 'content', 'attachments'];
+      const order: FieldKey[] = ['category', 'brand', 'price', 'modelName', 'title', 'content', 'attachments'];
+
       const first = order.find((k) => Boolean(errs[k]));
       if (first) requestAnimationFrame(() => focusField(first));
       return;
@@ -563,7 +586,18 @@ export default function FreeBoardWriteClient() {
               </section>
 
               {/* ── 섹션 2+3: 거래 핵심 정보 + 상품 세부 스펙 (MarketMetaFields) ── */}
-              <MarketMetaFields category={category} value={marketMeta} onChange={setMarketMeta} disabled={isSubmitting} />
+              <MarketMetaFields
+                category={category}
+                value={marketMeta}
+                onChange={setMarketMeta}
+                disabled={isSubmitting}
+                fieldErrors={{
+                  price: fieldErrors.price,
+                  modelName: fieldErrors.modelName,
+                }}
+                priceRef={priceRef}
+                modelNameRef={modelNameRef}
+              />
 
               {/* ── 섹션 4: 게시글 내용 ── */}
               <section className="rounded-xl border border-border bg-card shadow-sm">
@@ -593,7 +627,7 @@ export default function FreeBoardWriteClient() {
                       disabled={isSubmitting}
                       maxLength={TITLE_MAX}
                       placeholder="예: 윌슨 블레이드 98 16x19 판매합니다"
-                      className={cn('h-11 text-base', fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : '')}
+                      className={cn('h-11 text-base placeholder:text-muted-foreground/60', fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : '')}
                     />
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] text-muted-foreground">
@@ -611,7 +645,7 @@ export default function FreeBoardWriteClient() {
                     <Textarea
                       id="content"
                       ref={contentRef}
-                      className={cn('min-h-[220px] resize-y leading-relaxed', fieldErrors.content ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : '')}
+                      className={cn('min-h-[220px] resize-y leading-relaxed placeholder:text-muted-foreground/60', fieldErrors.content ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : '')}
                       value={content}
                       onChange={(e) => {
                         setContent(e.target.value);
