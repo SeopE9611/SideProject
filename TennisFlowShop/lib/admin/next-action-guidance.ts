@@ -1,3 +1,5 @@
+import { isVisitPickupOrder } from '@/lib/order-shipping';
+
 export type OpsLikeItem = {
   kind: 'order' | 'stringing_application' | 'rental';
   statusLabel?: string | null;
@@ -7,6 +9,7 @@ export type OpsLikeItem = {
   hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
   hasInboundTracking?: boolean;
+  shippingMethod?: string | null;
 };
 
 export type NextActionGuide = {
@@ -65,7 +68,12 @@ const isOrderClosed = (status?: string | null) => {
   return s.includes('환불') || s.includes('취소') || s.includes('결제취소') || s === 'refunded' || s === 'cancelled' || s === 'canceled';
 };
 
+
+const isVisitPickupItem = (item: OpsLikeItem) => isVisitPickupOrder(item.shippingMethod);
+
 function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
+  const isVisitPickup = isVisitPickupItem(item);
+
   if (isOrderClosed(item.statusLabel)) {
     return { stage: '주문 종료 단계', nextAction: '후속 조치 없음' };
   }
@@ -75,15 +83,19 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
   }
 
   if (isOrderDeliveredLike(item.statusLabel)) {
-    return { stage: '배송 완료 단계', nextAction: '구매확정/환불 요청 여부 모니터링' };
+    return { stage: isVisitPickup ? '방문 수령 완료 단계' : '배송 완료 단계', nextAction: '구매확정/환불 요청 여부 모니터링' };
   }
 
   if (isOrderShipped(item.statusLabel)) {
-    return { stage: '배송 진행 단계', nextAction: '배송 완료 전 운송장/수령 상태 확인 필요' };
+    return { stage: isVisitPickup ? '방문 수령 준비 단계' : '배송 진행 단계', nextAction: isVisitPickup ? '방문 수령 완료 처리 필요' : '배송 완료 전 운송장/수령 상태 확인 필요' };
   }
 
-  if (!item.hasShippingInfo) {
+  if (!item.hasShippingInfo && !isVisitPickup) {
     return { stage: '배송 준비 단계', nextAction: '배송 정보 등록 필요' };
+  }
+
+  if (isVisitPickup) {
+    return { stage: '방문 수령 준비 단계', nextAction: '매장 방문 수령 준비 상태 확인 필요' };
   }
 
   return { stage: '배송 준비 단계', nextAction: '배송중 처리 필요' };
@@ -128,7 +140,7 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
       if (!doneLike(item.paymentLabel)) {
         return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 및 연결 신청서 진행 가능 여부 확인 필요' };
       }
-      return { stage: '주문 후속 처리 단계', nextAction: '배송/수령 상태를 확인하고 연결 신청서 진행 상태를 점검하세요' };
+      return { stage: '주문 후속 처리 단계', nextAction: '수령/배송 상태를 확인하고 연결 신청서 진행 상태를 점검하세요' };
     }
     return inferStandaloneOrderGuide(item);
   }

@@ -16,6 +16,7 @@ import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrder
 import SiteContainer from '@/components/layout/SiteContainer';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import LoginGate from '@/components/system/LoginGate';
+import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 
 type PopulatedItem = {
   name: string;
@@ -107,6 +108,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const stringingApplicationHref =
     isLoggedIn && stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
+  const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
+  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(order.shippingInfo);
 
   let stringingSummary: StringingSummary | null = null;
   if (hasSubmittedApplication && stringingApplicationId && ObjectId.isValid(stringingApplicationId)) {
@@ -203,7 +206,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <p className="mb-1 text-muted-foreground">교체 서비스 신청이 함께 접수되었습니다.</p>
                   ) : (
                     <p className="mb-4 text-muted-foreground">
-                      {order.shippingInfo?.deliveryMethod === '방문수령' ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
+                      {isVisitPickup ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
                     </p>
                   )}
                   {hasSubmittedApplication ? (
@@ -346,11 +349,11 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
                 <Separator className="my-6" />
 
-                {/* 배송 정보 */}
+                {/* 수령/배송 정보 */}
                 <div className="mb-6">
                   <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
                     <MapPin className="h-5 w-5 text-primary" />
-                    배송 정보
+                    {getOrderDeliveryInfoTitle(order.shippingInfo)}
                   </h3>
                   <div className="space-y-2 rounded-lg border border-border bg-background p-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -363,11 +366,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                         <span className="ml-2 font-semibold text-foreground">{order.shippingInfo?.phone || '정보 없음'}</span>
                       </div>
                     </div>
-                    <div>
-                      <span className="text-sm text-muted-foreground">주소:</span>
-                      <span className="ml-2 font-semibold text-foreground">{order.shippingInfo?.address || '정보 없음'}</span>
-                    </div>
-                    {order.shippingInfo?.deliveryRequest && (
+                    {showDeliveryOnlyFields && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">주소:</span>
+                        <span className="ml-2 font-semibold text-foreground">{order.shippingInfo?.address || '정보 없음'}</span>
+                      </div>
+                    )}
+                    {!showDeliveryOnlyFields && <p className="text-sm text-muted-foreground">매장 방문 시 주문번호를 제시해주세요.</p>}
+                    {showDeliveryOnlyFields && order.shippingInfo?.deliveryRequest && (
                       <div>
                         <span className="text-sm text-muted-foreground">배송 요청사항:</span>
                         <span className="ml-2 font-semibold text-foreground">{order.shippingInfo.deliveryRequest}</span>
@@ -442,8 +448,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
                       <Package className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
-                        <h4 className="mb-1 font-semibold text-foreground">배송 안내</h4>
-                        <p className="text-sm text-muted-foreground">입금 확인 후 배송이 시작됩니다.</p>
+                        <h4 className="mb-1 font-semibold text-foreground">{isVisitPickup ? '방문 수령 안내' : '배송 안내'}</h4>
+                        <p className="text-sm text-muted-foreground">{isVisitPickup ? '입금 확인 후 매장에서 수령 준비가 진행됩니다.' : '입금 확인 후 배송이 시작됩니다.'}</p>
                       </div>
                     </div>
                   </div>
@@ -459,7 +465,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <Phone className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
                         <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
-                        <p className="text-sm text-muted-foreground">배송 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.</p>
+                        <p className="text-sm text-muted-foreground">{isVisitPickup ? '방문 수령 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.' : '배송 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.'}</p>
                       </div>
                     </div>
                   </div>

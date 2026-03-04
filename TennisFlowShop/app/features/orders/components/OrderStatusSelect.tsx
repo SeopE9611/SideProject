@@ -4,6 +4,7 @@ import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 
 const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
 
@@ -23,9 +24,10 @@ interface StatusRes {
 interface Props {
   orderId: string; // 대상 주문 ID
   currentStatus: string; // 서버에서 내려준 현재 상태(초깃값)
+  shippingMethod?: string;
 }
 
-export default function OrderStatusSelect({ orderId, currentStatus }: Props) {
+export default function OrderStatusSelect({ orderId, currentStatus, shippingMethod }: Props) {
   // 상태 전용 SWR: fallbackData로 초기 상태 주입 -> 첫 렌더 안정화
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusRes>(`/api/orders/${orderId}/status`, fetcher, { fallbackData: { status: currentStatus } });
 
@@ -36,6 +38,7 @@ export default function OrderStatusSelect({ orderId, currentStatus }: Props) {
   // 현재 상태(취소여부 판정에 사용)
   const current = statusData?.status ?? currentStatus;
   const isCancelled = current === '취소';
+  const isVisitPickup = isVisitPickupOrder(shippingMethod);
 
   // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
   const SELECTABLE_STATUSES = ['대기중', '결제완료', '배송중', '배송완료', '환불'] as const;
@@ -85,13 +88,13 @@ export default function OrderStatusSelect({ orderId, currentStatus }: Props) {
             {/*  ‘취소’는 제외. 모달 버튼으로만 처리 */}
             {SELECTABLE_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
-                {s}
+                {getOrderStatusLabelForDisplay(s, shippingMethod)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       )}
-      <p className="mt-1 text-[11px] text-muted-foreground">취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">{isVisitPickup ? '취소는 수령 전 단계에서만 사용하고, 수령 완료 이후 금전 반환은 상태 "환불"로 처리하세요.' : '취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.'}</p>
     </div>
   );
 }
