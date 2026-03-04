@@ -44,3 +44,29 @@
 rg -n "useUnsavedChangesGuard|UNSAVED_CHANGES_MESSAGE|window\.confirm" app lib
 rg -n "router\.push|router\.back|history\.back|Link href|popstate" app/<target-files> lib/hooks
 ```
+
+
+## 5차 확장 반영 사항 (게시판/리뷰 write·edit opt-in)
+
+- 범위: **긴 글 작성/수정 화면(write/edit)만** `useBackNavigationGuard`를 opt-in으로 확장.
+- 유지: 기존 `useUnsavedChangesGuard`(beforeunload)와 각 페이지 local confirm 로직은 그대로 유지.
+- 제외: 상세(detail)/댓글(comment)/답글(reply)/신고/토글/모달 계열 화면은 이번 차수에서 미적용.
+
+### 5차 적용 파일
+
+- `app/board/free/_components/FreeBoardWriteClient.tsx`
+- `app/board/free/[id]/edit/_components/FreeBoardEditClient.tsx`
+- `app/board/gear/_components/FreeBoardWriteClient.tsx`
+- `app/board/gear/[id]/edit/_components/FreeBoardEditClient.tsx`
+- `app/board/market/_components/FreeBoardWriteClient.tsx`
+- `app/board/market/[id]/edit/_components/FreeBoardEditClient.tsx`
+- `app/board/notice/write/page.tsx`
+- `app/board/qna/write/page.tsx`
+- `app/reviews/write/page.tsx`
+
+### 정책 재확인 (변경 없음)
+
+- unload(탭 닫기/새로고침): `useUnsavedChangesGuard`
+- internal navigation(버튼/링크): 페이지 local confirm
+- browser/system back(popstate): `useBackNavigationGuard` (opt-in)
+- 전역 click/popstate interception은 복원하지 않음

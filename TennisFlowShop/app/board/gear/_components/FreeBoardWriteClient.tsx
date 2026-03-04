@@ -15,6 +15,7 @@ import ImageUploader from '@/components/admin/ImageUploader';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 
@@ -93,6 +94,7 @@ export default function FreeBoardWriteClient() {
 
   // 탭닫기/새로고침 + 뒤로가기(popstate)까지 통합 보호
   useUnsavedChangesGuard(isDirty && !isSubmitting);
+  useBackNavigationGuard(isDirty && !isSubmitting);
 
   const guardLeave = (e: any) => {
     if (!isDirty || isSubmitting) return;

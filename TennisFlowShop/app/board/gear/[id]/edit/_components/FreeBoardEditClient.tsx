@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/lib/supabase';
 import { CATEGORY_OPTIONS } from '@/app/board/gear/_components/FreeBoardWriteClient';
 import SiteContainer from '@/components/layout/SiteContainer';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 
@@ -82,6 +83,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   }, [title, content, category, images, selectedFiles.length]);
 
   useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
+  useBackNavigationGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();

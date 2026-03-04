@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { normalizeMarketMeta, type MarketMeta } from '@/lib/market';
 import { supabase } from '@/lib/supabase';
@@ -110,6 +111,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   }, [title, content, category, brand, images, selectedFiles.length, marketMeta]);
 
   useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
+  useBackNavigationGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();

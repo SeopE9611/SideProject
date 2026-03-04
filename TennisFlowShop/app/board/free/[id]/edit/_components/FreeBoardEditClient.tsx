@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { supabase } from '@/lib/supabase';
 import type { CommunityPost } from '@/lib/types/community';
@@ -83,6 +84,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 업로드/제출 중엔 경고를 막고(= 작업 방해 방지), 평상시엔 이탈 보호
   useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
+  useBackNavigationGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();

@@ -11,6 +11,7 @@ import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import NextImage from 'next/image';
@@ -223,6 +224,7 @@ export default function ReviewWritePage() {
   }, [rating, content, photos.length]);
 
   useUnsavedChangesGuard(isDirty && !isSubmitting);
+  useBackNavigationGuard(isDirty && !isSubmitting);
 
   const resetForm = () => {
     setRating(5);
