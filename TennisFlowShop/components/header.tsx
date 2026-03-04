@@ -10,9 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
-import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { ChevronDown, ChevronRight, Gift, Grid2X2, Loader2, Mail, Menu, MessageSquare, MessageSquareText, ShoppingCart, UserIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -97,9 +97,15 @@ const Header = () => {
     const n = itemWidths.length;
     if (n === 0) return;
 
-    // 상단 헤더는 스크롤 시 transform: scale(...)을 사용하므로,
-    // clientWidth는 "스케일 전" 레이아웃 폭이라 계산이 틀어질 수 있음 → getBoundingClientRect() 사용
-    const available = Math.max(0, navEl.getBoundingClientRect().width);
+    // 핵심:
+    // getBoundingClientRect()/clientWidth는 padding까지 포함할 수 있어서
+    // 실제 "메뉴가 들어갈 수 있는 내용 영역(content box)"보다 크게 잡힐 수 있습니다.
+    // 그러면 코드상으로는 들어간다고 판단했지만
+    // 실제 화면에서는 첫 메뉴(예: 스트링)가 살짝 잘리는 현상이 생깁니다.
+    const navStyle = window.getComputedStyle(navEl);
+    const paddingLeft = Number.parseFloat(navStyle.paddingLeft || '0') || 0;
+    const paddingRight = Number.parseFloat(navStyle.paddingRight || '0') || 0;
+    const available = Math.max(0, navEl.clientWidth - paddingLeft - paddingRight);
 
     const prefixWidth = (count: number) => {
       if (count <= 0) return 0;
@@ -145,7 +151,7 @@ const Header = () => {
     setOverflowMenuOpen(false);
     recomputeOverflow();
     // 스크롤 상태 변화(scale 변경)도 실측 폭에 영향을 주므로 재계산 트리거로 포함
-  }, [recomputeOverflow, pathname, isScrolled]);
+  }, [recomputeOverflow, pathname]);
 
   useEffect(() => {
     const navEl = navRef.current;
@@ -331,6 +337,7 @@ const Header = () => {
   const visibleCount = Math.max(0, menuItems.length - overflowCount);
   const primaryMenuItems = menuItems.slice(0, visibleCount);
   const overflowMenuItems = menuItems.slice(visibleCount);
+  const hasOverflow = overflowMenuItems.length > 0;
 
   const isActiveMenu = (item: (typeof menuItems)[number]) => {
     const p = pathname ?? '';
@@ -624,7 +631,11 @@ const Header = () => {
                               카카오
                             </Badge>
                           )}
-                          {hasNaver && <Badge variant={getSocialProviderBadgeSpec('naver').variant} className="border-0 text-[10px] h-5 px-2">네이버</Badge>}
+                          {hasNaver && (
+                            <Badge variant={getSocialProviderBadgeSpec('naver').variant} className="border-0 text-[10px] h-5 px-2">
+                              네이버
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>
@@ -777,8 +788,15 @@ const Header = () => {
                   <div className="mt-1 text-xs tracking-wider text-muted-foreground font-medium whitespace-nowrap">TENNIS FLOW SHOP</div>
                 </div>
               </Link>
-
-              <nav ref={navRef} className="hidden bp-lg:flex items-center gap-1.5 ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden xl:justify-center xl:pr-8 2xl:pr-10">
+              <nav
+                ref={navRef}
+                className={`hidden bp-lg:flex items-center gap-1 xl:gap-1.5 ml-1 whitespace-nowrap flex-1 min-w-0 overflow-hidden ${
+                  // 메뉴가 전부 보일 때는 중앙 정렬로 넓은 화면의 빈 여백을 줄이고,
+                  // 하나라도 overflow가 생기면 왼쪽 정렬로 전환해
+                  // 첫 메뉴(스트링)가 잘리지 않게 합니다.
+                  hasOverflow ? 'justify-start' : 'xl:justify-center xl:pr-8 2xl:pr-10'
+                }`}
+              >
                 {primaryMenuItems.map((item) => {
                   const active = isActiveMenu(item);
                   return (
