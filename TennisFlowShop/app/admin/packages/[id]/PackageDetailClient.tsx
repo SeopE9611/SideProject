@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { type MouseEvent as ReactMouseEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, CreditCard, Package as PackageIcon, User, Edit3, Clock, Target, MapPin, Phone, Mail, Plus, Minus, History, RotateCcw, CalendarPlus, ChevronRight, User2, Loader2 } from 'lucide-react';
@@ -20,7 +20,7 @@ import type { AdminPackageDetailDto, AdminPackageOperationHistoryDto } from '@/t
 import PackagePaymentStatusSelect from '@/app/features/packages/components/PackagePaymentStatusSelect';
 import PackagePassStatusSelect from '@/app/features/packages/components/PackagePassStatusSelect';
 import PackageCurrentStatusSelect from '@/app/features/packages/components/PackageCurrentStatusSelect';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { getMerchandisingBadgeSpec, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 
 type PackageDetail = AdminPackageDetailDto;
@@ -180,6 +180,13 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   const isDirty = isExtensionDirty || isAdjustDirty;
   useUnsavedChangesGuard(isDirty);
 
+  const onLeaveListClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (!isDirty) return;
+    if (window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   // 최신순 정렬(내림차순)
   const operationsHistorySorted = [...operationsHistory].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -306,7 +313,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               </div>
               <div className="flex gap-2">
                 <Button asChild variant="outline" className="border-border">
-                  <Link href="/admin/packages">
+                  <Link href="/admin/packages" data-no-unsaved-guard onClick={onLeaveListClick}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로
                   </Link>

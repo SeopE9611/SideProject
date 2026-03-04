@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { Building2, Calendar, CheckCircle, CreditCard, Mail, MessageSquare, Package, Phone, Shield, Star, UserIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -157,6 +158,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   }, [prefillDone, isPackageLoading, fingerprint]);
 
   useUnsavedChangesGuard(isDirty);
+  useBackNavigationGuard(isDirty);
 
   const onLeavePageClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!isDirty) return;

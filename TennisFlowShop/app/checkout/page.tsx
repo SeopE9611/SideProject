@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { bankLabelMap } from '@/lib/constants';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { calcShippingFee } from '@/lib/shipping-fee';
 import { cn } from '@/lib/utils';
@@ -585,6 +586,7 @@ export default function CheckoutPage() {
 
   // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
   useUnsavedChangesGuard(isDirty);
+  useBackNavigationGuard(isDirty);
 
   // 내부 링크(예: 장바구니로 돌아가기) 클릭 시 confirm 경고
   const onLeaveCartClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {

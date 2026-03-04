@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { calcShippingFee } from '@/lib/shipping-fee';
 import { showErrorToast } from '@/lib/toast';
@@ -105,6 +106,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
   }, [name, phone, address, addressDetail, postalCode, depositor, deliveryRequest, pickupMethod, bank, agree]);
 
   useUnsavedChangesGuard(isDirty);
+  useBackNavigationGuard(isDirty);
 
   async function onSubmit() {
     // 0) 중복 클릭 방지

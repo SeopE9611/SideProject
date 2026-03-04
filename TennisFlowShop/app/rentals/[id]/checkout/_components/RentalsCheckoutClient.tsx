@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { badgeToneVariant } from '@/lib/badge-style';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -250,6 +251,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   }, [prefillReady, fingerprint]);
 
   useUnsavedChangesGuard(isDirty);
+  useBackNavigationGuard(isDirty);
 
   const pushIfSafe = (href: string) => {
     if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
