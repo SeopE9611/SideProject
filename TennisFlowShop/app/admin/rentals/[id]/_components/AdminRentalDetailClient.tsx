@@ -282,6 +282,7 @@ export default function AdminRentalDetailClient() {
   const stringPrice = Number(data?.amount?.stringPrice ?? (data?.stringing?.requested ? data?.stringing?.price ?? 0 : 0));
   const stringingFee = Number(data?.amount?.stringingFee ?? (data?.stringing?.requested ? data?.stringing?.mountingFee ?? 0 : 0));
   const hasStringingSummary = Boolean(data?.stringing?.requested || stringPrice > 0 || stringingFee > 0 || data?.stringingApplicationId);
+  const hasStringingIntakeSummary = Boolean(data?.stringingReceptionLabel || data?.stringingRacketCount || data?.stringingTensionSummary || (Array.isArray(data?.stringingNames) && data.stringingNames.length > 0) || data?.stringingReservationLabel);
 
   const rentalGuide = inferNextActionForOperationItem({
     kind: 'rental',
@@ -444,15 +445,24 @@ export default function AdminRentalDetailClient() {
                 <p className="text-muted-foreground">스트링: <span className="font-medium text-foreground">{stringingName ?? '선택됨(이름 미기록)'}</span></p>
                 <p className="text-muted-foreground">요금: <span className="font-medium text-foreground">{stringPrice > 0 ? won(stringPrice) : '0원'}</span></p>
                 <p className="text-muted-foreground">교체비: <span className="font-medium text-foreground">{stringingFee > 0 ? won(stringingFee) : '0원'}</span></p>
-                {data?.stringingApplicationId ? (
-                  <p className="text-muted-foreground">
-                    신청서: <span className="font-medium text-foreground">{data?.stringingApplicationStatus ?? '상태 확인 필요'}</span>{' '}
-                    <Link href={`/admin/applications/stringing/${encodeURIComponent(String(data.stringingApplicationId))}`} className="underline underline-offset-2 text-primary">
-                      상세 이동
-                    </Link>
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground">신청서: 연결 없음</p>
+                {data?.stringingApplicationId && (
+                  <p className="text-muted-foreground">신청 상태: <span className="font-medium text-foreground">{data?.stringingApplicationStatus ?? '상태 확인 필요'}</span></p>
+                )}
+                {hasStringingIntakeSummary && (
+                  <>
+                    {data?.stringingReceptionLabel && <p className="text-muted-foreground">접수 방식: <span className="font-medium text-foreground">{data.stringingReceptionLabel}</span></p>}
+                    {typeof data?.stringingRacketCount === 'number' && data.stringingRacketCount > 0 && <p className="text-muted-foreground">라인 수: <span className="font-medium text-foreground">{data.stringingRacketCount}개</span></p>}
+                    {Array.isArray(data?.stringingNames) && data.stringingNames.length > 0 && <p className="text-muted-foreground">스트링 선택: <span className="font-medium text-foreground">{data.stringingNames.join(', ')}</span></p>}
+                    {data?.stringingTensionSummary && <p className="text-muted-foreground">텐션: <span className="font-medium text-foreground">{data.stringingTensionSummary}</span></p>}
+                    {data?.stringingReservationLabel && <p className="text-muted-foreground">방문 예약: <span className="font-medium text-foreground">{data.stringingReservationLabel}</span></p>}
+                  </>
+                )}
+                {data?.stringingApplicationId && (
+                  <div className="pt-2">
+                    <Button asChild size="sm" className="h-8">
+                      <Link href={`/admin/applications/stringing/${encodeURIComponent(String(data.stringingApplicationId))}`}>신청서 상세로 이동</Link>
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>

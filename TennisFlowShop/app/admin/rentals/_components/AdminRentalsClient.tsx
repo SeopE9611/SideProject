@@ -701,6 +701,7 @@ export default function AdminRentalsClient() {
                                   ];
                                   return <AdminBadgeRow maxVisible={3} items={items} />;
                                 })()}
+                                {r.stringingApplicationStatus && <p className="text-[11px] text-muted-foreground">신청 상태: {r.stringingApplicationStatus}</p>}
                               </button>
                             </TooltipTrigger>
 
@@ -726,6 +727,11 @@ export default function AdminRentalsClient() {
 
                                 {/* 교체서비스 포함 안내 */}
                                 {r.withStringService && <p className="mt-2 text-[11px] text-muted-foreground">교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서 상태/배송을 관리합니다)</p>}
+                                {r.stringingReceptionLabel && <p className="mt-1 text-[11px] text-muted-foreground">접수 방식: {r.stringingReceptionLabel}</p>}
+                                {typeof r.stringingRacketCount === 'number' && r.stringingRacketCount > 0 && <p className="mt-1 text-[11px] text-muted-foreground">라인 수: {r.stringingRacketCount}개</p>}
+                                {Array.isArray(r.stringingNames) && r.stringingNames.length > 0 && <p className="mt-1 text-[11px] text-muted-foreground">스트링: {r.stringingNames.join(', ')}</p>}
+                                {r.stringingTensionSummary && <p className="mt-1 text-[11px] text-muted-foreground">텐션: {r.stringingTensionSummary}</p>}
+                                {r.stringingReservationLabel && <p className="mt-1 text-[11px] text-muted-foreground">예약: {r.stringingReservationLabel}</p>}
                                 <p className="mt-2 text-[11px] text-muted-foreground">
                                   시나리오: <span className="font-medium text-foreground">{flow.label}</span>
                                 </p>
