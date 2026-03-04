@@ -77,6 +77,8 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
   const [pickupMethod, setPickupMethod] = useState<PickupMethod>('courier');
   const [bank, setBank] = useState<Bank>('shinhan');
+  const isVisitPickup = pickupMethod === 'visit';
+  const needsShippingAddress = !isVisitPickup;
 
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -92,7 +94,7 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
 
   // const canSubmit = racket.status === 'available' && agree && !submitting && name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim();
   // canSubmit은 boolean으로 유지(기존은 && 체인 때문에 string이 될 수 있음)
-  const canSubmit = racket.status === 'available' && agree && !submitting && Boolean(name.trim() && phone.trim() && address.trim() && postalCode.trim() && depositor.trim());
+  const canSubmit = racket.status === 'available' && agree && !submitting && Boolean(name.trim() && phone.trim() && depositor.trim() && (!needsShippingAddress || (address.trim() && postalCode.trim())));
 
   /**
    * 입력 이탈 경고(Unsaved Changes Guard)
@@ -141,13 +143,15 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
       return;
     }
-    if (!POSTAL_RE.test(postalTrim)) {
-      showErrorToast('우편번호(5자리)를 확인해주세요.');
-      return;
-    }
-    if (!addressTrim) {
-      showErrorToast('주소를 입력해주세요.');
-      return;
+    if (needsShippingAddress) {
+      if (!POSTAL_RE.test(postalTrim)) {
+        showErrorToast('우편번호(5자리)를 확인해주세요.');
+        return;
+      }
+      if (!addressTrim) {
+        showErrorToast('주소를 입력해주세요.');
+        return;
+      }
     }
     if (depositorTrim.length < 2) {
       showErrorToast('입금자명은 2자 이상 입력해주세요.');
@@ -244,15 +248,19 @@ export default function RacketPurchaseCheckoutClient({ racket }: { racket: Racke
       </div>
 
       <div className="rounded-lg border p-4 space-y-3">
-        <div className="font-semibold">배송 정보</div>
+        <div className="font-semibold">{isVisitPickup ? '수령/연락 정보' : '배송 정보'}</div>
 
         <Input className="w-full text-sm" placeholder="수령인" value={name} onChange={(e) => setName(e.target.value)} />
         <Input className="w-full text-sm" placeholder="연락처" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <Input className="w-full text-sm" placeholder="우편번호" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
-        <Input className="w-full text-sm" placeholder="주소" value={address} onChange={(e) => setAddress(e.target.value)} />
-        <Input className="w-full text-sm" placeholder="상세주소(선택)" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} />
+        {needsShippingAddress && (
+          <>
+            <Input className="w-full text-sm" placeholder="우편번호" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
+            <Input className="w-full text-sm" placeholder="주소" value={address} onChange={(e) => setAddress(e.target.value)} />
+            <Input className="w-full text-sm" placeholder="상세주소(선택)" value={addressDetail} onChange={(e) => setAddressDetail(e.target.value)} />
+            <Input className="w-full text-sm" placeholder="배송 요청사항(선택)" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} />
+          </>
+        )}
         <Input className="w-full text-sm" placeholder="입금자명" value={depositor} onChange={(e) => setDepositor(e.target.value)} />
-        <Input className="w-full text-sm" placeholder="배송 요청사항(선택)" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} />
       </div>
 
       <div className="rounded-lg border p-4 space-y-3">

@@ -1033,14 +1033,16 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            {/* 배송 정보 */}
+            {/* 배송 정보/수령 정보 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
               <div className="bg-card p-3 bp-sm:p-4 bp-lg:p-6">
                 <CardTitle className="flex items-center gap-3 text-base bp-sm:text-lg">
                   <MapPin className="h-5 w-5 text-foreground" />
-                  배송 정보
+                  {needsShippingAddress ? '배송 정보' : '수령/연락 정보'}
                 </CardTitle>
-                <CardDescription className="mt-2">상품을 받으실 배송지 정보를 입력해주세요.</CardDescription>
+                <CardDescription className="mt-2">
+                  {needsShippingAddress ? '상품을 받으실 배송지 정보를 입력해주세요.' : '매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요.'}
+                </CardDescription>
               </div>
               <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
                 <div className="space-y-4 bp-sm:space-y-6">
@@ -1091,54 +1093,58 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
-                        <Home className="h-4 w-4 text-foreground" />
-                        우편번호
-                      </Label>
-                      <Button variant="outline" size="sm" onClick={handleFindPostcode} className="bg-primary text-primary-foreground border-0 hover:bg-primary/90">
-                        우편번호 찾기
-                      </Button>
-                    </div>
-                    <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-muted cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-destructive/30')} />
-                    <div className="min-h-[16px]">{fieldErrors.postalCode && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
-                  </div>
+                  {needsShippingAddress && (
+                    <>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
+                            <Home className="h-4 w-4 text-foreground" />
+                            우편번호
+                          </Label>
+                          <Button variant="outline" size="sm" onClick={handleFindPostcode} className="bg-primary text-primary-foreground border-0 hover:bg-primary/90">
+                            우편번호 찾기
+                          </Button>
+                        </div>
+                        <Input id="address-postal" readOnly value={postalCode} placeholder="우편번호" className={cn('bg-muted cursor-not-allowed max-w-[200px] border-2', fieldErrors.postalCode && 'border-destructive/30')} />
+                        <div className="min-h-[16px]">{fieldErrors.postalCode && <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>}</div>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="address-main">기본 주소</Label>
-                    <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-muted cursor-not-allowed border-2', fieldErrors.postalCode && 'border-destructive/30')} />
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address-main">기본 주소</Label>
+                        <Input id="address-main" readOnly value={address} placeholder="기본 주소" className={cn('bg-muted cursor-not-allowed border-2', fieldErrors.postalCode && 'border-destructive/30')} />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="address-detail">상세 주소</Label>
-                    <Input
-                      id="address-detail"
-                      value={addressDetail}
-                      onChange={(e) => setAddressDetail(e.target.value)}
-                      placeholder="상세 주소를 입력하세요"
-                      className={cn('border-2 focus:border-border transition-colors', fieldErrors.addressDetail && 'border-destructive/30 focus:border-destructive/30')}
-                    />
-                    <div className="min-h-[16px]">{fieldErrors.addressDetail && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address-detail">상세 주소</Label>
+                        <Input
+                          id="address-detail"
+                          value={addressDetail}
+                          onChange={(e) => setAddressDetail(e.target.value)}
+                          placeholder="상세 주소를 입력하세요"
+                          className={cn('border-2 focus:border-border transition-colors', fieldErrors.addressDetail && 'border-destructive/30 focus:border-destructive/30')}
+                        />
+                        <div className="min-h-[16px]">{fieldErrors.addressDetail && <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>}</div>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
-                      <MessageSquare className="h-4 w-4 text-foreground" />
-                      배송 요청사항
-                    </Label>
-                    <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
+                          <MessageSquare className="h-4 w-4 text-foreground" />
+                          배송 요청사항
+                        </Label>
+                        <Textarea id="delivery-request" value={deliveryRequest} onChange={(e) => setDeliveryRequest(e.target.value)} placeholder="배송 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
+                      </div>
 
-                  <div className="bg-muted p-4 rounded-lg border border-border">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
-                      <label htmlFor="save-address" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-foreground'}`}>
-                        이 배송지 정보를 저장
-                      </label>
-                    </div>
-                    {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
-                  </div>
+                      <div className="bg-muted p-4 rounded-lg border border-border">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox id="save-address" checked={saveAddress} onCheckedChange={(checked) => setSaveAddress(!!checked)} disabled={!user} />
+                          <label htmlFor="save-address" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-foreground'}`}>
+                            이 배송지 정보를 저장
+                          </label>
+                        </div>
+                        {!user && <p className="text-xs text-muted-foreground ml-6 mt-1">로그인 후 배송지 정보를 저장할 수 있습니다.</p>}
+                      </div>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
