@@ -26,6 +26,26 @@ type PopulatedItem = {
 type NumericLike = number | string | null | undefined;
 type OrderItemLike = { name?: string; price?: NumericLike; quantity?: NumericLike } | null | undefined;
 
+type StringingSummary = {
+  lineCount: number;
+  stringNames: string[];
+  tensionSummary: string | null;
+  receptionLabel: string;
+  reservationLabel: string | null;
+};
+
+function getApplicationLines(stringDetails: any): any[] {
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === 'visit') return '방문 접수';
+  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
+  return '발송 접수';
+}
+
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
@@ -87,6 +107,40 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const stringingApplicationHref =
     isLoggedIn && stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
+
+  let stringingSummary: StringingSummary | null = null;
+  if (hasSubmittedApplication && stringingApplicationId && ObjectId.isValid(stringingApplicationId)) {
+    const app = await db.collection('stringing_applications').findOne(
+      { _id: new ObjectId(stringingApplicationId) },
+      { projection: { stringDetails: 1, collectionMethod: 1 } },
+    );
+    if (app) {
+      const lines = getApplicationLines((app as any).stringDetails);
+      const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
+      const tensionSet = Array.from(
+        new Set(
+          lines
+            .map((line: any) => {
+              const main = String(line?.tensionMain ?? '').trim();
+              const cross = String(line?.tensionCross ?? '').trim();
+              if (!main && !cross) return '';
+              return cross && cross !== main ? `${main}/${cross}` : main || cross;
+            })
+            .filter(Boolean),
+        ),
+      );
+      const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? '').trim();
+      const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? '').trim();
+
+      stringingSummary = {
+        lineCount: lines.length,
+        stringNames,
+        tensionSummary: tensionSet.length ? tensionSet.join(', ') : null,
+        receptionLabel: getReceptionLabel((app as any).collectionMethod),
+        reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+      };
+    }
+  }
 
   // 안전한 가격 표시 함수
   const formatPrice = (price: NumericLike): string => {
@@ -176,6 +230,26 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 </div>
               </div>
             )}
+
+            {withStringService && hasSubmittedApplication && stringingSummary && (
+              <div className="mt-4 max-w-2xl mx-auto">
+                <Card className="border border-border bg-card/90">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">교체 서비스 접수 요약</CardTitle>
+                    <CardDescription>신청서 상세로 이동하지 않아도 핵심 접수 내용을 바로 확인할 수 있습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm text-foreground">
+                    {/* 성공 직후 혼동을 줄이기 위한 핵심 요약만 노출 */}
+                    <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold">{stringingSummary.receptionLabel}</span></p>
+                    <p><span className="text-muted-foreground">라인 수:</span> <span className="font-semibold">{stringingSummary.lineCount}개</span></p>
+                    {stringingSummary.stringNames.length > 0 && <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold">{stringingSummary.stringNames.join(', ')}</span></p>}
+                    {stringingSummary.tensionSummary && <p><span className="text-muted-foreground">텐션:</span> <span className="font-semibold">{stringingSummary.tensionSummary}</span></p>}
+                    {stringingSummary.reservationLabel && <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-semibold">{stringingSummary.reservationLabel}</span></p>}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
           </SiteContainer>
         </div>
 

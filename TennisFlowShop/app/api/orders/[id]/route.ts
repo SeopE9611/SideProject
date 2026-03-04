@@ -52,6 +52,29 @@ function getApplicationLines(stringDetails: any): any[] {
   return [];
 }
 
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === 'visit') return '방문 접수';
+  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
+  return '발송 접수';
+}
+
+function getTensionSummary(lines: any[]): string | null {
+  const set = Array.from(
+    new Set(
+      lines
+        .map((line: any) => {
+          const main = String(line?.tensionMain ?? '').trim();
+          const cross = String(line?.tensionCross ?? '').trim();
+          if (!main && !cross) return '';
+          return cross && cross !== main ? `${main}/${cross}` : main || cross;
+        })
+        .filter(Boolean),
+    ),
+  );
+  return set.length ? set.join(', ') : null;
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -237,12 +260,22 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const remainingSlots = Math.max(totalSlots - usedSlots, 0);
 
     // 이 주문과 연결된 신청서 요약 정보 배열
-    const stringingApplications = apps.map((app: any) => ({
-      id: app._id?.toString(),
-      status: app.status ?? 'draft',
-      createdAt: app.createdAt ?? null,
-      racketCount: getApplicationLines(app?.stringDetails).length,
-    }));
+    const stringingApplications = apps.map((app: any) => {
+      const lines = getApplicationLines(app?.stringDetails);
+      const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
+      const preferredDate = String(app?.stringDetails?.preferredDate ?? '').trim();
+      const preferredTime = String(app?.stringDetails?.preferredTime ?? '').trim();
+      return {
+        id: app._id?.toString(),
+        status: app.status ?? 'draft',
+        createdAt: app.createdAt ?? null,
+        racketCount: lines.length,
+        receptionLabel: getReceptionLabel(app?.collectionMethod),
+        tensionSummary: getTensionSummary(lines),
+        stringNames,
+        reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+      };
+    });
 
     return NextResponse.json({
       ...order, // 원문은 펴주되,

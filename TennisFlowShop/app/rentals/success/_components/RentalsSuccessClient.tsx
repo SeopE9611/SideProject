@@ -24,6 +24,14 @@ type Props = {
     withStringService?: boolean;
     isStringServiceApplied?: boolean;
     stringingApplicationId?: string | null;
+    applicationSummary?: {
+      status: string;
+      lineCount: number;
+      stringNames: string[];
+      tensionSummary: string | null;
+      receptionLabel: string;
+      reservationLabel: string | null;
+    } | null;
     racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
     payment?: {
       method?: string;
@@ -109,6 +117,30 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <p>• 별도 신청서 작성 없이 현재 대여에 포함되어 처리됩니다.</p>
                 <p>• 추가 요청/장착 정보가 함께 저장되었습니다.</p>
                 {stringingApplicationId ? <p className="font-mono text-xs">신청서 ID: {stringingApplicationId}</p> : null}
+              </CardContent>
+            </Card>
+          )}
+
+          {withService && stringingApplied && data.applicationSummary && (
+            <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border border-border shadow-xl">
+              <CardHeader className="bg-muted/30 pb-3">
+                <CardTitle className="text-lg">교체 서비스 접수 요약</CardTitle>
+                <CardDescription>대여와 함께 접수된 장착 정보를 한눈에 확인하세요.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-2 text-sm">
+                {/* 성공 화면에서는 핵심 접수 정보만 간단히 노출 */}
+                <p><span className="text-muted-foreground">신청 상태:</span> <span className="font-semibold text-foreground">{data.applicationSummary.status}</span></p>
+                <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold text-foreground">{data.applicationSummary.receptionLabel}</span></p>
+                <p><span className="text-muted-foreground">라인 수:</span> <span className="font-semibold text-foreground">{data.applicationSummary.lineCount}개</span></p>
+                {data.applicationSummary.stringNames.length > 0 && (
+                  <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold text-foreground">{data.applicationSummary.stringNames.join(', ')}</span></p>
+                )}
+                {data.applicationSummary.tensionSummary && (
+                  <p><span className="text-muted-foreground">텐션:</span> <span className="font-semibold text-foreground">{data.applicationSummary.tensionSummary}</span></p>
+                )}
+                {data.applicationSummary.reservationLabel && (
+                  <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-semibold text-foreground">{data.applicationSummary.reservationLabel}</span></p>
+                )}
               </CardContent>
             </Card>
           )}
