@@ -147,8 +147,13 @@ const Header = () => {
 
   // 페이지 이동 시(활성 메뉴 font-semibold으로 폭 변화)에도 overflow 재계산
   useEffect(() => {
-    // 라우트 이동하면 드롭다운(⋯)은 무조건 닫기
+    // 라우트 이동하면
+    // 1) 데스크톱 overflow 드롭다운 닫기
+    // 2) 모바일 Sheet도 함께 닫기
+    //    -> 메뉴 항목 중 일부에서 setOpen(false)를 빠뜨려도
+    //       페이지 이동 후 메뉴가 열린 상태로 남지 않게 하는 안전장치
     setOverflowMenuOpen(false);
+    setOpen(false);
     recomputeOverflow();
     // 스크롤 상태 변화(scale 변경)도 실측 폭에 영향을 주므로 재계산 트리거로 포함
   }, [recomputeOverflow, pathname]);
@@ -355,13 +360,13 @@ const Header = () => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="left"
-          className="w-[300px] bp-sm:w-[320px] bg-card p-0 flex flex-col border-r border-border"
+          className="w-[min(88vw,340px)] max-w-[340px] h-[100dvh] max-h-[100dvh] overflow-hidden bg-card p-0 flex flex-col border-r border-border"
           onOpenAutoFocus={(e) => {
             if (typeof window !== 'undefined' && window.innerWidth < 768) e.preventDefault();
           }}
         >
           {/* 상단 로고/검색 */}
-          <div className="shrink-0 p-6 pb-4 border-b border-border bg-muted/30">
+          <div className="shrink-0 border-b border-border bg-muted/30 px-4 pt-5 pb-3 bp-sm:px-5 bp-sm:pt-6 bp-sm:pb-4">
             <Link href="/" className="flex flex-col group" aria-label="테니스 플로우 홈" onClick={() => setOpen(false)}>
               <div className="font-bold text-lg text-foreground whitespace-nowrap">테니스 플로우</div>
               <div className="text-xs tracking-wider text-muted-foreground font-medium">TENNIS FLOW SHOP</div>
@@ -371,7 +376,7 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-hide p-4 bg-card">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-hide bg-card px-3 py-3 bp-sm:px-4">
             <Accordion type="single">
               {/* 스트링 */}
               <AccordionItem value="strings" className="border-none">
@@ -388,6 +393,7 @@ const Header = () => {
                     variant="ghost"
                     className="group w-full justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 dark:hover:bg-primary/20 transition-all relative z-0 hover:shadow-sm hover:ring-1 hover:ring-inset hover:ring-ring/40 hover:z-10 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     onClick={() => {
+                      setOpen(false);
                       router.push(NAV_LINKS.strings.root);
                     }}
                   >
@@ -586,11 +592,11 @@ const Header = () => {
           </div>
 
           {/* 하단 고정 영역(모바일) */}
-          <div className="shrink-0 border-t border-border p-4 bg-card space-y-3">
+          <div className="shrink-0 border-t border-border bg-card/95 supports-[backdrop-filter]:bg-card/90 backdrop-blur px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] bp-sm:px-4 bp-sm:pt-4 space-y-3">
             {user ? (
               <>
                 {/* 사용자 정보 카드 */}
-                <div className="p-4 rounded-xl bg-card border border-border">
+                <div className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-start justify-between">
                     {/* <Avatar className="h-10 w-10 border-2 border-border shadow-sm">
                           <AvatarImage src={user.image || '/placeholder.svg'} />
@@ -647,7 +653,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
                     onClick={() => {
                       setOpen(false);
                       router.push('/mypage');
@@ -661,7 +667,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
                     onClick={() => {
                       setOpen(false);
                       router.push('/messages');
@@ -678,7 +684,7 @@ const Header = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="relative h-11 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
+                    className="relative h-10 w-full rounded-xl border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20"
                     onClick={() => {
                       setOpen(false);
                       router.push('/cart');
@@ -696,7 +702,7 @@ const Header = () => {
                   {isAdmin && (
                     <Button
                       variant="secondary"
-                      className="w-full justify-center rounded-xl h-10 transition-all duration-200"
+                      className="h-10 w-full justify-center rounded-xl transition-all duration-200"
                       onClick={() => {
                         setOpen(false);
                         router.push('/admin/dashboard');
@@ -708,7 +714,7 @@ const Header = () => {
 
                   <Button
                     variant="destructive"
-                    className="w-full justify-center rounded-xl h-10 transition-all duration-200"
+                    className="h-10 w-full justify-center rounded-xl transition-all duration-200"
                     onClick={async () => {
                       await fetch('/api/logout', {
                         method: 'POST',
@@ -723,7 +729,7 @@ const Header = () => {
               </>
             ) : (
               <Button
-                className="w-full justify-center rounded-xl h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all duration-200"
+                className="h-10 w-full justify-center rounded-xl bg-primary text-primary-foreground shadow-md transition-all duration-200 hover:bg-primary/90"
                 onClick={() => {
                   setOpen(false);
                   const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
