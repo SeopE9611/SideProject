@@ -297,6 +297,31 @@ export default function OrdersClient() {
     return { label: '정산: 주문', className: linkBadgeClass('integrated') };
   }
 
+  // 연결 신청서는 "최신 수정/생성 시각" 기준으로 1건을 선택해 요약에 사용
+  function getLatestStringingApplicationInGroup(group: OrderWithType[]) {
+    const apps = group.filter((o) => o.__type === 'stringing_application') as Array<OrderWithType & { updatedAt?: string; createdAt?: string }>;
+    if (apps.length === 0) return null;
+
+    const getStamp = (app: { updatedAt?: string; createdAt?: string }, idx: number) => {
+      const raw = app.updatedAt ?? app.createdAt;
+      const ts = raw ? new Date(raw).getTime() : Number.NaN;
+      return Number.isFinite(ts) ? ts : -idx;
+    };
+
+    return apps
+      .map((app, idx) => ({ app, ts: getStamp(app, idx), idx }))
+      .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
+  }
+
+  // 관리자 목록에서는 원문 코드 대신 접수 방식 라벨로 노출
+  function getReceptionLabel(raw: unknown): string | null {
+    const method = String(raw ?? '').trim().toLowerCase();
+    if (!method) return null;
+    if (method === 'visit') return '방문 접수';
+    if (method === 'courier_pickup') return '기사 방문 수거';
+    return '발송 접수';
+  }
+
   // 날짜 포맷터
   const formatDate = (dateString: string) =>
     new Intl.DateTimeFormat('ko-KR', {
@@ -567,7 +592,8 @@ export default function OrdersClient() {
                       const isLinkedProductOrder = order.__type === 'order' && hasStringingAppInGroup;
                       const isIntegratedApp = order.__type === 'stringing_application' && !!order.linkedOrderId && !!anchorOrder;
                       // 통합 주문 행에서도 연결 신청서 핵심 정보를 빠르게 읽기 위한 참조
-                      const linkedApplication = group.find((o) => o.__type === 'stringing_application') as OrderWithType | undefined;
+                      const linkedApplication = getLatestStringingApplicationInGroup(group);
+                      const linkedReceptionLabel = getReceptionLabel((linkedApplication as any)?.shippingInfo?.shippingMethod ?? (linkedApplication as any)?.collectionMethod);
 
                       const kind = getKindBadge(order);
                       const link = getLinkBadge(order, isLinkedProductOrder);
@@ -638,10 +664,10 @@ export default function OrdersClient() {
                                     {isLinkedProductOrder && <p className="mt-2 text-[11px] text-muted-foreground">연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)</p>}
                                     {isLinkedProductOrder && linkedApplication && (
                                       <>
-                                        {(linkedApplication as any).shippingInfo?.shippingMethod && (
-                                          <p className="mt-1 text-[11px] text-muted-foreground">접수 방식: {(linkedApplication as any).shippingInfo.shippingMethod}</p>
-                                        )}
+                                        {linkedReceptionLabel && <p className="mt-1 text-[11px] text-muted-foreground">접수 방식: {linkedReceptionLabel}</p>}
                                         {linkedApplication.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">스트링: {linkedApplication.stringSummary}</p>}
+                                        {(linkedApplication as any)?.tensionSummary && <p className="mt-1 text-[11px] text-muted-foreground">텐션: {(linkedApplication as any).tensionSummary}</p>}
+                                        {(linkedApplication as any)?.reservationLabel && <p className="mt-1 text-[11px] text-muted-foreground">예약: {(linkedApplication as any).reservationLabel}</p>}
                                       </>
                                     )}
                                     {order.__type === 'stringing_application' && order.linkedOrderId && (
