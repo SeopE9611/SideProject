@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 // 모든 폼에서 공통으로 쓰는 기본 경고 문구 (페이지별 변수 선언 없이 사용)
 export const UNSAVED_CHANGES_MESSAGE = '이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.';
@@ -10,7 +10,6 @@ export const UNSAVED_CHANGES_MESSAGE = '이 페이지를 벗어날 경우 입력
  * - 내부 라우팅/뒤로가기/popstate/intercept는 페이지 로컬 confirm에서 처리
  */
 let __guardCount = 0;
-let __message: string = UNSAVED_CHANGES_MESSAGE;
 let __installed = false;
 
 let __onBeforeUnload: ((e: BeforeUnloadEvent) => void) | null = null;
@@ -36,21 +35,7 @@ function __uninstallGuard() {
   __onBeforeUnload = null;
 }
 
-export function useUnsavedChangesGuard(enabled: boolean, message: string = UNSAVED_CHANGES_MESSAGE) {
-  // guard가 켜졌을 때의 URL을 기억해두면, guard가 꺼질 때 “더미 히스토리”를 정리할 수 있음
-  const armedUrlRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!enabled) return;
-    // hook 단위로 “활성화 시점 URL”은 기록만 해둠(디버깅/호환용)
-    armedUrlRef.current = window.location.href;
-  }, [enabled]);
-
-  // message는 enabled일 때만 전역 메시지로 반영(동일 페이지에서 마지막으로 켠 메시지가 사용됨)
-  useEffect(() => {
-    if (!enabled) return;
-    __message = message;
-  }, [enabled, message]);
+export function useUnsavedChangesGuard(enabled: boolean, _message: string = UNSAVED_CHANGES_MESSAGE) {
 
   // 실제 가드 설치/해제는 ref-count로 1회만
   useEffect(() => {
@@ -66,7 +51,6 @@ export function useUnsavedChangesGuard(enabled: boolean, message: string = UNSAV
       if (__guardCount === 0) {
         __uninstallGuard();
       }
-      armedUrlRef.current = null;
     };
   }, [enabled]);
 }

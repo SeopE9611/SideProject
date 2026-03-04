@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 // 기존 프로젝트의 비밀번호 정책과 최대한 맞춰서 갑니다.
@@ -33,6 +33,7 @@ export default function ResetPasswordPage() {
 
   const isDirty = !isDone && (newPassword.trim() !== '' || confirmPassword.trim() !== '');
   useUnsavedChangesGuard(isDirty && !isSubmitting);
+  const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   const validate = () => {
     const trimmed = newPassword.trim();
@@ -130,7 +131,14 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
       <div className="relative w-full max-w-md">
         <div className="mb-6">
-          <Link href="/login" className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium">
+          <Link
+            href="/login"
+            className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium"
+            onClick={(e) => {
+              if (confirmLeaveIfDirty()) return;
+              e.preventDefault();
+            }}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             로그인으로 돌아가기
           </Link>

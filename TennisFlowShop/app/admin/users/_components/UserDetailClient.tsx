@@ -45,7 +45,7 @@ import { Section, SectionHeader, SectionBody } from '@/components/admin/Section'
 import { InfoItem } from '@/components/admin/InfoItem';
 import StatusBadge from '@/components/admin/StatusBadge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useUserSessions } from '@/app/admin/users/_hooks/useUserSessions';
 import { UserActivityTabsSection } from '@/app/admin/users/_components/UserActivityTabsSection';
 import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
@@ -211,6 +211,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   // 폼 로컬 상태 (미저장 변경 탐지)
   const [form, setForm] = useState<Partial<UserDetail>>({});
   const hasDirty = useMemo(() => Object.keys(form).length > 0, [form]);
+  const confirmLeaveIfDirty = () => !hasDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   // 입력 중 이탈 방지(뒤로가기/탭닫기/링크이동)
   useUnsavedChangesGuard(hasDirty);
@@ -371,7 +372,13 @@ export default function UserDetailClient({ id }: { id: string }) {
             <div className="mx-auto max-w-5xl flex items-center justify-between gap-2">
               {/* 좌측: 뒤로 */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={() => router.back()}>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    if (!confirmLeaveIfDirty()) return;
+                    router.back();
+                  }}
+                >
                   <ChevronLeft className="mr-1 h-4 w-4" />
                   목록으로
                 </Button>

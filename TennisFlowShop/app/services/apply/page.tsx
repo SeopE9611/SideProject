@@ -20,7 +20,7 @@ import LoginGate from '@/components/system/LoginGate';
 import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
 import type { Order } from '@/lib/types/order';
@@ -692,6 +692,10 @@ export default function StringServiceApplyPage() {
   }, [prefillReady, fingerprint]);
 
   useUnsavedChangesGuard(isDirty);
+  const safePush = (href: string) => {
+    if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
+    router.push(href);
+  };
 
   // 패키지 미리보기 상태 + 패스조회
   const [packagePreview, setPackagePreview] = useState<null | {
@@ -1405,7 +1409,7 @@ export default function StringServiceApplyPage() {
             {/* Option 1: 스트링 구매하고 신청 */}
             <button
               type="button"
-              onClick={() => router.push('/products?from=apply')}
+              onClick={() => safePush('/products?from=apply')}
               className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {/* Recommended Badge */}
@@ -1451,14 +1455,14 @@ export default function StringServiceApplyPage() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => router.push('/rackets?from=apply')}
+                  onClick={() => safePush('/rackets?from=apply')}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   라켓 구매
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push('/rackets?from=apply&rentOnly=1')}
+                  onClick={() => safePush('/rackets?from=apply&rentOnly=1')}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   라켓 대여
@@ -1469,7 +1473,7 @@ export default function StringServiceApplyPage() {
             {/* Option 3: 신청서만 작성 */}
             <button
               type="button"
-              onClick={() => router.push('/services/apply?mode=single')}
+              onClick={() => safePush('/services/apply?mode=single')}
               className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {/* Badge */}
@@ -1539,14 +1543,14 @@ export default function StringServiceApplyPage() {
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => router.push('/mypage?tab=orders')}
+                    onClick={() => safePush('/mypage?tab=orders')}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     주문 내역
                   </button>
                   <button
                     type="button"
-                    onClick={() => router.push('/mypage?tab=rentals')}
+                    onClick={() => safePush('/mypage?tab=rentals')}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     대여 내역
@@ -1586,7 +1590,7 @@ export default function StringServiceApplyPage() {
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => router.push('/mypage?tab=orders')}
+                          onClick={() => safePush('/mypage?tab=orders')}
                           className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors"
                         >
                           주문 상세에서 확인

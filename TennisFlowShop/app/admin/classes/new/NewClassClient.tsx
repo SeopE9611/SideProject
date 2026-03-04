@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 
 // 임시 강사 데이터
 const instructors = [
@@ -105,13 +105,21 @@ export default function NewClassClient() {
     return formData.name.trim() !== '' && formData.instructor !== '' && formData.schedule.trim() !== '' && formData.capacity.trim() !== '' && formData.location !== '';
   };
 
+  const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
+
   return (
     <div className="container py-10">
       <div className="mx-auto max-w-2xl">
         {/* 뒤로 가기 링크 */}
         <div className="mb-6">
           <Button variant="ghost" size="sm" asChild className="gap-1">
-            <Link href="/admin/classes">
+            <Link
+              href="/admin/classes"
+              onClick={(e) => {
+                if (confirmLeaveIfDirty()) return;
+                e.preventDefault();
+              }}
+            >
               <ArrowLeft className="h-4 w-4" />
               클래스 목록으로 돌아가기
             </Link>
@@ -253,7 +261,15 @@ export default function NewClassClient() {
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-x-4 sm:space-y-0">
-              <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => window.history.back()}>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  if (!confirmLeaveIfDirty()) return;
+                  window.history.back();
+                }}
+              >
                 취소
               </Button>
               <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting || !isFormValid()}>

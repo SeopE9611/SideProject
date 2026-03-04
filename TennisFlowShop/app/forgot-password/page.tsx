@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast } from '@/lib/toast';
 
 export default function ForgotPasswordPage() {
@@ -21,6 +21,7 @@ export default function ForgotPasswordPage() {
   // 입력 중인데 아직 전송 완료 전이면 페이지 이탈 경고
   const isDirty = !isSubmitted && email.trim() !== '';
   useUnsavedChangesGuard(isDirty && !isSubmitting);
+  const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +69,14 @@ export default function ForgotPasswordPage() {
 
       <div className="relative w-full max-w-md">
         <div className="mb-6">
-          <Link href="/login" className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium">
+          <Link
+            href="/login"
+            className="inline-flex items-center text-sm text-primary hover:text-primary dark:hover:text-primary hover:underline font-medium"
+            onClick={(e) => {
+              if (confirmLeaveIfDirty()) return;
+              e.preventDefault();
+            }}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             로그인으로 돌아가기
           </Link>
