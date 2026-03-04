@@ -83,6 +83,11 @@ interface OrderDetail {
  id: string;
  status: string;
  createdAt?: string | null;
+ updatedAt?: string | null;
+ receptionLabel?: string | null;
+ tensionSummary?: string | null;
+ stringNames?: string[];
+ reservationLabel?: string | null;
  racketCount?: number;
  }[];
 }
@@ -309,11 +314,23 @@ export default function OrderDetailClient({ orderId }: Props) {
  return docs;
  })();
 
- const linkedApplicationForGuide = Array.isArray(orderDetail.stringingApplications)
- ? orderDetail.stringingApplications
-     .filter((app) => Boolean(app?.id))
-     .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]
- : null;
+ // 연결 신청서는 최신 수정/생성 시각 기준으로 요약값을 우선 노출
+ const latestLinkedApplication = (() => {
+ const apps = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications.filter((app) => Boolean(app?.id)) : [];
+ if (apps.length === 0) return null;
+ return apps
+ .map((app, idx) => {
+ const raw = app.updatedAt ?? app.createdAt;
+ const ts = raw ? new Date(raw).getTime() : Number.NaN;
+ return { app, ts: Number.isFinite(ts) ? ts : -idx, idx };
+ })
+ .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
+ })();
+
+ const linkedApplicationForGuide = latestLinkedApplication;
+ const latestStringNames = Array.from(new Set((latestLinkedApplication?.stringNames ?? []).map((name) => String(name ?? '').trim()).filter(Boolean)));
+ const latestStringSummary = latestStringNames.length > 0 ? latestStringNames.join(', ') : null;
+ const latestRacketCount = typeof latestLinkedApplication?.racketCount === 'number' ? latestLinkedApplication.racketCount : null;
 
  const orderGuide = inferNextActionForOperationGroup([
  {
@@ -645,6 +662,48 @@ export default function OrderDetailClient({ orderId }: Props) {
  : '이 주문은 교체서비스 신청서와 연결되어 있습니다. 배송/운송장 정보는 신청서에서 단일 관리합니다.'
  }
  />
+
+ <Card className="mt-4 border border-border/60 bg-card/70">
+ <CardHeader className="pb-2">
+ <CardTitle className="text-base">교체 서비스 접수 요약</CardTitle>
+ <CardDescription>운영 판단에 필요한 최신 신청서 기준 핵심 정보입니다.</CardDescription>
+ </CardHeader>
+ <CardContent>
+ {/* 값이 있는 항목만 노출해 과밀도를 줄인다. */}
+ <div className="grid gap-2 text-sm md:grid-cols-2">
+ {latestLinkedApplication?.status && (
+ <p>
+ <span className="text-muted-foreground">신청 상태:</span> <span className="font-medium text-foreground">{latestLinkedApplication.status}</span>
+ </p>
+ )}
+ {latestLinkedApplication?.receptionLabel && (
+ <p>
+ <span className="text-muted-foreground">접수 방식:</span> <span className="font-medium text-foreground">{latestLinkedApplication.receptionLabel}</span>
+ </p>
+ )}
+ {latestRacketCount !== null && (
+ <p>
+ <span className="text-muted-foreground">라인 수:</span> <span className="font-medium text-foreground">{latestRacketCount}개</span>
+ </p>
+ )}
+ {latestStringSummary && (
+ <p>
+ <span className="text-muted-foreground">스트링:</span> <span className="font-medium text-foreground">{latestStringSummary}</span>
+ </p>
+ )}
+ {latestLinkedApplication?.tensionSummary && (
+ <p>
+ <span className="text-muted-foreground">텐션:</span> <span className="font-medium text-foreground">{latestLinkedApplication.tensionSummary}</span>
+ </p>
+ )}
+ {latestLinkedApplication?.reservationLabel && (
+ <p>
+ <span className="text-muted-foreground">예약:</span> <span className="font-medium text-foreground">{latestLinkedApplication.reservationLabel}</span>
+ </p>
+ )}
+ </div>
+ </CardContent>
+ </Card>
 
  <Card className="mt-4 border border-primary/20 bg-primary/5">
  <CardHeader className="pb-2">

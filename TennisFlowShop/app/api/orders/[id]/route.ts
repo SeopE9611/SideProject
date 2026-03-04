@@ -269,6 +269,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         id: app._id?.toString(),
         status: app.status ?? 'draft',
         createdAt: app.createdAt ?? null,
+        updatedAt: app.updatedAt ?? null,
         racketCount: lines.length,
         receptionLabel: getReceptionLabel(app?.collectionMethod),
         tensionSummary: getTensionSummary(lines),
