@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { normalizeMarketMeta, type MarketMeta } from '@/lib/market';
 import { supabase } from '@/lib/supabase';
@@ -130,6 +131,7 @@ export default function FreeBoardWriteClient() {
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
   useUnsavedChangesGuard(isDirty && !isSubmitting);
+  useBackNavigationGuard(isDirty && !isSubmitting);
 
   const guardLeave = (e: any) => {
     if (!isDirty || isSubmitting) return;

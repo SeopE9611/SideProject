@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { supabase } from '@/lib/supabase';
 import { showErrorToast } from '@/lib/toast';
@@ -82,6 +83,7 @@ export default function QnaWritePage() {
   }, [preProductId, category, product?.id, title, content, selectedFiles.length, isPrivate]);
 
   useUnsavedChangesGuard(isDirty && !submitting);
+  useBackNavigationGuard(isDirty && !submitting);
 
   const confirmGoIfDirty = (go: () => void) => {
     if (!isDirty || submitting) return go();

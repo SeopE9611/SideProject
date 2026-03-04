@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { communityFetch } from '@/lib/community/communityFetch.client';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { supabase } from '@/lib/supabase';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -142,6 +143,7 @@ export default function NoticeWritePage() {
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
   useUnsavedChangesGuard(isDirty && !submitting);
+  useBackNavigationGuard(isDirty && !submitting);
 
   const guardLeave = (e: any) => {
     if (!isDirty || submitting) return;
