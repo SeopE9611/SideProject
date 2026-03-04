@@ -6,6 +6,7 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { calcOrderEarnPoints } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
 import { bankLabelMap } from '@/lib/constants';
+import { canConfirmOrderByStatus, isVisitPickupOrder } from '@/lib/order-shipping';
 
 function paymentMethodLabel(paymentInfo: any): string {
   const method = String(paymentInfo?.method ?? '').trim();
@@ -66,7 +67,7 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   const db = client.db();
   const orders = db.collection('orders');
 
-  const order = await orders.findOne({ _id: orderObjectId }, { projection: { userId: 1, status: 1, totalPrice: 1, paymentInfo: 1, userConfirmedAt: 1 } });
+  const order = await orders.findOne({ _id: orderObjectId }, { projection: { userId: 1, status: 1, totalPrice: 1, paymentInfo: 1, userConfirmedAt: 1, shippingInfo: 1 } });
 
   if (!order) {
     return NextResponse.json({ ok: false, error: '주문을 찾을 수 없습니다.' }, { status: 404 });
@@ -84,9 +85,11 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
   const alreadyConfirmed = Boolean((order as any).userConfirmedAt || (order as any).status === '구매확정');
 
   const prevStatus = String((order as any).status ?? '');
-  const allowedPrev = prevStatus === '배송완료' || prevStatus === 'delivered';
+  const shippingInfo = (order as any).shippingInfo;
+  const isVisitPickup = isVisitPickupOrder(shippingInfo);
+  const allowedPrev = canConfirmOrderByStatus(prevStatus, shippingInfo);
   if (!alreadyConfirmed && !allowedPrev) {
-    return NextResponse.json({ ok: false, error: '배송완료 상태에서만 구매 확정이 가능합니다.' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: isVisitPickup ? '방문 수령 완료 상태에서만 구매 확정이 가능합니다.' : '배송완료 상태에서만 구매 확정이 가능합니다.' }, { status: 400 });
   }
 
   // --- 묶음 주문(교체 서비스 포함)일 수 있으므로, 연결된 신청 상태를 먼저 확인 ---
@@ -131,7 +134,8 @@ export async function POST(_req: Request, context: { params: Promise<{ id: strin
       description: '사용자 구매 확정',
     };
 
-    const upd = await orders.updateOne({ _id: orderObjectId, userId, status: { $in: ['배송완료', 'delivered'] }, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, {
+    const allowedStatuses = isVisitPickup ? ['배송완료', 'delivered', '완료'] : ['배송완료', 'delivered'];
+    const upd = await orders.updateOne({ _id: orderObjectId, userId, status: { $in: allowedStatuses }, $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }] }, {
       $set: { status: '구매확정', userConfirmedAt: confirmedAt, updatedAt: confirmedAt },
       $push: { history: historyEntry },
     } as any);

@@ -24,7 +24,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
-import { orderShippingMethodLabel } from '@/lib/order-shipping';
+import {
+  getOrderDeliveryInfoTitle,
+  getOrderStatusLabelForDisplay,
+  isVisitPickupOrder,
+  orderShippingMethodLabel,
+  shouldShowDeliveryOnlyFields,
+  canConfirmOrderByStatus,
+} from '@/lib/order-shipping';
 
 // SWR fetcher
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -191,7 +198,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  const isCancelRequested = cancelStatus === 'requested';
 
  // 상태 판정은 boolean으로 분리 (조건/disabled/tooltip에서 안정적으로 사용)
- const isDelivered = localStatus === '배송완료';
+ const isFulfillmentCompleted = canConfirmOrderByStatus(localStatus, orderDetail.shippingInfo);
  const isConfirmed = localStatus === '구매확정';
  const isCanceled = ['취소', '결제취소', '환불'].includes(localStatus);
  const isCancelableByPolicy = isAdminCancelableOrderStatus(localStatus);
@@ -214,6 +221,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
  const shippingMethodValue = orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
  const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
+ const isVisitPickup = isVisitPickupOrder(orderDetail.shippingInfo);
+ const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail.shippingInfo);
 
  /**
  * 구매확정(관리자 화면에서 처리 버튼)
@@ -224,7 +233,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  if (!orderId) return;
  if (isConfirmingPurchase) return;
 
- const ok = window.confirm('구매확정을 진행하시겠습니까?\n\n- 배송완료 이후에만 확정할 수 있습니다.\n- 확정 후에는 되돌릴 수 없습니다.');
+ const ok = window.confirm(`구매확정을 진행하시겠습니까?\n\n- ${isVisitPickup ? '방문 수령 완료' : '배송완료'} 이후에만 확정할 수 있습니다.\n- 확정 후에는 되돌릴 수 없습니다.`);
  if (!ok) return;
 
  try {
@@ -544,7 +553,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <Package className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-medium text-muted-foreground">주문 상태</span>
  </div>
- {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{localStatus}</Badge>; })()}
+ {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}</Badge>; })()}
  </div>
 
  <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm">
@@ -584,7 +593,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardHeader className="bg-muted/30 border-b pb-3">
  <div className="flex items-center justify-between">
  <CardTitle>주문 상태 관리</CardTitle>
- {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{localStatus}</Badge>; })()}
+ {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}</Badge>; })()}
  </div>
  <CardDescription>
  {formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.
@@ -593,7 +602,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardFooter className="pt-3">
  <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-between">
  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
- <OrderStatusSelect orderId={orderId!} currentStatus={localStatus} />
+ <OrderStatusSelect orderId={orderId!} currentStatus={localStatus} shippingMethod={shippingMethodValue as string} />
 
  {/* 구매확정 버튼 (배송완료 전/확정 후/취소 주문은 disabled + tooltip) */}
  <TooltipProvider>
@@ -604,7 +613,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  size="sm"
  variant="outline"
  className="border-border hover:border-border hover:bg-muted dark:border-border dark:hover:border-border dark:hover:bg-muted bg-transparent"
- disabled={isCanceled || !isDelivered || isConfirmed || isConfirmingPurchase}
+ disabled={isCanceled || !isFulfillmentCompleted || isConfirmed || isConfirmingPurchase}
  onClick={handleConfirmPurchase}
  >
  <CheckCircle className="mr-1 h-4 w-4" />
@@ -621,9 +630,9 @@ export default function OrderDetailClient({ orderId }: Props) {
  <TooltipContent side="top" className="text-sm">
  이미 구매확정된 주문입니다.
  </TooltipContent>
- ) : !isDelivered ? (
+) : !isFulfillmentCompleted ? (
  <TooltipContent side="top" className="text-sm">
- 배송완료 후 구매확정이 가능합니다.
+ {isVisitPickup ? '방문 수령 완료 후 구매확정이 가능합니다.' : '배송완료 후 구매확정이 가능합니다.'}
  </TooltipContent>
  ) : null}
  </Tooltip>
@@ -818,7 +827,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <CardHeader className="bg-muted/30 border-b pb-3">
  <CardTitle className="flex items-center">
  <Truck className="mr-2 h-5 w-5 text-primary" />
- 배송 정보
+ {getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
  </CardTitle>
  </CardHeader>
  <CardContent className="p-4 lg:p-5">
@@ -827,7 +836,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  <div className="flex items-start gap-2">
  <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="space-y-2">
- <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.</p>
+ <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 {isVisitPickup ? '수령 준비 정보' : '배송 정보'}를 신청서에서 관리합니다.</p>
  <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
  <Truck className="h-4 w-4 text-primary" />
  <div>
@@ -848,7 +857,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  onClick={() => router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`)}
  >
  <Truck className="mr-2 h-4 w-4" />
- 배송 정보 등록/수정
+ {isVisitPickup ? '수령 준비 정보 등록/수정' : '배송 정보 등록/수정'}
  </Button>
  </div>
 
@@ -863,13 +872,14 @@ export default function OrderDetailClient({ orderId }: Props) {
  >
  <Truck className="h-4 w-4 text-muted-foreground" />
  <div>
- <p className="text-sm text-muted-foreground">배송 방법</p>
+ <p className="text-sm text-muted-foreground">{isVisitPickup ? '수령 방법' : '배송 방법'}</p>
  <p className="font-semibold text-foreground">
  {shippingMethodLabel}
  </p>
  </div>
  </div>
 
+ {showDeliveryOnlyFields && (
  <div
  className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border"
  >
@@ -879,8 +889,11 @@ export default function OrderDetailClient({ orderId }: Props) {
  <p className="font-semibold text-foreground">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
  </div>
  </div>
+ )}
 
- {orderDetail.shippingInfo.invoice?.trackingNumber && (
+ {!showDeliveryOnlyFields && <p className="text-sm text-muted-foreground">방문 수령 주문은 준비 완료 안내 후 매장에서 수령 처리합니다.</p>}
+
+ {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
  <>
  <div
  className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border"

@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import { cn } from '@/lib/utils';
+import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -138,6 +139,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   // 완료 상태
   const completedStatuses = new Set(['배송완료', '완료', '구매확정']);
+  const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
+  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail?.shippingInfo);
   const canShowReviewCTA = completedStatuses.has(orderDetail?.status ?? '');
   const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
 
@@ -551,7 +554,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             <CardHeader variant="sectionGradient">
               <CardTitle className="flex items-center space-x-2">
                 <Truck className="h-5 w-5 text-success" />
-                <span>배송 정보</span>
+                <span>{getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 bp-sm:p-6">
@@ -559,7 +562,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">배송 방법</p>
+                    <p className="text-sm text-muted-foreground">{isVisitPickup ? '수령 방법' : '배송 방법'}</p>
                     <p className="font-semibold text-foreground">
                       {{
                         delivery: '택배 배송',
@@ -570,15 +573,19 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">예상 수령일</p>
-                    <p className="font-semibold text-foreground">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
+                {showDeliveryOnlyFields && (
+                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">예상 수령일</p>
+                      <p className="font-semibold text-foreground">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {orderDetail.shippingInfo.invoice?.trackingNumber && (
+                {!showDeliveryOnlyFields && <p className="text-sm text-muted-foreground">방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.</p>}
+
+                {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
                   <>
                     <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                       <div>
@@ -692,6 +699,7 @@ export default function OrderDetailClient({ orderId }: Props) {
         </div>
 
         {/* 요청사항 */}
+        {showDeliveryOnlyFields && (
         <Card variant="elevatedGradient">
           <CardHeader variant="sectionGradient">
             <CardTitle>배송 요청사항</CardTitle>
@@ -729,6 +737,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             </CardFooter>
           )}
         </Card>
+        )}
 
         {/* 처리 이력 */}
         <OrderHistory orderId={orderId} />

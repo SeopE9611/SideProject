@@ -23,6 +23,7 @@ import type {
 import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
+import { isVisitPickupOrder } from '@/lib/order-shipping';
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 
@@ -83,6 +84,9 @@ function hasOrderShippingInfo(order: UnknownDoc) {
   const invoice = asDoc(shippingInfo.invoice);
   const invoiceCourier = getString(invoice?.courier);
   const trackingNumber = getString(invoice?.trackingNumber);
+
+  // 방문 수령은 택배 필드가 없어도 정상 케이스로 본다.
+  if (isVisitPickupOrder(shippingMethod)) return true;
 
   return Boolean(
     (shippingMethod && shippingMethod.trim()) ||
@@ -668,6 +672,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const appId = orderToApp.get(id) ?? null;
     const isIntegrated = !!appId;
     const hasShippingInfo = hasOrderShippingInfo(o);
+    const shippingMethod = getString(asDoc(o?.shippingInfo)?.shippingMethod) ?? getString(asDoc(o?.shippingInfo)?.deliveryMethod);
     const hasOutboundTracking = Boolean(getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim());
     const statusLabel = normalizeOrderStatus(o.status);
     const paymentLabel = normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status));
@@ -699,6 +704,7 @@ export async function handleAdminOperationsGet(req: Request) {
         related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
         hasShippingInfo,
         hasOutboundTracking,
+        shippingMethod,
       }),
     };
   });
