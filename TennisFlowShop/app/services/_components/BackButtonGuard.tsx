@@ -7,9 +7,6 @@ export default function BackButtonGuard() {
   const router = useRouter();
 
   useEffect(() => {
-    // 1) 현재 URL을 히스토리에 한 번 더 쌓아서 "뒤로가기" 클릭 시 popstate가 발생하도록 함
-    window.history.pushState(null, '', window.location.href);
-
     const onPopState = () => {
       // 뒤로가기 클릭 시 홈으로 보냄
       router.replace('/');
