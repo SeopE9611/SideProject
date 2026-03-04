@@ -20,7 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { badgeBase, badgeSizeSm, badgeToneVariant, flowBadgeClass, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass } from '@/lib/badge-style';
-import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { shortenId } from '@/lib/shorten';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { adminRichTooltipClass } from '@/lib/tooltip-style';
@@ -600,6 +600,8 @@ export default function OrdersClient() {
                       const link = getLinkBadge(order, isLinkedProductOrder);
                       const flow = getFlowBadge(order, { isLinkedProductOrder, anchorHasRacket, isIntegratedApp });
                       const settlement = getSettlementBadge(order, { isIntegratedApp });
+                      const actionMethodSource = order.__type === 'stringing_application' ? (order as any)?.shippingInfo?.shippingMethod ?? (order as any)?.collectionMethod : (order as any)?.shippingInfo;
+                      const shippingActionLabel = isVisitPickupOrder(actionMethodSource) ? '수령 정보 등록' : '배송 정보 등록';
 
                       return (
                         <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
@@ -799,7 +801,7 @@ export default function OrdersClient() {
                                     handleShippingUpdate(order.id);
                                   }}
                                 >
-                                  <Truck className="mr-2 h-4 w-4" /> 배송 정보 등록
+                                  <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>

@@ -92,6 +92,7 @@ export default function AdminRentalDetailClient() {
   const [confirming, setConfirming] = useState(false);
 
   const { data, isLoading, mutate } = useSWR(id ? `/api/admin/rentals/${id}` : null, fetcher);
+  const isVisitPickup = data?.servicePickupMethod === 'SHOP_VISIT';
 
   const [busyAction, setBusyAction] = useState<null | 'approveCancel' | 'rejectCancel' | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
   const [pendingAction, setPendingAction] = useState<null | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);
@@ -140,7 +141,7 @@ export default function AdminRentalDetailClient() {
   const onOut = async () => {
     const result = await runAdminActionWithToast({
       action: () => adminMutator(`/api/admin/rentals/${id}/out`, { method: 'POST' }),
-      successMessage: '대여 시작 처리 완료',
+      successMessage: isVisitPickup ? '방문 수령 처리 완료' : '대여 시작 처리 완료',
       fallbackErrorMessage: '처리 실패',
     });
     if (result) await mutate();
@@ -199,7 +200,6 @@ export default function AdminRentalDetailClient() {
   const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateString('ko-KR') : '-');
 
   const servicePickupMethod = (data?.servicePickupMethod ?? null) as 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null;
-  const isVisitPickup = servicePickupMethod === 'SHOP_VISIT';
   const pickupMethodLabel = data?.pickupMethodLabel ?? (isVisitPickup ? '방문 수령' : servicePickupMethod === 'COURIER_VISIT' ? '기사 방문 수거' : '택배 발송');
 
   const pendingDialogConfig =

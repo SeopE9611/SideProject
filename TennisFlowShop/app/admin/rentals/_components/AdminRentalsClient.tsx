@@ -411,6 +411,10 @@ export default function AdminRentalsClient() {
   }
 
   function ShippingBadge({ item }: { item: RentalRow }) {
+    if (item.servicePickupMethod === 'SHOP_VISIT') {
+      return <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-primary/10 text-primary dark:bg-primary/20">운송장 불필요</span>;
+    }
+
     const s = deriveShippingStatus(item);
     const map = {
       none: ['운송장 없음', 'bg-background text-foreground'],
@@ -515,11 +519,11 @@ export default function AdminRentalsClient() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="배송(전체)" />
+                  <SelectValue placeholder="배송/운송장(전체)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">배송(전체)</SelectItem>
-                  <SelectItem value="none">운송장 없음</SelectItem>
+                  <SelectItem value="all">배송/운송장(전체)</SelectItem>
+                  <SelectItem value="none">운송장 없음 / 방문 수령</SelectItem>
                   <SelectItem value="outbound-set">출고 운송장</SelectItem>
                   <SelectItem value="return-set">반납 운송장</SelectItem>
                   <SelectItem value="both-set">출고+반납</SelectItem>

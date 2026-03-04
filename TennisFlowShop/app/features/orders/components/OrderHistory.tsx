@@ -4,7 +4,7 @@ import useSWRInfinite from 'swr/infinite';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
+import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck, Store, Handshake } from 'lucide-react';
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 
 export const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, previousPageData: any) => {
@@ -14,7 +14,7 @@ export const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev
   return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=5`;
 };
 // 상태별로 아이콘 컴포넌트와 클래스 리턴하는 헬퍼 함수
-function getIconProps(status: string) {
+function getIconProps(status: string, isVisitPickup: boolean) {
   switch (status) {
     case '대기중':
       return {
@@ -30,13 +30,13 @@ function getIconProps(status: string) {
       };
     case '배송중':
       return {
-        Icon: Truck,
+        Icon: isVisitPickup ? Store : Truck,
         wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
         iconClasses: 'text-foreground',
       };
     case '배송완료':
       return {
-        Icon: PackageCheck,
+        Icon: isVisitPickup ? Handshake : PackageCheck,
         wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
       };
@@ -180,7 +180,7 @@ export default function OrderHistory({ orderId, shippingMethod }: { orderId: str
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
             const displayStatus = getOrderStatusLabelForDisplay(item.status, shippingMethod);
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status);
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status, isVisitPickup);
             return (
               <div key={idx} className="flex space-x-4 py-3">
                 <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
