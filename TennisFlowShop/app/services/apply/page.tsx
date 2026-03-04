@@ -20,6 +20,7 @@ import LoginGate from '@/components/system/LoginGate';
 import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
@@ -692,6 +693,7 @@ export default function StringServiceApplyPage() {
   }, [prefillReady, fingerprint]);
 
   useUnsavedChangesGuard(isDirty);
+  useBackNavigationGuard(isDirty);
   const safePush = (href: string) => {
     if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
     router.push(href);
