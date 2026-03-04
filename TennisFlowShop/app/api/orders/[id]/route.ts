@@ -45,6 +45,13 @@ const customerSchema = z.object({
     .refine((s) => s.length <= 100, { message: '상세주소는 100자 이내로 입력해주세요.' }),
 });
 
+function getApplicationLines(stringDetails: any): any[] {
+  // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -224,7 +231,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       .toArray();
 
     // 각 신청서에서 사용된 슬롯(= 라켓 개수) 합산
-    const usedSlots = apps.reduce((sum, app) => sum + (app.stringDetails?.racketLines?.length ?? 0), 0);
+    const usedSlots = apps.reduce((sum, app) => sum + getApplicationLines(app?.stringDetails).length, 0);
 
     // 남은 슬롯 계산 (음수 방지)
     const remainingSlots = Math.max(totalSlots - usedSlots, 0);
@@ -234,7 +241,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       id: app._id?.toString(),
       status: app.status ?? 'draft',
       createdAt: app.createdAt ?? null,
-      racketCount: app.stringDetails?.racketLines?.length ?? 0,
+      racketCount: getApplicationLines(app?.stringDetails).length,
     }));
 
     return NextResponse.json({

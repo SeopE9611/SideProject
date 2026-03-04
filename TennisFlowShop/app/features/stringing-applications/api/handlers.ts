@@ -64,6 +64,14 @@ function normalizeCancelStatus(raw: any): CancelStatus {
   return 'none';
 }
 
+
+function getApplicationLines(stringDetails: any): any[] {
+  // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
@@ -187,9 +195,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     const purchasedStrings = orderStrings;
     const sd = app.stringDetails || {};
 
-    // 라켓별 세부 장착 정보(racketLines) 정리
-    const racketLines = Array.isArray((sd as any).racketLines)
-      ? (sd as any).racketLines.map((line: any, index: number) => {
+    // 라켓별 세부 장착 정보(lines 우선 + racketLines fallback) 정리
+    const racketLines = getApplicationLines(sd).map((line: any, index: number) => {
           // 저장된 racketType 이 있으면 우선 사용, 없으면 racketLabel 로 보정
           const rawName = (line.racketType && String(line.racketType).trim()) || (line.racketLabel && String(line.racketLabel).trim()) || '';
 
@@ -217,8 +224,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             // 한 자루당 장착비 – 숫자가 아니면 0으로 방어
             mountingFee: typeof line.mountingFee === 'number' ? line.mountingFee : 0,
           };
-        })
-      : [];
+        });
 
     // === 패키지 사용 정보 계산 ===
     // - 제출 시점 로직과 동일하게, 라켓 라인 개수를 사용 회차로 간주

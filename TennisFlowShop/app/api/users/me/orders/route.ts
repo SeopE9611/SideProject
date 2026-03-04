@@ -118,6 +118,13 @@ function resolveListItemKind(item: any): 'racket' | 'string' | 'product' {
   return 'product';
 }
 
+function getApplicationLines(stringDetails: any): any[] {
+  // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
 export async function GET(req: NextRequest) {
   try {
     // 인증
@@ -158,7 +165,7 @@ export async function GET(req: NextRequest) {
     const orderIds = orders.map((o) => o._id);
     const apps = await db
       .collection('stringing_applications')
-      .find({ userId, orderId: { $in: orderIds }, status: { $nin: ['draft', '취소'] } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.racketLines': 1 } })
+      .find({ userId, orderId: { $in: orderIds }, status: { $nin: ['draft', '취소'] } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.lines': 1, 'stringDetails.racketLines': 1 } })
       .toArray();
     const stringServiceByOrderId = new Map<
       string,
@@ -171,12 +178,12 @@ export async function GET(req: NextRequest) {
       const orderId = String(app.orderId);
       const prev = stringServiceByOrderId.get(orderId) ?? { submittedApplicationId: null, usedSlots: 0 };
 
-      const racketLines = Array.isArray(app?.stringDetails?.racketLines) ? app.stringDetails.racketLines.length : 0;
+      const usedLineCount = getApplicationLines(app?.stringDetails).length;
       const submittedApplicationId = prev.submittedApplicationId ?? String(app._id);
 
       stringServiceByOrderId.set(orderId, {
         submittedApplicationId,
-        usedSlots: prev.usedSlots + racketLines,
+        usedSlots: prev.usedSlots + usedLineCount,
       });
     }
 

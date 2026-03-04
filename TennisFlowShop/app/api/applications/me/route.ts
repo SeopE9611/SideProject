@@ -28,6 +28,13 @@ function toObjectIdMaybe(v: any): ObjectId | null {
   return new ObjectId(s);
 }
 
+function getApplicationLines(stringDetails: any): any[] {
+  // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
 export async function GET(req: Request) {
   // 인증
   const token = (await cookies()).get('accessToken')?.value;
@@ -166,8 +173,8 @@ export async function GET(req: Request) {
             return details.racketType.trim();
           }
 
-          // 2단계: racketLines 배열을 기준으로 요약 생성
-          const rawLines = Array.isArray((details as any).racketLines) ? (details as any).racketLines : [];
+          // 2단계: lines 우선 + racketLines fallback으로 요약 생성
+          const rawLines = getApplicationLines(details);
           if (rawLines.length === 0) {
             return '-';
           }
