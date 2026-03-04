@@ -406,7 +406,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <span className="text-primary">{formatPrice(order.totalPrice)}원</span>
                     </div>
 
-                    <p className="text-sm text-muted-foreground">(배송비 {formatPrice(order.shippingFee)}원 포함)</p>
+                    <p className="text-sm text-muted-foreground">({isVisitPickup ? '추가 비용' : '배송비'} {formatPrice(order.shippingFee)}원 포함)</p>
                   </div>
                 </div>
               </CardContent>
