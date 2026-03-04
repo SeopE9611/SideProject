@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -22,11 +23,13 @@ const shippingSig = (v: { courier: string; tracking: string; date: string }) =>
   });
 
 export default function ShippingForm({ rentalId }: { rentalId: string }) {
+  const router = useRouter();
   const [courier, setCourier] = useState('');
   const [tracking, setTracking] = useState('');
   const [date, setDate] = useState('');
   const [busy, setBusy] = useState(false);
   const [hasExisting, setHasExisting] = useState(false);
+  const [isVisitPickup, setIsVisitPickup] = useState(false);
 
   // 프리필(초기 로드) 기준선(baseline)
   const [initialSig, setInitialSig] = useState('');
@@ -41,6 +44,9 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   useEffect(() => {
     (async () => {
       const json = await adminFetcher<any>(`/api/admin/rentals/${rentalId}`, { cache: 'no-store' });
+      const pickupMethod = String(json?.servicePickupMethod ?? '').toUpperCase();
+      const isVisit = pickupMethod === 'SHOP_VISIT';
+      setIsVisitPickup(isVisit);
       const out = json?.shipping?.outbound;
       const next = {
         courier: out?.courier || '',
@@ -57,6 +63,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   }, [rentalId]);
 
   const onSave = async () => {
+    if (isVisitPickup) return showErrorToast('방문 수령 대여는 출고 운송장을 등록할 수 없습니다.');
     if (!courier) return showErrorToast('택배사를 선택해주세요');
     if (!tracking) return showErrorToast('운송장 번호를 입력해주세요');
     setBusy(true);
@@ -82,6 +89,25 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     setGuardOn(false);
     setTimeout(() => history.back(), 0);
   };
+
+
+  if (isVisitPickup) {
+    return (
+      <div className="max-w-xl mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>방문 수령 대여 안내</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">이 대여는 방문 수령 건이라 출고 운송장 등록이 필요하지 않습니다.</CardContent>
+          <CardFooter>
+            <Button variant="outline" onClick={() => router.push(`/admin/rentals/${rentalId}`)}>
+              상세로 돌아가기
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto p-6">

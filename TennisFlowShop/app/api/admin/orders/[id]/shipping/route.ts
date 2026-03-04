@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
-import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { isVisitPickupOrder, normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { z } from 'zod';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
@@ -76,12 +76,18 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     }
 
     const formattedDate = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(est);
+    const isVisitPickup = isVisitPickupOrder(order?.shippingInfo) || normalizedMethod === 'visit';
+    const methodLabel = shippingMethodMap[normalizedMethod] ?? '정보 없음';
+    const historyDescription = isVisitPickup
+      ? `수령/배송 방법을 "${methodLabel}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`
+      : `배송 방법을 "${methodLabel}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`;
+
     await db.collection('orders').updateOne({ _id: orderId }, {
       $push: {
         history: {
           status: '배송정보변경',
           date: new Date().toISOString(),
-          description: `배송 방법을 "${shippingMethodMap[normalizedMethod] ?? '정보 없음'}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`,
+          description: historyDescription,
         },
       },
     } as any);

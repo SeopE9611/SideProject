@@ -198,12 +198,16 @@ export default function AdminRentalDetailClient() {
 
   const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateString('ko-KR') : '-');
 
+  const servicePickupMethod = (data?.servicePickupMethod ?? null) as 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null;
+  const isVisitPickup = servicePickupMethod === 'SHOP_VISIT';
+  const pickupMethodLabel = data?.pickupMethodLabel ?? (isVisitPickup ? '방문 수령' : servicePickupMethod === 'COURIER_VISIT' ? '기사 방문 수거' : '택배 발송');
+
   const pendingDialogConfig =
     pendingAction === 'out'
       ? {
-          title: '대여 시작 처리할까요?',
-          description: '대여 상태가 대여중(out)으로 변경됩니다.',
-          confirmText: '대여 시작',
+          title: isVisitPickup ? '방문 수령 처리할까요?' : '대여 시작 처리할까요?',
+          description: isVisitPickup ? '방문 수령 확인 후 상태가 대여중(out)으로 변경됩니다.' : '대여 상태가 대여중(out)으로 변경됩니다.',
+          confirmText: isVisitPickup ? '방문 수령 처리' : '대여 시작',
           eventKey: 'admin-rental-detail-out-confirm',
           eventMeta: { rentalId: id, currentStatus: data?.status },
         }
@@ -314,7 +318,7 @@ export default function AdminRentalDetailClient() {
                   </Link>
                 </Button>
 
-                {data?.status !== 'canceled' && (
+                {data?.status !== 'canceled' && !isVisitPickup && (
                   <Button asChild variant="outline" size="sm" className="h-8 border-border text-foreground hover:bg-muted whitespace-nowrap">
                     <Link href={`/admin/rentals/${id}/shipping-update`}>
                       <Truck className="h-4 w-4 mr-2" />
@@ -329,7 +333,7 @@ export default function AdminRentalDetailClient() {
               <div className="bg-card/60 dark:bg-card/60 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">대여 시작</span>
+                  <span className="text-sm font-medium text-foreground">{isVisitPickup ? '방문 수령 처리(out)' : '대여 시작'}</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">{data.outAt ? formatDate(data.outAt) : '-'}</p>
               </div>
@@ -362,6 +366,7 @@ export default function AdminRentalDetailClient() {
                   <span className="text-sm font-medium text-foreground">대여 기간</span>
                 </div>
                 <p className="text-lg font-semibold text-foreground">{data.days}일</p>
+                <p className="mt-1 text-xs text-muted-foreground">수령 방식: {pickupMethodLabel}</p>
               </div>
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
@@ -499,7 +504,7 @@ export default function AdminRentalDetailClient() {
                     setPendingAction('out');
                   }}
                 >
-                  {busyAction === 'out' ? '대여 시작 처리중…' : '대여 시작(out)'}
+                  {busyAction === 'out' ? (isVisitPickup ? '방문 수령 처리중…' : '대여 시작 처리중…') : isVisitPickup ? '방문 수령 처리(out)' : '대여 시작(out)'}
                 </Button>
 
                 {/* 반납 처리(return) */}
@@ -719,25 +724,36 @@ export default function AdminRentalDetailClient() {
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
-                운송장 정보
+                {isVisitPickup ? '수령/배송 정보' : '운송장 정보'}
               </CardTitle>
               <div className="ml-auto">
-                {
+                {isVisitPickup ? (
+                  <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs dark:bg-primary/20">방문 수령</span>
+                ) : (
                   {
                     none: <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">운송장 없음</span>,
                     'outbound-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">출고 운송장</span>,
                     'return-set': <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">반납 운송장</span>,
                     'both-set': <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs dark:bg-primary/20">왕복 운송장</span>,
                   }[deriveShippingStatus(data)]
-                }
+                )}
               </div>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid gap-6 md:grid-cols-2">
                 {/* 출고 */}
                 <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">출고</p>
-                  {data?.shipping?.outbound?.trackingNumber ? (
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{isVisitPickup ? '인도(매장)' : '출고'}</p>
+                  {isVisitPickup ? (
+                    <div className="space-y-1 text-sm">
+                      <div>
+                        수령 방식: <b>{pickupMethodLabel}</b>
+                      </div>
+                      <div>
+                        방문 수령 처리일: <b>{data.outAt ? fmtDateOnly(data.outAt) : '-'}</b>
+                      </div>
+                    </div>
+                  ) : data?.shipping?.outbound?.trackingNumber ? (
                     <div className="space-y-1 text-sm">
                       <div>
                         택배사: <b>{courierLabel[data.shipping.outbound.courier] ?? data.shipping.outbound.courier ?? '-'}</b>
@@ -794,7 +810,7 @@ export default function AdminRentalDetailClient() {
                 <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
-                    <p className="text-sm text-muted-foreground">대여 시작</p>
+                    <p className="text-sm text-muted-foreground">{isVisitPickup ? '방문 수령 처리(out)' : '대여 시작'}</p>
                     <p className="font-semibold text-foreground">{data.outAt ? formatDate(data.outAt) : '-'}</p>
                   </div>
                 </div>
@@ -822,7 +838,7 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardContent>
           </Card>
-          <AdminRentalHistory id={id} />
+          <AdminRentalHistory id={id} servicePickupMethod={servicePickupMethod} />
         </div>
       </div>
     </div>

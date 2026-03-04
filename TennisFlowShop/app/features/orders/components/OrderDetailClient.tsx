@@ -1093,7 +1093,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </CardTitle>
  </CardHeader>
  <CardContent className="p-4 lg:p-5">
- <OrderHistory orderId={orderId} />
+ <OrderHistory orderId={orderId} shippingMethod={orderDetail.shippingInfo} />
  </CardContent>
  </Card>
  </div>

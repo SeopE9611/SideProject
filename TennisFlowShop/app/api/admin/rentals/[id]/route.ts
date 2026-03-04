@@ -37,6 +37,21 @@ function getTensionSummary(lines: any[]): string | null {
   return set.length ? set.join(', ') : null;
 }
 
+
+function normalizeServicePickupMethod(v: any): 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null {
+  const raw = String(v ?? '').trim().toUpperCase();
+  if (raw === 'SELF_SEND' || raw === 'COURIER_VISIT' || raw === 'SHOP_VISIT') return raw;
+  if (raw === 'DELIVERY') return 'SELF_SEND';
+  if (raw === 'PICKUP') return 'SHOP_VISIT';
+  return null;
+}
+
+function getPickupMethodLabel(method: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null): string {
+  if (method === 'SHOP_VISIT') return '방문 수령';
+  if (method === 'COURIER_VISIT') return '기사 방문 수거';
+  return '택배 발송';
+}
+
 function maskName(name?: string) {
   if (!name) return '';
   // 한 글자 이름: 그대로, 두 글자 이상: 마지막 글자만 노출
@@ -74,6 +89,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     : null;
 
   const paymentMeta = normalizeRentalPaymentMeta(doc);
+  const servicePickupMethod = normalizeServicePickupMethod((doc as any).servicePickupMethod);
 
   let linkedApplicationStatus: string | null = null;
   let linkedApplicationReceptionLabel: string | null = null;
@@ -127,6 +143,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     stringingReservationLabel: linkedApplicationReservationLabel,
     paymentStatusLabel: paymentMeta.label,
     paymentStatusSource: paymentMeta.source,
+    servicePickupMethod,
+    pickupMethodLabel: getPickupMethodLabel(servicePickupMethod),
 
     shipping: {
       outbound: doc.shipping?.outbound ?? null,
