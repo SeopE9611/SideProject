@@ -20,6 +20,21 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   return '발송 접수';
 }
 
+
+function normalizeServicePickupMethod(v: any): 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null {
+  const raw = String(v ?? '').trim().toUpperCase();
+  if (raw === 'SELF_SEND' || raw === 'COURIER_VISIT' || raw === 'SHOP_VISIT') return raw;
+  if (raw === 'DELIVERY') return 'SELF_SEND';
+  if (raw === 'PICKUP') return 'SHOP_VISIT';
+  return null;
+}
+
+function getPickupMethodLabel(method: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null): string {
+  if (method === 'SHOP_VISIT') return '방문 수령';
+  if (method === 'COURIER_VISIT') return '기사 방문 수거';
+  return '택배 발송';
+}
+
 function getTensionSummary(lines: any[]): string | null {
   const set = Array.from(
     new Set(
@@ -173,6 +188,7 @@ export async function GET(req: Request) {
 
     const paymentMeta = normalizeRentalPaymentMeta(rentalDoc);
     const appSummary = stringingApplicationId ? appSummaryMap.get(stringingApplicationId) : null;
+    const servicePickupMethod = normalizeServicePickupMethod((rentalDoc as any)?.servicePickupMethod);
 
     return {
       id: rentalDoc._id?.toString(),
@@ -197,6 +213,8 @@ export async function GET(req: Request) {
       stringingReservationLabel: appSummary?.reservationLabel ?? null,
       paymentStatusLabel: paymentMeta.label as '결제완료' | '결제대기',
       paymentStatusSource: paymentMeta.source,
+      servicePickupMethod,
+      pickupMethodLabel: getPickupMethodLabel(servicePickupMethod),
       shipping: {
         outbound: out ? { courier: out.courier ?? '', trackingNumber: out.trackingNumber ?? '', shippedAt: out.shippedAt ?? null } : null,
         return: ret ? { courier: ret.courier ?? '', trackingNumber: ret.trackingNumber ?? '', shippedAt: ret.shippedAt ?? null } : null,

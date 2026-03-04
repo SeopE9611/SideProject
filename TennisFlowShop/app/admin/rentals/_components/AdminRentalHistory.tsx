@@ -22,11 +22,12 @@ type HistoryItem = {
 const ACTIONS = ['all', 'paid', 'out', 'returned', 'cancel-request', 'cancel-approved', 'cancel-rejected', 'cancel-withdrawn'] as const;
 
 type ActionFilter = (typeof ACTIONS)[number];
+type ServicePickupMethod = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null | undefined;
 
 const FILTER_LABELS: Record<ActionFilter, string> = {
   all: '전체',
   paid: '결제 확인',
-  out: '대여 시작',
+  out: '대여 시작 / 방문 수령 처리',
   returned: '반납 완료',
   'cancel-request': '취소 요청',
   'cancel-approved': '취소 승인',
@@ -34,7 +35,7 @@ const FILTER_LABELS: Record<ActionFilter, string> = {
   'cancel-withdrawn': '취소 철회',
 };
 
-function getActionMeta(action: HistoryItem['action']) {
+function getActionMeta(action: HistoryItem['action'], isVisitPickup: boolean) {
   switch (action) {
     case 'paid':
       return {
@@ -45,7 +46,7 @@ function getActionMeta(action: HistoryItem['action']) {
       };
     case 'out':
       return {
-        label: '대여 시작',
+        label: isVisitPickup ? '방문 수령 처리' : '대여 시작',
         Icon: Play,
         wrapperClasses: 'border border-border bg-muted dark:bg-card',
         iconClasses: 'text-foreground',
@@ -97,7 +98,7 @@ function getActorLabel(actor?: HistoryItem['actor']) {
 }
 
 /** 한 줄 설명 문구 생성 */
-function getDescription(item: HistoryItem) {
+function getDescription(item: HistoryItem, isVisitPickup: boolean) {
   const actor = getActorLabel(item.actor);
   const base = `${actor}가 상태를 ${item.from} → ${item.to}로 변경했습니다.`;
 
@@ -115,18 +116,25 @@ function getDescription(item: HistoryItem) {
     return `${actor}가 대여 취소 요청을 철회했습니다.`;
   }
 
+  if (item.action === 'out' && isVisitPickup) {
+    return `${actor}가 매장 방문 수령을 확인하여 상태를 ${item.from} → ${item.to}로 변경했습니다.`;
+  }
+
   // paid / out / returned 등은 기본 문구 사용
   return base;
 }
 
+
 interface Props {
   id: string;
+  servicePickupMethod?: ServicePickupMethod;
 }
 
-export default function AdminRentalHistory({ id }: Props) {
+export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<ActionFilter>('all');
   const pageSize = 5;
+  const isVisitPickup = servicePickupMethod === 'SHOP_VISIT';
 
   const { data, isLoading } = useSWR<{
     ok: boolean;
@@ -166,7 +174,7 @@ export default function AdminRentalHistory({ id }: Props) {
         {/* 실제 이력 리스트 */}
         <div className="space-y-3">
           {items.map((h) => {
-            const meta = getActionMeta(h.action);
+            const meta = getActionMeta(h.action, isVisitPickup);
             const dateStr = new Intl.DateTimeFormat('ko-KR', {
               year: 'numeric',
               month: '2-digit',
@@ -185,7 +193,7 @@ export default function AdminRentalHistory({ id }: Props) {
                     <span className="font-semibold">{meta.label}</span>
                     <span className="text-xs text-muted-foreground">{dateStr}</span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{getDescription(h)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{getDescription(h, isVisitPickup)}</p>
                 </div>
               </div>
             );

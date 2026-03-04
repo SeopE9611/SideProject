@@ -5,6 +5,7 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 
 export const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, previousPageData: any) => {
   // orderId가 없으면 요청 중단
@@ -79,7 +80,7 @@ interface HistoryResponse {
   total: number;
 }
 
-export default function OrderHistory({ orderId }: { orderId: string }) {
+export default function OrderHistory({ orderId, shippingMethod }: { orderId: string; shippingMethod?: any }) {
   const [page, setPage] = useState(1);
 
   // getKey: pageIndex마다 서버에 page=pageIndex+1 요청
@@ -128,6 +129,20 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   const totalPages = Math.max(1, Math.ceil(pageData.total / LIMIT));
 
   // 날짜 안전 포멧 함수
+
+  const isVisitPickup = isVisitPickupOrder(shippingMethod);
+
+  const getHistoryDescriptionForDisplay = (item: HistoryItem) => {
+    const raw = String(item.description ?? '');
+    if (!isVisitPickup) return raw;
+
+    return raw
+      .replaceAll('배송중', '수령 준비중')
+      .replaceAll('배송완료', '방문 수령 완료')
+      .replaceAll('배송 방법', '수령/배송 방법')
+      .replaceAll('배송 정보', '수령/배송 정보');
+  };
+
   const formatHistoryDate = (raw: string) => {
     const d = new Date(raw);
     if (Number.isNaN(d.getTime())) return '날짜 없음';
@@ -164,6 +179,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
         ) : (
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
+            const displayStatus = getOrderStatusLabelForDisplay(item.status, shippingMethod);
             const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status);
             return (
               <div key={idx} className="flex space-x-4 py-3">
@@ -172,10 +188,10 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <span className="font-semibold">{item.status}</span>
+                    <span className="font-semibold">{displayStatus}</span>
                     <span className="text-sm text-muted-foreground">{formatHistoryDate(item.date)}</span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{getHistoryDescriptionForDisplay(item)}</p>
                 </div>
               </div>
             );

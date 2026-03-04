@@ -67,7 +67,8 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingMeth
       await mutateHistory();
       await mutate((key) => typeof key === 'string' && key.startsWith('/api/orders'));
 
-      showSuccessToast(`주문 상태가 '${nextStatus}'(으)로 변경되었습니다.`);
+      const displayStatus = getOrderStatusLabelForDisplay(nextStatus, shippingMethod);
+      showSuccessToast(`주문 상태가 '${displayStatus}'(으)로 변경되었습니다.`);
     } catch (err: any) {
       console.error(err);
       showErrorToast(`상태 변경 실패: ${err?.message || '서버 오류'}`);

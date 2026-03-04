@@ -112,6 +112,12 @@ export default function AdminRentalsClient() {
     return { label: '정산: 대여', variant: badgeToneVariant('neutral') };
   }
 
+  function getPickupBadge(r: RentalRow) {
+    const label = r.pickupMethodLabel ?? '택배 발송';
+    const variant = r.servicePickupMethod === 'SHOP_VISIT' ? badgeToneVariant('brand') : badgeToneVariant('neutral');
+    return { label, variant };
+  }
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -668,6 +674,7 @@ export default function AdminRentalsClient() {
                   const link = getLinkBadge(r);
                   const flow = getFlowBadge(r);
                   const settlement = getSettlementBadge();
+                  const pickup = getPickupBadge(r);
                   const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
                   return (
                     <TableRow key={rid || `row-${idx}`} className="hover:bg-muted/50 transition-colors">
@@ -697,6 +704,7 @@ export default function AdminRentalsClient() {
                                     { label: svc.label, variant: svc.variant, title: '교체서비스 포함 여부' },
                                     ...(link ? [{ label: link.label, variant: link.variant, title: '신청서 연결 여부' }] : []),
                                     { label: flow.shortLabel, variant: flow.variant, title: `시나리오: ${flow.label}` },
+                                    { label: pickup.label, variant: pickup.variant, title: '수령 방식' },
                                     { label: settlement.label, variant: settlement.variant, title: '정산 앵커' },
                                   ];
                                   return <AdminBadgeRow maxVisible={3} items={items} />;
@@ -735,6 +743,7 @@ export default function AdminRentalsClient() {
                                 <p className="mt-2 text-[11px] text-muted-foreground">
                                   시나리오: <span className="font-medium text-foreground">{flow.label}</span>
                                 </p>
+                                <p className="mt-1 text-[11px] text-muted-foreground">수령 방식: {pickup.label}</p>
                                 <p className="mt-1 text-[11px] text-muted-foreground">{settlement.label}</p>
                                 {warnMissingApp && <p className="mt-2 text-[11px] text-primary">주의: 교체서비스 포함인데 신청서 연결이 없습니다.</p>}
 

@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { deductPoints, grantPoints } from '@/lib/points.service';
 import { z } from 'zod';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
+import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -554,13 +555,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       updateFields.paymentStatus = newPaymentStatus;
     }
 
-    // 히스토리 메시지
+    // 히스토리 메시지(방문수령은 화면/기록 문구만 수령 맥락으로 치환)
+    const prevDisplayStatus = getOrderStatusLabelForDisplay(__prevStatus, (existing as any)?.shippingInfo);
+    const nextDisplayStatus = getOrderStatusLabelForDisplay(__nextStatus, (existing as any)?.shippingInfo);
+
     const description =
       __nextStatus === '취소'
         ? `주문이 취소되었습니다. 사유: ${cancelReason}${cancelReason === '기타' && cancelReasonDetail ? ` (${cancelReasonDetail})` : ''}`
         : __isBackward
-          ? `주문 상태가 '${__prevStatus}' → '${__nextStatus}'(으)로 되돌려졌습니다.`
-          : `주문 상태가 '${__nextStatus}'(으)로 변경되었습니다.`;
+          ? `주문 상태가 '${prevDisplayStatus}' → '${nextDisplayStatus}'(으)로 되돌려졌습니다.`
+          : `주문 상태가 '${nextDisplayStatus}'(으)로 변경되었습니다.`;
 
     const historyEntry = {
       status: nextStatus,

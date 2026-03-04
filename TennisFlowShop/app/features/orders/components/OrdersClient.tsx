@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { badgeBase, badgeSizeSm, badgeToneVariant, flowBadgeClass, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass } from '@/lib/badge-style';
+import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
 import { shortenId } from '@/lib/shorten';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { adminRichTooltipClass } from '@/lib/tooltip-style';
@@ -705,7 +706,7 @@ export default function OrdersClient() {
                                 const st = getOrderStatusBadgeSpec(order.status);
                                 return (
                                   <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
-                                    {order.status}
+                                    {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
                                   </Badge>
                                 );
                               })()

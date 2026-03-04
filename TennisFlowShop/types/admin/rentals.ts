@@ -1,3 +1,5 @@
+export type AdminRentalServicePickupMethod = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null;
+
 export type AdminRentalPaymentFilter = 'all' | 'unpaid' | 'paid';
 export type AdminRentalShippingFilter = 'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set';
 
@@ -14,6 +16,8 @@ export interface AdminRentalsListRequestDto {
 }
 
 export interface AdminRentalListItemDto {
+  servicePickupMethod?: AdminRentalServicePickupMethod;
+  pickupMethodLabel?: string;
   id?: string;
   racketId?: string;
   brand: string;
