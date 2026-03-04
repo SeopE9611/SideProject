@@ -1,38 +1,59 @@
-# Unsaved Changes Guard 조사/정책 (2026-03-04)
+# Unsaved Changes Guard 조사/정책 (2026-03-04, 2차 재수정 반영)
 
-## 전수 조사 요약
+## 최종 정책
 
-- `useUnsavedChangesGuard(...)` 사용 파일: **54개**
-- `window.confirm(UNSAVED_CHANGES_MESSAGE)` 중복 사용 파일: **29개**
-- `beforeunload | popstate | pushState | history.back` 직접 사용 파일: **14개**
+- 공통 훅 `useUnsavedChangesGuard`는 **beforeunload 전용 최소 책임**만 담당한다.
+- `router.push`, `router.back`, `history.back`, 페이지 내 취소/목록 이동은 **각 페이지 local confirm**으로 처리한다.
+- 모달/다이얼로그(`MessageComposeDialog`, `AdminBroadcastDialog`)는 **전역 guard 없이 local confirm 우선** 정책을 유지한다.
+- 성공 페이지의 뒤로가기 정책은 동일 패턴(더미 `pushState` + `popstate`에서 홈으로 치환)으로 일관성을 맞춘다.
 
-## 위험 포인트
+## 1차 수정 후 남은 hook-only 위험 지점(2차 작업 전)
 
-1. 공통 훅(`lib/hooks/useUnsavedChangesGuard.tsx`)이 `beforeunload + popstate + document click capture + dummy pushState + cleanup history.back`를 동시에 담당.
-2. 다수 페이지에서 공통 훅과 로컬 `window.confirm(...)`을 함께 써 중복 경고 가능.
-3. 모달/다이얼로그에서도 전역 가드를 켜서, 화면 외부 이탈과 모달 닫기 UX 경계가 섞임.
+다음 파일은 `useUnsavedChangesGuard`를 쓰지만 내부 이동 액션에 local confirm이 없어서 회귀 위험이 있었다.
 
-## 화면별 정책 표 (대표)
+- `app/admin/classes/new/NewClassClient.tsx`
+- `app/admin/users/_components/UserDetailClient.tsx`
+- `app/forgot-password/page.tsx`
+- `app/mypage/profile/_components/ProfileClient.tsx`
+- `app/reset-password/page.tsx`
+- `app/services/apply/page.tsx`
 
-| 파일 | 화면 성격 | 기존 guard 방식 | 문제점 | 방침 |
-|---|---|---|---|---|
-| `lib/hooks/useUnsavedChangesGuard.tsx` | 공통 훅 | beforeunload + popstate + click capture + history 조작 | 히스토리 체인 오염, 입력 중 오탐, 모바일 민감도 증가 | **수정**: beforeunload 전용 최소 책임 |
-| `app/services/_components/BackButtonGuard.tsx` | 성공 페이지 보조 가드 | `pushState + popstate` | 불필요한 더미 히스토리 추가 | **수정**: `pushState` 제거, popstate만 유지 |
-| `app/services/apply/page.tsx` | 대형 폼(프리필+스냅샷) | 공통 훅 + baseline dirty | 공통 훅 과책임에 의존 | **유지(후속 확장)**: baseline 유지, 내부 이동은 점진 로컬 confirm 전환 |
-| `app/checkout/page.tsx` | 대형 폼(체크아웃) | 공통 훅 + 로컬 confirm | 공통 훅 과책임 시 중복/과민 가능 | **유지**: 훅 최소화 후 로컬 confirm 중심 |
-| `app/rentals/[id]/checkout/_components/RentalsCheckoutClient.tsx` | 체크아웃 | 공통 훅 + 로컬 confirm | 공통 훅 과책임 | **유지** |
-| `app/rackets/[id]/_components/RacketPurchaseCheckoutClient.tsx` | 체크아웃 | 공통 훅 단독 | 내부 이동 confirm이 페이지에 따라 부족 가능 | **유지(후속 확장)** |
-| `app/board/free/_components/FreeBoardWriteClient.tsx` | 게시글 작성 | 공통 훅 + 로컬 confirm | 중복 confirm 잠재 | **유지** |
-| `app/board/free/[id]/edit/_components/FreeBoardEditClient.tsx` | 게시글 수정 | 공통 훅 + 로컬 confirm | 중복 confirm 잠재 | **유지** |
-| `app/reviews/write/page.tsx` | 작성 폼 | 공통 훅 + 로컬 confirm | 중복 confirm 잠재 | **유지** |
-| `app/login/_components/LoginPageClient.tsx` | 로그인/비밀번호 입력 | 공통 훅 + 로컬 confirm | 중복 confirm 잠재 | **유지** |
-| `app/messages/_components/MessageComposeDialog.tsx` | 모달/다이얼로그 | 공통 훅 + 모달 닫기 confirm | 모달에서 전역 guard 불필요/과민 | **수정**: 전역 훅 제거, 모달 close confirm만 유지 |
-| `app/messages/_components/AdminBroadcastDialog.tsx` | 모달/다이얼로그 | 공통 훅 + 모달 닫기 confirm | 모달에서 전역 guard 불필요/과민 | **수정**: 전역 훅 제거, 모달 close confirm만 유지 |
+## 2차에서 local confirm 보강한 파일
+
+- `app/admin/classes/new/NewClassClient.tsx`
+  - 목록 링크/취소(`window.history.back`)에 `confirmLeaveIfDirty` 적용
+- `app/admin/users/_components/UserDetailClient.tsx`
+  - 상단 `router.back()` 액션에 dirty 확인 추가
+- `app/forgot-password/page.tsx`
+  - 로그인 복귀 링크 클릭 시 dirty 확인 추가
+- `app/mypage/profile/_components/ProfileClient.tsx`
+  - 마이페이지 복귀 링크 클릭 시 dirty 확인 추가
+- `app/reset-password/page.tsx`
+  - 로그인 복귀 링크 클릭 시 dirty 확인 추가
+- `app/services/apply/page.tsx`
+  - 분기 이동 버튼(`router.push`)을 `safePush`로 래핑해 dirty 확인 추가
+
+## success BackButtonGuard 정책 비교
+
+- `app/checkout/success/_components/BackButtonGuard.tsx`
+  - `pushState`로 현재 URL 1회 추가 + `popstate`에서 `router.replace('/')`
+- `app/services/_components/BackButtonGuard.tsx`
+  - 1차에서 제거됐던 `pushState`를 복구하여 checkout success와 동작 정책을 통일
+
+## 이번 범위에서 확인한 “변경 없음” 파일
+
+아래는 `useUnsavedChangesGuard`를 사용하지만, 이번 2차 범위 기준으로 제출 후 이동 외 별도 취소/내부 이동 포인트가 뚜렷하지 않아 추가 변경하지 않았다.
+
+- `app/admin/applications/stringing/[id]/shipping-update/shipping-form.tsx`
+- `app/admin/orders/[id]/shipping-update/shipping-form.tsx`
+- `app/admin/rentals/[id]/shipping-update/shipping-form.tsx`
+- `app/mypage/rentals/[id]/return-shipping/return-form.tsx`
+- `app/rackets/[id]/_components/RacketPurchaseCheckoutClient.tsx`
 
 ## 조사 명령어
 
 ```bash
-rg -l "useUnsavedChangesGuard\(" app lib
-rg -l "window\.confirm\(UNSAVED_CHANGES_MESSAGE\)" app lib
-rg -l "beforeunload|popstate|pushState\(|history\.back\(" app lib
+rg -n "useUnsavedChangesGuard" app lib
+rg -n "router\.push|router\.back|history\.back|window\.history\.back|Link href" app/<target-files>
+rg -n "window\.confirm|UNSAVED_CHANGES_MESSAGE" app/<target-files>
 ```

@@ -18,7 +18,7 @@ import { MdSportsTennis } from 'react-icons/md';
 import TennisProfileForm from '@/app/mypage/profile/_components/TennisProfileForm';
 import { Badge } from '@/components/ui/badge';
 import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
 
 // 제출 직전 최종 유효성 가드
@@ -97,9 +97,11 @@ export default function ProfileClient({ user }: Props) {
 
  // 비밀번호 탭: 입력 중이면 dirty (서버 baseline 필요 없음)
  const isPasswordDirty = Boolean(passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword);
+ const isDirty = isProfileDirty || isPasswordDirty;
 
  // 최종 dirty (프로필/주소/마케팅 변경 OR 비밀번호 입력 중)
- useUnsavedChangesGuard(isProfileDirty || isPasswordDirty);
+ useUnsavedChangesGuard(isDirty);
+ const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
  useEffect(() => {
  const fetchProfile = async () => {
@@ -301,7 +303,14 @@ export default function ProfileClient({ user }: Props) {
  <div className="relative container mx-auto px-4 py-16">
  <div className="max-w-4xl mx-auto">
  <div className="flex items-center gap-6 mb-8">
- <Link href="/mypage" className="inline-flex items-center text-foreground/80 hover:text-primary transition-colors font-medium">
+ <Link
+ href="/mypage"
+ className="inline-flex items-center text-foreground/80 hover:text-primary transition-colors font-medium"
+ onClick={(e) => {
+ if (confirmLeaveIfDirty()) return;
+ e.preventDefault();
+ }}
+ >
  <ArrowLeft className="mr-2 h-5 w-5" />
  마이페이지로 돌아가기
  </Link>

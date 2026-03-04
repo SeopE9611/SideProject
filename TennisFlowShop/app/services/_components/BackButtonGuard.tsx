@@ -7,6 +7,10 @@ export default function BackButtonGuard() {
   const router = useRouter();
 
   useEffect(() => {
+    // checkout success와 동일하게 현재 URL을 한 번 더 쌓아
+    // 뒤로가기(popstate) 시 홈으로 강제 이동 정책을 유지한다.
+    window.history.pushState(null, '', window.location.href);
+
     const onPopState = () => {
       // 뒤로가기 클릭 시 홈으로 보냄
       router.replace('/');
