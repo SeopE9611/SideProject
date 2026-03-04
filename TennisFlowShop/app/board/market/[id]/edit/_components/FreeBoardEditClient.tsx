@@ -17,7 +17,8 @@ import { normalizeMarketMeta, type MarketMeta } from '@/lib/market';
 import { supabase } from '@/lib/supabase';
 import type { CommunityPost } from '@/lib/types/community';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, ArrowLeft, Check, Loader2, MessageSquare, Package, Upload, X } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronUp, Loader2, MessageSquare, Package, Upload, X } from 'lucide-react';
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MouseEvent as ReactMouseEvent } from 'react';
@@ -311,6 +312,35 @@ export default function FreeBoardEditClient({ id }: Props) {
     { label: '이미지 첨부', ok: images.length > 0 },
   ];
 
+  /**
+   * 오른쪽 sticky 패널 compact 모드
+   * ---------------------------------
+   * - 노트북 125% 배율처럼 "세로 뷰포트가 낮은 환경"에서는
+   *   체크리스트를 기본 접힘 처리해서 저장 버튼이 더 위에 보이도록 합니다.
+   */
+  const [isCompactSticky, setIsCompactSticky] = useState(false);
+  const [isChecklistOpen, setIsChecklistOpen] = useState(true);
+
+  useEffect(() => {
+    const updateCompactMode = () => {
+      // 125% 배율 노트북에서 보통 세로 viewport가 많이 줄어드므로
+      // 높이가 낮으면 compact 모드로 전환합니다.
+      setIsCompactSticky(window.innerHeight <= 820);
+    };
+
+    updateCompactMode();
+    window.addEventListener('resize', updateCompactMode);
+    return () => window.removeEventListener('resize', updateCompactMode);
+  }, []);
+
+  useEffect(() => {
+    // compact 모드에서는 체크리스트를 기본 접힘,
+    // 일반 높이에서는 기본 펼침으로 둡니다.
+    setIsChecklistOpen(!isCompactSticky);
+  }, [isCompactSticky]);
+
+  const checklistDoneCount = checklist.filter((item) => item.ok).length;
+
   // 파일 추가 (드롭/선택 공통)
   const addFiles = (files: File[]) => {
     if (!files.length) return;
@@ -576,7 +606,7 @@ export default function FreeBoardEditClient({ id }: Props) {
             <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">중고 거래 글 수정</h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.</p>
             {/* 이탈 경고(고정 노출) */}
-            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+            <div className="mb-3 mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나 새로고침하면 입력한 내용이 <span className="font-semibold">초기화될 수 있습니다.</span>
@@ -596,16 +626,6 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <span>목록으로</span>
               </Link>
             </Button>
-          </div>
-        </div>
-
-        <div className="mb-6 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
-          <p className="mb-2 text-sm font-semibold text-foreground">수정 전 체크리스트</p>
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-muted-foreground">
-            <span>{'- '}브랜드 / 모델명 최신 상태 확인</span>
-            <span>{'- '}판매가 / 판매 상태 재점검</span>
-            <span>{'- '}상태 메모 최신화</span>
-            <span>{'- '}이미지 / 첨부 파일 확인</span>
           </div>
         </div>
 
@@ -751,7 +771,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       }}
                       disabled={isSubmitting}
                       maxLength={TITLE_MAX}
-                      placeholder="예: 윌슨 블레이드 98 16x19 판매합니다"
+                      placeholder="ex: 윌슨 블레이드 98 16x19 판매합니다"
                       className={cn('placeholder:text-muted-foreground/60', fieldErrors.title ? 'border-destructive focus-visible:border-destructive' : '')}
                     />
                     {fieldErrors.title ? <p className="text-xs text-destructive">{fieldErrors.title}</p> : null}
@@ -931,13 +951,13 @@ export default function FreeBoardEditClient({ id }: Props) {
 
             {/* ===== 오른쪽: sticky 수정 요약 카드 (lg+) ===== */}
             <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
-              <div className="space-y-4">
+              <div className={cn('space-y-4', isCompactSticky && 'space-y-3')}>
                 {/* 수정 요약 */}
                 <div className="rounded-xl border border-border bg-card shadow-sm">
-                  <div className="border-b border-border px-5 py-3">
+                  <div className={cn('border-b border-border px-5 py-3', isCompactSticky && 'px-4 py-2.5')}>
                     <h3 className="text-sm font-semibold text-foreground">수정 요약</h3>
                   </div>
-                  <div className="space-y-3 px-5 py-4 text-sm">
+                  <div className={cn('space-y-3 px-5 py-4 text-sm', isCompactSticky && 'space-y-2 px-4 py-3 text-[13px]')}>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">분류</span>
                       <span className="font-medium text-foreground">{categoryLabel}</span>
@@ -991,26 +1011,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                   </div>
                 </div>
 
-                {/* 수정 전 확인 */}
-                <div className="rounded-xl border border-border bg-card shadow-sm">
-                  <div className="border-b border-border px-5 py-3">
-                    <h3 className="text-sm font-semibold text-foreground">수정 전 확인</h3>
-                  </div>
-                  <div className="space-y-2 px-5 py-4">
-                    {checklist.map((item) => (
-                      <div key={item.label} className="flex items-center gap-2 text-sm">
-                        <div className={cn('flex h-4 w-4 items-center justify-center rounded-full', item.ok ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
-                          <Check className="h-2.5 w-2.5" />
-                        </div>
-                        <span className={item.ok ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 데스크탑 전용 CTA */}
-                <div className="space-y-2">
-                  <Button type="submit" className="w-full gap-2" disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
+                <div className={cn('space-y-2', isCompactSticky && 'space-y-1.5')}>
+                  <Button type="submit" className={cn('w-full gap-2', isCompactSticky && 'h-10')} disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -1024,10 +1026,41 @@ export default function FreeBoardEditClient({ id }: Props) {
                     )}
                   </Button>
 
-                  <Button type="button" variant="outline" className="w-full" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn('w-full', isCompactSticky && 'h-10')}
+                    disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+                    onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}
+                  >
                     취소
                   </Button>
-                  <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">저장 버튼을 누르면 현재 수정 내용이 상세 페이지에 반영됩니다.</p>
+                  <p className={cn('px-1 text-[11px] leading-relaxed text-muted-foreground', isCompactSticky && 'text-[10px] leading-snug')}></p>
+                </div>
+                {/* 수정 전 확인: compact 모드에서는 접힘/펼침 */}
+                <div className="rounded-xl border border-border bg-card shadow-sm">
+                  <button type="button" onClick={() => setIsChecklistOpen((prev) => !prev)} className={cn('flex w-full items-center justify-between border-b border-border px-5 py-3 text-left', isCompactSticky && 'px-4 py-2.5')}>
+                    <h3 className="text-sm font-semibold text-foreground">수정 전 확인</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        {checklistDoneCount}/{checklist.length} 완료
+                      </span>
+                      {isChecklistOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </div>
+                  </button>
+
+                  {isChecklistOpen && (
+                    <div className={cn('space-y-2 px-5 py-4', isCompactSticky && 'grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-3')}>
+                      {checklist.map((item) => (
+                        <div key={item.label} className="flex items-center gap-2 text-sm">
+                          <div className={cn('flex h-4 w-4 items-center justify-center rounded-full', item.ok ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
+                            <Check className="h-2.5 w-2.5" />
+                          </div>
+                          <span className={cn(item.ok ? 'text-foreground' : 'text-muted-foreground', isCompactSticky && 'text-[13px]')}>{item.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>

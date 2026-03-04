@@ -122,7 +122,7 @@ export default function MarketMetaFields({ category, value, onChange, disabled, 
               onChange={(e) => onChange({ ...value, conditionNote: e.target.value })}
               disabled={disabled}
               className="min-h-[100px] resize-y placeholder:text-muted-foreground/60"
-              placeholder="예: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
+              placeholder="ex: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
             />
             <p className="text-[11px] text-muted-foreground">실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.</p>
           </div>
@@ -148,7 +148,7 @@ export default function MarketMetaFields({ category, value, onChange, disabled, 
                   </Label>
                   <Input
                     ref={modelNameRef}
-                    placeholder="예: EZONE 98 2024, PRO STAFF 97 V14"
+                    placeholder="ex: EZONE 98 2024, PRO STAFF 97 V14"
                     value={value.racketSpec?.modelName ?? ''}
                     onChange={(e) =>
                       onChange({
@@ -164,9 +164,9 @@ export default function MarketMetaFields({ category, value, onChange, disabled, 
                 </div>
                 {(
                   [
-                    { key: 'weight' as const, ph: '300' },
-                    { key: 'balance' as const, ph: '320' },
-                    { key: 'headSize' as const, ph: '98' },
+                    { key: 'weight' as const, ph: 'ex: 300' },
+                    { key: 'balance' as const, ph: 'ex: 320' },
+                    { key: 'headSize' as const, ph: 'ex: 98' },
                   ] as const
                 ).map(({ key, ph }) => (
                   <div className="space-y-2" key={key}>
@@ -198,9 +198,9 @@ export default function MarketMetaFields({ category, value, onChange, disabled, 
               <div className="grid gap-4 sm:grid-cols-2">
                 {(
                   [
-                    { key: 'lengthIn' as const, ph: '27' },
-                    { key: 'swingWeight' as const, ph: '320' },
-                    { key: 'stiffnessRa' as const, ph: '68' },
+                    { key: 'lengthIn' as const, ph: 'ex: 27' },
+                    { key: 'swingWeight' as const, ph: 'ex: 320' },
+                    { key: 'stiffnessRa' as const, ph: 'ex: 68' },
                   ] as const
                 ).map(({ key, ph }) => (
                   <div className="space-y-2" key={key}>

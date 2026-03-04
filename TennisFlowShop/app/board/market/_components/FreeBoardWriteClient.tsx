@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Check, FileText, ImageIcon, Loader2, Package, Tag, Upload, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronUp, FileText, ImageIcon, Loader2, Package, Tag, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
@@ -468,6 +468,31 @@ export default function FreeBoardWriteClient() {
     { label: '이미지 첨부', ok: images.length > 0 },
   ];
 
+  /**
+   * 오른쪽 sticky 패널 compact 모드
+   * ---------------------------------
+   * - 125% 배율 노트북처럼 세로 viewport가 낮은 환경에서는
+   *   체크리스트를 기본 접힘 처리해서 등록 버튼이 더 빨리 보이게 합니다.
+   */
+  const [isCompactSticky, setIsCompactSticky] = useState(false);
+  const [isChecklistOpen, setIsChecklistOpen] = useState(true);
+
+  useEffect(() => {
+    const updateCompactMode = () => {
+      setIsCompactSticky(window.innerHeight <= 820);
+    };
+
+    updateCompactMode();
+    window.addEventListener('resize', updateCompactMode);
+    return () => window.removeEventListener('resize', updateCompactMode);
+  }, []);
+
+  useEffect(() => {
+    setIsChecklistOpen(!isCompactSticky);
+  }, [isCompactSticky]);
+
+  const checklistDoneCount = checklist.filter((item) => item.ok).length;
+
   const selectCls = 'h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50';
 
   return (
@@ -498,17 +523,6 @@ export default function FreeBoardWriteClient() {
             <Button asChild variant="outline" size="sm">
               <Link href="/board">게시판 홈</Link>
             </Button>
-          </div>
-        </div>
-
-        {/* ── 등록 체크리스트 배너 ── */}
-        <div className="mb-6 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
-          <p className="mb-2 text-sm font-semibold text-foreground">등록 전 체크리스트</p>
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-muted-foreground">
-            <span>{'- '}정확한 브랜드 / 모델명 입력</span>
-            <span>{'- '}상태를 솔직하게 작성</span>
-            <span>{'- '}실물 사진 1장 이상 첨부 권장</span>
-            <span>{'- '}희망 판매가 명시</span>
           </div>
         </div>
 
@@ -626,7 +640,7 @@ export default function FreeBoardWriteClient() {
                       }}
                       disabled={isSubmitting}
                       maxLength={TITLE_MAX}
-                      placeholder="예: 윌슨 블레이드 98 16x19 판매합니다"
+                      placeholder="ex: 윌슨 블레이드 98 16x19 판매합니다"
                       className={cn('h-11 text-base placeholder:text-muted-foreground/60', fieldErrors.title ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : '')}
                     />
                     <div className="flex items-center justify-between">
@@ -789,14 +803,14 @@ export default function FreeBoardWriteClient() {
             </div>
 
             {/* ====== 오른쪽: sticky 요약 카드 (lg+) ====== */}
-            <aside className="hidden lg:block lg:w-[300px] xl:w-[320px] flex-shrink-0">
-              <div className="sticky top-24 space-y-4">
+            <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
+              <div className={cn('space-y-4', isCompactSticky && 'space-y-3')}>
                 {/* 입력 요약 */}
                 <div className="rounded-xl border border-border bg-card shadow-sm">
                   <div className="border-b border-border px-5 py-3">
                     <h3 className="text-sm font-semibold text-foreground">등록 요약</h3>
                   </div>
-                  <div className="px-5 py-4 space-y-3 text-sm">
+                  <div className={cn('px-5 py-4 space-y-3 text-sm', isCompactSticky && 'px-4 py-3 space-y-2 text-[13px]')}>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">분류</span>
                       <span className="font-medium text-foreground">{categoryLabel}</span>
@@ -836,26 +850,8 @@ export default function FreeBoardWriteClient() {
                   </div>
                 </div>
 
-                {/* 체크리스트 */}
-                <div className="rounded-xl border border-border bg-card shadow-sm">
-                  <div className="border-b border-border px-5 py-3">
-                    <h3 className="text-sm font-semibold text-foreground">등록 전 확인</h3>
-                  </div>
-                  <div className="px-5 py-4 space-y-2">
-                    {checklist.map((item) => (
-                      <div key={item.label} className="flex items-center gap-2 text-sm">
-                        <div className={cn('flex h-4 w-4 items-center justify-center rounded-full', item.ok ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
-                          <Check className="h-2.5 w-2.5" />
-                        </div>
-                        <span className={item.ok ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* CTA 버튼 */}
-                <div className="space-y-2">
-                  <Button type="submit" className="w-full gap-2" disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
+                <div className={cn('space-y-2', isCompactSticky && 'space-y-1.5')}>
+                  <Button type="submit" className={cn('w-full gap-2', isCompactSticky && 'h-10')} disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -868,9 +864,36 @@ export default function FreeBoardWriteClient() {
                       </>
                     )}
                   </Button>
-                  <Button type="button" variant="outline" className="w-full" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={handleCancel}>
+                  <Button type="button" variant="outline" className={cn('w-full', isCompactSticky && 'h-10')} disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={handleCancel}>
                     취소
                   </Button>
+                  <p className={cn('px-1 text-[11px] leading-relaxed text-muted-foreground', isCompactSticky && 'text-[10px] leading-snug')}>등록 버튼을 누르면 현재 입력 내용이 게시글로 저장됩니다.</p>
+                </div>
+
+                {/* 등록 전 확인: compact 모드에서는 접힘/펼침 */}
+                <div className="rounded-xl border border-border bg-card shadow-sm">
+                  <button type="button" onClick={() => setIsChecklistOpen((prev) => !prev)} className={cn('flex w-full items-center justify-between border-b border-border px-5 py-3 text-left', isCompactSticky && 'px-4 py-2.5')}>
+                    <h3 className="text-sm font-semibold text-foreground">등록 전 확인</h3>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        {checklistDoneCount}/{checklist.length} 완료
+                      </span>
+                      {isChecklistOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </div>
+                  </button>
+
+                  {isChecklistOpen && (
+                    <div className={cn('px-5 py-4 space-y-2', isCompactSticky && 'grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-3')}>
+                      {checklist.map((item) => (
+                        <div key={item.label} className="flex items-center gap-2 text-sm">
+                          <div className={cn('flex h-4 w-4 items-center justify-center rounded-full', item.ok ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
+                            <Check className="h-2.5 w-2.5" />
+                          </div>
+                          <span className={cn(item.ok ? 'text-foreground' : 'text-muted-foreground', isCompactSticky && 'text-[13px]')}>{item.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {errorMsg && <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-destructive">{errorMsg}</div>}
