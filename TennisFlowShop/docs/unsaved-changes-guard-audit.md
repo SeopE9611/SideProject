@@ -1,4 +1,4 @@
-# Unsaved Changes Guard 조사/정책 (2026-03-04, 3차 반영)
+# Unsaved Changes Guard 조사/정책 (2026-03-04, 4차 반영)
 
 ## 최종 정책
 
@@ -7,16 +7,25 @@
 - 브라우저/시스템 back(`popstate`)는 전역 interception 없이, **major form에서만 opt-in 훅 `useBackNavigationGuard`** 로 보호한다.
 - 모달/다이얼로그(`MessageComposeDialog`, `AdminBroadcastDialog`)는 **전역 back guard 없이 local confirm 우선** 정책을 유지한다.
 
-## 3차 신규 도입: opt-in back guard
+## 4차 blocker 해결 사항
 
 - `lib/hooks/useBackNavigationGuard.ts`
-  - dirty(`enabled=true`)일 때만 현재 URL을 1회 `pushState`
-  - `popstate` 발생 시 확인 창 노출
-  - 취소 시 현재 페이지 유지(`pushState` 재등록)
-  - 확인 시 뒤로가기 허용(`history.back`)
-  - document click capture / cleanup `history.back()` 없음
+  - guard가 추가한 history entry를 marker(`__unsavedBackGuard`)로 식별
+  - dirty 상태 진입 시 marker entry를 1회만 삽입(중복 push 방지)
+  - `popstate`에서 취소 시 marker entry를 재삽입해 현재 페이지 유지
+  - dirty 해제/cleanup 시 현재 state가 **내가 만든 marker**일 때만 `history.back()`으로 정리하여 stale entry 잔존 방지
+  - 사용자가 back 확인 후 실제 이탈 중인 경우에는 cleanup 정리를 건너뛰어 추가 back 호출 방지
+- `app/checkout/page.tsx`
+  - 번들 주문의 `수량/스트링 변경` 링크에도 기존 local confirm(`onLeaveCartClick`) 적용
 
-## 3차에서 opt-in back guard 적용한 major form
+## `useBackNavigationGuard` 최종 동작 원칙
+
+- dirty(`enabled=true`)일 때만 marker entry를 사용한다.
+- marker 기반으로 현재 엔트리를 판별해 중복 삽입을 막는다.
+- disabled/cleanup 시에는 현재 state가 guard marker인 경우에만 최소 정리를 수행한다.
+- 사용자가 뒤로가기를 수락한 실제 네비게이션 흐름에서는 guard 정리 로직이 추가 이탈을 만들지 않게 분기한다.
+
+## opt-in back guard 적용 major form
 
 - `app/services/apply/page.tsx`
 - `app/checkout/page.tsx`
@@ -24,33 +33,10 @@
 - `app/rentals/[id]/checkout/_components/RentalsCheckoutClient.tsx`
 - `app/services/packages/checkout/PackageCheckoutClient.tsx`
 
-## 3차에서 local confirm만 보강/유지한 파일
+## 남은 한계 / 후속 확인
 
-- `app/admin/packages/[id]/PackageDetailClient.tsx`
-  - 상단 목록 이동 링크(`/admin/packages`)에 dirty 확인 추가
-- `app/admin/rackets/[id]/edit/_components/AdminRacketEditClient.tsx`
-- `app/admin/rackets/_components/AdminRacketForm.tsx`
-- `app/admin/rackets/new/_components/AdminRacketNewClient.tsx`
-- `app/services/apply/page.tsx` (기존 `safePush` 유지)
-- `app/checkout/page.tsx` (기존 `onLeaveCartClick` 유지)
-- `app/rentals/[id]/checkout/_components/RentalsCheckoutClient.tsx` (기존 `pushIfSafe` 유지)
-- `app/services/packages/checkout/PackageCheckoutClient.tsx` (기존 `onLeavePageClick` 유지)
-
-## 이번 3차에서 확인만 하고 변경하지 않은 hook-only 폼
-
-- `app/admin/applications/stringing/[id]/shipping-update/shipping-form.tsx`
-- `app/admin/orders/[id]/shipping-update/shipping-form.tsx`
-- `app/admin/rentals/[id]/shipping-update/shipping-form.tsx`
-- `app/mypage/rentals/[id]/return-shipping/return-form.tsx`
-
-> 사유: 제출 완료 후 이동 중심 플로우이거나, 입력 규모/체류 시간 기준으로 major form 우선순위에서 제외.
-
-## 후속 검토 필요 페이지
-
-- 관리자 배송 업데이트/반송 폼 4종:
-  - 모바일 실사용에서 시스템 back 오조작 리스크가 반복 보고되면 opt-in back guard 후보로 재평가
-- 향후 신규 체크아웃/신청 대형 폼:
-  - `useUnsavedChangesGuard` + local confirm 기본 적용 후, 입력 손실 비용이 큰 경우만 `useBackNavigationGuard` 추가
+- 브라우저/기기별(`iOS Safari`, `Android Chrome`, in-app webview) back stack 처리 차이는 실기기 재검증이 필요하다.
+- 관리자 배송 업데이트/반송 폼 4종은 현재 정책상 major form 우선순위에서 제외되어 있으며, 사용자 리포트가 누적되면 opt-in back guard 후보로 재평가한다.
 
 ## 조사 명령어
 

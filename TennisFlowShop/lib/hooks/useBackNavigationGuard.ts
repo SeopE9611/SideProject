@@ -1,6 +1,13 @@
 import { useEffect } from 'react';
 import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
 
+const BACK_GUARD_MARKER_KEY = '__unsavedBackGuard';
+
+const isGuardState = (state: unknown, markerId: string) => {
+  if (!state || typeof state !== 'object') return false;
+  return (state as Record<string, unknown>)[BACK_GUARD_MARKER_KEY] === markerId;
+};
+
 /**
  * 브라우저/시스템 back(popstate) 전용 opt-in 가드.
  * - enabled=true인 페이지에서만 동작
@@ -11,19 +18,39 @@ export function useBackNavigationGuard(enabled: boolean, message: string = UNSAV
   useEffect(() => {
     if (!enabled) return;
 
+    const markerId = `back-guard-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     let active = true;
+    let isNavigatingAway = false;
+    let hasGuardEntry = false;
 
-    window.history.pushState({ __unsavedBackGuard: true }, '', window.location.href);
+    const pushGuardEntry = () => {
+      const currentState = window.history.state;
+      if (isGuardState(currentState, markerId)) {
+        hasGuardEntry = true;
+        return;
+      }
+
+      const nextState = {
+        ...(currentState && typeof currentState === 'object' ? currentState : {}),
+        [BACK_GUARD_MARKER_KEY]: markerId,
+      };
+
+      window.history.pushState(nextState, '', window.location.href);
+      hasGuardEntry = true;
+    };
+
+    pushGuardEntry();
 
     const onPopState = () => {
       if (!active) return;
 
       const shouldLeave = window.confirm(message);
       if (!shouldLeave) {
-        window.history.pushState({ __unsavedBackGuard: true }, '', window.location.href);
+        pushGuardEntry();
         return;
       }
 
+      isNavigatingAway = true;
       active = false;
       window.removeEventListener('popstate', onPopState);
       window.history.back();
@@ -34,7 +61,11 @@ export function useBackNavigationGuard(enabled: boolean, message: string = UNSAV
     return () => {
       active = false;
       window.removeEventListener('popstate', onPopState);
+
+      const currentState = window.history.state;
+      if (!isNavigatingAway && hasGuardEntry && isGuardState(currentState, markerId)) {
+        window.history.back();
+      }
     };
   }, [enabled, message]);
 }
-

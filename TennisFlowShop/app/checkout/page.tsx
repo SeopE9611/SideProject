@@ -896,7 +896,9 @@ export default function CheckoutPage() {
                     {bundleRacketId && (
                       <div className="mt-3">
                         <Button type="button" variant="outline" size="sm" className="h-8" asChild>
-                          <Link href={`/rackets/${bundleRacketId}/select-string`}>수량/스트링 변경</Link>
+                          <Link href={`/rackets/${bundleRacketId}/select-string`} data-no-unsaved-guard onClick={onLeaveCartClick}>
+                            수량/스트링 변경
+                          </Link>
                         </Button>
                       </div>
                     )}
