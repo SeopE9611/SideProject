@@ -807,7 +807,7 @@ export default function FreeBoardWriteClient() {
               <div className={cn('space-y-4', isCompactSticky && 'space-y-3')}>
                 {/* 입력 요약 */}
                 <div className="rounded-xl border border-border bg-card shadow-sm">
-                  <div className="border-b border-border px-5 py-3">
+                  <div className={cn('border-b border-border px-5 py-3', isCompactSticky && 'px-4 py-2.5')}>
                     <h3 className="text-sm font-semibold text-foreground">등록 요약</h3>
                   </div>
                   <div className={cn('px-5 py-4 space-y-3 text-sm', isCompactSticky && 'px-4 py-3 space-y-2 text-[13px]')}>

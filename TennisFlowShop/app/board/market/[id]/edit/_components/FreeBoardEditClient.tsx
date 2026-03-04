@@ -1035,7 +1035,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                   >
                     취소
                   </Button>
-                  <p className={cn('px-1 text-[11px] leading-relaxed text-muted-foreground', isCompactSticky && 'text-[10px] leading-snug')}></p>
+                  <p className={cn('px-1 text-[11px] leading-relaxed text-muted-foreground', isCompactSticky && 'text-[10px] leading-snug')}>저장 버튼을 누르면 현재 수정 내용이 상세 페이지에 반영됩니다.</p>
                 </div>
                 {/* 수정 전 확인: compact 모드에서는 접힘/펼침 */}
                 <div className="rounded-xl border border-border bg-card shadow-sm">
