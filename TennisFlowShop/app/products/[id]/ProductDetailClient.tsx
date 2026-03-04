@@ -1408,7 +1408,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="aspect-square rounded-lg bg-muted mb-2 sm:mb-3 flex items-center justify-center">
                         <span className="text-muted-foreground text-sm">준비 중</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">곧 업데이트됩니다</div>
+                      <div className="text-sm text-muted-foreground">곧 상품이 업데이트됩니다.</div>
                     </div>
                   ))}
                 </div>
