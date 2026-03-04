@@ -27,6 +27,16 @@ interface OrderDetail {
   };
   isStringServiceApplied?: boolean;
   stringingApplicationId?: string | null;
+  stringingApplications?: {
+    id: string;
+    status: string;
+    createdAt?: string | null;
+    racketCount?: number;
+    receptionLabel?: string;
+    tensionSummary?: string | null;
+    stringNames?: string[];
+    reservationLabel?: string | null;
+  }[];
   paymentInfo?: {
     method: string;
     bank?: 'shinhan' | 'kookmin' | 'woori';
@@ -117,6 +127,10 @@ export default function OrderDetailPage() {
   };
 
   const hasCompletedStringingApplication = order?.isStringServiceApplied === true;
+  const latestStringingApplication =
+    Array.isArray(order?.stringingApplications) && order.stringingApplications.length > 0
+      ? [...order.stringingApplications].sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]
+      : null;
 
   // 금액 포맷팅 함수
   const formatCurrency = (amount: number) => {
@@ -284,6 +298,45 @@ export default function OrderDetailPage() {
                       </p>
                     </div>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 비회원 조회에서도 신청서 상세 진입 없이 핵심 맥락을 확인할 수 있게 요약 노출 */}
+          {order.shippingInfo?.withStringService && hasCompletedStringingApplication && latestStringingApplication && (
+            <Card className="mb-8 border border-border bg-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">교체 서비스 접수 요약</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2 text-sm">
+                <p className="text-muted-foreground">
+                  신청 상태: <span className="font-medium text-foreground">{latestStringingApplication.status}</span>
+                </p>
+                {latestStringingApplication.receptionLabel && (
+                  <p className="text-muted-foreground">
+                    접수 방식: <span className="font-medium text-foreground">{latestStringingApplication.receptionLabel}</span>
+                  </p>
+                )}
+                {typeof latestStringingApplication.racketCount === 'number' && latestStringingApplication.racketCount > 0 && (
+                  <p className="text-muted-foreground">
+                    라인 수: <span className="font-medium text-foreground">{latestStringingApplication.racketCount}개</span>
+                  </p>
+                )}
+                {Array.isArray(latestStringingApplication.stringNames) && latestStringingApplication.stringNames.length > 0 && (
+                  <p className="text-muted-foreground">
+                    스트링: <span className="font-medium text-foreground">{latestStringingApplication.stringNames.join(', ')}</span>
+                  </p>
+                )}
+                {latestStringingApplication.tensionSummary && (
+                  <p className="text-muted-foreground">
+                    텐션: <span className="font-medium text-foreground">{latestStringingApplication.tensionSummary}</span>
+                  </p>
+                )}
+                {latestStringingApplication.reservationLabel && (
+                  <p className="text-muted-foreground">
+                    방문 예약: <span className="font-medium text-foreground">{latestStringingApplication.reservationLabel}</span>
+                  </p>
                 )}
               </CardContent>
             </Card>

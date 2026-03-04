@@ -21,6 +21,34 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
+function getApplicationLines(stringDetails: any): any[] {
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === 'visit') return '방문 접수';
+  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
+  return '발송 접수';
+}
+
+function getTensionSummary(lines: any[]): string | null {
+  const set = Array.from(
+    new Set(
+      lines
+        .map((line: any) => {
+          const main = String(line?.tensionMain ?? '').trim();
+          const cross = String(line?.tensionCross ?? '').trim();
+          if (!main && !cross) return '';
+          return cross && cross !== main ? `${main}/${cross}` : main || cross;
+        })
+        .filter(Boolean),
+    ),
+  );
+  return set.length ? set.join(', ') : null;
+}
+
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
      // 운영 정책: 비회원 주문을 받지 않는 경우(off)에는 "비회원 주문 조회/상세"도 중단
@@ -50,8 +78,48 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       }
     }
 
+    // 비회원 주문조회에서도 교체서비스 핵심 요약을 바로 볼 수 있도록 읽기용 요약을 함께 제공
+    const apps = await db
+      .collection('stringing_applications')
+      .find({
+        orderId: order._id,
+        status: { $ne: '취소' },
+      })
+      .toArray();
+
+    const stringingApplications = apps.map((app: any) => {
+      const lines = getApplicationLines(app?.stringDetails);
+      const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
+      const preferredDate = String(app?.stringDetails?.preferredDate ?? '').trim();
+      const preferredTime = String(app?.stringDetails?.preferredTime ?? '').trim();
+      return {
+        id: app._id?.toString(),
+        status: app.status ?? 'draft',
+        createdAt: app.createdAt ?? null,
+        racketCount: lines.length,
+        receptionLabel: getReceptionLabel(app?.collectionMethod),
+        tensionSummary: getTensionSummary(lines),
+        stringNames,
+        reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+      };
+    });
+
+    const latestApplication = stringingApplications
+      .filter((app) => app.id)
+      .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] ?? null;
+
+    const isStringServiceApplied = stringingApplications.some((app) => app.status !== 'draft');
+
     // 비회원 주문은 userId 없음 -> 누구나 접근 허용
-    return NextResponse.json({ success: true, order });
+    return NextResponse.json({
+      success: true,
+      order: {
+        ...order,
+        isStringServiceApplied,
+        stringingApplicationId: latestApplication?.id ?? null,
+        stringingApplications,
+      },
+    });
   } catch (err) {
     console.error('[GUEST_ORDER_DETAIL_ERROR]', err);
     return NextResponse.json({ success: false, error: '서버 오류' }, { status: 500 });

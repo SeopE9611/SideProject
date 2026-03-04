@@ -8,6 +8,35 @@ function maskAccount(acct?: string) {
   const last4 = String(acct).slice(-4);
   return `••••${last4}`;
 }
+
+function getApplicationLines(stringDetails: any): any[] {
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === 'visit') return '방문 접수';
+  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
+  return '발송 접수';
+}
+
+function getTensionSummary(lines: any[]): string | null {
+  const set = Array.from(
+    new Set(
+      lines
+        .map((line: any) => {
+          const main = String(line?.tensionMain ?? '').trim();
+          const cross = String(line?.tensionCross ?? '').trim();
+          if (!main && !cross) return '';
+          return cross && cross !== main ? `${main}/${cross}` : main || cross;
+        })
+        .filter(Boolean),
+    ),
+  );
+  return set.length ? set.join(', ') : null;
+}
+
 function maskName(name?: string) {
   if (!name) return '';
   // 한 글자 이름: 그대로, 두 글자 이상: 마지막 글자만 노출
@@ -47,13 +76,29 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const paymentMeta = normalizeRentalPaymentMeta(doc);
 
   let linkedApplicationStatus: string | null = null;
+  let linkedApplicationReceptionLabel: string | null = null;
+  let linkedApplicationRacketCount: number | null = null;
+  let linkedApplicationTensionSummary: string | null = null;
+  let linkedApplicationStringNames: string[] = [];
+  let linkedApplicationReservationLabel: string | null = null;
+
   const rawStringingApplicationId = (doc as any).stringingApplicationId;
   if (rawStringingApplicationId) {
     const linkedApp = await db.collection('stringing_applications').findOne(
       { _id: rawStringingApplicationId },
-      { projection: { status: 1 } },
+      { projection: { status: 1, collectionMethod: 1, stringDetails: 1 } },
     );
     linkedApplicationStatus = typeof linkedApp?.status === 'string' ? linkedApp.status : null;
+    if (linkedApp) {
+      const lines = getApplicationLines((linkedApp as any).stringDetails);
+      linkedApplicationReceptionLabel = getReceptionLabel((linkedApp as any).collectionMethod);
+      linkedApplicationRacketCount = lines.length;
+      linkedApplicationTensionSummary = getTensionSummary(lines);
+      linkedApplicationStringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
+      const preferredDate = String((linkedApp as any)?.stringDetails?.preferredDate ?? '').trim();
+      const preferredTime = String((linkedApp as any)?.stringDetails?.preferredTime ?? '').trim();
+      linkedApplicationReservationLabel = preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null;
+    }
   }
 
   return NextResponse.json({
@@ -75,6 +120,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     stringing: (doc as any).stringing ?? null,
     stringingApplicationId: (doc as any).stringingApplicationId ?? null,
     stringingApplicationStatus: linkedApplicationStatus,
+    stringingReceptionLabel: linkedApplicationReceptionLabel,
+    stringingRacketCount: linkedApplicationRacketCount,
+    stringingTensionSummary: linkedApplicationTensionSummary,
+    stringingNames: linkedApplicationStringNames,
+    stringingReservationLabel: linkedApplicationReservationLabel,
     paymentStatusLabel: paymentMeta.label,
     paymentStatusSource: paymentMeta.source,
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import type { Document, Filter } from 'mongodb';
+import { ObjectId, type Document, type Filter } from 'mongodb';
 import { z } from 'zod';
 
 import { requireAdmin } from '@/lib/admin.guard';
@@ -7,6 +7,35 @@ import type { AdminRentalListItemDto, AdminRentalsListResponseDto } from '@/type
 import { normalizeRentalPaymentMeta } from '@/lib/admin-ops-normalize';
 
 export const dynamic = 'force-dynamic';
+
+function getApplicationLines(stringDetails: any): any[] {
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === 'visit') return '방문 접수';
+  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
+  return '발송 접수';
+}
+
+function getTensionSummary(lines: any[]): string | null {
+  const set = Array.from(
+    new Set(
+      lines
+        .map((line: any) => {
+          const main = String(line?.tensionMain ?? '').trim();
+          const cross = String(line?.tensionCross ?? '').trim();
+          if (!main && !cross) return '';
+          return cross && cross !== main ? `${main}/${cross}` : main || cross;
+        })
+        .filter(Boolean),
+    ),
+  );
+  return set.length ? set.join(', ') : null;
+}
+
 
 function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
@@ -89,6 +118,42 @@ export async function GET(req: Request) {
     users.forEach((u) => userMap.set(String(u._id), { name: u.name, email: u.email }));
   }
 
+  // 대여 목록에서 통합 플로우 핵심 요약을 즉시 보여주기 위해 신청서 읽기용 필드를 병합
+  const appIds = Array.from(
+    new Set(
+      docs
+        .map((doc) => {
+          const raw = (doc as Record<string, unknown>).stringingApplicationId;
+          const id = raw ? String(raw) : '';
+          return ObjectId.isValid(id) ? id : '';
+        })
+        .filter(Boolean),
+    ),
+  );
+
+  const appSummaryMap = new Map<string, { status: string; receptionLabel: string; racketCount: number; tensionSummary: string | null; stringNames: string[]; reservationLabel: string | null }>();
+
+  if (appIds.length > 0) {
+    const apps = await db
+      .collection('stringing_applications')
+      .find({ _id: { $in: appIds.map((id) => new ObjectId(id)) } }, { projection: { status: 1, collectionMethod: 1, stringDetails: 1 } })
+      .toArray();
+
+    apps.forEach((app: any) => {
+      const lines = getApplicationLines(app?.stringDetails);
+      const preferredDate = String(app?.stringDetails?.preferredDate ?? '').trim();
+      const preferredTime = String(app?.stringDetails?.preferredTime ?? '').trim();
+      appSummaryMap.set(String(app._id), {
+        status: String(app?.status ?? 'draft'),
+        receptionLabel: getReceptionLabel(app?.collectionMethod),
+        racketCount: lines.length,
+        tensionSummary: getTensionSummary(lines),
+        stringNames: Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean))),
+        reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+      });
+    });
+  }
+
   const items: AdminRentalListItemDto[] = docs.map((rentalDoc) => {
     const out = rentalDoc?.shipping?.outbound ?? null;
     const ret = rentalDoc?.shipping?.return ?? null;
@@ -107,6 +172,7 @@ export async function GET(req: Request) {
     const stringingApplicationId = rawAppId ? (typeof rawAppId === 'string' ? rawAppId : String(rawAppId)) : null;
 
     const paymentMeta = normalizeRentalPaymentMeta(rentalDoc);
+    const appSummary = stringingApplicationId ? appSummaryMap.get(stringingApplicationId) : null;
 
     return {
       id: rentalDoc._id?.toString(),
@@ -123,6 +189,12 @@ export async function GET(req: Request) {
       depositRefundedAt: rentalDoc.depositRefundedAt ?? null,
       stringingApplicationId,
       withStringService,
+      stringingApplicationStatus: appSummary?.status ?? null,
+      stringingReceptionLabel: appSummary?.receptionLabel ?? null,
+      stringingRacketCount: appSummary?.racketCount ?? null,
+      stringingTensionSummary: appSummary?.tensionSummary ?? null,
+      stringingNames: appSummary?.stringNames ?? [],
+      stringingReservationLabel: appSummary?.reservationLabel ?? null,
       paymentStatusLabel: paymentMeta.label as '결제완료' | '결제대기',
       paymentStatusSource: paymentMeta.source,
       shipping: {

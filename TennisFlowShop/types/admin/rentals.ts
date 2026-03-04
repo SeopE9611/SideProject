@@ -34,6 +34,12 @@ export interface AdminRentalListItemDto {
   depositRefundedAt: string | Date | null;
   stringingApplicationId: string | null;
   withStringService: boolean;
+  stringingApplicationStatus?: string | null;
+  stringingReceptionLabel?: string | null;
+  stringingRacketCount?: number | null;
+  stringingTensionSummary?: string | null;
+  stringingNames?: string[];
+  stringingReservationLabel?: string | null;
   paymentStatusLabel: '결제완료' | '결제대기';
   paymentStatusSource: 'explicit' | 'derived';
   shipping: {

@@ -566,6 +566,8 @@ export default function OrdersClient() {
                     return group.map((order) => {
                       const isLinkedProductOrder = order.__type === 'order' && hasStringingAppInGroup;
                       const isIntegratedApp = order.__type === 'stringing_application' && !!order.linkedOrderId && !!anchorOrder;
+                      // 통합 주문 행에서도 연결 신청서 핵심 정보를 빠르게 읽기 위한 참조
+                      const linkedApplication = group.find((o) => o.__type === 'stringing_application') as OrderWithType | undefined;
 
                       const kind = getKindBadge(order);
                       const link = getLinkBadge(order, isLinkedProductOrder);
@@ -601,6 +603,9 @@ export default function OrdersClient() {
                                         { label: settlement.label, className: settlement.className, title: '정산 앵커(금액 해석 기준)' },
                                       ]}
                                     />
+                                    {isLinkedProductOrder && linkedApplication && (
+                                      <p className="text-[11px] text-muted-foreground">신청 상태: {linkedApplication.status}</p>
+                                    )}
                                   </div>
                                 </TooltipTrigger>
 
@@ -631,6 +636,14 @@ export default function OrdersClient() {
                                     <p className="mt-1 text-[11px] text-muted-foreground">{settlement.label}</p>
 
                                     {isLinkedProductOrder && <p className="mt-2 text-[11px] text-muted-foreground">연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)</p>}
+                                    {isLinkedProductOrder && linkedApplication && (
+                                      <>
+                                        {(linkedApplication as any).shippingInfo?.shippingMethod && (
+                                          <p className="mt-1 text-[11px] text-muted-foreground">접수 방식: {(linkedApplication as any).shippingInfo.shippingMethod}</p>
+                                        )}
+                                        {linkedApplication.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">스트링: {linkedApplication.stringSummary}</p>}
+                                      </>
+                                    )}
                                     {order.__type === 'stringing_application' && order.linkedOrderId && (
                                       <p className="mt-1 text-[11px] text-muted-foreground">
                                         연결 주문: <span className="font-mono">{shortenId(order.linkedOrderId)}</span>
