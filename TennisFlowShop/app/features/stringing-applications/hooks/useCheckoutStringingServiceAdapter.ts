@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import type { CartItem } from '@/app/store/cartStore';
 import useStringingApplySharedState from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
 import { resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
+import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
+import type { CartItem } from '@/app/store/cartStore';
 
 type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
 
@@ -61,7 +62,31 @@ const sameCountMap = (a: Record<string, number> | undefined, b: Record<string, n
   return true;
 };
 
-export default function useCheckoutStringingServiceAdapter({ withStringService, orderItems, mountingFeeByProductId, serviceTargetIds, name, email, phone, postalCode, address, addressDetail, depositor, selectedBank, servicePickupMethod, isMember }: Params) {
+// 시간 문자열("10:30")을 분 단위로 바꿔서
+// 슬롯 간격(예: 30분) 계산에 사용
+const parseTimeToMinutes = (time: string | null | undefined) => {
+  if (!time || typeof time !== 'string') return null;
+  const [h, m] = time.split(':').map((v) => Number(v));
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  return h * 60 + m;
+};
+
+export default function useCheckoutStringingServiceAdapter({
+  withStringService,
+  orderItems,
+  mountingFeeByProductId,
+  serviceTargetIds,
+  name,
+  email,
+  phone,
+  postalCode,
+  address,
+  addressDetail,
+  depositor,
+  selectedBank,
+  servicePickupMethod,
+  isMember,
+}: Params) {
   const [packagePreview, setPackagePreview] = useState<{
     has: boolean;
     remaining?: number;
@@ -151,18 +176,18 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
 
     setFormData((prev) => {
       if (
-        prev.name === name
-        && prev.email === email
-        && prev.phone === phone
-        && prev.shippingName === name
-        && prev.shippingEmail === email
-        && prev.shippingPhone === phone
-        && prev.shippingPostcode === (isVisit ? '' : postalCode)
-        && prev.shippingAddress === (isVisit ? '' : address)
-        && prev.shippingAddressDetail === (isVisit ? '' : addressDetail)
-        && prev.shippingDepositor === depositor
-        && prev.shippingBank === selectedBank
-        && prev.collectionMethod === collectionMethod
+        prev.name === name &&
+        prev.email === email &&
+        prev.phone === phone &&
+        prev.shippingName === name &&
+        prev.shippingEmail === email &&
+        prev.shippingPhone === phone &&
+        prev.shippingPostcode === (isVisit ? '' : postalCode) &&
+        prev.shippingAddress === (isVisit ? '' : address) &&
+        prev.shippingAddressDetail === (isVisit ? '' : addressDetail) &&
+        prev.shippingDepositor === depositor &&
+        prev.shippingBank === selectedBank &&
+        prev.collectionMethod === collectionMethod
       ) {
         return prev;
       }
@@ -220,6 +245,38 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
     [shared.linesForSubmit, shared.formData.stringTypes],
   );
 
+  // 예약 가능한 시간 목록을 실제로 조회
+  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate } = useReservedSlots({
+    preferredDate: shared.formData.preferredDate,
+    preferredTime: shared.formData.preferredTime,
+    requiredPassCount,
+    setFormData: shared.setFormData,
+  });
+
+  // 예약 슬롯 배열에서 간격(예: 30분)을 계산.
+  // 예: ["10:00", "10:30", "11:00"] -> 30분
+  const slotIntervalMinutes = useMemo(() => {
+    if (!timeSlots || timeSlots.length < 2) return null;
+    const first = parseTimeToMinutes(timeSlots[0]);
+    const second = parseTimeToMinutes(timeSlots[1]);
+    if (first == null || second == null) return null;
+    const diff = Math.abs(second - first);
+    return diff > 0 ? diff : null;
+  }, [timeSlots]);
+
+  // 현재 신청 라인 수 = 실제 필요한 작업 슬롯 수와 같은 개념으로 사용
+  const visitSlotCountUi = shared.lineCount || 0;
+  // 예상 소요 시간 = 슬롯 간격 × 슬롯 수
+  const visitDurationMinutesUi = useMemo(() => {
+    if (!slotIntervalMinutes || !visitSlotCountUi) return null;
+    return slotIntervalMinutes * visitSlotCountUi;
+  }, [slotIntervalMinutes, visitSlotCountUi]);
+
+  useEffect(() => {
+    // shared 훅 내부 visitTimeRange 계산에 필요한 값을 동기화
+    shared.setVisitDurationMinutesUi(visitDurationMinutesUi);
+  }, [visitDurationMinutesUi, shared.setVisitDurationMinutesUi]);
+
   const packageRemaining = Math.max(0, packagePreview?.remaining ?? 0);
   const packageUsage = resolvePackageUsage({
     hasPackage: !!packagePreview?.has,
@@ -261,6 +318,15 @@ export default function useCheckoutStringingServiceAdapter({ withStringService, 
       pickupFee: 0,
       total: price,
     },
+
+    // MountingInfoSection으로 내려줄 예약 슬롯 관련 값들
+    timeSlots,
+    disabledTimes,
+    slotsLoading,
+    hasCacheForDate,
+    slotsError,
+    visitSlotCountUi,
+    visitDurationMinutesUi,
 
     ...shared,
   };

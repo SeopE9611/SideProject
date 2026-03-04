@@ -389,7 +389,7 @@ export default function Home() {
                 <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 group-hover:text-primary" />
               </div>
               <div className="text-center">
-                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교�� 서비스 신청</h3>
+                <h3 className="text-sm bp-sm:text-base font-semibold text-foreground">교체 서비스 신청</h3>
                 <p className="mt-0.5 bp-sm:mt-1 text-[10px] bp-sm:text-xs line-clamp-2 text-muted-foreground">라켓/스트링 선택 후 한 번에</p>
               </div>
             </Link>

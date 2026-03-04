@@ -1,13 +1,13 @@
 'use client';
 
-import SiteContainer from '@/components/layout/SiteContainer';
+import { type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import FinalRequestSection from '@/app/features/stringing-applications/components/apply-shared/FinalRequestSection';
 import MountingInfoSection from '@/app/features/stringing-applications/components/apply-shared/MountingInfoSection';
-import { type StringingApplicationInput } from '@/app/features/stringing-applications/api/submit-core';
 import useRentalCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter';
 import { collectionMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
-import { Button } from '@/components/ui/button';
+import SiteContainer from '@/components/layout/SiteContainer';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
-import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import { badgeToneVariant } from '@/lib/badge-style';
+import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -737,13 +737,13 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                           requiredPassCount={0}
                           linesForSubmit={rentalStringingAdapter.linesForSubmit}
                           handleLineFieldChange={rentalStringingAdapter.handleLineFieldChange}
-                          timeSlots={[]}
-                          disabledTimes={[]}
-                          slotsLoading={false}
-                          hasCacheForDate={false}
-                          slotsError={null}
-                          visitSlotCountUi={rentalStringingAdapter.lineCount}
-                          visitDurationMinutesUi={null}
+                          timeSlots={rentalStringingAdapter.timeSlots}
+                          disabledTimes={rentalStringingAdapter.disabledTimes}
+                          slotsLoading={rentalStringingAdapter.slotsLoading}
+                          hasCacheForDate={rentalStringingAdapter.hasCacheForDate}
+                          slotsError={rentalStringingAdapter.slotsError}
+                          visitSlotCountUi={rentalStringingAdapter.visitSlotCountUi}
+                          visitDurationMinutesUi={rentalStringingAdapter.visitDurationMinutesUi}
                           visitTimeRange={rentalStringingAdapter.visitTimeRange}
                         />
                       </CardContent>

@@ -67,13 +67,13 @@ export default function CheckoutStringingServiceSections({ section, withStringSe
             requiredPassCount={adapter.requiredPassCount}
             linesForSubmit={adapter.linesForSubmit}
             handleLineFieldChange={adapter.handleLineFieldChange}
-            timeSlots={[]}
-            disabledTimes={[]}
-            slotsLoading={false}
-            hasCacheForDate={false}
-            slotsError={null}
-            visitSlotCountUi={adapter.lineCount}
-            visitDurationMinutesUi={null}
+            timeSlots={adapter.timeSlots}
+            disabledTimes={adapter.disabledTimes}
+            slotsLoading={adapter.slotsLoading}
+            hasCacheForDate={adapter.hasCacheForDate}
+            slotsError={adapter.slotsError}
+            visitSlotCountUi={adapter.visitSlotCountUi}
+            visitDurationMinutesUi={adapter.visitDurationMinutesUi}
             visitTimeRange={adapter.visitTimeRange}
           />
         </CardContent>

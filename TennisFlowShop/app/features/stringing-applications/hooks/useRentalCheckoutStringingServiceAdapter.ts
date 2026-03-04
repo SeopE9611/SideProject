@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react';
 
 import useStringingApplySharedState from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
+import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
 
 type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
 
@@ -27,6 +28,15 @@ type Params = {
   depositor: string;
   selectedBank: string;
   servicePickupMethod: ServicePickup;
+};
+
+// "10:30" -> 630(분)
+// 예약 슬롯 간격(예: 30분)을 계산
+const parseTimeToMinutes = (time: string | null | undefined) => {
+  if (!time || typeof time !== 'string') return null;
+  const [h, m] = time.split(':').map((v) => Number(v));
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  return h * 60 + m;
 };
 
 const mapPickupToCollectionMethod = (pickup: ServicePickup) => {
@@ -106,6 +116,42 @@ export default function useRentalCheckoutStringingServiceAdapter({
 
   const price = useMemo(() => shared.linesForSubmit.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0), [shared.linesForSubmit]);
 
+  // 패키지(requiredPassCount)와는 별개로, 예약 슬롯 cap은 "이번 신청에 필요한 실제 슬롯 수"를 사용.
+  // 대여는 1대 기준이므로 일반적으로 1이지만, 안전하게 lineCount 기준으로 맞춤
+  const reservationSlotCount = Math.max(shared.lineCount || 1, 1);
+
+  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate } = useReservedSlots({
+    preferredDate: shared.formData.preferredDate,
+    preferredTime: shared.formData.preferredTime,
+    requiredPassCount: reservationSlotCount,
+    setFormData: shared.setFormData,
+  });
+
+  // 예약 슬롯 배열에서 시간 간격을 추정
+  // 예: ["10:00", "10:30", "11:00"] -> 30분
+  const slotIntervalMinutes = useMemo(() => {
+    if (!timeSlots || timeSlots.length < 2) return null;
+    const first = parseTimeToMinutes(timeSlots[0]);
+    const second = parseTimeToMinutes(timeSlots[1]);
+    if (first == null || second == null) return null;
+    const diff = Math.abs(second - first);
+    return diff > 0 ? diff : null;
+  }, [timeSlots]);
+
+  // UI 표시용: 이번 방문에서 실제 사용하는 슬롯 수
+  const visitSlotCountUi = shared.lineCount || 0;
+
+  // UI 표시용: 예상 소요 시간 = 슬롯 간격 × 슬롯 수
+  const visitDurationMinutesUi = useMemo(() => {
+    if (!slotIntervalMinutes || !visitSlotCountUi) return null;
+    return slotIntervalMinutes * visitSlotCountUi;
+  }, [slotIntervalMinutes, visitSlotCountUi]);
+
+  useEffect(() => {
+    // shared 훅 내부 visitTimeRange 계산에 필요한 값을 동기화
+    shared.setVisitDurationMinutesUi(visitDurationMinutesUi);
+  }, [visitDurationMinutesUi, shared.setVisitDurationMinutesUi]);
+
   return {
     ...shared,
     rentalId,
@@ -119,6 +165,16 @@ export default function useRentalCheckoutStringingServiceAdapter({
       pickupFee: 0,
       total: price,
     },
+
+    // MountingInfoSection으로 내려줄 예약 슬롯 관련 값
+    timeSlots,
+    disabledTimes,
+    slotsLoading,
+    hasCacheForDate,
+    slotsError,
+    visitSlotCountUi,
+    visitDurationMinutesUi,
+
     // 대여 checkout에서는 패키지 미적용 정책을 유지한다.
     usingPackage: false,
     packageInsufficient: false,
