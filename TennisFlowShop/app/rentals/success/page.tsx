@@ -17,6 +17,19 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
+
+function getApplicationLines(stringDetails: any): any[] {
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function getReceptionLabel(collectionMethod?: string | null): string {
+  if (collectionMethod === 'visit') return '방문 접수';
+  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
+  return '발송 접수';
+}
+
 async function getData(id: string) {
   const db = (await clientPromise).db();
   const r = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
@@ -29,6 +42,42 @@ async function getData(id: string) {
   const stringingFee = r.amount?.stringingFee ?? 0;
   const total = r.amount?.total ?? fee + deposit + stringPrice + stringingFee;
 
+  const appId = (r as any)?.stringingApplicationId ? String((r as any).stringingApplicationId) : null;
+  let applicationSummary = null;
+  if (appId && ObjectId.isValid(appId)) {
+    const app = await db.collection('stringing_applications').findOne(
+      { _id: new ObjectId(appId) },
+      { projection: { stringDetails: 1, collectionMethod: 1, status: 1 } },
+    );
+    if (app) {
+      const lines = getApplicationLines((app as any).stringDetails);
+      const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
+      const tensionSet = Array.from(
+        new Set(
+          lines
+            .map((line: any) => {
+              const main = String(line?.tensionMain ?? '').trim();
+              const cross = String(line?.tensionCross ?? '').trim();
+              if (!main && !cross) return '';
+              return cross && cross !== main ? `${main}/${cross}` : main || cross;
+            })
+            .filter(Boolean),
+        ),
+      );
+      const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? '').trim();
+      const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? '').trim();
+
+      applicationSummary = {
+        status: String((app as any)?.status ?? '접수완료'),
+        lineCount: lines.length,
+        stringNames,
+        tensionSummary: tensionSet.length ? tensionSet.join(', ') : null,
+        receptionLabel: getReceptionLabel((app as any).collectionMethod),
+        reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+      };
+    }
+  }
+
   return {
     id,
     period,
@@ -40,7 +89,8 @@ async function getData(id: string) {
     status: r.status,
     withStringService: Boolean((r as any)?.stringing?.requested) || Boolean((r as any)?.isStringServiceApplied) || Boolean((r as any)?.stringingApplicationId),
     isStringServiceApplied: Boolean((r as any)?.isStringServiceApplied),
-    stringingApplicationId: (r as any)?.stringingApplicationId ? String((r as any).stringingApplicationId) : null,
+    stringingApplicationId: appId,
+    applicationSummary,
     racket: rk ? { brand: rk.brand, model: rk.model, condition: rk.condition } : null,
     payment: r.payment
       ? {

@@ -39,6 +39,14 @@ type Rental = {
   // 대여 기반 교체 서비스 신청서 연결
   stringingApplicationId?: string | null;
   isStringServiceApplied?: boolean;
+  applicationSummary?: {
+    status: string;
+    lineCount: number;
+    stringNames: string[];
+    tensionSummary: string | null;
+    receptionLabel: string;
+    reservationLabel: string | null;
+  } | null;
 
   /**
    * 교체 서비스 포함 여부 (레거시/예외 케이스 보강)
@@ -425,6 +433,42 @@ export default function RentalsDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </div>
+      )}
+
+      {withStringService && data.applicationSummary && (
+        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <Wrench className="h-5 w-5 text-primary" />
+              <span>교체 서비스 접수 요약</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-2 text-sm">
+            {/* 신청 상세로 들어가기 전 핵심 정보만 먼저 확인 */}
+            <p><span className="text-muted-foreground">신청 상태:</span> <span className="font-semibold text-foreground">{data.applicationSummary.status}</span></p>
+            <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold text-foreground">{data.applicationSummary.receptionLabel}</span></p>
+            <p><span className="text-muted-foreground">라인 수:</span> <span className="font-semibold text-foreground">{data.applicationSummary.lineCount}개</span></p>
+            {data.applicationSummary.stringNames.length > 0 && (
+              <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold text-foreground">{data.applicationSummary.stringNames.join(', ')}</span></p>
+            )}
+            {data.applicationSummary.tensionSummary && (
+              <p><span className="text-muted-foreground">텐션:</span> <span className="font-semibold text-foreground">{data.applicationSummary.tensionSummary}</span></p>
+            )}
+            {data.applicationSummary.reservationLabel && (
+              <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-semibold text-foreground">{data.applicationSummary.reservationLabel}</span></p>
+            )}
+            {applicationHref && (
+              <div className="pt-2">
+                <Link href={applicationHref}>
+                  <Button variant="outline" className="gap-2">
+                    <Wrench className="h-4 w-4" />
+                    신청 상세 이동
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid gap-8 lg:grid-cols-2">

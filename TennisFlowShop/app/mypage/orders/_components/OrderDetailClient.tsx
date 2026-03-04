@@ -85,6 +85,10 @@ interface OrderDetail {
     status: string;
     createdAt?: string | null;
     racketCount?: number;
+    receptionLabel?: string;
+    tensionSummary?: string | null;
+    stringNames?: string[];
+    reservationLabel?: string | null;
   }[];
 }
 interface Props {
@@ -379,9 +383,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <p className="text-sm text-success">
                         이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다.
                       </p>
-                      <p className="text-sm text-success">실제 신청에 포함된 개수와 라켓 정보는 신청 상세 화면에서 확인하실 수 있습니다.</p>
+                      <p className="text-sm text-success">실제 신청 접수 방식/텐션/예약 정보는 아래 요약 또는 신청 상세에서 확인하실 수 있습니다.</p>
 
-                      {/* 연결된 신청 리스트 간단 요약 */}
+                      {/* 사용자 오해 방지를 위해 접수 핵심 정보만 노출 */}
                       {hasLinkedStringingApps && (
                         <div className="mt-3 space-y-1 text-xs text-success">
                           {linkedStringingApps.map((app) => (
@@ -389,8 +393,12 @@ export default function OrderDetailClient({ orderId }: Props) {
                               <div className="flex flex-wrap items-center gap-2">
                                 <Badge variant={badgeToneVariant(getApplicationStatusTone(app.status))} className="px-1.5 py-0.5 text-[11px] font-medium">{app.status ?? '상태 미정'}</Badge>
                                 {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
-                                <span>라켓 {app.racketCount ?? 0}개</span>
+                                <span>라인 {app.racketCount ?? 0}개</span>
+                                {app.receptionLabel && <span>· {app.receptionLabel}</span>}
+                                {app.reservationLabel && <span>· 예약 {app.reservationLabel}</span>}
                               </div>
+                              {app.stringNames && app.stringNames.length > 0 && <p className="text-[11px] text-success">스트링: {app.stringNames.join(', ')}</p>}
+                              {app.tensionSummary && <p className="text-[11px] text-success">텐션: {app.tensionSummary}</p>}
                               <Link className="w-full bp-sm:w-auto" href={`/mypage?tab=applications&applicationId=${app.id}`}>
                                 <Button variant="outline" className="h-7 px-2 text-xs">
                                   신청 상세
