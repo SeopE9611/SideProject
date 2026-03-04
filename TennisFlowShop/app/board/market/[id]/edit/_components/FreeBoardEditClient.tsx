@@ -1,28 +1,28 @@
 'use client';
 
-import { FormEvent, useEffect, useState, useRef, ChangeEvent, useMemo } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { MessageSquare, ArrowLeft, Loader2, Upload, X, AlertTriangle } from 'lucide-react';
-import useSWR, { mutate as globalMutate } from 'swr';
-import type { MouseEvent as ReactMouseEvent } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import type { CommunityPost } from '@/lib/types/community';
-import ImageUploader from '@/components/admin/ImageUploader';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { supabase } from '@/lib/supabase';
 import { CATEGORY_OPTIONS } from '@/app/board/market/_components/FreeBoardWriteClient';
 import { getMarketBrandOptions, isMarketBrandCategory, isValidMarketBrandForCategory } from '@/app/board/market/_components/market.constants';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { communityFetch } from '@/lib/community/communityFetch.client';
 import MarketMetaFields from '@/app/board/market/_components/MarketMetaFields';
+import ImageUploader from '@/components/admin/ImageUploader';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { communityFetch } from '@/lib/community/communityFetch.client';
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { normalizeMarketMeta, type MarketMeta } from '@/lib/market';
+import { supabase } from '@/lib/supabase';
+import type { CommunityPost } from '@/lib/types/community';
+import { cn } from '@/lib/utils';
+import { AlertTriangle, ArrowLeft, Check, Loader2, MessageSquare, Package, Upload, X } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { MouseEvent as ReactMouseEvent } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import useSWR, { mutate as globalMutate } from 'swr';
 
 type Props = {
   id: string;
@@ -90,14 +90,13 @@ export default function FreeBoardEditClient({ id }: Props) {
     return title !== b.title || content !== b.content || String(category) !== b.category || brand !== b.brand || imagesJson !== b.imagesJson || marketMetaJson !== b.marketMetaJson || selectedFiles.length > 0;
   }, [title, content, category, brand, images, selectedFiles.length, marketMeta]);
 
- useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
-
+  useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();
     if (isSubmitting || isUploadingImages || isUploadingFiles) return;
 
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE)
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (ok) go();
   };
 
@@ -105,7 +104,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     if (!isDirty) return;
     if (isSubmitting || isUploadingImages || isUploadingFiles) return;
 
-    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE)
+    const ok = window.confirm(UNSAVED_CHANGES_MESSAGE);
     if (!ok) {
       e.preventDefault();
       e.stopPropagation();
@@ -191,6 +190,36 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 기존 첨부 개수 + 새로 선택한 파일 개수 함께 계산
   const totalAttachmentCount = attachments.length + selectedFiles.length;
+
+  /**
+   * 1단계: write 페이지와 같은 우측 sticky 요약 카드에 보여줄 파생값들
+   * ------------------------------------------------------------------
+   * - 로직 변경이 아니라 "현재 state를 보기 좋게 요약"하는 값들입니다.
+   * - edit는 기존 첨부 + 신규 첨부를 함께 봐야 하므로 totalAttachmentCount를 사용합니다.
+   */
+  const categoryLabel = CATEGORY_OPTIONS.find((opt) => opt.value === category)?.label ?? '-';
+  const brandLabel = brand ? (getMarketBrandOptions(category).find((opt) => opt.value === brand)?.label ?? brand) : '-';
+  const priceLabel = typeof marketMeta.price === 'number' && marketMeta.price > 0 ? `${marketMeta.price.toLocaleString('ko-KR')}원` : '-';
+  const saleStatusLabel = marketMeta.saleStatus === 'selling' ? '판매중' : marketMeta.saleStatus === 'reserved' ? '예약중' : '판매완료';
+  const gradeLabel = marketMeta.conditionGrade ?? '-';
+  const changeStatusLabel = isDirty ? '변경 있음' : '변경 없음';
+  const existingAttachmentCount = attachments.length;
+  const newAttachmentCount = selectedFiles.length;
+
+  /**
+   * 오른쪽 요약 카드 하단 체크리스트
+   * --------------------------------
+   * - "필수 검증 로직"이 아니라, 사용자가 현재 얼마나 입력했는지 빠르게 보는 UI 용도입니다.
+   * - validate()를 대체하지 않습니다.
+   */
+  const checklist = [
+    { label: '분류 선택', ok: true },
+    { label: '브랜드 선택', ok: !isMarketBrandCategory(category) || !!brand },
+    { label: '판매가 입력', ok: typeof marketMeta.price === 'number' && marketMeta.price > 0 },
+    { label: '제목 입력', ok: title.trim().length > 0 },
+    { label: '내용 입력', ok: content.trim().length > 0 },
+    { label: '이미지 첨부', ok: images.length > 0 },
+  ];
 
   // 파일 추가 (드롭/선택 공통)
   const addFiles = (files: File[]) => {
@@ -312,14 +341,14 @@ export default function FreeBoardEditClient({ id }: Props) {
         payload.attachments = nextAttachments;
       }
 
-const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
-  method: 'PATCH',
-  headers: {
-    'Content-Type': 'application/json',
-    ...(clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
-  },
-  body: JSON.stringify(payload),
-});
+      const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
 
       const json = await res.json();
 
@@ -389,7 +418,9 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
         <div className="container mx-auto px-4 py-8">
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
             <CardContent className="space-y-4 p-6">
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.</div>
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+                해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
+              </div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/board/market">목록으로</Link>
@@ -406,7 +437,7 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-8">
         {/* 상단 헤더 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -446,171 +477,30 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
           </div>
         </div>
 
-        {/* 본문 카드 (수정 폼) */}
-        <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
-          <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-              <MessageSquare className="h-4 w-4 text-success" />
-              <span>글 내용 수정</span>
-            </CardTitle>
-          </CardHeader>
+        <div className="mb-6 rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
+          <p className="mb-2 text-sm font-semibold text-foreground">수정 전 체크리스트</p>
+          <div className="flex flex-wrap gap-x-5 gap-y-1 text-[12px] text-muted-foreground">
+            <span>{'- '}브랜드 / 모델명 최신 상태 확인</span>
+            <span>{'- '}판매가 / 판매 상태 재점검</span>
+            <span>{'- '}상태 메모 최신화</span>
+            <span>{'- '}이미지 / 첨부 파일 확인</span>
+          </div>
+        </div>
 
-          <CardContent className="p-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* 수정 시에도 상품 핵심 정보 우선 입력을 유도해 목록/상세 비교성을 유지합니다. */}
-              <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-                브랜드, 모델명, 가격, 상태 정보를 우선 점검해 주세요. 정확한 정보일수록 구매자가 빠르게 판단할 수 있습니다.
-              </div>
-
-              {/* 분류 선택 */}
-              <div className="space-y-2">
-                <Label>분류</Label>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {CATEGORY_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setCategory(opt.value)}
-                      className={cn(
-                        'rounded-full border px-2 py-0.5 text-[11px]',
-                        category === opt.value ? 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
-                      )}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {isMarketBrandCategory(category) && (
-                <div className="space-y-2">
-                  <Label>브랜드</Label>
-                  <select value={brand} onChange={(e) => setBrand(e.target.value)} disabled={isSubmitting} className="h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm">
-                    <option value="">브랜드를 선택해 주세요</option>
-                    {getMarketBrandOptions(category).map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
-                </div>
-              )}
-
-
-              {/* market 상세 스펙 공용 UI */}
-              <MarketMetaFields category={category} value={marketMeta} onChange={setMarketMeta} disabled={isSubmitting} />
-
-              {/* 제목 */}
-              <div className="space-y-2">
-                <Label htmlFor="title">제목</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} />
-              </div>
-
-              {/* 내용 */}
-              <div className="space-y-2">
-                <Label htmlFor="content">내용</Label>
-                <Textarea id="content" className="min-h-[200px]" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} />
-                <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
-              </div>
-
-              {/* 첨부 영역: 이미지 / 파일 탭 (작성 페이지와 동일 패턴) */}
-              <div className="space-y-3">
-                <Label>첨부 (선택)</Label>
-
-                <Tabs defaultValue="image" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="image">이미지 업로드</TabsTrigger>
-                    <TabsTrigger value="file">파일 업로드</TabsTrigger>
-                  </TabsList>
-
-                  {/* 이미지 업로드 탭 */}
-                  <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
-                    <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
-                  </TabsContent>
-
-                  {/* 파일 업로드 탭 */}
-                  <TabsContent value="file" className="pt-4 space-y-4">
-                    {/* 드롭존 */}
-                    <div
-                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => {
-                        if (e.target !== e.currentTarget) return;
-                        fileInputRef.current?.click();
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          fileInputRef.current?.click();
-                        }
-                      }}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        addFiles(Array.from(e.dataTransfer.files || []));
-                      }}
-                    >
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개, 현재 {totalAttachmentCount}/{MAX_FILES}개)
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-3"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fileInputRef.current?.click();
-                        }}
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        파일 선택
-                      </Button>
-                      <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" className="sr-only" onChange={handleFileInputChange} />
-                    </div>
-
-                    {/* 새로 선택한 파일 카드 목록 */}
-                    {selectedFiles.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">새로 첨부할 파일 ({selectedFiles.length}개)</p>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                          {selectedFiles.map((file, index) => (
-                            <div
-                              key={`${file.name}-${index}`}
-                              className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
-                            >
-                              <div className="flex-1 flex flex-col gap-1 text-xs">
-                                <span className="font-medium truncate" title={file.name}>
-                                  {file.name}
-                                </span>
-                                <span className="text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFile(index)}
-                                className="absolute top-1.5 right-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-card border border-border text-muted-foreground hover:text-destructive"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </div>
-
-              {/* 에러 메시지 */}
+        <form onSubmit={handleSubmit}>
+          {/* 1단계 핵심: write 페이지와 같은 2컬럼 골격 이식 */}
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+            {/* ===== 왼쪽: 기존 수정 폼 ===== */}
+            <div className="min-w-0 flex-1 space-y-6">
+              {/*
+    수정 화면에서는 에러/충돌 안내를 가장 위로 끌어올려
+    사용자가 저장 전에 바로 문제를 인식할 수 있게 합니다.
+  */}
               {errorMsg && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">{errorMsg}</div>}
 
               {conflictOpen && (
-                <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
-                  <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
+                <div className="rounded-lg border border-border bg-muted px-4 py-4 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+                  <p className="font-semibold text-foreground">동시 수정 충돌이 감지되었습니다.</p>
                   <p className="mt-1">최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해 주세요.</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button
@@ -632,8 +522,236 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
                 </div>
               )}
 
-              {/* 하단 버튼 */}
-              <div className="flex justify-end gap-2">
+              {/* 상품 기본 정보 카드 */}
+              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+                <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <Package className="h-4 w-4 text-success" />
+                    <span>상품 기본 정보</span>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">판매할 상품의 유형과 브랜드를 먼저 확인해 주세요.</p>
+                </CardHeader>
+                <CardContent className="space-y-6 p-6">
+                  <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">브랜드, 모델명, 가격, 상태 정보를 우선 점검해 주세요. 정확한 정보일수록 구매자가 빠르게 판단할 수 있습니다.</div>
+
+                  <div className="space-y-2">
+                    <Label>분류</Label>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {CATEGORY_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setCategory(opt.value)}
+                          className={cn(
+                            'rounded-full border px-2 py-0.5 text-[11px]',
+                            category === opt.value ? 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {isMarketBrandCategory(category) && (
+                    <div className="space-y-2">
+                      <Label>브랜드</Label>
+                      <select value={brand} onChange={(e) => setBrand(e.target.value)} disabled={isSubmitting} className="h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm">
+                        <option value="">브랜드를 선택해 주세요</option>
+                        {getMarketBrandOptions(category).map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-muted-foreground">라켓/스트링 글은 브랜드 선택이 필수입니다.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* 거래 핵심 정보 카드 */}
+              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+                <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <Package className="h-4 w-4 text-success" />
+                    <span>거래 핵심 정보</span>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">판매가, 상태, 세부 스펙을 최신 상태로 정리해 주세요.</p>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <MarketMetaFields category={category} value={marketMeta} onChange={setMarketMeta} disabled={isSubmitting} />
+                </CardContent>
+              </Card>
+
+              {/* 게시글 내용 카드 */}
+              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+                <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <MessageSquare className="h-4 w-4 text-success" />
+                    <span>게시글 내용</span>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">구매자가 이해하기 쉽도록 제목과 설명을 구체적으로 작성해 주세요.</p>
+                </CardHeader>
+                <CardContent className="space-y-6 p-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">제목</Label>
+                    <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} placeholder="예: 윌슨 블레이드 98 16x19 판매합니다" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="content">내용</Label>
+                    <Textarea
+                      id="content"
+                      className="min-h-[220px]"
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      disabled={isSubmitting}
+                      placeholder="구매 시기, 사용 기간, 상태, 거래 방식(직거래/택배), 포함 구성품 등을 적어주세요."
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 판매 이미지 / 파일 카드 */}
+              <Card className="border-0 bg-card shadow-xl backdrop-blur-sm dark:bg-card">
+                <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+                    <Upload className="h-4 w-4 text-success" />
+                    <span>판매 이미지 / 파일</span>
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">실물 사진은 최소 1장 이상 권장되며, 첫 번째 이미지가 대표 이미지로 사용됩니다.</p>
+                </CardHeader>
+                <CardContent className="space-y-3 p-6">
+                  {/*
+                    edit 화면은 "기존 첨부 + 새로 추가할 첨부"가 함께 존재할 수 있으므로
+                   상단에 현재 상태를 한 번 요약해서 보여준다.
+                  */}
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                      <p className="text-[11px] text-muted-foreground">현재 이미지</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{images.length}장</p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                      <p className="text-[11px] text-muted-foreground">기존 첨부 파일</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{existingAttachmentCount}개</p>
+                    </div>
+                    <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
+                      <p className="text-[11px] text-muted-foreground">새로 추가한 파일</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{newAttachmentCount}개</p>
+                    </div>
+                  </div>
+                  <Tabs defaultValue="image" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="image">이미지 업로드</TabsTrigger>
+                      <TabsTrigger value="file">파일 업로드</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="image" className="space-y-2 pt-4">
+                      <p className="text-xs text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
+                      <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
+                    </TabsContent>
+
+                    <TabsContent value="file" className="space-y-4 pt-4">
+                      {attachments.length > 0 && (
+                        <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-foreground">현재 보관된 첨부 파일</p>
+                            <span className="text-xs text-muted-foreground">{attachments.length}개</span>
+                          </div>
+
+                          <div className="space-y-2">
+                            {attachments.map((file, index) => (
+                              <a
+                                key={`${file.url}-${index}`}
+                                href={file.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm transition-colors hover:bg-muted/40"
+                              >
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium text-foreground">{file.name}</p>
+                                  <p className="text-xs text-muted-foreground">{typeof file.size === 'number' ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : '크기 정보 없음'}</p>
+                                </div>
+                                <span className="ml-3 shrink-0 text-xs text-muted-foreground">열기</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div
+                        className="cursor-pointer rounded-lg border-2 border-dashed border-border bg-card p-6 text-center transition-colors hover:border-border dark:hover:border-border"
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          if (e.target !== e.currentTarget) return;
+                          fileInputRef.current?.click();
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            fileInputRef.current?.click();
+                          }
+                        }}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          addFiles(Array.from(e.dataTransfer.files || []));
+                        }}
+                      >
+                        <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개, 현재 {totalAttachmentCount}/{MAX_FILES}개)
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          파일 선택
+                        </Button>
+                        <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" className="sr-only" onChange={handleFileInputChange} />
+                      </div>
+
+                      {selectedFiles.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">새로 첨부할 파일 ({selectedFiles.length}개)</p>
+                          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                            {selectedFiles.map((file, index) => (
+                              <div key={`${file.name}-${index}`} className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm ring-1 ring-ring transition hover:shadow-md hover:ring-2 hover:ring-ring">
+                                <div className="flex flex-1 flex-col gap-1 text-xs">
+                                  <span className="truncate font-medium" title={file.name}>
+                                    {file.name}
+                                  </span>
+                                  <span className="text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFile(index)}
+                                  className="absolute right-1.5 top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-destructive"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* 모바일/태블릿 하단 버튼 */}
+              <div className="flex justify-end gap-2 lg:hidden">
                 <Button type="button" variant="outline" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}>
                   <ArrowLeft className="h-4 w-4" />
                   <span>취소</span>
@@ -643,9 +761,114 @@ const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
                   <span>수정하기</span>
                 </Button>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+
+            {/* ===== 오른쪽: sticky 수정 요약 카드 (lg+) ===== */}
+            <aside className="hidden flex-shrink-0 lg:block lg:w-[300px] xl:w-[320px]">
+              <div className="sticky top-24 space-y-4">
+                {/* 수정 요약 */}
+                <div className="rounded-xl border border-border bg-card shadow-sm">
+                  <div className="border-b border-border px-5 py-3">
+                    <h3 className="text-sm font-semibold text-foreground">수정 요약</h3>
+                  </div>
+                  <div className="space-y-3 px-5 py-4 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">분류</span>
+                      <span className="font-medium text-foreground">{categoryLabel}</span>
+                    </div>
+
+                    {isMarketBrandCategory(category) && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">브랜드</span>
+                        <span className="font-medium text-foreground">{brandLabel}</span>
+                      </div>
+                    )}
+
+                    <div className="border-t border-border" />
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">판매가</span>
+                      <span className="font-semibold text-foreground">{priceLabel}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">판매 상태</span>
+                      <span className="font-medium text-foreground">{saleStatusLabel}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">상태 등급</span>
+                      <span className="font-medium text-foreground">{gradeLabel}</span>
+                    </div>
+
+                    <div className="border-t border-border" />
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">변경 상태</span>
+                      <span className="font-medium text-foreground">{changeStatusLabel}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">제목</span>
+                      <span className="max-w-[140px] truncate font-medium text-foreground">{title.trim() || '-'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">이미지</span>
+                      <span className="font-medium text-foreground">{images.length}장</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">기존 파일</span>
+                      <span className="font-medium text-foreground">{existingAttachmentCount}개</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">새 파일</span>
+                      <span className="font-medium text-foreground">{newAttachmentCount}개</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 수정 전 확인 */}
+                <div className="rounded-xl border border-border bg-card shadow-sm">
+                  <div className="border-b border-border px-5 py-3">
+                    <h3 className="text-sm font-semibold text-foreground">수정 전 확인</h3>
+                  </div>
+                  <div className="space-y-2 px-5 py-4">
+                    {checklist.map((item) => (
+                      <div key={item.label} className="flex items-center gap-2 text-sm">
+                        <div className={cn('flex h-4 w-4 items-center justify-center rounded-full', item.ok ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground')}>
+                          <Check className="h-2.5 w-2.5" />
+                        </div>
+                        <span className={item.ok ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 데스크탑 전용 CTA */}
+                <div className="space-y-2">
+                  <Button type="submit" className="w-full gap-2" disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        저장 중...
+                      </>
+                    ) : (
+                      <>
+                        <Package className="h-4 w-4" />
+                        수정 내용 저장
+                      </>
+                    )}
+                  </Button>
+
+                  <Button type="button" variant="outline" className="w-full" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}>
+                    취소
+                  </Button>
+                  <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">저장 버튼을 누르면 현재 수정 내용이 상세 페이지에 반영됩니다.</p>
+                </div>
+
+                {errorMsg && <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-destructive">{errorMsg}</div>}
+              </div>
+            </aside>
+          </div>
+        </form>
       </div>
     </div>
   );
