@@ -525,7 +525,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Button>
  <Button onClick={handleShippingUpdate} className="bg-primary hover:bg-primary/90 text-primary-foreground">
  <Truck className="mr-2 h-4 w-4" />
- {isShippingManagedByApplication ? '신청서 배송 정보 관리' : '배송 정보 업데이트'}
+ {/* 방문 수령 주문은 배송 용어 대신 수령 용어로 노출 */}
+ {isVisitPickup ? (isShippingManagedByApplication ? '신청서 방문 수령 정보 관리' : '방문 수령 정보 업데이트') : isShippingManagedByApplication ? '신청서 배송 정보 관리' : '배송 정보 업데이트'}
  </Button>
  </div>
  </div>
@@ -596,7 +597,10 @@ export default function OrderDetailClient({ orderId }: Props) {
  {(() => { const st = getOrderStatusBadgeSpec(localStatus); return <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm)}>{getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}</Badge>; })()}
  </div>
  <CardDescription>
- {formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.
+ {/* 방문 수령 주문은 수령 전/후 기준으로 안내 문구 분기 */}
+ {isVisitPickup
+ ? `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(수령 전)와 환불(수령 후)은 별도 정책으로 운영합니다.`
+ : `${formatDate(orderDetail.date)}에 접수된 주문입니다. · 주문 취소(배송 전)와 환불(배송 후)은 별도 정책으로 운영합니다.`}
  </CardDescription>
  </CardHeader>
  <CardFooter className="pt-3">
@@ -1030,7 +1034,8 @@ export default function OrderDetailClient({ orderId }: Props) {
  </Card>
  </div>
 
- {/* 배송 요청사항 */}
+ {/* 방문 수령 주문은 배송 요청사항 카드를 숨김 */}
+ {showDeliveryOnlyFields && (
  <Card
  className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-1 ring-ring xl:col-span-6"
  >
@@ -1075,6 +1080,7 @@ export default function OrderDetailClient({ orderId }: Props) {
  </>
  )}
  </Card>
+ )}
 
  {/* 처리 이력 */}
  <Card

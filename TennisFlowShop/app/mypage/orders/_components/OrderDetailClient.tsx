@@ -453,7 +453,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div>
                       <p className="font-semibold text-warning">이 주문은 리뷰를 작성하지 않았습니다.</p>
                       <p className="text-sm text-warning">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
-                      <p className="text-sm text-destructive">※상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다.</p>
+                      {/* 방문 수령 주문은 배송완료 대신 수령 완료 문구로 안내 */}
+                      <p className="text-sm text-destructive">※{isVisitPickup ? "상품이 정상적으로 '수령 완료' 처리되면 [리뷰 작성] 버튼이 나타납니다." : "상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다."}</p>
                     </div>
                   </div>
                   <OrderReviewCTA
