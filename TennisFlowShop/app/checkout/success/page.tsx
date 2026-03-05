@@ -14,7 +14,7 @@ import BackButtonGuard from '@/app/checkout/success/_components/BackButtonGuard'
 import ClearCartOnMount from '@/app/checkout/success/_components/ClearCartOnMount';
 import SetGuestOrderToken from '@/app/checkout/success/_components/SetGuestOrderToken';
 import SiteContainer from '@/components/layout/SiteContainer';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import LoginGate from '@/components/system/LoginGate';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 
@@ -57,6 +57,15 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
+function safeVerifyOrderAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyOrderAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ orderId?: string }> }) {
   const sp = await searchParams;
   const orderId = sp.orderId;
@@ -85,10 +94,19 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
   if (!order) return notFound();
 
+  const cookieStore = await cookies();
+  const accessPayload = safeVerifyAccessToken(cookieStore.get('accessToken')?.value);
+  const orderAccessPayload = safeVerifyOrderAccessToken(cookieStore.get('orderAccessToken')?.value);
+  const ownerUserId = order.userId ? String(order.userId) : null;
+
+  const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
+  const isGuestOwner = !!(orderAccessPayload?.orderId && orderAccessPayload.orderId === String(order._id));
+
+  if (!isMemberOwner && !isGuestOwner) return notFound();
+
   const appParams = new URLSearchParams({ orderId: order._id.toString() });
   const appHref = `/services/apply?${appParams.toString()}`;
 
-  const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
 
   let isLoggedIn = false;
