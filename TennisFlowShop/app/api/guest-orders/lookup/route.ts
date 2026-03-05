@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { z } from 'zod';
+import { hasCompletedStringingApplication, normalizeStringingApplicationId } from '@/app/order-lookup/_lib/stringing-status';
 
 type GuestOrderMode = 'off' | 'legacy' | 'on';
 
@@ -100,7 +101,21 @@ export async function POST(req: Request) {
       orders = await db.collection('orders').find(ciQuery).sort({ createdAt: -1 }).limit(50).toArray();
     }
 
-    return NextResponse.json({ success: true, orders });
+    const normalizedOrders = orders.map((order: any) => {
+      const stringingApplicationId = normalizeStringingApplicationId(order?.stringingApplicationId);
+      const isStringServiceApplied = hasCompletedStringingApplication({
+        isStringServiceApplied: order?.isStringServiceApplied,
+        stringingApplicationId,
+      });
+
+      return {
+        ...order,
+        isStringServiceApplied,
+        stringingApplicationId,
+      };
+    });
+
+    return NextResponse.json({ success: true, orders: normalizedOrders });
   } catch (error) {
     console.error('[GUEST_ORDER_LOOKUP_ERROR]', error);
     return NextResponse.json({ success: false, error: '주문 조회 중 오류가 발생했습니다.' }, { status: 500 });

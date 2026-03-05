@@ -13,6 +13,7 @@ import Image from 'next/image';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
 import { getOrderShippingReadLabels, normalizeOrderShippingMethod } from '@/app/features/stringing-applications/lib/fulfillment-labels';
+import { hasCompletedStringingApplication } from '@/app/order-lookup/_lib/stringing-status';
 
 // 주문 상세 타입 정의
 interface OrderDetail {
@@ -126,7 +127,7 @@ export default function OrderDetailPage() {
     router.back();
   };
 
-  const hasCompletedStringingApplication = order?.isStringServiceApplied === true;
+  const hasStringingApplication = hasCompletedStringingApplication(order ?? {});
   const latestStringingApplication =
     Array.isArray(order?.stringingApplications) && order.stringingApplications.length > 0
       ? [...order.stringingApplications].sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]
@@ -266,7 +267,7 @@ export default function OrderDetailPage() {
           {order.shippingInfo?.withStringService && (
             <Card className="mb-8 border-2 border-border bg-card">
               <CardContent className="p-6">
-                {!hasCompletedStringingApplication ? (
+                {!hasStringingApplication ? (
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                       <ShoppingBag className="w-6 h-6 text-foreground" />
@@ -290,11 +291,11 @@ export default function OrderDetailPage() {
                       <CheckCircle className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="mb-1 font-semibold text-foreground">교체 서비스 접수 완료</h3>
+                      <h3 className="mb-1 font-semibold text-foreground">교체 서비스 신청서 접수 완료</h3>
                       <p className="text-foreground">
                         {isVisitPickup
-                          ? '이미 신청이 접수된 주문입니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다.'
-                          : '이미 신청이 접수된 주문입니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다.'}
+                          ? '이미 접수된 신청서가 존재합니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다.'
+                          : '이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다.'}
                       </p>
                     </div>
                   </div>
@@ -304,7 +305,7 @@ export default function OrderDetailPage() {
           )}
 
           {/* 비회원 조회에서도 신청서 상세 진입 없이 핵심 맥락을 확인할 수 있게 요약 노출 */}
-          {order.shippingInfo?.withStringService && hasCompletedStringingApplication && latestStringingApplication && (
+          {order.shippingInfo?.withStringService && hasStringingApplication && latestStringingApplication && (
             <Card className="mb-8 border border-border bg-card">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">교체 서비스 접수 요약</CardTitle>
