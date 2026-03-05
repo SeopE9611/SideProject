@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import ContinueShoppingButton from '@/app/checkout/_components/ContinueShoppingButton';
@@ -17,6 +16,7 @@ import SiteContainer from '@/components/layout/SiteContainer';
 import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import LoginGate from '@/components/system/LoginGate';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
+import { buildCheckoutSuccessLinks } from '@/lib/checkout-success-links';
 
 type PopulatedItem = {
   name: string;
@@ -107,24 +107,16 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const appParams = new URLSearchParams({ orderId: order._id.toString() });
   const appHref = `/services/apply?${appParams.toString()}`;
 
-  const refreshToken = cookieStore.get('refreshToken')?.value;
-
-  let isLoggedIn = false;
-  if (refreshToken) {
-    try {
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!);
-      isLoggedIn = true;
-    } catch {}
-  }
-
-  const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
-  const orderDetailHref = isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id.toString()}`;
   const withStringService = order.shippingInfo?.withStringService === true;
   const stringingApplicationId =
     typeof order.stringingApplicationId === 'string' && order.stringingApplicationId.trim() ? order.stringingApplicationId.trim() : null;
   const hasSubmittedApplication = Boolean(stringingApplicationId);
-  const stringingApplicationHref =
-    isLoggedIn && stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
+  const { isLoggedIn, orderDetailHref, stringingApplicationHref } = buildCheckoutSuccessLinks({
+    accessSub: accessPayload?.sub,
+    orderId: order._id.toString(),
+    stringingApplicationId,
+  });
+  const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
   const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(order.shippingInfo);
