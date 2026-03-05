@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import { bankLabelMap, racketBrandLabel } from '@/lib/constants';
 import clientPromise from '@/lib/mongodb';
 import jwt from 'jsonwebtoken';
@@ -32,6 +32,26 @@ function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
   try {
     return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}
+
+
+function safeVerifyOrderAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyOrderAccessToken(token) as { orderId?: string; applicationId?: string } | null;
+  } catch {
+    return null;
+  }
+}
+
+function safeVerifyApplicationAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    const secret = process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+    return jwt.verify(token, secret) as { orderId?: string; applicationId?: string };
   } catch {
     return null;
   }
@@ -105,6 +125,24 @@ export default async function StringServiceSuccessPage(props: Props) {
 
   // applicationId는 유효하지만, 실제 문서가 없으면 404 처리
   if (!application) return notFound();
+
+  const cookieStore = await cookies();
+  const accessPayload = safeVerifyAccessToken(cookieStore.get('accessToken')?.value);
+  const orderAccessPayload = safeVerifyOrderAccessToken(cookieStore.get('orderAccessToken')?.value);
+  const applicationAccessPayload = safeVerifyApplicationAccessToken(cookieStore.get('applicationAccessToken')?.value);
+
+  const ownerUserId = application.userId ? String(application.userId) : null;
+  const ownerOrderId = application.orderId ? String(application.orderId) : null;
+  const ownerApplicationId = String(application._id);
+
+  const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
+  const isGuestOwner = !!(
+    (orderAccessPayload?.orderId && ownerOrderId && orderAccessPayload.orderId === ownerOrderId) ||
+    (applicationAccessPayload?.applicationId && applicationAccessPayload.applicationId === ownerApplicationId) ||
+    (applicationAccessPayload?.orderId && ownerOrderId && applicationAccessPayload.orderId === ownerOrderId)
+  );
+
+  if (!isMemberOwner && !isGuestOwner) return notFound();
 
   /**
    * 중첩 필드 방어
@@ -219,7 +257,6 @@ export default async function StringServiceSuccessPage(props: Props) {
   const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
 
   // 로그인 여부 확인
-  const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refreshToken')?.value;
   let isLoggedIn = false;
   if (refreshToken) {

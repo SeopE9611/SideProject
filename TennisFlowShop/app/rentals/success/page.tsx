@@ -1,9 +1,10 @@
 import RentalsSuccessClient from '@/app/rentals/success/_components/RentalsSuccessClient';
 import LoginGate from '@/components/system/LoginGate';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,15 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
+function safeVerifyOrderAccessToken(token?: string) {
+  if (!token) return null;
+  try {
+    return verifyOrderAccessToken(token) as { orderId?: string; rentalId?: string } | null;
+  } catch {
+    return null;
+  }
+}
+
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
@@ -37,10 +47,7 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   return '발송 접수';
 }
 
-async function getData(id: string) {
-  const db = (await clientPromise).db();
-  const r = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
-  if (!r) return null;
+async function getData(db: any, id: string, r: any) {
   const rk = await db.collection('used_rackets').findOne({ _id: r.racketId });
   const period = r.days ?? r.period ?? 0;
   const fee = r.amount?.fee ?? r.fee ?? 0;
@@ -126,7 +133,7 @@ function parseBooleanHint(value?: string): boolean | null {
 
 export default async function Page({ searchParams }: { searchParams: Promise<SuccessSearchParams> }) {
   const { id, withService, stringingSubmitted, stringingApplicationId } = await searchParams;
-  if (!id) return <div className="max-w-3xl mx-auto p-6">잘못된 접근입니다.</div>;
+  if (!id || !ObjectId.isValid(id)) return notFound();
 
   // 비회원 주문(대여) 차단 모드면, success 페이지도 로그인 필수로 막는다.
   // (id만으로 대여/환불계좌 등의 정보가 렌더링될 수 있으므로 DB 조회 전에 차단)
@@ -143,9 +150,26 @@ export default async function Page({ searchParams }: { searchParams: Promise<Suc
       return <LoginGate next={next} variant="checkout" />;
     }
   }
-  const data = await getData(id);
-  if (!data) return <div className="max-w-3xl mx-auto p-6">존재하지 않는 대여 건입니다.</div>;
+  const db = (await clientPromise).db();
+  const rental = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
+  if (!rental) return notFound();
 
+  const cookieStore = await cookies();
+  const accessPayload = safeVerifyAccessToken(cookieStore.get('accessToken')?.value);
+  const orderAccessPayload = safeVerifyOrderAccessToken(cookieStore.get('orderAccessToken')?.value);
+
+  const ownerUserId = rental.userId ? String(rental.userId) : null;
+  const rentalOrderId = rental.orderId ? String(rental.orderId) : null;
+  const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
+  const isGuestOwner = !!(
+    orderAccessPayload &&
+    ((orderAccessPayload.orderId && (orderAccessPayload.orderId === rentalOrderId || orderAccessPayload.orderId === String(rental._id))) ||
+      (orderAccessPayload.rentalId && orderAccessPayload.rentalId === String(rental._id)))
+  );
+
+  if (!isMemberOwner && !isGuestOwner) return notFound();
+
+  const data = await getData(db, id, rental);
   return (
     <RentalsSuccessClient
       data={{
