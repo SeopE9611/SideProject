@@ -71,6 +71,34 @@ function getIdString(value: unknown): string | null {
   return null;
 }
 
+type NormalizedCancel = {
+  status: 'none' | 'requested' | 'approved' | 'rejected';
+  requestedAt?: string | null;
+  handledAt?: string | null;
+  reason?: string;
+};
+
+function normalizeCancelStatus(raw: unknown): NormalizedCancel['status'] {
+  const v = String(raw ?? '').trim().toLowerCase();
+  if (!v) return 'none';
+  if (v === 'requested' || v === '요청') return 'requested';
+  if (v === 'approved' || v === '승인') return 'approved';
+  if (v === 'rejected' || v === '거절') return 'rejected';
+  return 'none';
+}
+
+function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
+  const cancel = asDoc(doc?.cancelRequest);
+  const status = normalizeCancelStatus(cancel?.status);
+  const requestedAt = toISO(cancel?.requestedAt ?? cancel?.createdAt ?? null);
+  const handledAt = toISO(cancel?.processedAt ?? cancel?.approvedAt ?? cancel?.rejectedAt ?? null);
+  const reasonCode = getString(cancel?.reasonCode);
+  const reasonText = getString(cancel?.reasonText) ?? getString(cancel?.rejectReason);
+  const reason = [reasonCode, reasonText].filter(Boolean).join(' · ') || undefined;
+  return { status, requestedAt, handledAt, reason };
+}
+
+
 function hasRacketItems(items: unknown) {
   return asDocArray(items).some((it) => it.kind === 'racket' || it.kind === 'used_racket');
 }
@@ -308,6 +336,7 @@ export async function handleAdminOperationsGet(req: Request) {
       userSnapshot: 1,
       guestName: 1,
       guestEmail: 1,
+      cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
     .limit(MAX_FETCH_EACH)
@@ -361,6 +390,7 @@ export async function handleAdminOperationsGet(req: Request) {
       userSnapshot: 1,
       guestInfo: 1,
       items: 1,
+      cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
     .limit(MAX_FETCH_EACH)
@@ -388,6 +418,7 @@ export async function handleAdminOperationsGet(req: Request) {
       stringing: 1,
       stringingApplicationId: 1,
       isStringServiceApplied: 1,
+      cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
     .limit(MAX_FETCH_EACH)
@@ -676,6 +707,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const hasOutboundTracking = Boolean(getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim());
     const statusLabel = normalizeOrderStatus(o.status);
     const paymentLabel = normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status));
+    const cancel = normalizeCancelRequest(o);
     return {
       id,
       kind: 'order',
@@ -695,8 +727,12 @@ export async function handleAdminOperationsGet(req: Request) {
       hasShippingInfo,
       hasOutboundTracking,
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
-      pendingReasons: pendingByKey.get(`order:${id}`) ?? [],
+      pendingReasons: [
+        ...(pendingByKey.get(`order:${id}`) ?? []),
+        ...(cancel.status === 'requested' ? ['취소 요청 처리 필요'] : []),
+      ],
       warn: (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
+      cancel,
       ...inferNextActionForOperationItem({
         kind: 'order',
         statusLabel,
@@ -705,6 +741,7 @@ export async function handleAdminOperationsGet(req: Request) {
         hasShippingInfo,
         hasOutboundTracking,
         shippingMethod,
+        cancelStatus: cancel.status,
       }),
     };
   });
@@ -726,6 +763,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const paymentDerived = deriveStringingPaymentLabel(a);
     const paymentSource = getString(a?.paymentSource) ?? '';
     const serviceFeeBefore = Number(a?.serviceFeeBefore ?? 0);
+    const cancel = normalizeCancelRequest(a);
     const reviewReasons: string[] = [];
     const reviewInfoReasons: string[] = [];
     const reviewActionReasons: string[] = [];
@@ -795,16 +833,21 @@ export async function handleAdminOperationsGet(req: Request) {
       related,
       isIntegrated,
       warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
-      pendingReasons: pendingByKey.get(`stringing_application:${id}`) ?? [],
+      pendingReasons: [
+        ...(pendingByKey.get(`stringing_application:${id}`) ?? []),
+        ...(cancel.status === 'requested' ? ['취소 요청 처리 필요'] : []),
+      ],
       warn: (warnByKey.get(`stringing_application:${id}`)?.length ?? 0) > 0,
       needsReview: reviewLevel === 'action',
       reviewLevel,
       reviewTitle: reviewLevel === 'action' ? '결제 상태 확인 필요' : reviewLevel === 'info' ? '정상 파생(조치 필요 없음)' : undefined,
       reviewReasons,
+      cancel,
       ...inferNextActionForOperationItem({
         kind: 'stringing_application',
         statusLabel: String(a?.status ?? '접수완료'),
         paymentLabel: paymentDerived.paymentLabel,
+        cancelStatus: cancel.status,
       }),
     };
   });
@@ -829,6 +872,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const mountingFee = Number(r?.amount?.stringingFee ?? (stringingDoc?.requested ? stringingDoc?.mountingFee : 0) ?? 0);
     const requested = Boolean(stringingDoc?.requested) || stringPrice > 0 || mountingFee > 0 || Boolean(appId);
     const reviewLevel: AdminOperationReviewLevel = rentalPaymentMeta.source === 'derived' ? 'info' : 'none';
+    const cancel = normalizeCancelRequest(r);
 
     return {
       id,
@@ -847,7 +891,10 @@ export async function handleAdminOperationsGet(req: Request) {
       related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
       isIntegrated,
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
-      pendingReasons: pendingByKey.get(`rental:${id}`) ?? [],
+      pendingReasons: [
+        ...(pendingByKey.get(`rental:${id}`) ?? []),
+        ...(cancel.status === 'requested' ? ['취소 요청 처리 필요'] : []),
+      ],
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
       needsReview: false,
       reviewLevel,
@@ -863,11 +910,13 @@ export async function handleAdminOperationsGet(req: Request) {
           }
         : undefined,
       hasOutboundTracking,
+      cancel,
       ...inferNextActionForOperationItem({
         kind: 'rental',
         statusLabel: normalizeRentalStatus(r?.status),
         paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
+        cancelStatus: cancel.status,
       }),
     };
   });
