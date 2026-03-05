@@ -26,6 +26,8 @@ type ActivityOrderSummary = {
   firstItemName: string;
   itemsCount: number;
   withStringService: boolean;
+  stringingApplicationIds: string[];
+  applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
   cancelReasonSummary?: string | null;
@@ -43,6 +45,8 @@ type ActivityRentalSummary = {
   deposit?: number;
   fee?: number;
   withStringService: boolean;
+  stringingApplicationIds: string[];
+  applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
 };
@@ -82,6 +86,10 @@ function toISO(v: any): string {
 function isoMax(...values: Array<string | null | undefined>): string {
   const base = new Date(0).toISOString();
   return values.filter((v): v is string => Boolean(v)).reduce((acc, cur) => (cur > acc ? cur : acc), base);
+}
+
+function compareByUpdatedThenCreatedDesc(a: Pick<ActivityApplicationSummary, 'updatedAt' | 'createdAt'>, b: Pick<ActivityApplicationSummary, 'updatedAt' | 'createdAt'>) {
+  return b.updatedAt.localeCompare(a.updatedAt) || b.createdAt.localeCompare(a.createdAt);
 }
 
 function calcOrderTotal(o: any): number {
@@ -287,8 +295,8 @@ export async function GET(req: Request) {
     .toArray();
 
   // orderId/rentalId → applicationSummary 매핑
-  const appByOrderId = new Map<string, ActivityApplicationSummary>();
-  const appByRentalId = new Map<string, ActivityApplicationSummary>();
+  const appByOrderId = new Map<string, ActivityApplicationSummary[]>();
+  const appByRentalId = new Map<string, ActivityApplicationSummary[]>();
 
   for (const doc of linkedApps as any[]) {
     const details = doc.stringDetails ?? {};
@@ -332,8 +340,25 @@ export async function GET(req: Request) {
       needsInboundTracking,
     };
 
-    if (doc.orderId) appByOrderId.set(String(doc.orderId), app);
-    if (doc.rentalId) appByRentalId.set(String(doc.rentalId), app);
+    if (doc.orderId) {
+      const key = String(doc.orderId);
+      const bucket = appByOrderId.get(key) ?? [];
+      bucket.push(app);
+      appByOrderId.set(key, bucket);
+    }
+    if (doc.rentalId) {
+      const key = String(doc.rentalId);
+      const bucket = appByRentalId.get(key) ?? [];
+      bucket.push(app);
+      appByRentalId.set(key, bucket);
+    }
+  }
+
+  for (const [, apps] of appByOrderId) {
+    apps.sort(compareByUpdatedThenCreatedDesc);
+  }
+  for (const [, apps] of appByRentalId) {
+    apps.sort(compareByUpdatedThenCreatedDesc);
   }
 
   // 6) 그룹 생성(주문/대여 + 단독신청)
@@ -344,7 +369,8 @@ export async function GET(req: Request) {
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
 
-    const linked = appByOrderId.get(orderId);
+    const linkedApps = appByOrderId.get(orderId) ?? [];
+    const linked = linkedApps[0];
 
     const rawCancelStatus = o?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
@@ -372,6 +398,8 @@ export async function GET(req: Request) {
         firstItemName: first?.name ?? '(상품명 없음)',
         itemsCount: items.length,
         withStringService,
+        stringingApplicationIds: linkedApps.map((app) => app.id),
+        applicationSummaries: linkedApps,
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: rawCancelStatus,
         cancelReasonSummary,
@@ -382,7 +410,8 @@ export async function GET(req: Request) {
 
   for (const r of rentals as any[]) {
     const rentalId = String(r._id);
-    const linked = appByRentalId.get(rentalId);
+    const linkedApps = appByRentalId.get(rentalId) ?? [];
+    const linked = linkedApps[0];
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
     const updatedAt = toISO(r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp());
@@ -406,7 +435,9 @@ export async function GET(req: Request) {
         deposit: r?.amount?.deposit,
         fee: r?.amount?.fee,
         withStringService,
-        stringingApplicationId: r.stringingApplicationId ? String(r.stringingApplicationId) : (linked?.id ?? null),
+        stringingApplicationIds: linkedApps.map((app) => app.id),
+        applicationSummaries: linkedApps,
+        stringingApplicationId: linked?.id ?? null,
         cancelStatus: r?.cancelRequest?.status ?? null,
       },
       application: linked,

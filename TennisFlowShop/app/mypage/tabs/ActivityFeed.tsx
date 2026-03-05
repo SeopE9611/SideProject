@@ -27,6 +27,8 @@ type ActivityOrderSummary = {
   firstItemName: string;
   itemsCount: number;
   withStringService: boolean;
+  stringingApplicationIds?: string[];
+  applicationSummaries?: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
 };
 
@@ -41,6 +43,8 @@ type ActivityRentalSummary = {
   deposit?: number;
   fee?: number;
   withStringService: boolean;
+  stringingApplicationIds?: string[];
+  applicationSummaries?: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
 };
 
@@ -151,6 +155,12 @@ function groupAmount(g: ActivityGroup) {
   if (g.kind === 'order') return typeof g.order?.totalPrice === 'number' ? g.order?.totalPrice : null;
   if (g.kind === 'rental') return typeof g.rental?.totalAmount === 'number' ? g.rental?.totalAmount : null;
   return null;
+}
+
+function linkedApplicationSummaries(g: ActivityGroup): ActivityApplicationSummary[] {
+  if (g.kind === 'order') return g.order?.applicationSummaries ?? [];
+  if (g.kind === 'rental') return g.rental?.applicationSummaries ?? [];
+  return g.application ? [g.application] : [];
 }
 
 /**
@@ -648,6 +658,7 @@ export default function ActivityFeed() {
                 {actionTop.map((g) => {
                   const app = g.application;
                   const appId = app?.id;
+                  const linkedCount = linkedApplicationSummaries(g).length;
                   const menuKey = `top:${g.key}`;
                   const showMore = Boolean(appId && (canShowStringingReviewCta(app) || canShowStringingConfirmCta(app)));
 
@@ -861,6 +872,7 @@ export default function ActivityFeed() {
 
                       const app = g.application;
                       const appId = app?.id;
+                      const linkedCount = linkedApplicationSummaries(g).length;
                       const canShowShipping = Boolean(appId && (app?.needsInboundTracking ?? true));
                       const canShowShippingEdit = Boolean(canShowShipping && app?.hasTracking);
                       const menuKey = `row:${g.key}`;
@@ -903,6 +915,7 @@ export default function ActivityFeed() {
 
                                   <h3 className="text-base bp-sm:text-lg font-bold text-foreground mb-1 truncate">{title}</h3>
                                   <p className="text-sm text-muted-foreground">{kindLabel(g.kind)}</p>
+                                  {g.kind !== 'application' && linkedCount > 1 ? <p className="text-xs text-muted-foreground mt-1">대표 신청서 외 {linkedCount - 1}건</p> : null}
                                 </div>
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
@@ -939,6 +952,12 @@ export default function ActivityFeed() {
                                 {canShowShipping && hasAction ? (
                                   <Button asChild size="sm" className="rounded-lg">
                                     <Link href={shippingHref}>{shippingLabel}</Link>
+                                  </Button>
+                                ) : null}
+
+                                {g.kind !== 'application' && linkedCount > 1 ? (
+                                  <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
+                                    <Link href="/mypage?tab=applications">신청서 {linkedCount}건 보기</Link>
                                   </Button>
                                 ) : null}
 
