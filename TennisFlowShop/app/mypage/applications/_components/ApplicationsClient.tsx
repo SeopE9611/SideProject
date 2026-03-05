@@ -348,7 +348,7 @@ export default function ApplicationsClient() {
           // 취소 요청 가능 여부
           const isCancelable = isStringService && ['접수완료', '검토 중'].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
           return (
-            <Card key={app.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <Card key={app.id} data-cy="mypage-application-summary-card" className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
                 <div className="h-full w-full bg-card rounded-lg" />
               </div>
@@ -394,9 +394,11 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2" data-cy="mypage-application-status-wrap">
                     {getApplicationStatusIcon(app.status)}
-                    <ApplicationStatusBadge status={app.status} />
+                    <span data-cy="mypage-application-status-badge">
+                      <ApplicationStatusBadge status={app.status} />
+                    </span>
 
                     {(() => {
                       const raw = app.cancelStatus ?? 'none';
@@ -477,6 +479,7 @@ export default function ApplicationsClient() {
                   {/* 상세/운송장/취소 요청 버튼들 */}
                   <div className="flex items-center gap-2">
                     <Button
+                      data-cy="mypage-application-detail-cta"
                       variant="outline"
                       size="sm"
                       onClick={() => router.push(`/mypage?tab=applications&applicationId=${app.id}`)}
@@ -488,14 +491,15 @@ export default function ApplicationsClient() {
 
                     {isSelfShip &&
                       (isClosed ? (
-                        <Button variant="outline" size="sm" onClick={() => showInfoToast('이미 종료된 신청서입니다. 운송장 수정이 불가합니다.')}>
+                        <Button data-cy="mypage-application-shipping-cta" variant="outline" size="sm" onClick={() => showInfoToast('이미 종료된 신청서입니다. 운송장 수정이 불가합니다.')}>
                           운송장 수정하기
                         </Button>
                       ) : (
-                        <Button variant="outline" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping?return=${encodeURIComponent('/mypage?tab=applications')}`)}>
+                        <Button data-cy="mypage-application-shipping-cta" variant="outline" size="sm" onClick={() => router.push(`/services/applications/${app.id}/shipping?return=${encodeURIComponent('/mypage?tab=applications')}`)}>
                           {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                         </Button>
                       ))}
+
 
                     {/* 교체확정(항상 노출) - 스트링 장착 서비스에만 표시 */}
                     {isStringService && (

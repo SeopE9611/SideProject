@@ -966,10 +966,10 @@ export default function OperationsClient() {
               {showAdvancedLegend && (
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground">시나리오</span>
-                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
-                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
-                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
-                  <Badge className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
+                  <Badge data-cy="admin-operations-flow-badge-1" className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}>스트링 구매</Badge>
+                  <Badge data-cy="admin-operations-flow-badge-4" className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}>라켓 구매</Badge>
+                  <Badge data-cy="admin-operations-flow-badge-6" className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}>대여</Badge>
+                  <Badge data-cy="admin-operations-flow-badge-3" className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}>교체 신청(단독)</Badge>
                 </div>
               )}
             </div>
