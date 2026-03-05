@@ -319,7 +319,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-5xl mx-auto">
-            <Card className="mb-8 backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl">
+            <Card data-cy="service-success-summary-card" className="mb-8 backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl">
               <CardHeader className="bg-muted/30 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div>
@@ -342,7 +342,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
               <CardContent className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-muted p-6 rounded-xl">
+                  <div data-cy="service-success-amount-card" className="bg-muted p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <Calendar className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">신청일자</h3>
@@ -350,7 +350,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <p className="text-2xl font-bold text-primary">{createdAtLabel}</p>
                   </div>
 
-                  <div className="bg-muted p-6 rounded-xl">
+                  <div data-cy="service-success-collection-card" className="bg-muted p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <CreditCard className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">결제 요약</h3>
@@ -728,6 +728,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <Button variant="default" className="flex-1 h-12 transition-all duration-200" asChild>
                     <Link
+                      data-cy="service-success-application-link"
                       href={`/mypage?${new URLSearchParams({
                         tab: 'applications',
                         applicationId: String(application._id),
