@@ -76,6 +76,13 @@ function getTensionSummary(lines: any[]): string | null {
   return set.length ? set.join(', ') : null;
 }
 
+// 주문-스트링 신청서 동기화 정책:
+// - draft(임시저장)는 제외
+// - 취소는 포함(운영 추적/감사를 위해 이력 동기화 유지)
+const CUSTOMER_SYNC_APPLICATION_FILTER = {
+  status: { $ne: 'draft' },
+};
+
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -438,15 +445,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       await orders.updateOne({ _id }, { $set: updateFields, $push: { history: historyEntry } } as any);
 
       // 연결된 스트링 신청서 동기화
-      if ((existing as any).stringingApplicationId && ObjectId.isValid((existing as any).stringingApplicationId)) {
-        const stringingColl = db.collection('stringing_applications');
-        const appId = new ObjectId((existing as any).stringingApplicationId);
-        const prevApp = await stringingColl.findOne({ _id: appId }); // 한 번만 읽어서 재사용
+      // 정책: draft 제외, 취소 포함
+      const stringingColl = db.collection('stringing_applications');
+      const syncedAt = new Date();
+      const syncHistoryEntry = {
+        status: '고객정보수정(동기화)',
+        date: syncedAt,
+        description: '연결된 주문서에서 고객 정보를 동기화했습니다.',
+      };
 
-        await stringingColl.updateOne({ _id: appId }, {
+      const syncResult = await stringingColl.updateMany(
+        {
+          orderId: _id,
+          ...CUSTOMER_SYNC_APPLICATION_FILTER,
+        },
+        {
           $set: {
             customer: {
-              ...(prevApp?.customer ?? {}),
               name: c.name,
               email: c.email,
               phone: c.phone,
@@ -456,16 +471,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
             },
           },
           $push: {
-            history: {
-              status: '고객정보수정(동기화)',
-              date: new Date(),
-              description: '연결된 주문서에서 고객 정보를 동기화했습니다.',
-            },
+            history: syncHistoryEntry,
           },
-        } as any);
-      }
+        } as any,
+      );
 
-      return NextResponse.json({ ok: true });
+      return NextResponse.json({ ok: true, syncedApplicationCount: syncResult.modifiedCount });
     }
 
     // 결제 금액 수정
