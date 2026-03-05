@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
+import { hasCompletedStringingApplication, normalizeStringingApplicationId } from '@/app/order-lookup/_lib/stringing-status';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -153,7 +154,7 @@ export default function OrderLookupResultsPage() {
                 withStringService: o.shippingInfo?.withStringService,
               },
               isStringServiceApplied: o.isStringServiceApplied,
-              stringingApplicationId: o.stringingApplicationId ?? null,
+              stringingApplicationId: normalizeStringingApplicationId(o.stringingApplicationId),
             })),
           );
         } else {
@@ -331,7 +332,7 @@ export default function OrderLookupResultsPage() {
               {orders && orders.length > 0 ? (
                 <div className="space-y-6">
                   {orders.map((order, index) => {
-                    const hasCompletedStringingApplication = order.isStringServiceApplied === true;
+                    const hasStringingApplication = hasCompletedStringingApplication(order);
                     const normalizedDeliveryMethod = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '');
                     const isVisitPickup = normalizedDeliveryMethod === '방문수령';
 
@@ -402,7 +403,7 @@ export default function OrderLookupResultsPage() {
 
                           {order.shippingInfo?.withStringService && (
                             <>
-                              {!hasCompletedStringingApplication ? (
+                              {!hasStringingApplication ? (
                                 <div className="flex flex-col items-end gap-2">
                                   <p className="text-xs text-muted-foreground">
                                     {isVisitPickup ? '방문수령 주문의 장착 신청이 가능합니다.' : '택배 기반 장착 서비스 신청이 가능합니다.'}
@@ -421,11 +422,11 @@ export default function OrderLookupResultsPage() {
                                     <TooltipTrigger asChild>
                                       <div className="inline-flex h-10 items-center justify-center rounded-md border-2 border-border bg-primary/10 px-4 py-2 text-sm font-semibold text-primary cursor-default dark:bg-primary/20">
                                         <CheckCircle2 className="w-4 h-4 mr-2" />
-                                        교체 서비스 접수 완료
+                                        교체 서비스 신청서 접수 완료
                                       </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="top" className="text-sm">
-                                      {isVisitPickup ? '방문수령 장착 신청이 이미 완료된 주문입니다.' : '택배 장착 서비스 신청이 이미 완료된 주문입니다.'}
+                                      {isVisitPickup ? '이미 접수된 신청서가 존재합니다. 방문수령 장착은 접수된 내용으로 진행됩니다.' : '이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용으로 진행됩니다.'}
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>

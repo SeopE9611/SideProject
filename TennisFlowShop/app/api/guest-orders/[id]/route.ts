@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { hasCompletedStringingApplication, normalizeStringingApplicationId } from '@/app/order-lookup/_lib/stringing-status';
 
 // 단일 비회원 주문 상세 조회
 type GuestOrderMode = 'off' | 'legacy' | 'on';
@@ -108,7 +109,11 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       .filter((app) => app.id)
       .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] ?? null;
 
-    const isStringServiceApplied = stringingApplications.some((app) => app.status !== 'draft');
+    const normalizedStringingApplicationId = latestApplication?.id ?? normalizeStringingApplicationId((order as any)?.stringingApplicationId);
+    const isStringServiceApplied = hasCompletedStringingApplication({
+      isStringServiceApplied: (order as any)?.isStringServiceApplied,
+      stringingApplicationId: normalizedStringingApplicationId,
+    });
 
     // 비회원 주문은 userId 없음 -> 누구나 접근 허용
     return NextResponse.json({
@@ -116,7 +121,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       order: {
         ...order,
         isStringServiceApplied,
-        stringingApplicationId: latestApplication?.id ?? null,
+        stringingApplicationId: normalizedStringingApplicationId,
         stringingApplications,
       },
     });
