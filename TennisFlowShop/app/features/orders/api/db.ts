@@ -277,82 +277,9 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
     )
   ).filter(Boolean); // ← null 제거
 
-  // 현재 관리자/사용자 주문 목록에서는
-  // "일반 주문 + 스트링 교체 서비스 신청(stringing_applications)"만 통합해서 사용한다.
-  // 라켓 대여 주문(rental_orders)은 전용 관리자 페이지(/admin/rentals) 및
-  // 관련 API(/api/admin/rentals, /api/me/rentals 등)에서 별도로 관리하므로
-  // 여기서는 포함하지 않는다.
-  // 혹시라도 통합 관리기능이 도입될 방지를 위해 주석처리
-
-  /*  // rental_orders를 정규화하여 append
-  const rentalDocs = await db.collection('rental_orders').find().toArray();
-
-  const rentalOrders = await Promise.all(
-    rentalDocs.map(async (r: any) => {
-      // 라켓 기본 정보 조회(브랜드/모델명)
-      const rak = await db.collection('used_rackets').findOne({ _id: r.racketId });
-
-      // 고객 표기 (비회원이면 guestInfo 그대로 표시)
-      const customer = r.guestInfo
-        ? {
-            name: `${r.guestInfo.name ?? '비회원'}`,
-            email: r.guestInfo.email ?? '-',
-            phone: r.guestInfo.phone ?? '-',
-          }
-        : await findUserSnapshot(r.userId?.toString());
-
-      // 상태/뱃지 라벨 간단 매핑(기존 팔레트 사용 전제)
-      const mapRentalToBadge = (s: string) => {
-        switch (s) {
-          case 'paid':
-          case 'shipped':
-          case 'in_use':
-            return '진행중';
-          case 'returned':
-            return '반납완료';
-          case 'late':
-            return '연체';
-          case 'lost':
-          case 'damaged':
-            return '이슈';
-          default:
-            return '대기';
-        }
-      };
-
-      return {
-        id: r._id.toString(),
-        __type: 'rental_order' as const,
-
-        customer,
-        userId: r.userId?.toString?.() ?? null,
-
-        // 날짜 정렬 기준: createdAt (출고/수령 기반 정렬은 후속 단계에서)
-        date: r.createdAt ?? null,
-
-        // 기존 목록 컬럼과 호환되는 필드명 유지
-        status: mapRentalToBadge(r.status),
-        paymentStatus: r.status === 'paid' ? '결제완료' : '결제대기',
-        type: '대여',
-
-        // 관리자가 한눈에 보기 쉽게 수수료+보증금 합계(표시용)
-        total: Number(r.fee ?? 0) + Number(r.deposit ?? 0),
-
-        items: [
-          {
-            id: rak?._id?.toString?.() ?? '',
-            name: `${rak?.brand ?? ''} ${rak?.model ?? ''} (대여 ${r.period}일)`,
-            price: Number(r.fee ?? 0),
-            quantity: 1,
-          },
-        ],
-
-        // 운송장/주소 구조는 추후 표준화(지금은 그대로 전달)
-        shippingInfo: r.shipping ?? null,
-      };
-    })
-  );
-*/
+  // 정책 A: /admin/orders(및 공용 목록 API)는 "주문 + 교체서비스 신청"만 다룬다.
+  // 대여 주문(rental_orders)은 /admin/rentals 및 전용 API에서만 관리한다.
+  // 따라서 이 통합 목록에는 rental_orders를 append하지 않는다.
   const combined = [...orders, ...(stringingOrders as any[])].sort((a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date));
   return combined;
 }

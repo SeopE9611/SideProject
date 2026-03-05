@@ -197,19 +197,16 @@ export default function OrdersClient() {
     return '';
   }
 
+  const ADMIN_SCOPE_TEXT = '이 화면의 포함 범위: 상품 주문 + 교체서비스 신청 (대여 제외)';
+
   /**
    * 관리자 UX용 “거래종류(kind)” 라벨
    * - 개발자/DB 타입(__type)은 운영자에게 그대로 노출하면 헷갈리기 쉽다.
-   * - 따라서 화면에서는 “주문 / 신청서”처럼 운영자 언어로 통일해서 보여준다.
+   * - 정책 A: /admin/orders는 주문 + 신청서만 관리한다.
    */
   function getKindBadge(order: OrderWithType) {
     if (order.__type === 'stringing_application') {
       return { label: '신청서', className: kindBadgeClass('stringing_application') };
-    }
-    // 현재 /admin/orders 목록은 기본적으로 order + 신청서 통합이지만,
-    // 타입 확장 대비로 rental_order 케이스도 안전하게 처리해둔다.
-    if (order.__type === 'rental_order') {
-      return { label: '대여', className: kindBadgeClass('rental_order') };
     }
     return { label: '주문', className: kindBadgeClass('order') };
   }
@@ -231,10 +228,6 @@ export default function OrdersClient() {
       }
       return { label: '단독', className: linkBadgeClass('standalone') };
     }
-    if (order.__type === 'rental_order') {
-      // /admin/orders에는 현재 대여가 나오지 않지만, 타입 확장 대비로 처리
-      return { label: '대여', className: kindBadgeClass('rental_order') };
-    }
     if (isLinkedProductOrder) {
       return { label: '통합(주문+신청)', className: linkBadgeClass('integrated') };
     }
@@ -243,13 +236,12 @@ export default function OrdersClient() {
 
   /**
    * 관리자 UX: “시나리오(Flow)” + “정산 앵커” 라벨
-   * - 운영자가 봤을 때 이 행이 어떤 케이스(1~7)인지 즉시 구분되게 한다.
+   * - 운영자가 봤을 때 이 행이 어떤 케이스(1~5)인지 즉시 구분되게 한다.
    * - 금액/정산 사고 방지: 신청서가 통합인지(주문 앵커) 단독인지(신청서 앵커)도 같이 표기한다.
    *
-   * 참고: /admin/orders는 현재 주문(order) + 신청서(stringing_application)만 통합 노출.
-   *       Flow 6/7(대여 계열)은 타입 확장 대비용 fallback.
+   * 참고: 정책 A에 따라 /admin/orders는 주문(order) + 신청서(stringing_application)만 노출한다.
    */
-  type Flow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+  type Flow = 1 | 2 | 3 | 4 | 5;
 
   const FLOW_LABEL: Record<Flow, string> = {
     1: '스트링 단품 구매',
@@ -257,8 +249,6 @@ export default function OrdersClient() {
     3: '교체서비스 단일 신청',
     4: '라켓 단품 구매',
     5: '라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)',
-    6: '라켓 단품 대여',
-    7: '라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)',
   };
 
   const FLOW_SHORT: Record<Flow, string> = {
@@ -267,8 +257,6 @@ export default function OrdersClient() {
     3: 'F3 신청 단독',
     4: 'F4 라켓 단품',
     5: 'F5 라켓+신청',
-    6: 'F6 대여',
-    7: 'F7 대여+신청',
   };
 
   function hasRacketItems(items: any[] | undefined) {
@@ -291,8 +279,6 @@ export default function OrdersClient() {
     let flow: Flow = 1;
     if (order.__type === 'stringing_application') {
       flow = isIntegratedApp ? orderFlowByHasRacket(anchorHasRacket, true) : 3;
-    } else if (order.__type === 'rental_order') {
-      flow = 6;
     } else {
       flow = orderFlowByHasRacket(hasRacketItems((order as any)?.items), isLinkedProductOrder);
     }
@@ -306,9 +292,6 @@ export default function OrdersClient() {
     // - 신청서 행: 통합이면 주문 앵커 / 단독이면 신청서 앵커
     if (order.__type === 'stringing_application') {
       return ctx.isIntegratedApp ? { label: '정산: 주문', className: linkBadgeClass('integrated') } : { label: '정산: 신청(단독)', className: linkBadgeClass('standalone') };
-    }
-    if (order.__type === 'rental_order') {
-      return { label: '정산: 대여', className: linkBadgeClass('rental') };
     }
     return { label: '정산: 주문', className: linkBadgeClass('integrated') };
   }
@@ -466,14 +449,14 @@ export default function OrdersClient() {
         {/* 제목 및 설명 */}
         <div className="mx-auto mb-4 max-w-[1440px]">
           <h1 className="text-4xl font-semibold tracking-tight">주문·신청 관리</h1>
-          <p className="mt-1 text-xs text-muted-foreground">상품/클래스 주문과 교체서비스 신청서를 함께 관리합니다. (통합건은 같은 색 테두리로 묶여 표시됩니다)</p>
+          <p className="mt-1 text-xs text-muted-foreground">{ADMIN_SCOPE_TEXT}. (통합건은 같은 색 테두리로 묶여 표시됩니다)</p>
         </div>
 
         {/* 필터 및 검색 카드 */}
         <Card className="mb-4 rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
           <CardHeader className="pb-2.5">
             <CardTitle>필터 및 검색</CardTitle>
-            <CardDescription className="text-xs">주문 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
+            <CardDescription className="text-xs">{ADMIN_SCOPE_TEXT}. 주문/신청 상태, 유형, 결제 상태로 필터링하거나 주문 ID, 고객명, 이메일로 검색하세요.</CardDescription>
           </CardHeader>
           <CardContent className="pt-1">
             <div className="flex flex-col gap-4">
@@ -527,8 +510,10 @@ export default function OrdersClient() {
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', kindBadgeClass('stringing_application'))}>신청서</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('integrated'))}>통합(주문+신청)</Badge>
               <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('standalone'))}>단독</Badge>
+              <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', linkBadgeClass('standalone'))}>범위: 주문+신청</Badge>
               <span>• 같은 색 테두리 = 같은 통합건</span>
               <span>• “신청서에서 관리” = 운송장/배송정보는 신청서에서만 등록</span>
+              <span>• 대여 주문은 /admin/rentals에서만 관리</span>
             </div>
           </CardHeader>
           <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
@@ -644,7 +629,7 @@ export default function OrdersClient() {
                                       items={[
                                         { label: kind.label, className: kind.className, title: '문서 종류' },
                                         { label: link.label, className: link.className, title: '통합/연결 상태' },
-                                        { label: flow.shortLabel, className: flow.className, title: `시나리오: ${flow.label}` },
+                                        { label: flow.shortLabel, className: flow.className, title: `주문/신청 시나리오: ${flow.label}` },
                                         { label: settlement.label, className: settlement.className, title: '정산 앵커(금액 해석 기준)' },
                                         ...(order.cancelStatus
                                           ? [
@@ -685,9 +670,10 @@ export default function OrdersClient() {
                                     {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
 
                                     <p className="mt-2 text-[11px] text-muted-foreground">
-                                      시나리오: <span className="font-medium text-foreground">{flow.label}</span>
+                                      주문/신청 시나리오: <span className="font-medium text-foreground">{flow.label}</span>
                                     </p>
                                     <p className="mt-1 text-[11px] text-muted-foreground">{settlement.label}</p>
+                                    <p className="mt-1 text-[11px] text-muted-foreground">포함 범위: 주문 + 신청 (대여 제외)</p>
 
                                     {isLinkedProductOrder && <p className="mt-2 text-[11px] text-muted-foreground">연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)</p>}
                                     {isLinkedProductOrder && linkedApplication && (
