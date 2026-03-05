@@ -49,12 +49,19 @@
 
 ---
 
+### 2-3. success 페이지 분기 규칙(현재 코드 기준)
+- 통합 접수 완료 카드 노출 조건: `(query.stringingSubmitted ?? isStringServiceApplied) === true` 이고 `(query.withService ?? withStringService) === true`
+- 통합 접수 요약 카드 노출 조건: 위 조건 + `applicationSummary` 존재
+- 신청서 링크 ID 우선순위: `query.stringingApplicationId` 우선, 없으면 DB `stringingApplicationId`
+- 보정 안내 카드 노출 조건: query 힌트 값과 DB 상태가 서로 다를 때
+
 ## 3) 권장 실행 순서 (실행 동선)
 
 1. **사용자 checkout 실행**
    - P0-1(스트링+서비스) → P0-2(라켓+스트링+서비스) 순서로 결제/제출.
 2. **success/주문 완료 상태 확인**
-   - 주문 응답 및 성공 페이지에서 `stringingApplicationId`, 서비스 적용 여부 확인.
+   - 성공 페이지는 query 힌트(`withService`, `stringingSubmitted`, `stringingApplicationId`)를 우선 사용해 즉시 렌더되는지 확인.
+   - 이후 DB 상태(`withStringService`, `isStringServiceApplied`, 저장된 `stringingApplicationId`)와 불일치 시 보정 안내 카드 노출 여부 확인.
 3. **마이페이지 확인**
    - 주문 목록/상세에서 CTA 분기(신청서 보기/추가 신청/완료) 점검.
 4. **비회원 조회 확인**

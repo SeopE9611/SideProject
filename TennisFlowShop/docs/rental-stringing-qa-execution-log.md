@@ -7,7 +7,7 @@
 - 대상 분기:
   1. 입력 부족 → legacy fallback (`createStringingApplicationFromRental`)
   2. 입력 충분 → 신규 통합 제출 (`submitStringingApplicationCore`)
-  3. success/handoff 분기
+  3. success 통합완료 안내/상태 보정 분기
   4. 마이페이지 목록/상세 CTA 분기
   5. 신청서 보기 링크 이동
   6. 중복 생성 여부
@@ -33,7 +33,8 @@
 ### 1-3. 사전 확인 체크
 
 - [ ] 체크아웃에서 `stringingApplicationInput` 전송이 가능한 UI 상태인지 확인
-- [ ] success 페이지 query(`withService`, `stringingSubmitted`, `stringingApplicationId`) 확인 가능
+- [ ] success 페이지 query(`withService`, `stringingSubmitted`, `stringingApplicationId`)를 즉시 렌더 힌트로 확인 가능
+- [ ] query 힌트와 DB 상태 불일치 시 보정 안내 카드 노출 확인 가능
 - [ ] 마이페이지에서 `stringingApplicationId`, `withStringService`, `isStringServiceApplied` 기반 CTA가 보이는지 확인 가능
 
 ---
@@ -47,7 +48,7 @@
 - 목적: checkout에서 교체서비스를 선택했지만 통합 입력 최소요건이 부족할 때 fallback이 유지되는지 확인
 - 기대 핵심:
   - `/api/rentals` 응답의 `stringingSubmitted !== true`
-  - success에서 handoff 화면 노출 (`withService=1`, `stringingSubmitted!=1`)
+  - success에서 통합 접수 완료 카드가 노출되지 않음 (`withService=1`, `stringingSubmitted!=1`)
   - 신청서는 생성되며, 이후 `/services/apply?rentalId=...` 진입 가능
 
 ### 시나리오 2. 라켓 대여 + 교체서비스 (입력 충분 → 신규 통합 제출)
@@ -58,12 +59,13 @@
   - success query에 `stringingSubmitted=1`, `stringingApplicationId` 포함
   - success에서 handoff 없이 “통합 접수 완료” 안내 노출
 
-### 시나리오 3. success / handoff 분기 확인
+### 시나리오 3. success 통합완료/보정 안내 분기 확인
 
-- 목적: 동일 대여 타입에서 query 값에 따른 분기 UI가 정확히 나뉘는지 확인
+- 목적: 동일 대여 타입에서 query 힌트 우선 렌더와 DB 보정 안내가 정확히 동작하는지 확인
 - 기대 핵심:
-  - `withService=1 && stringingSubmitted!=1` → handoff
-  - `withService=1 && stringingSubmitted=1` → 일반 success + 통합 접수 안내
+  - `withService=1 && stringingSubmitted=1`(query 기준) → 일반 success + 통합 접수 안내 즉시 노출
+  - query와 DB 상태가 다르면 “접수 상태 확인 중” 보정 안내 카드 노출
+  - query 힌트가 없으면 DB 상태(`withStringService`, `isStringServiceApplied`)를 사용
 
 ### 시나리오 4. 마이페이지 목록 CTA 분기
 
@@ -131,7 +133,8 @@
   - [ ] `POST /api/rentals` 응답 본문 저장 (`id`, `stringingApplicationId`, `stringingSubmitted`)
   - [ ] success 진입 URL query 스크린샷/텍스트 기록
 - 화면
-  - [ ] success가 handoff인지 통합완료 안내인지 기록
+  - [ ] success가 통합완료 안내 노출 대상인지 기록
+  - [ ] query 힌트/DB 상태 불일치 시 보정 안내 카드 노출 여부 기록
   - [ ] 마이페이지 목록/상세의 CTA 문구 기록
 - 데이터
   - [ ] 같은 rentalId 기준 stringing application 생성 수 기록
@@ -144,19 +147,19 @@
 ### 5-1. 현재 가장 중요한 분기
 
 1. `stringingApplicationInput` 최소요건 충족 여부에 따른 **submit-core vs fallback 분기**
-2. success query(`stringingSubmitted`)에 따른 **handoff 노출 여부 분기**
+2. success query 힌트 우선 + DB 상태 보정에 따른 **통합완료/보정안내 분기**
 3. 마이페이지에서 `stringingApplicationId`/`withStringService` 기반 **CTA 분기**
 
 ### 5-2. Regression 위험이 높은 케이스
 
-1. 통합 제출 성공인데도 success에서 handoff가 다시 뜨는 케이스
+1. 통합 제출 성공인데도 success에서 통합 접수 완료가 누락되는 케이스
 2. fallback 케이스에서 신청서 ID 누락으로 목록/상세 CTA가 비정상 노출되는 케이스
 3. 기존 대여 데이터(구형 필드)에서 `withStringService` 계산이 어긋나 CTA가 사라지는 케이스
 
 ### 5-3. 오늘 바로 테스트할 우선순위 3개
 
-1. **입력 충분 통합 제출**: `stringingSubmitted=1` + handoff 미노출 + 신청서 보기 연결
-2. **입력 부족 fallback**: handoff 노출 + apply 이동 + 신청서 생성 확인
+1. **입력 충분 통합 제출**: `stringingSubmitted=1` + 통합 접수 완료 노출 + 신청서 보기 연결
+2. **입력 부족 fallback**: 통합 접수 완료 미노출 + apply 이동 + 신청서 생성 확인
 3. **마이페이지 목록/상세 CTA 분기**: 신청서 있음/없음 각각 버튼 검증
 
 ### 5-4. 내일 해도 되는 후순위 테스트 3개
