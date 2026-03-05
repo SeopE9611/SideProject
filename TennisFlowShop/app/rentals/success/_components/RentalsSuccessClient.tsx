@@ -32,6 +32,11 @@ type Props = {
       receptionLabel: string;
       reservationLabel: string | null;
     } | null;
+    queryHint?: {
+      withService?: boolean | null;
+      stringingSubmitted?: boolean | null;
+      stringingApplicationId?: string | null;
+    };
     racket: { brand: string; model: string; condition: 'A' | 'B' | 'C' } | null;
     payment?: {
       method?: string;
@@ -47,9 +52,24 @@ type Props = {
 };
 
 export default function RentalsSuccessClient({ data }: Props) {
-  const withService = Boolean(data.withStringService);
-  const stringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
-  const stringingApplied = Boolean(data.isStringServiceApplied);
+  const dbWithService = Boolean(data.withStringService);
+  const dbStringingApplied = Boolean(data.isStringServiceApplied);
+  const dbStringingApplicationId = typeof data.stringingApplicationId === 'string' ? data.stringingApplicationId : '';
+
+  const hintedWithService = typeof data.queryHint?.withService === 'boolean' ? data.queryHint.withService : null;
+  const hintedStringingSubmitted = typeof data.queryHint?.stringingSubmitted === 'boolean' ? data.queryHint.stringingSubmitted : null;
+  const hintedStringingApplicationId = typeof data.queryHint?.stringingApplicationId === 'string' ? data.queryHint.stringingApplicationId : '';
+
+  // 우선 렌더는 query hint를 먼저 반영하고, hint가 없을 때 DB 상태를 fallback으로 사용한다.
+  const withService = hintedWithService ?? dbWithService;
+  const stringingApplied = hintedStringingSubmitted ?? dbStringingApplied;
+  const stringingApplicationId = hintedStringingApplicationId || dbStringingApplicationId;
+
+  const hasStateMismatch =
+    (hintedWithService !== null && hintedWithService !== dbWithService) ||
+    (hintedStringingSubmitted !== null && hintedStringingSubmitted !== dbStringingApplied) ||
+    (Boolean(hintedStringingApplicationId) && hintedStringingApplicationId !== dbStringingApplicationId);
+
   const stringingApplicationHref = stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
 
   useEffect(() => {
@@ -121,6 +141,18 @@ export default function RentalsSuccessClient({ data }: Props) {
             </Card>
           )}
 
+          {hasStateMismatch && (
+            <Card className="backdrop-blur-sm bg-warning/10 dark:bg-warning/10 border border-warning/40 shadow-xl">
+              <CardHeader className="bg-warning/10">
+                <CardTitle className="text-base text-warning">접수 상태 확인 중</CardTitle>
+                <CardDescription className="text-warning/90">
+                  결제 직후에는 URL 힌트 기준으로 먼저 안내되며, 서버 최종 상태와 차이가 있으면 마이페이지 기준으로 보정됩니다.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
+          {/* 통합 접수 요약은 "교체서비스 포함 + 통합 제출 완료" 상태에서만 노출한다. */}
           {withService && stringingApplied && data.applicationSummary && (
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border border-border shadow-xl">
               <CardHeader className="bg-muted/30 pb-3">
