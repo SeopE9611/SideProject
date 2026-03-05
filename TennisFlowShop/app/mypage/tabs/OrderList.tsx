@@ -31,7 +31,7 @@ interface Order {
   userSnapshot?: { name: string; email: string };
   shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
   isStringServiceApplied?: boolean;
-  stringingApplicationId?: string | null; // 연결된 교체 서비스 신청서 ID(있으면 '신청서 보기' CTA로 연결)
+  stringingApplicationId?: string | null; // API가 최신순(updatedAt/createdAt desc) 기준으로 고른 대표 신청서 ID
   stringService?: {
     totalSlots?: number;
     usedSlots?: number;

@@ -231,13 +231,18 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     // 스트링 서비스 신청 존재 여부
     // - draft(초안)와 취소(취소 완료)는 제외
-    const linkedApp = await db.collection('stringing_applications').findOne(
-      {
-        orderId: new ObjectId(order._id),
-        status: { $nin: ['draft', '취소'] },
-      },
-      { projection: { _id: 1 } },
-    );
+    const [linkedApp] = await db
+      .collection('stringing_applications')
+      .find(
+        {
+          orderId: order._id,
+          status: { $nin: ['draft', '취소'] },
+        },
+        { projection: { _id: 1, createdAt: 1, updatedAt: 1 } },
+      )
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .limit(1)
+      .toArray();
 
     const isStringServiceApplied = !!linkedApp;
     const stringingApplicationId = linkedApp?._id?.toString() ?? null;
@@ -252,6 +257,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         orderId: order._id,
         status: { $ne: '취소' },
       })
+      .sort({ updatedAt: -1, createdAt: -1 })
       .toArray();
 
     // 각 신청서에서 사용된 슬롯(= 라켓 개수) 합산

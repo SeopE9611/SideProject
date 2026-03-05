@@ -205,7 +205,8 @@ export default function OrderDetailClient({ orderId }: Props) {
   const hasSubmittedStringingApplication = hasLinkedStringingApps || Boolean(orderDetail?.stringingApplicationId) || orderDetail?.isStringServiceApplied === true;
 
   // 리뷰/링크에 사용할 대표 신청 ID
-  // - 우선순위: 기존 필드(stringingApplicationId) → 요약 리스트의 첫 번째 신청
+  // - API 계약: stringingApplicationId는 최신 신청서(updatedAt/createdAt desc)
+  // - 하위 호환 fallback: 요약 리스트 첫 원소(동일 정렬 계약)
   const primaryStringingAppId = orderDetail?.stringingApplicationId ?? (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   // 취소 요청 상태/라벨 계산

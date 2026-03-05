@@ -166,6 +166,7 @@ export async function GET(req: NextRequest) {
     const apps = await db
       .collection('stringing_applications')
       .find({ userId, orderId: { $in: orderIds }, status: { $nin: ['draft', '취소'] } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.lines': 1, 'stringDetails.racketLines': 1 } })
+      .sort({ updatedAt: -1, createdAt: -1 })
       .toArray();
     const stringServiceByOrderId = new Map<
       string,
@@ -179,7 +180,7 @@ export async function GET(req: NextRequest) {
       const prev = stringServiceByOrderId.get(orderId) ?? { submittedApplicationId: null, usedSlots: 0 };
 
       const usedLineCount = getApplicationLines(app?.stringDetails).length;
-      const submittedApplicationId = prev.submittedApplicationId ?? String(app._id);
+      const submittedApplicationId = prev.submittedApplicationId === null ? String(app._id) : prev.submittedApplicationId;
 
       stringServiceByOrderId.set(orderId, {
         submittedApplicationId,
