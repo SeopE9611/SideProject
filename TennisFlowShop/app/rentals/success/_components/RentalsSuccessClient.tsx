@@ -60,17 +60,19 @@ export default function RentalsSuccessClient({ data }: Props) {
   const hintedStringingSubmitted = typeof data.queryHint?.stringingSubmitted === 'boolean' ? data.queryHint.stringingSubmitted : null;
   const hintedStringingApplicationId = typeof data.queryHint?.stringingApplicationId === 'string' ? data.queryHint.stringingApplicationId : '';
 
-  // 우선 렌더는 query hint를 먼저 반영하고, hint가 없을 때 DB 상태를 fallback으로 사용한다.
-  const withService = hintedWithService ?? dbWithService;
-  const stringingApplied = hintedStringingSubmitted ?? dbStringingApplied;
-  const stringingApplicationId = hintedStringingApplicationId || dbStringingApplicationId;
+  // 최종 렌더는 DB 상태를 기준으로 하고, query hint는 상태 불일치 감지용 보조 신호로만 사용한다.
+  const withService = dbWithService;
+  const stringingApplied = dbStringingApplied;
+  const stringingApplicationId = dbStringingApplicationId;
 
   const hasStateMismatch =
     (hintedWithService !== null && hintedWithService !== dbWithService) ||
     (hintedStringingSubmitted !== null && hintedStringingSubmitted !== dbStringingApplied) ||
     (Boolean(hintedStringingApplicationId) && hintedStringingApplicationId !== dbStringingApplicationId);
 
-  const stringingApplicationHref = stringingApplicationId ? `/mypage?tab=applications&applicationId=${encodeURIComponent(stringingApplicationId)}` : null;
+  const stringingApplicationHref = dbStringingApplicationId
+    ? `/mypage?tab=applications&applicationId=${encodeURIComponent(dbStringingApplicationId)}`
+    : null;
 
   useEffect(() => {
     try {
@@ -146,7 +148,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               <CardHeader className="bg-warning/10">
                 <CardTitle className="text-base text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
-                  결제 직후에는 URL 힌트 기준으로 먼저 안내되며, 서버 최종 상태와 차이가 있으면 마이페이지 기준으로 보정됩니다.
+                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지에서 최종 상태를 확인해 주세요.
                 </CardDescription>
               </CardHeader>
             </Card>
