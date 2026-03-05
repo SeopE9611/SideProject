@@ -241,6 +241,14 @@ function isWarnGroup(g: { items: OpItem[] }) {
   return (g.items ?? []).some((it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0);
 }
 
+
+function cancelBadgeSpec(status?: 'none' | 'requested' | 'approved' | 'rejected') {
+  if (status === 'requested') return { label: '취소요청', tone: 'danger' as const };
+  if (status === 'approved') return { label: '취소승인', tone: 'info' as const };
+  if (status === 'rejected') return { label: '취소거절', tone: 'neutral' as const };
+  return null;
+}
+
 function reviewLevelPriority(level: ReviewLevel) {
   if (level === 'action') return 2;
   if (level === 'info') return 1;
@@ -452,14 +460,15 @@ export default function OperationsClient() {
         const hasWarn = groupItems.some((it) => Array.isArray(it.warnReasons) && it.warnReasons.length > 0);
         const hasPending = groupItems.some((it) => Array.isArray(it.pendingReasons) && it.pendingReasons.length > 0);
         const hasPaymentRisk = groupItems.some((it) => it.paymentLabel === '결제취소' || it.paymentLabel === '결제실패' || it.paymentLabel === '확인필요');
+        const hasCancelRequested = groupItems.some((it) => it.cancel?.status === 'requested');
         const hasPaymentPending = groupItems.some((it) => it.paymentLabel === '결제대기');
         const hasActionReview = groupItems.some((it) => (it.reviewLevel ?? (it.needsReview ? 'action' : (it.reviewReasons?.length ?? 0) > 0 ? 'info' : 'none')) === 'action') || group.reviewLevel === 'action';
         const groupGuide = inferNextActionForOperationGroup(group.items);
-        const hasRoutineNextAction = !hasWarn && !hasActionReview && !hasPaymentRisk && Boolean(groupGuide.nextAction?.trim()) && !groupGuide.nextAction.includes('후속 조치 없음');
+        const hasRoutineNextAction = !hasWarn && !hasActionReview && !hasPaymentRisk && !hasCancelRequested && Boolean(groupGuide.nextAction?.trim()) && !groupGuide.nextAction.includes('후속 조치 없음');
 
         if (hasWarn) acc.urgent += 1;
-        if (hasPaymentRisk || hasActionReview) acc.caution += 1;
-        if (hasPending || hasPaymentPending || hasRoutineNextAction) acc.pending += 1;
+        if (hasPaymentRisk || hasActionReview || hasCancelRequested) acc.caution += 1;
+        if (hasPending || hasPaymentPending || hasRoutineNextAction || hasCancelRequested) acc.pending += 1;
         return acc;
       },
       { urgent: 0, caution: 0, pending: 0 },
@@ -1045,6 +1054,7 @@ export default function OperationsClient() {
                       const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
                       const reviewReasons = collectReviewReasons(g);
                       const groupGuide = inferNextActionForOperationGroup(g.items);
+                      const groupCancelRequested = g.items.some((it) => it.cancel?.status === 'requested');
                       const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
                       const warn = g.warn;
                       const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
@@ -1067,7 +1077,7 @@ export default function OperationsClient() {
                                 </div>
                                 {!warn && g.reviewLevel === 'action' && reviewReasons.length > 0 && <div className="w-full text-[11px] text-primary/90">사유 {reviewReasons.length}건 · 펼쳐서 확인</div>}
                                 {!warn && g.reviewLevel === 'info' && <div className="w-full text-[11px] text-info">정상 파생 · 조치 필요 없음</div>}
-                                <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">다음 할 일: {groupGuide.nextAction?.trim() ? groupGuide.nextAction : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</div>
+                                <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">다음 할 일: {groupGuide.nextAction?.trim() ? groupGuide.nextAction : groupCancelRequested ? '취소 요청 처리 필요' : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</div>
                                 <div className="text-[11px] text-muted-foreground">{groupGuide.stage} · {isGroup ? `${g.items.length}건 그룹` : '단일 건'}</div>
                               </div>
                             </TableCell>
@@ -1103,6 +1113,10 @@ export default function OperationsClient() {
                                 ) : (
                                   <span className="text-xs text-muted-foreground">결제정보 없음(문서 미기입)</span>
                                 )}
+                                {(() => {
+                                  const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
+                                  return cancelBadge ? <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(cancelBadge.tone))}>{cancelBadge.label}</Badge> : null;
+                                })()}
                               </div>
                             </TableCell>
 
@@ -1225,6 +1239,7 @@ export default function OperationsClient() {
                   const warn = g.warn;
                   const reviewReasons = collectReviewReasons(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
+                  const groupCancelRequested = g.items.some((it) => it.cancel?.status === 'requested');
                   return (
                     <Card key={`m:${g.key}`} className="border-border">
                       <CardContent className="p-3 space-y-2">
@@ -1239,11 +1254,15 @@ export default function OperationsClient() {
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
                         <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
                         {g.anchor.paymentLabel ? <div className="text-xs text-muted-foreground">결제: {g.anchor.paymentLabel}</div> : null}
+                        {(() => {
+                          const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
+                          return cancelBadge ? <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(cancelBadge.tone))}>{cancelBadge.label}</Badge> : null;
+                        })()}
                         {g.anchor.flow === 7 && <div className="text-xs text-muted-foreground">스트링 요약: {stringSummaryText(g.items.find((it) => it.kind === 'rental')) ?? '정보 없음'}</div>}
                         <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
                           <p className="text-[11px] font-medium text-primary">현재 업무 단계</p>
                           <p className="text-[11px] text-muted-foreground">{groupGuide.stage}</p>
-                          <p className="mt-1 text-[11px] text-foreground">다음 할 일: {groupGuide.nextAction?.trim() ? groupGuide.nextAction : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</p>
+                          <p className="mt-1 text-[11px] text-foreground">다음 할 일: {groupGuide.nextAction?.trim() ? groupGuide.nextAction : groupCancelRequested ? '취소 요청 처리 필요' : g.reviewLevel === 'info' ? '조치 필요 없음(정상 파생)' : '조치 필요 없음'}</p>
                         </div>
                         {!warn && g.reviewLevel === 'action' && reviewReasons.length > 0 && (
                           <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">

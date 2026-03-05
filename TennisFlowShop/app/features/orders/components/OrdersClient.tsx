@@ -28,7 +28,7 @@ import type { ApiResponse, OrderWithType } from '@/lib/types/order';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, ChevronDown, Copy, Eye, MoreHorizontal, Search, Truck, X } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
@@ -37,6 +37,7 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((re
 
 export default function OrdersClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // 현재 페이지 번호 상태
   const [page, setPage] = useState(1);
@@ -50,6 +51,7 @@ export default function OrdersClient() {
   const [paymentFilter, setPaymentFilter] = useState('all');
   const [shippingFilter, setShippingFilter] = useState('all');
   const [customerTypeFilter, setCustomerTypeFilter] = useState('all');
+  const [cancelFilter, setCancelFilter] = useState<'all' | 'requested' | 'approved' | 'rejected'>('all');
 
   // 고급 검색 토글 상태
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -81,6 +83,7 @@ export default function OrdersClient() {
     if (paymentFilter !== 'all') sp.set('payment', paymentFilter);
     if (shippingFilter !== 'all') sp.set('shipping', shippingFilter);
     if (customerTypeFilter !== 'all') sp.set('customerType', customerTypeFilter);
+    if (cancelFilter !== 'all') sp.set('cancel', cancelFilter);
 
     // 날짜는 KST 기준 YYYY-MM-DD로 보내는 게 안전함(UTC toISOString 오차 방지)
     if (selectedDate) {
@@ -94,7 +97,7 @@ export default function OrdersClient() {
     }
 
     return sp.toString();
-  }, [page, limit, searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter, selectedDate]);
+  }, [page, limit, searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter, cancelFilter, selectedDate]);
 
   /**
    * 필터/검색/날짜가 바뀌면 1페이지부터 다시 조회
@@ -103,7 +106,18 @@ export default function OrdersClient() {
    */
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter, selectedDate]);
+  }, [searchTerm, statusFilter, typeFilter, paymentFilter, shippingFilter, customerTypeFilter, cancelFilter, selectedDate]);
+
+  useEffect(() => {
+    const preset = searchParams.get('preset');
+    if (preset === 'stringing') {
+      setTypeFilter('서비스');
+      return;
+    }
+    if (preset === 'cancelRequests') {
+      setCancelFilter('requested');
+    }
+  }, [searchParams]);
 
   // SWR 훅: page/limit + 검색/필터/날짜까지 쿼리로 포함
   const { data, error } = useSWR<ApiResponse>(`/api/orders?${qs}`, fetcher);
@@ -121,6 +135,7 @@ export default function OrdersClient() {
     const statusMatch = statusFilter === 'all' || order.status === statusFilter;
     const typeMatch = typeFilter === 'all' || order.type === typeFilter;
     const paymentMatch = paymentFilter === 'all' || order.paymentStatus === paymentFilter;
+    const cancelMatch = cancelFilter === 'all' || order.cancelStatus === cancelFilter;
 
     // 고객 유형 필터: 회원/비회원
     const customerTypeMatch = customerTypeFilter === 'all' || (customerTypeFilter === 'member' && order.userId) || (customerTypeFilter === 'guest' && !order.userId);
@@ -131,7 +146,7 @@ export default function OrdersClient() {
     // 날짜 필터
     const matchDate = !selectedDate || new Date(order.date).toDateString() === selectedDate.toDateString();
 
-    return searchMatch && statusMatch && typeMatch && paymentMatch && shippingMatch && customerTypeMatch && matchDate;
+    return searchMatch && statusMatch && typeMatch && paymentMatch && cancelMatch && shippingMatch && customerTypeMatch && matchDate;
   });
 
   // 정렬 로직
@@ -345,6 +360,7 @@ export default function OrdersClient() {
     setPaymentFilter('all');
     setShippingFilter('all');
     setCustomerTypeFilter('all');
+    setCancelFilter('all');
     setSelectedDate(undefined);
   };
 
@@ -630,6 +646,15 @@ export default function OrdersClient() {
                                         { label: link.label, className: link.className, title: '통합/연결 상태' },
                                         { label: flow.shortLabel, className: flow.className, title: `시나리오: ${flow.label}` },
                                         { label: settlement.label, className: settlement.className, title: '정산 앵커(금액 해석 기준)' },
+                                        ...(order.cancelStatus
+                                          ? [
+                                              {
+                                                label: order.cancelStatus === 'requested' ? '취소요청' : order.cancelStatus === 'approved' ? '취소승인' : '취소거절',
+                                                className: order.cancelStatus === 'requested' ? 'bg-destructive/10 text-destructive border border-destructive/30' : 'bg-muted text-muted-foreground border border-border',
+                                                title: '취소 요청 상태',
+                                              },
+                                            ]
+                                          : []),
                                       ]}
                                     />
                                     {isLinkedProductOrder && linkedApplication && (
@@ -702,14 +727,20 @@ export default function OrdersClient() {
                           {/* 상태 셀 */}
                           <TableCell className={tdClasses}>
                             {order.__type === 'stringing_application' ? (
-                              <ApplicationStatusBadge status={order.status} />
+                              <div className="flex flex-col items-start gap-1">
+                                <ApplicationStatusBadge status={order.status} />
+                                {order.cancelStatus === 'requested' && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30')}>취소요청</Badge>}
+                              </div>
                             ) : (
                               (() => {
                                 const st = getOrderStatusBadgeSpec(order.status);
                                 return (
-                                  <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
-                                    {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
-                                  </Badge>
+                                  <div className="flex flex-col items-start gap-1">
+                                    <Badge variant={st.variant} className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap')}>
+                                      {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
+                                    </Badge>
+                                    {order.cancelStatus === 'requested' && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30')}>취소요청</Badge>}
+                                  </div>
                                 );
                               })()
                             )}

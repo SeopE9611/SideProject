@@ -10,6 +10,8 @@ export type OpsLikeItem = {
   hasOutboundTracking?: boolean;
   hasInboundTracking?: boolean;
   shippingMethod?: string | null;
+  cancelStatus?: 'none' | 'requested' | 'approved' | 'rejected' | null;
+  cancelRequested?: boolean;
 };
 
 export type NextActionGuide = {
@@ -71,6 +73,12 @@ const isOrderClosed = (status?: string | null) => {
 
 const isVisitPickupItem = (item: OpsLikeItem) => isVisitPickupOrder(item.shippingMethod);
 
+
+function isCancelRequested(item: OpsLikeItem) {
+  if (item.cancelRequested) return true;
+  return item.cancelStatus === 'requested';
+}
+
 function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
   const isVisitPickup = isVisitPickupItem(item);
 
@@ -102,6 +110,10 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
 }
 
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
+  if (isCancelRequested(item)) {
+    return { stage: '취소 요청 처리 단계', nextAction: '취소 요청 확인 후 승인/거절 처리 필요' };
+  }
+
   if (item.kind === 'rental') {
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
       return { stage: '대여 결제 확인 단계', nextAction: '대여 결제 확인 필요' };
@@ -149,6 +161,10 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
 }
 
 export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActionGuide {
+  if (items.some((it) => isCancelRequested(it))) {
+    return { stage: '취소 요청 처리 단계', nextAction: '취소 요청 확인 후 승인/거절 처리 필요' };
+  }
+
   const order = items.find((it) => it.kind === 'order');
   const rental = items.find((it) => it.kind === 'rental');
   const app = items.find((it) => it.kind === 'stringing_application');

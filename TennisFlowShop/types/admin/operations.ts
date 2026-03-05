@@ -6,6 +6,7 @@ export type AdminOperationKind = 'order' | 'stringing_application' | 'rental';
 export type AdminOperationFlow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type SettlementAnchor = 'order' | 'rental' | 'application';
 export type AdminOperationReviewLevel = 'none' | 'info' | 'action';
+export type AdminOperationCancelStatus = 'none' | 'requested' | 'approved' | 'rejected';
 
 export type AdminOperationItem = {
   id: string;
@@ -44,6 +45,12 @@ export type AdminOperationItem = {
   nextAction?: string;
   hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
+  cancel?: {
+    status: AdminOperationCancelStatus;
+    requestedAt?: string | null;
+    handledAt?: string | null;
+    reason?: string;
+  };
 };
 
 

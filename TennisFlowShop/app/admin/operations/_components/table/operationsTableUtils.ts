@@ -2,6 +2,7 @@ import type { Flow, Kind } from '../filters/operationsFilters';
 
 export type SettlementAnchor = 'order' | 'rental' | 'application';
 export type ReviewLevel = 'none' | 'info' | 'action';
+export type CancelStatus = 'none' | 'requested' | 'approved' | 'rejected';
 
 export type OpItem = {
   id: string;
@@ -39,6 +40,12 @@ export type OpItem = {
   stage?: string;
   nextAction?: string;
   hasOutboundTracking?: boolean;
+  cancel?: {
+    status: CancelStatus;
+    requestedAt?: string | null;
+    handledAt?: string | null;
+    reason?: string;
+  };
 };
 
 export function formatKST(iso?: string | null) {

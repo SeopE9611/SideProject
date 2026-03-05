@@ -748,6 +748,7 @@ export async function getOrders(req: NextRequest): Promise<Response> {
   const payment = sp.get('payment') || 'all';
   const shipping = sp.get('shipping') || 'all';
   const customerType = sp.get('customerType') || 'all'; // member | guest | all
+  const cancel = sp.get('cancel') || 'all'; // all | requested | approved | rejected
   const dateYmd = sp.get('date') || ''; // "YYYY-MM-DD" (OrdersClient에서 KST로 보냄)
 
   // KST 기준 YYYY-MM-DD 변환 (클라 DateFilter와 동일 기준 맞추기)
@@ -787,11 +788,14 @@ export async function getOrders(req: NextRequest): Promise<Response> {
     const shippingLabel = getShippingBadge(order).label;
     const shippingMatch = shipping === 'all' || shippingLabel === shipping;
 
+    // --- 취소 요청 상태(cancel) ---
+    const cancelMatch = cancel === 'all' || order?.cancelStatus === cancel;
+
     // --- 날짜(date): KST YYYY-MM-DD 기준 일치 여부 ---
     const orderYmd = dateYmd ? toKstYmd(order?.date ?? order?.createdAt) : '';
     const dateMatch = !dateYmd || (orderYmd && orderYmd === dateYmd);
 
-    return searchMatch && statusMatch && typeMatch && paymentMatch && customerTypeMatch && shippingMatch && dateMatch;
+    return searchMatch && statusMatch && typeMatch && paymentMatch && customerTypeMatch && cancelMatch && shippingMatch && dateMatch;
   });
 
   // 2) 필터된 결과에 대해 페이징
