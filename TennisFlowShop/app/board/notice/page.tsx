@@ -1,5 +1,4 @@
 import { getBoardList } from '@/lib/boards.queries';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
 import type { Metadata } from 'next';
 import NoticeListClient from './_components/NoticeListClient';
 
@@ -50,12 +49,6 @@ async function fetchNotices(opts: { page: number; limit: number; q: string; fiel
   }
 }
 
-// 2) 관리자 여부 조회
-async function fetchIsAdmin() {
-  const me = await getCurrentUser();
-  return me?.role === 'admin';
-}
-
 export default async function Page({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   // URL 쿼리로 직접 진입하는 케이스(/board/notice?page=3&q=...&field=title 등)에서
   // 서버 프리로드가 항상 page=1로 뜨는 문제를 방지
@@ -74,7 +67,7 @@ export default async function Page({ searchParams }: { searchParams?: Promise<Re
 
   const q = rawQ;
 
-  const [{ items, total }, isAdmin] = await Promise.all([fetchNotices({ page, limit, q, field }), fetchIsAdmin()]);
+  const { items, total } = await fetchNotices({ page, limit, q, field });
 
-  return <NoticeListClient initialItems={items} initialTotal={total} isAdmin={isAdmin} initialPage={page} initialKeyword={q} initialField={field} />;
+  return <NoticeListClient initialItems={items} initialTotal={total} initialPage={page} initialKeyword={q} initialField={field} />;
 }
