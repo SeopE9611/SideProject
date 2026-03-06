@@ -299,9 +299,14 @@ export default function AdminDashboardClient() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
-                <span className="text-sm">취소 요청</span>
-                <Badge variant={data.kpi.queue.cancelRequests > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge>
+              <div className="rounded-lg bg-background/60 px-3 py-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">취소 요청</span>
+                  <Badge variant={data.kpi.queue.cancelRequests > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  계좌 확인 필요 {formatAdminNumber(data.kpi.queue.cancelRequestsNeedingRefundAccount)}건 / 승인 검토 가능 {formatAdminNumber(data.kpi.queue.cancelRequestsReadyForReview)}건
+                </p>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
                 <span className="text-sm">결제 대기 24h+</span>

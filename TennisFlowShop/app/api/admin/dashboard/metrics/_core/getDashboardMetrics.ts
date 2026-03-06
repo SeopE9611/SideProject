@@ -83,6 +83,8 @@ type DashboardMetrics = {
     inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
     queue: {
       cancelRequests: number;
+      cancelRequestsNeedingRefundAccount: number;
+      cancelRequestsReadyForReview: number;
       shippingPending: number;
       paymentPending24h: number;
       rentalOverdue: number;
@@ -213,6 +215,27 @@ type DashboardMetrics = {
       lastGeneratedBy: string | null;
     };
   };
+};
+
+
+const REFUND_ACCOUNT_READY_QUERY = {
+  'cancelRequest.refundAccount.bank': { $nin: [null, ''] },
+  'cancelRequest.refundAccount.account': { $nin: [null, ''] },
+  'cancelRequest.refundAccount.holder': { $nin: [null, ''] },
+};
+
+const REFUND_ACCOUNT_NOT_READY_QUERY = {
+  $or: [
+    { 'cancelRequest.refundAccount.bank': { $exists: false } },
+    { 'cancelRequest.refundAccount.bank': null },
+    { 'cancelRequest.refundAccount.bank': '' },
+    { 'cancelRequest.refundAccount.account': { $exists: false } },
+    { 'cancelRequest.refundAccount.account': null },
+    { 'cancelRequest.refundAccount.account': '' },
+    { 'cancelRequest.refundAccount.holder': { $exists: false } },
+    { 'cancelRequest.refundAccount.holder': null },
+    { 'cancelRequest.refundAccount.holder': '' },
+  ],
 };
 
 export async function getDashboardMetrics(db: Db) {
@@ -487,6 +510,8 @@ export async function getDashboardMetrics(db: Db) {
     .toArray();
 
   const orderCancelRequestsP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
+  const orderCancelRequestsNeedingRefundAccountP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_NOT_READY_QUERY });
+  const orderCancelRequestsReadyForReviewP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_READY_QUERY });
 
   const recentOrdersP = ordersCol
     .find(
@@ -538,6 +563,8 @@ export async function getDashboardMetrics(db: Db) {
     .toArray();
 
   const appCancelRequestsP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
+  const appCancelRequestsNeedingRefundAccountP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_NOT_READY_QUERY });
+  const appCancelRequestsReadyForReviewP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_READY_QUERY });
 
   const shippingPendingAppsP = appsCol.countDocuments({
     paymentStatus: { $in: PAYMENT_PAID_VALUES },
@@ -679,6 +706,8 @@ export async function getDashboardMetrics(db: Db) {
     .toArray();
 
   const rentalCancelRequestsP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
+  const rentalCancelRequestsNeedingRefundAccountP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_NOT_READY_QUERY });
+  const rentalCancelRequestsReadyForReviewP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_READY_QUERY });
 
   const rentalCancelRequestsListP = rentalsCol
     .find(
@@ -1007,6 +1036,8 @@ export async function getDashboardMetrics(db: Db) {
     orderPayStatusDistRows,
     shippingPending,
     orderCancelRequests,
+    orderCancelRequestsNeedingRefundAccount,
+    orderCancelRequestsReadyForReview,
     recentOrders,
 
     totalApps,
@@ -1017,6 +1048,8 @@ export async function getDashboardMetrics(db: Db) {
     dailyAppRevenue,
     appStatusDistRows,
     appCancelRequests,
+    appCancelRequestsNeedingRefundAccount,
+    appCancelRequestsReadyForReview,
     recentApps,
 
     totalRentals,
@@ -1024,6 +1057,8 @@ export async function getDashboardMetrics(db: Db) {
     paidRentals7d,
     revenueRentals7dRows,
     rentalCancelRequests,
+    rentalCancelRequestsNeedingRefundAccount,
+    rentalCancelRequestsReadyForReview,
     overdueRentals,
     dueSoonRentals,
     recentRentals,
@@ -1099,6 +1134,8 @@ export async function getDashboardMetrics(db: Db) {
     orderPayStatusDistP,
     shippingPendingP,
     orderCancelRequestsP,
+    orderCancelRequestsNeedingRefundAccountP,
+    orderCancelRequestsReadyForReviewP,
     recentOrdersP,
 
     totalAppsP,
@@ -1109,6 +1146,8 @@ export async function getDashboardMetrics(db: Db) {
     dailyAppRevenueP,
     appStatusDistP,
     appCancelRequestsP,
+    appCancelRequestsNeedingRefundAccountP,
+    appCancelRequestsReadyForReviewP,
     recentAppsP,
 
     totalRentalsP,
@@ -1116,6 +1155,8 @@ export async function getDashboardMetrics(db: Db) {
     paidRentals7dP,
     revenueRentals7dP,
     rentalCancelRequestsP,
+    rentalCancelRequestsNeedingRefundAccountP,
+    rentalCancelRequestsReadyForReviewP,
     overdueRentalsP,
     dueSoonRentalsP,
     recentRentalsP,
@@ -1551,6 +1592,10 @@ export async function getDashboardMetrics(db: Db) {
 
       queue: {
         cancelRequests: Number(orderCancelRequests || 0) + Number(rentalCancelRequests || 0) + Number(appCancelRequests || 0),
+        cancelRequestsNeedingRefundAccount:
+          Number(orderCancelRequestsNeedingRefundAccount || 0) + Number(rentalCancelRequestsNeedingRefundAccount || 0) + Number(appCancelRequestsNeedingRefundAccount || 0),
+        cancelRequestsReadyForReview:
+          Number(orderCancelRequestsReadyForReview || 0) + Number(rentalCancelRequestsReadyForReview || 0) + Number(appCancelRequestsReadyForReview || 0),
         shippingPending: Number(shippingPending || 0) + Number(shippingPendingApps || 0),
         paymentPending24h,
         rentalOverdue: Number(overdueRentals || 0),

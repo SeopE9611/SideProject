@@ -24,6 +24,7 @@ import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { isVisitPickupOrder } from '@/lib/order-shipping';
+import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 
@@ -76,6 +77,8 @@ type NormalizedCancel = {
   requestedAt?: string | null;
   handledAt?: string | null;
   reason?: string;
+  refundAccountReady?: boolean;
+  refundBankLabel?: string | null;
 };
 
 function normalizeCancelStatus(raw: unknown): NormalizedCancel['status'] {
@@ -87,6 +90,21 @@ function normalizeCancelStatus(raw: unknown): NormalizedCancel['status'] {
   return 'none';
 }
 
+function hasRefundAccount(account: UnknownDoc | null) {
+  if (!account) return false;
+  const bank = getString(account.bank)?.trim();
+  const number = getString(account.account)?.trim();
+  const holder = getString(account.holder)?.trim();
+  return Boolean(bank && number && holder);
+}
+
+function resolveRefundBankLabel(account: UnknownDoc | null) {
+  if (!account) return null;
+  const bank = getString(account.bank)?.trim();
+  if (!bank) return null;
+  return getRefundBankLabel(bank);
+}
+
 function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
   const cancel = asDoc(doc?.cancelRequest);
   const status = normalizeCancelStatus(cancel?.status);
@@ -95,7 +113,10 @@ function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
   const reasonCode = getString(cancel?.reasonCode);
   const reasonText = getString(cancel?.reasonText) ?? getString(cancel?.rejectReason);
   const reason = [reasonCode, reasonText].filter(Boolean).join(' · ') || undefined;
-  return { status, requestedAt, handledAt, reason };
+  const refundAccount = asDoc(cancel?.refundAccount);
+  const refundAccountReady = status === 'none' ? undefined : hasRefundAccount(refundAccount);
+  const refundBankLabel = status === 'none' ? null : resolveRefundBankLabel(refundAccount);
+  return { status, requestedAt, handledAt, reason, refundAccountReady, refundBankLabel };
 }
 
 
@@ -742,6 +763,7 @@ export async function handleAdminOperationsGet(req: Request) {
         hasOutboundTracking,
         shippingMethod,
         cancelStatus: cancel.status,
+        refundAccountReady: cancel.refundAccountReady,
       }),
     };
   });
@@ -848,6 +870,7 @@ export async function handleAdminOperationsGet(req: Request) {
         statusLabel: String(a?.status ?? '접수완료'),
         paymentLabel: paymentDerived.paymentLabel,
         cancelStatus: cancel.status,
+        refundAccountReady: cancel.refundAccountReady,
       }),
     };
   });
@@ -917,6 +940,7 @@ export async function handleAdminOperationsGet(req: Request) {
         paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
         cancelStatus: cancel.status,
+        refundAccountReady: cancel.refundAccountReady,
       }),
     };
   });
