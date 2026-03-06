@@ -4,7 +4,6 @@ import UnifiedPackageCard from '@/app/services/packages/_components/UnifiedPacka
 import { normalizePackageCardData, type PackageCardData } from '@/app/services/packages/_lib/packageCard';
 import { getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import { useAuthStore, type User } from '@/app/store/authStore';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -14,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getMyInfo } from '@/lib/auth.client';
 import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -330,7 +330,37 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid && !ownershipBlockedMessage;
 
   if (loading || isPackageLoading) {
-    return <FullPageSpinner label="패키지 결제 화면 준비 중..." />;
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="border-b border-border bg-muted/30">
+          <div className="container mx-auto px-4 py-8 space-y-3">
+            <Skeleton className="h-9 w-56" />
+            <Skeleton className="h-4 w-80 max-w-full" />
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <Card>
+              <CardContent className="space-y-4 p-6">
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-28 w-full" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="space-y-3 p-6">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+                <Skeleton className="h-11 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!selectedPackage) {

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { parse, isToday, isAfter } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TimeSlotSelectorProps {
   selected: string;
@@ -95,7 +96,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-2xl bg-card/60 dark:bg-card backdrop-blur-sm px-4 py-3 shadow-sm">
               <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
-              <p className="mt-2 text-xs text-muted-foreground text-center">시간대 불러오는 중…</p>
+              <div className="mt-2 flex justify-center"><Skeleton className="h-3 w-24" /></div>
             </div>
           </div>
         )}

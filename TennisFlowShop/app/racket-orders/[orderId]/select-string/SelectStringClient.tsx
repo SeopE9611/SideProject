@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type SelectableStringProduct = {
   _id: string;
@@ -80,7 +81,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
       {hasMore && (
         <div className="pt-2">
           <Button type="button" variant="outline" data-cy="racket-string-load-more" onClick={loadMore} disabled={isFetchingMore || !!addingProductId} className="w-full border-border bg-card text-foreground">
-            {isFetchingMore ? '불러오는 중…' : '더 보기'}
+            {isFetchingMore ? <Skeleton className="mx-auto h-4 w-20" /> : '더 보기'}
           </Button>
         </div>
       )}

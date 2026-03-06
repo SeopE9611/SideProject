@@ -1,5 +1,27 @@
-import { FullPageSpinner } from '@/components/system/PageLoading';
+import SiteContainer from '@/components/layout/SiteContainer';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
-  return <FullPageSpinner label="운송장 입력 화면을 불러오는 중..." minHeightClassName="min-h-[70svh]" />;
+  return (
+    <SiteContainer variant="wide" className="py-10 min-h-[70svh]">
+      <div className="mx-auto max-w-3xl space-y-6">
+        <Card>
+          <CardContent className="space-y-3 p-6">
+            <Skeleton className="h-7 w-52" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="space-y-3 p-6">
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-11 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-11 w-36" />
+          </CardContent>
+        </Card>
+      </div>
+    </SiteContainer>
+  );
 }

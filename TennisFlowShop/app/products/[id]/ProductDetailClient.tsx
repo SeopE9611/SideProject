@@ -10,6 +10,7 @@ import PhotosUploader from '@/components/reviews/PhotosUploader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
@@ -1271,7 +1272,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </Button>
                 </div>
 
-                {qnaLoading && <div className="text-sm text-muted-foreground">불러오는 중…</div>}
+                {qnaLoading && <div className="py-1"><Skeleton className="h-4 w-20" /></div>}
                 {qnaError && <div className="text-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>}
 
                 {!qnaLoading && !qnaError && (

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
@@ -210,12 +211,20 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
   if (isLoadingInitial) {
     return (
-      <SiteContainer variant="wide" className="py-16">
-        <div className="flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-foreground" />
-            <p className="text-sm text-muted-foreground">스트링을 불러오는 중...</p>
-          </div>
+      <SiteContainer variant="wide" className="py-16 space-y-6">
+        <div className="mx-auto max-w-2xl space-y-3 text-center">
+          <Skeleton className="mx-auto h-8 w-40" />
+          <Skeleton className="mx-auto h-4 w-96 max-w-full" />
+        </div>
+        <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="rounded-2xl border border-border bg-card p-5 space-y-3">
+              <Skeleton className="aspect-square w-full rounded-xl" />
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
         </div>
       </SiteContainer>
     );
@@ -387,8 +396,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
             <Button onClick={loadMore} disabled={isFetchingMore} className="px-8 py-6 rounded-xl font-medium bg-card border-2 border-border text-foreground hover:border-border hover:bg-muted disabled:opacity-50 transition-all duration-300">
               {isFetchingMore ? (
                 <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-foreground" />
-                  불러오는 중...
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <Skeleton className="h-4 w-20" />
                 </span>
               ) : (
                 <span className="flex items-center gap-2">

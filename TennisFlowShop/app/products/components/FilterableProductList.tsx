@@ -613,7 +613,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               {isFetchingMore && (
                 <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
                   <div className="h-4 w-4 rounded-full border-2 border-border border-t-transparent animate-spin" />
-                  <span className="text-muted-foreground">더 불러오는 중...</span>
+                  <Skeleton className="h-4 w-24" />
                 </div>
               )}
             </>

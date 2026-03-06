@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { X, ArrowLeft, Trash2, Info, Scale, AlertCircle, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from '@/lib/constants';
@@ -212,7 +213,7 @@ export default function RacketCompareClient() {
           <div className="rounded-xl bg-muted/30 dark:bg-muted/20 ring-1 ring-border/10 p-6">
             <div className="flex items-center gap-3 text-muted-foreground">
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              <span className="text-sm">비교 목록을 불러오는 중...</span>
+              <div className="space-y-2"><Skeleton className="h-4 w-36" /><Skeleton className="h-4 w-24" /></div>
             </div>
           </div>
         ) : !canCompare ? (

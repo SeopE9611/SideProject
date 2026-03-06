@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ClipboardList, DollarSign, Ticket, Zap } from 'lucide-react';
 import React from 'react';
 
@@ -338,7 +339,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           {(isLockedNonOrder || isRentalNonOrder) && lockedStringId && lockedStringId !== 'custom' && (
             <div className="mb-4 rounded-lg border border-border bg-muted/70 p-3">
               {isLoadingPdpProduct ? (
-                <div className="text-xs text-primary">선택한 스트링 정보를 불러오는 중입니다...</div>
+                <div className="space-y-2"><Skeleton className="h-4 w-40" /><Skeleton className="h-4 w-56" /></div>
               ) : (
                 <>
                   <div className="flex items-center gap-3">

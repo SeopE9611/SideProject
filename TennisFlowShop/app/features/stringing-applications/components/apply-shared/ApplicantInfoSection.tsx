@@ -6,6 +6,7 @@ import { User, Truck, Store, Shield, MapPin, Box } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -419,7 +420,7 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
         <div className="absolute inset-0 z-10 rounded-2xl bg-card/45 dark:bg-card backdrop-blur-[2px] ring-1 ring-inset ring-ring grid place-content-center">
           <div className="flex items-center gap-3 text-foreground">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
-            <span className="text-sm">회원 정보 불러오는 중…</span>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-4 w-24" /></div>
           </div>
         </div>
       )}
