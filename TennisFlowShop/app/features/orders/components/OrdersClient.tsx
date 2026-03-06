@@ -35,6 +35,21 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 export default function OrdersClient() {
+
+function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필요' | '검토 가능'; className: string } | null {
+  if (order.cancelStatus !== 'requested') return null;
+  if (order.refundAccountReady === true) {
+    return {
+      label: '검토 가능',
+      className: 'bg-primary/10 text-primary border border-primary/30',
+    };
+  }
+  return {
+    label: '계좌확인 필요',
+    className: 'bg-muted text-muted-foreground border border-border',
+  };
+}
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -610,6 +625,7 @@ export default function OrdersClient() {
                       const settlement = getSettlementBadge(order, { isIntegratedApp });
                       const actionMethodSource = order.__type === 'stringing_application' ? (order as any)?.shippingInfo?.shippingMethod ?? (order as any)?.collectionMethod : (order as any)?.shippingInfo;
                       const shippingActionLabel = isVisitPickupOrder(actionMethodSource) ? '수령 정보 등록' : '배송 정보 등록';
+                      const cancelQuickSignal = getCancelQuickSignal(order);
 
                       return (
                         <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
@@ -647,6 +663,15 @@ export default function OrdersClient() {
                                               },
                                             ]
                                           : []),
+                                        ...(cancelQuickSignal
+                                          ? [
+                                              {
+                                                label: cancelQuickSignal.label,
+                                                className: cancelQuickSignal.className,
+                                                title: '환불 계좌 준비 상태',
+                                              },
+                                            ]
+                                          : []),
                                       ]}
                                     />
                                     {isLinkedProductOrder && linkedApplication && (
@@ -674,6 +699,8 @@ export default function OrdersClient() {
                                     </div>
 
                                     {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-primary">취소 요청이 접수된 주문입니다.</p>}
+                                    {cancelQuickSignal && <p className="mt-1 text-[11px] text-muted-foreground">{cancelQuickSignal.label === '검토 가능' ? '환불 계좌가 준비되어 검토 가능한 상태입니다.' : '환불 계좌 정보 확인이 필요합니다.'}</p>}
+                                    {cancelQuickSignal && order.refundBankLabel && <p className="mt-1 text-[11px] text-muted-foreground">환불 은행: {order.refundBankLabel}</p>}
                                     {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
 
                                     <p className="mt-2 text-[11px] text-muted-foreground">
@@ -723,6 +750,7 @@ export default function OrdersClient() {
                               <div className="flex flex-col items-start gap-1">
                                 <ApplicationStatusBadge status={order.status} />
                                 {order.cancelStatus === 'requested' && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30')}>취소요청</Badge>}
+                                {cancelQuickSignal && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', cancelQuickSignal.className)}>{cancelQuickSignal.label}</Badge>}
                               </div>
                             ) : (
                               (() => {
@@ -733,6 +761,7 @@ export default function OrdersClient() {
                                       {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
                                     </Badge>
                                     {order.cancelStatus === 'requested' && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30')}>취소요청</Badge>}
+                                    {cancelQuickSignal && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', cancelQuickSignal.className)}>{cancelQuickSignal.label}</Badge>}
                                   </div>
                                 );
                               })()

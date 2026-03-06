@@ -50,6 +50,8 @@ export type Order = {
   stringSummary?: string;
 
   cancelStatus?: 'requested' | 'approved' | 'rejected';
+  refundAccountReady?: boolean;
+  refundBankLabel?: string | null;
 };
 
 export type OrderWithType = Order & {

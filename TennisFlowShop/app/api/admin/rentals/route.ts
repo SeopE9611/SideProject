@@ -5,8 +5,25 @@ import { z } from 'zod';
 import { requireAdmin } from '@/lib/admin.guard';
 import type { AdminRentalListItemDto, AdminRentalsListResponseDto } from '@/types/admin/rentals';
 import { normalizeRentalPaymentMeta } from '@/lib/admin-ops-normalize';
+import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 
 export const dynamic = 'force-dynamic';
+
+
+function hasRefundAccount(account: any): boolean {
+  if (!account || typeof account !== 'object') return false;
+  const bank = String(account.bank ?? '').trim();
+  const number = String(account.account ?? '').trim();
+  const holder = String(account.holder ?? '').trim();
+  return Boolean(bank && number && holder);
+}
+
+function resolveRefundBankLabel(account: any): string | null {
+  if (!account || typeof account !== 'object') return null;
+  const bank = String(account.bank ?? '').trim();
+  if (!bank) return null;
+  return getRefundBankLabel(bank);
+}
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
@@ -227,6 +244,8 @@ export async function GET(req: Request) {
                 : rentalDoc.cancelRequest.status === '승인' || rentalDoc.cancelRequest.status === 'approved'
                   ? 'approved'
                   : 'rejected',
+            refundAccountReady: hasRefundAccount((rentalDoc as any)?.cancelRequest?.refundAccount ?? null),
+            refundBankLabel: resolveRefundBankLabel((rentalDoc as any)?.cancelRequest?.refundAccount ?? null),
           }
         : null,
       customer: { name: cust?.name || '', email: cust?.email || '' },

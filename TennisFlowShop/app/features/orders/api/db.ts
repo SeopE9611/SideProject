@@ -4,6 +4,22 @@ import { DBOrder } from '@/lib/types/order-db';
 import { ObjectId } from 'mongodb';
 import { normalizeOrderStatus, normalizePaymentStatus } from '@/lib/admin-ops-normalize';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+
+function hasRefundAccount(account: any): boolean {
+  if (!account || typeof account !== 'object') return false;
+  const bank = String(account.bank ?? '').trim();
+  const number = String(account.account ?? '').trim();
+  const holder = String(account.holder ?? '').trim();
+  return Boolean(bank && number && holder);
+}
+
+function resolveRefundBankLabel(account: any): string | null {
+  if (!account || typeof account !== 'object') return null;
+  const bank = String(account.bank ?? '').trim();
+  if (!bank) return null;
+  return getRefundBankLabel(bank);
+}
 
 // 주문을 DB에 삽입하는 함수
 export async function insertOrder(order: DBOrder) {
@@ -81,6 +97,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
 
       // 원본 상태 문자열 (한글/영문 섞여 있을 수 있음)
       const rawCancelStatus = order.cancelRequest?.status as string | undefined;
+      const refundAccount = (order as any)?.cancelRequest?.refundAccount ?? null;
 
       // 한글/영문 모두 지원해서 공통 코드로 정규화
       let cancelStatus: 'requested' | 'approved' | 'rejected' | undefined;
@@ -150,6 +167,8 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
           },
         },
         cancelStatus,
+        refundAccountReady: cancelStatus ? hasRefundAccount(refundAccount) : undefined,
+        refundBankLabel: cancelStatus ? resolveRefundBankLabel(refundAccount) : null,
       };
     }),
   );
@@ -232,6 +251,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
 
         // 신청서 쪽 원본 상태 문자열
         const rawAppCancelStatus = (app as any).cancelRequest?.status as string | undefined;
+        const appRefundAccount = (app as any)?.cancelRequest?.refundAccount ?? null;
 
         let cancelStatus: 'requested' | 'approved' | 'rejected' | undefined;
 
@@ -275,6 +295,8 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
             },
           },
           cancelStatus,
+          refundAccountReady: cancelStatus ? hasRefundAccount(appRefundAccount) : undefined,
+          refundBankLabel: cancelStatus ? resolveRefundBankLabel(appRefundAccount) : null,
         };
       }),
     )
