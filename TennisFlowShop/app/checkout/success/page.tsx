@@ -181,6 +181,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   // 포인트/적용 전 금액 안전 추출(필드가 없을 수도 있으니 fallback)
   const originalTotal = order.originalTotalPrice ?? order.paymentInfo?.originalTotal ?? order.totalPrice ?? 0;
   const pointsUsed = order.pointsUsed ?? order.paymentInfo?.pointsUsed ?? 0;
+  const totalPrice = Number(order.totalPrice ?? 0);
+  const normalizedTotalPrice = Number.isFinite(totalPrice) ? totalPrice : 0;
+  const originalTotalNumber = Number(originalTotal);
+  const normalizedOriginalTotal = Number.isFinite(originalTotalNumber) ? originalTotalNumber : 0;
+  const pointsUsedNumber = Number(pointsUsed);
+  const normalizedPointsUsed = Number.isFinite(pointsUsedNumber) ? pointsUsedNumber : 0;
+  // 0원 결제 시 입금 안내 오해 방지
+  const isZeroPayment = normalizedTotalPrice <= 0 || normalizedOriginalTotal - normalizedPointsUsed <= 0;
 
   return (
     <>
@@ -303,7 +311,14 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <CreditCard className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">결제 방법</p>
-                        <p className="font-semibold text-foreground">무통장입금</p>
+                        {isZeroPayment ? (
+                          <>
+                            <p className="font-semibold text-foreground">결제 완료 (결제 금액 0원)</p>
+                            <p className="text-sm text-muted-foreground">포인트 전액 사용 등으로 추가 입금이 필요하지 않습니다.</p>
+                          </>
+                        ) : (
+                          <p className="font-semibold text-foreground">무통장입금</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -313,18 +328,25 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <CreditCard className="h-5 w-5 text-primary" />
                       <h3 className="font-bold text-foreground">입금 계좌 정보</h3>
                     </div>
-                    {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
+                    {isZeroPayment ? (
                       <div className="space-y-2 rounded-lg border border-border bg-card p-4">
-                        <div className="font-semibold text-foreground">{bankLabelMap[order.paymentInfo.bank].label}</div>
-                        <div className="font-mono text-lg font-bold text-primary">{bankLabelMap[order.paymentInfo.bank].account}</div>
-                        <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</div>
+                        <p className="font-semibold text-foreground">추가 입금 불필요</p>
+                        <p className="text-sm text-muted-foreground">결제 금액이 0원으로 확인되어 입금 안내가 생략되었습니다.</p>
                       </div>
+                    ) : order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
+                      <>
+                        <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+                          <div className="font-semibold text-foreground">{bankLabelMap[order.paymentInfo.bank].label}</div>
+                          <div className="font-mono text-lg font-bold text-primary">{bankLabelMap[order.paymentInfo.bank].account}</div>
+                          <div className="text-sm text-muted-foreground">예금주: {bankLabelMap[order.paymentInfo.bank].holder}</div>
+                        </div>
+                        <div className="mt-4 rounded-lg border border-border bg-card p-3">
+                          <p className="text-sm font-semibold text-primary">⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
+                        </div>
+                      </>
                     ) : (
                       <p className="text-muted-foreground">선택된 은행 없음</p>
                     )}
-                    <div className="mt-4 rounded-lg border border-border bg-card p-3">
-                      <p className="text-sm font-semibold text-primary">⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString('ko-KR')} 23:59까지</p>
-                    </div>
                   </div>
                 </div>
 
