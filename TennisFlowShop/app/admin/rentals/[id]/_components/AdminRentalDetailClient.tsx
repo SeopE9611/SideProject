@@ -11,7 +11,7 @@ import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
-import { formatRefundAccountSummary, getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import { racketBrandLabel } from '@/lib/constants';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -268,7 +268,6 @@ export default function AdminRentalDetailClient() {
 
   // 취소 요청 상태 정보
   const cancelInfo = getAdminRentalCancelInfo(data);
-  const cancelRefundAccountSummary = formatRefundAccountSummary(data?.cancelRequest?.refundAccount ?? null);
   const cancelRefundAccount = data?.cancelRequest?.refundAccount
     ? {
         bankLabel: getRefundBankLabel(data.cancelRequest.refundAccount.bank),
@@ -383,24 +382,16 @@ export default function AdminRentalDetailClient() {
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
               <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_300px]">
                   <div>
                     <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
                     <p className="mt-1">{cancelInfo.label}</p>
                     {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
-                    {cancelRefundAccountSummary && <p className="mt-1 text-xs text-primary">환불 계좌: {cancelRefundAccountSummary}</p>}
-                    {cancelRefundAccount && (
-                      <div className="mt-2 space-y-1 rounded-md border border-border/60 bg-background/70 px-3 py-2 text-xs text-foreground">
-                        <p>환불 은행: {cancelRefundAccount.bankLabel || '미입력'}</p>
-                        <p>계좌번호: {cancelRefundAccount.account || '미입력'}</p>
-                        <p>예금주: {cancelRefundAccount.holder || '미입력'}</p>
-                      </div>
-                    )}
-                  </div>
 
-                  {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
-                  {cancelInfo.status === 'requested' && (
-                    <div className="mt-2 flex flex-col gap-2 sm:mt-0 sm:flex-row sm:items-center sm:justify-end">
+                    {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
+                    {cancelInfo.status === 'requested' && (
+                      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+
                       <Button
                         size="sm"
                         className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -435,8 +426,27 @@ export default function AdminRentalDetailClient() {
                       >
                         {busyAction === 'rejectCancel' ? '거절 처리중…' : '요청 거절'}
                       </Button>
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
+                    <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
+                    <dl className="mt-2 space-y-1 text-xs text-foreground">
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">환불 은행</dt>
+                        <dd>{cancelRefundAccount?.bankLabel || '미입력'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">계좌번호</dt>
+                        <dd className="font-mono">{cancelRefundAccount?.account || '미입력'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">예금주</dt>
+                        <dd>{cancelRefundAccount?.holder || '미입력'}</dd>
+                      </div>
+                    </dl>
+                  </div>
                 </div>
               </div>
             )}

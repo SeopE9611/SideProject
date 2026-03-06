@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
-import { formatRefundAccountSummary, getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -97,7 +97,6 @@ function getAdminCancelRequestInfo(order: any): {
   label: string;
   badge: string;
   reason?: string;
-  refundAccountSummary?: string | null;
   refundAccount?: {
     bankLabel: string;
     account: string;
@@ -108,7 +107,6 @@ function getAdminCancelRequestInfo(order: any): {
   if (!cancel || !cancel.status || cancel.status === 'none') return null;
 
   const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
-  const refundAccountSummary = formatRefundAccountSummary(cancel.refundAccount ?? null);
   const refundAccount = cancel?.refundAccount
     ? {
         bankLabel: getRefundBankLabel(cancel.refundAccount.bank),
@@ -123,7 +121,6 @@ function getAdminCancelRequestInfo(order: any): {
         label: '고객이 주문 취소를 요청했습니다.',
         badge: '요청됨',
         reason: reasonSummary,
-        refundAccountSummary,
         refundAccount,
       };
     case 'approved':
@@ -131,7 +128,6 @@ function getAdminCancelRequestInfo(order: any): {
         label: '취소 요청이 승인되어 주문이 취소되었습니다.',
         badge: '승인',
         reason: reasonSummary,
-        refundAccountSummary,
         refundAccount,
       };
     case 'rejected':
@@ -139,7 +135,6 @@ function getAdminCancelRequestInfo(order: any): {
         label: '취소 요청이 거절되었습니다.',
         badge: '거절',
         reason: reasonSummary,
-        refundAccountSummary,
         refundAccount,
       };
     default:
@@ -553,19 +548,28 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
               <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-foreground">
-                <div className="flex items-start justify-between gap-2">
+                <div className="grid gap-3 md:grid-cols-2">
                   <div>
                     <p className="font-medium text-foreground">취소 요청 상태: {cancelInfo.badge}</p>
                     <p className="mt-1">{cancelInfo.label}</p>
                     {cancelInfo.reason && <p className="mt-1 text-xs text-foreground/80">사유: {cancelInfo.reason}</p>}
-                    {cancelInfo.refundAccountSummary && <p className="mt-1 text-xs text-foreground/80">환불 계좌: {cancelInfo.refundAccountSummary}</p>}
-                    {cancelInfo.refundAccount && (
-                      <div className="mt-2 space-y-1 rounded-md border border-border/60 bg-background/60 px-3 py-2 text-xs text-foreground/90">
-                        <p>환불 은행: {cancelInfo.refundAccount.bankLabel || '미입력'}</p>
-                        <p>계좌번호: {cancelInfo.refundAccount.account || '미입력'}</p>
-                        <p>예금주: {cancelInfo.refundAccount.holder || '미입력'}</p>
+                  </div>
+                  <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
+                    <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
+                    <dl className="mt-2 space-y-1 text-xs text-foreground/90">
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">환불 은행</dt>
+                        <dd>{cancelInfo.refundAccount?.bankLabel || '미입력'}</dd>
                       </div>
-                    )}
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">계좌번호</dt>
+                        <dd className="font-mono">{cancelInfo.refundAccount?.account || '미입력'}</dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">예금주</dt>
+                        <dd>{cancelInfo.refundAccount?.holder || '미입력'}</dd>
+                      </div>
+                    </dl>
                   </div>
                 </div>
               </div>
