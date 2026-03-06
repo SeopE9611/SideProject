@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -26,6 +27,30 @@ const fetcher = async (url: string) => {
   if (!res.ok) throw new Error('문의 목록을 불러오지 못했습니다.');
   return res.json();
 };
+
+
+
+const QnAListSkeleton = ({ count = 4 }: { count?: number }) => (
+  <div className="space-y-4">
+    {Array.from({ length: count }).map((_, idx) => (
+      <Card key={idx} className="border-0 bg-card">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-5 w-64" />
+            </div>
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+          <div className="flex items-center justify-between border-t border-border/60 pt-4">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-9 w-20" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
 
 export default function QnAList() {
   // 필터/검색 대비
@@ -68,7 +93,7 @@ export default function QnAList() {
 
   // 첫 로딩
   if (!data && isValidating) {
-    return <div className="text-center py-8 text-muted-foreground">문의 내역을 불러오는 중입니다...</div>;
+    return <QnAListSkeleton />;
   }
 
   // 빈 상태
@@ -140,12 +165,14 @@ export default function QnAList() {
       <div className="mt-6 flex justify-center items-center">
         {hasMore ? (
           <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
-            {isValidating ? '불러오는 중…' : '더 보기'}
+            더 보기
           </Button>
         ) : qnas.length ? (
           <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
+
+      {hasMore && isValidating ? <QnAListSkeleton count={2} /> : null}
     </div>
   );
 }

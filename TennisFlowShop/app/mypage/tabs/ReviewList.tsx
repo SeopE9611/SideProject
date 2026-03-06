@@ -7,6 +7,7 @@ import useSWRInfinite from 'swr/infinite';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,6 +67,40 @@ interface ReviewListProps {
   // SSR 등으로 부모에서 넣을 수도 있는 초기 표시용
   reviews?: SSRReview[];
 }
+
+
+
+const ReviewListSkeleton = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-4">
+    {Array.from({ length: count }).map((_, idx) => (
+      <Card key={idx} className="border-0 bg-card">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12 rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-16" />
+              <Skeleton className="h-9 w-16" />
+            </div>
+          </div>
+          <div className="space-y-2 rounded-lg bg-muted p-4">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+          <div className="flex items-center justify-between border-t border-border/60 pt-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
 
 /* 공통 */
 const fetcher = (url: string) =>
@@ -326,7 +361,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
   // 첫 로딩
   if (!data && isValidating) {
-    return <div className="text-center py-8 text-muted-foreground">리뷰 내역을 불러오는 중입니다...</div>;
+    return <ReviewListSkeleton />;
   }
 
   return (
@@ -486,18 +521,14 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       <div className="flex justify-center pt-2">
         {itemsToRender.length && hasMore ? (
           <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
-            {isValidating ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" /> 불러오는 중…
-              </>
-            ) : (
-              '더 보기'
-            )}
+            더 보기
           </Button>
         ) : itemsToRender.length ? (
           <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
+
+      {itemsToRender.length && hasMore && isValidating ? <ReviewListSkeleton count={2} /> : null}
 
       {/* 수정 다이얼로그 */}
       <Dialog open={!!editing} onOpenChange={(open) => !open && closeEdit()}>
