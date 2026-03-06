@@ -369,7 +369,7 @@ export default function MypageClient({ user }: Props) {
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
                       {selectedRentalId ? (
-                        <Suspense fallback={<div className="p-6">불러오는 중…</div>}>
+                        <Suspense fallback={<RentalSkeleton />}>
                           <RentalsDetailClient id={selectedRentalId} />
                         </Suspense>
                       ) : (
@@ -484,7 +484,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<div className="p-4">불러오는 중…</div>}>
+                      <Suspense fallback={<PassListSkeleton />}>
                         <MyPointsTab />
                       </Suspense>
                     </CardContent>
