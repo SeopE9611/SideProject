@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { mutate } from 'swr';
-import { XCircle } from 'lucide-react';
+import { getRefundBankLabel, REFUND_ACCOUNT_BANKS } from '@/lib/cancel-request/refund-account';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { mutate } from 'swr';
 
 interface CancelRentalDialogProps {
   rentalId: string;
@@ -28,8 +30,27 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
   // API 호출 중 여부
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 환불 계좌
+  const [refundBank, setRefundBank] = useState<string>('');
+  const [refundAccount, setRefundAccount] = useState('');
+  const [refundHolder, setRefundHolder] = useState('');
+
+  /**
+   * 다이얼로그 내부 입력값 초기화
+   * - 닫기
+   * - 성공 후 종료
+   * 두 경우 모두 동일한 정리가 필요하므로 함수로 분리
+   */
+  const resetForm = () => {
+    setSelectedReason(undefined);
+    setOtherReason('');
+    setRefundBank('');
+    setRefundAccount('');
+    setRefundHolder('');
+  };
+
   // 입력/선택이 있는 상태에서 페이지 이탈(뒤로가기/링크/탭닫기) 방지
-  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0);
+  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0 || refundBank !== '' || refundAccount.trim().length > 0 || refundHolder.trim().length > 0);
   useUnsavedChangesGuard(isDirty);
 
   // “닫기” 시 입력 유실 방지 (ESC/오버레이/닫기 버튼 모두 여기로 들어옴)
@@ -51,8 +72,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
 
     // 닫힐 때는 “버리기”가 확정이므로 상태를 정리
     setOpen(false);
-    setSelectedReason(undefined);
-    setOtherReason('');
+    resetForm();
   };
 
   const handleSubmit = async () => {
@@ -67,6 +87,16 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       return;
     }
 
+    const refundAccountDigits = refundAccount.replace(/\D/g, '');
+    if (!refundBank || !refundAccountDigits || !refundHolder.trim()) {
+      showErrorToast('환불 은행, 계좌번호, 예금주를 입력해주세요.');
+      return;
+    }
+    if (refundAccountDigits.length < 8 || refundAccountDigits.length > 20) {
+      showErrorToast('계좌번호는 -를 제외한 숫자 8~20자리로 입력해주세요.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -75,6 +105,11 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
         reasonCode: selectedReason,
         // "기타"일 때만 입력한 텍스트 저장, 나머지는 공란
         reasonText: selectedReason === '기타' ? otherReason.trim() : '',
+        refundAccount: {
+          bank: refundBank,
+          account: refundAccountDigits,
+          holder: refundHolder.trim(),
+        },
       };
 
       const res = await fetch(`/api/rentals/${rentalId}/cancel-request`, {
@@ -100,8 +135,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       await mutate((key: string) => key?.startsWith('/api/me/rentals'), undefined, { revalidate: true });
 
       // 성공 종료 시에도 입력값은 초기화(다음 오픈 시 이전 선택값 잔존 방지)
-      setSelectedReason(undefined);
-      setOtherReason('');
+      resetForm();
       // 모달 닫기
       setOpen(false);
       if (onSuccess) {
@@ -151,6 +185,38 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
               <Textarea rows={3} value={otherReason} onChange={(e) => setOtherReason(e.target.value)} placeholder="취소 요청 사유를 입력해주세요." />
             </div>
           )}
+          <div className="space-y-3 rounded-md border border-border/60 bg-muted/30 p-3">
+            <div>
+              <p className="text-sm font-semibold">환불 계좌 정보</p>
+              <p className="text-xs text-muted-foreground mt-1">기존 계좌와 다르면, 실제 환불받을 계좌로 다시 입력해주세요.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>환불 은행</Label>
+              <Select value={refundBank} onValueChange={setRefundBank}>
+                <SelectTrigger>
+                  <SelectValue placeholder="은행 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFUND_ACCOUNT_BANKS.map((bank) => (
+                    <SelectItem key={bank} value={bank}>
+                      {getRefundBankLabel(bank)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>환불 계좌번호</Label>
+              <Input value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="숫자만 입력 가능" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>예금주</Label>
+              <Input value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예금주명을 입력해주세요" />
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

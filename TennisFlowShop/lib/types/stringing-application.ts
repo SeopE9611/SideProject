@@ -1,3 +1,5 @@
+import { RefundAccountInfo } from '@/lib/cancel-request/refund-account';
+
 /** 수거 방식: 자가 발송 / 기사 방문 수거 / 매장 방문 */
 export type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
 
@@ -61,7 +63,7 @@ export interface StringingApplication {
    * - DB에는 ObjectId 또는 string이 혼재할 수 있으므로(레거시/마이그레이션) API에서는 둘 다 매칭 처리 권장
    */
   rentalId?: string | null;
-  
+
   createdAt: string; // ISO
   updatedAt: string; // ISO
 
@@ -98,6 +100,7 @@ export interface StringingApplication {
     approvedAt?: string;
     rejectedAt?: string;
     rejectReason?: string;
+    refundAccount?: RefundAccountInfo;
   };
 
   // 이력

@@ -1,3 +1,5 @@
+import { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
+
 // 취소 요청 상태 타입
 export type CancelRequestStatus = 'none' | 'requested' | 'approved' | 'rejected';
 
@@ -21,4 +23,11 @@ export interface CancelRequestInfo {
 
   // 처리를 수행한 관리자 ID(문자열, ObjectId 문자열 형태)
   processedByAdminId?: string;
+
+  /**
+   * 취소 요청 시점 환불 계좌 스냅샷
+   * - top-level 주문/신청 정보가 아니라
+   *   "취소 요청 당시 고객이 입력한 값"을 보존하기 위해 cancelRequest 내부에 둔다.
+   */
+  refundAccount?: RefundAccountInfo;
 }

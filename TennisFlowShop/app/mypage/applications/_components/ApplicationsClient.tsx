@@ -3,6 +3,7 @@
 import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { collectionMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
+import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,8 +17,6 @@ import { MdSportsTennis } from 'react-icons/md';
 import { useSWRConfig } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 import CancelStringingDialog from './CancelStringingDialog';
-import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
-import { badgeToneVariant, getApplicationStatusBadgeSpec } from '@/lib/badge-style';
 
 export interface Application {
   id: string;
@@ -160,7 +159,15 @@ export default function ApplicationsClient() {
     setCancelDialogOpen(true);
   };
 
-  const handleConfirmCancel = async (params: { reasonCode: string; reasonText?: string }) => {
+  const handleConfirmCancel = async (params: {
+    reasonCode: string;
+    reasonText?: string;
+    refundAccount: {
+      bank: 'shinhan' | 'kookmin' | 'woori';
+      account: string;
+      holder: string;
+    };
+  }) => {
     if (!targetId) return;
 
     try {
@@ -317,14 +324,7 @@ export default function ApplicationsClient() {
             isStringService && isVisit && app.preferredDate && app.preferredTime ? formatVisitTimeRange(app.preferredDate, app.preferredTime, app.visitDurationMinutes ?? null, app.visitSlotCount ?? null).replace(/-/g, '.') : null;
 
           // 라벨 고증에 맞게 보정
-          const collectionLabel =
-            !isStringService
-              ? null
-              : !inboundRequired
-                ? '접수 방식: 입고 불필요(주문/대여 기반)'
-                : cm === 'self_ship' || cm === 'courier_pickup' || cm === 'visit'
-                  ? `접수 방식: ${collectionMethodLabel(cm)}`
-                  : '접수 방식: 기타';
+          const collectionLabel = !isStringService ? null : !inboundRequired ? '접수 방식: 입고 불필요(주문/대여 기반)' : cm === 'self_ship' || cm === 'courier_pickup' || cm === 'visit' ? `접수 방식: ${collectionMethodLabel(cm)}` : '접수 방식: 기타';
 
           // 운송장 등록 여부
           const hasTracking = app.hasTracking;
@@ -382,15 +382,17 @@ export default function ApplicationsClient() {
                       {hasRentalLink && rentalId && (
                         <div className="mt-1 flex items-center gap-2">
                           <Link href={`/mypage?tab=rentals&rentalId=${rentalId}`}>
-                            <Badge variant="outline">
-                              원 대여 상세 보기
-                            </Badge>
+                            <Badge variant="outline">원 대여 상세 보기</Badge>
                           </Link>
                           <span className="text-xs text-muted-foreground">대여 ID 끝자리 {rentalId.slice(-6)}</span>
                         </div>
                       )}
 
-                      {collectionLabel && <Badge variant="neutral" className="mt-1 px-2 py-0.5 text-[11px] font-medium">{collectionLabel}</Badge>}
+                      {collectionLabel && (
+                        <Badge variant="neutral" className="mt-1 px-2 py-0.5 text-[11px] font-medium">
+                          {collectionLabel}
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
@@ -499,7 +501,6 @@ export default function ApplicationsClient() {
                           {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
                         </Button>
                       ))}
-
 
                     {/* 교체확정(항상 노출) - 스트링 장착 서비스에만 표시 */}
                     {isStringService && (

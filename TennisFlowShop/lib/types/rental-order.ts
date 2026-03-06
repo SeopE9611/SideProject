@@ -1,4 +1,7 @@
 // 대여 도메인 상태
+
+import { RefundAccountInfo } from '@/lib/cancel-request/refund-account';
+
 // pending → paid → out → returned (종결) / canceled(종결)
 export type RentalStatus =
   | 'pending' // 대기중(신청 완료, 결제 전)
@@ -17,7 +20,8 @@ export type RentalCancelRequest = {
   reasonText?: string; // 기타 상세 사유
   requestedAt: string; // ISO 문자열
   processedAt?: string; // 승인/거절 시각
-  processedByAdminId?: string; // 처리한 관리자 ID (선택)
+  processedByAdminId?: string; // 처리한 관리자 ID
+  refundAccount?: RefundAccountInfo; // 취소 요청 시점 환불 계좌
 };
 
 export type RentalStringing = {
@@ -86,6 +90,9 @@ export type RentalOrder = {
 
   // 반납 이후 크레딧
   creditIssued?: { amount: number; expiresAt: string };
+
+  // 기존 대여 체크아웃 환급 계좌
+  refundAccount?: RefundAccountInfo | null;
 
   // 취소 요청 정보
   cancelRequest?: RentalCancelRequest;

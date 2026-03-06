@@ -22,6 +22,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
+import { formatRefundAccountSummary } from '@/lib/cancel-request/refund-account';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -65,6 +66,11 @@ interface ApplicationDetail {
     approvedAt?: string;
     rejectedAt?: string;
     rejectedReason?: string;
+     refundAccount?: {
+      bank: 'shinhan' | 'kookmin' | 'woori';
+      account: string;
+      holder: string;
+    };
   } | null;
   updatedAt?: string;
   items: Array<{
@@ -159,11 +165,13 @@ function getAdminApplicationCancelRequestInfo(app: any): {
   label: string;
   badge: string;
   reason?: string;
+  refundAccountSummary?: string | null;
 } | null {
   const cancel = app?.cancelRequest;
   if (!cancel || !cancel.status || cancel.status === 'none') return null;
 
   const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
+  const refundAccountSummary = formatRefundAccountSummary(cancel.refundAccount ?? null);
 
   // 한글/영문 상태 모두 허용
   const status = cancel.status;
@@ -175,6 +183,7 @@ function getAdminApplicationCancelRequestInfo(app: any): {
         label: '고객이 신청 취소를 요청했습니다.',
         badge: '요청됨',
         reason: reasonSummary,
+        refundAccountSummary,
       };
     case 'approved':
     case '승인':
@@ -182,6 +191,7 @@ function getAdminApplicationCancelRequestInfo(app: any): {
         label: '취소 요청이 승인되어 신청이 취소되었습니다.',
         badge: '승인',
         reason: reasonSummary,
+        refundAccountSummary,
       };
     case 'rejected':
     case '거절':
@@ -189,6 +199,7 @@ function getAdminApplicationCancelRequestInfo(app: any): {
         label: '취소 요청이 거절되었습니다.',
         badge: '거절',
         reason: reasonSummary,
+        refundAccountSummary,
       };
     default:
       return null;
@@ -322,8 +333,16 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   };
 
   // 2) 모달에서 "취소 요청하기" 눌렀을 때 실제 요청
-  const handleConfirmCancelRequest = (params: { reasonCode: string; reasonText?: string }) => {
-    const { reasonCode, reasonText } = params;
+  const handleConfirmCancelRequest = (params: {
+    reasonCode: string;
+    reasonText?: string;
+    refundAccount: {
+      bank: 'shinhan' | 'kookmin' | 'woori';
+      account: string;
+      holder: string;
+    };
+  }) => {
+    const { reasonCode, reasonText, refundAccount } = params;
 
     startTransition(async () => {
       try {
@@ -333,6 +352,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           body: JSON.stringify({
             reasonCode,
             reasonText,
+            refundAccount,
           }),
           credentials: 'include',
         });
@@ -803,6 +823,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <p className="font-medium text-foreground">취소 요청 상태: {cancelInfo.badge}</p>
                   <p className="mt-1">{cancelInfo.label}</p>
                   {cancelInfo.reason && <p className="mt-1 text-xs text-foreground">사유: {cancelInfo.reason}</p>}
+                  {cancelInfo.refundAccountSummary && <p className="mt-1 text-xs text-foreground">환불 계좌: {cancelInfo.refundAccountSummary}</p>}
                 </div>
               </div>
             </div>
@@ -988,7 +1009,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {(() => {
                   const pay = getPaymentStatusBadgeSpec(paymentStatus);
                   return (
-                    <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{paymentStatus}</Badge>
+                    <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                      {paymentStatus}
+                    </Badge>
                   );
                 })()}
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
@@ -1114,8 +1137,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">스트링 {stringTypeCount}종</Badge>
-                  <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">라켓 {racketCount}자루</Badge>
+                  <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">
+                    스트링 {stringTypeCount}종
+                  </Badge>
+                  <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">
+                    라켓 {racketCount}자루
+                  </Badge>
                 </div>
 
                 <div className="text-xs sm:text-sm font-semibold text-primary">총 장착비 {totalPrice.toLocaleString()}원</div>

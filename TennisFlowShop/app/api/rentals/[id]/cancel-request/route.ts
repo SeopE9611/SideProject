@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
+import { writeRentalHistory } from '@/app/features/rentals/utils/history';
+import { verifyAccessToken } from '@/lib/auth.utils';
+import { RefundAccountSchema } from '@/lib/cancel-request/refund-account';
 import clientPromise from '@/lib/mongodb';
+import type { RentalCancelRequestStatus } from '@/lib/types/rental-order';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { writeRentalHistory } from '@/app/features/rentals/utils/history';
-import type { RentalCancelRequestStatus } from '@/lib/types/rental-order';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
-
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -144,7 +144,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // 스키마 실패 시에도 기존처럼 기본값으로 처리(동작/UX 유지)
     const reasonCode = parsedBody.success ? (parsedBody.data.reasonCode ?? '기타') : '기타';
     const reasonText = parsedBody.success ? (parsedBody.data.reasonText ?? '') : '';
-    
+
+    /**
+     * 대여는 기존에 top-level refundAccount가 이미 존재할 수 있다.
+     * 하지만 취소 요청 시점 스냅샷을 남겨야 하므로,
+     * body.refundAccount를 우선하고 없으면 기존 refundAccount를 fallback으로 사용한다.
+     */
+    const bodyRefundAccount = rawBody && typeof rawBody === 'object' ? (rawBody as any).refundAccount : undefined;
+
+    const parsedRefundAccount = RefundAccountSchema.safeParse(bodyRefundAccount ?? rental.refundAccount ?? null);
+    if (!parsedRefundAccount.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'INVALID_REFUND_ACCOUNT',
+          detail: '환불 계좌 정보를 정확히 입력해주세요.',
+          fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+    const refundAccount = parsedRefundAccount.data;
+
     const now = new Date();
 
     // 4) cancelRequest 업데이트
@@ -153,6 +174,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       reasonCode,
       reasonText,
       requestedAt: now,
+      refundAccount,
     };
 
     await db.collection('rental_orders').updateOne(

@@ -1,18 +1,28 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { showErrorToast } from '@/lib/toast';
+import { getRefundBankLabel, REFUND_ACCOUNT_BANKS } from '@/lib/cancel-request/refund-account';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast } from '@/lib/toast';
+import { useEffect, useState } from 'react';
 
 interface CancelStringingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (params: { reasonCode: string; reasonText?: string }) => void;
+  onConfirm: (params: {
+    reasonCode: string;
+    reasonText?: string;
+    refundAccount: {
+      bank: 'shinhan' | 'kookmin' | 'woori';
+      account: string;
+      holder: string;
+    };
+  }) => void;
   isSubmitting?: boolean;
 }
 
@@ -20,9 +30,12 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
   // 로컬 상태: 사유 선택값, 기타 입력값
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
   const [otherReason, setOtherReason] = useState('');
+  const [refundBank, setRefundBank] = useState<string>('');
+  const [refundAccount, setRefundAccount] = useState('');
+  const [refundHolder, setRefundHolder] = useState('');
 
   // 입력/선택이 있는 상태에서 이탈(뒤로가기/링크/탭닫기) 방지
-  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0);
+  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0 || refundBank !== '' || refundAccount.trim().length > 0 || refundHolder.trim().length > 0);
   useUnsavedChangesGuard(isDirty);
 
   // X/오버레이/ESC/닫기 버튼으로 “모달 자체”를 닫을 때도 입력 유실 방지
@@ -39,6 +52,9 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
     if (!open) {
       setSelectedReason(undefined);
       setOtherReason('');
+      setRefundBank('');
+      setRefundAccount('');
+      setRefundHolder('');
     }
   }, [open]);
 
@@ -51,10 +67,24 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
       showErrorToast('기타 사유를 입력해주세요.');
       return;
     }
+    const refundAccountDigits = refundAccount.replace(/\D/g, '');
+    if (!refundBank || !refundAccountDigits || !refundHolder.trim()) {
+      showErrorToast('환불 은행, 계좌번호, 예금주를 입력해주세요.');
+      return;
+    }
+    if (refundAccountDigits.length < 8 || refundAccountDigits.length > 20) {
+      showErrorToast('계좌번호는 -를 제외한 숫자 8~20자리로 입력해주세요.');
+      return;
+    }
 
     onConfirm({
       reasonCode: selectedReason,
       reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
+      refundAccount: {
+        bank: refundBank as 'shinhan' | 'kookmin' | 'woori',
+        account: refundAccountDigits,
+        holder: refundHolder.trim(),
+      },
     });
   };
 
@@ -82,6 +112,38 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
           </Select>
 
           {selectedReason === '기타' && <Textarea className="mt-2" placeholder="기타 사유를 입력해주세요" value={otherReason} onChange={(e) => setOtherReason(e.target.value)} />}
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">환불 계좌 정보</p>
+              <p className="text-xs text-muted-foreground mt-1">취소 승인 시 환불에 사용할 계좌입니다.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>환불 은행</Label>
+              <Select value={refundBank} onValueChange={setRefundBank}>
+                <SelectTrigger>
+                  <SelectValue placeholder="은행 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFUND_ACCOUNT_BANKS.map((bank) => (
+                    <SelectItem key={bank} value={bank}>
+                      {getRefundBankLabel(bank)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>환불 계좌번호</Label>
+              <Input value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="숫자만 입력 가능" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>예금주</Label>
+              <Input value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예금주명을 입력해주세요" />
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

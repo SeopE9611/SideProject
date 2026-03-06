@@ -1,24 +1,25 @@
 'use client';
 
-import useSWR from 'swr';
-import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { ArrowLeft, Calendar, CreditCard, Loader2, Package, Settings, Truck, Wrench } from 'lucide-react';
+import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
+import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
+import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
-import Link from 'next/link';
-import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
-import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
+import { formatRefundAccountSummary } from '@/lib/cancel-request/refund-account';
 import { racketBrandLabel } from '@/lib/constants';
-import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
-import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { cn } from '@/lib/utils';
+import { ArrowLeft, Calendar, CreditCard, Loader2, Package, Settings, Truck, Wrench } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import useSWR from 'swr';
 
 const fetcher = (url: string) => adminFetcher<any>(url, { cache: 'no-store' });
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
@@ -267,6 +268,7 @@ export default function AdminRentalDetailClient() {
 
   // 취소 요청 상태 정보
   const cancelInfo = getAdminRentalCancelInfo(data);
+  const cancelRefundAccountSummary = formatRefundAccountSummary(data?.cancelRequest?.refundAccount ?? null);
 
   // 연결 문서(표시 전용)
   const linkedDocs: LinkedDocItem[] = data?.stringingApplicationId
@@ -283,8 +285,8 @@ export default function AdminRentalDetailClient() {
   const paymentLabel = data?.paymentStatusLabel ?? (derivePaymentStatus(data) === 'paid' ? '결제완료' : '결제대기');
   const paymentSource = data?.paymentStatusSource ?? 'derived';
   const stringingName = data?.stringing?.name ? String(data.stringing.name) : null;
-  const stringPrice = Number(data?.amount?.stringPrice ?? (data?.stringing?.requested ? data?.stringing?.price ?? 0 : 0));
-  const stringingFee = Number(data?.amount?.stringingFee ?? (data?.stringing?.requested ? data?.stringing?.mountingFee ?? 0 : 0));
+  const stringPrice = Number(data?.amount?.stringPrice ?? (data?.stringing?.requested ? (data?.stringing?.price ?? 0) : 0));
+  const stringingFee = Number(data?.amount?.stringingFee ?? (data?.stringing?.requested ? (data?.stringing?.mountingFee ?? 0) : 0));
   const hasStringingSummary = Boolean(data?.stringing?.requested || stringPrice > 0 || stringingFee > 0 || data?.stringingApplicationId);
   const hasStringingIntakeSummary = Boolean(data?.stringingReceptionLabel || data?.stringingRacketCount || data?.stringingTensionSummary || (Array.isArray(data?.stringingNames) && data.stringingNames.length > 0) || data?.stringingReservationLabel);
 
@@ -355,7 +357,9 @@ export default function AdminRentalDetailClient() {
                   const rentalLabel = rentalStatusLabels[data.status] || data.status;
                   const rentalSpec = getRentalStatusBadgeSpec(data.status);
                   return (
-                    <Badge variant={rentalSpec.variant} className={cn(badgeBase, badgeSizeSm)}>{rentalLabel}</Badge>
+                    <Badge variant={rentalSpec.variant} className={cn(badgeBase, badgeSizeSm)}>
+                      {rentalLabel}
+                    </Badge>
                   );
                 })()}
               </div>
@@ -377,6 +381,7 @@ export default function AdminRentalDetailClient() {
                     <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
                     <p className="mt-1">{cancelInfo.label}</p>
                     {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
+                    {cancelRefundAccountSummary && <p className="mt-1 text-xs text-primary">환불 계좌: {cancelRefundAccountSummary}</p>}
                   </div>
 
                   {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
@@ -447,19 +452,47 @@ export default function AdminRentalDetailClient() {
                 <CardDescription>스트링 선택 정보와 교체서비스 신청 진행 상태를 한 번에 확인합니다.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2 text-sm">
-                <p className="text-muted-foreground">스트링: <span className="font-medium text-foreground">{stringingName ?? '선택됨(이름 미기록)'}</span></p>
-                <p className="text-muted-foreground">요금: <span className="font-medium text-foreground">{stringPrice > 0 ? won(stringPrice) : '0원'}</span></p>
-                <p className="text-muted-foreground">교체비: <span className="font-medium text-foreground">{stringingFee > 0 ? won(stringingFee) : '0원'}</span></p>
+                <p className="text-muted-foreground">
+                  스트링: <span className="font-medium text-foreground">{stringingName ?? '선택됨(이름 미기록)'}</span>
+                </p>
+                <p className="text-muted-foreground">
+                  요금: <span className="font-medium text-foreground">{stringPrice > 0 ? won(stringPrice) : '0원'}</span>
+                </p>
+                <p className="text-muted-foreground">
+                  교체비: <span className="font-medium text-foreground">{stringingFee > 0 ? won(stringingFee) : '0원'}</span>
+                </p>
                 {data?.stringingApplicationId && (
-                  <p className="text-muted-foreground">신청 상태: <span className="font-medium text-foreground">{data?.stringingApplicationStatus ?? '상태 확인 필요'}</span></p>
+                  <p className="text-muted-foreground">
+                    신청 상태: <span className="font-medium text-foreground">{data?.stringingApplicationStatus ?? '상태 확인 필요'}</span>
+                  </p>
                 )}
                 {hasStringingIntakeSummary && (
                   <>
-                    {data?.stringingReceptionLabel && <p className="text-muted-foreground">접수 방식: <span className="font-medium text-foreground">{data.stringingReceptionLabel}</span></p>}
-                    {typeof data?.stringingRacketCount === 'number' && data.stringingRacketCount > 0 && <p className="text-muted-foreground">라인 수: <span className="font-medium text-foreground">{data.stringingRacketCount}개</span></p>}
-                    {Array.isArray(data?.stringingNames) && data.stringingNames.length > 0 && <p className="text-muted-foreground">스트링 선택: <span className="font-medium text-foreground">{data.stringingNames.join(', ')}</span></p>}
-                    {data?.stringingTensionSummary && <p className="text-muted-foreground">텐션: <span className="font-medium text-foreground">{data.stringingTensionSummary}</span></p>}
-                    {data?.stringingReservationLabel && <p className="text-muted-foreground">방문 예약: <span className="font-medium text-foreground">{data.stringingReservationLabel}</span></p>}
+                    {data?.stringingReceptionLabel && (
+                      <p className="text-muted-foreground">
+                        접수 방식: <span className="font-medium text-foreground">{data.stringingReceptionLabel}</span>
+                      </p>
+                    )}
+                    {typeof data?.stringingRacketCount === 'number' && data.stringingRacketCount > 0 && (
+                      <p className="text-muted-foreground">
+                        라인 수: <span className="font-medium text-foreground">{data.stringingRacketCount}개</span>
+                      </p>
+                    )}
+                    {Array.isArray(data?.stringingNames) && data.stringingNames.length > 0 && (
+                      <p className="text-muted-foreground">
+                        스트링 선택: <span className="font-medium text-foreground">{data.stringingNames.join(', ')}</span>
+                      </p>
+                    )}
+                    {data?.stringingTensionSummary && (
+                      <p className="text-muted-foreground">
+                        텐션: <span className="font-medium text-foreground">{data.stringingTensionSummary}</span>
+                      </p>
+                    )}
+                    {data?.stringingReservationLabel && (
+                      <p className="text-muted-foreground">
+                        방문 예약: <span className="font-medium text-foreground">{data.stringingReservationLabel}</span>
+                      </p>
+                    )}
                   </>
                 )}
                 {data?.stringingApplicationId && (
@@ -634,7 +667,9 @@ export default function AdminRentalDetailClient() {
                   {(() => {
                     const pay = getPaymentStatusBadgeSpec(paymentLabel);
                     return (
-                      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{paymentLabel}</Badge>
+                      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                        {paymentLabel}
+                      </Badge>
                     );
                   })()}
                   {paymentSource === 'derived' && <span className="text-[11px] text-muted-foreground">대여 상태 기준 파생</span>}

@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { mutate } from 'swr';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { XCircle } from 'lucide-react';
+import { getRefundBankLabel, REFUND_ACCOUNT_BANKS } from '@/lib/cancel-request/refund-account';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { mutate } from 'swr';
 
 // props: 주문 ID만 전달받음
 interface CancelOrderDialogProps {
@@ -23,11 +23,35 @@ interface CancelOrderDialogProps {
 
 const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrderDialogProps) => {
   const router = useRouter();
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  /**
+   * 이 컴포넌트는
+   * 1) 목록 페이지에서는 controlled(open/onOpenChange 사용)
+   * 2) 상세 페이지에서는 uncontrolled(children trigger만 사용)
+   * 두 방식이 모두 존재한다.
+   *
+   * 그래서 실제 열림 상태는 "props open 우선, 없으면 internalOpen"으로 합쳐서 써야 한다.
+   */
+  const dialogOpen = typeof open === 'boolean' ? open : internalOpen;
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    // uncontrolled 사용처 대응
+    if (typeof open !== 'boolean') {
+      setInternalOpen(nextOpen);
+    }
+
+    // controlled 사용처 대응
+    onOpenChange?.(nextOpen);
+  };
 
   //  로컬 상태: 사유 선택값, 기타 입력값, 제출 중 여부
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
   const [otherReason, setOtherReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refundBank, setRefundBank] = useState<string>('');
+  const [refundAccount, setRefundAccount] = useState('');
+  const [refundHolder, setRefundHolder] = useState('');
 
   // 교체 신청 동시 취소 확인 단계 여부 / 신청 개수
   const [confirmWithStringing, setConfirmWithStringing] = useState(false);
@@ -38,8 +62,20 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
    * - 다이얼로그가 열린 상태에서 입력/선택이 있으면 경고
    * - 409로 “연결된 신청 함께 취소” 확인 단계로 들어간 상태도 dirty로 간주
    */
-  const isDirty = !!open && (selectedReason !== undefined || otherReason.trim().length > 0 || confirmWithStringing || linkedCount !== null);
+  const isDirty = dialogOpen && (selectedReason !== undefined || otherReason.trim().length > 0 || refundBank !== '' || refundAccount.trim().length > 0 || refundHolder.trim().length > 0 || confirmWithStringing || linkedCount !== null);
   useUnsavedChangesGuard(isDirty);
+
+  useEffect(() => {
+    if (!dialogOpen) {
+      setSelectedReason(undefined);
+      setOtherReason('');
+      setRefundBank('');
+      setRefundAccount('');
+      setRefundHolder('');
+      setConfirmWithStringing(false);
+      setLinkedCount(null);
+    }
+  }, [dialogOpen]);
 
   //  제출 처리 함수
   const handleSubmit = async () => {
@@ -53,6 +89,16 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
     }
     if (selectedReason === '기타' && !otherReason.trim()) {
       showErrorToast('기타 사유를 입력해주세요.');
+      return;
+    }
+
+    const refundAccountDigits = refundAccount.replace(/\D/g, '');
+    if (!refundBank || !refundAccountDigits || !refundHolder.trim()) {
+      showErrorToast('환불 은행, 계좌번호, 예금주를 입력해주세요.');
+      return;
+    }
+    if (refundAccountDigits.length < 8 || refundAccountDigits.length > 20) {
+      showErrorToast('계좌번호는 -를 제외한 숫자 8~20자리로 입력해주세요.');
       return;
     }
 
@@ -74,6 +120,11 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
           reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
           // 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
           withStringing: confirmWithStringing ? true : false,
+          refundAccount: {
+            bank: refundBank,
+            account: refundAccountDigits,
+            holder: refundHolder.trim(),
+          },
         }),
       });
 
@@ -120,7 +171,7 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
       // - 연결된 신청이 없거나
       // - 있더라도 사용자가 "신청도 함께 취소되도록" 동의(withStringing: true)한 상태
       showSuccessToast(confirmWithStringing ? '주문과 연결된 교체 서비스 신청을 함께 취소 요청했습니다. 관리자 확인 후 처리됩니다.' : '취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
-      onOpenChange?.(false);
+      handleDialogOpenChange(false);
       // status 전용 버튼/Badge 갱신 (OrderStatusBadge가 /api/orders/{orderId}/status 를 SWR로 가져오는 경우)
       await mutate(`/api/orders/${orderId}/status`, undefined, { revalidate: true });
 
@@ -148,7 +199,7 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
     }
   };
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       {children ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
 
       {/*  다이얼로그 본문 */}
@@ -173,7 +224,7 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
           )}
 
           <Label>취소 사유</Label>
-          <Select onValueChange={setSelectedReason}>
+          <Select value={selectedReason} onValueChange={setSelectedReason}>
             <SelectTrigger>
               <SelectValue placeholder="사유 선택" />
             </SelectTrigger>
@@ -188,6 +239,38 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
 
           {/*  기타 선택 시 textarea 활성화 */}
           {selectedReason === '기타' && <Textarea className="mt-2" placeholder="기타 사유를 입력해주세요" value={otherReason} onChange={(e) => setOtherReason(e.target.value)} />}
+          <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">환불 계좌 정보</p>
+              <p className="text-xs text-muted-foreground mt-1">취소 승인 후 환불 처리 시 사용할 계좌입니다.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>환불 은행</Label>
+              <Select value={refundBank} onValueChange={setRefundBank}>
+                <SelectTrigger>
+                  <SelectValue placeholder="은행 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REFUND_ACCOUNT_BANKS.map((bank) => (
+                    <SelectItem key={bank} value={bank}>
+                      {getRefundBankLabel(bank)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>환불 계좌번호</Label>
+              <Input value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="숫자만 입력 가능" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>예금주</Label>
+              <Input value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예금주명을 입력해주세요" />
+            </div>
+          </div>
         </div>
 
         {/*  제출 버튼 */}

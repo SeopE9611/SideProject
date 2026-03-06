@@ -1,16 +1,17 @@
 import { onApplicationCanceled, onApplicationSubmitted, onScheduleConfirmed, onScheduleUpdated, onStatusUpdated } from '@/app/features/notifications/triggers/stringing';
+import { submitStringingApplicationCore } from '@/app/features/stringing-applications/api/submit-core';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { buildSlotSummaryForDate, loadStringingSettings, validateBookingWindow } from '@/app/features/stringing-applications/lib/slotEngine';
 import { verifyAccessToken, verifyOrderAccessToken } from '@/lib/auth.utils';
+import { RefundAccountSchema } from '@/lib/cancel-request/refund-account';
 import { normalizeEmail } from '@/lib/claims';
 import clientPromise, { getDb } from '@/lib/mongodb';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
-import { consumePass, findOneActivePassForUser, revertConsumption } from '@/lib/passes.service';
+import { revertConsumption } from '@/lib/passes.service';
 import { calcStringingTotal } from '@/lib/pricing';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { ServicePassConsumption } from '@/lib/types/pass';
 import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db';
-import { submitStringingApplicationCore } from '@/app/features/stringing-applications/api/submit-core';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
@@ -63,7 +64,6 @@ function normalizeCancelStatus(raw: any): CancelStatus {
   // 그 외 알 수 없는 값은 안전하게 none 처리
   return 'none';
 }
-
 
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
@@ -197,34 +197,34 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
     // 라켓별 세부 장착 정보(lines 우선 + racketLines fallback) 정리
     const racketLines = getApplicationLines(sd).map((line: any, index: number) => {
-          // 저장된 racketType 이 있으면 우선 사용, 없으면 racketLabel 로 보정
-          const rawName = (line.racketType && String(line.racketType).trim()) || (line.racketLabel && String(line.racketLabel).trim()) || '';
+      // 저장된 racketType 이 있으면 우선 사용, 없으면 racketLabel 로 보정
+      const rawName = (line.racketType && String(line.racketType).trim()) || (line.racketLabel && String(line.racketLabel).trim()) || '';
 
-          const racketName = rawName || '';
+      const racketName = rawName || '';
 
-          return {
-            // key 용 ID – 기존 DB에 id가 있으면 그대로 쓰고, 없으면 index 기반으로 생성
-            id: String(line.id ?? `${index}`),
+      return {
+        // key 용 ID – 기존 DB에 id가 있으면 그대로 쓰고, 없으면 index 기반으로 생성
+        id: String(line.id ?? `${index}`),
 
-            // 라켓 이름: null 허용 (없을 수도 있으니)
-            racketLabel: racketName || null,
-            racketType: racketName, // 클라이언트에서 바로 쓸 수 있게 별도 필드 제공
+        // 라켓 이름: null 허용 (없을 수도 있으니)
+        racketLabel: racketName || null,
+        racketType: racketName, // 클라이언트에서 바로 쓸 수 있게 별도 필드 제공
 
-            // 어떤 스트링 상품을 장착하는지
-            stringProductId: line.stringProductId ?? '',
-            stringName: line.stringName ?? '',
+        // 어떤 스트링 상품을 장착하는지
+        stringProductId: line.stringProductId ?? '',
+        stringName: line.stringName ?? '',
 
-            // 메인/크로스 텐션
-            tensionMain: line.tensionMain ?? '',
-            tensionCross: line.tensionCross ?? '',
+        // 메인/크로스 텐션
+        tensionMain: line.tensionMain ?? '',
+        tensionCross: line.tensionCross ?? '',
 
-            // 라켓별 메모
-            note: line.note ?? '',
+        // 라켓별 메모
+        note: line.note ?? '',
 
-            // 한 자루당 장착비 – 숫자가 아니면 0으로 방어
-            mountingFee: typeof line.mountingFee === 'number' ? line.mountingFee : 0,
-          };
-        });
+        // 한 자루당 장착비 – 숫자가 아니면 0으로 방어
+        mountingFee: typeof line.mountingFee === 'number' ? line.mountingFee : 0,
+      };
+    });
 
     // === 패키지 사용 정보 계산 ===
     // - 제출 시점 로직과 동일하게, 라켓 라인 개수를 사용 회차로 간주
@@ -316,8 +316,9 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             reasonText: app.cancelRequest.reasonText ?? undefined,
             requestedAt: app.cancelRequest.requestedAt ?? null,
             handledAt: app.cancelRequest.handledAt ?? null,
+            refundAccount: app.cancelRequest.refundAccount ?? null,
           }
-        : { status: 'none' },
+        : { status: 'none', refundAccount: null },
 
       history: (app.history ?? []).map((record: HistoryRecord) => ({
         status: record.status,
@@ -739,6 +740,18 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
       reasonText?: string;
     };
 
+    const parsedRefundAccount = RefundAccountSchema.safeParse((body as any)?.refundAccount ?? null);
+    if (!parsedRefundAccount.success) {
+      return NextResponse.json(
+        {
+          error: '환불 계좌 정보를 정확히 입력해주세요.',
+          fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+    const refundAccount = parsedRefundAccount.data;
+
     const reasonLabelMap: Record<string, string> = {
       CHANGE_MIND: '단순 변심',
       WRONG_INFO: '신청 정보와 다름',
@@ -762,7 +775,7 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
     const historyEntry: HistoryRecord = {
       status: '취소요청',
       date: new Date(),
-      description: `고객이 신청 취소를 요청했습니다. 사유: ${reasonLabel}${extra}`,
+      description: `고객이 신청 취소를 요청했습니다. 사유: ${reasonLabel}${extra} · 환불 계좌 정보가 등록되었습니다.`,
     };
 
     // 5) 신청서 문서에 취소 요청 정보 + 히스토리 추가
@@ -773,6 +786,7 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
           reasonCode: reasonCode ?? 'OTHER',
           reasonText: reasonText ?? '',
           requestedAt: new Date(),
+          refundAccount,
         },
       },
       // history 타입이 any라서 push에 as any 한 번 감싸줌
@@ -1208,6 +1222,19 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
     const reasonCode: string | undefined = typeof body.reasonCode === 'string' ? body.reasonCode.trim() : undefined;
     const reasonText: string | undefined = typeof body.reasonText === 'string' ? body.reasonText.trim() : undefined;
 
+    const parsedRefundAccount = RefundAccountSchema.safeParse(body.refundAccount ?? null);
+    if (!parsedRefundAccount.success) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'INVALID_REFUND_ACCOUNT',
+          fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
+    const refundAccount = parsedRefundAccount.data;
+
     const now = new Date();
 
     // 7) cancelRequest 필드 구성 (DB에는 Date 타입으로 저장)
@@ -1216,6 +1243,7 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
       reasonCode: reasonCode || '기타',
       reasonText: reasonText || '',
       requestedAt: now,
+      refundAccount,
       // handledAt / handledByAdminId 등은 승인/거절 시 채움 예정
     };
 
@@ -1226,7 +1254,7 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
     const historyEntry: HistoryRecord = {
       status: '취소요청',
       date: now,
-      description: `고객이 스트링 교체 서비스 신청 취소를 요청했습니다. 사유: ${descBase}${descDetail}`,
+      description: `고객이 스트링 교체 서비스 신청 취소를 요청했습니다. 사유: ${descBase}${descDetail} · 환불 계좌 정보가 등록되었습니다.`,
     };
 
     // 9) DB 업데이트
@@ -1745,8 +1773,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     }
 
     // 주문의 선택에 따라 기본 수거방식 결정
-    const initialCollectionMethod: 'self_ship' | 'courier_pickup' | 'visit' =
-      (order as any)?.shippingInfo?.deliveryMethod === '방문수령' ? 'visit' : toCollectionMethodFromServicePickup((order as any)?.servicePickupMethod);
+    const initialCollectionMethod: 'self_ship' | 'courier_pickup' | 'visit' = (order as any)?.shippingInfo?.deliveryMethod === '방문수령' ? 'visit' : toCollectionMethodFromServicePickup((order as any)?.servicePickupMethod);
 
     // 없으면 초안 생성
     const now = new Date();
