@@ -1,10 +1,10 @@
 'use client';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import useSWR, { mutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 
 const LIMIT = 5; // 한 페이지에 보여줄 이력 개수
 
@@ -38,6 +38,8 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingMeth
   // 현재 상태(취소여부 판정에 사용)
   const current = statusData?.status ?? currentStatus;
   const isCancelled = current === '취소';
+  const isConfirmed = current === '구매확정';
+  const isLocked = isCancelled || isConfirmed;
   const isVisitPickup = isVisitPickupOrder(shippingMethod);
 
   // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
@@ -77,9 +79,15 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingMeth
 
   return (
     <div className="w-[200px]">
-      {/*  취소된 주문은 변경 불가*/}
-      {isCancelled ? (
-        <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm italic">취소됨 (변경 불가)</div>
+ {/*
+        취소 / 구매확정 상태는 최종 상태로 보고 셀렉트 변경을 막습니다.
+        - 취소: 이미 종료된 주문
+        - 구매확정: 사용자가 주문 완료를 확정한 상태
+      */}
+      {isLocked ? (
+        <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm italic">
+          {isConfirmed ? '구매확정됨 (변경 불가)' : '취소됨 (변경 불가)'}
+        </div>
       ) : (
         <Select value={current} onValueChange={handleChange}>
           <SelectTrigger>
@@ -95,7 +103,9 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingMeth
           </SelectContent>
         </Select>
       )}
-      <p className="mt-1 text-[11px] text-muted-foreground">{isVisitPickup ? '취소는 수령 전 단계에서만 사용하고, 수령 완료 이후 금전 반환은 상태 "환불"로 처리하세요.' : '취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.'}</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {isVisitPickup ? '취소는 수령 전 단계에서만 사용하고, 수령 완료 이후 금전 반환은 상태 "환불"로 처리하세요.' : '취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.'}
+      </p>
     </div>
   );
 }

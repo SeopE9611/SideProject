@@ -60,9 +60,17 @@ const isOrderShipped = (status?: string | null) => {
   return s.includes('배송중') || s === 'shipped';
 };
 
-const isOrderDeliveredLike = (status?: string | null) => {
+// 배송완료는 "구매확정 직전" 단계로 보고, 운영센터에서 후속 모니터링 대상으로 둡니다.
+const isOrderDelivered = (status?: string | null) => {
   const s = String(status ?? '').toLowerCase();
-  return s.includes('배송완료') || s.includes('구매확정') || s === 'delivered' || s === 'confirmed';
+  return s.includes('배송완료') || s === 'delivered';
+};
+
+// 구매확정은 주문 플로우가 사실상 종료된 상태로 보고,
+// 운영센터 KPI의 "미처리" 건으로 잡히지 않게 별도 분리합니다.
+const isOrderConfirmed = (status?: string | null) => {
+  const s = String(status ?? '').toLowerCase();
+  return s.includes('구매확정') || s === 'confirmed';
 };
 
 const isOrderClosed = (status?: string | null) => {
@@ -70,9 +78,7 @@ const isOrderClosed = (status?: string | null) => {
   return s.includes('환불') || s.includes('취소') || s.includes('결제취소') || s === 'refunded' || s === 'cancelled' || s === 'canceled';
 };
 
-
 const isVisitPickupItem = (item: OpsLikeItem) => isVisitPickupOrder(item.shippingMethod);
-
 
 function isCancelRequested(item: OpsLikeItem) {
   if (item.cancelRequested) return true;
@@ -86,12 +92,25 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
     return { stage: '주문 종료 단계', nextAction: '후속 조치 없음' };
   }
 
+  // 구매확정은 배송완료 이후의 최종 확정 상태이므로
+  // 운영센터에서 별도 액션 대상으로 보지 않습니다.
+  if (isOrderConfirmed(item.statusLabel)) {
+    return {
+      stage: isVisitPickup ? '방문 수령 확정 완료 단계' : '주문 확정 완료 단계',
+      nextAction: '후속 조치 없음',
+    };
+  }
+
   if (!doneLike(item.paymentLabel)) {
     return { stage: '주문 결제 확인 단계', nextAction: '주문 결제 확인 필요' };
   }
 
-  if (isOrderDeliveredLike(item.statusLabel)) {
-    return { stage: isVisitPickup ? '방문 수령 완료 단계' : '배송 완료 단계', nextAction: '구매확정/환불 요청 여부 모니터링' };
+  // 배송완료는 아직 구매확정/환불 가능성이 남아 있으므로 모니터링 대상으로 유지합니다.
+  if (isOrderDelivered(item.statusLabel)) {
+    return {
+      stage: isVisitPickup ? '방문 수령 완료 단계' : '배송 완료 단계',
+      nextAction: '구매확정/환불 요청 여부 모니터링',
+    };
   }
 
   if (isOrderShipped(item.statusLabel)) {

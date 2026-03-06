@@ -406,6 +406,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return new NextResponse('취소된 주문입니다.', { status: 400 });
     }
 
+     // 구매확정된 주문은 추가 변경 금지
+    if (existing.status === '구매확정') {
+      return new NextResponse('구매확정된 주문은 상태를 변경할 수 없습니다.', { status: 400 });
+    }
+
     // 고객정보 수정 분기
     // - 패스 발급은 여기서 하지 않도록 수정(아래 상태변경 분기로 이동)
     if (customer) {
