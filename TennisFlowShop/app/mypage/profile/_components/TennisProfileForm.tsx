@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -322,7 +323,27 @@ export default function TennisProfileForm() {
 
       <CardContent className="p-8 space-y-8">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">테니스 프로필을 불러오는 중입니다...</p>
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <div className="grid gap-3 md:grid-cols-3">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-24" />
+              <div className="grid gap-3 md:grid-cols-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
         ) : (
           <>
             {/* 플레이어 기본 정보 */}
