@@ -17,7 +17,7 @@ test('community-list-query 유틸은 BoardListClient 쿼리 키 전부를 Mongo 
   // searchType + q: title/author/title_content 반영 계약
   assert.ok(source.includes("if (query.searchType === 'title')"));
   assert.ok(source.includes("filter.title = regex;"));
-  assert.ok(source.includes("} else if (query.searchType === 'author')"));
+  assert.ok(source.includes("query.searchType === 'author'"));
   assert.ok(source.includes("filter.nickname = regex;"));
   assert.ok(source.includes('filter.$or = [{ title: regex }, { content: regex }];'));
 
