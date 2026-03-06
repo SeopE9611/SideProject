@@ -108,13 +108,42 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const appHref = `/services/apply?${appParams.toString()}`;
 
   const withStringService = order.shippingInfo?.withStringService === true;
-  const stringingApplicationId =
+  const orderStringingApplicationId =
     typeof order.stringingApplicationId === 'string' && order.stringingApplicationId.trim() ? order.stringingApplicationId.trim() : null;
-  const hasSubmittedApplication = Boolean(stringingApplicationId);
+
+  const submittedStatusExclusions = ['draft', 'canceled', 'cancelled', '취소'];
+  const latestSubmittedByOrderApp = withStringService
+    ? await db.collection('stringing_applications').findOne(
+        {
+          $and: [
+            { $or: [{ orderId: order._id }, { orderId: order._id.toString() }] },
+            { status: { $nin: submittedStatusExclusions } },
+          ],
+        },
+        { projection: { _id: 1 }, sort: { createdAt: -1, _id: -1 } },
+      )
+    : null;
+
+  const orderLinkedSubmittedApp =
+    withStringService && orderStringingApplicationId && ObjectId.isValid(orderStringingApplicationId)
+      ? await db.collection('stringing_applications').findOne(
+          {
+            _id: new ObjectId(orderStringingApplicationId),
+            status: { $nin: submittedStatusExclusions },
+          },
+          { projection: { _id: 1 } },
+        )
+      : null;
+
+  const representativeStringingApplicationId =
+    (orderLinkedSubmittedApp?._id ? String(orderLinkedSubmittedApp._id) : null) ??
+    (latestSubmittedByOrderApp?._id ? String(latestSubmittedByOrderApp._id) : null);
+  const hasSubmittedApplication = Boolean(representativeStringingApplicationId);
+
   const { isLoggedIn, orderDetailHref, stringingApplicationHref } = buildCheckoutSuccessLinks({
     accessSub: accessPayload?.sub,
     orderId: order._id.toString(),
-    stringingApplicationId,
+    stringingApplicationId: representativeStringingApplicationId,
   });
   const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
   const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
@@ -122,9 +151,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(order.shippingInfo);
 
   let stringingSummary: StringingSummary | null = null;
-  if (hasSubmittedApplication && stringingApplicationId && ObjectId.isValid(stringingApplicationId)) {
+  if (hasSubmittedApplication && representativeStringingApplicationId && ObjectId.isValid(representativeStringingApplicationId)) {
     const app = await db.collection('stringing_applications').findOne(
-      { _id: new ObjectId(stringingApplicationId) },
+      { _id: new ObjectId(representativeStringingApplicationId) },
       { projection: { stringDetails: 1, collectionMethod: 1 } },
     );
     if (app) {
@@ -240,14 +269,15 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                         </Button>
                       ) : null}
                     </div>
-                  ) : (
+                  ) : shouldShowApplyCta ? (
                     <Button className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90" asChild>
                       <Link href={appHref} className="flex items-center gap-2">
                         장착 서비스 신청서 작성하기
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
-                  )}
+                  ) : null
+                  }
                 </div>
               </div>
             )}
