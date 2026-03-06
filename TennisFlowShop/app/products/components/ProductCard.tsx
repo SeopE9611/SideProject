@@ -65,7 +65,6 @@ function WishButton({ inWish, onToggle, size = 'md' }: { inWish: boolean; onTogg
       type="button"
       onClick={onToggle}
       title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
-      style={inWish ? { background: 'rgb(244 63 94)', borderColor: 'rgb(244 63 94)', color: '#fff' } : undefined}
       className={cn(
         dim,
         'flex-shrink-0 rounded-md border shadow-md',
@@ -73,17 +72,13 @@ function WishButton({ inWish, onToggle, size = 'md' }: { inWish: boolean; onTogg
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         // 비활성 기본
         !inWish && [
-          // 라이트
-          'border-border bg-white text-slate-500',
-          // 라이트 호버 → rose
-          'hover:border-rose-400 hover:bg-rose-50 hover:text-rose-500',
-          // 다크
-          'dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
-          // 다크 호버 → rose
-          'dark:hover:border-rose-500 dark:hover:bg-rose-950 dark:hover:text-rose-400',
+          'border-border bg-card text-muted-foreground',
+          'hover:border-destructive/45 hover:bg-destructive/12 hover:text-destructive',
+          'dark:border-border dark:bg-card dark:text-muted-foreground',
+          'dark:hover:border-destructive/55 dark:hover:bg-destructive/20 dark:hover:text-destructive',
         ],
         // 활성 hover
-        inWish && ['hover:opacity-90 active:opacity-80'],
+        inWish && ['border-destructive bg-destructive text-destructive-foreground', 'hover:opacity-90 active:opacity-80'],
       )}
     >
       <Heart className={cn(iconDim, 'transition-all duration-200 mx-auto', inWish ? 'fill-current scale-110' : 'scale-100')} />
@@ -301,8 +296,8 @@ const ProductCard = React.memo(
                 'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
                 // 라이트: 하단 흰 그라디언트 (이미지 가리지 않고 버튼 가독성 확보)
                 // 다크: 하단 짙은 그라디언트
-                'bg-gradient-to-t from-white/95 via-white/60 to-transparent',
-                'dark:from-zinc-900/95 dark:via-zinc-900/60 dark:to-transparent',
+                'bg-gradient-to-t from-card via-card/70 to-transparent',
+                'dark:from-card dark:via-card/70 dark:to-transparent',
               )}
             >
               {/* 상세보기 버튼 */}
