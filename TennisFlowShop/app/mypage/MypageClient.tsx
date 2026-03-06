@@ -21,7 +21,6 @@ import ReviewList from '@/app/mypage/tabs/ReviewList';
 import ReviewListSkeleton from '@/app/mypage/tabs/ReviewListSkeleton';
 import Wishlist from '@/app/mypage/tabs/Wishlist';
 import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
-import AuthGuard from '@/components/auth/AuthGuard';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Badge } from '@/components/ui/badge';
 import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
@@ -100,13 +99,11 @@ export default function MypageClient({ user }: Props) {
 
   if (!user) {
     return (
-      <AuthGuard>
-        <SiteContainer variant="wide" className="py-10">
-          <Card className="border-border bg-card">
-            <CardContent className="p-6 text-sm text-muted-foreground">회원 정보를 확인하는 중입니다.</CardContent>
-          </Card>
-        </SiteContainer>
-      </AuthGuard>
+      <SiteContainer variant="wide" className="py-10">
+        <Card className="border-border bg-card">
+          <CardContent className="p-6 text-sm text-muted-foreground">회원 정보를 확인하는 중입니다.</CardContent>
+        </Card>
+      </SiteContainer>
     );
   }
 
@@ -144,8 +141,7 @@ export default function MypageClient({ user }: Props) {
   };
 
   return (
-    <AuthGuard>
-      <div className="min-h-full bg-background">
+    <div className="min-h-full bg-background">
         <div className="absolute inset-0 opacity-5 dark:opacity-10 bp-xs:hidden bg-cross-line-pattern" />
 
         <div className={pageTone.heroPanel}>
@@ -499,6 +495,5 @@ export default function MypageClient({ user }: Props) {
           </div>
         </SiteContainer>
       </div>
-    </AuthGuard>
   );
 }
