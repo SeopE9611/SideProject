@@ -16,14 +16,20 @@ export default function GlobalTokenGuard() {
 
   useEffect(() => {
     if (started.current) return;
-    started.current = true;
 
-    // 서버(AuthHydrator)에서 이미 주입됐다면 아무것도 안 함
-    if (user) return;
+    // AuthHydrator가 먼저 setUser를 반영할 기회를 준 뒤 부트스트랩 여부를 결정
+    const timer = window.setTimeout(() => {
+      if (started.current) return;
+      started.current = true;
 
-    bootstrapOnce(setUser, () => latestUser.current as any);
-    // 의도적으로 빈 배열: 마운트 때 한 번만
-  }, []);
+      // 서버(AuthHydrator)에서 이미 주입됐다면 아무것도 안 함
+      if (latestUser.current) return;
+
+      void bootstrapOnce(setUser, () => latestUser.current as any);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [setUser, user]);
 
   return null;
 }

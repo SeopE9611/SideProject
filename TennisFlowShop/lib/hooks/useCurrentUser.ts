@@ -1,9 +1,8 @@
 'use client';
 
 import { useAuthStore } from '@/app/store/authStore';
-import { bootstrapOnce } from '@/lib/auth/bootstrap';
 import { refreshOnce } from '@/lib/auth/refresh-mutex';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export function useCurrentUser(): {
   user: ReturnType<typeof useAuthStore>['user'];
@@ -12,17 +11,13 @@ export function useCurrentUser(): {
 } {
   const { user, setUser } = useAuthStore();
 
-  // 최신 user 스냅샷 (네트워크 응답 레이스 컨디션 방지)
-  const latestUser = useRef(user);
-  useEffect(() => {
-    latestUser.current = user;
-  }, [user]);
-
   // 수동 새로고침(재시도)용 in-flight 병합
   const inFlight = useRef<Promise<void> | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const refresh = useCallback(async () => {
     if (inFlight.current) return inFlight.current;
 
+    setIsRefreshing(true);
     inFlight.current = (async () => {
       try {
         // 1) /api/users/me
@@ -54,27 +49,14 @@ export function useCurrentUser(): {
         setUser(null);
       } finally {
         inFlight.current = null;
+        setIsRefreshing(false);
       }
     })();
 
     return inFlight.current;
   }, [setUser]);
 
-  // 부트스트랩 완료 여부를 state로 관리하여 리렌더 유발
-  const [bootDone, setBootDone] = useState(false);
-  const bootStarted = useRef(false);
-  useEffect(() => {
-    if (bootStarted.current) return;
-    bootStarted.current = true;
-
-    // 탭당 1회 자동 부트스트랩 (이미 user가 있으면 내부적으로 바로 종료)
-    bootstrapOnce(setUser, () => latestUser.current as any).finally(() => {
-      setBootDone(true); // ← 이 state 변경이 리렌더를 일으킴
-    });
-  }, [setUser]);
-
-  // user가 이미 있으면 bootDone 이전이라도 로딩 아님.
-  const loading = !!inFlight.current || (!bootDone && !user);
+  const loading = isRefreshing;
 
   return { user, loading, refresh };
 }
