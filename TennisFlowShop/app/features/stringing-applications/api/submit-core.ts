@@ -3,6 +3,7 @@ import { ObjectId as MongoObjectId } from 'mongodb';
 
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
+import { loadStringingSettings, resolveDaySchedule } from '@/app/features/stringing-applications/lib/slotEngine';
 import { normalizeEmail } from '@/lib/claims';
 import { calcStringingTotal } from '@/lib/pricing';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
@@ -150,6 +151,28 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     lines: normalizedLines,
     stringTypes,
   });
+
+  // 멀티 슬롯 예약 정확도: 방문 예약은 라인 수(패스 사용량)만큼 슬롯 점유 길이가 늘어나므로
+  // 신청서 저장 시 슬롯 수/총 소요시간을 함께 기록해 예약 엔진의 점유 계산과 일치시킨다.
+  let visitSlotCount: number | null = null;
+  let visitDurationMinutes: number | null = null;
+  if (cm === 'visit') {
+    const slotCount = Math.max(1, Math.floor(packageUseCount || 1));
+    let intervalMinutes = 30;
+
+    if (preferredDate) {
+      const settings = await loadStringingSettings(db);
+      const schedule = resolveDaySchedule(settings, preferredDate);
+      const resolvedInterval = Number(schedule.interval);
+      if (Number.isFinite(resolvedInterval) && resolvedInterval > 0) {
+        intervalMinutes = resolvedInterval;
+      }
+    }
+
+    visitSlotCount = slotCount;
+    visitDurationMinutes = slotCount * intervalMinutes;
+  }
+
   let packageApplied = false;
   let packagePassId: ObjectId | null = null;
   let packageRedeemedAt: Date | null = null;
@@ -199,6 +222,7 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     guestPhone: userId ? null : phone,
     userSnapshot: userId ? { name, email: email ?? '' } : null,
     updatedAt: new Date(),
+    ...(cm === 'visit' ? { visitSlotCount, visitDurationMinutes } : {}),
   };
 
   const existingDraft = orderObjectId
