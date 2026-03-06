@@ -10,13 +10,12 @@ import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import useSWR from 'swr';
 
 type Props = {
   initialItems: any[];
   initialTotal: number;
-  isAdmin: boolean;
-
   // URL 쿼리로 직접 진입하는 경우(/board/notice?page=...&q=...)
   // 서버 프리로드와 클라이언트 SWR key를 일치시켜 "한 번 튐"을 줄임.
   initialPage?: number;
@@ -24,7 +23,22 @@ type Props = {
   initialField?: 'all' | 'title' | 'content' | 'title_content';
 };
 
-export default function NoticeListClient({ initialItems, initialTotal, isAdmin, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
+function AdminNoticeWriteButton() {
+  const { user, loading } = useCurrentUser();
+
+  if (loading || user?.role !== 'admin') return null;
+
+  return (
+    <Button asChild size="sm" className="bg-muted/30 h-10 sm:h-11 text-sm sm:text-base">
+      <Link href="/board/notice/write">
+        <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+        작성하기
+      </Link>
+    </Button>
+  );
+}
+
+export default function NoticeListClient({ initialItems, initialTotal, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
   type NoticeItem = {
     _id: string;
     title: string;
@@ -211,14 +225,7 @@ export default function NoticeListClient({ initialItems, initialTotal, isAdmin, 
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
                   검색
                 </Button>
-                {isAdmin && (
-                  <Button asChild size="sm" className="bg-muted/30 h-10 sm:h-11 text-sm sm:text-base">
-                    <Link href="/board/notice/write">
-                      <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-                      작성하기
-                    </Link>
-                  </Button>
-                )}
+                <AdminNoticeWriteButton />
               </div>
             </CardTitle>
           </CardHeader>
