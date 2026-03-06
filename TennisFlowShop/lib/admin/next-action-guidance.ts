@@ -13,6 +13,10 @@ export type OpsLikeItem = {
   cancelStatus?: 'none' | 'requested' | 'approved' | 'rejected' | null;
   cancelRequested?: boolean;
   refundAccountReady?: boolean;
+  cancel?: {
+    status?: 'none' | 'requested' | 'approved' | 'rejected' | null;
+    refundAccountReady?: boolean;
+  } | null;
 };
 
 export type NextActionGuide = {
@@ -83,7 +87,18 @@ const isVisitPickupItem = (item: OpsLikeItem) => isVisitPickupOrder(item.shippin
 
 function isCancelRequested(item: OpsLikeItem) {
   if (item.cancelRequested) return true;
-  return item.cancelStatus === 'requested';
+  const status = getEffectiveCancelStatus(item);
+  return status === 'requested';
+}
+
+function getEffectiveCancelStatus(item: OpsLikeItem) {
+  return item.cancel?.status ?? item.cancelStatus;
+}
+
+function getEffectiveRefundAccountReady(item: OpsLikeItem) {
+  if (typeof item.cancel?.refundAccountReady === 'boolean') return item.cancel.refundAccountReady;
+  if (typeof item.refundAccountReady === 'boolean') return item.refundAccountReady;
+  return false;
 }
 
 function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
@@ -131,7 +146,7 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
 
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
   if (isCancelRequested(item)) {
-    if (item.refundAccountReady) {
+    if (getEffectiveRefundAccountReady(item)) {
       return { stage: '취소 요청 처리 단계', nextAction: '취소 승인/거절 검토 필요' };
     }
     return { stage: '취소 요청 처리 단계', nextAction: '환불 계좌 확인 필요' };
@@ -184,8 +199,13 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
 }
 
 export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActionGuide {
-  if (items.some((it) => isCancelRequested(it))) {
-    return { stage: '취소 요청 처리 단계', nextAction: '취소 요청 확인 후 승인/거절 처리 필요' };
+  const requestedCancels = items.filter((it) => isCancelRequested(it));
+  if (requestedCancels.length > 0) {
+    const hasRefundAccountPending = requestedCancels.some((it) => !getEffectiveRefundAccountReady(it));
+    if (hasRefundAccountPending) {
+      return { stage: '취소 요청 처리 단계', nextAction: '환불 계좌 확인 필요' };
+    }
+    return { stage: '취소 요청 처리 단계', nextAction: '취소 승인/거절 검토 필요' };
   }
 
   const order = items.find((it) => it.kind === 'order');
