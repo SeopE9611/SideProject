@@ -12,6 +12,7 @@ export type OpsLikeItem = {
   shippingMethod?: string | null;
   cancelStatus?: 'none' | 'requested' | 'approved' | 'rejected' | null;
   cancelRequested?: boolean;
+  refundAccountReady?: boolean;
 };
 
 export type NextActionGuide = {
@@ -130,7 +131,10 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
 
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
   if (isCancelRequested(item)) {
-    return { stage: '취소 요청 처리 단계', nextAction: '취소 요청 확인 후 승인/거절 처리 필요' };
+    if (item.refundAccountReady) {
+      return { stage: '취소 요청 처리 단계', nextAction: '취소 승인/거절 검토 필요' };
+    }
+    return { stage: '취소 요청 처리 단계', nextAction: '환불 계좌 확인 필요' };
   }
 
   if (item.kind === 'rental') {

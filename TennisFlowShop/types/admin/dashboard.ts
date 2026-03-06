@@ -30,6 +30,8 @@ export type DashboardMetrics = {
     inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
     queue: {
       cancelRequests: number;
+      cancelRequestsNeedingRefundAccount: number;
+      cancelRequestsReadyForReview: number;
       shippingPending: number;
       paymentPending24h: number;
       rentalOverdue: number;

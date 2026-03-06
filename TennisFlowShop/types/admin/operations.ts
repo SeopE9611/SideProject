@@ -50,6 +50,8 @@ export type AdminOperationItem = {
     requestedAt?: string | null;
     handledAt?: string | null;
     reason?: string;
+    refundAccountReady?: boolean;
+    refundBankLabel?: string | null;
   };
 };
 
