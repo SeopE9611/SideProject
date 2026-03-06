@@ -10,7 +10,6 @@ import ApplicationStatusBadge from '@/app/features/stringing-applications/compon
 import { useOrderStore } from '@/app/store/orderStore';
 import { useStringingStore } from '@/app/store/stringingStore';
 import { AdminBadgeRow } from '@/components/admin/AdminBadgeRow';
-import AuthGuard from '@/components/auth/AuthGuard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -445,8 +444,7 @@ export default function OrdersClient() {
   }
 
   return (
-    <AuthGuard>
-      <div className="container py-4 lg:py-5">
+    <div className="container py-4 lg:py-5">
         {/* 제목 및 설명 */}
         <div className="mx-auto mb-4 max-w-[1440px]">
           <h1 className="text-4xl font-semibold tracking-tight">주문·신청 관리</h1>
@@ -867,6 +865,5 @@ export default function OrdersClient() {
           </CardContent>
         </Card>
       </div>
-    </AuthGuard>
   );
 }
