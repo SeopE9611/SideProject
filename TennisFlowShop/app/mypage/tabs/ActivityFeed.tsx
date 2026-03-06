@@ -9,6 +9,7 @@ import OrderShippingInfoDialog from './_components/OrderShippingInfoDialog';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
@@ -1037,20 +1038,39 @@ export default function ActivityFeed() {
       </div>
 
       {hasMore && (
-        <div className="flex justify-center pt-4">
-          <Button onClick={() => setSize(size + 1)} disabled={isValidating} size="lg" className="rounded-xl px-8 bp-sm:px-12">
-            {isValidating ? (
-              <>
-                <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
-                불러오는 중...
-              </>
-            ) : (
-              <>
-                더 보기
-                <TrendingUp className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+        <div className="space-y-3 pt-4">
+          {isValidating ? (
+            <div className="space-y-2">
+              {Array.from({ length: 2 }).map((_, idx) => (
+                <div key={`activity-feed-more-skeleton-${idx}`} className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-3/5" />
+                      <Skeleton className="h-4 w-2/5" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="flex justify-center">
+            <Button onClick={() => setSize(size + 1)} disabled={isValidating} size="lg" className="rounded-xl px-8 bp-sm:px-12">
+              {isValidating ? (
+                <>
+                  <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />
+                  <span className="sr-only">추가 항목 로딩 중</span>
+                </>
+              ) : (
+                <>
+                  더 보기
+                  <TrendingUp className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       )}
 

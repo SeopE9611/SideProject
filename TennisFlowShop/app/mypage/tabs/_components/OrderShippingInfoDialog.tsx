@@ -8,6 +8,7 @@
  import { Button } from '@/components/ui/button';
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
  import { Separator } from '@/components/ui/separator';
+ import { Skeleton } from '@/components/ui/skeleton';
  import { showErrorToast, showSuccessToast } from '@/lib/toast';
  type CourierCode =
    | 'cj'
@@ -108,7 +109,29 @@
          </DialogHeader>
 
          {isLoading ? (
-           <div className="space-y-2 text-sm text-muted-foreground">불러오는 중...</div>
+           <div className="space-y-4">
+             <div className="flex items-center gap-2">
+               <Skeleton className="h-6 w-24 rounded-full" />
+               <Skeleton className="h-6 w-36 rounded-full" />
+             </div>
+
+             <Separator />
+
+             <div className="space-y-2">
+               <Skeleton className="h-4 w-14" />
+               <Skeleton className="h-4 w-3/4" />
+             </div>
+
+             <div className="space-y-2">
+               <Skeleton className="h-4 w-10" />
+               <Skeleton className="h-4 w-full" />
+             </div>
+
+             <div className="space-y-2">
+               <Skeleton className="h-4 w-24" />
+               <Skeleton className="h-4 w-2/3" />
+             </div>
+           </div>
          ) : !hasInvoice ? (
            <div className="space-y-2 text-sm">
              <p className="text-muted-foreground">아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.</p>
