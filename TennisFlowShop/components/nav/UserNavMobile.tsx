@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
@@ -17,7 +18,15 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
   const { logout } = useAuthStore();
   const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="space-y-3" aria-hidden="true">
+        <Skeleton className="h-4 w-32 mx-auto" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (

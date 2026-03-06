@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMyInfo } from '@/lib/auth.client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Props {
   children: React.ReactNode;
@@ -43,8 +43,21 @@ export default function AuthGuard({ children }: Props) {
     })();
   }, [router]);
 
-  if (!checked) return null;
-  if (!isLoggedIn) return null;
+  if (!checked) {
+    return (
+      <div className="min-h-[40svh] w-full">
+        <div className="mx-auto w-full max-w-6xl space-y-4 px-4 py-6">
+          <Skeleton className="h-10 w-52" />
+          <Skeleton className="h-28 w-full" />
+          <Skeleton className="h-28 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return <div className="min-h-[40svh] w-full" aria-hidden="true" />;
+  }
 
   return <>{children}</>;
 }
