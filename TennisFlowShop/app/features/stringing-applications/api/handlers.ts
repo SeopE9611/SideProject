@@ -1600,7 +1600,8 @@ export async function handleGetReservedTimeSlots(req: Request) {
     const summary = await buildSlotSummaryForDate(db, date);
 
     // 3) 그대로 프론트로 반환
-    //    - allTimes / reservedTimes / availableTimes / capacity / date
+    //    - allTimes / reservedTimes / availableTimes / capacity / date / closed
+    // 훅이 기대하는 closed 필드를 그대로 전달해 휴무일이 오류처럼 보이는 오해를 방지한다.
     return NextResponse.json(summary, { status: 200, headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('[handleGetReservedTimeSlots] error', error);
