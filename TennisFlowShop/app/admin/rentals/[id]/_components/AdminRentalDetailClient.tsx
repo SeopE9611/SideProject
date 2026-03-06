@@ -11,7 +11,7 @@ import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
-import { formatRefundAccountSummary } from '@/lib/cancel-request/refund-account';
+import { formatRefundAccountSummary, getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import { racketBrandLabel } from '@/lib/constants';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -269,6 +269,13 @@ export default function AdminRentalDetailClient() {
   // 취소 요청 상태 정보
   const cancelInfo = getAdminRentalCancelInfo(data);
   const cancelRefundAccountSummary = formatRefundAccountSummary(data?.cancelRequest?.refundAccount ?? null);
+  const cancelRefundAccount = data?.cancelRequest?.refundAccount
+    ? {
+        bankLabel: getRefundBankLabel(data.cancelRequest.refundAccount.bank),
+        account: String(data.cancelRequest.refundAccount.account ?? '').trim(),
+        holder: String(data.cancelRequest.refundAccount.holder ?? '').trim(),
+      }
+    : null;
 
   // 연결 문서(표시 전용)
   const linkedDocs: LinkedDocItem[] = data?.stringingApplicationId
@@ -382,6 +389,13 @@ export default function AdminRentalDetailClient() {
                     <p className="mt-1">{cancelInfo.label}</p>
                     {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
                     {cancelRefundAccountSummary && <p className="mt-1 text-xs text-primary">환불 계좌: {cancelRefundAccountSummary}</p>}
+                    {cancelRefundAccount && (
+                      <div className="mt-2 space-y-1 rounded-md border border-border/60 bg-background/70 px-3 py-2 text-xs text-foreground">
+                        <p>환불 은행: {cancelRefundAccount.bankLabel || '미입력'}</p>
+                        <p>계좌번호: {cancelRefundAccount.account || '미입력'}</p>
+                        <p>예금주: {cancelRefundAccount.holder || '미입력'}</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* 요청 상태일 때만 승인/거절 버튼 노출 */}

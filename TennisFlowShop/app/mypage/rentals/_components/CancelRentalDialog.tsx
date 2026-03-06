@@ -2,11 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import RefundAccountFields from '@/components/refund/RefundAccountFields';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { getRefundBankLabel, REFUND_ACCOUNT_BANKS } from '@/lib/cancel-request/refund-account';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { XCircle } from 'lucide-react';
@@ -185,38 +184,16 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
               <Textarea rows={3} value={otherReason} onChange={(e) => setOtherReason(e.target.value)} placeholder="취소 요청 사유를 입력해주세요." />
             </div>
           )}
-          <div className="space-y-3 rounded-md border border-border/60 bg-muted/30 p-3">
-            <div>
-              <p className="text-sm font-semibold">환불 계좌 정보</p>
-              <p className="text-xs text-muted-foreground mt-1">기존 계좌와 다르면, 실제 환불받을 계좌로 다시 입력해주세요.</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>환불 은행</Label>
-              <Select value={refundBank} onValueChange={setRefundBank}>
-                <SelectTrigger>
-                  <SelectValue placeholder="은행 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REFUND_ACCOUNT_BANKS.map((bank) => (
-                    <SelectItem key={bank} value={bank}>
-                      {getRefundBankLabel(bank)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>환불 계좌번호</Label>
-              <Input value={refundAccount} onChange={(e) => setRefundAccount(e.target.value)} placeholder="숫자만 입력 가능" />
-            </div>
-
-            <div className="space-y-2">
-              <Label>예금주</Label>
-              <Input value={refundHolder} onChange={(e) => setRefundHolder(e.target.value)} placeholder="예금주명을 입력해주세요" />
-            </div>
-          </div>
+          <RefundAccountFields
+            bank={refundBank}
+            account={refundAccount}
+            holder={refundHolder}
+            onBankChange={setRefundBank}
+            onAccountChange={setRefundAccount}
+            onHolderChange={setRefundHolder}
+            description="기존 계좌와 다르면, 실제 환불받을 계좌로 다시 입력해주세요."
+            disabled={isSubmitting}
+          />
         </div>
 
         <DialogFooter>

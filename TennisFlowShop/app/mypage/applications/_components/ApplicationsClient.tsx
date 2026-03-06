@@ -163,7 +163,7 @@ export default function ApplicationsClient() {
     reasonCode: string;
     reasonText?: string;
     refundAccount: {
-      bank: 'shinhan' | 'kookmin' | 'woori';
+      bank: string;
       account: string;
       holder: string;
     };
