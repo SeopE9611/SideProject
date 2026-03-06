@@ -9,7 +9,7 @@ export function useCurrentUser(): {
   loading: boolean;
   refresh: () => Promise<void>;
 } {
-  const { user, setUser } = useAuthStore();
+  const { user, authChecked, setUser, setAuthChecked } = useAuthStore();
 
   // 수동 새로고침(재시도)용 in-flight 병합
   const inFlight = useRef<Promise<void> | null>(null);
@@ -50,13 +50,14 @@ export function useCurrentUser(): {
       } finally {
         inFlight.current = null;
         setIsRefreshing(false);
+        setAuthChecked(true);
       }
     })();
 
     return inFlight.current;
-  }, [setUser]);
+  }, [setAuthChecked, setUser]);
 
-  const loading = isRefreshing;
+  const loading = isRefreshing || !authChecked;
 
   return { user, loading, refresh };
 }

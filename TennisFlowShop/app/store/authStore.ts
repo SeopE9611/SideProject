@@ -12,14 +12,18 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  authChecked: boolean;
   setUser: (user: User | null) => void;
+  setAuthChecked: (checked: boolean) => void;
   logout: () => void;
 }
 
 const createAuthStore = () =>
   createStore<AuthState>((set) => ({
     user: null,
+    authChecked: false,
     setUser: (user) => set({ user }),
+    setAuthChecked: (checked) => set({ authChecked: checked }),
     logout: () => set({ user: null }),
   }));
 
