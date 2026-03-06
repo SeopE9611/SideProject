@@ -64,6 +64,15 @@ const rentalStatusLabels: Record<string, string> = {
 };
 
 export default function AdminRentalsClient() {
+
+function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { label: '계좌확인 필요' | '검토 가능'; variant: ReturnType<typeof badgeToneVariant> } | null {
+  if (cancelRequest?.status !== 'requested') return null;
+  if (cancelRequest.refundAccountReady === true) {
+    return { label: '검토 가능', variant: badgeToneVariant('success') };
+  }
+  return { label: '계좌확인 필요', variant: badgeToneVariant('warning') };
+}
+
   /**
    *  관리자 UX용 뱃지(대여 페이지)
    *  - Orders 페이지와 동일하게 “시나리오(F#)” + “정산 앵커”를 표준화해
@@ -680,6 +689,7 @@ export default function AdminRentalsClient() {
                   const settlement = getSettlementBadge();
                   const pickup = getPickupBadge(r);
                   const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
+                  const cancelQuickSignal = getCancelQuickSignal(r.cancelRequest);
                   return (
                     <TableRow key={rid || `row-${idx}`} className="hover:bg-muted/50 transition-colors">
                       <TableCell className={cn(tdClasses, 'pl-6')}>
@@ -708,6 +718,7 @@ export default function AdminRentalsClient() {
                                     { label: svc.label, variant: svc.variant, title: '교체서비스 포함 여부' },
                                     ...(link ? [{ label: link.label, variant: link.variant, title: '신청서 연결 여부' }] : []),
                                     { label: flow.shortLabel, variant: flow.variant, title: `시나리오: ${flow.label}` },
+                                    ...(cancelQuickSignal ? [{ label: cancelQuickSignal.label, variant: cancelQuickSignal.variant, title: '환불 계좌 준비 상태' }] : []),
                                     { label: pickup.label, variant: pickup.variant, title: '수령 방식' },
                                     { label: settlement.label, variant: settlement.variant, title: '정산 앵커' },
                                   ];
@@ -736,6 +747,8 @@ export default function AdminRentalsClient() {
                                 </div>
 
                                 {r.cancelRequest?.status === 'requested' && <p className="mt-2 text-sm text-primary">취소 요청이 접수된 대여입니다.</p>}
+                                {cancelQuickSignal && <p className="mt-1 text-[11px] text-muted-foreground">{cancelQuickSignal.label === '검토 가능' ? '환불 계좌가 준비되어 검토 가능한 상태입니다.' : '환불 계좌 정보 확인이 필요합니다.'}</p>}
+                                {cancelQuickSignal && r.cancelRequest?.refundBankLabel && <p className="mt-1 text-[11px] text-muted-foreground">환불 은행: {r.cancelRequest.refundBankLabel}</p>}
 
                                 {/* 교체서비스 포함 안내 */}
                                 {r.withStringService && <p className="mt-2 text-[11px] text-muted-foreground">교체서비스 포함 대여입니다. (신청서 연결 시 신청서에서 상태/배송을 관리합니다)</p>}

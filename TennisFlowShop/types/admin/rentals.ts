@@ -50,7 +50,13 @@ export interface AdminRentalListItemDto {
     outbound: { courier: string; trackingNumber: string; shippedAt: string | Date | null } | null;
     return: { courier: string; trackingNumber: string; shippedAt: string | Date | null } | null;
   };
-  cancelRequest: { status: 'requested' | 'approved' | 'rejected' } | null;
+  cancelRequest:
+    | {
+        status: 'requested' | 'approved' | 'rejected';
+        refundAccountReady?: boolean;
+        refundBankLabel?: string | null;
+      }
+    | null;
   customer: {
     name: string;
     email: string;
