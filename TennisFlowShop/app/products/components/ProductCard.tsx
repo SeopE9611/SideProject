@@ -252,7 +252,7 @@ const ProductCard = React.memo(
                       showSuccessToast(inWish ? '위시리스트에서 제거했습니다.' : '위시리스트에 추가했습니다.');
                     } catch (e: any) {
                       if (e?.message === 'unauthorized') {
-                        router.push(`/login?redirectTo=${encodeURIComponent(detailHref)}`);
+                        router.push(`/login?next=${encodeURIComponent(detailHref)}`);
                       } else {
                         showErrorToast('처리 중 오류가 발생했습니다.');
                       }

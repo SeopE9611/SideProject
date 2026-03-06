@@ -507,7 +507,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         action: {
           label: '로그인하기',
           // onClick: () => router.push('/login?from=cart'),
-          onClick: () => router.push(`/login?redirectTo=${encodeURIComponent(`/products/${product._id}`)}`),
+          onClick: () => router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
         },
       });
     } else {
@@ -540,7 +540,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // router.push('/checkout?mode=buynow');
     const target = '/checkout?mode=buynow';
     if (!user && !allowGuestCheckout) {
-      router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
+      router.push(`/login?next=${encodeURIComponent(target)}`);
       return;
     }
     router.push(target);
@@ -582,7 +582,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // router.push(`/checkout?${search.toString()}`);
     const target = `/checkout?${search.toString()}`;
     if (!user && !allowGuestCheckout) {
-      router.push(`/login?redirectTo=${encodeURIComponent(target)}`);
+      router.push(`/login?next=${encodeURIComponent(target)}`);
       return;
     }
     router.push(target);
@@ -597,8 +597,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
     } catch (e: any) {
       if (e?.message === 'unauthorized') {
         showErrorToast('로그인이 필요합니다.');
-        const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/products/${product._id}`;
-        router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
+        const nextPath = typeof window !== 'undefined' ? window.location.pathname + window.location.search : `/products/${product._id}`;
+        router.push(`/login?next=${encodeURIComponent(nextPath)}`);
       } else {
         showErrorToast('처리 중 오류가 발생했습니다.');
       }
