@@ -11,7 +11,7 @@ export default async function MessageWritePage({ searchParams }: { searchParams:
   const me = await getCurrentUser();
   if (!me) {
     const target = `/messages/write${typeof sp?.to === 'string' ? `?to=${sp.to}` : ''}`;
-    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
   const to = typeof sp?.to === 'string' ? sp.to : '';

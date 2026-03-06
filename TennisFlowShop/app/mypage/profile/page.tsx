@@ -16,7 +16,7 @@ export default async function ProfilePage() {
 
   if (!user) {
     const target = '/mypage/profile';
-    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
   return (
