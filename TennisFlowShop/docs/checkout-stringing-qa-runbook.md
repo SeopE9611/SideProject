@@ -50,18 +50,19 @@
 ---
 
 ### 2-3. success 페이지 분기 규칙(현재 코드 기준)
-- 통합 접수 완료 카드 노출 조건: `(query.stringingSubmitted ?? isStringServiceApplied) === true` 이고 `(query.withService ?? withStringService) === true`
-- 통합 접수 요약 카드 노출 조건: 위 조건 + `applicationSummary` 존재
-- 신청서 링크 ID 우선순위: `query.stringingApplicationId` 우선, 없으면 DB `stringingApplicationId`
-- 보정 안내 카드 노출 조건: query 힌트 값과 DB 상태가 서로 다를 때
+- 주문 success 페이지는 **DB 기준 단일 판정**을 사용한다. query hint(`withService`, `stringingSubmitted`, `stringingApplicationId`)는 분기 근거로 사용하지 않는다.
+- 통합 접수 완료 카드 노출 조건: `withStringService === true`이고 `stringingApplicationId`가 존재할 때
+- 통합 접수 요약 카드 노출 조건: 위 조건 + DB에서 신청서 요약(`stringingSummary`) 조회 성공
+- 신청서 링크 노출 조건: 로그인 상태이면서 DB `stringingApplicationId`가 존재할 때
+- query hint/보정 안내 카드 분기는 주문 success 페이지 범위에서 미사용
 
 ## 3) 권장 실행 순서 (실행 동선)
 
 1. **사용자 checkout 실행**
    - P0-1(스트링+서비스) → P0-2(라켓+스트링+서비스) 순서로 결제/제출.
 2. **success/주문 완료 상태 확인**
-   - 성공 페이지는 query 힌트(`withService`, `stringingSubmitted`, `stringingApplicationId`)를 우선 사용해 즉시 렌더되는지 확인.
-   - 이후 DB 상태(`withStringService`, `isStringServiceApplied`, 저장된 `stringingApplicationId`)와 불일치 시 보정 안내 카드 노출 여부 확인.
+   - 성공 페이지는 DB 상태(`withStringService`, 저장된 `stringingApplicationId`)만으로 분기되는지 확인.
+   - query hint(`withService`, `stringingSubmitted`, `stringingApplicationId`)를 URL에 수동 추가해도 분기가 바뀌지 않는지 확인.
 3. **마이페이지 확인**
    - 주문 목록/상세에서 CTA 분기(신청서 보기/추가 신청/완료) 점검.
 4. **비회원 조회 확인**

@@ -20,6 +20,8 @@
 - [ ] 테스트 주문/신청 데이터 시드 준비 완료
 - [ ] 서버/API 로그 확인 경로 확보
 - [ ] 스크린샷 저장 폴더 생성
+- [ ] 주문 success 분기 확인 시 DB 기준 단일 판정(`withStringService`, `stringingApplicationId`)으로 기록할 준비 완료
+- [ ] query hint(`withService`, `stringingSubmitted`, `stringingApplicationId`) 수동 변경 검증 항목 포함 여부 확인
 
 ---
 
@@ -37,6 +39,7 @@
 | 회원/비회원 여부 | |
 | 주문번호/신청번호 | |
 | 진입 URL | |
+| query hint 조작 여부/값 | |
 | 기대 결과 | |
 | 실제 결과 | |
 | Pass / Fail | ☐ Pass / ☐ Fail |
