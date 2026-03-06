@@ -14,6 +14,9 @@
   - 주문 목록/상세/비회원 조회에서 CTA가 중복 노출되지 않는지
   - 신청 완료 상태에서 잘못된 "신규 신청" CTA가 노출되지 않는지
   - 추가 신청 가능 상태(`remainingSlots > 0`)에서만 `/services/apply?orderId=...`가 유효한지
+- success 페이지 분기 기준(주문)
+  - `/checkout/success`는 query hint(`withService`, `stringingSubmitted`, `stringingApplicationId`)를 사용하지 않고 DB 필드(`withStringService`, `stringingApplicationId`)만으로 분기한다.
+  - URL query를 수동 변경해도 success 카드/CTA가 바뀌지 않아야 한다.
 
 ---
 

@@ -35,3 +35,15 @@ test('비로그인 상태에서는 신청서 ID가 있어도 신청내역 링크
   assert.equal(result.orderDetailHref, '/order-lookup/details/order-abc');
   assert.equal(result.stringingApplicationHref, null);
 });
+
+
+test('주문 success 링크 분기는 query hint와 무관하게 DB 신청서 ID로만 결정한다', () => {
+  const result = buildCheckoutSuccessLinks({
+    accessSub: 'user-123',
+    orderId: 'order-abc',
+    stringingApplicationId: null,
+    queryStringingApplicationId: 'apply-from-query',
+  });
+
+  assert.equal(result.stringingApplicationHref, null);
+});
