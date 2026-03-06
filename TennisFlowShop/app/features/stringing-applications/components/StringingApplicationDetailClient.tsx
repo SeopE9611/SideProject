@@ -12,6 +12,7 @@ import StringingApplicationHistory from '@/app/features/stringing-applications/c
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
+import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import { useStringingStore } from '@/app/store/stringingStore';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
@@ -22,7 +23,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
-import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -160,61 +161,6 @@ interface ApplicationDetail {
 }
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
-
-function getAdminApplicationCancelRequestInfo(app: any): {
-  label: string;
-  badge: string;
-  reason?: string;
-  refundAccount?: {
-    bankLabel: string;
-    account: string;
-    holder: string;
-  } | null;
-} | null {
-  const cancel = app?.cancelRequest;
-  if (!cancel || !cancel.status || cancel.status === 'none') return null;
-
-  const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
-  const refundAccount = cancel?.refundAccount
-    ? {
-        bankLabel: getRefundBankLabel(cancel.refundAccount.bank),
-        account: String(cancel.refundAccount.account ?? '').trim(),
-        holder: String(cancel.refundAccount.holder ?? '').trim(),
-      }
-    : null;
-
-  // 한글/영문 상태 모두 허용
-  const status = cancel.status;
-
-  switch (status) {
-    case 'requested':
-    case '요청':
-      return {
-        label: '고객이 신청 취소를 요청했습니다.',
-        badge: '요청됨',
-        reason: reasonSummary,
-        refundAccount,
-      };
-    case 'approved':
-    case '승인':
-      return {
-        label: '취소 요청이 승인되어 신청이 취소되었습니다.',
-        badge: '승인',
-        reason: reasonSummary,
-        refundAccount,
-      };
-    case 'rejected':
-    case '거절':
-      return {
-        label: '취소 요청이 거절되었습니다.',
-        badge: '거절',
-        reason: reasonSummary,
-        refundAccount,
-      };
-    default:
-      return null;
-  }
-}
 
 // 스트링 교체 서비스용 택배사 라벨/URL 헬퍼
 const stringingCourierLabelMap: Record<string, string> = {
@@ -572,11 +518,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const paymentStatus = isPaid ? '결제완료' : '결제대기';
 
   // 취소 요청 상태 (한글/영문 모두 허용)
-  const rawCancelStatus = (data.cancelRequest?.status ?? null) as string | null;
+  const rawCancelStatus = normalizeAdminCancelRequestStatus((data.cancelRequest?.status ?? null) as string | null);
 
-  const isCancelRequested = rawCancelStatus === '요청' || rawCancelStatus === 'requested';
-  const isCancelApproved = rawCancelStatus === '승인' || rawCancelStatus === 'approved';
-  const isCancelRejected = rawCancelStatus === '거절' || rawCancelStatus === 'rejected';
+  const isCancelRequested = rawCancelStatus === 'requested';
 
   // 확정 여부 필드가 서버에서 내려온다는 전제
   const isUserConfirmed = Boolean((data as any).userConfirmedAt);
@@ -628,7 +572,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const paymentMethodLabel = data.packageInfo?.applied ? '무통장입금(패키지 사용)' : '무통장입금';
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
-  const cancelInfo = getAdminApplicationCancelRequestInfo(data);
+  const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, 'application');
 
   // 자가발송/운송장 등록 여부 계산
   // "고객→매장" 기준은 collectionMethod만 사용
@@ -827,13 +771,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </div>
           {/* 취소 요청 상태 안내 (관리자용) */}
           {isAdmin && cancelInfo && (
-            <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <p className="font-medium text-foreground">취소 요청 상태: {cancelInfo.badge}</p>
-                  <p className="mt-1">{cancelInfo.label}</p>
-                  {cancelInfo.reason && <p className="mt-1 text-xs text-foreground">사유: {cancelInfo.reason}</p>}
-                </div>
+            <AdminCancelRequestCard
+              badgeLabel={cancelInfo.badgeLabel}
+              description={cancelInfo.description}
+              reasonSummary={cancelInfo.reasonSummary}
+              tone={cancelInfo.tone}
+              rightSlot={
                 <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
                   <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
                   <dl className="mt-2 space-y-1 text-xs text-foreground">
@@ -851,8 +794,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </div>
                   </dl>
                 </div>
-              </div>
-            </div>
+              }
+            />
           )}
         </div>
 
