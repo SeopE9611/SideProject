@@ -122,6 +122,7 @@
 ### 기대 서버 결과
 - 조회 API가 `withStringService`, `isStringServiceApplied`, `stringingApplicationId`를 정확히 반환
 - 화면 분기와 필드값이 1:1 대응
+- **비회원 목록/상세 상태 일치 검증:** 동일 주문에서 목록(`POST /api/guest-orders/lookup`)과 상세(`GET /api/guest-orders/{id}`)의 `isStringServiceApplied`, `stringingApplicationId`가 동일 기준(초안/취소 제외 최신 신청서 기준)으로 반환
 
 ### 실패 시 의심 지점 (관련 파일)
 - `app/order-lookup/results/page.tsx`
