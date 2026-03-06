@@ -15,7 +15,7 @@ import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import { racketBrandLabel } from '@/lib/constants';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, Calendar, CreditCard, Loader2, Package, Settings, Truck, Wrench } from 'lucide-react';
+import { ArrowLeft, Calendar, Copy, CreditCard, Loader2, Package, Settings, Truck, Wrench } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -275,6 +275,8 @@ export default function AdminRentalDetailClient() {
         holder: String(data.cancelRequest.refundAccount.holder ?? '').trim(),
       }
     : null;
+  const hasCancelRefundAccount = Boolean(cancelRefundAccount);
+  const hasLegacyRefundAccount = Boolean(data?.refundAccount);
 
   // 연결 문서(표시 전용)
   const linkedDocs: LinkedDocItem[] = data?.stringingApplicationId
@@ -430,23 +432,6 @@ export default function AdminRentalDetailClient() {
                     )}
                   </div>
 
-                  <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
-                    <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
-                    <dl className="mt-2 space-y-1 text-xs text-foreground">
-                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                        <dt className="text-muted-foreground">환불 은행</dt>
-                        <dd>{cancelRefundAccount?.bankLabel || '미입력'}</dd>
-                      </div>
-                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                        <dt className="text-muted-foreground">계좌번호</dt>
-                        <dd className="font-mono">{cancelRefundAccount?.account || '미입력'}</dd>
-                      </div>
-                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                        <dt className="text-muted-foreground">예금주</dt>
-                        <dd>{cancelRefundAccount?.holder || '미입력'}</dd>
-                      </div>
-                    </dl>
-                  </div>
                 </div>
               </div>
             )}
@@ -740,40 +725,94 @@ export default function AdminRentalDetailClient() {
                       <p className="text-xl font-bold text-primary dark:text-foreground">{won(data.amount?.total)}</p>
                     </div>
                   </div>
-                  <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">보증금 환불 계좌</p>
-                    {data?.refundAccount ? (
-                      <div className="space-y-1 text-sm">
-                        <div>
-                          은행: <b>{data.refundAccount.bank || '-'}</b>
+                  {(hasCancelRefundAccount || hasLegacyRefundAccount) && (
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium text-muted-foreground">환불 계좌 확인</p>
+                      {hasCancelRefundAccount && (
+                        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">취소 요청 시 제출한 환불 계좌</p>
+                              <p className="mt-1 text-xs text-muted-foreground">취소 요청 시 고객이 제출한 환불 계좌입니다. 환불 처리 전 이 계좌를 우선 검토하세요.</p>
+                            </div>
+                            <Badge variant="outline" className="border-primary/40 text-primary">
+                              우선 검토
+                            </Badge>
+                          </div>
+                          <dl className="mt-3 space-y-1 text-sm text-foreground">
+                            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                              <dt className="text-muted-foreground">환불 은행</dt>
+                              <dd>{cancelRefundAccount?.bankLabel || '미입력'}</dd>
+                            </div>
+                            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                              <dt className="text-muted-foreground">계좌번호</dt>
+                              <dd className="font-mono">{cancelRefundAccount?.account || '미입력'}</dd>
+                            </div>
+                            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                              <dt className="text-muted-foreground">예금주</dt>
+                              <dd>{cancelRefundAccount?.holder || '미입력'}</dd>
+                            </div>
+                          </dl>
+                          {cancelRefundAccount?.account && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mt-3"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(cancelRefundAccount.account);
+                                  showSuccessToast('취소 요청 환불 계좌번호를 복사했습니다');
+                                } catch {
+                                  showErrorToast('계좌번호 복사에 실패했습니다');
+                                }
+                              }}
+                            >
+                              <Copy className="mr-2 h-4 w-4" />
+                              계좌번호 복사
+                            </Button>
+                          )}
                         </div>
-                        <div>
-                          예금주: <b>{data.refundAccount.holderMasked || '-'}</b>
+                      )}
+
+                      {hasLegacyRefundAccount && (
+                        <div className={cn('rounded-lg border p-4', hasCancelRefundAccount ? 'border-border/60 bg-muted/40' : 'border-border bg-muted/60 dark:bg-card/70')}>
+                          <p className="text-sm font-medium text-foreground">보증금 환불 계좌</p>
+                          <p className="mt-1 text-xs text-muted-foreground">기존에 등록된 보증금 환불 계좌입니다. 취소 요청 계좌가 없을 때 참고용으로 확인하세요.</p>
+                          <dl className="mt-3 space-y-1 text-sm text-foreground">
+                            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                              <dt className="text-muted-foreground">환불 은행</dt>
+                              <dd>{getRefundBankLabel(data.refundAccount.bank) || '미입력'}</dd>
+                            </div>
+                            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                              <dt className="text-muted-foreground">예금주</dt>
+                              <dd>{data.refundAccount.holderMasked || '미입력'}</dd>
+                            </div>
+                            <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                              <dt className="text-muted-foreground">계좌번호</dt>
+                              <dd className="font-mono">{data.refundAccount.accountMasked || '미입력'}</dd>
+                            </div>
+                          </dl>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3"
+                            onClick={async () => {
+                              try {
+                                const j = await adminFetcher<{ bank?: string; holder?: string; account?: string }>(`/api/admin/rentals/${id}/refund-account`, { cache: 'no-store' });
+                                const text = `[${j.bank}] ${j.holder} / ${j.account}`;
+                                await navigator.clipboard.writeText(text);
+                                showSuccessToast('보증금 환불 계좌 정보를 복사했습니다');
+                              } catch {
+                                showErrorToast('네트워크 오류');
+                              }
+                            }}
+                          >
+                            전체 계좌 보기/복사
+                          </Button>
                         </div>
-                        <div>
-                          계좌번호: <b>{data.refundAccount.accountMasked || '-'}</b>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">입력된 환불 계좌가 없습니다.</p>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        const j = await adminFetcher<{ bank?: string; holder?: string; account?: string }>(`/api/admin/rentals/${id}/refund-account`, { cache: 'no-store' });
-                        const text = `[${j.bank}] ${j.holder} / ${j.account}`;
-                        await navigator.clipboard.writeText(text);
-                        showSuccessToast('계좌 정보를 복사했습니다');
-                      } catch {
-                        showErrorToast('네트워크 오류');
-                      }
-                    }}
-                  >
-                    전체 계좌 보기/복사
-                  </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
