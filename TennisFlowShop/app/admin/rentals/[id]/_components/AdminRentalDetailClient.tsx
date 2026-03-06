@@ -3,6 +3,7 @@
 import AdminRentalHistory from '@/app/admin/rentals/_components/AdminRentalHistory';
 import { derivePaymentStatus, deriveShippingStatus } from '@/app/features/rentals/utils/status';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
+import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
+import { buildAdminCancelRequestView } from '@/lib/cancel-request/admin-cancel-request-view';
 import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import { racketBrandLabel } from '@/lib/constants';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -48,44 +50,6 @@ const courierTrackUrl: Record<string, (no: string) => string> = {
 // 날짜 포맷 보조
 const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : '-');
 
-// 관리자용 취소 요청 상태 정보 헬퍼
-function getAdminRentalCancelInfo(rental: any): {
-  label: string;
-  badge: string;
-  reason?: string;
-  status: 'requested' | 'approved' | 'rejected';
-} | null {
-  const cancel = rental?.cancelRequest;
-  if (!cancel || !cancel.status) return null;
-
-  const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
-
-  switch (cancel.status) {
-    case 'requested':
-      return {
-        status: 'requested',
-        label: '고객이 대여 취소를 요청했습니다.',
-        badge: '요청됨',
-        reason: reasonSummary,
-      };
-    case 'approved':
-      return {
-        status: 'approved',
-        label: '취소 요청이 승인되어 대여가 취소되었습니다.',
-        badge: '승인',
-        reason: reasonSummary,
-      };
-    case 'rejected':
-      return {
-        status: 'rejected',
-        label: '취소 요청이 거절되었습니다.',
-        badge: '거절',
-        reason: reasonSummary,
-      };
-    default:
-      return null;
-  }
-}
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
@@ -267,7 +231,7 @@ export default function AdminRentalDetailClient() {
   const canConfirmPayment = data.status === 'pending' && (!data.cancelRequest || data.cancelRequest.status === 'rejected');
 
   // 취소 요청 상태 정보
-  const cancelInfo = getAdminRentalCancelInfo(data);
+  const cancelInfo = buildAdminCancelRequestView(data?.cancelRequest, 'rental');
   const cancelRefundAccount = data?.cancelRequest?.refundAccount
     ? {
         bankLabel: getRefundBankLabel(data.cancelRequest.refundAccount.bank),
@@ -383,57 +347,52 @@ export default function AdminRentalDetailClient() {
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
-              <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
-                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_300px]">
-                  <div>
-                    <p className="font-medium text-primary">취소 요청 상태: {cancelInfo.badge}</p>
-                    <p className="mt-1">{cancelInfo.label}</p>
-                    {cancelInfo.reason && <p className="mt-1 text-xs text-primary">사유: {cancelInfo.reason}</p>}
+              <AdminCancelRequestCard
+                badgeLabel={cancelInfo.badgeLabel}
+                description={cancelInfo.description}
+                reasonSummary={cancelInfo.reasonSummary}
+                tone={cancelInfo.tone}
+              >
+                {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
+                {cancelInfo.status === 'requested' && (
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Button
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                      disabled={isBusy}
+                      onClick={async () => {
+                        if (isBusy) return;
+                        setBusyAction('approveCancel');
+                        try {
+                          await onApproveCancel();
+                        } finally {
+                          setBusyAction(null);
+                        }
+                      }}
+                    >
+                      {busyAction === 'approveCancel' ? '승인 처리중…' : '요청 승인'}
+                    </Button>
 
-                    {/* 요청 상태일 때만 승인/거절 버튼 노출 */}
-                    {cancelInfo.status === 'requested' && (
-                      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-
-                      <Button
-                        size="sm"
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                        disabled={isBusy}
-                        onClick={async () => {
-                          if (isBusy) return;
-                          setBusyAction('approveCancel');
-                          try {
-                            await onApproveCancel();
-                          } finally {
-                            setBusyAction(null);
-                          }
-                        }}
-                      >
-                        {busyAction === 'approveCancel' ? '승인 처리중…' : '요청 승인'}
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-border text-primary hover:bg-muted"
-                        disabled={isBusy}
-                        onClick={async () => {
-                          if (isBusy) return;
-                          setBusyAction('rejectCancel');
-                          try {
-                            await onRejectCancel();
-                          } finally {
-                            setBusyAction(null);
-                          }
-                        }}
-                      >
-                        {busyAction === 'rejectCancel' ? '거절 처리중…' : '요청 거절'}
-                      </Button>
-                      </div>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-border text-primary hover:bg-muted"
+                      disabled={isBusy}
+                      onClick={async () => {
+                        if (isBusy) return;
+                        setBusyAction('rejectCancel');
+                        try {
+                          await onRejectCancel();
+                        } finally {
+                          setBusyAction(null);
+                        }
+                      }}
+                    >
+                      {busyAction === 'rejectCancel' ? '거절 처리중…' : '요청 거절'}
+                    </Button>
                   </div>
-
-                </div>
-              </div>
+                )}
+              </AdminCancelRequestCard>
             )}
           </div>
 

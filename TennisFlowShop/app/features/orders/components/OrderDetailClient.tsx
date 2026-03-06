@@ -8,13 +8,14 @@ import OrderStatusSelect from '@/app/features/orders/components/OrderStatusSelec
 import PaymentEditForm from '@/app/features/orders/components/PaymentEditForm';
 import PaymentMethodDetail from '@/app/features/orders/components/PaymentMethodDetail';
 import RequestEditForm from '@/app/features/orders/components/RequestEditForm';
+import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
-import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -92,56 +93,6 @@ interface OrderDetail {
   }[];
 }
 
-// 관리자용 취소 요청 상태 정보 헬퍼
-function getAdminCancelRequestInfo(order: any): {
-  label: string;
-  badge: string;
-  reason?: string;
-  refundAccount?: {
-    bankLabel: string;
-    account: string;
-    holder: string;
-  } | null;
-} | null {
-  const cancel = order?.cancelRequest;
-  if (!cancel || !cancel.status || cancel.status === 'none') return null;
-
-  const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
-  const refundAccount = cancel?.refundAccount
-    ? {
-        bankLabel: getRefundBankLabel(cancel.refundAccount.bank),
-        account: String(cancel.refundAccount.account ?? '').trim(),
-        holder: String(cancel.refundAccount.holder ?? '').trim(),
-      }
-    : null;
-
-  switch (cancel.status) {
-    case 'requested':
-      return {
-        label: '고객이 주문 취소를 요청했습니다.',
-        badge: '요청됨',
-        reason: reasonSummary,
-        refundAccount,
-      };
-    case 'approved':
-      return {
-        label: '취소 요청이 승인되어 주문이 취소되었습니다.',
-        badge: '승인',
-        reason: reasonSummary,
-        refundAccount,
-      };
-    case 'rejected':
-      return {
-        label: '취소 요청이 거절되었습니다.',
-        badge: '거절',
-        reason: reasonSummary,
-        refundAccount,
-      };
-    default:
-      return null;
-  }
-}
-
 // 메인 컴포넌트
 interface Props {
   orderId: string;
@@ -196,10 +147,10 @@ export default function OrderDetailClient({ orderId }: Props) {
   const usedSlots = orderDetail?.stringService?.usedSlots ?? 0;
 
   // 취소 요청 상태 정보 계산
-  const cancelInfo = getAdminCancelRequestInfo(orderDetail);
+  const cancelInfo = buildAdminCancelRequestView((orderDetail as any)?.cancelRequest, 'order');
 
   // 실제 cancelRequest.status 를 보고 "요청됨" 상태인지 여부
-  const cancelStatus = (orderDetail as any).cancelRequest?.status ?? 'none';
+  const cancelStatus = normalizeAdminCancelRequestStatus((orderDetail as any).cancelRequest?.status);
   const isCancelRequested = cancelStatus === 'requested';
 
   const isCanceled = ['취소', '결제취소', '환불'].includes(localStatus);
@@ -547,13 +498,12 @@ export default function OrderDetailClient({ orderId }: Props) {
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
-              <div className="mt-4 rounded-lg border border-dashed border-border bg-muted px-4 py-3 text-sm text-foreground">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
-                    <p className="font-medium text-foreground">취소 요청 상태: {cancelInfo.badge}</p>
-                    <p className="mt-1">{cancelInfo.label}</p>
-                    {cancelInfo.reason && <p className="mt-1 text-xs text-foreground/80">사유: {cancelInfo.reason}</p>}
-                  </div>
+              <AdminCancelRequestCard
+                badgeLabel={cancelInfo.badgeLabel}
+                description={cancelInfo.description}
+                reasonSummary={cancelInfo.reasonSummary}
+                tone={cancelInfo.tone}
+                rightSlot={
                   <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
                     <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
                     <dl className="mt-2 space-y-1 text-xs text-foreground/90">
@@ -571,8 +521,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </div>
                     </dl>
                   </div>
-                </div>
-              </div>
+                }
+              />
             )}
           </div>
 
