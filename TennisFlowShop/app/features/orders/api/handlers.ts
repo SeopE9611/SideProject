@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse, NextRequest } from 'next/server';
-import { ObjectId } from 'mongodb';
+import { ObjectId, type Db } from 'mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import type { DBOrder } from '@/lib/types/order-db';
 import { findUserSnapshot, fetchCombinedOrders } from './db';
@@ -138,6 +138,18 @@ const CreateOrderBodySchema = z
   })
   .passthrough();
 
+const ordersIdemIndexGlobal = globalThis as typeof globalThis & {
+  __tf_orders_idem_index_promise__?: Promise<string>;
+};
+
+// 매 요청 createIndex 비용 제거(런타임 1회 보장)
+async function ensureOrdersIdemIndex(db: Db) {
+  if (!ordersIdemIndexGlobal.__tf_orders_idem_index_promise__) {
+    ordersIdemIndexGlobal.__tf_orders_idem_index_promise__ = db.collection('orders').createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+  }
+  await ordersIdemIndexGlobal.__tf_orders_idem_index_promise__;
+}
+
 // 주문 생성 핸들러
 export async function createOrder(req: Request): Promise<Response> {
   try {
@@ -268,7 +280,7 @@ export async function createOrder(req: Request): Promise<Response> {
     const ordersCol = db.collection<OrderDoc>('orders');
 
     // idemKey 유니크 인덱스(여러 번 호출해도 안전)
-    await ordersCol.createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+    await ensureOrdersIdemIndex(db);
 
     // idemKey로 이미 생성된 주문이면 반환
     if (idemKey) {
