@@ -5,11 +5,11 @@ import { normalizePackageCardData, type PackageCardData } from '@/app/services/p
 import { type PackageVariant, getPackageVariantByIndex, toPackageVariant } from '@/app/services/packages/_lib/packageVariant';
 import SiteContainer from '@/components/layout/SiteContainer';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { packagesBadgeVariant } from '@/lib/badge-style';
 import { ArrowRight, Award, Calendar, Clock, Gift, MessageSquare, Package, Percent, Phone, Shield, Star, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -75,6 +75,25 @@ const STATIC_PACKAGES: PackageCardData[] = [
     popular: false,
   },
 ].map((pkg) => normalizePackageCardData(pkg));
+
+function PackageCardSkeleton() {
+  return (
+    <Card className="w-full max-w-[340px] overflow-hidden border-border bg-card/90">
+      <CardContent className="space-y-4 p-6">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <div className="space-y-2 pt-2">
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-3.5 w-11/12" />
+          <Skeleton className="h-3.5 w-10/12" />
+        </div>
+        <Skeleton className="h-10 w-full" />
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function StringPackagesPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -227,9 +246,6 @@ export default function StringPackagesPage() {
     return () => window.clearTimeout(id);
   }, [searchParams]);
 
-  if (isLoading && packages.length === 0) {
-    return <FullPageSpinner label="패키지 목록 불러오는 중..." />;
-  }
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -307,19 +323,21 @@ export default function StringPackagesPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap justify-center gap-8">
-            {packages.map((pkg) => (
-              <UnifiedPackageCard
-                key={pkg.id}
-                pkg={pkg}
-                selected={selectedPackage === pkg.id}
-                onSelect={() => setSelectedPackage(pkg.id)}
-                ctaHref={`/services/packages/checkout?package=${pkg.id}`}
-                ctaLabel={ownershipBlockedMessage ? '추가 구매 불가' : '패키지 선택'}
-                ctaDisabled={!!ownershipBlockedMessage}
-                ctaHelperText={ownershipBlockedMessage ? cardBlockedHelperText : undefined}
-              />
-            ))}
+          <div className="flex min-h-[420px] flex-wrap justify-center gap-8">
+            {isLoading && packages.length === 0
+              ? Array.from({ length: 4 }).map((_, idx) => <PackageCardSkeleton key={`pkg-skeleton-${idx}`} />)
+              : packages.map((pkg) => (
+                  <UnifiedPackageCard
+                    key={pkg.id}
+                    pkg={pkg}
+                    selected={selectedPackage === pkg.id}
+                    onSelect={() => setSelectedPackage(pkg.id)}
+                    ctaHref={`/services/packages/checkout?package=${pkg.id}`}
+                    ctaLabel={ownershipBlockedMessage ? '추가 구매 불가' : '패키지 선택'}
+                    ctaDisabled={!!ownershipBlockedMessage}
+                    ctaHelperText={ownershipBlockedMessage ? cardBlockedHelperText : undefined}
+                  />
+                ))}
           </div>
         </SiteContainer>
       </section>

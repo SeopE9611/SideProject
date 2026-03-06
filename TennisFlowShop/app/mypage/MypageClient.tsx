@@ -23,10 +23,10 @@ import Wishlist from '@/app/mypage/tabs/Wishlist';
 import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
 import AuthGuard from '@/components/auth/AuthGuard';
 import SiteContainer from '@/components/layout/SiteContainer';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
 import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast } from '@/lib/toast';
 import { Briefcase, CalendarCheck, ClipboardList, Heart, Layers, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User, UserCheck } from 'lucide-react';
@@ -48,7 +48,7 @@ type Props = {
 export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] = useState(true);
 
   // 주문, 신청서 카운터 상태관리
   const [ordersCount, setOrdersCount] = useState(0);
@@ -88,6 +88,8 @@ export default function MypageClient({ user }: Props) {
         setApplicationsCount(0);
         showErrorToast('신청 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
+
+      setSummaryLoading(false);
     })();
 
     return () => {
@@ -96,15 +98,17 @@ export default function MypageClient({ user }: Props) {
     };
   }, []);
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return <FullPageSpinner label="마이페이지 불러오는 중..." />;
+  if (!user) {
+    return (
+      <AuthGuard>
+        <SiteContainer variant="wide" className="py-10">
+          <Card className="border-border bg-card">
+            <CardContent className="p-6 text-sm text-muted-foreground">회원 정보를 확인하는 중입니다.</CardContent>
+          </Card>
+        </SiteContainer>
+      </AuthGuard>
+    );
   }
-
-  if (!user) return null;
 
   const currentTab = searchParams.get('tab') ?? 'activity'; // 마이페이지 첫 진입 시 “전체”를 기본으로
 
@@ -167,12 +171,12 @@ export default function MypageClient({ user }: Props) {
               <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-6">
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{ordersCount}</div>
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : ordersCount}</div>
                   <div className="text-xs bp-sm:text-sm text-muted-foreground">총 주문</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{applicationsCount}</div>
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : applicationsCount}</div>
                   <div className="text-xs bp-sm:text-sm text-muted-foreground">서비스 신청</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1">

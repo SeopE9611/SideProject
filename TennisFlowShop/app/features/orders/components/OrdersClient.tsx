@@ -121,6 +121,7 @@ export default function OrdersClient() {
 
   // SWR 훅: page/limit + 검색/필터/날짜까지 쿼리로 포함
   const { data, error } = useSWR<ApiResponse>(`/api/orders?${qs}`, fetcher);
+  const isTableLoading = !data && !error;
 
   // 데이터 준비: data.items, data.total
   const orders = data?.items ?? []; // 현재 페이지 항목 배열
@@ -484,6 +485,14 @@ export default function OrdersClient() {
                   필터 초기화
                 </Button>
               </div>
+
+              {isTableLoading && (
+                <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <Skeleton key={`filter-skeleton-${idx}`} className="h-9 w-full rounded-md" />
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -516,7 +525,7 @@ export default function OrdersClient() {
               <span>• 대여 주문은 /admin/rentals에서만 관리</span>
             </div>
           </CardHeader>
-          <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
+          <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2 md:overflow-x-visible md:pr-0">
             <Table className="w-full table-auto border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
               <TableHeader className="sticky top-0 bg-muted dark:bg-card shadow-sm">
                 <TableRow>
