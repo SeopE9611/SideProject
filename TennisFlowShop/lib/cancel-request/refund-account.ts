@@ -1,11 +1,8 @@
-import { bankLabelMap } from '@/lib/constants';
+import { getRefundBankCatalogLabel, isRefundBankCode } from '@/lib/refund-bank-catalog';
 import { z } from 'zod';
 
-export const REFUND_ACCOUNT_BANKS = ['shinhan', 'kookmin', 'woori'] as const;
-export type RefundAccountBank = (typeof REFUND_ACCOUNT_BANKS)[number];
-
 export type RefundAccountInfo = {
-  bank: RefundAccountBank;
+  bank: string;
   account: string;
   holder: string;
 };
@@ -19,19 +16,19 @@ const toDigits = (value: unknown) => toTrimmedString(value).replace(/\D/g, '');
 
 /**
  * 환불 계좌 서버 최종 방어 스키마
- * - bank: 허용 은행만
+ * - bank: 환불 은행 canonical code만 허용
  * - account: 하이픈 제거 후 숫자만 저장
  * - holder: 예금주명 2자 이상
  */
 export const RefundAccountSchema = z.object({
-  bank: z.enum(REFUND_ACCOUNT_BANKS),
+  bank: z.preprocess(toTrimmedString, z.string().min(1).refine((value) => isRefundBankCode(value), { message: '지원하지 않는 은행 코드입니다.' })),
   account: z.preprocess(toDigits, z.string().min(8).max(20)),
   holder: z.preprocess(toTrimmedString, z.string().min(2).max(30)),
 });
 
 export function getRefundBankLabel(bank?: string | null) {
   if (!bank) return '은행 미입력';
-  return bankLabelMap[String(bank)]?.label ?? String(bank);
+  return getRefundBankCatalogLabel(String(bank)) ?? String(bank);
 }
 
 /**

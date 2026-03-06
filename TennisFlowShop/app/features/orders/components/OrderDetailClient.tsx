@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
-import { formatRefundAccountSummary } from '@/lib/cancel-request/refund-account';
+import { formatRefundAccountSummary, getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -98,12 +98,24 @@ function getAdminCancelRequestInfo(order: any): {
   badge: string;
   reason?: string;
   refundAccountSummary?: string | null;
+  refundAccount?: {
+    bankLabel: string;
+    account: string;
+    holder: string;
+  } | null;
 } | null {
   const cancel = order?.cancelRequest;
   if (!cancel || !cancel.status || cancel.status === 'none') return null;
 
   const reasonSummary = cancel.reasonCode ? `${cancel.reasonCode}${cancel.reasonText ? ` (${cancel.reasonText})` : ''}` : cancel.reasonText || '';
   const refundAccountSummary = formatRefundAccountSummary(cancel.refundAccount ?? null);
+  const refundAccount = cancel?.refundAccount
+    ? {
+        bankLabel: getRefundBankLabel(cancel.refundAccount.bank),
+        account: String(cancel.refundAccount.account ?? '').trim(),
+        holder: String(cancel.refundAccount.holder ?? '').trim(),
+      }
+    : null;
 
   switch (cancel.status) {
     case 'requested':
@@ -112,6 +124,7 @@ function getAdminCancelRequestInfo(order: any): {
         badge: '요청됨',
         reason: reasonSummary,
         refundAccountSummary,
+        refundAccount,
       };
     case 'approved':
       return {
@@ -119,6 +132,7 @@ function getAdminCancelRequestInfo(order: any): {
         badge: '승인',
         reason: reasonSummary,
         refundAccountSummary,
+        refundAccount,
       };
     case 'rejected':
       return {
@@ -126,6 +140,7 @@ function getAdminCancelRequestInfo(order: any): {
         badge: '거절',
         reason: reasonSummary,
         refundAccountSummary,
+        refundAccount,
       };
     default:
       return null;
@@ -544,6 +559,13 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <p className="mt-1">{cancelInfo.label}</p>
                     {cancelInfo.reason && <p className="mt-1 text-xs text-foreground/80">사유: {cancelInfo.reason}</p>}
                     {cancelInfo.refundAccountSummary && <p className="mt-1 text-xs text-foreground/80">환불 계좌: {cancelInfo.refundAccountSummary}</p>}
+                    {cancelInfo.refundAccount && (
+                      <div className="mt-2 space-y-1 rounded-md border border-border/60 bg-background/60 px-3 py-2 text-xs text-foreground/90">
+                        <p>환불 은행: {cancelInfo.refundAccount.bankLabel || '미입력'}</p>
+                        <p>계좌번호: {cancelInfo.refundAccount.account || '미입력'}</p>
+                        <p>예금주: {cancelInfo.refundAccount.holder || '미입력'}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
