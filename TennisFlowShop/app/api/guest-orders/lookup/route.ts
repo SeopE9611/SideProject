@@ -101,11 +101,44 @@ export async function POST(req: Request) {
       orders = await db.collection('orders').find(ciQuery).sort({ createdAt: -1 }).limit(50).toArray();
     }
 
+    // 상세 API와 동일 정책으로 주문에 연결된 신청서 우선 판단
+    // - 초안(draft), 취소(취소 완료)는 서비스 접수 완료 판단에서 제외
+    const orderIds = orders.map((order: any) => order?._id).filter(Boolean);
+    const submittedApps = orderIds.length
+      ? await db
+          .collection('stringing_applications')
+          .find(
+            {
+              orderId: { $in: orderIds },
+              status: { $nin: ['draft', '취소'] },
+            },
+            {
+              projection: { _id: 1, orderId: 1, updatedAt: 1, createdAt: 1 },
+            },
+          )
+          .sort({ updatedAt: -1, createdAt: -1 })
+          .toArray()
+      : [];
+
+    const latestApplicationIdByOrderId = new Map<string, string>();
+    for (const app of submittedApps as any[]) {
+      const orderIdKey = String(app?.orderId ?? '');
+      if (!orderIdKey || latestApplicationIdByOrderId.has(orderIdKey)) continue;
+
+      const appId = String(app?._id ?? '').trim();
+      if (!appId) continue;
+      latestApplicationIdByOrderId.set(orderIdKey, appId);
+    }
+
     const normalizedOrders = orders.map((order: any) => {
-      const stringingApplicationId = normalizeStringingApplicationId(order?.stringingApplicationId);
+      const orderIdKey = String(order?._id ?? '');
+      const latestApplicationId = orderIdKey ? latestApplicationIdByOrderId.get(orderIdKey) ?? null : null;
+      const fallbackApplicationId = normalizeStringingApplicationId(order?.stringingApplicationId);
+      const stringingApplicationId = latestApplicationId ?? fallbackApplicationId;
+
       const isStringServiceApplied = hasCompletedStringingApplication({
-        isStringServiceApplied: order?.isStringServiceApplied,
-        stringingApplicationId,
+        isStringServiceApplied: latestApplicationId ? true : order?.isStringServiceApplied,
+        stringingApplicationId: stringingApplicationId ?? fallbackApplicationId,
       });
 
       return {
