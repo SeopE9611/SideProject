@@ -1,19 +1,19 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import useSWRInfinite from 'swr/infinite';
-import Link from 'next/link';
+import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
+import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ShoppingBag, Calendar, User, CreditCard, Package, ArrowRight, CheckCircle, Clock, Truck, Ban, MoreVertical, MessageSquarePlus, Undo2 } from 'lucide-react';
-import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
-import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { mutate as globalMutate } from 'swr';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { ArrowRight, Ban, Calendar, CheckCircle, Clock, CreditCard, MessageSquarePlus, MoreVertical, Package, ShoppingBag, Truck, Undo2, User } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { mutate as globalMutate } from 'swr';
+import useSWRInfinite from 'swr/infinite';
 
 //  주문 데이터 타입 정의
 type OrderResponse = {
@@ -140,7 +140,7 @@ export default function OrderList() {
   const handleConfirmPurchase = async (orderId: string) => {
     if (confirmingOrderId) return; // 이미 처리 중이면 무시
 
-    const ok = window.confirm('구매확정을 진행하시겠습니까?\n\n- 배송완료 이후에만 확정할 수 있습니다.\n- 확정 후에는 되돌릴 수 없습니다.');
+    const ok = window.confirm('구매확정을 진행하시겠습니까?\n\n- 구매확정 시 반품/교환/환불이 어려울 수 있습니다.');
     if (!ok) return;
 
     try {
@@ -282,7 +282,12 @@ export default function OrderList() {
                 ? 'done'
                 : 'apply';
 
-        const stringServiceCTAHref = stringServiceCTAKind === 'view' && order.stringingApplicationId ? `/mypage?tab=applications&applicationId=${order.stringingApplicationId}` : stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? `/services/apply?orderId=${order.id}` : null;
+        const stringServiceCTAHref =
+          stringServiceCTAKind === 'view' && order.stringingApplicationId
+            ? `/mypage?tab=applications&applicationId=${order.stringingApplicationId}`
+            : stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add'
+              ? `/services/apply?orderId=${order.id}`
+              : null;
         const stringServiceCTALabel = stringServiceCTAKind === 'add' ? '추가 신청' : stringServiceCTAKind === 'view' ? '신청서 보기' : stringServiceCTAKind === 'done' ? '교체 신청 완료' : '교체 신청';
 
         // 모바일 보조 CTA: "교체 신청" 또는 "신청서 보기" 중 하나라도 있으면 2버튼 레이아웃
@@ -307,7 +312,9 @@ export default function OrderList() {
 
                       {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                       {order.stringingApplicationId ? (
-                        <Badge variant={getWorkflowMetaBadgeSpec('application_linked').variant} className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">신청서 연결됨</Badge>
+                        <Badge variant={getWorkflowMetaBadgeSpec('application_linked').variant} className="shrink-0 px-2 py-0.5 text-[11px] font-semibold">
+                          신청서 연결됨
+                        </Badge>
                       ) : null}
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">
@@ -320,7 +327,9 @@ export default function OrderList() {
                 {/* 상태/취소 관련 영역 */}
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                   {getStatusIcon(order.status)}
-                  <Badge variant={getOrderStatusBadgeSpec(order.status).variant} className="px-3 py-1 text-xs font-medium">{order.status}</Badge>
+                  <Badge variant={getOrderStatusBadgeSpec(order.status).variant} className="px-3 py-1 text-xs font-medium">
+                    {order.status}
+                  </Badge>
 
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === 'requested' && (
@@ -418,7 +427,16 @@ export default function OrderList() {
                   <TooltipProvider>
                     {order.shippingInfo?.withStringService ? (
                       stringServiceCTAHref ? (
-                        <Button size="sm" variant={stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? 'default' : 'outline'} className={stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200' : 'border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent'} asChild>
+                        <Button
+                          size="sm"
+                          variant={stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add' ? 'default' : 'outline'}
+                          className={
+                            stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add'
+                              ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-all duration-200'
+                              : 'border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent'
+                          }
+                          asChild
+                        >
                           <Link href={stringServiceCTAHref} className="inline-flex items-center gap-1">
                             {stringServiceCTALabel}
                             <ArrowRight className="h-3 w-3" />

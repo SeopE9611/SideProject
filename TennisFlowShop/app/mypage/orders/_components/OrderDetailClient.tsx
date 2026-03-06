@@ -13,8 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
+import { getOrderDeliveryInfoTitle, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { cn } from '@/lib/utils';
-import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -141,6 +141,12 @@ export default function OrderDetailClient({ orderId }: Props) {
   const completedStatuses = new Set(['배송완료', '완료', '구매확정']);
   const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail?.shippingInfo);
+
+  // 관리자 상세와 동일하게 shippingMethod -> deliveryMethod 순으로 읽고
+  // 공용 정규화 유틸로 라벨을 만든다.
+  const shippingMethodValue = orderDetail?.shippingInfo?.shippingMethod ?? (orderDetail?.shippingInfo as any)?.deliveryMethod;
+  const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
+
   const canShowReviewCTA = completedStatuses.has(orderDetail?.status ?? '');
   const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
 
@@ -359,11 +365,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
                       </p>
                       {stringServiceItemCount > 1 && <p className="mt-1 text-xs text-warning">(상품 기준으로는 교체 서비스 대상 스트링이 {stringServiceItemCount}개 포함되어 있습니다.)</p>}
-                      {hasSubmittedStringingApplication && (
-                        <p className="mt-1 text-xs text-warning">
-                          이미 교체 서비스 접수가 완료된 주문이며, 남은 대상에 한해 추가 신청이 가능합니다.
-                        </p>
-                      )}
+                      {hasSubmittedStringingApplication && <p className="mt-1 text-xs text-warning">이미 교체 서비스 접수가 완료된 주문이며, 남은 대상에 한해 추가 신청이 가능합니다.</p>}
                     </div>
                   </div>
                   <div className="flex justify-center bp-md:justify-end">
@@ -395,7 +397,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                           {linkedStringingApps.map((app) => (
                             <div key={app.id} className="flex flex-wrap items-center justify-between gap-2">
                               <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant={badgeToneVariant(getApplicationStatusTone(app.status))} className="px-1.5 py-0.5 text-[11px] font-medium">{app.status ?? '상태 미정'}</Badge>
+                                <Badge variant={badgeToneVariant(getApplicationStatusTone(app.status))} className="px-1.5 py-0.5 text-[11px] font-medium">
+                                  {app.status ?? '상태 미정'}
+                                </Badge>
                                 {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
                                 <span>라인 {app.racketCount ?? 0}개</span>
                                 {app.receptionLabel && <span>· {app.receptionLabel}</span>}
@@ -565,13 +569,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">{isVisitPickup ? '수령 방법' : '배송 방법'}</p>
-                    <p className="font-semibold text-foreground">
-                      {{
-                        delivery: '택배 배송',
-                        quick: '퀵 배송 (당일)',
-                        visit: '방문 수령',
-                      }[orderDetail.shippingInfo.shippingMethod] || '정보 없음'}
-                    </p>
+                    <p className="font-semibold text-foreground">{shippingMethodLabel}</p>
                   </div>
                 </div>
 
@@ -631,7 +629,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                     {(() => {
                       const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                       return (
-                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>{orderDetail.paymentStatus}</Badge>
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                          {orderDetail.paymentStatus}
+                        </Badge>
                       );
                     })()}
                   </div>
@@ -702,43 +702,43 @@ export default function OrderDetailClient({ orderId }: Props) {
 
         {/* 요청사항 */}
         {showDeliveryOnlyFields && (
-        <Card variant="elevatedGradient">
-          <CardHeader variant="sectionGradient">
-            <CardTitle>배송 요청사항</CardTitle>
-            <CardDescription>사용자가 결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
-          </CardHeader>
-          {editingRequest ? (
-            <CardContent className="p-4 bp-sm:p-6">
-              <RequestEditForm
-                initialData={orderDetail.shippingInfo.deliveryRequest || ''}
-                orderId={orderId}
-                onSuccess={() => {
-                  mutateOrderDetail();
-                  mutateHistory();
-                  setEditingRequest(false);
-                }}
-                onCancel={() => setEditingRequest(false)}
-              />
-            </CardContent>
-          ) : (
-            <CardContent className="p-4 bp-sm:p-6">
-              {orderDetail.shippingInfo.deliveryRequest ? (
-                <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-lg p-4">
-                  <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
-                </div>
-              ) : (
-                <p className="text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
-              )}
-            </CardContent>
-          )}
-          {isEditMode && canUserEdit && !editingRequest && (
-            <CardFooter className="flex justify-center bg-muted/50">
-              <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border">
-                요청사항 수정
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
+          <Card variant="elevatedGradient">
+            <CardHeader variant="sectionGradient">
+              <CardTitle>배송 요청사항</CardTitle>
+              <CardDescription>결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
+            </CardHeader>
+            {editingRequest ? (
+              <CardContent className="p-4 bp-sm:p-6">
+                <RequestEditForm
+                  initialData={orderDetail.shippingInfo.deliveryRequest || ''}
+                  orderId={orderId}
+                  onSuccess={() => {
+                    mutateOrderDetail();
+                    mutateHistory();
+                    setEditingRequest(false);
+                  }}
+                  onCancel={() => setEditingRequest(false)}
+                />
+              </CardContent>
+            ) : (
+              <CardContent className="p-4 bp-sm:p-6">
+                {orderDetail.shippingInfo.deliveryRequest ? (
+                  <div className="bg-muted border border-border rounded-lg p-4">
+                    <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
+                )}
+              </CardContent>
+            )}
+            {isEditMode && canUserEdit && !editingRequest && (
+              <CardFooter className="flex justify-center bg-muted/50">
+                <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border">
+                  요청사항 수정
+                </Button>
+              </CardFooter>
+            )}
+          </Card>
         )}
 
         {/* 처리 이력 */}
