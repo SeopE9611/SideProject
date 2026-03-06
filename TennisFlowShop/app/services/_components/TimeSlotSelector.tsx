@@ -40,6 +40,15 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
     );
   }
 
+  if (items.length === 0) {
+    return (
+      <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
+        {/* 빈 그리드를 노출하지 않아 휴무/비영업일을 버그로 오해하지 않게 한다. */}
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">해당 날짜는 예약 가능한 시간이 없습니다(휴무/영업시간 없음). 다른 날짜를 선택해주세요.</div>
+      </div>
+    );
+  }
+
   //  여기부터는 "정상"일 때만 시간대 격자를 보여준다.
   return (
     <div className="space-y-2" aria-busy={isLoading ? true : undefined}>

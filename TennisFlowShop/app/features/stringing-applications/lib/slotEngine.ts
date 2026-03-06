@@ -364,6 +364,7 @@ export async function buildSlotSummaryForDate(
   db: Db,
   date: string
 ): Promise<{
+  closed: boolean;
   date: string;
   capacity: number;
   allTimes: string[];
@@ -390,6 +391,8 @@ export async function buildSlotSummaryForDate(
   // 4) 영업 안 하는 날이면 reserved/available 모두 빈 배열로 반환
   if (!schedule.isOpen || allTimes.length === 0) {
     return {
+      // 훅이 기대하는 closed 스키마를 채워서 휴무일을 오류처럼 오해하지 않게 한다.
+      closed: true,
       date,
       capacity: schedule.capacity,
       allTimes: [],
@@ -403,6 +406,8 @@ export async function buildSlotSummaryForDate(
   const availableTimes = allTimes.filter((t) => !reservedTimes.includes(t));
 
   return {
+    // 정상 영업일은 closed=false를 명시해 프론트 분기 오해를 방지한다.
+    closed: false,
     date,
     capacity: schedule.capacity,
     allTimes,
