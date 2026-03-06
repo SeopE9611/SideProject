@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { ObjectId, type Db } from 'mongodb';
 import { cookies } from 'next/headers';
 import { verifyAccessToken } from '@/lib/auth.utils';
 import { deductPoints, getPointsSummary } from '@/lib/points.service';
@@ -13,6 +13,19 @@ export const dynamic = 'force-dynamic';
 
 // 주문 체크아웃과 동일한 포인트 사용 단위(=100P 단위)
 const POINT_UNIT = 100;
+
+
+const rentalOrdersIdemIndexGlobal = globalThis as typeof globalThis & {
+  __tf_rental_orders_idem_index_promise__?: Promise<string>;
+};
+
+// 매 요청 createIndex 비용 제거(런타임 1회 보장)
+async function ensureRentalOrdersIdemIndex(db: Db) {
+  if (!rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__) {
+    rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__ = db.collection('rental_orders').createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+  }
+  await rentalOrdersIdemIndexGlobal.__tf_rental_orders_idem_index_promise__;
+}
 
 const POSTAL_RE = /^\d{5}$/;
 const ALLOWED_BANKS = new Set(['shinhan', 'kookmin', 'woori'] as const);
@@ -156,7 +169,7 @@ export async function POST(req: Request) {
   const db = client.db();
   const rentalOrders = db.collection('rental_orders');
 
-  await rentalOrders.createIndex({ idemKey: 1 }, { unique: true, sparse: true });
+  await ensureRentalOrdersIdemIndex(db);
 
   if (idemKey) {
     const existing = await rentalOrders.findOne({ idemKey });
