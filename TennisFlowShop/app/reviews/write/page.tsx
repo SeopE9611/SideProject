@@ -7,9 +7,10 @@ import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import LoginGate from '@/components/system/LoginGate';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -703,7 +704,30 @@ export default function ReviewWritePage() {
 
   // 비회원 차단
   if (!allowGuestCheckout && !authChecked) {
-    return <FullPageSpinner label="로그인 상태 확인 중..." />;
+    return (
+      <div className="min-h-screen bg-muted/30">
+        <div className="relative mx-auto max-w-7xl px-4 py-8">
+          <div className="grid lg:grid-cols-[400px_1fr] gap-8 min-h-[80vh]">
+            <Card className="rounded-2xl">
+              <CardContent className="space-y-4 p-6">
+                <Skeleton className="h-6 w-44" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl">
+              <CardContent className="space-y-4 p-6">
+                <Skeleton className="h-8 w-56" />
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-11 w-36" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
   if (blockedByLoginGate) {
     return <LoginGate next={nextUrl} variant="default" />;

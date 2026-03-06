@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Mail, Phone, MapPin, User, Calendar, Shield } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
@@ -17,7 +18,26 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
   const router = useRouter();
   const { data, error, isLoading, mutate } = useSWR(`${baseUrl}/api/admin/users/${id}`, fetcher);
 
-  if (isLoading) return <div className="p-6">불러오는 중...</div>;
+  if (isLoading)
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-56" />
+            </div>
+          </div>
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <Card><CardContent className="space-y-3 p-6">
+          <Skeleton className="h-5 w-28" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-4/5" />
+        </CardContent></Card>
+      </div>
+    );
   if (error || !data) return <div className="p-6 text-destructive">불러오기 실패</div>;
 
   const u = data as {

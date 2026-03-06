@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
@@ -155,7 +156,7 @@ export default function OrderDetailPage() {
                 <Package className="w-8 h-8 animate-pulse" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4"><span className="text-primary">주문</span> 상세 정보</h1>
-              <p className="text-xl text-muted-foreground">주문 정보를 불러오는 중입니다...</p>
+              <Skeleton className="mx-auto h-6 w-72 max-w-full" />
             </div>
           </div>
         </div>
@@ -168,8 +169,8 @@ export default function OrderDetailPage() {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full mb-6">
                     <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">주문 정보 로딩 중</h3>
-                  <p className="text-muted-foreground">잠시만 기다려주세요...</p>
+                  <Skeleton className="mx-auto h-6 w-48" />
+                  <Skeleton className="mx-auto mt-2 h-4 w-40" />
                 </div>
               </CardContent>
             </Card>

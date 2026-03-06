@@ -17,9 +17,9 @@ import Step3PaymentInfoRentalReadonly from '@/app/services/apply/_components/ste
 import Step4FinalRequest from '@/app/services/apply/_components/steps/Step4FinalRequest';
 import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
 import LoginGate from '@/components/system/LoginGate';
-import { FullPageSpinner } from '@/components/system/PageLoading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -1385,7 +1385,22 @@ export default function StringServiceApplyPage() {
   // ===== 비회원 주문/신청 차단(LoginGate) =====
   // - 게스트 모드가 꺼져 있을 때: 인증 체크 완료 후 미로그인이라면 LoginGate로 진입 차단
   if (!allowGuestCheckout && !authChecked) {
-    return <FullPageSpinner label="로그인 상태 확인 중..." />;
+    return (
+      <div className="min-h-full bg-card bp-lg:bg-background">
+        <ApplyHero />
+        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
+          <div className="rounded-2xl border border-border bg-card p-6 bp-sm:p-8 space-y-4">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-full max-w-2xl" />
+            <div className="grid gap-4 bp-lg:grid-cols-2">
+              <Skeleton className="h-52 w-full" />
+              <Skeleton className="h-52 w-full" />
+            </div>
+            <Skeleton className="h-11 w-40" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (blockedByLoginGate) return <LoginGate next={nextUrl} variant="default" />;
