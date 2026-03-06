@@ -12,7 +12,7 @@ export default async function MyPagePage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
   if (!user) {
     // 탭(tab) 등 쿼리스트링을 보존한 채 로그인으로 보내기
-    // (로그인 성공 후 /login?redirectTo=... 값을 사용해 원래 경로로 복귀)
+    // (로그인 성공 후 /login?next=... 값을 사용해 원래 경로로 복귀)
     const sp = await Promise.resolve(searchParams ?? {});
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(sp)) {
@@ -20,7 +20,7 @@ export default async function MyPagePage({ searchParams }: PageProps) {
       else if (Array.isArray(v)) v.forEach((x) => qs.append(k, x));
     }
     const target = `/mypage${qs.toString() ? `?${qs.toString()}` : ''}`;
-    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
   // email이 null일 수 있으니 안전 문자열로 보정

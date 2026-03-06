@@ -7,7 +7,7 @@ export default async function MessagesPage() {
 
   if (!user) {
     const target = '/messages';
-    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
   return <MessagesClient user={user} />;

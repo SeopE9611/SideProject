@@ -12,7 +12,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   if (!user) {
     const target = `/mypage/orders/${id}`;
-    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
   return (
     <div className="container py-8">

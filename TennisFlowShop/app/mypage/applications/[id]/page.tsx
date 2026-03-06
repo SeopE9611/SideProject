@@ -13,7 +13,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
 
   if (!user) {
     const target = `/mypage/applications/${id}`;
-    redirect(`/login?redirectTo=${encodeURIComponent(target)}`);
+    redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
   const host = (await headers()).get('host');
