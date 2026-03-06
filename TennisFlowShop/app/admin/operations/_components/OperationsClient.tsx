@@ -1024,12 +1024,28 @@ export default function OperationsClient() {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-0 pt-2">
+        <CardContent className="min-h-[520px] p-0 pt-2">
           {isLoading ? (
-            <div className="space-y-2 p-4">
-              <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
-              <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
-              <Skeleton className="h-12 w-full rounded bg-muted dark:bg-card" />
+            <div className="space-y-3 p-4">
+              <div className="rounded-lg border border-border bg-card/80 p-3">
+                <div className="grid gap-2 bp-sm:grid-cols-4">
+                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
+                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
+                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
+                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
+                </div>
+              </div>
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div key={`operations-row-skeleton-${idx}`} className="rounded-lg border border-border bg-card/70 p-3">
+                  <div className="grid gap-2 bp-sm:grid-cols-[1.3fr_1fr_1fr_1fr_120px]">
+                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
+                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
+                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
+                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
+                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <>
