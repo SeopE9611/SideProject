@@ -362,15 +362,18 @@ export async function findFullyBookedTimes(db: Db, date: string, capacity: numbe
  */
 export async function buildSlotSummaryForDate(
   db: Db,
-  date: string
+  date: string,
+  cap?: number
 ): Promise<{
   closed: boolean;
   date: string;
   capacity: number;
   allTimes: string[];
   reservedTimes: string[];
+  blockedTimes: string[];
   availableTimes: string[];
 }> {
+  const capCount = Math.max(1, Math.floor(cap || 1));
   const settings = await loadStringingSettings(db);
 
   // 1) 예약 가능 기간 검증
@@ -397,13 +400,25 @@ export async function buildSlotSummaryForDate(
       capacity: schedule.capacity,
       allTimes: [],
       reservedTimes: [],
+      blockedTimes: [],
       availableTimes: [],
     };
   }
 
   // 5) 마감 시간 계산
   const reservedTimes = await findFullyBookedTimesWithSpan(db, date, schedule.capacity, allTimes);
-  const availableTimes = allTimes.filter((t) => !reservedTimes.includes(t));
+  const reservedSet = new Set(reservedTimes);
+
+  // 연속 슬롯(cap) 예약 충돌 방지를 위해, 시작 시각 기준으로 span 확보 가능 여부를 검사한다.
+  // span 내에 완전 마감 슬롯이 있거나 하루 끝으로 span 생성이 불가능하면 시작 시각을 차단한다.
+  const blockedTimes = allTimes.filter((time) => {
+    const span = computeSlotSpan(allTimes, time, capCount);
+    if (!span) return true;
+    return span.slots.some((slot) => reservedSet.has(slot));
+  });
+
+  const blockedSet = new Set(blockedTimes);
+  const availableTimes = allTimes.filter((t) => !blockedSet.has(t));
 
   return {
     // 정상 영업일은 closed=false를 명시해 프론트 분기 오해를 방지한다.
@@ -412,6 +427,7 @@ export async function buildSlotSummaryForDate(
     capacity: schedule.capacity,
     allTimes,
     reservedTimes,
+    blockedTimes,
     availableTimes,
   };
 }

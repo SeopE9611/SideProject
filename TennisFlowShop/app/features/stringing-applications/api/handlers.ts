@@ -1589,6 +1589,10 @@ export async function handleGetReservedTimeSlots(req: Request) {
 
     const db = (await clientPromise).db();
 
+    const capRaw = searchParams.get('cap');
+    const cap = Number(capRaw);
+    const capCount = Math.max(1, Math.floor((Number.isNaN(cap) ? 1 : cap) || 1));
+
     // 1) 우선 설정을 로드하고, "예약 가능 기간" 검증을 slotEngine 로직으로 수행
     const settings = await loadStringingSettings(db);
     const win = validateBookingWindow(settings, date);
@@ -1597,7 +1601,7 @@ export async function handleGetReservedTimeSlots(req: Request) {
     }
 
     // 2) slotEngine에 하루 요약 계산을 위임
-    const summary = await buildSlotSummaryForDate(db, date);
+    const summary = await buildSlotSummaryForDate(db, date, capCount);
 
     // 3) 그대로 프론트로 반환
     //    - allTimes / reservedTimes / availableTimes / capacity / date / closed

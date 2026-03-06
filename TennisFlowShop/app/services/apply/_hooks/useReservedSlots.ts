@@ -95,9 +95,11 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
           return;
         }
 
-        // 서버 슬롯/마감 반영
+        // 서버 슬롯/비활성 시간 반영
         setTimeSlots(Array.isArray(data?.allTimes) ? data.allTimes : []);
-        setDisabledTimes(Array.isArray(data?.reservedTimes) ? data.reservedTimes : []);
+        const disabled: string[] = Array.isArray(data?.blockedTimes) ? data.blockedTimes : Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
+        slotsCache.current.set(cacheKey, disabled);
+        setDisabledTimes(disabled);
 
         // (선택) 현재 선택된 시간이 사용 불가면 선택 해제
         if (data?.availableTimes && !data.availableTimes.includes(preferredTime)) {
@@ -105,7 +107,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
         }
 
         // 사용자가 로딩 중에 선택해둔 시간이 새로 "비활성"이 되면 해제
-        setFormData((prev) => (prev.preferredTime && (data?.reservedTimes?.includes(prev.preferredTime) ?? false) ? ({ ...prev, preferredTime: '' } as T) : prev));
+        setFormData((prev) => (prev.preferredTime && disabled.includes(prev.preferredTime) ? ({ ...prev, preferredTime: '' } as T) : prev));
       } catch {
         if (!cacheHit) {
           setDisabledTimes([]);
@@ -150,9 +152,9 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: { pr
       const res = await fetch(`/api/applications/stringing/reserved?date=${encodeURIComponent(date)}&cap=${cap}`, { credentials: 'include' });
       if (!res.ok) return;
       const data = await res.json();
-      const times: string[] = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
-      slotsCache.current.set(cacheKey, times);
-      setDisabledTimes(times);
+      const disabled: string[] = Array.isArray(data?.blockedTimes) ? data.blockedTimes : Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
+      slotsCache.current.set(cacheKey, disabled);
+      setDisabledTimes(disabled);
     } catch {
       // 조용히 실패 무시
     }
