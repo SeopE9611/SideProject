@@ -156,17 +156,20 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
 
   // 스트링 교체 서비스 신청서 불러오기
   // draft 제외 + 필수 참조(orderId, userId) 없는 고아 문서 제외
+  // 대여 기반 신청서 제외(운영 오판 방지)
   const rawApps = await db
     .collection('stringing_applications')
     .find(
       {
         status: { $ne: 'draft' }, // draft 제외
         ...stringingQuery,
+        $or: [{ rentalId: { $exists: false } }, { rentalId: null }],
       },
       {
         projection: {
           _id: 1,
           orderId: 1,
+          rentalId: 1,
           userId: 1,
           createdAt: 1,
           status: 1,
