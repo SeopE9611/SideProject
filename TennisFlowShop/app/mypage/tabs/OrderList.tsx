@@ -5,6 +5,7 @@ import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
@@ -83,6 +84,32 @@ const formatDate = (dateString: string) => {
 };
 
 const LIMIT = 5;
+
+const OrderListSkeleton = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-4">
+    {Array.from({ length: count }).map((_, idx) => (
+      <Card key={idx} className="border-0 bg-card">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-5 w-48" />
+            </div>
+            <Skeleton className="h-7 w-20 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
 
 const getOrderCompositionTitle = (order: Order) => {
   const itemKinds = order.items.map((item) => item.kind).filter((kind): kind is 'racket' | 'string' | 'product' => Boolean(kind));
@@ -230,7 +257,7 @@ export default function OrderList() {
 
   // 첫 로딩
   if (!data && isValidating) {
-    return <div className="text-center py-8 text-muted-foreground">주문 내역을 불러오는 중입니다...</div>;
+    return <OrderListSkeleton />;
   }
 
   //  주문이 없을 경우
@@ -602,12 +629,14 @@ export default function OrderList() {
       <div className="flex justify-center pt-4">
         {hasMore ? (
           <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
-            {isValidating ? '불러오는 중…' : '더 보기'}
+            더 보기
           </Button>
         ) : items.length ? (
           <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
+
+      {hasMore && isValidating ? <OrderListSkeleton count={2} /> : null}
     </div>
   );
 }

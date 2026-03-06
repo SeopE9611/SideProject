@@ -3,6 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Ticket } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -27,6 +28,28 @@ type Res = { items: PassItem[] };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
+
+
+const PassListSkeleton = ({ count = 3 }: { count?: number }) => (
+  <Card className="border-0">
+    <CardContent className="space-y-4">
+      {Array.from({ length: count }).map((_, idx) => (
+        <div key={idx} className="bg-card p-3 shadow-sm ring-1 ring-border/70 dark:ring-border/70 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </div>
+          <Skeleton className="h-2 w-full rounded-full" />
+          <Skeleton className="h-4 w-44" />
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
+
 export default function PassList() {
   const { data, isLoading, error, mutate } = useSWR<Res>('/api/passes/me', fetcher);
   const [now, setNow] = useState(0);
@@ -36,7 +59,7 @@ export default function PassList() {
   }, []);
 
   if (isLoading) {
-    return <div className="text-center py-8 text-muted-foreground">패키지 내역을 불러오는 중입니다...</div>;
+    return <PassListSkeleton />;
   }
 
   if (error || !data) {

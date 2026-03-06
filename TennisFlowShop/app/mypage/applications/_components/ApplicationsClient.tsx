@@ -7,6 +7,7 @@ import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { ArrowRight, Ban, Calendar, CheckCircle, Clock, FileText, GraduationCap, LayoutGrid, Phone, Undo2, User, XCircle } from 'lucide-react';
@@ -52,6 +53,34 @@ export interface Application {
 }
 
 type AppResponse = { items: Application[]; total: number };
+
+
+const ApplicationsListSkeleton = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-4">
+    {Array.from({ length: count }).map((_, idx) => (
+      <Card key={idx} className="border-0 bg-card">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-5 w-56" />
+            </div>
+            <Skeleton className="h-7 w-20 rounded-full" />
+          </div>
+          <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
+
 
 const formatDateTime = (iso: string) => {
   const date = new Date(iso);
@@ -288,7 +317,7 @@ export default function ApplicationsClient() {
 
   // 첫 로딩
   if (!data && isValidating) {
-    return <div className="text-center py-8 text-muted-foreground">신청 내역을 불러오는 중입니다...</div>;
+    return <ApplicationsListSkeleton />;
   }
 
   return (
@@ -579,12 +608,14 @@ export default function ApplicationsClient() {
       <div className="mt-6 flex justify-center items-center">
         {hasMore ? (
           <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
-            {isValidating ? '불러오는 중…' : '더 보기'}
+            더 보기
           </Button>
         ) : applications.length ? (
           <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
+
+      {hasMore && isValidating ? <ApplicationsListSkeleton count={2} /> : null}
 
       {/* 목록 전용 스트링 취소 요청 Dialog (선택된 신청서 기준) */}
       <CancelStringingDialog

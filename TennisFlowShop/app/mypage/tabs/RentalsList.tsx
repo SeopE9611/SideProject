@@ -3,6 +3,7 @@
 import useSWRInfinite from 'swr/infinite';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, CreditCard, Package, ArrowRight, Briefcase, CheckCircle, AlertCircle, XCircle, Undo2 } from 'lucide-react';
@@ -71,6 +72,32 @@ const formatDate = (dateString: string) => {
   }).format(date);
 };
 
+
+
+const RentalsListSkeleton = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-4">
+    {Array.from({ length: count }).map((_, idx) => (
+      <Card key={idx} className="border-0 bg-card">
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-5 w-44" />
+            </div>
+            <Skeleton className="h-7 w-20 rounded-full" />
+          </div>
+          <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
 export default function RentalsList() {
   const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(getKey, fetcher);
 
@@ -123,7 +150,7 @@ export default function RentalsList() {
 
   // 첫 로딩
   if (!data && isValidating) {
-    return <div className="text-center py-8 text-muted-foreground">대여 내역을 불러오는 중입니다...</div>;
+    return <RentalsListSkeleton />;
   }
 
   if (!isValidating && flat.length === 0) {
@@ -345,12 +372,14 @@ export default function RentalsList() {
       <div className="flex justify-center pt-4">
         {hasMore ? (
           <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating} className="border-border hover:bg-muted dark:hover:bg-muted bg-transparent">
-            {isValidating ? '불러오는 중…' : '더 보기'}
+            더 보기
           </Button>
         ) : flat.length ? (
           <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         ) : null}
       </div>
+
+      {hasMore && isValidating ? <RentalsListSkeleton count={2} /> : null}
     </div>
   );
 }
