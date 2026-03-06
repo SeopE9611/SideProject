@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCard, Undo2 } from 'lucide-react';
+import { CheckCircle, Package, Clock, ArrowRight, Shield, Truck, Phone, CreditCard, Undo2, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +43,15 @@ type Props = {
       bank?: string | null;
       depositor?: string | null;
     } | null;
+    shipping?: {
+      name?: string | null;
+      phone?: string | null;
+      postalCode?: string | null;
+      address?: string | null;
+      addressDetail?: string | null;
+      deliveryRequest?: string | null;
+      shippingMethod?: string | null;
+    } | null;
     refundAccount?: {
       bank?: string | null;
       account?: string | null;
@@ -73,6 +82,8 @@ export default function RentalsSuccessClient({ data }: Props) {
   const stringingApplicationHref = dbStringingApplicationId
     ? `/mypage?tab=applications&applicationId=${encodeURIComponent(dbStringingApplicationId)}`
     : null;
+  // 방문수령/배송 오해 방지
+  const isPickup = data.shipping?.shippingMethod === 'pickup';
 
   useEffect(() => {
     try {
@@ -321,8 +332,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
                     <Truck className="h-5 w-5 text-primary mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-primary mb-1">배송 안내</h4>
-                      <p className="text-sm text-muted-foreground">결제 완료 후 배송이 시작됩니다.</p>
+                      <h4 className="font-semibold text-primary mb-1">{isPickup ? '방문 수령 안내' : '배송 안내'}</h4>
+                      <p className="text-sm text-muted-foreground">{isPickup ? '입금 확인 후 매장에서 수령 준비가 진행됩니다.' : '결제 완료 후 배송이 시작됩니다.'}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
@@ -350,6 +361,52 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl">
+            <CardHeader className="bg-muted/30">
+              <CardTitle className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-foreground" />
+                수령 정보
+              </CardTitle>
+              <CardDescription>{isPickup ? '방문 수령으로 접수된 주문입니다.' : '배송지 정보를 확인해주세요.'}</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6 text-sm space-y-2">
+              {isPickup ? (
+                <>
+                  <p>
+                    <span className="text-muted-foreground">수령 방식:</span> <span className="font-semibold">방문 수령 선택됨</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <span className="text-muted-foreground">이름:</span> <span className="font-semibold">{data.shipping?.name || '-'}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">연락처:</span> <span className="font-semibold">{data.shipping?.phone || '-'}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">우편번호:</span> <span className="font-semibold">{data.shipping?.postalCode || '-'}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">주소:</span> <span className="font-semibold">{data.shipping?.address || '-'}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">상세주소:</span> <span className="font-semibold">{data.shipping?.addressDetail || '-'}</span>
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">요청사항:</span> <span className="font-semibold">{data.shipping?.deliveryRequest || '-'}</span>
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 

@@ -113,6 +113,17 @@ async function getData(db: any, id: string, r: any) {
           depositor: r.payment.depositor || null,
         }
       : null,
+    shipping: r.shipping
+      ? {
+          name: r.shipping.name || null,
+          phone: r.shipping.phone || null,
+          postalCode: r.shipping.postalCode || null,
+          address: r.shipping.address || null,
+          addressDetail: r.shipping.addressDetail || null,
+          deliveryRequest: r.shipping.deliveryRequest || null,
+          shippingMethod: r.shipping.shippingMethod || null,
+        }
+      : null,
     refundAccount: r.refundAccount
       ? {
           bank: r.refundAccount.bank || null,
