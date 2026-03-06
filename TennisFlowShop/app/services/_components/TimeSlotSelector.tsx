@@ -69,7 +69,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
                   key={time}
                   type="button"
                   disabled
-                  title={isReserved ? '이미 예약된 시간대입니다' : '지난 시간대입니다'}
+                  title={isReserved ? '이미 예약되었거나 연속 예약이 불가능한 시간대입니다' : '지난 시간대입니다'}
                   className={baseBtn + ' cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border'}
                   aria-disabled
                 >
@@ -101,7 +101,7 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground mt-2">🔒 회색으로 표시된 시간은 이미 예약되어 선택할 수 없습니다.</p>
+      <p className="text-xs text-muted-foreground mt-2">🔒 회색으로 표시된 시간은 이미 예약되었거나 연속 예약이 불가능해 선택할 수 없습니다.</p>
     </div>
   );
 }
