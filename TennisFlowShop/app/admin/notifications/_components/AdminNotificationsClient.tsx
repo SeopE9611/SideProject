@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -475,9 +476,13 @@ export default function AdminNotificationsClient() {
           </DialogHeader>
 
           {detailLoading ? (
-            <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              로딩 중...
+            <div className="space-y-3 py-2">
+              <Skeleton className="h-5 w-44" />
+              <div className="rounded-lg border border-border/40 bg-card p-4 space-y-2">
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <Skeleton key={index} className="h-4 w-full" />
+                ))}
+              </div>
             </div>
           ) : detail ? (
             <div className="max-h-[60vh] overflow-auto rounded-lg border border-border/40 bg-card p-4">

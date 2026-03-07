@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 
 type AdminEditItem = {
@@ -111,9 +112,22 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            게시물을 불러오는 중입니다...
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-[320px] w-full" />
+            </div>
+            <div className="flex justify-end">
+              <Skeleton className="h-10 w-28" />
+            </div>
           </div>
         ) : (
           <form className="space-y-6" onSubmit={handleSubmit}>
