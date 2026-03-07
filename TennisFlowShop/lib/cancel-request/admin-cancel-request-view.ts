@@ -71,8 +71,8 @@ export function buildAdminCancelRequestView(
   if (status === 'requested') {
     return {
       status,
-      badgeLabel: '요청됨',
-      description: `고객이 ${noun} 취소를 요청했습니다.`,
+      badgeLabel: '취소요청',
+      description: '취소 요청이 접수된 항목입니다.',
       reasonSummary,
       tone: 'warning',
       refundAccount,
@@ -82,8 +82,8 @@ export function buildAdminCancelRequestView(
   if (status === 'approved') {
     return {
       status,
-      badgeLabel: '승인',
-      description: `취소 요청이 승인되어 ${noun}이(가) 취소되었습니다.`,
+      badgeLabel: '취소승인',
+      description: `${noun} 취소 요청이 승인되었습니다.`,
       reasonSummary,
       tone: 'success',
       refundAccount,
@@ -92,8 +92,8 @@ export function buildAdminCancelRequestView(
 
   return {
     status,
-    badgeLabel: '거절',
-    description: '취소 요청이 거절되었습니다.',
+    badgeLabel: '취소거절',
+    description: `${noun} 취소 요청이 거절되었습니다.`,
     reasonSummary,
     tone: 'destructive',
     refundAccount,

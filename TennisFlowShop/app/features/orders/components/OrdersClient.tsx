@@ -698,8 +698,8 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
                                       </Button>
                                     </div>
 
-                                    {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-primary">취소 요청이 접수된 주문입니다.</p>}
-                                    {cancelQuickSignal && <p className="mt-1 text-[11px] text-muted-foreground">{cancelQuickSignal.label === '검토 가능' ? '환불 계좌가 준비되어 검토 가능한 상태입니다.' : '환불 계좌 정보 확인이 필요합니다.'}</p>}
+                                    {order.cancelStatus === 'requested' && <p className="mt-2 text-sm text-primary">취소 요청이 접수된 항목입니다.</p>}
+                                    {cancelQuickSignal && <p className="mt-1 text-[11px] text-muted-foreground">{cancelQuickSignal.label === '검토 가능' ? '환불 계좌 준비가 완료되어 검토 가능합니다.' : '환불 계좌 확인이 필요합니다.'}</p>}
                                     {cancelQuickSignal && order.refundBankLabel && <p className="mt-1 text-[11px] text-muted-foreground">환불 은행: {order.refundBankLabel}</p>}
                                     {order.__type === 'stringing_application' && order.stringSummary && <p className="mt-1 text-[11px] text-muted-foreground">장착 상품: {order.stringSummary}</p>}
 

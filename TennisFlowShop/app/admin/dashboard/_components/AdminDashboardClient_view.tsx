@@ -197,7 +197,7 @@ function getCancelQueueQuickSignal(status?: string, refundAccountReady?: boolean
     return {
       label: '검토 가능',
       tone: 'success',
-      tooltip: '환불 계좌 준비 완료로 검토 가능한 상태입니다.',
+      tooltip: '환불 계좌 준비가 완료되어 검토 가능합니다.',
     };
   }
 
@@ -343,7 +343,7 @@ export default function AdminDashboardClient() {
                   <Badge variant={data.kpi.queue.cancelRequests > 0 ? 'destructive' : 'secondary'}>{formatAdminNumber(data.kpi.queue.cancelRequests)}</Badge>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  계좌 확인 필요 {formatAdminNumber(data.kpi.queue.cancelRequestsNeedingRefundAccount)}건 / 승인 검토 가능 {formatAdminNumber(data.kpi.queue.cancelRequestsReadyForReview)}건
+                  계좌 확인 필요 {formatAdminNumber(data.kpi.queue.cancelRequestsNeedingRefundAccount)}건 / 검토 가능 {formatAdminNumber(data.kpi.queue.cancelRequestsReadyForReview)}건
                 </p>
               </div>
               <div className="flex items-center justify-between rounded-lg bg-background/60 px-3 py-2">
