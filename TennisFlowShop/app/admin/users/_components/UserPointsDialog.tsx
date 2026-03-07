@@ -10,6 +10,7 @@ import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel,
 import { Badge } from '@/components/ui/badge';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type Props = {
   open: boolean;
@@ -203,7 +204,23 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
 
           <div className="p-3">
             {isLoading ? (
-              <div className="text-sm text-muted-foreground">불러오는 중...</div>
+              <div className="space-y-2">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="rounded border p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <Skeleton className="ml-auto h-4 w-16" />
+                        <Skeleton className="ml-auto h-3 w-14" />
+                      </div>
+                    </div>
+                    <Skeleton className="mt-2 h-3 w-48" />
+                  </div>
+                ))}
+              </div>
             ) : items.length === 0 ? (
               <div className="text-sm text-muted-foreground">내역이 없습니다.</div>
             ) : (
