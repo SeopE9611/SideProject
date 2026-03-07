@@ -750,7 +750,6 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
                               <div className="flex flex-col items-start gap-1">
                                 <ApplicationStatusBadge status={order.status} />
                                 {order.cancelStatus === 'requested' && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30')}>취소요청</Badge>}
-                                {cancelQuickSignal && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', cancelQuickSignal.className)}>{cancelQuickSignal.label}</Badge>}
                               </div>
                             ) : (
                               (() => {
@@ -761,7 +760,6 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
                                       {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
                                     </Badge>
                                     {order.cancelStatus === 'requested' && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap bg-destructive/10 text-destructive border border-destructive/30')}>취소요청</Badge>}
-                                    {cancelQuickSignal && <Badge className={cn(badgeBase, badgeSizeSm, 'whitespace-nowrap', cancelQuickSignal.className)}>{cancelQuickSignal.label}</Badge>}
                                   </div>
                                 );
                               })()
