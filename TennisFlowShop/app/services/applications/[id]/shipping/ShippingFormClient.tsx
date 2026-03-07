@@ -5,6 +5,7 @@ import type React from 'react';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -88,17 +89,35 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
     return (
       <div className="max-w-3xl mx-auto mt-12 px-4">
         <Card className="border-border shadow-lg">
-          <CardContent className="p-12">
-            <div className="flex flex-col items-center gap-6 text-center">
-              <div className="relative">
-                <div className="w-16 h-16 bg-muted/40 dark:bg-muted/30 rounded-full flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <CardContent className="p-6 sm:p-8 space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+
+            <div className="rounded-xl border border-border p-4 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">신청 정보 불러오는 중</h3>
-                <p className="text-sm text-muted-foreground">잠시만 기다려 주세요...</p>
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-10 w-full" />
               </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Skeleton className="h-10 w-28 rounded-md" />
             </div>
           </CardContent>
         </Card>
