@@ -5,7 +5,7 @@ import { normalizeCollection } from '@/app/features/stringing-applications/lib/c
 import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
 import { loadStringingSettings, resolveDaySchedule } from '@/app/features/stringing-applications/lib/slotEngine';
 import { normalizeEmail } from '@/lib/claims';
-import { calcStringingTotal } from '@/lib/pricing';
+import { calcStringingMountingFeeByProductId, calcStringingTotal } from '@/lib/pricing';
 import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
 
 export type StringingApplicationInput = {
@@ -102,15 +102,21 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
 
   const usingLines = Array.isArray(lines) && lines.length > 0;
   const normalizedLines = usingLines
-    ? lines.map((line) => ({
-        racketType: line.racketType ?? '',
-        stringProductId: line.stringProductId ?? 'custom',
-        stringName: line.stringName ?? (line.stringProductId === 'custom' ? customStringName ?? '커스텀 스트링' : '선택한 스트링'),
-        tensionMain: line.tensionMain ?? '',
-        tensionCross: line.tensionCross ?? '',
-        note: line.note ?? '',
-        mountingFee: Number(line.mountingFee ?? 0),
-      }))
+    ? await Promise.all(
+        lines.map(async (line) => {
+          const stringProductId = line.stringProductId ?? 'custom';
+          const serverMountingFee = await calcStringingMountingFeeByProductId(db, stringProductId);
+          return {
+            racketType: line.racketType ?? '',
+            stringProductId,
+            stringName: line.stringName ?? (stringProductId === 'custom' ? customStringName ?? '커스텀 스트링' : '선택한 스트링'),
+            tensionMain: line.tensionMain ?? '',
+            tensionCross: line.tensionCross ?? '',
+            note: line.note ?? '',
+            mountingFee: serverMountingFee,
+          };
+        }),
+      )
     : [];
 
   const normalizedStringItems = usingLines
@@ -145,7 +151,8 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     postalCode: cm === 'visit' ? '' : shippingInfo?.postalCode ?? '',
   };
 
-  const serviceFeeBefore = usingLines ? normalizedLines.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0) : await calcStringingTotal(db, stringTypes);
+  const serviceFeeBeforeRaw = usingLines ? normalizedLines.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0) : await calcStringingTotal(db, stringTypes);
+  const serviceFeeBefore = Math.max(0, Math.round(Number.isFinite(serviceFeeBeforeRaw) ? serviceFeeBeforeRaw : 0));
 
   const packageUseCount = resolveRequiredPassCountFromInput({
     lines: normalizedLines,
@@ -194,7 +201,8 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     }
   }
 
-  const totalPrice = applyPackageToServiceFee(serviceFeeBefore, { usingPackage: packageApplied });
+  const totalPriceRaw = applyPackageToServiceFee(serviceFeeBefore, { usingPackage: packageApplied });
+  const totalPrice = Math.max(0, Math.round(Number.isFinite(totalPriceRaw) ? totalPriceRaw : 0));
 
   const updateDoc = {
     orderId: orderObjectId,
@@ -210,6 +218,7 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
     stringItems: normalizedStringItems,
     totalPrice,
     serviceFeeBefore,
+    serviceFee: totalPrice,
     serviceAmount: totalPrice,
     packageApplied,
     packagePassId,
