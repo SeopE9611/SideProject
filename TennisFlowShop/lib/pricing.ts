@@ -11,6 +11,28 @@ import { ObjectId } from 'mongodb';
 
 import { CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
 
+function createInvalidStringProductError(message: string) {
+  return Object.assign(new Error(message), { status: 400 });
+}
+
+async function resolveStringProductMountingFee(db: Db, productId: string): Promise<number> {
+  if (!ObjectId.isValid(productId)) {
+    throw createInvalidStringProductError('유효하지 않은 스트링 상품 ID입니다.');
+  }
+
+  const prod = await db.collection('products').findOne({ _id: new ObjectId(productId), isDeleted: { $ne: true } }, { projection: { mountingFee: 1 } });
+  if (!prod) {
+    throw createInvalidStringProductError('존재하지 않는 스트링 상품입니다.');
+  }
+
+  const fee = Number(prod.mountingFee);
+  if (!Number.isFinite(fee) || fee <= 0) {
+    throw createInvalidStringProductError('장착 가능한 스트링 상품이 아닙니다.');
+  }
+
+  return Math.round(fee);
+}
+
 export async function calcStringingTotal(db: Db, stringTypes: string[] | undefined | null): Promise<number> {
   let sum = 0;
 
@@ -20,13 +42,7 @@ export async function calcStringingTotal(db: Db, stringTypes: string[] | undefin
       sum += CUSTOM_STRING_MOUNTING_FEE;
       continue;
     }
-    if (!ObjectId.isValid(id)) {
-      continue;
-    }
-    // 상품 선택: mountingFee 기준 합산 (없으면 0)
-    const prod = await db.collection('products').findOne({ _id: new ObjectId(id) }, { projection: { mountingFee: 1 } });
-    const fee = Number(prod?.mountingFee ?? 0);
-    sum += Number.isFinite(fee) ? Math.max(0, fee) : 0;
+    sum += await resolveStringProductMountingFee(db, id);
   }
 
   // 방어적 처리: 음수/NaN 방지 + 정수 반올림
@@ -37,14 +53,9 @@ export async function calcStringingMountingFeeByProductId(db: Db, productId: str
   if (productId === 'custom') {
     return CUSTOM_STRING_MOUNTING_FEE;
   }
-  if (!productId || !ObjectId.isValid(productId)) {
-    return 0;
+  if (!productId) {
+    throw createInvalidStringProductError('스트링 상품 ID가 필요합니다.');
   }
 
-  const prod = await db.collection('products').findOne({ _id: new ObjectId(productId) }, { projection: { mountingFee: 1 } });
-  const mountingFee = Number(prod?.mountingFee ?? 0);
-  if (!Number.isFinite(mountingFee)) {
-    return 0;
-  }
-  return Math.max(0, Math.round(mountingFee));
+  return resolveStringProductMountingFee(db, productId);
 }
