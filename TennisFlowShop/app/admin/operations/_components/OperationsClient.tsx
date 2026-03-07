@@ -13,12 +13,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, badgeToneVariant, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import { shortenId } from '@/lib/shorten';
+import { adminRichTooltipClass } from '@/lib/tooltip-style';
 import { cn } from '@/lib/utils';
 import { copyToClipboard } from './actions/operationsActions';
 import { flowBadgeClass, prevMonthYyyymmKST, type Kind } from './filters/operationsFilters';
@@ -247,6 +249,22 @@ function cancelBadgeSpec(status?: 'none' | 'requested' | 'approved' | 'rejected'
   if (status === 'approved') return { label: '취소승인', tone: 'info' as const };
   if (status === 'rejected') return { label: '취소거절', tone: 'neutral' as const };
   return null;
+}
+
+function cancelQuickSignalSpec(cancel?: OpItem['cancel']): { label: '계좌확인 필요' | '검토 가능'; tone: 'warning' | 'success'; tooltipCopy: string } | null {
+  if (cancel?.status !== 'requested') return null;
+  if (cancel.refundAccountReady === true) {
+    return {
+      label: '검토 가능',
+      tone: 'success',
+      tooltipCopy: '환불 계좌 준비 완료로 검토 가능한 상태입니다.',
+    };
+  }
+  return {
+    label: '계좌확인 필요',
+    tone: 'warning',
+    tooltipCopy: '환불 계좌 확인이 필요합니다.',
+  };
 }
 
 function reviewLevelPriority(level: ReviewLevel) {
@@ -1071,6 +1089,7 @@ export default function OperationsClient() {
                       const reviewReasons = collectReviewReasons(g);
                       const groupGuide = inferNextActionForOperationGroup(g.items);
                       const groupCancelRequested = g.items.some((it) => it.cancel?.status === 'requested');
+                      const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
                       const linkedDocsForAnchor = isGroup ? children.map((x) => ({ kind: x.kind, id: x.id, href: x.href })) : g.anchor.related ? [g.anchor.related] : [];
                       const warn = g.warn;
                       const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
@@ -1133,6 +1152,22 @@ export default function OperationsClient() {
                                   const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
                                   return cancelBadge ? <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(cancelBadge.tone))}>{cancelBadge.label}</Badge> : null;
                                 })()}
+                                {anchorCancelQuickSignal && (
+                                  <TooltipProvider delayDuration={50}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(anchorCancelQuickSignal.tone), 'cursor-help')}>
+                                          {anchorCancelQuickSignal.label}
+                                        </Badge>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" align="start" sideOffset={6} className={adminRichTooltipClass}>
+                                        <p className="text-sm text-foreground">취소 요청이 접수된 항목입니다.</p>
+                                        <p className="mt-1 text-xs text-muted-foreground">{anchorCancelQuickSignal.tooltipCopy}</p>
+                                        {g.anchor.cancel?.refundBankLabel && <p className="mt-1 text-xs text-muted-foreground">환불 은행: {g.anchor.cancel.refundBankLabel}</p>}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
                               </div>
                             </TableCell>
 
@@ -1256,6 +1291,7 @@ export default function OperationsClient() {
                   const reviewReasons = collectReviewReasons(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
                   const groupCancelRequested = g.items.some((it) => it.cancel?.status === 'requested');
+                  const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
                   return (
                     <Card key={`m:${g.key}`} className="border-border">
                       <CardContent className="p-3 space-y-2">
@@ -1270,10 +1306,28 @@ export default function OperationsClient() {
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
                         <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
                         {g.anchor.paymentLabel ? <div className="text-xs text-muted-foreground">결제: {g.anchor.paymentLabel}</div> : null}
-                        {(() => {
-                          const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
-                          return cancelBadge ? <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(cancelBadge.tone))}>{cancelBadge.label}</Badge> : null;
-                        })()}
+                        <div className="flex flex-wrap items-center gap-1">
+                          {(() => {
+                            const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
+                            return cancelBadge ? <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(cancelBadge.tone))}>{cancelBadge.label}</Badge> : null;
+                          })()}
+                          {anchorCancelQuickSignal && (
+                            <TooltipProvider delayDuration={50}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(anchorCancelQuickSignal.tone), 'cursor-help')}>
+                                    {anchorCancelQuickSignal.label}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" align="start" sideOffset={6} className={adminRichTooltipClass}>
+                                  <p className="text-sm text-foreground">취소 요청이 접수된 항목입니다.</p>
+                                  <p className="mt-1 text-xs text-muted-foreground">{anchorCancelQuickSignal.tooltipCopy}</p>
+                                  {g.anchor.cancel?.refundBankLabel && <p className="mt-1 text-xs text-muted-foreground">환불 은행: {g.anchor.cancel.refundBankLabel}</p>}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                         {g.anchor.flow === 7 && <div className="text-xs text-muted-foreground">스트링 요약: {stringSummaryText(g.items.find((it) => it.kind === 'rental')) ?? '정보 없음'}</div>}
                         <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
                           <p className="text-[11px] font-medium text-primary">현재 업무 단계</p>
