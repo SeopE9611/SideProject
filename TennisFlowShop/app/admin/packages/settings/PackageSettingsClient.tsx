@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -182,7 +183,55 @@ export default function PackageSettingsClient() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">패키지 설정을 불러오는 중입니다...</div>;
+    return (
+      <div className="min-h-screen bg-muted/30">
+        <div className="container py-6">
+          <div className="mb-8 rounded-2xl border border-border bg-muted/30 p-8 shadow-lg">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-14 w-14 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-40" />
+                  <Skeleton className="h-4 w-72" />
+                </div>
+              </div>
+              <Skeleton className="h-9 w-44" />
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <Card className="border-0 bg-card shadow-2xl">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 gap-2">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-52" />
+              <Skeleton className="h-4 w-80" />
+              <div className="grid gap-6 md:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Card key={index} className="border-0 bg-card shadow-lg">
+                    <CardHeader className="space-y-2">
+                      <Skeleton className="h-6 w-40" />
+                      <Skeleton className="h-4 w-24" />
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                      <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
