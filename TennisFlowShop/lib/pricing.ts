@@ -9,21 +9,42 @@
 import type { Db } from 'mongodb';
 import { ObjectId } from 'mongodb';
 
+import { CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
+
 export async function calcStringingTotal(db: Db, stringTypes: string[] | undefined | null): Promise<number> {
   let sum = 0;
 
   for (const id of stringTypes ?? []) {
     if (id === 'custom') {
-      // 직접입력/보유 스트링: 기본 작업비 1.5만원
-      sum += 15_000;
+      // 직접입력/보유 스트링: 정책 상수 기준
+      sum += CUSTOM_STRING_MOUNTING_FEE;
+      continue;
+    }
+    if (!ObjectId.isValid(id)) {
       continue;
     }
     // 상품 선택: mountingFee 기준 합산 (없으면 0)
     const prod = await db.collection('products').findOne({ _id: new ObjectId(id) }, { projection: { mountingFee: 1 } });
-
-    sum += prod?.mountingFee ?? 0;
+    const fee = Number(prod?.mountingFee ?? 0);
+    sum += Number.isFinite(fee) ? Math.max(0, fee) : 0;
   }
 
   // 방어적 처리: 음수/NaN 방지 + 정수 반올림
   return Math.max(0, Math.round(sum));
+}
+
+export async function calcStringingMountingFeeByProductId(db: Db, productId: string | undefined | null): Promise<number> {
+  if (productId === 'custom') {
+    return CUSTOM_STRING_MOUNTING_FEE;
+  }
+  if (!productId || !ObjectId.isValid(productId)) {
+    return 0;
+  }
+
+  const prod = await db.collection('products').findOne({ _id: new ObjectId(productId) }, { projection: { mountingFee: 1 } });
+  const mountingFee = Number(prod?.mountingFee ?? 0);
+  if (!Number.isFinite(mountingFee)) {
+    return 0;
+  }
+  return Math.max(0, Math.round(mountingFee));
 }
