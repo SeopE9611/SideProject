@@ -62,7 +62,7 @@ export type DashboardMetrics = {
     reports: Array<{ id: string; createdAt: string; kind: 'post' | 'comment'; reason: string }>;
   };
   queueDetails: {
-    cancelRequests: Array<{ kind: 'order' | 'application' | 'rental'; id: string; createdAt: string; name: string; amount: number; status: string; paymentStatus?: string; href: string }>;
+    cancelRequests: Array<{ kind: 'order' | 'application' | 'rental'; id: string; createdAt: string; name: string; amount: number; status: string; paymentStatus?: string; refundAccountReady?: boolean; refundBankLabel?: string | null; href: string }>;
     shippingPending: Array<{ kind: 'order' | 'application'; id: string; createdAt: string; name: string; amount: number; status: string; paymentStatus: string; href: string }>;
     paymentPending24h: Array<{ kind: 'order' | 'application' | 'rental' | 'package'; id: string; createdAt: string; name: string; amount: number; status: string; href: string; hoursAgo: number }>;
     rentalOverdue: Array<{ id: string; dueAt: string; name: string; amount: number; overdueDays: number; href: string }>;

@@ -1,5 +1,6 @@
 import type { Db } from 'mongodb';
 import type { AdminDashboardMetricsResponseDto } from '@/types/admin/dashboard';
+import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 import {
   CANCEL_REQUESTED_VALUES,
   PAYMENT_PAID_VALUES,
@@ -122,6 +123,8 @@ type DashboardMetrics = {
       amount: number;
       status: string;
       paymentStatus?: string;
+      refundAccountReady?: boolean;
+      refundBankLabel?: string | null;
       href: string;
     }>;
 
@@ -1296,6 +1299,22 @@ export async function getDashboardMetrics(db: Db) {
     return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000))) : 0;
   };
 
+  const mapCancelRefundSignal = (doc: UnknownDoc) => {
+    const cancelRequest = asDoc(doc.cancelRequest);
+    const refundAccount = asDoc(cancelRequest?.refundAccount);
+
+    const bank = (getString(refundAccount?.bank) ?? '').trim();
+    const account = (getString(refundAccount?.account) ?? '').trim();
+    const holder = (getString(refundAccount?.holder) ?? '').trim();
+
+    const refundAccountReady = Boolean(bank && account && holder);
+
+    return {
+      refundAccountReady,
+      refundBankLabel: bank ? getRefundBankLabel(bank) : null,
+    };
+  };
+
   // 목록 변환/통합
   const cancelRequests = [
     ...asDocArray(orderCancelRequestsList).map((d) => ({
@@ -1306,6 +1325,7 @@ export async function getDashboardMetrics(db: Db) {
       amount: Number(d?.totalPrice || 0),
       status: String(d?.status || ''),
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
+      ...mapCancelRefundSignal(d),
       href: `/admin/orders/${String(d?._id)}`,
     })),
     ...asDocArray(appCancelRequestsList).map((d) => ({
@@ -1316,6 +1336,7 @@ export async function getDashboardMetrics(db: Db) {
       amount: Number(d?.totalPrice || 0),
       status: String(d?.status || ''),
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
+      ...mapCancelRefundSignal(d),
       href: `/admin/applications/stringing/${String(d?._id)}`,
     })),
     ...asDocArray(rentalCancelRequestsList).map((d) => ({
@@ -1325,6 +1346,7 @@ export async function getDashboardMetrics(db: Db) {
       name: String(asDoc(d.guest)?.name || '고객'),
       amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
       status: String(d?.status || ''),
+      ...mapCancelRefundSignal(d),
       href: `/admin/rentals/${String(d?._id)}`,
     })),
   ]
