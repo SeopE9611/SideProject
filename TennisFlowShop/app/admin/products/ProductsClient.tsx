@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { showErrorToast } from '@/lib/toast';
@@ -277,7 +278,7 @@ export default function ProductsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
-                <CardDescription className="text-foreground">{total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
+                <CardDescription className="text-foreground">{isLoading && !data ? <Skeleton className="h-4 w-56" /> : total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
               </div>
               <Button
                 asChild

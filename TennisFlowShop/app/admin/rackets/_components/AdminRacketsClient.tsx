@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { racketBrandLabel } from '@/lib/constants';
@@ -150,7 +151,7 @@ export default function AdminRacketsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary">라켓 목록</CardTitle>
-                <CardDescription className="text-muted-foreground">{filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : isLoading ? '목록을 불러오는 중…' : '조건에 맞는 라켓이 없습니다.'}</CardDescription>
+                <CardDescription className="text-muted-foreground">{isLoading && !data ? <Skeleton className="h-4 w-56" /> : filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : '조건에 맞는 라켓이 없습니다.'}</CardDescription>
               </div>
               <Button
                 asChild
