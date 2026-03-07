@@ -147,7 +147,7 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
 export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
   if (isCancelRequested(item)) {
     if (getEffectiveRefundAccountReady(item)) {
-      return { stage: '취소 요청 처리 단계', nextAction: '취소 승인/거절 검토 필요' };
+      return { stage: '취소 요청 처리 단계', nextAction: '취소승인/취소거절 검토 필요' };
     }
     return { stage: '취소 요청 처리 단계', nextAction: '환불 계좌 확인 필요' };
   }
@@ -205,7 +205,7 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
     if (hasRefundAccountPending) {
       return { stage: '취소 요청 처리 단계', nextAction: '환불 계좌 확인 필요' };
     }
-    return { stage: '취소 요청 처리 단계', nextAction: '취소 승인/거절 검토 필요' };
+    return { stage: '취소 요청 처리 단계', nextAction: '취소승인/취소거절 검토 필요' };
   }
 
   const order = items.find((it) => it.kind === 'order');
