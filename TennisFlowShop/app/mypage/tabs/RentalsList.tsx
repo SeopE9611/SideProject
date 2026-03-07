@@ -148,12 +148,9 @@ export default function RentalsList() {
     );
   }
 
-  // 첫 로딩
-  if (!data && isValidating) {
-    return <RentalsListSkeleton />;
-  }
+  const isInitialLoading = !data && isValidating;
 
-  if (!isValidating && flat.length === 0) {
+  if (!isInitialLoading && !isValidating && flat.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
         <CardContent className="p-12 text-center">
@@ -169,6 +166,9 @@ export default function RentalsList() {
 
   return (
     <div className="space-y-6">
+      {isInitialLoading ? (
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">대여 내역을 불러오는 중입니다...</div>
+      ) : null}
       {flat.map((r: any) => {
         const fee = r.amount?.fee ?? 0;
         const deposit = r.amount?.deposit ?? 0;

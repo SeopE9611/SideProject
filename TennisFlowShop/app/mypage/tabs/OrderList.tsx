@@ -255,13 +255,10 @@ export default function OrderList() {
     );
   }
 
-  // 첫 로딩
-  if (!data && isValidating) {
-    return <OrderListSkeleton />;
-  }
+  const isInitialLoading = !data && isValidating;
 
   //  주문이 없을 경우
-  if (!isValidating && items.length === 0) {
+  if (!isInitialLoading && !isValidating && items.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
         <CardContent className="p-12 text-center">
@@ -278,6 +275,9 @@ export default function OrderList() {
   //  주문 내역 렌더링
   return (
     <div className="space-y-6">
+      {isInitialLoading ? (
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">주문 내역을 불러오는 중입니다...</div>
+      ) : null}
       {items.map((order) => {
         // 이 주문이 현재 "취소 요청 버튼"을 보여줄 수 있는 상태인지 계산
         const isCancelable = ['대기중', '결제완료'].includes(order.status) && (!order.cancelStatus || order.cancelStatus === 'none' || order.cancelStatus === 'rejected');

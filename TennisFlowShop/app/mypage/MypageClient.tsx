@@ -2,25 +2,17 @@
 
 import ApplicationDetail from '@/app/mypage/applications/_components/ApplicationDetail';
 import ApplicationsClient from '@/app/mypage/applications/_components/ApplicationsClient';
-import ApplicationsSkeleton from '@/app/mypage/applications/loading';
 import OrderDetailClient from '@/app/mypage/orders/_components/OrderDetailClient';
 import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
 import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
 import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
-import ActivityFeedSkeleton from '@/app/mypage/tabs/ActivityFeedSkeleton';
 import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
 import OrderList from '@/app/mypage/tabs/OrderList';
-import OrderListSkeleton from '@/app/mypage/tabs/OrderListSkeleton';
 import PassList from '@/app/mypage/tabs/PassList';
-import PassListSkeleton from '@/app/mypage/tabs/PassListSkeleton';
 import QnAList from '@/app/mypage/tabs/QnAList';
-import QnAListSkeleton from '@/app/mypage/tabs/QnAListSkeleton';
-import RentalSkeleton from '@/app/mypage/tabs/RentalSkeleton';
 import RentalsList from '@/app/mypage/tabs/RentalsList';
 import ReviewList from '@/app/mypage/tabs/ReviewList';
-import ReviewListSkeleton from '@/app/mypage/tabs/ReviewListSkeleton';
 import Wishlist from '@/app/mypage/tabs/Wishlist';
-import WishlistSkeleton from '@/app/mypage/tabs/WishlistSkeleton';
 import SiteContainer from '@/components/layout/SiteContainer';
 import { Badge } from '@/components/ui/badge';
 import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
@@ -300,7 +292,7 @@ export default function MypageClient({ user }: Props) {
                     </CardHeader>
 
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<ActivityFeedSkeleton />}>
+                      <Suspense fallback={null}>
                         <ActivityFeed />
                       </Suspense>
                     </CardContent>
@@ -322,7 +314,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<OrderListSkeleton />}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
+                      <Suspense fallback={null}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -345,7 +337,7 @@ export default function MypageClient({ user }: Props) {
                       {selectedApplicationId ? (
                         <ApplicationDetail id={selectedApplicationId} />
                       ) : (
-                        <Suspense fallback={<ApplicationsSkeleton />}>
+                        <Suspense fallback={null}>
                           <ApplicationsClient />
                         </Suspense>
                       )}
@@ -369,11 +361,11 @@ export default function MypageClient({ user }: Props) {
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
                       {selectedRentalId ? (
-                        <Suspense fallback={<RentalSkeleton />}>
+                        <Suspense fallback={null}>
                           <RentalsDetailClient id={selectedRentalId} />
                         </Suspense>
                       ) : (
-                        <Suspense fallback={<RentalSkeleton />}>
+                        <Suspense fallback={null}>
                           <RentalsList />
                         </Suspense>
                       )}
@@ -396,7 +388,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<WishlistSkeleton />}>
+                      <Suspense fallback={null}>
                         <Wishlist />
                       </Suspense>
                     </CardContent>
@@ -418,7 +410,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<ReviewListSkeleton />}>
+                      <Suspense fallback={null}>
                         <ReviewList />
                       </Suspense>
                     </CardContent>
@@ -440,7 +432,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<QnAListSkeleton />}>
+                      <Suspense fallback={null}>
                         <QnAList />
                       </Suspense>
                     </CardContent>
@@ -462,7 +454,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<PassListSkeleton />}>
+                      <Suspense fallback={null}>
                         <PassList />
                       </Suspense>
                     </CardContent>
@@ -484,7 +476,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 bp-sm:p-6">
-                      <Suspense fallback={<PassListSkeleton />}>
+                      <Suspense fallback={null}>
                         <MyPointsTab />
                       </Suspense>
                     </CardContent>
