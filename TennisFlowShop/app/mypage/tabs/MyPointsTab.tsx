@@ -4,7 +4,6 @@ import useSWR from 'swr';
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { PointTransactionListItem } from '@/lib/types/points';
 import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime, shortId } from '@/lib/points.display';
 import Link from 'next/link';
@@ -55,31 +54,20 @@ export default function MyPointsTab() {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
-  if (isLoading && !data) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-          <Skeleton className="h-24 bp-sm:h-28 rounded-2xl" />
-          <Skeleton className="h-24 bp-sm:h-28 rounded-2xl" />
-          <Skeleton className="h-24 bp-sm:h-28 rounded-2xl bp-md:col-span-2 bp-lg:col-span-1" />
-        </div>
-        <Card className="border-0 shadow-xl">
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-20" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const isInitialLoading = isLoading && !data;
 
-  if (!data?.ok) {
+  const pointsData =
+    data ??
+    ({
+      ok: true,
+      balance: 0,
+      items: [],
+      total: 0,
+      page,
+      limit,
+    } as PointsHistoryRes);
+
+  if (!isInitialLoading && !data?.ok) {
     return (
       <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
         <CardContent className="flex flex-col items-center justify-center py-12 bp-sm:py-16">
@@ -99,6 +87,10 @@ export default function MyPointsTab() {
 
   return (
     <div className="space-y-6">
+      {isInitialLoading ? (
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">포인트 정보를 불러오는 중입니다...</div>
+      ) : null}
+
       <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
         <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-muted/30 text-foreground">
           <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
@@ -120,11 +112,11 @@ export default function MyPointsTab() {
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-primary">보유 포인트</p>
-              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-tight">{fmt(data.balance)}P</p>
-              {typeof data.debt === 'number' && data.debt > 0 && (
+              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-tight">{fmt(pointsData.balance)}P</p>
+              {typeof pointsData.debt === 'number' && pointsData.debt > 0 && (
                 <p className="text-xs text-primary flex items-center gap-1">
                   <span>사용 가능:</span>
-                  <span className="font-bold">{fmt(Math.max(0, data.balance - data.debt))}P</span>
+                  <span className="font-bold">{fmt(Math.max(0, pointsData.balance - pointsData.debt))}P</span>
                 </p>
               )}
             </div>
@@ -177,7 +169,7 @@ export default function MyPointsTab() {
               </div>
               <div>
                 <CardTitle className="text-lg bp-sm:text-xl">포인트 내역</CardTitle>
-                <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">전체 {data.total}건</p>
+                <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">전체 {pointsData.total}건</p>
               </div>
             </div>
             <Button onClick={() => mutate()} variant="outline" size="sm" className="gap-2">
@@ -188,7 +180,7 @@ export default function MyPointsTab() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {data.items.length === 0 ? (
+          {pointsData.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 bp-sm:py-16 px-4">
               <div className="bg-muted/50 rounded-full p-4 mb-4">
                 <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
@@ -198,7 +190,7 @@ export default function MyPointsTab() {
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {data.items.map((it, idx) => (
+              {pointsData.items.map((it, idx) => (
                 <div
                   key={it.id}
                   className="group relative p-4 bp-sm:p-5 bp-lg:p-6 hover:bg-muted/30 dark:hover:bg-card transition-colors duration-200"
@@ -272,7 +264,7 @@ export default function MyPointsTab() {
           )}
         </CardContent>
 
-        {data.items.length > 0 && (
+        {pointsData.items.length > 0 && (
           <div className="border-t bg-muted/30 dark:bg-card/30 px-4 bp-sm:px-6 py-4">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground tabular-nums">

@@ -315,14 +315,12 @@ export default function ApplicationsClient() {
     return <p className="text-center py-4 text-destructive">에러: {error.message}</p>;
   }
 
-  // 첫 로딩
-  if (!data && isValidating) {
-    return <ApplicationsListSkeleton />;
-  }
+  const isInitialLoading = !data && isValidating;
 
   return (
     <div className="space-y-6">
-      {applications.length === 0 ? (
+      {isInitialLoading ? <ApplicationsListSkeleton /> : null}
+      {!isInitialLoading && applications.length === 0 ? (
         <Card className="relative overflow-hidden border-0 bg-muted/30">
           <CardContent className="p-12 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
@@ -332,8 +330,10 @@ export default function ApplicationsClient() {
             <p className="mb-6 text-muted-foreground">아직 신청하신 서비스가 없습니다.</p>
           </CardContent>
         </Card>
-      ) : (
-        applications.map((app) => {
+      ) : null}
+
+      {!isInitialLoading
+        ? applications.map((app) => {
           const isStringService = app.type === '스트링 장착 서비스';
           // collectionMethod는 "방문/자가발송" 라벨 표시에만 사용 (버튼 노출 조건은 needsInboundTracking 사용)
           const cm = normalizeCollection((app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod);
@@ -602,7 +602,7 @@ export default function ApplicationsClient() {
             </Card>
           );
         })
-      )}
+        : null}
 
       {/* '더 보기' 버튼 */}
       <div className="mt-6 flex justify-center items-center">

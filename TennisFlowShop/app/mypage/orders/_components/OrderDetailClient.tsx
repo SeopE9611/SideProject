@@ -3,7 +3,6 @@
 import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm';
 import OrderHistory from '@/app/features/orders/components/OrderHistory';
 import { OrderStatusBadge } from '@/app/features/orders/components/OrderStatusBadge';
-import OrderDetailSkeleton from '@/app/mypage/orders/_components/OrderDetailSkeleton';
 import PaymentMethodDetail from '@/app/mypage/orders/_components/PaymentMethodDetail';
 import RequestEditForm from '@/app/mypage/orders/_components/RequestEditForm';
 import SiteContainer from '@/components/layout/SiteContainer';
@@ -129,7 +128,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] = useState(false);
 
   // 주문 상세를 SWR로 가져오기
-  const { data: orderDetail, error: orderError, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
+  const { data: orderDetail, error: orderError, isLoading: isOrderLoading, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
 
   // 처리 이력 데이터를 SWRInfinite로 가져오기
   const { data: historyPages, error: historyError, mutate: mutateHistory } = useSWRInfinite(getOrderHistoryKey(orderId), fetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
@@ -194,8 +193,20 @@ export default function OrderDetailClient({ orderId }: Props) {
     return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
   }
 
+  const isInitialLoading = isOrderLoading && !orderDetail;
+
+  if (isInitialLoading) {
+    return (
+      <main className="w-full">
+        <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
+          <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">주문 상세 정보를 불러오는 중입니다...</div>
+        </SiteContainer>
+      </main>
+    );
+  }
+
   if (!orderDetail) {
-    return <OrderDetailSkeleton />;
+    return <div className="text-center text-muted-foreground">주문 정보를 찾을 수 없습니다.</div>;
   }
   // quantity 기반으로 총 '장착 서비스 대상 스트링 수량' 계산
   const stringServiceItemCount = (orderDetail.items ?? []).filter((item) => item.mountingFee != null && item.mountingFee > 0).reduce((sum, item) => sum + (item.quantity ?? 1), 0);
