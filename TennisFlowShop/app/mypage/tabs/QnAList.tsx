@@ -91,13 +91,10 @@ export default function QnAList() {
     return <p className="text-center py-6 text-destructive">에러: {error.message}</p>;
   }
 
-  // 첫 로딩
-  if (!data && isValidating) {
-    return <QnAListSkeleton />;
-  }
+  const isInitialLoading = !data && isValidating;
 
   // 빈 상태
-  if (!isValidating && qnas.length === 0) {
+  if (!isInitialLoading && !isValidating && qnas.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30">
         <CardContent className="p-12 text-center">
@@ -120,6 +117,9 @@ export default function QnAList() {
   // 목록
   return (
     <div className="space-y-6">
+      {isInitialLoading ? (
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">Q&A 내역을 불러오는 중입니다...</div>
+      ) : null}
       {qnas.map((qna) => (
         <Card key={qna.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>

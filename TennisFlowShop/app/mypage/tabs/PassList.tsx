@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Clock, Ticket } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
@@ -28,28 +27,6 @@ type Res = { items: PassItem[] };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
-
-
-const PassListSkeleton = ({ count = 3 }: { count?: number }) => (
-  <Card className="border-0">
-    <CardContent className="space-y-4">
-      {Array.from({ length: count }).map((_, idx) => (
-        <div key={idx} className="bg-card p-3 shadow-sm ring-1 ring-border/70 dark:ring-border/70 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="space-y-2">
-              <Skeleton className="h-5 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-            <Skeleton className="h-6 w-20 rounded-full" />
-          </div>
-          <Skeleton className="h-2 w-full rounded-full" />
-          <Skeleton className="h-4 w-44" />
-        </div>
-      ))}
-    </CardContent>
-  </Card>
-);
-
 export default function PassList() {
   const { data, isLoading, error, mutate } = useSWR<Res>('/api/passes/me', fetcher);
   const [now, setNow] = useState(0);
@@ -58,11 +35,9 @@ export default function PassList() {
     setNow(Date.now());
   }, []);
 
-  if (isLoading) {
-    return <PassListSkeleton />;
-  }
+  const isInitialLoading = isLoading;
 
-  if (error || !data) {
+  if (!isInitialLoading && (error || !data)) {
     return (
       <Card className="border-0 shadow-2xl">
         <CardHeader>
@@ -79,7 +54,7 @@ export default function PassList() {
     );
   }
 
-  const items = data.items ?? [];
+  const items = data?.items ?? [];
   const activeItems = items.filter((p) => p.status === 'active');
   const waitingItems = items.filter((p) => ['pending_payment', 'pending_activation', 'suspended', 'paused'].includes(p.status));
   const historyItems = items.filter((p) => ['expired', 'cancelled'].includes(p.status));
@@ -170,6 +145,9 @@ export default function PassList() {
   return (
     <Card className="border-0">
       <CardContent className="space-y-4">
+        {isInitialLoading ? (
+          <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">패키지 이용권 정보를 불러오는 중입니다...</div>
+        ) : null}
         {hasNoHistory && (
           <div className="flex flex-col items-center justify-center py-12 bp-sm:py-16 px-4">
             <div className="bg-muted/50 rounded-full p-4 mb-4">
