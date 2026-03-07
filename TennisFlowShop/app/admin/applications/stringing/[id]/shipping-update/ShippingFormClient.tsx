@@ -2,6 +2,7 @@
 
 import useSWR from 'swr';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, AlertTriangle, Truck } from 'lucide-react';
 import ShippingForm from '@/app/admin/applications/stringing/[id]/shipping-update/shipping-form';
 
@@ -42,15 +43,23 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const isRegistered = Boolean(method || date || courier || tracking);
 
   const pageTitle = data ? (isRegistered ? '배송 정보 수정' : '배송 정보 등록') : '배송 정보 관리';
-  const pageDesc = data ? (isRegistered ? '배송 방법과 예상 수령일을 수정할 수 있습니다.' : '배송 방법과 예상 수령일을 등록할 수 있습니다.') : isLoading ? '신청 정보를 불러오는 중입니다…' : '신청 정보를 불러올 수 없습니다.';
+  const pageDesc = data ? (isRegistered ? '배송 방법과 예상 수령일을 수정할 수 있습니다.' : '배송 방법과 예상 수령일을 등록할 수 있습니다.') : isLoading ? '배송 정보를 준비하고 있습니다.' : '신청 정보를 불러올 수 없습니다.';
 
   let content = null;
   if (isLoading) {
     content = (
-      <Card>
-        <CardContent className="py-10 flex items-center justify-center gap-3">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>신청 정보를 불러오는 중입니다…</span>
+      <Card className="border-border/60">
+        <CardContent className="space-y-5 p-6">
+          <Skeleton className="h-5 w-28" />
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-11 w-full" />
+            ))}
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-28" />
+          </div>
         </CardContent>
       </Card>
     );

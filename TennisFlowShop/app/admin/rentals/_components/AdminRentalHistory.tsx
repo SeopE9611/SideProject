@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CreditCard, Play, RotateCcw, XCircle, Undo2, Clock } from 'lucide-react';
 import { adminFetcher } from '@/lib/admin/adminFetcher';
 
@@ -167,7 +168,22 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
       </CardHeader>
 
       <CardContent className="pt-2">
-        {isLoading && <div className="py-6 text-center text-sm text-muted-foreground">불러오는 중…</div>}
+        {isLoading && (
+          <div className="space-y-3 py-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="flex space-x-4 border-b py-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between gap-4">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {!isLoading && items.length === 0 && <div className="py-6 text-center text-sm text-muted-foreground">아직 처리 이력이 없습니다.</div>}
 

@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
@@ -418,7 +419,23 @@ export default function AdminReviewListClient() {
           {error ? (
             <div className="p-8 text-center text-destructive">목록을 불러오지 못했습니다.</div>
           ) : !data && isValidating ? (
-            <div className="p-8 text-center text-muted-foreground">불러오는 중…</div>
+            <div className="space-y-3 p-4">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className={`grid grid-cols-1 lg:grid ${GRID} items-center gap-x-3 gap-y-2 rounded-md border border-border/40 px-3 py-3`}>
+                  <Skeleton className="h-4 w-4" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="mx-auto h-5 w-10 rounded-full" />
+                  <Skeleton className="justify-self-end h-8 w-8 rounded-md" />
+                </div>
+              ))}
+            </div>
           ) : rows.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">불러올 리뷰가 없습니다.</div>
           ) : (
@@ -739,6 +756,22 @@ export default function AdminReviewListClient() {
             <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
           ))}
       </div>
+      {rows.length > 0 && isValidating && (
+        <div className="space-y-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <div key={index} className="grid grid-cols-1 gap-2 rounded-md border border-border/40 p-3 lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px] lg:items-center lg:gap-x-3">
+              <Skeleton className="h-4 w-4" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-14 rounded-full" />
+              <Skeleton className="h-5 w-10 rounded-full" />
+              <Skeleton className="h-8 w-8 rounded-md justify-self-end" />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
