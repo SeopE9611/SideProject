@@ -597,6 +597,11 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   const payload = verifyAccessToken(token);
   if (!payload) return new NextResponse('Unauthorized', { status: 401 }); // 토큰이 변조되었거나 만료됨
 
+  const userId = (payload as any)?.sub;
+  if (!userId || typeof userId !== 'string' || !ObjectId.isValid(userId)) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   // URL 파라미터로부터 신청 ID 추출
   const { id } = context.params;
   if (!ObjectId.isValid(id)) return new NextResponse('Invalid ID', { status: 400 }); // MongoDB ObjectId 형식 검증
@@ -620,6 +625,14 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   // MongoDB 연결
   const client = await clientPromise;
   const db = await getDb();
+
+  const me = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+  if (!me) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+  if (me.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   // description 따로 준비
   const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
