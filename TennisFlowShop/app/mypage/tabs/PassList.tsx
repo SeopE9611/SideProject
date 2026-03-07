@@ -59,7 +59,7 @@ export default function PassList() {
   const waitingItems = items.filter((p) => ['pending_payment', 'pending_activation', 'suspended', 'paused'].includes(p.status));
   const historyItems = items.filter((p) => ['expired', 'cancelled'].includes(p.status));
 
-  const hasNoHistory = items.length === 0;
+  const hasNoHistory = !isInitialLoading && items.length === 0;
 
   const statusLabel = (status: PassItem['status']) => {
     if (status === 'active') return '사용 가능';
