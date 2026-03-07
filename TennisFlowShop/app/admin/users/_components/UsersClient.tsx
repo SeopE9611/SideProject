@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import UserPointsDialog from '@/app/admin/users/_components/UserPointsDialog';
 import { FiltersSection } from '@/app/admin/users/_components/users-client/FiltersSection';
@@ -924,8 +925,13 @@ export default function UsersClient() {
                 {/* 미리보기 리스트 */}
                 <div className="border rounded-md p-3 max-h-64 overflow-auto">
                   {cleanupLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> 불러오는 중…
+                    <div className="space-y-2" aria-label="탈퇴 회원 미리보기 로딩 중">
+                      {Array.from({ length: 2 }).map((_, index) => (
+                        <div key={`cleanup-preview-skeleton-${index}`} className="flex items-center justify-between gap-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-28" />
+                        </div>
+                      ))}
                     </div>
                   ) : cleanupPreview.length === 0 ? (
                     <div className="text-sm text-muted-foreground">삭제 예정인 탈퇴 회원이 없습니다.</div>
@@ -1000,8 +1006,13 @@ export default function UsersClient() {
                 {/* 미리보기 리스트 */}
                 <div className="border rounded-md p-3 max-h-64 overflow-auto">
                   {purgeLoading ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> 불러오는 중…
+                    <div className="space-y-2" aria-label="완전 삭제 대상 미리보기 로딩 중">
+                      {Array.from({ length: 2 }).map((_, index) => (
+                        <div key={`purge-preview-skeleton-${index}`} className="flex items-center justify-between gap-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-28" />
+                        </div>
+                      ))}
                     </div>
                   ) : purgePreview.length === 0 ? (
                     <div className="text-sm text-muted-foreground">완전 삭제 대상 계정이 없습니다.</div>

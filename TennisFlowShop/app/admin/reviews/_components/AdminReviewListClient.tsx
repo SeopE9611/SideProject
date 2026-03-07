@@ -746,7 +746,8 @@ export default function AdminReviewListClient() {
             <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
               {isValidating ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" /> 불러오는 중…
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="sr-only">불러오는 중</span>
                 </>
               ) : (
                 '더 보기'

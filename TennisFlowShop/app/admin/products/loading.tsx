@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Package, CheckCircle, AlertTriangle, XCircle, PlusCircle, Search, XIcon } from 'lucide-react';
 
 function NumberSkeleton() {
@@ -95,7 +96,7 @@ export default function ProductsLoading() {
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
               <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
-              <CardDescription className="text-muted-foreground">목록을 불러오는 중…</CardDescription>
+              <CardDescription className="text-muted-foreground"><Skeleton className="h-4 w-56" /></CardDescription>
             </div>
             <Button disabled className="opacity-70">
               <PlusCircle className="mr-2 h-4 w-4" />
