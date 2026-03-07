@@ -5,15 +5,17 @@
 import { type ReactNode } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { Activity, AlertTriangle, Bell, Boxes, ClipboardList, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from 'lucide-react';
+import { Activity, AlertTriangle, Bell, Boxes, CircleHelp, ClipboardList, Package, ShoppingCart, Star, TrendingUp, Users, Wrench } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { DashboardMetrics } from '@/types/admin/dashboard';
 import { formatAdminKRW, formatAdminNumber, formatIsoToKstShort } from '@/lib/admin/formatters';
 import { labelOrderStatus, labelPaymentStatus, labelStringingStatus } from '@/lib/admin/status-labels';
+import { adminRichTooltipClass } from '@/lib/tooltip-style';
 
 // ----------------------------- 타입 -----------------------------
 
@@ -168,6 +170,42 @@ function ListSkeleton() {
       <Skeleton className="h-4 w-9/12" />
     </div>
   );
+}
+
+
+function getCancelRequestStatusLabel(status?: string): '취소요청' | '취소승인' | '취소거절' | null {
+  const normalized = String(status ?? '').trim().toLowerCase();
+  if (!normalized) return null;
+  if (normalized === 'requested' || normalized === 'request' || normalized === 'cancel_requested' || normalized === 'cancelrequest' || normalized === '취소요청') return '취소요청';
+  if (normalized === 'approved' || normalized === 'cancel_approved' || normalized === '취소승인') return '취소승인';
+  if (normalized === 'rejected' || normalized === 'cancel_rejected' || normalized === '취소거절') return '취소거절';
+  return null;
+}
+
+function getCancelQueueQuickSignal(status?: string, refundAccountReady?: boolean): null | { label: '계좌확인 필요' | '검토 가능'; tone: 'warning' | 'success'; tooltip: string } {
+  const normalized = String(status ?? '').trim().toLowerCase();
+  const isRequested =
+    normalized === 'requested' ||
+    normalized === 'request' ||
+    normalized === '취소요청' ||
+    normalized === 'cancel_requested' ||
+    normalized === 'cancelrequest';
+
+  if (!isRequested) return null;
+
+  if (refundAccountReady === true) {
+    return {
+      label: '검토 가능',
+      tone: 'success',
+      tooltip: '환불 계좌 준비 완료로 검토 가능한 상태입니다.',
+    };
+  }
+
+  return {
+    label: '계좌확인 필요',
+    tone: 'warning',
+    tooltip: '환불 계좌 확인이 필요합니다.',
+  };
 }
 
 // ----------------------------- 메인 -----------------------------
@@ -529,24 +567,52 @@ export default function AdminDashboardClient() {
                 <div className="py-8 text-center text-sm text-muted-foreground">취소 요청이 없습니다</div>
               ) : (
                 <div className="space-y-3">
-                  {data.queueDetails.cancelRequests.slice(0, 5).map((it) => (
-                    <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <Link href={it.href} className="block truncate text-sm font-medium group-hover:underline">
-                          {it.name}
-                        </Link>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {it.kind}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
+                  {data.queueDetails.cancelRequests.slice(0, 5).map((it) => {
+                    const statusLabel = getCancelRequestStatusLabel(it.status);
+                    const quickSignal = getCancelQueueQuickSignal(it.status, it.refundAccountReady);
+                    const quickSignalTone = quickSignal?.tone === 'success' ? 'default' : 'secondary';
+
+                    return (
+                      <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <Link href={it.href} className="block truncate text-sm font-medium group-hover:underline">
+                            {it.name}
+                          </Link>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {it.kind}
+                            </Badge>
+                            {statusLabel && (
+                              <Badge variant={statusLabel === '취소요청' ? 'destructive' : 'secondary'} className="text-xs">
+                                {statusLabel}
+                              </Badge>
+                            )}
+                            {quickSignal && (
+                              <TooltipProvider delayDuration={50}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge variant={quickSignalTone} className="inline-flex cursor-help items-center gap-1 text-xs">
+                                      {quickSignal.label}
+                                      <CircleHelp className="h-3 w-3" />
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" align="start" sideOffset={6} className={adminRichTooltipClass}>
+                                    <p className="font-semibold">취소 요청이 접수된 항목입니다.</p>
+                                    <p className="mt-1 text-xs text-muted-foreground">{quickSignal.tooltip}</p>
+                                    {it.refundBankLabel ? <p className="mt-1 text-xs text-muted-foreground">환불 은행: {it.refundBankLabel}</p> : null}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                            <span className="text-xs text-muted-foreground">{formatIsoToKstShort(it.createdAt)}</span>
+                          </div>
                         </div>
+                        <Badge variant="destructive" className="shrink-0">
+                          {formatAdminKRW(it.amount)}
+                        </Badge>
                       </div>
-                      <Badge variant="destructive" className="shrink-0">
-                        {formatAdminKRW(it.amount)}
-                      </Badge>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                     <Link href="/admin/orders?preset=cancelRequests">전체 보기</Link>
                   </Button>
