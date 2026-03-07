@@ -1719,7 +1719,24 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 {authorTarget?.nickname ? `${authorTarget.nickname}님의 커뮤니티 활동 정보입니다.` : '작성자 정보'}
               </DialogHeader>
 
-              {isAuthorLoading && <div className="py-8 text-sm text-muted-foreground text-center">작성자 정보를 불러오는 중입니다...</div>}
+              {isAuthorLoading && (
+                <div className="py-6 space-y-6">
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-32" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-44" />
+                      <Skeleton className="h-4 w-52" />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-36" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton className="h-20 w-full rounded-lg" />
+                      <Skeleton className="h-20 w-full rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {!isAuthorLoading && (
                 <Tabs defaultValue="community" className="w-full mt-2">

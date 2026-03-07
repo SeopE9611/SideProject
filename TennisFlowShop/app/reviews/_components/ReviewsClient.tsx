@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -225,7 +226,9 @@ export default function ReviewsClient() {
                 >
                   {isValidating ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 불러오는 중...
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Skeleton aria-hidden className="h-4 w-16 rounded-full" />
+                      <span className="sr-only">리뷰를 불러오는 중입니다</span>
                     </>
                   ) : (
                     '더 보기'
