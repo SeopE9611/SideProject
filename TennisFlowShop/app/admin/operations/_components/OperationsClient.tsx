@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
@@ -999,31 +998,22 @@ export default function OperationsClient() {
       <Card className="rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
         <CardHeader className="pb-2">
           <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
-            {data ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-base font-medium">업무 목록</CardTitle>
-                  {activePresetKey && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>{PRESET_CONFIG[activePresetKey].label}</Badge>}
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-muted-foreground">총 {total.toLocaleString('ko-KR')}건</p>
-                  <span className="text-xs text-muted-foreground">표시 밀도</span>
-                  <div className="inline-flex items-center rounded-md border border-border p-0.5">
-                    <Button type="button" size="sm" variant={displayDensity === 'default' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('default')} aria-pressed={displayDensity === 'default'}>
-                      기본
-                    </Button>
-                    <Button type="button" size="sm" variant={displayDensity === 'compact' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('compact')} aria-pressed={displayDensity === 'compact'}>
-                      컴팩트
-                    </Button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <Skeleton className="h-5 w-24 rounded bg-muted dark:bg-card" />
-                <Skeleton className="h-4 w-36 rounded bg-card" />
-              </>
-            )}
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base font-medium">업무 목록</CardTitle>
+              {activePresetKey && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>{PRESET_CONFIG[activePresetKey].label}</Badge>}
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">{data ? `총 ${total.toLocaleString('ko-KR')}건` : '목록을 불러오는 중…'}</p>
+              <span className="text-xs text-muted-foreground">표시 밀도</span>
+              <div className="inline-flex items-center rounded-md border border-border p-0.5">
+                <Button type="button" size="sm" variant={displayDensity === 'default' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('default')} aria-pressed={displayDensity === 'default'}>
+                  기본
+                </Button>
+                <Button type="button" size="sm" variant={displayDensity === 'compact' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('compact')} aria-pressed={displayDensity === 'compact'}>
+                  컴팩트
+                </Button>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2 pt-2">
             <div className="text-xs text-muted-foreground">
@@ -1044,27 +1034,7 @@ export default function OperationsClient() {
         </CardHeader>
         <CardContent className="min-h-[520px] p-0 pt-2">
           {isLoading ? (
-            <div className="space-y-3 p-4">
-              <div className="rounded-lg border border-border bg-card/80 p-3">
-                <div className="grid gap-2 bp-sm:grid-cols-4">
-                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
-                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
-                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
-                  <Skeleton className="h-4 w-full rounded bg-muted dark:bg-card" />
-                </div>
-              </div>
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={`operations-row-skeleton-${idx}`} className="rounded-lg border border-border bg-card/70 p-3">
-                  <div className="grid gap-2 bp-sm:grid-cols-[1.3fr_1fr_1fr_1fr_120px]">
-                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
-                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
-                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
-                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
-                    <Skeleton className="h-11 w-full rounded bg-muted dark:bg-card" />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">업무 목록을 불러오는 중입니다.</div>
           ) : (
             <>
               <div className="hidden bp-lg:block overflow-x-auto">
