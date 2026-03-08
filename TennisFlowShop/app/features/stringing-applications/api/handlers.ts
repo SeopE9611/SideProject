@@ -1660,6 +1660,7 @@ export async function handleSubmitStringingApplication(req: Request) {
   const token = cookieStore.get('accessToken')?.value;
   const payload = token ? verifyAccessToken(token) : null;
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
+  const guestClaims = verifyOrderAccessToken(cookieStore.get('orderAccessToken')?.value ?? '');
 
   try {
     const body = await req.json();
@@ -1668,6 +1669,8 @@ export async function handleSubmitStringingApplication(req: Request) {
     const result = await submitStringingApplicationCore({
       db,
       userId,
+      guestOrderId: guestClaims?.orderId ?? null,
+      guestRentalId: typeof (guestClaims as any)?.rentalId === 'string' ? (guestClaims as any).rentalId : null,
       input: body,
     });
 
