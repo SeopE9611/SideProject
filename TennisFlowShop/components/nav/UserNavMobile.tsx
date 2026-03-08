@@ -6,7 +6,6 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
@@ -20,11 +19,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
 
   if (loading) {
     return (
-      <div className="space-y-3" aria-hidden="true">
-        <Skeleton className="h-4 w-32 mx-auto" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
+      <p className="text-sm text-center text-muted-foreground py-2" aria-live="polite" aria-busy="true">사용자 정보를 확인하고 있습니다.</p>
     );
   }
 

@@ -20,7 +20,6 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { getMyInfo } from '@/lib/auth.client';
 import { bankLabelMap } from '@/lib/constants';
@@ -789,39 +788,23 @@ export default function CheckoutPage() {
     };
   }, [user]);
 
-  if (loading)
+  if (loading) {
     return (
       <div className="min-h-full bg-background">
         <div className="border-b border-border bg-muted/30">
-          <SiteContainer variant="wide" className="py-8 space-y-3">
-            <Skeleton className="h-10 w-56" />
-            <Skeleton className="h-5 w-80 max-w-full" />
+          <SiteContainer variant="wide" className="py-8 space-y-2">
+            <h1 className="text-2xl font-bold">주문/결제</h1>
+            <p className="text-sm text-muted-foreground">주문 정보를 준비하고 있습니다.</p>
           </SiteContainer>
         </div>
         <SiteContainer variant="wide" className="py-8">
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <Card>
-              <CardContent className="space-y-4 p-6">
-                <Skeleton className="h-6 w-44" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="space-y-3 p-6">
-                <Skeleton className="h-6 w-36" />
-                {Array.from({ length: 5 }).map((_, idx) => (
-                  <Skeleton key={idx} className="h-4 w-full" />
-                ))}
-                <Skeleton className="h-11 w-full" />
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="border-border/60">
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">로그인 상태와 주문 정보를 확인하고 있습니다…</CardContent>
+          </Card>
         </SiteContainer>
       </div>
     );
+  }
 
   // 비로그인 + 비회원 주문 중단 상태이면 체크아웃 UI 자체를 막고 로그인 유도 화면을 노출
   if (!user && !allowGuestCheckout) {
