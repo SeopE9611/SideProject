@@ -6,6 +6,8 @@ import { verifyAccessToken } from '@/lib/auth.utils';
 import { calcOrderEarnPoints } from '@/lib/points.policy';
 import { grantPoints } from '@/lib/points.service';
 
+const MAX_REWARD_BASE_AMOUNT = 1_000_000_000;
+
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
   try {
@@ -13,6 +15,27 @@ function safeVerifyAccessToken(token?: string) {
   } catch {
     return null;
   }
+}
+
+function toSafeRewardBaseAmount(raw: unknown): number {
+  const amount = Number(raw);
+  if (!Number.isFinite(amount)) return 0;
+  if (amount <= 0) return 0;
+  if (amount > MAX_REWARD_BASE_AMOUNT) return 0;
+  return Math.round(amount);
+}
+
+function resolveOrderRewardBaseAmount(order: any): number {
+  const paymentInfo = (order as any)?.paymentInfo;
+  return toSafeRewardBaseAmount(paymentInfo?.total ?? paymentInfo?.amount ?? (order as any)?.totalPrice);
+}
+
+function resolveStandaloneAppRewardBaseAmount(app: any): number {
+  return toSafeRewardBaseAmount((app as any)?.serviceAmount ?? (app as any)?.serviceFee ?? (app as any)?.totalPrice);
+}
+
+function resolveRentalRewardBaseAmount(rental: any): number {
+  return toSafeRewardBaseAmount((rental as any)?.amount?.fee);
 }
 
 
@@ -57,7 +80,7 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
       const orderObjectId = app.orderId instanceof ObjectId ? app.orderId : new ObjectId(String(app.orderId));
       const orders = db.collection('orders');
 
-      const order = await orders.findOne({ _id: orderObjectId }, { projection: { userId: 1, status: 1, totalPrice: 1, userConfirmedAt: 1 } as any });
+      const order = await orders.findOne({ _id: orderObjectId }, { projection: { userId: 1, status: 1, totalPrice: 1, paymentInfo: 1, userConfirmedAt: 1 } as any });
 
       if (!order) {
         return NextResponse.json({ ok: false, message: '연결된 주문을 찾을 수 없습니다.' }, { status: 404 });
@@ -116,8 +139,8 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
         return NextResponse.json({ ok: true, already: true, message: '이미 확정된 주문입니다.', earnedPoints: 0 });
       }
 
-      const totalPrice = Number((order as any).totalPrice ?? 0);
-      const earnedPoints = calcOrderEarnPoints(totalPrice);
+      const rewardBaseAmount = resolveOrderRewardBaseAmount(order);
+      const earnedPoints = calcOrderEarnPoints(rewardBaseAmount);
 
       if (earnedPoints > 0) {
         const refKey = `order_reward:${String(orderObjectId)}`;
@@ -152,8 +175,23 @@ export async function POST(_: Request, context: { params: Promise<{ id: string }
 
     const now = new Date();
 
-    const totalPrice = Number(app.totalPrice ?? 0);
-    const earnedPoints = calcOrderEarnPoints(totalPrice);
+    const rentalObjectId = app.rentalId && ObjectId.isValid(String(app.rentalId))
+      ? (app.rentalId instanceof ObjectId ? app.rentalId : new ObjectId(String(app.rentalId)))
+      : null;
+
+    let rewardBaseAmount = resolveStandaloneAppRewardBaseAmount(app);
+    if (rentalObjectId) {
+      const rental = await db.collection('rental_orders').findOne(
+        { _id: rentalObjectId },
+        { projection: { userId: 1, amount: 1 } as any },
+      );
+
+      if (rental && String((rental as any).userId) === String(userId)) {
+        rewardBaseAmount = resolveRentalRewardBaseAmount(rental);
+      }
+    }
+
+    const earnedPoints = calcOrderEarnPoints(rewardBaseAmount);
 
     // 포인트가 0원이어도, '확정' 자체는 기록한다(단, now로 한 번만 찍는다).
     if (earnedPoints <= 0) {
