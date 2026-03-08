@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { LogOut, LayoutDashboard, Settings, UserIcon, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUnreadMessageCount } from '@/lib/hooks/useUnreadMessageCount';
@@ -25,9 +24,9 @@ export function UserNav({ unreadCount }: UserNavProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-6 w-6 rounded-full" />
-        <Skeleton className="h-4 w-16 rounded" />
+      <div className="flex items-center gap-2 text-muted-foreground" aria-live="polite" aria-busy="true">
+        <UserIcon className="h-5 w-5" />
+        <span className="text-sm">사용자 확인 중</span>
       </div>
     );
   }
