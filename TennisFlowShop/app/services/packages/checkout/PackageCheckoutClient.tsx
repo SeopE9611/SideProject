@@ -13,7 +13,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
 import { getMyInfo } from '@/lib/auth.client';
 import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
@@ -327,43 +326,10 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   }, [name, email, phone, depositor]);
 
   const isFormValid = Object.keys(fieldErrors).length === 0;
-  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid && !ownershipBlockedMessage;
+  const isFrameLoading = loading || isPackageLoading;
+  const canSubmit = agreeTerms && agreePrivacy && agreeRefund && isFormValid && !ownershipBlockedMessage && !isFrameLoading;
 
-  if (loading || isPackageLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="border-b border-border bg-muted/30">
-          <div className="container mx-auto px-4 py-8 space-y-3">
-            <Skeleton className="h-9 w-56" />
-            <Skeleton className="h-4 w-80 max-w-full" />
-          </div>
-        </div>
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <Card>
-              <CardContent className="space-y-4 p-6">
-                <Skeleton className="h-6 w-40" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-28 w-full" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="space-y-3 p-6">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-4/5" />
-                <Skeleton className="h-11 w-full" />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!selectedPackage) {
+  if (!selectedPackage && !isPackageLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto">
@@ -381,13 +347,13 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
   }
 
   // 할인 존재 여부 (정가 > 판매가 이고, 할인율도 0보다 클 때만 true)
-  const hasDiscount = typeof selectedPackage.originalPrice === 'number' && selectedPackage.originalPrice > selectedPackage.price && typeof selectedPackage.discount === 'number' && selectedPackage.discount > 0;
+  const hasDiscount = typeof selectedPackage?.originalPrice === 'number' && selectedPackage.originalPrice > selectedPackage.price && typeof selectedPackage.discount === 'number' && selectedPackage.discount > 0;
 
   // 안전한 회당 가격 헬퍼
-  const perSessionPrice = selectedPackage.sessions > 0 && selectedPackage.price > 0 ? Math.round(selectedPackage.price / selectedPackage.sessions) : 0;
+  const perSessionPrice = selectedPackage && selectedPackage.sessions > 0 && selectedPackage.price > 0 ? Math.round(selectedPackage.price / selectedPackage.sessions) : 0;
 
   // 할인 금액 (없으면 0)
-  const discountAmount = hasDiscount ? selectedPackage.originalPrice! - selectedPackage.price : 0;
+  const discountAmount = hasDiscount && selectedPackage ? selectedPackage.originalPrice! - selectedPackage.price : 0;
 
   return (
     <div className="min-h-full bg-background">
@@ -436,7 +402,11 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                 <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
               </div>
               <CardContent className="p-6">
-                <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
+                {selectedPackage ? (
+                  <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5 text-sm text-muted-foreground">패키지 정보를 불러오는 중입니다.</div>
+                )}
               </CardContent>
             </Card>
 
@@ -464,6 +434,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setName(e.target.value);
                           touch();
                         }}
+                        disabled={loading}
                         placeholder="신청자 이름을 입력하세요"
                         className={inputClass('border-2 focus:border-border transition-colors', 'name', fieldErrors)}
                       />
@@ -482,6 +453,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setEmail(e.target.value);
                           touch();
                         }}
+                        disabled={loading}
                         placeholder="example@naver.com"
                         className={inputClass('border-2 focus:border-border transition-colors', 'email', fieldErrors)}
                       />
@@ -499,6 +471,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setPhone(e.target.value);
                           touch();
                         }}
+                        disabled={loading}
                         placeholder="연락처를 입력하세요 ('-' 제외)"
                         className={inputClass('border-2 focus:border-border transition-colors', 'phone', fieldErrors)}
                       />
@@ -542,7 +515,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <MessageSquare className="h-4 w-4 text-primary" />
                     서비스 요청사항
                   </Label>
-                  <Textarea id="service-request" value={serviceRequest} onChange={(e) => setServiceRequest(e.target.value)} placeholder="서비스 이용 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" />
+                  <Textarea id="service-request" value={serviceRequest} onChange={(e) => setServiceRequest(e.target.value)} placeholder="서비스 이용 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" disabled={loading} />
                 </div>
               </CardContent>
             </Card>
@@ -575,6 +548,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <Label htmlFor="bank-account">입금 계좌 선택</Label>
                     <Select
                       value={selectedBank}
+                      disabled={loading}
                       onValueChange={(v) => {
                         setSelectedBank(v);
                         touch();
@@ -600,6 +574,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                         setDepositor(e.target.value);
                         touch();
                       }}
+                      disabled={loading}
                       placeholder="입금자명을 입력하세요"
                       className={inputClass('border-2 focus:border-border transition-colors', 'depositor', fieldErrors)}
                     />
@@ -718,14 +693,14 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">패키지 금액</span>
-                      <span className="font-semibold text-lg">{selectedPackage.price.toLocaleString()}원</span>
+                      <span className="font-semibold text-lg">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : '-'}</span>
                     </div>
 
                     {hasDiscount && (
                       <>
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">정가</span>
-                          <span className="text-muted-foreground line-through">{selectedPackage.originalPrice!.toLocaleString()}원</span>
+                          <span className="text-muted-foreground line-through">{selectedPackage!.originalPrice!.toLocaleString()}원</span>
                         </div>
 
                         <div className="flex justify-between items-center">
@@ -739,7 +714,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
-                      <span className="text-primary">{selectedPackage.price.toLocaleString()}원</span>
+                      <span className="text-primary">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : '-'}</span>
                     </div>
                   </div>
 
@@ -749,8 +724,8 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                       <span className="font-semibold">패키지 혜택</span>
                     </div>
                     <div className="text-sm text-foreground space-y-1">
-                      <p>• {selectedPackage.sessions}회 스트링 교체 서비스</p>
-                      <p>• 유효기간: {selectedPackage.validityPeriod}</p>
+                      <p>• {selectedPackage ? `${selectedPackage.sessions}회 스트링 교체 서비스` : '패키지 정보를 확인 중입니다.'}</p>
+                      <p>• 유효기간: {selectedPackage?.validityPeriod ?? '-'}</p>
                       <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
                       {selectedPackage.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
                     </div>
@@ -771,18 +746,21 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                 <div className="flex flex-col gap-4 p-6">
                   {ownershipBlockedMessage && <p className="text-sm rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive">{ownershipBlockedMessage}</p>}
                   {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-destructive">필수 입력칸을 확인해주세요. (이름/이메일/연락처/입금자명)</p>}
-                  <PackageCheckoutButton
-                    disabled={!canSubmit}
-                    ownershipBlockedMessage={ownershipBlockedMessage}
-                    packageInfo={selectedPackage}
-                    name={name}
-                    phone={phone}
-                    email={email}
-                    depositor={depositor}
-                    selectedBank={selectedBank}
-                    serviceRequest={serviceRequest}
-                    saveInfo={saveInfo}
-                  />
+                  {isFrameLoading && <p className="text-xs text-muted-foreground">기본 정보를 불러오는 중입니다. 잠시만 기다려주세요.</p>}
+                  {selectedPackage && (
+                    <PackageCheckoutButton
+                      disabled={!canSubmit}
+                      ownershipBlockedMessage={ownershipBlockedMessage}
+                      packageInfo={selectedPackage}
+                      name={name}
+                      phone={phone}
+                      email={email}
+                      depositor={depositor}
+                      selectedBank={selectedBank}
+                      serviceRequest={serviceRequest}
+                      saveInfo={saveInfo}
+                    />
+                  )}
                   <Button variant="outline" className="w-full border-2" asChild>
                     <Link href="/services/packages" onClick={onLeavePageClick}>
                       패키지 선택으로 돌아가기
