@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { badgeBase, badgeSizeSm, badgeToneVariant, flowBadgeClass, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingBadge, getShippingMethodBadge, getTrackingBadge, kindBadgeClass, linkBadgeClass } from '@/lib/badge-style';
@@ -499,13 +498,7 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
                 </Button>
               </div>
 
-              {isTableLoading && (
-                <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <Skeleton key={`filter-skeleton-${idx}`} className="h-9 w-full rounded-md" />
-                  ))}
-                </div>
-              )}
+              {isTableLoading && <p className="text-xs text-muted-foreground">주문 정보를 불러오는 중입니다.</p>}
             </div>
           </CardContent>
         </Card>
@@ -514,17 +507,8 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
         <Card className="rounded-xl border-border bg-card px-4 py-4 shadow-md lg:px-5">
           <CardHeader className="pb-2 pt-1">
             <div className="flex items-center justify-between">
-              {data ? (
-                <>
-                  <CardTitle className="text-base font-medium">주문 목록</CardTitle>
-                  <p className="text-xs text-muted-foreground">총 {data.total}개의 주문</p>
-                </>
-              ) : (
-                <>
-                  <Skeleton className="h-5 w-24 rounded bg-muted" />
-                  <Skeleton className="h-4 w-36 rounded bg-muted" />
-                </>
-              )}
+              <CardTitle className="text-base font-medium">주문 목록</CardTitle>
+              <p className="text-xs text-muted-foreground">{data ? `총 ${data.total}개의 주문` : '목록을 불러오는 중…'}</p>
             </div>
             {/* 운영자용: “이 화면에서 뭘 보고 처리해야 하는지”를 한 번에 이해시키는 장치 */}
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -576,15 +560,11 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
                     </TableCell>
                   </TableRow>
                 ) : !data ? (
-                  Array.from({ length: limit }).map((_, rowIdx) => (
-                    <TableRow key={rowIdx}>
-                      {Array.from({ length: 10 }).map((_, cellIdx) => (
-                        <TableCell key={cellIdx}>
-                          <Skeleton className="h-4 w-full" />
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+                  <TableRow>
+                    <TableCell colSpan={10} className={cn(tdClasses, 'text-center text-muted-foreground')}>
+                      주문 정보를 불러오는 중입니다.
+                    </TableCell>
+                  </TableRow>
                 ) : data.items.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className={tdClasses}>
