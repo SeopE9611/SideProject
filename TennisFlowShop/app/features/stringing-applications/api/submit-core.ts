@@ -49,6 +49,8 @@ type SubmitCoreParams = {
   db: Db;
   input: StringingApplicationInput;
   userId: ObjectId | null;
+  guestOrderId?: string | null;
+  guestRentalId?: string | null;
   session?: ClientSession;
 };
 
@@ -59,7 +61,19 @@ export type SubmitCoreResult = {
   stringingSubmitted: true;
 };
 
-export async function submitStringingApplicationCore({ db, input, userId, session }: SubmitCoreParams): Promise<SubmitCoreResult> {
+function toObjectIdOrThrow(id: unknown, fieldName: string): ObjectId | null {
+  if (typeof id !== 'string' || !id.trim()) return null;
+  if (!MongoObjectId.isValid(id)) {
+    throw Object.assign(new Error(`유효하지 않은 ${fieldName}입니다.`), { status: 400 });
+  }
+  return new MongoObjectId(id);
+}
+
+function isSameObjectId(a: unknown, b: ObjectId): boolean {
+  return !!a && MongoObjectId.isValid(String(a)) && String(a) === String(b);
+}
+
+export async function submitStringingApplicationCore({ db, input, userId, guestOrderId, guestRentalId, session }: SubmitCoreParams): Promise<SubmitCoreResult> {
   const {
     applicationId: bodyAppId,
     orderId,
@@ -83,21 +97,61 @@ export async function submitStringingApplicationCore({ db, input, userId, sessio
   }
 
   const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship');
-  const orderObjectId = typeof orderId === 'string' && MongoObjectId.isValid(orderId) ? new MongoObjectId(orderId) : null;
-  const rentalObjectId = typeof rentalId === 'string' && MongoObjectId.isValid(rentalId) ? new MongoObjectId(rentalId) : null;
+  const orderObjectId = toObjectIdOrThrow(orderId, 'orderId');
+  const rentalObjectId = toObjectIdOrThrow(rentalId, 'rentalId');
 
   if (orderObjectId && rentalObjectId) {
     throw Object.assign(new Error('orderId와 rentalId는 동시에 제출할 수 없습니다.'), { status: 400 });
   }
 
-  let applicationId: ObjectId;
-  if (typeof bodyAppId === 'string' && bodyAppId.trim()) {
-    if (!MongoObjectId.isValid(bodyAppId)) {
-      throw Object.assign(new Error('유효하지 않은 applicationId입니다.'), { status: 400 });
+  const bodyApplicationObjectId = toObjectIdOrThrow(bodyAppId, 'applicationId');
+
+  if (bodyApplicationObjectId) {
+    const existingApp = await db.collection('stringing_applications').findOne(
+      { _id: bodyApplicationObjectId },
+      { projection: { _id: 1, userId: 1, orderId: 1, rentalId: 1 }, session },
+    );
+
+    if (!existingApp) {
+      throw Object.assign(new Error('수정 권한이 없는 신청서입니다.'), { status: 403 });
     }
-    applicationId = new MongoObjectId(bodyAppId);
-  } else {
-    applicationId = new MongoObjectId();
+
+    const isMemberOwner = !!userId && isSameObjectId((existingApp as any).userId, userId);
+    const isGuestOrderOwner = !userId && !!guestOrderId && !!(existingApp as any).orderId && String((existingApp as any).orderId) === String(guestOrderId);
+    const isGuestRentalOwner = !userId && !!guestRentalId && !!(existingApp as any).rentalId && String((existingApp as any).rentalId) === String(guestRentalId);
+
+    if (!isMemberOwner && !isGuestOrderOwner && !isGuestRentalOwner) {
+      throw Object.assign(new Error('수정 권한이 없는 신청서입니다.'), { status: 403 });
+    }
+  }
+
+  const applicationId: ObjectId = bodyApplicationObjectId ?? new MongoObjectId();
+
+  if (orderObjectId) {
+    const order = await db.collection('orders').findOne({ _id: orderObjectId }, { projection: { _id: 1, userId: 1, guest: 1 }, session });
+    if (!order) {
+      throw Object.assign(new Error('접근할 수 없는 주문입니다.'), { status: 403 });
+    }
+
+    const isOwner = !!userId && isSameObjectId((order as any).userId, userId);
+    const isGuestOrder = !userId && (!((order as any).userId) || (order as any).guest === true);
+    const guestOwns = !!isGuestOrder && !!guestOrderId && String(guestOrderId) === String((order as any)._id);
+    if (!isOwner && !guestOwns) {
+      throw Object.assign(new Error('접근할 수 없는 주문입니다.'), { status: 403 });
+    }
+  }
+
+  if (rentalObjectId) {
+    const rental = await db.collection('rental_orders').findOne({ _id: rentalObjectId }, { projection: { _id: 1, userId: 1 }, session });
+    if (!rental) {
+      throw Object.assign(new Error('접근할 수 없는 대여입니다.'), { status: 403 });
+    }
+
+    const isOwner = !!userId && isSameObjectId((rental as any).userId, userId);
+    const guestOwns = !userId && !((rental as any).userId) && !!guestRentalId && String(guestRentalId) === String((rental as any)._id);
+    if (!isOwner && !guestOwns) {
+      throw Object.assign(new Error('접근할 수 없는 대여입니다.'), { status: 403 });
+    }
   }
 
   const usingLines = Array.isArray(lines) && lines.length > 0;
