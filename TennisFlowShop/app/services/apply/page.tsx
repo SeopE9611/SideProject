@@ -19,7 +19,6 @@ import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
 import LoginGate from '@/components/system/LoginGate';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -1389,14 +1388,11 @@ export default function StringServiceApplyPage() {
       <div className="min-h-full bg-card bp-lg:bg-background">
         <ApplyHero />
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
-          <div className="rounded-2xl border border-border bg-card p-6 bp-sm:p-8 space-y-4">
-            <Skeleton className="h-8 w-56" />
-            <Skeleton className="h-4 w-full max-w-2xl" />
-            <div className="grid gap-4 bp-lg:grid-cols-2">
-              <Skeleton className="h-52 w-full" />
-              <Skeleton className="h-52 w-full" />
+          <div className="rounded-2xl border border-border bg-card p-6 bp-sm:p-8">
+            <div className="max-w-xl space-y-2">
+              <p className="text-base font-semibold text-foreground">로그인 상태를 확인하고 있습니다.</p>
+              <p className="text-sm text-muted-foreground">잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로 자동 이동합니다.</p>
             </div>
-            <Skeleton className="h-11 w-40" />
           </div>
         </div>
       </div>
