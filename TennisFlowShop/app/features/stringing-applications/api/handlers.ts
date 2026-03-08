@@ -8,7 +8,7 @@ import { normalizeEmail } from '@/lib/claims';
 import clientPromise, { getDb } from '@/lib/mongodb';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { revertConsumption } from '@/lib/passes.service';
-import { calcStringingTotal } from '@/lib/pricing';
+import { calcStringingMountingFeeByProductId, calcStringingTotal } from '@/lib/pricing';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { ServicePassConsumption } from '@/lib/types/pass';
 import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db';
@@ -336,12 +336,17 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
 // ================= PATCH (관리자용 수정) =================
 export async function handlePatchStringingApplication(req: Request, id: string) {
-  const client = await clientPromise;
-  const db = await getDb();
-  const { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails } = await req.json();
+  try {
+    const client = await clientPromise;
+    const db = await getDb();
+    const { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails } = await req.json();
 
-  const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
-  if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Invalid application ID' }, { status: 400 });
+    }
+
+    const app = await db.collection('stringing_applications').findOne({ _id: new ObjectId(id) });
+    if (!app) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
 
   const appDoc = app as NonNullable<typeof app>;
 
@@ -439,11 +444,12 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
               quantity: 1, //
             };
           }
-          const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1, mountingFee: 1 } });
+          const mountingFee = await calcStringingMountingFeeByProductId(db, prodId);
+          const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
           return {
             id: prodId,
             name: prod?.name ?? '알 수 없는 상품',
-            price: prod?.mountingFee ?? getStringingServicePrice(prodId, false),
+            price: mountingFee,
             quantity: 1, //
           };
         }),
@@ -583,7 +589,14 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
     }
   }
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    if (e?.status) {
+      return NextResponse.json({ error: e.message ?? '요청 처리 실패' }, { status: e.status });
+    }
+    console.error('[PATCH stringing_application]', e);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
 // ========== 신청서의 상태 업데이트 ==========
