@@ -434,7 +434,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setName(e.target.value);
                           touch();
                         }}
-                        disabled={loading}
+                        disabled={isFrameLoading}
                         placeholder="신청자 이름을 입력하세요"
                         className={inputClass('border-2 focus:border-border transition-colors', 'name', fieldErrors)}
                       />
@@ -453,7 +453,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setEmail(e.target.value);
                           touch();
                         }}
-                        disabled={loading}
+                        disabled={isFrameLoading}
                         placeholder="example@naver.com"
                         className={inputClass('border-2 focus:border-border transition-colors', 'email', fieldErrors)}
                       />
@@ -471,7 +471,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setPhone(e.target.value);
                           touch();
                         }}
-                        disabled={loading}
+                        disabled={isFrameLoading}
                         placeholder="연락처를 입력하세요 ('-' 제외)"
                         className={inputClass('border-2 focus:border-border transition-colors', 'phone', fieldErrors)}
                       />
@@ -481,7 +481,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
                   <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!user} />
+                      <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!user || isFrameLoading} />
                       <label htmlFor="save-info" className={`text-sm font-medium ${!user ? 'text-muted-foreground' : 'text-primary'}`}>
                         이 정보를 저장
                       </label>
@@ -515,7 +515,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <MessageSquare className="h-4 w-4 text-primary" />
                     서비스 요청사항
                   </Label>
-                  <Textarea id="service-request" value={serviceRequest} onChange={(e) => setServiceRequest(e.target.value)} placeholder="서비스 이용 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" disabled={loading} />
+                  <Textarea id="service-request" value={serviceRequest} onChange={(e) => setServiceRequest(e.target.value)} placeholder="서비스 이용 시 요청사항을 입력하세요" className="border-2 focus:border-border transition-colors" disabled={isFrameLoading} />
                 </div>
               </CardContent>
             </Card>
@@ -535,7 +535,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <Label>결제 방법</Label>
                     <RadioGroup defaultValue="bank-transfer" className="space-y-3">
                       <div className="flex items-center space-x-3 p-4 bg-primary/10 dark:bg-primary/20 rounded-lg border-2 border-primary/20">
-                        <RadioGroupItem value="bank-transfer" id="bank-transfer" />
+                        <RadioGroupItem value="bank-transfer" id="bank-transfer" disabled={isFrameLoading} />
                         <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                           무통장입금
                         </Label>
@@ -548,7 +548,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     <Label htmlFor="bank-account">입금 계좌 선택</Label>
                     <Select
                       value={selectedBank}
-                      disabled={loading}
+                      disabled={isFrameLoading}
                       onValueChange={(v) => {
                         setSelectedBank(v);
                         touch();
@@ -574,7 +574,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                         setDepositor(e.target.value);
                         touch();
                       }}
-                      disabled={loading}
+                      disabled={isFrameLoading}
                       placeholder="입금자명을 입력하세요"
                       className={inputClass('border-2 focus:border-border transition-colors', 'depositor', fieldErrors)}
                     />
@@ -627,6 +627,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                           setAgreePrivacy(newValue);
                           setAgreeRefund(newValue);
                         }}
+                        disabled={isFrameLoading}
                       />
                       <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
                         전체 동의
@@ -661,6 +662,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                               if (!value) setAgreeAll(false);
                               else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                             }}
+                            disabled={isFrameLoading}
                           />
                           <label htmlFor={item.id} className="text-sm font-medium text-foreground">
                             {item.label}
