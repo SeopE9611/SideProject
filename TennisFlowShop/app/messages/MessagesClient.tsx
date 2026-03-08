@@ -217,11 +217,10 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                   <div className="space-y-2">
                     {isLoading && (
-                      <>
-                        <Skeleton className="h-24 w-full rounded-lg" />
-                        <Skeleton className="h-24 w-full rounded-lg" />
-                        <Skeleton className="h-24 w-full rounded-lg" />
-                      </>
+                      <div className="flex items-center gap-2 rounded-lg border border-border/30 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5 animate-pulse" />
+                        <span>쪽지 목록을 불러오는 중입니다.</span>
+                      </div>
                     )}
 
                     {!isLoading && items.length === 0 && (
