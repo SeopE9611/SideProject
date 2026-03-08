@@ -91,8 +91,10 @@ export default function MyPointsTab() {
         <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">포인트 정보를 불러오는 중입니다...</div>
       ) : null}
 
-      <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-        <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-muted/30 text-foreground">
+      {!isInitialLoading && (
+        <>
+          <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
+            <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-muted/30 text-foreground">
           <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
           <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
           <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
@@ -157,10 +159,10 @@ export default function MyPointsTab() {
               <p className="text-xs text-muted-foreground">전체 기준</p>
             </div>
           </CardContent>
-        </Card>
-      </div>
+            </Card>
+          </div>
 
-      <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm overflow-hidden">
+          <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm overflow-hidden">
         <CardHeader className="bg-muted/30 border-b p-5 bp-sm:p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
@@ -287,7 +289,9 @@ export default function MyPointsTab() {
             </div>
           </div>
         )}
-      </Card>
+          </Card>
+        </>
+      )}
 
       <style jsx global>{`
         @keyframes fadeIn {
