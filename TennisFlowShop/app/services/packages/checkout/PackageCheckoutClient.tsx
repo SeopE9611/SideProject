@@ -729,7 +729,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                       <p>• {selectedPackage ? `${selectedPackage.sessions}회 스트링 교체 서비스` : '패키지 정보를 확인 중입니다.'}</p>
                       <p>• 유효기간: {selectedPackage?.validityPeriod ?? '-'}</p>
                       <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
-                      {selectedPackage.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
+                      {selectedPackage?.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
                     </div>
                   </div>
 
