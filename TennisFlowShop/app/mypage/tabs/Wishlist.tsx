@@ -25,7 +25,7 @@ export default function Wishlist() {
   if (items.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0">
-        <CardContent className="p-12 text-center">
+        <CardContent className="p-8 md:p-12 text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
             <Heart className="h-10 w-10" />
           </div>
@@ -40,7 +40,7 @@ export default function Wishlist() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {visibleItems.map((it) => (
           <Card key={it.id} className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">

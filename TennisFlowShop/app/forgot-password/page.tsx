@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
         </div>
 
         <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative">
+          <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative">
             <div className="absolute inset-0 bg-overlay/10" />
             <div className="relative text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               {!isSubmitted ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-muted rounded-xl p-6 text-center border border-border">
+                <div className="bg-muted rounded-xl p-4 md:p-6 text-center border border-border">
                   <div className="w-16 h-16 mx-auto mb-4 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-8 w-8" />
                   </div>
@@ -134,7 +134,7 @@ export default function ForgotPasswordPage() {
               )}
             </CardContent>
 
-            <CardFooter className="p-6">
+            <CardFooter className="p-4 md:p-6">
               {!isSubmitted ? (
                 <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300" disabled={isSubmitting || !email.trim()}>
                   {isSubmitting ? '전송 중...' : '비밀번호 재설정 링크 전송'}

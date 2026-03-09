@@ -182,7 +182,7 @@ export default function ForceChangePasswordClient() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container py-16">
+      <div className="container py-10 md:py-16">
         <div className="mx-auto max-w-lg">
           <Card className="border-border/40 bg-card/60 backdrop-blur shadow-xl">
             <CardHeader className="text-center">
@@ -190,7 +190,7 @@ export default function ForceChangePasswordClient() {
               <CardDescription className="text-base">{reason === 'must' ? '보안을 위해 먼저 비밀번호를 변경해 주세요.' : '새 비밀번호로 변경해 주세요.'}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={onSubmit} className="space-y-6">
+              <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword" className="text-sm font-medium">
                     새 비밀번호 <span className="text-destructive">*</span>

@@ -404,7 +404,7 @@ export default function QnaWritePage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild className="p-2">
               <Link href="/board/qna" onClick={guardLinkLeave}>
@@ -429,7 +429,7 @@ export default function QnaWritePage() {
                 <span>새 문의 작성</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-4 md:p-8 space-y-6 md:space-y-8">
               <div ref={categoryWrapRef} className="space-y-3">
                 <Label htmlFor="category" className="text-base font-semibold">
                   카테고리 <span className="text-destructive">*</span>
@@ -589,7 +589,7 @@ export default function QnaWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive' : 'border-border'} rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
+                    className={`border-2 border-dashed ${fieldErrors.images ? 'border-destructive' : 'border-border'} rounded-lg p-4 md:p-6 text-center hover:border-border dark:hover:border-border transition-colors`}
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -683,7 +683,7 @@ export default function QnaWritePage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between p-8 border-t bg-muted/50 dark:bg-muted/20">
+            <CardFooter className="flex justify-between p-4 md:p-8 border-t bg-muted/50 dark:bg-muted/20">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/qna" onClick={guardLinkLeave}>
                   취소

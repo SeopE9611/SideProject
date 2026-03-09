@@ -285,9 +285,9 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Package Cards Section */}
-      <section id="packages" ref={packagesSectionRef} className="py-20 bg-background scroll-mt-24">
+      <section id="packages" ref={packagesSectionRef} className="py-12 md:py-20 bg-background scroll-mt-24">
         <SiteContainer variant="wide">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <Badge variant={packagesBadgeVariant('selection')} className="mb-4">
               <Star className="w-4 h-4 mr-2" />
               맞춤형 패키지 선택
@@ -303,7 +303,7 @@ export default function StringPackagesPage() {
             )}
           </div>
 
-          <div className="flex min-h-[420px] flex-wrap justify-center gap-8">
+          <div className="flex min-h-[420px] flex-wrap justify-center gap-6 md:gap-8">
             {isLoading && packages.length === 0 ? (
               <div className="flex min-h-[220px] w-full items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 text-center">
                 <p className="text-sm text-muted-foreground">패키지 정보를 불러오는 중입니다.</p>
@@ -327,11 +327,11 @@ export default function StringPackagesPage() {
       </section>
 
       {/* Additional Benefits Section */}
-      <section className="py-20 bg-muted/30 dark:bg-muted/20 relative overflow-hidden">
+      <section className="py-12 md:py-20 bg-muted/30 dark:bg-muted/20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-border/10" />
 
         <SiteContainer variant="wide" className="relative z-10">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <Badge variant={packagesBadgeVariant('benefits')} className="mb-4">
               <Award className="w-4 h-4 mr-2" />
               추가 혜택
@@ -340,9 +340,9 @@ export default function StringPackagesPage() {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">단순한 할인을 넘어서는 프리미엄 서비스를 경험하세요.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {additionalBenefits.map((benefit, index) => (
-              <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+              <div key={index} className="group bg-card/10 backdrop-blur-sm rounded-2xl p-4 md:p-8 border border-border/20 hover:border-border/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-primary/10 text-primary group-hover:scale-110 transition-transform duration-300">{benefit.icon}</div>
                 <h3 className="text-xl font-bold text-foreground mb-4 text-center">{benefit.title}</h3>
                 <p className="text-muted-foreground text-center leading-relaxed">{benefit.description}</p>
@@ -353,9 +353,9 @@ export default function StringPackagesPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-background">
+      <section className="py-12 md:py-20 bg-background">
         <SiteContainer variant="wide">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <Badge variant={packagesBadgeVariant('faq')} className="mb-4">
               <Zap className="w-4 h-4 mr-2" />
               자주 묻는 질문
@@ -364,7 +364,7 @@ export default function StringPackagesPage() {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               {[
                 {
                   question: '패키지 유효기간이 지나면 어떻게 되나요?',
@@ -384,7 +384,7 @@ export default function StringPackagesPage() {
                 },
               ].map((faq, index) => (
                 <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 md:p-6">
                     <h3 className="font-bold text-lg mb-3 text-primary">Q. {faq.question}</h3>
                     <p className="text-muted-foreground leading-relaxed">A. {faq.answer}</p>
                   </CardContent>
@@ -393,7 +393,7 @@ export default function StringPackagesPage() {
             </div>
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 md:mt-12">
             <Button size="lg" variant="default" className="shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" asChild>
               <Link href="/board/qna">
                 <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이 있으신가요?

@@ -116,7 +116,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
             <ErrorBox message="공지 불러오기에 실패했습니다." />
@@ -199,7 +199,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <Dialog open={secretBlock.open} onOpenChange={(open) => setSecretBlock((p) => ({ ...p, open }))}>
           <DialogContent>
             <DialogHeader>
@@ -321,9 +321,9 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
         {/* 헤더 */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 md:space-y-4">
           <div className="flex items-center justify-center gap-3 mb-2">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
               <MessagesSquare className="h-6 w-6 text-foreground" />
@@ -334,7 +334,7 @@ export default function SupportPage() {
         </div>
 
         {/* 카드 2열 레이아웃 */}
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-8 items-start">
           <NoticeCard items={notices} isAdmin={isAdmin} isLoading={isLoading} error={error} />
           <QnaCard items={qnas} viewerId={viewerId} isAdmin={isAdmin} isLoading={isLoading} error={error} />
         </div>
