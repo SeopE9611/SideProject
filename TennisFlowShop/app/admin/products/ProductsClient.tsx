@@ -9,7 +9,6 @@ import useSWR from 'swr';
 import BrandFilter from '@/app/admin/products/product-filters/BrandFilter';
 import MaterialFilter from '@/app/admin/products/product-filters/MaterialFilter';
 import StockStatusFilter from '@/app/admin/products/product-filters/StockStatusFilter';
-import ProductsTableSkeleton from '@/app/admin/products/ProductsTableSkeleton';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { showErrorToast } from '@/lib/toast';
@@ -264,7 +262,7 @@ export default function ProductsClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? '-' : c.value}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
@@ -278,7 +276,7 @@ export default function ProductsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
-                <CardDescription className="text-foreground">{isLoading && !data ? <Skeleton className="h-4 w-56" /> : total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
+                <CardDescription className="text-foreground">{isLoading && !data ? '상품 목록을 준비하고 있습니다.' : total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
               </div>
               <Button
                 asChild
@@ -360,9 +358,12 @@ export default function ProductsClient() {
                   </TableHeader>
 
                   <TableBody>
-                    {isLoading || isValidating ? (
-                      // 전환/첫 로딩: 고정 행수 스켈레톤
-                      <ProductsTableSkeleton rows={PAGE_SIZE} />
+                    {(isLoading || isValidating) && items.length === 0 ? (
+                      <TableRow className="border-0">
+                        <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
+                          상품 목록을 불러오는 중입니다.
+                        </TableCell>
+                      </TableRow>
                     ) : items.length === 0 ? (
                       <TableRow className="border-0">
                         <TableCell colSpan={8} className="py-16 text-center">

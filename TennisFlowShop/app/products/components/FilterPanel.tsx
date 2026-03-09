@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SkeletonFilterDetailed } from '@/app/products/components/SkeletonProductCard';
 
 type PerformanceFilterConfig = {
   label: string;
@@ -89,16 +88,11 @@ export const FilterPanel = React.memo(function FilterPanel({
     [selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort]
   );
 
-  if (isLoadingInitial) {
-    return (
-      <div className="rounded-xl bg-card/70 dark:bg-card p-4 bp-sm:p-6 shadow-lg">
-        <SkeletonFilterDetailed />
-      </div>
-    );
-  }
-
   return (
     <div className={cn('rounded-lg bp-sm:rounded-xl border border-border bg-card/80 dark:bg-card backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl')}>
+      {isLoadingInitial && (
+        <div className="mb-4 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">필터 정보를 준비하고 있습니다.</div>
+      )}
       <AnimatePresence mode="wait">
         <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
           <div className="flex items-center justify-between mb-4 bp-sm:mb-6">

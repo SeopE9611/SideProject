@@ -37,10 +37,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
-function SkeletonBox({ className = '' }: { className?: string }) {
-  return <div className={cn('animate-pulse rounded bg-muted dark:bg-card', className)} />;
-}
-
 function SortableTH({
   k,
   className = '',
@@ -486,7 +482,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
-                  <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-20" /> : kpiTotal}</div>
+                  <div className="text-3xl font-bold text-foreground">{isInitialLoading ? '-' : kpiTotal}</div>
                 </div>
                 <div className="bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                   <Package className="h-6 w-6" />
@@ -500,7 +496,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
-                  <div className="text-3xl font-bold text-success">{isInitialLoading ? <SkeletonBox className="h-7 w-16" /> : kpiActive}</div>
+                  <div className="text-3xl font-bold text-success">{isInitialLoading ? '-' : kpiActive}</div>
                 </div>
                 <div className="bg-success/10 dark:bg-success/15 rounded-xl p-3">
                   <Calendar className="h-6 w-6 text-success" />
@@ -514,7 +510,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">총 매출</p>
-                  <div className="text-3xl font-bold text-foreground">{isInitialLoading ? <SkeletonBox className="h-7 w-28" /> : formatCurrency(kpiRevenue)}</div>
+                  <div className="text-3xl font-bold text-foreground">{isInitialLoading ? '집계 중' : formatCurrency(kpiRevenue)}</div>
                 </div>
                 <div className="bg-muted rounded-xl p-3">
                   <CreditCard className="h-6 w-6 text-foreground" />
@@ -528,7 +524,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
-                  <div className="text-3xl font-bold text-warning">{isInitialLoading ? <SkeletonBox className="h-7 w-14" /> : kpiExpSoon}</div>
+                  <div className="text-3xl font-bold text-warning">{isInitialLoading ? '-' : kpiExpSoon}</div>
                 </div>
                 <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
                   <Calendar className="h-6 w-6 text-warning" />
@@ -690,68 +686,12 @@ export default function PackageOrdersClient() {
                 </TableHeader>
 
                 <TableBody>
-                  {/** 로딩 스켈레톤 */}
                   {isValidating && packages.length === 0 && (
-                    <>
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <TableRow key={`sk-${i}`} className="border-b last:border-0">
-                          {/* 패키지 ID */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-24 mx-auto" />
-                          </TableCell>
-
-                          {/* 고객 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-28 mx-auto" />
-                          </TableCell>
-
-                          {/* 패키지 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-16 mx-auto rounded-md" />
-                          </TableCell>
-
-                          {/* 남은 횟수 (lg 이상) */}
-                          <TableCell className={cn(tdClasses, 'hidden lg:table-cell')}>
-                            <SkeletonBox className="h-4 w-12 mx-auto" />
-                          </TableCell>
-
-                          {/* 진행률 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-20 mx-auto" />
-                          </TableCell>
-
-                          {/* 구매일 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-24 mx-auto" />
-                          </TableCell>
-
-                          {/* 만료일 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-24 mx-auto" />
-                          </TableCell>
-
-                          {/* 상태 배지 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-5 w-14 mx-auto rounded-full" />
-                          </TableCell>
-
-                          {/* 결제 (xl 이상) */}
-                          <TableCell className={cn(tdClasses, 'hidden xl:table-cell')}>
-                            <SkeletonBox className="h-5 w-16 mx-auto rounded-full" />
-                          </TableCell>
-
-                          {/* 금액 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-4 w-16 mx-auto" />
-                          </TableCell>
-
-                          {/* 작업 */}
-                          <TableCell className={cn(tdClasses)}>
-                            <SkeletonBox className="h-6 w-6 mx-auto rounded" />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </>
+                    <TableRow>
+                      <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
+                        패키지 목록을 불러오는 중입니다.
+                      </TableCell>
+                    </TableRow>
                   )}
 
                   {/** 빈 상태 */}
