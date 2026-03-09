@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import useSWRInfinite from 'swr/infinite';
 import { mutate as globalMutate } from 'swr';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import ActivityOrderReviewCTA from './_components/ActivityOrderReviewCTA';
 import OrderShippingInfoDialog from './_components/OrderShippingInfoDialog';
 import Link from 'next/link';
@@ -83,11 +84,7 @@ type ActivityResponse = {
 
 const LIMIT = 5;
 
-const fetcher = async (url: string): Promise<ActivityResponse> => {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error(`HTTP_${res.status}`);
-  return res.json();
-};
+const fetcher = (url: string) => authenticatedSWRFetcher<ActivityResponse>(url);
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -332,6 +329,8 @@ export default function ActivityFeed() {
     mutate: mutateActivity,
   } = useSWRInfinite<ActivityResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   const flat = useMemo(() => (data ?? []).flatMap((d) => d.items ?? []), [data]);

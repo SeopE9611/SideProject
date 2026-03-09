@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { ArrowRight, Ban, Calendar, CheckCircle, Clock, FileText, GraduationCap, LayoutGrid, Phone, Undo2, User, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -126,11 +127,7 @@ const formatVisitTimeRange = (preferredDate?: string, preferredTime?: string, du
   return `${baseRange} (총 ${durationMinutes}분)`;
 };
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error('데이터 로딩 실패');
-  return res.json();
-};
+const fetcher = (url: string) => authenticatedSWRFetcher<AppResponse>(url);
 
 const LIMIT = 5;
 
@@ -176,6 +173,8 @@ export default function ApplicationsClient() {
 
   const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<AppResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   // 취소 요청 Dialog 제어용 상태

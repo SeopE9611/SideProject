@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
 import PhotosUploader from '@/components/reviews/PhotosUploader';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Package, Star, Trash2 } from 'lucide-react';
 
 /*  API 타입 */
@@ -103,11 +104,7 @@ const ReviewListSkeleton = ({ count = 3 }: { count?: number }) => (
 );
 
 /* 공통 */
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then((r) => {
-    if (!r.ok) throw new Error('리뷰 목록을 불러오지 못했습니다.');
-    return r.json();
-  });
+const fetcher = (url: string) => authenticatedSWRFetcher<ApiMineResponse>(url);
 
 // 별점 렌더링
 const Stars = ({ rating }: { rating: number }) => (
@@ -140,7 +137,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     return `/api/reviews/mine?limit=10${cursor}`;
   }, []);
 
-  const { data, size, setSize, isValidating, mutate, error } = useSWRInfinite<ApiMineResponse>(getKey, fetcher);
+  const { data, size, setSize, isValidating, mutate, error } = useSWRInfinite<ApiMineResponse>(getKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // API -> UI 매핑
   const apiItems: ApiMineItem[] = useMemo(() => (data ? data.flatMap((p) => p.items) : []), [data]);

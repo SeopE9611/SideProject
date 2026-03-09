@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowRight, Ban, Calendar, CheckCircle, Clock, CreditCard, MessageSquarePlus, MoreVertical, Package, ShoppingBag, Truck, Undo2, User } from 'lucide-react';
 import Link from 'next/link';
@@ -48,11 +49,7 @@ interface Order {
   cancelReasonSummary?: string | null;
 }
 
-const fetcher = async (url: string): Promise<any> => {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error('Unauthorized');
-  return res.json();
-};
+const fetcher = (url: string) => authenticatedSWRFetcher<OrderResponse>(url);
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -150,6 +147,8 @@ export default function OrderList() {
 
   const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<OrderResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   // 구매확정 처리 중인 주문 id (중복 클릭 방지)
