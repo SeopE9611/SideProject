@@ -6,6 +6,7 @@ import RefundAccountFields from '@/components/refund/RefundAccountFields';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { validateRefundAccountInput } from '@/lib/cancel-request/refund-account-client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast } from '@/lib/toast';
 import { useEffect, useState } from 'react';
@@ -66,13 +67,13 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
       showErrorToast('기타 사유를 입력해주세요.');
       return;
     }
-    const refundAccountDigits = refundAccount.replace(/\D/g, '');
-    if (!refundBank || !refundAccountDigits || !refundHolder.trim()) {
-      showErrorToast('환불 은행, 계좌번호, 예금주를 입력해주세요.');
-      return;
-    }
-    if (refundAccountDigits.length < 8 || refundAccountDigits.length > 20) {
-      showErrorToast('계좌번호는 -를 제외한 숫자 8~20자리로 입력해주세요.');
+    const refundValidation = validateRefundAccountInput({
+      bank: refundBank,
+      account: refundAccount,
+      holder: refundHolder,
+    });
+    if (!refundValidation.ok) {
+      showErrorToast(refundValidation.message);
       return;
     }
 
@@ -80,9 +81,9 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
       reasonCode: selectedReason,
       reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
       refundAccount: {
-        bank: refundBank,
-        account: refundAccountDigits,
-        holder: refundHolder.trim(),
+        bank: refundValidation.value.bank,
+        account: refundValidation.value.account,
+        holder: refundValidation.value.holder,
       },
     });
   };

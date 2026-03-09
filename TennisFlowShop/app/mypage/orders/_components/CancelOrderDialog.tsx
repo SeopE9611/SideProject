@@ -6,6 +6,7 @@ import RefundAccountFields from '@/components/refund/RefundAccountFields';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { readCancelRequestError, validateRefundAccountInput } from '@/lib/cancel-request/refund-account-client';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
@@ -91,13 +92,13 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
       return;
     }
 
-    const refundAccountDigits = refundAccount.replace(/\D/g, '');
-    if (!refundBank || !refundAccountDigits || !refundHolder.trim()) {
-      showErrorToast('환불 은행, 계좌번호, 예금주를 입력해주세요.');
-      return;
-    }
-    if (refundAccountDigits.length < 8 || refundAccountDigits.length > 20) {
-      showErrorToast('계좌번호는 -를 제외한 숫자 8~20자리로 입력해주세요.');
+    const refundValidation = validateRefundAccountInput({
+      bank: refundBank,
+      account: refundAccount,
+      holder: refundHolder,
+    });
+    if (!refundValidation.ok) {
+      showErrorToast(refundValidation.message);
       return;
     }
 
@@ -120,50 +121,44 @@ const CancelOrderDialog = ({ orderId, children, open, onOpenChange }: CancelOrde
           // 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
           withStringing: confirmWithStringing ? true : false,
           refundAccount: {
-            bank: refundBank,
-            account: refundAccountDigits,
-            holder: refundHolder.trim(),
+            bank: refundValidation.value.bank,
+            account: refundValidation.value.account,
+            holder: refundValidation.value.holder,
           },
         }),
       });
 
       // 409: 비즈니스 룰 위반 (연결된 신청 존재 등)
       if (!res.ok && res.status === 409) {
-        let payload: any = null;
-        try {
-          payload = await res.json();
-        } catch {
-          // json 파싱 실패 시에는 아래 일반 에러 처리
-        }
+        const parsed = await readCancelRequestError(res, '취소 요청 처리 중 오류가 발생했습니다.');
 
-        if (payload?.errorCode === 'STRINGING_IN_PROGRESS') {
+        if (parsed.errorCode === 'STRINGING_IN_PROGRESS') {
           // 이미 작업 중/완료라 취소 요청 자체가 불가한 경우
-          showErrorToast(payload.message || '이미 작업 중이거나 완료된 교체 서비스 신청이 있어 주문 취소 요청을 할 수 없습니다.');
+          showErrorToast(parsed.message || '이미 작업 중이거나 완료된 교체 서비스 신청이 있어 주문 취소 요청을 할 수 없습니다.');
           setIsSubmitting(false);
           return;
         }
 
-        if (payload?.errorCode === 'STRINGING_APPS_EXIST') {
+        if (parsed.errorCode === 'STRINGING_APPS_EXIST') {
           // 취소 가능한 신청이 있어서, 한 번 더 확인해야 하는 경우
-          const count = payload.data?.count ?? null;
+          const count = parsed.data?.count ?? null;
           setLinkedCount(typeof count === 'number' ? count : null);
           setConfirmWithStringing(true);
 
-          showErrorToast(payload.message || '이 주문으로 접수된 교체 서비스 신청이 있습니다. 한 번 더 확인 후 취소 요청을 진행해 주세요.');
+          showErrorToast(parsed.message || '이 주문으로 접수된 교체 서비스 신청이 있습니다. 한 번 더 확인 후 취소 요청을 진행해 주세요.');
 
           setIsSubmitting(false);
           return;
         }
 
         // 그 외 409는 일반 에러로 처리
-        const message = await res.text().catch(() => '');
-        throw new Error(message || '취소 요청 처리 중 오류가 발생했습니다.');
+        throw new Error(parsed.message || '취소 요청 처리 중 오류가 발생했습니다.');
       }
 
       // 409 외 일반 에러
       if (!res.ok) {
-        const message = await res.text().catch(() => '');
-        throw new Error(message || '취소 요청 처리 중 오류가 발생했습니다.');
+        const parsed = await readCancelRequestError(res);
+        throw new Error(parsed.message || '취소 요청 처리 중 오류가 발생했습니다.');
       }
 
       // 여기까지 왔으면:

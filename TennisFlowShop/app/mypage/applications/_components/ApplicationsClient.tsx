@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { readCancelRequestError } from '@/lib/cancel-request/refund-account-client';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
 import { ArrowRight, Ban, Calendar, CheckCircle, Clock, FileText, GraduationCap, LayoutGrid, Phone, Undo2, User, XCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -209,9 +210,8 @@ export default function ApplicationsClient() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        const msg = data?.message || '취소 요청 처리 중 오류가 발생했습니다.';
-        showErrorToast(msg);
+        const parsed = await readCancelRequestError(res, '취소 요청 처리 중 오류가 발생했습니다.');
+        showErrorToast(parsed.message);
         return;
       }
 
