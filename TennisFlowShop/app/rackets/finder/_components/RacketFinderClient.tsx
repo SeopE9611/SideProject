@@ -407,7 +407,7 @@ export default function RacketFinderClient() {
   }, [applied, hasSearched, applyNow]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20">
@@ -420,8 +420,8 @@ export default function RacketFinderClient() {
         </div>
       </div>
 
-      <div className="bp-lg:grid bp-lg:grid-cols-[320px_1fr] bp-lg:gap-8 space-y-6 bp-lg:space-y-0">
-        <aside className="h-fit rounded-2xl bg-muted/30 p-5 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20">
+      <div className="bp-lg:grid bp-lg:grid-cols-[320px_1fr] bp-lg:gap-8 space-y-4 md:space-y-6 bp-lg:space-y-0">
+        <aside className="h-fit rounded-2xl bg-muted/30 p-4 md:p-5 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20">
           <div className="flex items-center justify-between pb-4">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-primary" />
@@ -669,7 +669,7 @@ export default function RacketFinderClient() {
           {error && <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive dark:bg-destructive/15">조회 중 오류가 발생했습니다.</div>}
 
           {!hasSearched ? (
-            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-8 text-center">
+            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-6 md:p-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/20">
                 <Search className="h-8 w-8 text-primary" />
               </div>
@@ -707,7 +707,7 @@ export default function RacketFinderClient() {
               <p className="text-sm text-destructive">데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을 확인해주세요.</p>
             </div>
           ) : items.length === 0 ? (
-            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-8 text-center">
+            <div className="rounded-2xl bg-muted/30 dark:bg-muted/10 ring-1 ring-muted/50 dark:ring-muted/20 p-6 md:p-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
