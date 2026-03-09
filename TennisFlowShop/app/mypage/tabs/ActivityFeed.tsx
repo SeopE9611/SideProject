@@ -631,7 +631,7 @@ export default function ActivityFeed() {
       {(actionTop.length > 0 || activeTop.length > 0) && (
         <div className="grid grid-cols-1 gap-4 bp-lg:grid-cols-2 min-w-0">
           {actionTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-muted/30 p-5 bp-sm:p-6 border border-border/50 slide-up">
+            <div className="min-w-0 rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg bg-muted p-2">
@@ -670,7 +670,7 @@ export default function ActivityFeed() {
                   const canShowShipping = Boolean(app?.needsInboundTracking ?? true);
 
                   return (
-                    <div key={`action:${g.key}`} className="rounded-xl bg-card p-4 border border-border/50 activity-card-hover">
+                    <div key={`action:${g.key}`} className="rounded-xl bg-card p-3 bp-sm:p-4 border border-border/50 activity-card-hover">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="flex items-start gap-3 flex-1 min-w-0">
                           <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
@@ -758,7 +758,7 @@ export default function ActivityFeed() {
           )}
 
           {activeTop.length > 0 && (
-            <div className="min-w-0 rounded-2xl bg-muted/30 p-5 bp-sm:p-6 border border-border/50 slide-up">
+            <div className="min-w-0 rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 slide-up">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between mb-4 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
@@ -791,7 +791,7 @@ export default function ActivityFeed() {
                   const app = g.application;
 
                   return (
-                    <div key={`active:${g.key}`} className="rounded-xl bg-card p-4 border border-border/50 activity-card-hover">
+                    <div key={`active:${g.key}`} className="rounded-xl bg-card p-3 bp-sm:p-4 border border-border/50 activity-card-hover">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="rounded-lg bg-muted p-2 mt-0.5 shrink-0">{kindIcon(g.kind)}</div>
                         <div className="flex-1 min-w-0">
@@ -886,11 +886,11 @@ export default function ActivityFeed() {
                       );
 
                       return (
-                        <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card border border-border p-4 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
-                          <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-4">
+                        <div key={g.key} className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card border border-border p-3 bp-sm:p-6 activity-card-hover" style={{ animationDelay: `${dayIndex * 50 + itemIndex * 30}ms` }}>
+                          <div className="flex flex-col bp-sm:flex-row bp-sm:items-start gap-3 bp-sm:gap-4">
                             <div className={cn('hidden bp-sm:flex', 'rounded-xl bg-muted/30 dark:bg-card/40 p-3 bp-sm:p-4 shrink-0', 'w-fit self-start')}>{kindIcon(g.kind)}</div>
 
-                            <div className="flex-1 min-w-0 space-y-3">
+                            <div className="flex-1 min-w-0 space-y-2.5 bp-sm:space-y-3">
                               <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
