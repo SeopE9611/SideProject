@@ -626,11 +626,11 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const canEditSelfShip = (isAdmin || (userEditableStatuses ?? []).includes(data.status)) && !completedLikeStatuses.includes(data.status);
 
   return (
-    <div className="container py-10 space-y-8">
+    <div className="container py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8">
       <div className="mx-auto max-w-4xl">
         {/* 헤더 */}
-        <div className="bg-primary/10 rounded-2xl p-8 border border-primary/20 shadow-lg mb-8 dark:bg-primary/20">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20 shadow-lg mb-6 dark:bg-primary/20 bp-sm:p-8 bp-sm:mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 bp-sm:mb-6">
             <div className="flex items-center space-x-4">
               <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
               <div>
@@ -722,7 +722,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </div>
 
           {/* 신청 요약 정보 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-4 bp-sm:gap-6">
             <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
               <div className="flex items-center space-x-2 mb-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -800,7 +800,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         </div>
 
         {/* 상태 카드 */}
-        <Card className="border border-border shadow-xl bg-card overflow-hidden mb-8">
+        <Card className="border border-border shadow-xl bg-card overflow-hidden mb-6 bp-sm:mb-8">
           <CardHeader className="bg-muted/50 border-b border-border pb-3">
             <div className="flex items-center justify-between">
               <CardTitle>신청 상태</CardTitle>
@@ -884,7 +884,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 bp-sm:gap-6">
           {/* 고객 정보 */}
           <Card className="border border-border shadow-xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border pb-3">
@@ -896,7 +896,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 bp-sm:p-6">
               {editingCustomer ? (
                 <CustomerEditForm
                   initialData={{
@@ -987,7 +987,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
             </CardHeader>
 
-            <CardContent className="p-6">
+            <CardContent className="p-4 bp-sm:p-6">
               {editingPayment ? (
                 <PaymentEditForm
                   initialData={{
@@ -1118,7 +1118,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
             </div>
 
-            <CardContent className="px-6 pb-6">
+            <CardContent className="px-4 pb-4 bp-sm:px-6 bp-sm:pb-6">
               <div className="space-y-6">
                 <section className="flex items-start justify-between border-b border-dashed border-border pb-4">
                   <div className="flex items-center gap-2 text-foreground">
@@ -1253,7 +1253,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 bp-sm:p-6">
               {editingRequirements ? (
                 <RequirementsEditForm
                   initial={data.stringDetails.requirements ?? ''}
@@ -1284,7 +1284,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           </Card>
         </div>
         {/* 관리자 전용 운송장 정보 카드 */}
-        <div className="mt-8 space-y-6">
+        <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
           {isAdmin && (
             <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
               <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
@@ -1292,7 +1292,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 <CardTitle className="mt-2 text-lg font-semibold">운송장 정보</CardTitle>
               </CardHeader>
 
-              <CardContent className="grid gap-4 p-6 md:grid-cols-2">
+              <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
                 {/* 자가 발송(사용자 → 매장) */}
                 <div className="rounded-lg border border-dashed border-border p-4">
                   <p className="text-sm font-semibold text-foreground">자가 발송</p>
@@ -1354,10 +1354,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 </CardTitle>
                 <CardDescription>신청 접수부터 운송장 등록까지의 주요 진행 상태입니다.</CardDescription>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-4 bp-sm:p-6">
                 <div className="space-y-4">
                   {/* 신청 접수 */}
-                  <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                       <Clock className="h-5 w-5 text-primary" />
                     </div>
@@ -1369,7 +1369,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
                   {/* 자가 발송(사용자 → 매장) */}
                   {selfShip?.trackingNo && (
-                    <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
+                    <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                         <Truck className="h-5 w-5 text-foreground" />
                       </div>
@@ -1389,7 +1389,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   )}
                   {/* 매장 발송(매장 → 사용자) */}
                   {invoice?.trackingNumber && (
-                    <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
+                    <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                         <Truck className="h-5 w-5 text-primary dark:text-foreground" />
                       </div>
@@ -1407,7 +1407,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   )}
 
                   {/* 전체 상태 요약 */}
-                  <div className="flex items-start gap-4 p-4 bg-muted dark:bg-card rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                       <CheckCircle2 className="h-5 w-5 text-foreground" />
                     </div>
