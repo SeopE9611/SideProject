@@ -20,6 +20,20 @@ import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
 import 'spoqa-han-sans/css/SpoqaHanSansNeo.css';
 import RootScrollLockBridge from '@/components/system/RootScrollLockBridge';
 
+declare global {
+  interface Window {
+    __resumeDebugMounted?: boolean;
+    __resumeDebug?: {
+      lastVisibilityChangeAt: number | null;
+      lastHiddenAt: number | null;
+      lastVisibleAt: number | null;
+      lastPageShowAt: number | null;
+      lastOnlineAt: number | null;
+      online: boolean | null;
+    };
+  }
+}
+
 export const metadata: Metadata = {
   title: '테니스 플로우',
   description: '테니스 스트링 및 장비 전문 쇼핑몰',
@@ -56,6 +70,64 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
         <Script id="kakao-jssdk" src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js" strategy="afterInteractive" crossOrigin="anonymous" />
+        <Script
+          id="resume-debug-listeners"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(() => {
+  if (typeof window === 'undefined') return;
+  if (window.__resumeDebugMounted) return;
+
+  window.__resumeDebugMounted = true;
+
+  const state = {
+    lastVisibilityChangeAt: null,
+    lastHiddenAt: null,
+    lastVisibleAt: null,
+    lastPageShowAt: null,
+    lastOnlineAt: null,
+    online: typeof navigator === 'undefined' ? null : navigator.onLine,
+  };
+
+  window.__resumeDebug = state;
+
+  const now = () => Date.now();
+
+  const onVisibilityChange = () => {
+    const ts = now();
+    state.lastVisibilityChangeAt = ts;
+    state.online = typeof navigator === 'undefined' ? state.online : navigator.onLine;
+    if (document.visibilityState === 'hidden') {
+      state.lastHiddenAt = ts;
+    }
+    if (document.visibilityState === 'visible') {
+      state.lastVisibleAt = ts;
+    }
+  };
+
+  const onPageShow = () => {
+    state.lastPageShowAt = now();
+    state.online = typeof navigator === 'undefined' ? state.online : navigator.onLine;
+  };
+
+  const onOnline = () => {
+    state.lastOnlineAt = now();
+    state.online = true;
+  };
+
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('pageshow', onPageShow);
+  window.addEventListener('online', onOnline);
+
+  window.addEventListener('pagehide', () => {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('pageshow', onPageShow);
+    window.removeEventListener('online', onOnline);
+    window.__resumeDebugMounted = false;
+  }, { once: true });
+})();`,
+          }}
+        />
         <AuthHydrator initialUser={initialUser} />
         <GlobalTokenGuard />
         <TokenRefresher />
