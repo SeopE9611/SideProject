@@ -72,6 +72,28 @@ function getApplicationLines(stringDetails: any): any[] {
   return [];
 }
 
+async function requireAdminUserFromAccessToken() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('accessToken')?.value;
+  if (!token) {
+    return { ok: false as const, response: new NextResponse('Unauthorized', { status: 401 }) };
+  }
+
+  const payload = verifyAccessToken(token);
+  const userId = (payload as any)?.sub;
+  if (!payload || typeof userId !== 'string' || !ObjectId.isValid(userId)) {
+    return { ok: false as const, response: new NextResponse('Unauthorized', { status: 401 }) };
+  }
+
+  const db = await getDb();
+  const me = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+  if (!me || me.role !== 'admin') {
+    return { ok: false as const, response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
+  }
+
+  return { ok: true as const, db, userId };
+}
+
 // ================= GET (단일 신청서 조회) =================
 export async function handleGetStringingApplication(req: Request, id: string) {
   const client = await clientPromise;
@@ -601,19 +623,8 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
 
 // ========== 신청서의 상태 업데이트 ==========
 export async function handleUpdateApplicationStatus(req: Request, context: { params: { id: string } }) {
-  // 쿠키에서 accessToken 추출
-  const cookieStore = await cookies();
-  const token = cookieStore.get('accessToken')?.value;
-  if (!token) return new NextResponse('Unauthorized', { status: 401 }); // 토큰 없으면 인증 실패
-
-  // accessToken 유효성 검증
-  const payload = verifyAccessToken(token);
-  if (!payload) return new NextResponse('Unauthorized', { status: 401 }); // 토큰이 변조되었거나 만료됨
-
-  const userId = (payload as any)?.sub;
-  if (!userId || typeof userId !== 'string' || !ObjectId.isValid(userId)) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
+  const adminAuth = await requireAdminUserFromAccessToken();
+  if (!adminAuth.ok) return adminAuth.response;
 
   // URL 파라미터로부터 신청 ID 추출
   const { id } = context.params;
@@ -636,16 +647,7 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
   } //
 
   // MongoDB 연결
-  const client = await clientPromise;
-  const db = await getDb();
-
-  const me = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
-  if (!me) {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-  if (me.role !== 'admin') {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
+  const db = adminAuth.db;
 
   // description 따로 준비
   const description = `신청서 상태가 [${status}]로 변경되었습니다.`;
@@ -818,16 +820,8 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
 // ======== 스트링 신청서 취소 요청 "승인" (관리자) ========
 export async function handleStringingCancelApprove(req: Request, { params }: { params: { id: string } }) {
   try {
-    // 관리자 인증
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    if (!token) {
-      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-    }
-    const payload = verifyAccessToken(token);
-    if (!payload || payload.role !== 'admin') {
-      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-    }
+    const adminAuth = await requireAdminUserFromAccessToken();
+    if (!adminAuth.ok) return adminAuth.response;
 
     // 파라미터 검증
     const { id } = params;
@@ -835,7 +829,7 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
-    const db = await getDb();
+    const db = adminAuth.db;
     const col = db.collection('stringing_applications');
     const _id = new ObjectId(id);
 
@@ -889,24 +883,15 @@ export async function handleStringingCancelApprove(req: Request, { params }: { p
 // ======== 스트링 신청서 취소 요청 "거절" (관리자) ========
 export async function handleStringingCancelReject(req: Request, { params }: { params: { id: string } }) {
   try {
-    // 관리자 인증
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    //  관리자 권한이 없는 경우 (로그인 안 했거나 role이 admin이 아닌 경우)
-    if (!token) {
-      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-    }
-    const payload = verifyAccessToken(token);
-    if (!payload || payload.role !== 'admin') {
-      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-    }
+    const adminAuth = await requireAdminUserFromAccessToken();
+    if (!adminAuth.ok) return adminAuth.response;
 
     const { id } = params;
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
-    const db = await getDb();
+    const db = adminAuth.db;
     const col = db.collection('stringing_applications');
     const _id = new ObjectId(id);
 
