@@ -75,7 +75,7 @@ const ReviewListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
     {Array.from({ length: count }).map((_, idx) => (
       <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-6">
+        <CardContent className="space-y-4 p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
               <Skeleton className="h-12 w-12 rounded-xl" />
@@ -354,7 +354,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   if (error) {
     return (
       <Card className="border-0 bg-muted/30">
-        <CardContent className="p-8 text-center">오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</CardContent>
+        <CardContent className="p-6 md:p-8 text-center">오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</CardContent>
       </Card>
     );
   }
@@ -362,7 +362,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   const isInitialLoading = !data && isValidating;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? (
         <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">리뷰 내역을 불러오는 중입니다...</div>
       ) : null}
@@ -409,7 +409,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
-            <CardContent className="relative p-6 space-y-4">
+            <CardContent className="relative p-4 md:p-6 space-y-4">
               {/* 헤더 영역 */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -507,12 +507,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         ))
       ) : (
         <Card className="relative overflow-hidden border-0 bg-muted/30">
-          <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
+          <CardContent className="p-8 md:p-12 text-center">
+            <div className="mx-auto mb-4 md:mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
               <Star className="h-10 w-10 text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">작성한 리뷰가 없습니다</h3>
-            <p className="mb-6 text-muted-foreground">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>
+            <p className="mb-4 md:mb-6 text-muted-foreground">구매하신 상품이나 서비스에 대한 후기를 남겨주세요!</p>
           </CardContent>
         </Card>
       )}

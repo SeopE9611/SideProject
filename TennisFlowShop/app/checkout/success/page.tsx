@@ -228,21 +228,21 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
           <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
-          <SiteContainer variant="wide" className="relative py-16">
+          <SiteContainer variant="wide" className="relative py-10 md:py-16">
             <div className="text-center">
-              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
+              <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
                 <CheckCircle className="h-12 w-12 text-foreground" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문이 완료되었습니다!</h1>
-              <p className="mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
+              <p className="mb-4 md:mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
 
 
             </div>
 
             {withStringService && (
-              <div className="mt-8 max-w-2xl mx-auto">
-                <div className="rounded-xl border border-border bg-card/10 p-6 text-center backdrop-blur-sm">
-                  <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="mt-6 md:mt-8 max-w-2xl mx-auto">
+                <div className="rounded-xl border border-border bg-card/10 p-4 md:p-6 text-center backdrop-blur-sm">
+                  <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
                     <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
                       <Package className="h-6 w-6" />
                     </div>
@@ -252,7 +252,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   {hasSubmittedApplication ? (
                     <p className="mb-1 text-muted-foreground">교체 서비스 신청이 함께 접수되었습니다.</p>
                   ) : (
-                    <p className="mb-4 text-muted-foreground">
+                    <p className="mb-3 md:mb-4 text-muted-foreground">
                       {isVisitPickup ? '방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요.' : '택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다.'}
                     </p>
                   )}
@@ -283,7 +283,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
             )}
 
             {withStringService && hasSubmittedApplication && stringingSummary && (
-              <div className="mt-4 max-w-2xl mx-auto">
+              <div className="mt-3 md:mt-4 max-w-2xl mx-auto">
                 <Card className="border border-border bg-card/90">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">교체 서비스 접수 요약</CardTitle>
@@ -320,8 +320,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   </span>
                 </CardDescription>
               </div>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <CardContent className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
                       <Clock className="h-5 w-5 text-primary" />
@@ -473,7 +473,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                 </div>
               </CardContent>
 
-              <CardFooter className="border-t border-border bg-background p-6">
+              <CardFooter className="border-t border-border bg-background p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <Button className="h-12 flex-1 bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl" asChild>
                     <Link href={isLoggedIn ? '/mypage' : `/order-lookup/details/${order._id}`} className="flex items-center gap-2">
@@ -497,8 +497,8 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                   주문 안내사항
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
                       <CreditCard className="mt-0.5 h-5 w-5 text-primary" />

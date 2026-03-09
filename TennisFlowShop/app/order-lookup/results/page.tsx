@@ -202,9 +202,9 @@ export default function OrderLookupResultsPage() {
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-16">
+        <div className="relative container mx-auto px-4 py-10 md:py-16">
             <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-4 md:mb-6">
                 <Search className="w-8 h-8 animate-pulse" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 조회 중...</h1>
@@ -213,10 +213,10 @@ export default function OrderLookupResultsPage() {
           </div>
         </div>
 
-        <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
           <div className="max-w-4xl mx-auto">
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
-              <CardContent className="flex justify-center items-center py-16">
+              <CardContent className="flex justify-center items-center py-10 md:py-16">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6 dark:bg-primary/20">
                     <div className="w-8 h-8 border-4 border-border/30 border-t-primary-foreground rounded-full animate-spin"></div>
@@ -239,9 +239,9 @@ export default function OrderLookupResultsPage() {
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-16">
+          <div className="relative container mx-auto px-4 py-10 md:py-16">
             <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-4 md:mb-6">
                 <Package className="w-8 h-8" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">조회 오류</h1>
@@ -250,18 +250,18 @@ export default function OrderLookupResultsPage() {
           </div>
         </div>
 
-        <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
           <div className="max-w-4xl mx-auto">
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
-              <CardContent className="flex flex-col items-center justify-center py-16">
+              <CardContent className="flex flex-col items-center justify-center py-10 md:py-16">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-16 h-16 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-6">
                     <Package className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground mb-4">오류가 발생했습니다</h3>
-                  <p className="text-muted-foreground mb-8 max-w-md">{error}</p>
+                  <p className="text-muted-foreground mb-6 md:mb-8 max-w-md">{error}</p>
                   {fieldErrors && (
-                    <div className="w-full max-w-md mb-8 text-left">
+                    <div className="w-full max-w-md mb-6 md:mb-8 text-left">
                       <div className="rounded-lg border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 p-4 text-foreground">
                         <p className="text-sm font-semibold text-destructive mb-2">입력값 오류 상세</p>
                         <ul className="list-disc pl-5 space-y-1">
@@ -294,9 +294,9 @@ export default function OrderLookupResultsPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="relative container mx-auto px-4 py-16">
+          <div className="relative container mx-auto px-4 py-10 md:py-16">
           <div className="text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-4 md:mb-6">
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">주문 조회 결과</h1>
@@ -307,18 +307,18 @@ export default function OrderLookupResultsPage() {
         </div>
       </div>
 
-      <div className="container mx-auto py-12 px-4 md:px-6">
+      <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <Link href="/order-lookup" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
             </Link>
           </div>
 
-          <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm mb-8">
-            <CardHeader className="text-center pb-8">
+          <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm mb-6 md:mb-8">
+            <CardHeader className="text-center pb-6 md:pb-8">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
               </div>
@@ -328,9 +328,9 @@ export default function OrderLookupResultsPage() {
 
             <Separator className="mx-6" />
 
-            <CardContent className="pt-8">
+            <CardContent className="pt-6 md:pt-8">
               {orders && orders.length > 0 ? (
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   {orders.map((order, index) => {
                     const hasStringingApplication = hasCompletedStringingApplication(order);
                     const normalizedDeliveryMethod = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '');
@@ -338,9 +338,9 @@ export default function OrderLookupResultsPage() {
 
                     return (
                     <Card key={order.id} className="overflow-hidden border-2 border-border hover:border-border transition-all duration-200 hover:shadow-lg">
-                      <div className="p-6">
+                      <div className="p-4 md:p-6">
                         {/* Order Header */}
-                        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 md:mb-6">
                           <div className="flex items-center mb-4 lg:mb-0">
                             <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mr-4 dark:bg-primary/20">
                               <span className="text-foreground font-bold">#{index + 1}</span>
@@ -359,7 +359,7 @@ export default function OrderLookupResultsPage() {
                         </div>
 
                         {/* Order Details Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
                           <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                             <User className="h-5 w-5 text-primary flex-shrink-0" />
                             <div className="min-w-0">
@@ -439,12 +439,12 @@ export default function OrderLookupResultsPage() {
                   )})}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-16">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-muted rounded-full mb-6">
+                <div className="flex flex-col items-center justify-center py-10 md:py-16">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-muted rounded-full mb-4 md:mb-6">
                     <ShoppingBag className="h-10 w-10 text-muted-foreground" />
                   </div>
                   <h3 className="text-2xl font-semibold text-foreground mb-4">조회된 주문이 없습니다</h3>
-                  <p className="text-muted-foreground text-center mb-8 max-w-md">
+                  <p className="text-muted-foreground text-center mb-6 md:mb-8 max-w-md">
                     입력하신 정보와 일치하는 주문 내역이 없습니다.
                     <br />
                     주문 시 입력한 정보를 다시 확인해주세요.
