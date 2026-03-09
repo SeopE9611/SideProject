@@ -15,7 +15,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
-import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { adminMutator } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
@@ -90,9 +91,10 @@ export default function StringingSettingsPage() {
   // 서버/초기 로드 완료 후 baseline(초기값)으로 삼을 시그니처
   const [initialSig, setInitialSig] = useState('');
 
-  const { data: serverSettings, error, isLoading: loading } = useSWR<StringingSettings | null>('/api/admin/settings/stringing', (url: string) =>
-    adminFetcher<StringingSettings | null>(url, { cache: 'no-store' }),
-  );
+  const { data: serverSettings, error, isLoading: loading } = useSWR<StringingSettings | null>('/api/admin/settings/stringing', authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
 
   // 현재 상태 시그니처

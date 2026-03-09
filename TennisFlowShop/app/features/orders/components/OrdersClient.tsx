@@ -29,9 +29,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
-
-/** 데이터를 받아오는 fetcher 함수 */
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 export default function OrdersClient() {
 
@@ -133,7 +131,10 @@ function getCancelQuickSignal(order: OrderWithType): { label: '계좌확인 필�
   }, [searchParams]);
 
   // SWR 훅: page/limit + 검색/필터/날짜까지 쿼리로 포함
-  const { data, error } = useSWR<ApiResponse>(`/api/orders?${qs}`, fetcher);
+  const { data, error } = useSWR<ApiResponse>(`/api/orders?${qs}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const isTableLoading = !data && !error;
 
   // 데이터 준비: data.items, data.total

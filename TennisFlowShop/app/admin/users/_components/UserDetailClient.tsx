@@ -48,7 +48,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { useUserSessions } from '@/app/admin/users/_hooks/useUserSessions';
 import { UserActivityTabsSection } from '@/app/admin/users/_components/UserActivityTabsSection';
-import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { adminMutator } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 
 // 변경이력 포맷터 유틸
@@ -93,8 +94,6 @@ function humanizeAuditDetail(action: string, raw?: string) {
   return parts.join(' · ');
 }
 
-const fetcher = <T,>(url: string) => adminFetcher<T>(url, { cache: 'no-store' });
-
 // list 응답 파싱: Array | {items} | {data} | {results} | {rows}
 function asTotal(val: unknown): number | undefined {
   const record = asRecord(val);
@@ -127,7 +126,10 @@ type AuditLog = { id?: string; action: string; detail?: string; at: string; by?:
 
 export default function UserDetailClient({ id }: { id: string }) {
   const router = useRouter();
-  const { data, isLoading, mutate } = useSWR<UserDetail>(`/api/admin/users/${id}`, fetcher);
+  const { data, isLoading, mutate } = useSWR<UserDetail>(`/api/admin/users/${id}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 다음 주소 API
   type DaumPostcodeData = { zonecode?: string; roadAddress?: string; jibunAddress?: string };
@@ -178,13 +180,28 @@ export default function UserDetailClient({ id }: { id: string }) {
   const [pwConfirmText, setPwConfirmText] = useState('');
 
   // KPI
-  const { data: kpi } = useSWR<{ orders: number; applications: number; reviews: number }>(`/api/admin/users/${id}/kpi`, fetcher);
+  const { data: kpi } = useSWR<{ orders: number; applications: number; reviews: number }>(`/api/admin/users/${id}/kpi`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 최근 항목
-  const { data: ordersResp } = useSWR<unknown>(`/api/admin/users/${id}/orders?limit=5`, fetcher);
-  const { data: appsResp } = useSWR<unknown>(`/api/admin/users/${id}/applications/stringing?limit=5`, fetcher);
-  const { data: reviewsResp } = useSWR<unknown>(`/api/admin/users/${id}/reviews?limit=5`, fetcher);
-  const { data: auditResp } = useSWR<{ items?: AuditLog[] } | AuditLog[] | null>(`/api/admin/users/${id}/audit?limit=5`, fetcher);
+  const { data: ordersResp } = useSWR<unknown>(`/api/admin/users/${id}/orders?limit=5`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const { data: appsResp } = useSWR<unknown>(`/api/admin/users/${id}/applications/stringing?limit=5`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const { data: reviewsResp } = useSWR<unknown>(`/api/admin/users/${id}/reviews?limit=5`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const { data: auditResp } = useSWR<{ items?: AuditLog[] } | AuditLog[] | null>(`/api/admin/users/${id}/audit?limit=5`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const { data: sessionsResp, mutate: mutateSessions } = useUserSessions(id, 5);
   const orders = safeArray(ordersResp);
   const apps = safeArray(appsResp);

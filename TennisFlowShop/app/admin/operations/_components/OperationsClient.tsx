@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { opsKindBadgeTone, opsKindLabel, opsStatusBadgeTone, type OpsBadgeTone } from '@/lib/admin-ops-taxonomy';
-import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, badgeToneVariant, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
@@ -432,7 +433,10 @@ export default function OperationsClient() {
   });
   const key = `/api/admin/operations?${queryString}`;
 
-  const { data, isLoading, error } = useSWR<{ items: OpItem[]; total: number }>(key, adminFetcher);
+  const { data, isLoading, error } = useSWR<{ items: OpItem[]; total: number }>(key, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / effectivePageSize));

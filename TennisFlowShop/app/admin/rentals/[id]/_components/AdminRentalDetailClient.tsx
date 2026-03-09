@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Skeleton } from '@/components/ui/skeleton';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { buildAdminCancelRequestView } from '@/lib/cancel-request/admin-cancel-request-view';
@@ -24,7 +25,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import useSWR from 'swr';
 
-const fetcher = (url: string) => adminFetcher<any>(url, { cache: 'no-store' });
 const won = (n: number) => (n || 0).toLocaleString('ko-KR') + '원';
 
 const rentalStatusLabels: Record<string, string> = {
@@ -51,13 +51,18 @@ const courierTrackUrl: Record<string, (no: string) => string> = {
 // 날짜 포맷 보조
 const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : '-');
 
+const fetcher = (url: string) => authenticatedSWRFetcher<any>(url);
+
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
 
-  const { data, isLoading, mutate } = useSWR(id ? `/api/admin/rentals/${id}` : null, fetcher);
+  const { data, isLoading, mutate } = useSWR(id ? `/api/admin/rentals/${id}` : null, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const isVisitPickup = data?.servicePickupMethod === 'SHOP_VISIT';
 
   const [busyAction, setBusyAction] = useState<null | 'approveCancel' | 'rejectCancel' | 'out' | 'return' | 'refundMark' | 'refundClear'>(null);

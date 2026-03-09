@@ -1,7 +1,7 @@
 'use client';
 import useSWR from 'swr';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
-import { adminFetcher } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 export type UserListFilters = {
   page: number;
@@ -48,7 +48,10 @@ export function useUserList(filters: UserListFilters) {
   });
 
   const key = `/api/admin/users?${queryString}`;
-  const swr = useSWR<UserListResponse>(key, (url: string) => adminFetcher<UserListResponse>(url, { cache: 'no-store' }));
+  const swr = useSWR<UserListResponse>(key, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   return {
     ...swr,

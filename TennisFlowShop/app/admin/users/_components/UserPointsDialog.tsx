@@ -9,7 +9,8 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime } from '@/lib/points.display';
 import { Badge } from '@/components/ui/badge';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { adminMutator } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Props = {
@@ -53,7 +54,10 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
     return `/api/admin/users/${userId}/points/history?page=${page}&limit=${limit}`;
   }, [userId, page]);
 
-  const { data, mutate, isLoading } = useSWR<UserPointHistoryResponse>(historyUrl, (url: string) => adminFetcher<UserPointHistoryResponse>(url, { cache: 'no-store' }));
+  const { data, mutate, isLoading } = useSWR<UserPointHistoryResponse>(historyUrl, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const balance = typeof data?.balance === 'number' ? data.balance : 0;
   const items: TxItem[] = Array.isArray(data?.items) ? data.items : [];

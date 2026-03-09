@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { badgeToneVariant, type BadgeSemanticTone } from '@/lib/badge-style';
 import { formatKRWCard, formatKRWFull } from '@/lib/money';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
@@ -37,7 +38,10 @@ export default function SettlementsClient() {
   // 상태
   // ──────────────────────────────────────────────────────────
   const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace('-', '')); // KST 기준 초기 yyyymm
-  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/admin/settlements', adminFetcher);
+  const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>('/api/admin/settlements', authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // URL 쿼리로 월을 지정하면(예: /admin/settlements?yyyymm=202601) 초기 선택 월을 그 값으로 맞춘다.
   // - 운영함 → 정산 "바로가기"에서 추천 월을 함께 전달할 때 월 착오를 줄이기 위함
