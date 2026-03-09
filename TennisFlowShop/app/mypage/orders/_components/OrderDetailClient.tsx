@@ -12,7 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
+import { refreshOnce } from '@/lib/auth/refresh-mutex';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
 import Link from 'next/link';
@@ -24,6 +26,21 @@ import CancelOrderDialog from './CancelOrderDialog'; // 기존 다이얼로그 �
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
+const WITHDRAW_TIMEOUT_MS = 12000;
+
+const parseApiMessage = async (res: Response, fallback: string) => {
+  const contentType = res.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    const data = await res.json().catch(() => null);
+    if (data && typeof data.message === 'string' && data.message.trim()) return data.message;
+    if (data && typeof data.error === 'string' && data.error.trim()) return data.error;
+  }
+
+  const text = await res.text().catch(() => '');
+  return text.trim() || fallback;
+};
+
 const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
   // orderId가 없으면 요청 중단
   if (!orderId) return null;
@@ -114,7 +131,25 @@ function getCancelRequestLabel(order: any): string | null {
 }
 
 export default function OrderDetailClient({ orderId }: Props) {
-  const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
+  const fetcher = async (url: string) => {
+    let res = await fetch(url, { credentials: 'include' });
+
+    if ((res.status === 401 || res.status === 403) && !url.includes('/api/refresh')) {
+      const rr = await refreshOnce();
+      if (rr.ok) {
+        res = await fetch(url, {
+          credentials: 'include',
+          headers: { 'x-suppress-auth-expired': '1' },
+        });
+      }
+    }
+
+    if (!res.ok) {
+      throw new Error(await parseApiMessage(res, '요청 처리 중 오류가 발생했습니다.'));
+    }
+
+    return res.json();
+  };
   const router = useRouter();
 
   // 편집 모드 전체 토글
@@ -238,7 +273,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const canShowCancelButton = ['대기중', '결제완료'].includes(orderDetail.status) && (!cancelStatus || cancelStatus === 'none' || cancelStatus === 'rejected');
 
   const handleWithdrawCancelRequest = async () => {
-    if (!orderDetail?._id) return;
+    if (!orderDetail?._id || isWithdrawingCancelRequest) return;
 
     if (!window.confirm('이미 제출한 취소 요청을 취소하시겠습니까?')) {
       return;
@@ -247,29 +282,58 @@ export default function OrderDetailClient({ orderId }: Props) {
     try {
       setIsWithdrawingCancelRequest(true);
 
-      const res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), WITHDRAW_TIMEOUT_MS);
+
+      let res: Response;
+      try {
+        res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
+          method: 'POST',
+          credentials: 'include',
+          signal: controller.signal,
+        });
+      } finally {
+        window.clearTimeout(timeout);
+      }
+
+      if (res.status === 401 || res.status === 403) {
+        const rr = await refreshOnce();
+        if (rr.ok) {
+          const retryController = new AbortController();
+          const retryTimeout = window.setTimeout(() => retryController.abort(), WITHDRAW_TIMEOUT_MS);
+          try {
+            res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'x-suppress-auth-expired': '1' },
+              signal: retryController.signal,
+            });
+          } finally {
+            window.clearTimeout(retryTimeout);
+          }
+        }
+      }
 
       if (!res.ok) {
-        const message = await res.text().catch(() => '');
-        throw new Error(message || '취소 요청을 취소하는 중 오류가 발생했습니다.');
+        throw new Error(await parseApiMessage(res, '취소 요청 철회 중 오류가 발생했습니다.'));
       }
 
       // SWR 캐시 갱신: 상태, 이력, 마이페이지 목록, 상세 모두 재검증
       await Promise.all([
-        mutate(`/api/orders/${orderDetail._id}/status`, undefined, { revalidate: true }),
-        mutate(`/api/orders/${orderDetail._id}/history`, undefined, { revalidate: true }),
-        mutate('/api/users/me/orders', undefined, { revalidate: true }),
-        mutate(`/api/orders/${orderDetail._id}`, undefined, { revalidate: true }),
+        mutateOrderDetail(),
+        mutateHistory(),
+        mutate((key) => typeof key === 'string' && key.startsWith(`/api/orders/${orderDetail._id}/history`), undefined, { revalidate: true }),
+        mutate((key) => typeof key === 'string' && key.startsWith('/api/users/me/orders'), undefined, { revalidate: true }),
       ]);
 
-      // UX는 프로젝트 기존 패턴에 맞게 토스트/alert 중 하나 사용
-      alert('취소 요청이 정상적으로 취소되었습니다.');
+      showSuccessToast('취소 요청이 정상적으로 철회되었습니다.');
     } catch (err) {
       console.error(err);
-      alert((err as Error).message || '취소 요청을 취소하는 중 오류가 발생했습니다.');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        showErrorToast('요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.');
+      } else {
+        showErrorToast((err as Error).message || '취소 요청 철회 중 오류가 발생했습니다.');
+      }
     } finally {
       setIsWithdrawingCancelRequest(false);
     }
