@@ -291,7 +291,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         <ActivityFeed />
                       </Suspense>
@@ -313,7 +313,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
                     </CardContent>
                   </Card>
@@ -333,7 +333,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       {selectedApplicationId ? (
                         <ApplicationDetail id={selectedApplicationId} />
                       ) : (
@@ -359,7 +359,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       {selectedRentalId ? (
                         <Suspense fallback={null}>
                           <RentalsDetailClient id={selectedRentalId} />
@@ -387,7 +387,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         <Wishlist />
                       </Suspense>
@@ -409,7 +409,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         <ReviewList />
                       </Suspense>
@@ -431,7 +431,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         <QnAList />
                       </Suspense>
@@ -453,7 +453,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         <PassList />
                       </Suspense>
@@ -475,7 +475,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-4 bp-sm:p-6">
+                    <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         <MyPointsTab />
                       </Suspense>
