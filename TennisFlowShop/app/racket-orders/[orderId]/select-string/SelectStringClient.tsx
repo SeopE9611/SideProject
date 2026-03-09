@@ -37,13 +37,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   };
 
   if (isLoadingInitial) {
-    return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-cy="racket-string-grid">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-28 animate-pulse rounded-lg border border-border bg-card" />
-        ))}
-      </div>
-    );
+    return <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">스트링 목록을 준비하고 있습니다.</div>;
   }
 
   if (error) {
