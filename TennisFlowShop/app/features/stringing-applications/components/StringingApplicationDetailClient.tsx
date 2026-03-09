@@ -22,6 +22,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { readCancelRequestError } from '@/lib/cancel-request/refund-account-client';
@@ -160,8 +161,6 @@ interface ApplicationDetail {
   inboundRequired?: boolean;
   needsInboundTracking?: boolean;
 }
-
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 // 스트링 교체 서비스용 택배사 라벨/URL 헬퍼
 const stringingCourierLabelMap: Record<string, string> = {
@@ -488,13 +487,10 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   useEffect(() => {
     useStringingStore.setState({ selectedApplicationId: id });
   }, [id]);
-  const swrFetcher = async (url: string) => {
-    const res = await fetch(url, { credentials: 'include' });
-    if (!res.ok) throw new Error(await res.text().catch(() => 'fetch failed'));
-    return res.json();
-  };
-
-  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, swrFetcher);
+  const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   if (error) return <div className="text-destructive p-4">신청서를 불러오는 중 오류가 발생했습니다.</div>;
   if (isLoading || !data) return <StringingApplicationDetailSkeleton />;
