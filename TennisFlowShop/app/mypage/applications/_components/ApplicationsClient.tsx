@@ -319,7 +319,11 @@ export default function ApplicationsClient() {
 
   return (
     <div className="space-y-6">
-      {isInitialLoading ? <ApplicationsListSkeleton /> : null}
+      {isInitialLoading ? (
+        <div className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
+          신청 내역을 불러오는 중입니다.
+        </div>
+      ) : null}
       {!isInitialLoading && applications.length === 0 ? (
         <Card className="relative overflow-hidden border-0 bg-muted/30">
           <CardContent className="p-12 text-center">
