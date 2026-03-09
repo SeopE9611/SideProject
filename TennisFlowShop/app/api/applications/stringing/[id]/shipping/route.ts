@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
  *
  * 권한 규칙
  * - 로그인 유저: 신청서 userId와 accessToken.sub 일치
- * - 관리자: accessToken.role === 'admin'
+ * - 관리자: accessToken.sub로 users.role 재조회 후 admin 확인
  * - 게스트: orderAccessToken.orderId 와 신청서 orderId 일치
  *
  * 허용 바디(사용자 화면)
@@ -44,8 +44,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const oax = jar.get('orderAccessToken')?.value ?? null;
 
   const payload = at ? verifyAccessToken(at) : null;
-  const isAdmin = payload?.role === 'admin';
   const userId = typeof payload?.sub === 'string' ? payload.sub : null;
+
+  let isAdmin = false;
+  if (userId && ObjectId.isValid(userId)) {
+    const me = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+    isAdmin = me?.role === 'admin';
+  }
 
   const isOwner = !!userId && !!(app as any).userId && String((app as any).userId) === String(userId);
 
