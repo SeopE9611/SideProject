@@ -300,9 +300,9 @@ export default function ProfileClient({ user }: Props) {
  <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
  </div>
 
- <div className="relative container mx-auto px-4 py-16">
+ <div className="relative container mx-auto px-4 py-10 md:py-16">
  <div className="max-w-4xl mx-auto">
- <div className="flex items-center gap-6 mb-8">
+ <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8">
  <Link
  href="/mypage"
  className="inline-flex items-center text-foreground/80 hover:text-primary transition-colors font-medium"
@@ -316,8 +316,8 @@ export default function ProfileClient({ user }: Props) {
  </Link>
  </div>
 
- <div className="flex items-center gap-6">
- <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+ <div className="flex items-center gap-4 md:gap-6">
+ <div className="bg-card/20 backdrop-blur-sm rounded-2xl p-4 md:p-6 shadow-lg">
  <Settings className="h-12 w-12" />
  </div>
  <div>
@@ -329,9 +329,9 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
 
- <div className="container mx-auto px-4 py-12">
+ <div className="container mx-auto px-4 py-8 md:py-12">
  <div className="max-w-4xl mx-auto">
- <Tabs defaultValue="profile" className="space-y-8">
+ <Tabs defaultValue="profile" className="space-y-6 md:space-y-8">
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardContent className="p-6">
  <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted">
@@ -375,8 +375,8 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  </CardHeader>
- <CardContent className="p-8 space-y-8">
- <div className="flex items-center gap-6">
+ <CardContent className="p-4 md:p-8 space-y-6 md:space-y-8">
+ <div className="flex items-center gap-4 md:gap-6">
  <Avatar className="h-24 w-24 border-4 border-border shadow-xl">
  <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
  <AvatarFallback className="text-2xl bg-primary/10 text-primary dark:bg-primary/20">{profileData.name.charAt(0)}</AvatarFallback>
@@ -390,7 +390,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
 
- <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+ <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2">
  <div className="space-y-2">
  <Label htmlFor="name" className="flex items-center gap-2 text-foreground">
  <User className="h-4 w-4" />
@@ -476,7 +476,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  </CardHeader>
- <CardContent className="p-8 space-y-6">
+ <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
  <div className="space-y-2">
  <Label htmlFor="currentPassword" className="text-foreground">
  현재 비밀번호 *
@@ -538,7 +538,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  </CardHeader>
- <CardContent className="p-8 space-y-6">
+ <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
  <div className="space-y-2">
  <Label htmlFor="zipCode" className="text-foreground">
@@ -591,7 +591,7 @@ export default function ProfileClient({ user }: Props) {
  </TabsContent>
 
  <TabsContent value="preferences">
- <div className="space-y-8">
+ <div className="space-y-6 md:space-y-8">
  <Card className="border-0 shadow-2xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
  <CardHeader className="bg-muted border-b">
  <div className="flex items-center gap-3">
@@ -604,7 +604,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  </CardHeader>
- <CardContent className="p-8 space-y-6">
+ <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
  <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
  <div>
  <Label htmlFor="email-marketing" className="font-medium text-foreground">
@@ -683,7 +683,7 @@ export default function ProfileClient({ user }: Props) {
  </div>
  </div>
  </CardHeader>
- <CardContent className="p-8">
+ <CardContent className="p-4 md:p-8">
  {showWithdrawalForm ? (
  <WithdrawalReasonSelect
  onSubmit={async (reason, detail) => {
@@ -713,7 +713,7 @@ export default function ProfileClient({ user }: Props) {
  />
  ) : (
  <div className="text-center">
- <div className="bg-destructive/10 dark:bg-destructive/15 border border-destructive/30 rounded-xl p-6 mb-6">
+ <div className="bg-destructive/10 dark:bg-destructive/15 border border-destructive/30 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
  <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
  <h3 className="text-lg font-semibold text-destructive mb-2">정말로 탈퇴하시겠습니까?</h3>
  <p className="text-sm text-muted-foreground">탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.</p>
