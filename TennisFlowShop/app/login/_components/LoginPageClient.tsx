@@ -634,7 +634,7 @@ export default function LoginPageClient() {
 
       <div className="relative w-full max-w-6xl">
         <Card className={`mx-auto overflow-hidden backdrop-blur-sm bg-card/95 dark:bg-muted border-0 shadow-2xl transition-all duration-700 ease-in-out ${activeTab === 'register' ? 'max-w-4xl' : 'max-w-md'}`}>
-          <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground relative overflow-hidden">
             <div className="absolute inset-0 bg-foreground/10"></div>
             <div className="relative text-center">
               <div className="mx-auto mb-4 flex justify-center">
@@ -660,8 +660,8 @@ export default function LoginPageClient() {
             </TabsList>
 
             {/* 로그인 탭 */}
-            <TabsContent value="login" className="p-6">
-              <div className="space-y-6">
+            <TabsContent value="login" className="p-4 md:p-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-foreground">로그인</h2>
                   <p className="text-foreground mt-2">계정에 로그인하여 쇼핑을 시작하세요</p>
@@ -812,21 +812,21 @@ export default function LoginPageClient() {
             </TabsContent>
 
             {/* 회원가입 탭 */}
-            <TabsContent value="register" className="p-6">
-              <div className="space-y-6">
+            <TabsContent value="register" className="p-4 md:p-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
                   <p className="text-foreground mt-2">테니스 플로우의 회원이 되어보세요</p>
                 </div>
 
-                <form onSubmit={handleRegister} className="space-y-6">
+                <form onSubmit={handleRegister} className="space-y-4 md:space-y-6">
                   {/* {registerFormError && (
  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
  <div className="whitespace-pre-line">{registerFormError}</div>
  </div>
  )} */}
-                  <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 md:gap-6">
                     {/* 이메일 */}
                     <div className="bp-lg:col-span-2 space-y-2">
                       <Label htmlFor="register-email-id" className="flex items-center gap-2 text-sm font-medium text-foreground">

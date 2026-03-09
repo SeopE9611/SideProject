@@ -1077,7 +1077,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         toUserId={composeTo?.id ?? ''}
         toName={composeTo?.name}
       />
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -1122,7 +1122,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
         {!isLoading && error && (
           <Card className="border-0 bg-card/90 shadow-xl backdrop-blur-sm">
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-4 md:p-6 space-y-4">
               <ErrorBox
                 message={isNotFound ? '해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.' : detailError.message}
                 status={detailError.status}
@@ -1242,7 +1242,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </div>
             </CardHeader>
 
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               {config.boardType === 'market' && item.marketMeta && (
                 <div className="mb-6 space-y-4">
                   {/* ── 1. 거래 핵심 정보 ── */}
@@ -1579,7 +1579,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-6 p-6">
+            <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
               <div className="space-y-3">
                 {user ? (
                   <>
@@ -1629,7 +1629,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 )}
 
                 {!isCommentsLoading && comments.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center">
                     <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground" />
                     <p className="text-sm font-medium text-muted-foreground">첫 댓글을 남겨보세요</p>
                   </div>
@@ -1720,7 +1720,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </DialogHeader>
 
               {isAuthorLoading && (
-                <div className="py-6 space-y-6">
+                <div className="py-5 md:py-6 space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Skeleton className="h-5 w-32" />
                     <div className="space-y-2">
@@ -1750,7 +1750,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   </TabsList>
 
                   {/* 작성자(커뮤니티) 탭 */}
-                  <TabsContent value="community" className="mt-6 space-y-6">
+                  <TabsContent value="community" className="mt-5 md:mt-6 space-y-4 md:space-y-6">
                     {/* 기본 정보 */}
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">기본 정보</h3>
@@ -1772,7 +1772,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {authorOverview && (
                       <div className="space-y-3">
                         <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">커뮤니티 활동</h3>
-                        <div className="flex gap-6">
+                        <div className="flex gap-4 md:gap-6">
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
                             <div className="text-xs text-muted-foreground mb-1">작성 글</div>
                             <div className="text-2xl font-semibold text-foreground">{authorOverview.stats.posts}</div>
@@ -1806,11 +1806,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   </TabsContent>
 
                   {/* 테니스 탭 */}
-                  <TabsContent value="tennis" className="mt-6">
+                  <TabsContent value="tennis" className="mt-5 md:mt-6">
                     {!authorOverview?.tennisProfile ? (
                       <div className="text-sm text-muted-foreground text-center py-8">작성자가 테니스 프로필을 공개하지 않았습니다.</div>
                     ) : (
-                      <div className="space-y-6">
+                      <div className="space-y-4 md:space-y-6">
                         {/* 기본 정보 */}
                         <div className="space-y-3">
                           <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">플레이어 정보</h3>
@@ -1899,7 +1899,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     )}
                   </TabsContent>
 
-                  <div className="flex items-center justify-between pt-6 mt-6 border-t border-border">
+                  <div className="flex items-center justify-between pt-4 md:pt-6 mt-4 md:mt-6 border-t border-border">
                     <Button variant="outline" size="sm" asChild disabled={!item} className="h-9 bg-transparent">
                       <Link href={authorTarget?.userId ? `${config.routePrefix}?authorId=${authorTarget.userId}&authorName=${encodeURIComponent(authorTarget.nickname ?? '')}` : '#'}>이 작성자의 글 보기</Link>
                     </Button>

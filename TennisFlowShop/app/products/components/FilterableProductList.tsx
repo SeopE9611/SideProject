@@ -514,9 +514,9 @@ export default function FilterableProductList({ initialBrand = null, initialMate
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-6 bp-md:gap-8 bp-lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 bp-md:gap-8 bp-lg:grid-cols-4">
         {/* 필터 사이드바 */}
-        <div className={cn('hidden bp-lg:block', 'space-y-6 bp-lg:col-span-1')}>
+        <div className={cn('hidden bp-lg:block', 'space-y-4 md:space-y-6 bp-lg:col-span-1')}>
           <div className="sticky top-20 self-start">
             <FilterPanel {...desktopFilterPanelProps} />
           </div>
@@ -578,12 +578,12 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               <p className="text-sm text-muted-foreground">상품 목록을 불러오는 중입니다.</p>
             </div>
           ) : error ? (
-            <div className="text-center py-16">
+            <div className="text-center py-10 md:py-16">
               <p className="text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
               <Button onClick={() => loadMore()}>다시 시도</Button>
             </div>
           ) : loadedCount === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-10 md:py-16">
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-muted/30 rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary" />
               </div>
