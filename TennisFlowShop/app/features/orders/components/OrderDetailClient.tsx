@@ -18,6 +18,7 @@ import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec, getPaymentStatusBadgeS
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CreditCard, Edit3, LinkIcon, Mail, MapPin, Package, Pencil, Phone, Settings, ShoppingCart, Truck, User } from 'lucide-react';
@@ -26,9 +27,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import useSWRInfinite from 'swr/infinite';
-
-// SWR fetcher
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
 // useSWRInfinite용 getKey (처리 이력)
 const LIMIT = 5; // 페이지 당 이력 개수
@@ -110,13 +108,16 @@ export default function OrderDetailClient({ orderId }: Props) {
   const [editingRequest, setEditingRequest] = useState(false);
 
   // 주문 전체 데이터를 SWR로 가져옴
-  const { data: orderDetail, error: orderError, mutate: mutateOrder } = useSWR<OrderDetail>(orderId ? `/api/orders/${orderId}` : null, fetcher);
+  const { data: orderDetail, error: orderError, mutate: mutateOrder } = useSWR<OrderDetail>(orderId ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   // 처리 이력 데이터를 SWRInfinite로 가져옴. (키: `/api/orders/${orderId}/history?…`)
   const {
     data: historyPages,
     error: historyError,
     mutate: mutateHistory,
-  } = useSWRInfinite(getOrderHistoryKey(orderId), fetcher, {
+  } = useSWRInfinite(getOrderHistoryKey(orderId), authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -182,7 +183,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail.shippingInfo);
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
-  const allHistory: any[] = historyPages ? historyPages.flatMap((page) => page.history) : [];
+  const allHistory: any[] = historyPages ? historyPages.flatMap((page: any) => page.history) : [];
 
   // 날짜/통화 포맷 함수
   const formatDate = (dateString: string | null | undefined) => {

@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { badgeToneVariant } from '@/lib/badge-style';
 import type { AdminOutboxDetailResponseDto } from '@/types/admin/notifications';
 
@@ -87,15 +88,6 @@ function mapApiToViewModel(data: AdminOutboxDetailResponseDto | undefined, id: s
   };
 }
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) {
-    const msg = await res.text().catch(() => '');
-    throw new Error(msg || `Request failed: ${res.status}`);
-  }
-  return res.json();
-};
-
 function safeFmt(iso?: string | null) {
   if (!iso) return '-';
   const d = new Date(iso);
@@ -110,7 +102,7 @@ function StatusBadge({ status }: { status?: string }) {
 }
 
 export default function OutboxDetailClient({ id }: { id: string }) {
-  const { data, error, isLoading, mutate } = useSWR<AdminOutboxDetailResponseDto>(id ? `/api/admin/notifications/outbox/${id}` : null, fetcher, { revalidateOnFocus: false });
+  const { data, error, isLoading, mutate } = useSWR<AdminOutboxDetailResponseDto>(id ? `/api/admin/notifications/outbox/${id}` : null, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
 
   const [busy, setBusy] = useState<'retry' | 'force' | null>(null);
 

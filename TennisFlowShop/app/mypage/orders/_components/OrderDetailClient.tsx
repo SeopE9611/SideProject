@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
 import { refreshOnce } from '@/lib/auth/refresh-mutex';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -131,25 +132,6 @@ function getCancelRequestLabel(order: any): string | null {
 }
 
 export default function OrderDetailClient({ orderId }: Props) {
-  const fetcher = async (url: string) => {
-    let res = await fetch(url, { credentials: 'include' });
-
-    if ((res.status === 401 || res.status === 403) && !url.includes('/api/refresh')) {
-      const rr = await refreshOnce();
-      if (rr.ok) {
-        res = await fetch(url, {
-          credentials: 'include',
-          headers: { 'x-suppress-auth-expired': '1' },
-        });
-      }
-    }
-
-    if (!res.ok) {
-      throw new Error(await parseApiMessage(res, '요청 처리 중 오류가 발생했습니다.'));
-    }
-
-    return res.json();
-  };
   const router = useRouter();
 
   // 편집 모드 전체 토글
@@ -163,10 +145,10 @@ export default function OrderDetailClient({ orderId }: Props) {
   const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] = useState(false);
 
   // 주문 상세를 SWR로 가져오기
-  const { data: orderDetail, error: orderError, isLoading: isOrderLoading, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, fetcher);
+  const { data: orderDetail, error: orderError, isLoading: isOrderLoading, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
 
   // 처리 이력 데이터를 SWRInfinite로 가져오기
-  const { data: historyPages, error: historyError, mutate: mutateHistory } = useSWRInfinite(getOrderHistoryKey(orderId), fetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
+  const { data: historyPages, error: historyError, mutate: mutateHistory } = useSWRInfinite(getOrderHistoryKey(orderId), authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
 
   // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
@@ -210,7 +192,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const nonEditableStatuses = ['배송중', '배송완료', '환불', '취소'];
   const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? '');
   // 이력 페이지를 합쳐서 하나의 배열로
-  const allHistory: any[] = historyPages ? historyPages.flatMap((page) => page.history) : [];
+  const allHistory: any[] = historyPages ? historyPages.flatMap((page: any) => page.history) : [];
 
   // 날짜/금액 포맷 함수
   const formatDate = (dateString: string | null | undefined) => {

@@ -17,7 +17,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
-import { adminFetcher, adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { showErrorToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
@@ -137,8 +138,9 @@ export default function ProductsClient() {
     totalsByStatus: Record<'active' | 'low_stock' | 'out_of_stock', number>; // 전역 통계(필터 무시)
   };
 
-  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(`/api/admin/products?${qs}`, adminFetcher, {
+  const { data, error, isLoading, isValidating, mutate } = useSWR<ApiRes>(`/api/admin/products?${qs}`, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
     keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬
   });
 
