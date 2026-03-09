@@ -123,7 +123,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
       <Card className="shadow-lg border-border/40">
         <CardHeader className="border-b border-border/40 bg-muted/30">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -146,7 +146,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <Tabs
             value={tab}
             onValueChange={(v) => {
@@ -157,7 +157,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             }}
             className="w-full"
           >
-            <TabsList className="grid w-full max-w-md grid-cols-3 mb-6 bg-muted/50">
+            <TabsList className="grid w-full max-w-md grid-cols-3 mb-4 md:mb-6 bg-muted/50">
               <TabsTrigger value="inbox" className="gap-2">
                 <Mail className="h-4 w-4" />
                 <span className="hidden sm:inline">받은쪽지</span>
@@ -176,7 +176,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             </TabsList>
 
             <TabsContent value={tab} className="mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
                 <div className="lg:col-span-5">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
                     <div className="text-sm font-medium text-muted-foreground">
@@ -224,7 +224,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     )}
 
                     {!isLoading && items.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-12 text-center border border-border/30 rounded-lg bg-muted/20">
+                      <div className="flex flex-col items-center justify-center py-8 md:py-12 text-center border border-border/30 rounded-lg bg-muted/20">
                         <Mail className="h-12 w-12 text-muted-foreground/40 mb-3" />
                         <p className="text-sm text-muted-foreground">아직 쪽지가 없습니다.</p>
                       </div>
@@ -279,7 +279,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 <div className="lg:col-span-7">
                   <div className="border border-border/30 rounded-lg min-h-[400px] bg-card">
                     {!selectedId && (
-                      <div className="flex flex-col items-center justify-center h-[400px] text-center p-8">
+                      <div className="flex flex-col items-center justify-center h-[400px] text-center p-6 md:p-8">
                         <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
                           <Mail className="h-8 w-8 text-muted-foreground/40" />
                         </div>
@@ -292,7 +292,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     )}
 
                     {selectedId && detailLoading && (
-                      <div className="p-6 space-y-4">
+                      <div className="p-4 md:p-6 space-y-4">
                         <Skeleton className="h-7 w-2/3" />
                         <Skeleton className="h-4 w-1/2" />
                         <div className="pt-4 border-t">
@@ -302,13 +302,13 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     )}
 
                     {selectedId && !detailLoading && !detail && (
-                      <div className="flex items-center justify-center h-[400px] text-center p-8">
+                      <div className="flex items-center justify-center h-[400px] text-center p-6 md:p-8">
                         <p className="text-sm text-muted-foreground">쪽지를 불러오지 못했습니다.</p>
                       </div>
                     )}
 
                     {detail && (
-                      <div className="p-6">
+                      <div className="p-4 md:p-6">
                         <div className="pb-4 border-b border-border/40">
                           <h2 className="text-xl font-semibold text-foreground leading-tight mb-3">{detail.title || '(제목 없음)'}</h2>
 
@@ -347,7 +347,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           </div>
                         </div>
 
-                        <div className="pt-6">
+                        <div className="pt-4 md:pt-6">
                           <div className="prose prose-sm max-w-none">
                             <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">{detail.body}</div>
                           </div>

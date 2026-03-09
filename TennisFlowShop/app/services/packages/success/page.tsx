@@ -124,7 +124,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
       <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/20"></div>
         <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-        <div className="relative container py-16">
+        <div className="relative container py-10 md:py-16">
           <div className="text-center">
             <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
               <CheckCircle className="h-12 w-12 text-foreground" />
@@ -150,7 +150,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
 
           {/* 패키지 활성화 안내 */}
           <div className="mt-8 max-w-2xl mx-auto">
-            <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-6 text-center">
+            <div className="bg-muted backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="p-2 bg-primary/10 rounded-full dark:bg-primary/20">
                   <Package className="h-6 w-6 text-primary" />
@@ -170,10 +170,10 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
       </div>
 
       <div className="container py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
           {/* 패키지 주문 정보 카드 */}
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-            <div className="bg-muted/60 p-6">
+            <div className="bg-muted/60 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Package className="h-6 w-6 text-primary" />
                 패키지 주문 정보
@@ -182,13 +182,13 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 주문 번호: <span className="font-mono font-semibold text-primary">{packageOrder._id.toString()}</span>
               </CardDescription>
             </div>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               {/* 패키지 정보 */}
-              <div className="mb-8">
+              <div className="mb-6 md:mb-8">
                 <UnifiedPackageCard pkg={packageCard} showTotalPrice className="shadow-none" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
                     <Clock className="h-5 w-5 text-primary" />
@@ -213,7 +213,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                   </div>
                 </div>
 
-                <div className="bg-muted p-6 rounded-xl border border-border">
+                <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
                   <div className="flex items-center gap-2 mb-4">
                     <CreditCard className="h-5 w-5 text-primary" />
                     <h3 className="font-bold text-primary">입금 계좌 정보</h3>
@@ -269,7 +269,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
               <Separator className="my-6" />
 
               {/* 결제 금액 */}
-              <div className="bg-muted p-6 rounded-xl border border-border">
+              <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
                 <div className="flex justify-between items-center text-2xl font-bold">
                   <span className="text-foreground">총 결제 금액</span>
                   <span className="text-primary">{formatPrice(packageOrder.totalPrice)}원</span>
@@ -278,8 +278,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
               </div>
             </CardContent>
 
-            <CardFooter className="bg-muted/40 p-6">
-              <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <CardFooter className="bg-muted/40 p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
                 <Button variant="default" className="flex-1 h-12 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300" asChild>
                   <Link href={isLoggedIn ? '/mypage?tab=passes' : `/package-lookup/details/${packageOrder._id}`} className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
@@ -295,7 +295,7 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 </Button>
               </div>
             </CardFooter>
-            <div className="px-6">
+            <div className="px-4 md:px-6">
               <DevMarkPaidButton orderId={packageOrder._id.toString()} show={showDevBtn} />
             </div>
           </Card>
@@ -308,8 +308,8 @@ export default async function PackageSuccessPage({ searchParams }: { searchParam
                 패키지 이용 안내사항
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
                     <CreditCard className="h-5 w-5 text-primary mt-0.5" />

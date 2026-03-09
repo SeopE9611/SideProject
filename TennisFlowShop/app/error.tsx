@@ -17,12 +17,12 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
 
   return (
     <div className="min-h-[60vh] bg-muted/30">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-10 md:py-16">
         <div className="max-w-2xl mx-auto">
           <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] backdrop-blur-sm bg-card/90 dark:bg-card">
             <div className="h-1.5 w-full bg-muted/30" />
 
-            <CardContent className="p-8">
+            <CardContent className="p-6 md:p-8">
               <div className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary grid place-content-center shadow-lg mb-6">
                 <AlertTriangle className="h-7 w-7" />
               </div>
@@ -39,7 +39,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
               </div>
             </CardContent>
 
-            <CardFooter className="px-8 pb-8">
+            <CardFooter className="px-6 md:px-8 pb-6 md:pb-8">
               <div className="flex flex-wrap gap-3">
                 <Button onClick={() => reset()} className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <RefreshCw className="mr-2 h-4 w-4" />

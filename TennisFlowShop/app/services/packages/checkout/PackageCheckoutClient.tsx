@@ -333,7 +333,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md mx-auto">
-          <CardContent className="p-8 text-center">
+          <CardContent className="p-6 md:p-8 text-center">
             <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
             <h2 className="text-2xl font-bold mb-4">패키지를 선택해주세요</h2>
             <p className="text-muted-foreground mb-6">올바른 패키지가 선택되지 않았습니다.</p>
@@ -360,7 +360,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40 text-foreground">
         <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
-        <div className="relative container py-16">
+        <div className="relative container py-10 md:py-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-card/20 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
@@ -371,7 +371,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
             </div>
           </div>
 
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-4 md:gap-6 text-sm">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-foreground" />
               <span>SSL 보안 결제</span>
@@ -389,19 +389,19 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
       </div>
 
       <div className="container py-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:gap-8 lg:grid-cols-3">
           {/* 주문 정보 입력 폼 */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             {/* 선택된 패키지 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
-              <div className="bg-primary/10 p-6 dark:bg-primary/20">
+              <div className="bg-primary/10 p-4 md:p-6 dark:bg-primary/20">
                 <CardTitle className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-primary" />
                   선택된 패키지
                 </CardTitle>
                 <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 {selectedPackage ? (
                   <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
                 ) : (
@@ -412,15 +412,15 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
             {/* 신청자 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
-              <div className="bg-primary/10 p-6 dark:bg-primary/20">
+              <div className="bg-primary/10 p-4 md:p-6 dark:bg-primary/20">
                 <CardTitle className="flex items-center gap-3">
                   <UserIcon className="h-5 w-5 text-primary" />
                   신청자 정보
                 </CardTitle>
                 <CardDescription className="mt-2">패키지를 이용하실 분의 정보를 입력해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
+              <CardContent className="p-4 md:p-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="applicant-name" className="flex items-center gap-2">
@@ -494,14 +494,14 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
 
             {/* 서비스 이용 안내 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-xl overflow-hidden">
-              <div className="bg-muted/50 dark:bg-muted/40 p-6">
+              <div className="bg-muted/50 dark:bg-muted/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
                   서비스 이용 안내
                 </CardTitle>
                 <CardDescription className="mt-2">패키지 주문 전 꼭 확인해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 md:p-6 space-y-4">
                 <div className="rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20 p-4 space-y-2 text-sm text-foreground">
                   <p>• 입금 확인 후 관리자가 패키지를 활성화해드려요.</p>
                   <p>• 활성화 완료 후부터 패키지를 사용할 수 있어요.</p>
@@ -581,7 +581,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-destructive">{fieldErrors.depositor}</p>}
                   </div>
 
-                  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
+                <div className="bg-primary/10 dark:bg-primary/20 p-3 md:p-4 rounded-lg border border-primary/20">
                     <div className="flex items-center gap-2 mb-3">
                       <Shield className="h-5 w-5 text-primary" />
                       <p className="font-semibold text-foreground">무통장입금 안내</p>
@@ -615,7 +615,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
               </div>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg border border-primary/20">
+                <div className="bg-primary/10 dark:bg-primary/20 p-3 md:p-4 rounded-lg border border-primary/20">
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="agree-all"
@@ -683,7 +683,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-20">
               <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl overflow-hidden">
-                <div className="bg-muted/60 dark:bg-muted/50 p-6 text-foreground">
+                <div className="bg-muted/60 dark:bg-muted/50 p-4 md:p-6 text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
                       <Package className="h-5 w-5" />
@@ -691,7 +691,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     주문 요약
                   </CardTitle>
                 </div>
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">패키지 금액</span>
@@ -745,7 +745,7 @@ export default function PackageCheckoutClient({ initialUser, initialQuery }: { i
                     </div>
                   </div>
                 </CardContent>
-                <div className="flex flex-col gap-4 p-6">
+                  <div className="flex flex-col gap-3 md:gap-4 p-4 md:p-6">
                   {ownershipBlockedMessage && <p className="text-sm rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive">{ownershipBlockedMessage}</p>}
                   {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && <p className="text-xs text-destructive">필수 입력칸을 확인해주세요. (이름/이메일/연락처/입금자명)</p>}
                   {isFrameLoading && <p className="text-xs text-muted-foreground">기본 정보를 불러오는 중입니다. 잠시만 기다려주세요.</p>}
