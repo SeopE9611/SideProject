@@ -77,7 +77,7 @@ export default function MyPointsTab() {
   if (!isInitialLoading && !data?.ok) {
     return (
       <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
-        <CardContent className="flex flex-col items-center justify-center py-12 bp-sm:py-16">
+        <CardContent className="flex flex-col items-center justify-center py-10 bp-sm:py-14">
           <div className="bg-destructive/10 rounded-full p-4 mb-4 dark:bg-destructive/15">
             <Coins className="h-8 w-8 text-destructive" />
           </div>
@@ -93,14 +93,14 @@ export default function MyPointsTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? (
         <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">포인트 정보를 불러오는 중입니다...</div>
       ) : null}
 
       {!isInitialLoading && (
         <>
-          <div className="grid gap-4 bp-sm:gap-6 bp-md:grid-cols-2 bp-lg:grid-cols-3">
+          <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
             <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-muted/30 text-foreground">
           <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
           <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
@@ -170,7 +170,7 @@ export default function MyPointsTab() {
           </div>
 
           <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b p-5 bp-sm:p-6">
+        <CardHeader className="bg-muted/30 border-b p-4 bp-sm:p-5 bp-md:p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="bg-muted/30 rounded-xl p-2.5 shadow-md">
@@ -190,7 +190,7 @@ export default function MyPointsTab() {
 
         <CardContent className="p-0">
           {pointsData.items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 bp-sm:py-16 px-4">
+            <div className="flex flex-col items-center justify-center py-10 bp-sm:py-14 px-4">
               <div className="bg-muted/50 rounded-full p-4 mb-4">
                 <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
               </div>

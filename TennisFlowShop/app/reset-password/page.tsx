@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-            <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-center">
+            <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
                 <ShieldAlert className="h-8 w-8 text-primary" />
               </div>
@@ -113,7 +113,7 @@ export default function ResetPasswordPage() {
               <CardDescription className="text-muted-foreground mt-2">비밀번호 재설정 토큰이 없거나 잘못된 접근입니다.</CardDescription>
             </div>
 
-            <CardFooter className="p-6 flex flex-col gap-3">
+            <CardFooter className="p-4 md:p-6 flex flex-col gap-3">
               <Button asChild className="w-full">
                 <Link href="/forgot-password">비밀번호 재설정 다시 요청</Link>
               </Button>
@@ -145,7 +145,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <Card className="border-0 bg-card/95 dark:bg-card backdrop-blur-sm shadow-2xl overflow-hidden">
-          <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-center">
+          <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 dark:bg-primary/20 rounded-2xl flex items-center justify-center shadow-lg">
               <KeyRound className="h-8 w-8 text-primary" />
             </div>
@@ -155,7 +155,7 @@ export default function ResetPasswordPage() {
 
           {!isDone ? (
             <form onSubmit={handleSubmit}>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 md:p-6 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">새 비밀번호</Label>
                   <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="8자 이상, 영문 + 숫자 포함" disabled={isSubmitting} />
@@ -167,7 +167,7 @@ export default function ResetPasswordPage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="p-6">
+              <CardFooter className="p-4 md:p-6">
                 <Button type="submit" className="w-full h-12" disabled={isSubmitting}>
                   {isSubmitting ? '저장 중...' : '비밀번호 저장'}
                 </Button>
@@ -175,8 +175,8 @@ export default function ResetPasswordPage() {
             </form>
           ) : (
             <>
-              <CardContent className="p-6">
-                <div className="bg-muted rounded-xl p-6 text-center border border-border">
+              <CardContent className="p-4 md:p-6">
+                <div className="bg-muted rounded-xl p-4 md:p-6 text-center border border-border">
                   <div className="w-16 h-16 mx-auto mb-4 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full flex items-center justify-center shadow-lg">
                     <CheckCircle className="h-8 w-8" />
                   </div>
@@ -185,7 +185,7 @@ export default function ResetPasswordPage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="p-6">
+              <CardFooter className="p-4 md:p-6">
                 <Button type="button" className="w-full h-12" onClick={() => router.push('/login')}>
                   로그인 페이지로 이동
                 </Button>

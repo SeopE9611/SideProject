@@ -332,7 +332,7 @@ export default function TensionGuidePage() {
 
       <div className="mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 py-6 bp-md:py-10 bp-lg:pb-16">
         {/* Navigation Tabs */}
-        <Tabs value={activeSection} onValueChange={setActiveSection} className="mb-8 bp-md:mb-12">
+        <Tabs value={activeSection} onValueChange={setActiveSection} className="mb-6 bp-md:mb-12">
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-auto p-1 bg-muted">
             <TabsTrigger value="calculator" className="py-2 bp-sm:py-3 text-[10px] bp-sm:text-xs bp-md:text-sm gap-1 bp-sm:gap-1.5">
               <BarChart3 className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
@@ -912,8 +912,8 @@ export default function TensionGuidePage() {
         </Tabs>
 
         {/* CTA 섹션 */}
-        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-8">
-          <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
+        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-6 bp-md:mb-8">
+          <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
                 <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">최적의 텐션으로 스트링 서비스를 받아보세요</h3>
@@ -928,8 +928,8 @@ export default function TensionGuidePage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-8">
-          <CardContent className="p-6 bp-sm:p-8 bp-md:p-10 bp-lg:p-12">
+        <Card className="bg-primary/10 border border-primary/20 dark:bg-primary/20 overflow-hidden mb-6 bp-md:mb-8">
+          <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
                 <h3 className="text-xl bp-sm:text-2xl bp-md:text-3xl font-bold mb-2 text-foreground">나에게 맞는 라켓을 찾아보세요</h3>
