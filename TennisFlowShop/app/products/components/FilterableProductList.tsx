@@ -2,7 +2,6 @@
 
 import { FilterPanel } from '@/app/products/components/FilterPanel';
 import ProductCard from '@/app/products/components/ProductCard';
-import { SkeletonProductCard } from '@/app/products/components/SkeletonProductCard';
 import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -575,10 +574,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
           {/* 콘텐츠 */}
           {isInitialLikeLoading ? (
-            <div data-cy="products-initial-loading" className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3' : 'grid-cols-1')}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonProductCard key={i} />
-              ))}
+            <div data-cy="products-initial-loading" className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-10 text-center">
+              <p className="text-sm text-muted-foreground">상품 목록을 불러오는 중입니다.</p>
             </div>
           ) : error ? (
             <div className="text-center py-16">
