@@ -121,6 +121,7 @@ export default function AdminNotificationsClient() {
   const rows = data?.items;
   const total = data?.total;
   const totalPages = Math.max(1, Math.ceil((total ?? 0) / LIMIT));
+  const shouldShowEmptyState = !isInitialLoading && !error && Array.isArray(rows) && rows.length === 0;
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -344,7 +345,7 @@ export default function AdminNotificationsClient() {
                   <Skeleton key={index} className="h-4 w-full" />
                 ))}
               </div>
-            ) : (rows?.length ?? 0) === 0 ? (
+            ) : shouldShowEmptyState ? (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/40 py-12">
                 <Mail className="mb-3 h-12 w-12 text-muted-foreground/40" />
                 <p className="text-sm font-medium text-muted-foreground">알림 데이터가 없습니다</p>

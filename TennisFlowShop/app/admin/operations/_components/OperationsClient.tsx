@@ -445,6 +445,7 @@ export default function OperationsClient() {
 
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items ?? []), [items]);
+  const hasResolvedItems = !isLoading && !error && Array.isArray(items);
   const groupsToRender = useMemo(() => {
     const withSignals = groups.map((group) => {
       const reviewLevel = computeReviewLevelGroup(group);
@@ -474,6 +475,7 @@ export default function OperationsClient() {
       return a.warn ? 1 : -1;
     });
   }, [groups, warnFilter, warnSort]);
+  const shouldShowEmptyState = hasResolvedItems && groupsToRender.length === 0;
 
   const todayTodoCount = useMemo(() => {
     if (!data) return null;
@@ -1247,7 +1249,7 @@ export default function OperationsClient() {
                       );
                     })}
 
-                    {groupsToRender.length === 0 && (
+                    {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
                         <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
@@ -1329,7 +1331,7 @@ export default function OperationsClient() {
                   );
                 })}
 
-                {groupsToRender.length === 0 && <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">표시할 항목이 없습니다.</div>}
+                {shouldShowEmptyState && <div className="rounded-md border border-dashed border-border px-3 py-10 text-center text-sm text-muted-foreground">표시할 항목이 없습니다.</div>}
               </div>
             </>
           )}
