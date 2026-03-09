@@ -1,8 +1,8 @@
 'use client';
 
+import RefundAccountFields from '@/components/refund/RefundAccountFields';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import RefundAccountFields from '@/components/refund/RefundAccountFields';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -143,7 +143,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       }
     } catch (e) {
       console.error(e);
-      showErrorToast('대여 취소 요청 중 오류가 발생했습니다.');
+      showErrorToast(e instanceof Error ? e.message : '대여 취소 요청 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
