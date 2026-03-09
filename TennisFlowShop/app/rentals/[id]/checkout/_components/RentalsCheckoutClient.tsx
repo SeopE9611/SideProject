@@ -578,7 +578,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-card text-foreground border-b border-border">
         <div className="absolute inset-0 bg-foreground/10 dark:bg-foreground/10"></div>
-        <SiteContainer variant="wide" className="relative py-16">
+        <SiteContainer variant="wide" className="relative py-10 md:py-16">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full">
               <CreditCard className="h-8 w-8" />
@@ -591,19 +591,19 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-8">
-        <div className="grid grid-cols-1 gap-8 bp-lg:grid-cols-3">
-          <div className="bp-lg:col-span-2 space-y-6">
+      <SiteContainer variant="wide" className="py-6 md:py-8">
+        <div className="grid grid-cols-1 gap-6 md:gap-8 bp-lg:grid-cols-3">
+          <div className="bp-lg:col-span-2 space-y-4 md:space-y-6">
             {/* 대여 상품 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-muted border-b border-border p-6">
+              <div className="bg-muted border-b border-border p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-primary" />
                   대여 상품
                 </CardTitle>
                 <CardDescription className="mt-2">선택하신 라켓 정보입니다.</CardDescription>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border">
                   <div className="relative">
                     {initial.racket?.image ? (
@@ -628,7 +628,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
             {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
-              <div className="bg-muted border-b border-border p-6">
+              <div className="bg-muted border-b border-border p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-primary" />
                   라켓 수령 방식
@@ -636,7 +636,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                 <CardDescription className="mt-2">라켓을 어떻게 수령하실지 선택해주세요.</CardDescription>
               </div>
 
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 md:p-6 space-y-4">
                 <RadioGroup value={deliveryMethod} onValueChange={(value) => setDeliveryMethod(value as any)} className="space-y-3">
                   <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg border border-border">
                     <RadioGroupItem value="택배수령" id="rentals-delivery-courier" />
@@ -778,15 +778,15 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
             {/* 배송 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-card p-6">
+              <div className="bg-card p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-foreground" />
                   {isVisitPickup ? '수령/연락 정보' : '배송 정보'}
                 </CardTitle>
                 <CardDescription className="mt-2">{isVisitPickup ? '매장 방문 수령을 위해 연락 가능한 정보를 입력해주세요.' : '라켓을 받으실 배송지 정보를 입력해주세요.'}</CardDescription>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
+              <CardContent className="p-4 md:p-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="name" className="flex items-center gap-2">
@@ -853,15 +853,15 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
             </Card>
             {/* 결제 정보 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-card p-6">
+              <div className="bg-card p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <CreditCard className="h-5 w-5 text-foreground" />
                   결제 정보
                 </CardTitle>
                 <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
+              <CardContent className="p-4 md:p-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label>결제 방법</Label>
                     <RadioGroup defaultValue="bank-transfer" className="space-y-3">
@@ -923,14 +923,14 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
               </CardContent>
             </Card>
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-card p-6">
+              <div className="bg-card p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Undo2 className="h-5 w-5 text-foreground" />
                   보증금 환급 계좌
                 </CardTitle>
                 <CardDescription className="mt-2">반납 완료 후 보증금을 환급해 드릴 계좌 정보를 입력해주세요.</CardDescription>
               </div>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 md:p-6 space-y-4">
                 {/* 환급 은행 */}
                 <div className="space-y-2">
                   <Label htmlFor="refund-bank">환급 은행</Label>
@@ -964,13 +964,13 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
             {/* 주문자 동의 */}
             <Card className="backdrop-blur-sm bg-card/80 dark:bg-card/80 border-0 shadow-xl overflow-hidden">
-              <div className="bg-card p-6">
+              <div className="bg-card p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-destructive" />
                   주문자 동의
                 </CardTitle>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 <div className="space-y-4">
                   <div className="bg-background p-4 rounded-lg">
                     <div className="flex items-center space-x-2">
@@ -1038,7 +1038,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
           <div className="bp-lg:col-span-1">
             <div className="bp-lg:sticky bp-lg:top-20">
               <Card className="backdrop-blur-sm bg-card/90 dark:bg-card/90 border-0 shadow-2xl overflow-hidden">
-                <div className="p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground">
+                <div className="p-4 md:p-6 border-b border-primary/20 bg-primary/10 dark:bg-primary/20 text-foreground">
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <div className="p-2 bg-card/20 rounded-full">
                       <CreditCard className="h-5 w-5" />
@@ -1046,7 +1046,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     결제 요약
                   </CardTitle>
                 </div>
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">대여 수수료</span>
@@ -1159,7 +1159,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4 p-6">
+                <CardFooter className="flex flex-col gap-4 p-4 md:p-6">
                   <Button
                     onClick={onPay}
                     disabled={loading}

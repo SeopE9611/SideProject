@@ -119,7 +119,7 @@ export default function RentalsSuccessClient({ data }: Props) {
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-muted/30 text-foreground">
         <div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>
-        <SiteContainer variant="wide" className="relative py-16">
+        <SiteContainer variant="wide" className="relative py-10 md:py-16">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-card/20 dark:bg-card/30 backdrop-blur-sm rounded-full mb-6">
               <CheckCircle className="h-12 w-12 text-foreground" />
@@ -131,7 +131,7 @@ export default function RentalsSuccessClient({ data }: Props) {
       </div>
 
       <SiteContainer variant="wide" className="py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
           {/*
             Step 3: 대여+교체서비스가 checkout에서 이미 통합 제출된 경우에는
             /services/apply handoff를 건너뛰고 현재 success에서 "접수 완료"를 확정 안내한다.
@@ -145,7 +145,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </CardTitle>
                 <CardDescription>별도 신청서 작성 없이 현재 대여 건에 함께 접수되었습니다.</CardDescription>
               </CardHeader>
-              <CardContent className="p-6 text-sm text-muted-foreground space-y-2">
+              <CardContent className="p-4 md:p-6 text-sm text-muted-foreground space-y-2">
                 <p>• 교체 서비스 신청이 함께 접수되었습니다.</p>
                 <p>• 별도 신청서 작성 없이 현재 대여에 포함되어 처리됩니다.</p>
                 <p>• 추가 요청/장착 정보가 함께 저장되었습니다.</p>
@@ -172,7 +172,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <CardTitle className="text-lg">교체 서비스 접수 요약</CardTitle>
                 <CardDescription>대여와 함께 접수된 장착 정보를 한눈에 확인하세요.</CardDescription>
               </CardHeader>
-              <CardContent className="p-6 space-y-2 text-sm">
+              <CardContent className="p-4 md:p-6 space-y-2 text-sm">
                 {/* 성공 화면에서는 핵심 접수 정보만 간단히 노출 */}
                 <p><span className="text-muted-foreground">신청 상태:</span> <span className="font-semibold text-foreground">{data.applicationSummary.status}</span></p>
                 <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold text-foreground">{data.applicationSummary.receptionLabel}</span></p>
@@ -192,7 +192,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
           {/* 대여 정보 카드 */}
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-            <div className="bg-muted/30 p-6">
+            <div className="bg-muted/30 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Package className="h-6 w-6 text-primary" />
                 대여 정보
@@ -201,9 +201,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                 대여 번호: <span className="font-mono font-semibold text-primary">{data.id}</span>
               </CardDescription>
             </div>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               {/* 라켓 정보 */}
-              <div className="mb-6">
+              <div className="mb-4 md:mb-6">
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
@@ -220,7 +220,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </div>
               </div>
 
-              <Separator className="my-6" />
+              <Separator className="my-4 md:my-6" />
 
               {/* 결제 금액 */}
               <div className="space-y-4">
@@ -245,7 +245,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   </div>
                 )}
                 <Separator />
-                <div className="bg-muted/30 p-6 rounded-xl border border-border">
+                <div className="bg-muted/30 p-4 md:p-6 rounded-xl border border-border">
                   <div className="flex justify-between items-center text-2xl font-bold">
                     <span className="text-foreground">총 결제 금액</span>
                     <span className="text-primary">{total.toLocaleString()}원</span>
@@ -255,13 +255,13 @@ export default function RentalsSuccessClient({ data }: Props) {
 
                 {/* 무통장 안내 카드 */}
                 <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-                  <div className="bg-muted/30 p-6">
+                  <div className="bg-muted/30 p-4 md:p-6">
                     <CardTitle className="flex items-center gap-3 text-2xl">
                       <CreditCard className="h-6 w-6 text-primary" />
                       무통장 입금 안내
                     </CardTitle>
                   </div>
-                  <CardContent className="p-6 text-sm">
+                  <CardContent className="p-4 md:p-6 text-sm">
                     <p className="text-muted-foreground">
                       아래 계좌로 입금해 주세요. 입금 확인 후 <b>결제완료</b>로 상태가 변경됩니다.
                     </p>
@@ -288,7 +288,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               </div>
             </CardContent>
 
-            <CardFooter className="bg-muted/30 p-6">
+            <CardFooter className="bg-muted/30 p-4 md:p-6">
               <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <Button
                   className="flex-1 h-12 bg-muted/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
@@ -326,8 +326,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                 대여 안내사항
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg">
                     <Truck className="h-5 w-5 text-primary mt-0.5" />
@@ -372,7 +372,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               </CardTitle>
               <CardDescription>{isPickup ? '방문 수령으로 접수된 주문입니다.' : '배송지 정보를 확인해주세요.'}</CardDescription>
             </CardHeader>
-            <CardContent className="p-6 text-sm space-y-2">
+            <CardContent className="p-4 md:p-6 text-sm space-y-2">
               {isPickup ? (
                 <>
                   <p>
@@ -411,13 +411,13 @@ export default function RentalsSuccessClient({ data }: Props) {
           </Card>
 
           <Card className="backdrop-blur-sm bg-card/80 dark:bg-card border-0 shadow-2xl overflow-hidden">
-            <div className="bg-muted/30 p-6">
+            <div className="bg-muted/30 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <Undo2 className="h-6 w-6 text-primary" />
                 보증금 환급 계좌
               </CardTitle>
             </div>
-            <CardContent className="p-6 text-sm">
+            <CardContent className="p-4 md:p-6 text-sm">
               <p className="text-muted-foreground">반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.</p>
               <div className="mt-4 space-y-1">
                 {refundBankInfo && (

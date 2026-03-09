@@ -85,9 +85,9 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   // 1) 로딩/에러(모든 렌더에서 동일한 훅 호출 순서)
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto mt-12 px-4">
+      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
         <Card className="border-border shadow-lg">
-          <CardContent className="p-6 sm:p-8 space-y-6">
+          <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
             <div className="space-y-3">
               <Skeleton className="h-7 w-48" />
               <Skeleton className="h-4 w-64" />
@@ -124,10 +124,10 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   }
   if (error || !data) {
     return (
-      <div className="max-w-3xl mx-auto mt-12 px-4">
+      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
         <Card className="border-border dark:border-destructive shadow-lg">
-          <CardContent className="p-12">
-            <div className="flex flex-col items-center gap-6 text-center">
+          <CardContent className="p-8 md:p-12">
+            <div className="flex flex-col items-center gap-4 md:gap-6 text-center">
               <div className="w-16 h-16 border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-destructive rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-8 h-8 text-destructive" />
               </div>
@@ -158,10 +158,10 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   const isClosed = CLOSED.includes(String(data?.status));
   if (!isSelfShip) {
     return (
-      <div className="max-w-3xl mx-auto mt-12 px-4">
+      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
         <Card className="border-border shadow-lg">
-          <CardContent className="p-12">
-            <div className="flex flex-col items-center gap-6 text-center">
+          <CardContent className="p-8 md:p-12">
+            <div className="flex flex-col items-center gap-4 md:gap-6 text-center">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-8 h-8 text-primary" />
               </div>
@@ -191,10 +191,10 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
 
   if (isClosed) {
     return (
-      <div className="max-w-3xl mx-auto mt-12 px-4">
+      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
         <Card className="border-border shadow-lg">
-          <CardContent className="p-12">
-            <div className="flex flex-col items-center gap-6 text-center">
+          <CardContent className="p-8 md:p-12">
+            <div className="flex flex-col items-center gap-4 md:gap-6 text-center">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-8 h-8 text-primary" />
               </div>
@@ -335,10 +335,10 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
   };
 
   return (
-    <div className="min-h-screen bg-background py-12">
+    <div className="min-h-screen bg-background py-8 md:py-12">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header Section */}
-        <div className="mb-8 text-center">
+        <div className="mb-6 md:mb-8 text-center">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="w-12 h-px bg-primary/30"></div>
             <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center shadow-lg">
@@ -350,10 +350,10 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
           <p className="text-muted-foreground leading-relaxed">{isEdit ? '이미 등록된 운송장 정보를 수정할 수 있습니다.' : '라켓을 발송하신 뒤, 택배사와 송장번호를 입력해 주세요.'}</p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
           {/* Info Card */}
           <Card className="border-border bg-card shadow-md">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Clock className="w-5 h-5 text-foreground" />
@@ -372,9 +372,9 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
           {/* Main Form Card */}
           <Card className="border-border shadow-lg">
-            <CardContent className="p-8">
+            <CardContent className="p-4 md:p-8">
               {/* Form Title with Divider */}
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
                 <div className="flex-1 h-px bg-primary/30"></div>
                 <div className="flex items-center gap-2 text-foreground">
                   <Package className="w-5 h-5" />
@@ -383,7 +383,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                 <div className="flex-1 h-px bg-muted/30"></div>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="courier" className="text-base font-semibold text-foreground flex items-center gap-2">
                     <Truck className="w-4 h-4 text-primary" />
@@ -471,7 +471,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
 
           {/* Action Buttons */}
           <Card className="border-border shadow-lg">
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6">
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(() => history.back())} disabled={submitting} className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card">
                   <ArrowLeft className="w-4 h-4 mr-2" />

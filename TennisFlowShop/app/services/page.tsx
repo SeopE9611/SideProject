@@ -174,7 +174,7 @@ export default async function ServicesPage() {
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto">
             <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur-sm dark:bg-card/95 overflow-hidden">
-              <div className="bg-card border-b border-primary/20 p-8 text-center text-foreground">
+              <div className="bg-card border-b border-primary/20 p-6 md:p-8 text-center text-foreground">
                 <h2 className="text-4xl font-bold mb-4">예약 안내</h2>
                 <p className="text-xl text-muted-foreground">
                   스트링 장착 서비스는 예약제로 운영됩니다.
@@ -184,8 +184,8 @@ export default async function ServicesPage() {
               </div>
 
               <CardContent className="p-5 bp-md:p-8">
-                <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 bp-md:gap-8 mb-6 bp-md:mb-8">
-                  <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-4 bp-md:gap-8 mb-6 bp-md:mb-8">
+                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
                     <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <PhoneCall className="h-10 w-10" />
                     </div>
@@ -195,7 +195,7 @@ export default async function ServicesPage() {
                     <p className="text-sm text-muted-foreground">운영 시간: 평일 10:00 - 22:00, 토요일 09:00 - 18:00</p>
                   </div>
 
-                  <div className="text-center p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
+                  <div className="text-center p-4 md:p-6 border border-border rounded-xl hover:shadow-lg transition-shadow duration-300">
                     <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                       <Calendar className="h-10 w-10" />
                     </div>
@@ -212,9 +212,9 @@ export default async function ServicesPage() {
                   </div>
                 </div>
 
-                <Separator className="my-8" />
+                <Separator className="my-6 md:my-8" />
 
-                <div className="bg-muted rounded-xl border border-border p-6 text-foreground">
+                <div className="bg-muted rounded-xl border border-border p-4 md:p-6 text-foreground">
                   <h3 className="text-xl font-bold mb-4 text-center">
                     <CheckCircle className="w-5 h-5 inline mr-2 text-primary" />
                     알아두세요
@@ -244,7 +244,7 @@ export default async function ServicesPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mt-6 md:mt-8">
                   <Button variant="outline" asChild>
                     <Link href="/board/qna">
                       <HelpCircle className="mr-2 h-4 w-4" />

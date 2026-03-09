@@ -248,7 +248,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
     return (
       <div className="space-y-6">
         <Card className="animate-pulse">
-          <CardContent className="p-8">
+          <CardContent className="p-6 md:p-8">
             <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
             <div className="h-4 bg-muted rounded w-2/3 mb-2"></div>
             <div className="h-4 bg-muted rounded w-1/2"></div>
@@ -261,7 +261,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   if (err) {
     return (
       <Card className="border-0 bg-muted/30">
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-6 md:p-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/15 dark:bg-destructive/20">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
@@ -274,7 +274,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
   if (!data) {
     return (
       <Card className="border-0 bg-muted/30">
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-6 md:p-8 text-center">
           <p className="text-muted-foreground">존재하지 않는 대여 건입니다.</p>
         </CardContent>
       </Card>
@@ -315,8 +315,8 @@ export default function RentalsDetailClient({ id }: { id: string }) {
       }
     : null;
   return (
-    <main className="space-y-8">
-      <div className="bg-muted/30 rounded-2xl p-8 border border-border/30 shadow-lg">
+    <main className="space-y-6 md:space-y-8">
+      <div className="bg-muted/30 rounded-2xl p-6 md:p-8 border border-border/30 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div className="flex items-center space-x-4 mb-4 sm:mb-0">
             <div className="bg-card dark:bg-muted rounded-full p-3 shadow-md">
@@ -471,7 +471,7 @@ export default function RentalsDetailClient({ id }: { id: string }) {
         </Card>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
         <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
           <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
