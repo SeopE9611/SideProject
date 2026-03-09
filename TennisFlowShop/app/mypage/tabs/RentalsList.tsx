@@ -83,7 +83,7 @@ const RentalsListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
     {Array.from({ length: count }).map((_, idx) => (
       <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-6">
+        <CardContent className="space-y-4 p-4 md:p-6">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-2">
               <Skeleton className="h-4 w-28" />
@@ -145,7 +145,7 @@ export default function RentalsList() {
   if (error) {
     return (
       <Card className="border-0 bg-card">
-        <CardContent className="p-8 text-center">
+        <CardContent className="p-6 md:p-8 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/15">
             <Briefcase className="h-8 w-8" />
           </div>
@@ -161,8 +161,8 @@ export default function RentalsList() {
   if (!isInitialLoading && !isValidating && flat.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30 dark:bg-card/40">
-        <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
+        <CardContent className="p-8 md:p-12 text-center">
+          <div className="mx-auto mb-4 md:mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
@@ -173,7 +173,7 @@ export default function RentalsList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? (
         <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">대여 내역을 불러오는 중입니다...</div>
       ) : null}
@@ -193,8 +193,8 @@ export default function RentalsList() {
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
-          <CardContent className="relative p-6">
-            <div className="flex items-start justify-between mb-6">
+          <CardContent className="relative p-4 md:p-6">
+            <div className="flex items-start justify-between mb-4 md:mb-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
                   <Briefcase className="h-6 w-6 text-foreground" />
@@ -226,7 +226,7 @@ export default function RentalsList() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <div>
@@ -272,7 +272,7 @@ export default function RentalsList() {
               )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-border/60 dark:border-border/60">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 pt-3 md:pt-4 border-t border-border/60 dark:border-border/60">
               <div className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-lg font-bold text-foreground">총 {total.toLocaleString()}원</span>

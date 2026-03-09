@@ -271,7 +271,7 @@ export default async function StringServiceSuccessPage(props: Props) {
       <BackButtonGuard />
 
       <div className="min-h-full bg-muted/30">
-        <div className="relative overflow-hidden bg-muted/30 py-20">
+        <div className="relative overflow-hidden bg-muted/30 py-12 md:py-20">
           <div className="absolute inset-0 bg-overlay/20"></div>
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="absolute inset-0">
@@ -281,27 +281,27 @@ export default async function StringServiceSuccessPage(props: Props) {
           </div>
 
           <div className="relative container mx-auto px-4 text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-card/20 backdrop-blur-sm mb-8">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-card/20 backdrop-blur-sm mb-6 md:mb-8">
               <CheckCircle className="h-12 w-12 text-primary" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">신청이 완료되었습니다!</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 text-foreground">신청이 완료되었습니다!</h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">테니스 플로우에서 확인 후 빠르게 연락드리겠습니다</p>
-            <div className="mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
+            <div className="mt-6 md:mt-8 inline-flex items-center space-x-2 bg-card/10 backdrop-blur-sm rounded-full px-6 py-3">
               <Calendar className="h-5 w-5" />
               <span className="text-sm font-medium">신청일: {createdAtLabel}</span>
             </div>
           </div>
 
           {isSelfShip && (
-            <div className="mt-10 max-w-2xl mx-auto px-4">
-              <div className="bg-muted/30 backdrop-blur-sm border border-border rounded-xl p-6 text-center">
-                <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="mt-8 md:mt-10 max-w-2xl mx-auto px-4">
+              <div className="bg-muted/30 backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
+                <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
                   <div className="rounded-full border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
                     <Package className="h-6 w-6 text-primary" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground">운송장 등록 안내</h3>
                 </div>
-                <p className="text-muted-foreground mb-4 leading-relaxed">
+                <p className="text-muted-foreground mb-3 md:mb-4 leading-relaxed">
                   <span className="font-semibold">라켓을 발송하신 뒤</span> 아래 버튼을 눌러 운송장을 등록해 주세요.
                   <br />
                   <span className="text-sm text-muted-foreground">(건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)</span>
@@ -317,7 +317,7 @@ export default async function StringServiceSuccessPage(props: Props) {
           )}
         </div>
 
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="max-w-5xl mx-auto">
             <Card data-cy="service-success-summary-card" className="mb-8 backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-2xl">
               <CardHeader className="bg-muted/30 rounded-t-lg">
@@ -340,9 +340,9 @@ export default async function StringServiceSuccessPage(props: Props) {
                 </div>
               </CardHeader>
 
-              <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div data-cy="service-success-amount-card" className="bg-muted p-6 rounded-xl">
+              <CardContent className="p-4 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                  <div data-cy="service-success-amount-card" className="bg-muted p-4 md:p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <Calendar className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">신청일자</h3>
@@ -350,7 +350,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <p className="text-2xl font-bold text-primary">{createdAtLabel}</p>
                   </div>
 
-                  <div data-cy="service-success-collection-card" className="bg-muted p-6 rounded-xl">
+                  <div data-cy="service-success-collection-card" className="bg-muted p-4 md:p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <CreditCard className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">결제 요약</h3>
@@ -392,7 +392,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     {application.packageApplied && <p className="mt-2 text-sm text-foreground">패키지 적용으로 입금 불필요</p>}
                   </div>
 
-                  <div className="bg-muted p-6 rounded-xl">
+                  <div className="bg-muted p-4 md:p-6 rounded-xl">
                     <div className="flex items-center mb-3">
                       <Clock className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">희망 일시</h3>
@@ -401,13 +401,13 @@ export default async function StringServiceSuccessPage(props: Props) {
                   </div>
                 </div>
                 {rental && (
-                  <div className="mb-8">
+                  <div className="mb-6 md:mb-8">
                     <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
                       <Package className="h-6 w-6 mr-3 text-primary" />
                       대여 정보
                     </h3>
 
-                    <div className="bg-muted/30 rounded-xl p-6 border-2 border-border">
+                    <div className="bg-muted/30 rounded-xl p-4 md:p-6 border-2 border-border">
                       {/* 상단: 대여 번호 */}
                       <div className="mb-4">
                         <p className="text-sm text-muted-foreground">대여 번호</p>
@@ -455,13 +455,13 @@ export default async function StringServiceSuccessPage(props: Props) {
                 )}
 
                 {order && !rental && (
-                  <div className="mb-8">
+                  <div className="mb-6 md:mb-8">
                     <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
                       <Package className="h-6 w-6 mr-3 text-primary" />
                       구매 정보
                     </h3>
 
-                    <div className="bg-muted/30 rounded-xl p-6 border-2 border-border">
+                    <div className="bg-muted/30 rounded-xl p-4 md:p-6 border-2 border-border">
                       {/* 상단: 주문 번호 */}
                       <div className="mb-4">
                         <p className="text-sm text-muted-foreground">주문 번호</p>
@@ -497,13 +497,13 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                 {application.packageApplied ? (
                   // ===== 패키지 적용 카드 =====
-                  <div className="mb-8">
+                  <div className="mb-6 md:mb-8">
                     <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
                       <Ticket className="h-6 w-6 mr-3 text-primary" />
                       패키지 적용됨
                     </h3>
 
-                    <div className="rounded-xl p-6 border-2 border-border/70 bg-muted/30">
+                    <div className="rounded-xl p-4 md:p-6 border-2 border-border/70 bg-muted/30">
                       <div className="flex items-start gap-4">
                         <div className="grid h-10 w-10 shrink-0 place-content-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm dark:bg-primary/20">
                           <Ticket className="h-5 w-5" />
@@ -561,16 +561,16 @@ export default async function StringServiceSuccessPage(props: Props) {
                 ) : (
                   // ===== 기존 입금 계좌 정보 (패키지 미적용 시에만 노출) =====
                   bankInfo && (
-                    <div className="mb-8">
+                    <div className="mb-6 md:mb-8">
                       <h3 className="text-xl font-bold text-foreground mb-4 flex items-center">
                         <CreditCard className="h-6 w-6 mr-3 text-primary" />
                         무통장 입금 안내
                       </h3>
 
-                      <div className="bg-muted/30 rounded-xl p-6 border-2 border-border">
+                      <div className="bg-muted/30 rounded-xl p-4 md:p-6 border-2 border-border">
                         <p className="text-sm text-muted-foreground mb-4">아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.</p>
 
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
                           <div className="bg-card p-4 rounded-lg shadow-sm">
                             <p className="text-sm text-muted-foreground mb-1">은행</p>
                             <p className="font-bold text-lg text-foreground">{bankInfo.label}</p>
@@ -607,10 +607,10 @@ export default async function StringServiceSuccessPage(props: Props) {
                   )
                 )}
 
-                <Separator className="my-8" />
+                <Separator className="my-6 md:my-8" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                  <div className="space-y-4 md:space-y-6">
                     <h3 className="text-xl font-bold text-foreground flex items-center">
                       <User className="h-6 w-6 mr-3 text-primary" />
                       신청자 정보
@@ -640,7 +640,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     </div>
                   </div>
 
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     <h3 className="text-xl font-bold text-foreground flex items-center">
                       <MapPin className="h-6 w-6 mr-3 text-foreground" />
                       {shippingSectionTitle}
@@ -659,22 +659,22 @@ export default async function StringServiceSuccessPage(props: Props) {
                   </div>
                 </div>
 
-                <Separator className="my-8" />
+                <Separator className="my-6 md:my-8" />
 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <h3 className="text-xl font-bold text-foreground flex items-center">
                     <Racquet className="h-6 w-6 mr-3 text-primary" />
                     장착 정보
                   </h3>
                   {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="p-6 bg-muted rounded-xl">
+ <div className="p-4 md:p-6 bg-muted rounded-xl">
  <div className="flex items-center mb-3">
  <Racquet className="h-5 w-5 text-primary mr-2" />
  <p className="text-sm font-medium text-muted-foreground">라켓</p>
  </div>
  <p className="font-bold text-lg text-foreground">{application.stringDetails.racketType}</p>
  </div>
- <div className="p-6 bg-muted rounded-xl">
+ <div className="p-4 md:p-6 bg-muted rounded-xl">
  <div className="flex items-center mb-3">
  <p className="text-sm font-medium text-muted-foreground">스트링</p>
  </div>
@@ -683,7 +683,7 @@ export default async function StringServiceSuccessPage(props: Props) {
  </div> */}
 
                   {stringDetails?.requirements && (
-                    <div className="p-6 bg-muted rounded-xl">
+                    <div className="p-4 md:p-6 bg-muted rounded-xl">
                       <div className="flex items-start mb-3">
                         <FileText className="h-5 w-5 text-primary mr-2 mt-0.5" />
                         <p className="text-sm font-medium text-muted-foreground">요청사항</p>
@@ -694,7 +694,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 </div>
                 {/* 기존 장착 정보 카드 아래 쪽에 추가 */}
                 {racketLines.length > 0 && (
-                  <div className="mt-8">
+                  <div className="mt-6 md:mt-8">
                     <h4 className="text-lg font-semibold text-foreground mb-3">라켓별 세부 장착 정보</h4>
 
                     <div className="space-y-3">
@@ -724,7 +724,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                 )}
               </CardContent>
 
-              <CardFooter className="bg-card rounded-b-lg p-8">
+              <CardFooter className="bg-card rounded-b-lg p-4 md:p-8">
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <Button variant="default" className="flex-1 h-12 transition-all duration-200" asChild>
                     <Link
@@ -748,7 +748,7 @@ export default async function StringServiceSuccessPage(props: Props) {
               </CardFooter>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
               <Card className="backdrop-blur-sm bg-card/90 dark:bg-card border-0 shadow-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">

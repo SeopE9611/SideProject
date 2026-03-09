@@ -182,7 +182,7 @@ export default function OrderLookupPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="relative container mx-auto px-4 py-16">
+        <div className="relative container mx-auto px-4 py-10 md:py-16">
           <div className="text-center text-foreground">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
               <Search className="w-8 h-8" />
@@ -193,9 +193,9 @@ export default function OrderLookupPage() {
         </div>
       </div>
 
-      <div className="container mx-auto py-12 px-4 md:px-6">
+      <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <Link href="/login" onClick={onLeaveToLoginClick} className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group">
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
@@ -204,7 +204,7 @@ export default function OrderLookupPage() {
 
           {/* Main Card */}
           <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
-            <CardHeader className="text-center pb-8">
+            <CardHeader className="text-center pb-6 md:pb-8">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
@@ -215,7 +215,7 @@ export default function OrderLookupPage() {
             <Separator className="mx-6" />
 
             <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-6 pt-8">
+              <CardContent className="space-y-4 md:space-y-6 pt-6 md:pt-8">
                 {/* Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
@@ -313,7 +313,7 @@ export default function OrderLookupPage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="flex flex-col gap-4 pt-2 pb-8">
+              <CardFooter className="flex flex-col gap-3 md:gap-4 pt-2 pb-6 md:pb-8">
                 <Button
                   type="submit"
                   size="lg"
@@ -344,8 +344,8 @@ export default function OrderLookupPage() {
           </Card>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-12">
+            <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-4">
                 <Shield className="w-6 h-6 text-primary" />
               </div>
@@ -353,7 +353,7 @@ export default function OrderLookupPage() {
               <p className="text-sm text-muted-foreground">개인정보 보호를 위한 안전한 주문 조회 시스템</p>
             </div>
 
-            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
+            <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4 dark:bg-success/15">
                 <Clock className="w-6 h-6 text-success" />
               </div>
@@ -361,7 +361,7 @@ export default function OrderLookupPage() {
               <p className="text-sm text-muted-foreground">최신 주문 상태를 실시간으로 확인 가능</p>
             </div>
 
-            <div className="text-center p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
+            <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-full mb-4">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
