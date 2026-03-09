@@ -437,13 +437,14 @@ export default function OperationsClient() {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-  const items = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / effectivePageSize));
+  // 초기 로딩에서 0/빈배열 기본값이 먼저 보이지 않도록 undefined를 유지한다.
+  const items = data?.items;
+  const total = data?.total;
+  const totalPages = typeof total === 'number' ? Math.max(1, Math.ceil(total / effectivePageSize)) : null;
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
 
   // 리스트를 "그룹(묶음)" 단위로 변환
-  const groups = useMemo(() => buildGroups(items), [items]);
+  const groups = useMemo(() => buildGroups(items ?? []), [items]);
   const groupsToRender = useMemo(() => {
     const withSignals = groups.map((group) => {
       const reviewLevel = computeReviewLevelGroup(group);
@@ -475,6 +476,7 @@ export default function OperationsClient() {
   }, [groups, warnFilter, warnSort]);
 
   const todayTodoCount = useMemo(() => {
+    if (!data) return null;
     return groupsToRender.reduce(
       (acc, group) => {
         const groupItems = [group.anchor, ...group.items.filter((it) => it.id !== group.anchor.id)];
@@ -494,7 +496,7 @@ export default function OperationsClient() {
       },
       { urgent: 0, caution: 0, pending: 0 },
     );
-  }, [groupsToRender]);
+  }, [data, groupsToRender]);
 
   // 펼칠 수 있는 그룹(통합 묶음)만 추림
   const expandableGroupKeys = useMemo(() => groupsToRender.filter((g) => g.items.length > 1).map((g) => g.key), [groupsToRender]);
@@ -649,7 +651,7 @@ export default function OperationsClient() {
                 <Siren className="h-4 w-4 text-warning" />
                 {PAGE_COPY.dailyTodoLabels.urgent}
               </CardTitle>
-              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.urgent}건</CardDescription>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount ? `${todayTodoCount.urgent}건` : '-'}</CardDescription>
             </CardHeader>
           </Card>
           <Card className="border-info/40 bg-info/5 shadow-none">
@@ -658,7 +660,7 @@ export default function OperationsClient() {
                 <BellRing className="h-4 w-4 text-info" />
                 {PAGE_COPY.dailyTodoLabels.caution}
               </CardTitle>
-              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.caution}건</CardDescription>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount ? `${todayTodoCount.caution}건` : '-'}</CardDescription>
             </CardHeader>
           </Card>
           <Card className="border-primary/30 bg-primary/5 shadow-none">
@@ -667,7 +669,7 @@ export default function OperationsClient() {
                 <ClipboardCheck className="h-4 w-4 text-primary" />
                 {PAGE_COPY.dailyTodoLabels.pending}
               </CardTitle>
-              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount.pending}건</CardDescription>
+              <CardDescription className="text-2xl font-bold text-foreground">{todayTodoCount ? `${todayTodoCount.pending}건` : '-'}</CardDescription>
             </CardHeader>
           </Card>
         </div>
@@ -928,7 +930,7 @@ export default function OperationsClient() {
             {activePresetGuide && (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <p className="text-xs text-muted-foreground">
-                  현재 결과 <span className="font-semibold text-foreground">{total.toLocaleString('ko-KR')}건</span>
+                  현재 결과 <span className="font-semibold text-foreground">{typeof total === 'number' ? `${total.toLocaleString('ko-KR')}건` : '-'}</span>
                 </p>
                 <p className="mt-1 text-sm font-medium text-foreground">{PRESET_CONFIG[activePresetGuide].label}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{PRESET_CONFIG[activePresetGuide].helperText}</p>
@@ -944,7 +946,7 @@ export default function OperationsClient() {
               <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
                 <div>
                   <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
-                  <p className="text-sm font-medium text-foreground">{total.toLocaleString('ko-KR')}건</p>
+                  <p className="text-sm font-medium text-foreground">{typeof total === 'number' ? `${total.toLocaleString('ko-KR')}건` : '-'}</p>
                 </div>
                 <div>
                   <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
@@ -1007,7 +1009,7 @@ export default function OperationsClient() {
               {activePresetKey && <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass('brand'))}>{PRESET_CONFIG[activePresetKey].label}</Badge>}
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">{data ? `총 ${total.toLocaleString('ko-KR')}건` : '목록을 불러오는 중…'}</p>
+              <p className="text-xs text-muted-foreground">{typeof total === 'number' ? `총 ${total.toLocaleString('ko-KR')}건` : '목록을 불러오는 중…'}</p>
               <span className="text-xs text-muted-foreground">표시 밀도</span>
               <div className="inline-flex items-center rounded-md border border-border p-0.5">
                 <Button type="button" size="sm" variant={displayDensity === 'default' ? 'secondary' : 'ghost'} className="h-6 px-2 text-xs" onClick={() => setDisplayDensity('default')} aria-pressed={displayDensity === 'default'}>
@@ -1021,7 +1023,7 @@ export default function OperationsClient() {
           </div>
           <div className="flex items-center gap-2 pt-2">
             <div className="text-xs text-muted-foreground">
-              {page} / {totalPages} 페이지
+              {totalPages ? `${page} / ${totalPages} 페이지` : '페이지 계산 중…'}
             </div>
             <Button
               type="button"
@@ -1333,10 +1335,10 @@ export default function OperationsClient() {
           )}
 
           {/* 페이지네이션 */}
-          {totalPages > 1 && (
+          {totalPages && totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-border px-4 pt-4 mt-4">
               <p className="text-xs text-muted-foreground">
-                {page} / {totalPages} 페이지 (총 {total.toLocaleString('ko-KR')}건)
+                {page} / {totalPages} 페이지 (총 {(total ?? 0).toLocaleString('ko-KR')}건)
               </p>
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="sm" className="h-8 px-3 bg-transparent" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>

@@ -196,27 +196,44 @@ const Header = () => {
 
   // 헤더 포인트 표시(로그인 유저만)
   const [pointsBalance, setPointsBalance] = useState<number | null>(null);
+  // 로딩/실패/실제 값(0 포함)을 분리해 잘못된 0 선노출을 막는다.
+  const [pointsStatus, setPointsStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
     if (!user) {
       setPointsBalance(null);
+      setPointsStatus('loading');
       return;
     }
 
     let cancelled = false;
 
+    setPointsStatus('loading');
     fetch('/api/points/me', { credentials: 'include' })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text().catch(() => '');
+          throw new Error(text || `포인트 조회 실패 (${res.status})`);
+        }
+        return res.json().catch(() => null);
+      })
       .then((data) => {
         if (cancelled) return;
 
-        const raw = data?.ok ? Number(data.balance ?? 0) : 0;
+        // 응답이 정상일 때만 실제 값을 렌더한다. (실제 0 포함)
+        if (!data?.ok || typeof data?.balance !== 'number') {
+          throw new Error('포인트 응답 형식이 올바르지 않습니다.');
+        }
+        const raw = Number(data.balance);
         const bal = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : 0;
         setPointsBalance(bal);
+        setPointsStatus('ready');
       })
       .catch(() => {
         if (cancelled) return;
-        setPointsBalance(0);
+        // 실패를 0으로 숨기지 않고, 알 수 없음 상태로 분리한다.
+        setPointsBalance(null);
+        setPointsStatus('error');
       });
 
     return () => {
@@ -612,13 +629,15 @@ const Header = () => {
                         <Link href="/mypage?tab=points" onClick={() => setOpen(false)} className="shrink-0 inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] font-semibold tabular-nums" aria-label="포인트 보기">
                           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">P</span>
                           <span className="inline-flex items-center gap-1">
-                            {pointsBalance === null ? (
+                            {pointsStatus === 'loading' ? (
                               <>
                                 <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-hidden="true" />
                                 <span className="sr-only">포인트 불러오는 중</span>
                               </>
+                            ) : pointsStatus === 'error' ? (
+                              <>-</>
                             ) : (
-                              <>{pointsBalance.toLocaleString()}P</>
+                              <>{(pointsBalance ?? 0).toLocaleString()}P</>
                             )}
                           </span>
                         </Link>
@@ -899,13 +918,15 @@ const Header = () => {
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">P</span>
                       <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums">
-                        {pointsBalance === null ? (
+                        {pointsStatus === 'loading' ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
                             <span className="sr-only">포인트 불러오는 중</span>
                           </>
+                        ) : pointsStatus === 'error' ? (
+                          <>-</>
                         ) : (
-                          <>{pointsBalance.toLocaleString()}P</>
+                          <>{(pointsBalance ?? 0).toLocaleString()}P</>
                         )}
                       </span>
                     </Link>

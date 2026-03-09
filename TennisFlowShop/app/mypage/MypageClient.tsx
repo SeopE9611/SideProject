@@ -42,8 +42,9 @@ export default function MypageClient({ user }: Props) {
   const [summaryLoading, setSummaryLoading] = useState(true);
 
   // 주문, 신청서 카운터 상태관리
-  const [ordersCount, setOrdersCount] = useState(0);
-  const [applicationsCount, setApplicationsCount] = useState(0);
+  // 로딩/실패/실제값(0 포함)을 구분하기 위해 null을 사용한다.
+  const [ordersCount, setOrdersCount] = useState<number | null>(null);
+  const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -55,7 +56,10 @@ export default function MypageClient({ user }: Props) {
       }
 
       const data = (await res.json().catch(() => null)) as { total?: unknown } | null;
-      return typeof data?.total === 'number' ? data.total : 0;
+      if (typeof data?.total !== 'number') {
+        throw new Error(`${label} total is not a number`);
+      }
+      return data.total;
     };
 
     (async () => {
@@ -69,14 +73,16 @@ export default function MypageClient({ user }: Props) {
       if (ordersResult.status === 'fulfilled') {
         setOrdersCount(ordersResult.value);
       } else if (!(ordersResult.reason instanceof DOMException && ordersResult.reason.name === 'AbortError')) {
-        setOrdersCount(0);
+        // 실패를 0으로 보이지 않게 null로 분리한다.
+        setOrdersCount(null);
         showErrorToast('주문 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
 
       if (applicationsResult.status === 'fulfilled') {
         setApplicationsCount(applicationsResult.value);
       } else if (!(applicationsResult.reason instanceof DOMException && applicationsResult.reason.name === 'AbortError')) {
-        setApplicationsCount(0);
+        // 실패를 0으로 보이지 않게 null로 분리한다.
+        setApplicationsCount(null);
         showErrorToast('신청 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       }
 
@@ -159,12 +165,12 @@ export default function MypageClient({ user }: Props) {
               <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-6">
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : ordersCount}</div>
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (ordersCount ?? '-')}</div>
                   <div className="text-xs bp-sm:text-sm text-muted-foreground">총 주문</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : applicationsCount}</div>
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (applicationsCount ?? '-')}</div>
                   <div className="text-xs bp-sm:text-sm text-muted-foreground">서비스 신청</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1">
