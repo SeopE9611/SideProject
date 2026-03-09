@@ -6,6 +6,7 @@ import RefundAccountFields from '@/components/refund/RefundAccountFields';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { readCancelRequestError, validateRefundAccountInput } from '@/lib/cancel-request/refund-account-client';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { XCircle } from 'lucide-react';
@@ -86,13 +87,13 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       return;
     }
 
-    const refundAccountDigits = refundAccount.replace(/\D/g, '');
-    if (!refundBank || !refundAccountDigits || !refundHolder.trim()) {
-      showErrorToast('환불 은행, 계좌번호, 예금주를 입력해주세요.');
-      return;
-    }
-    if (refundAccountDigits.length < 8 || refundAccountDigits.length > 20) {
-      showErrorToast('계좌번호는 -를 제외한 숫자 8~20자리로 입력해주세요.');
+    const refundValidation = validateRefundAccountInput({
+      bank: refundBank,
+      account: refundAccount,
+      holder: refundHolder,
+    });
+    if (!refundValidation.ok) {
+      showErrorToast(refundValidation.message);
       return;
     }
 
@@ -105,9 +106,9 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
         // "기타"일 때만 입력한 텍스트 저장, 나머지는 공란
         reasonText: selectedReason === '기타' ? otherReason.trim() : '',
         refundAccount: {
-          bank: refundBank,
-          account: refundAccountDigits,
-          holder: refundHolder.trim(),
+          bank: refundValidation.value.bank,
+          account: refundValidation.value.account,
+          holder: refundValidation.value.holder,
         },
       };
 
@@ -119,8 +120,8 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       });
 
       if (!res.ok) {
-        const msg = await res.text().catch(() => '');
-        throw new Error(msg || '대여 취소 요청 처리 중 오류가 발생했습니다.');
+        const parsed = await readCancelRequestError(res, '대여 취소 요청 처리 중 오류가 발생했습니다.');
+        throw new Error(parsed.message || '대여 취소 요청 처리 중 오류가 발생했습니다.');
       }
 
       showSuccessToast('대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');

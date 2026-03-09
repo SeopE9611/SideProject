@@ -761,7 +761,9 @@ export async function handleStringingCancelRequest(req: Request, { params }: { p
     if (!parsedRefundAccount.success) {
       return NextResponse.json(
         {
-          error: '환불 계좌 정보를 정확히 입력해주세요.',
+          ok: false,
+          errorCode: 'INVALID_REFUND_ACCOUNT',
+          message: '환불 계좌 정보를 정확히 입력해주세요.',
           fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
         },
         { status: 400 },
@@ -1227,7 +1229,8 @@ export async function handleApplicationCancelRequest(req: Request, { params }: {
       return NextResponse.json(
         {
           ok: false,
-          message: 'INVALID_REFUND_ACCOUNT',
+          errorCode: 'INVALID_REFUND_ACCOUNT',
+          message: '환불 계좌 정보를 정확히 입력해주세요.',
           fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
         },
         { status: 400 },

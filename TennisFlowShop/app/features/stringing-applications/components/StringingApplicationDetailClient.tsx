@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
+import { readCancelRequestError } from '@/lib/cancel-request/refund-account-client';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -314,9 +315,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         });
 
         if (!res.ok) {
-          const msg = await res.text().catch(() => '');
-          console.error('cancel-request failed', res.status, msg);
-          throw new Error('취소 요청 실패');
+          const parsed = await readCancelRequestError(res, '취소 요청 실패');
+          console.error('cancel-request failed', res.status, parsed);
+          throw new Error(parsed.message || '취소 요청 실패');
         }
 
         showSuccessToast('취소 요청이 정상적으로 접수되었습니다. 관리자 확인 후 결과가 반영됩니다.');
@@ -327,7 +328,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         setIsCancelDialogOpen(false);
       } catch (err) {
         console.error(err);
-        showErrorToast('취소 요청 중 오류가 발생했습니다.');
+        showErrorToast(err instanceof Error ? err.message : '취소 요청 중 오류가 발생했습니다.');
       }
     });
   };

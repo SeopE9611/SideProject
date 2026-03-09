@@ -30,12 +30,12 @@ export default function RefundAccountFields({ bank, account, holder, onBankChang
 
       <div className="space-y-2">
         <Label>환불 계좌번호</Label>
-        <Input value={account} onChange={(e) => onAccountChange(e.target.value)} disabled={disabled} placeholder="숫자만 입력 가능" />
+        <Input value={account} onChange={(e) => onAccountChange(e.target.value)} disabled={disabled} placeholder="숫자만 8~20자리 입력" />
       </div>
 
       <div className="space-y-2">
         <Label>예금주</Label>
-        <Input value={holder} onChange={(e) => onHolderChange(e.target.value)} disabled={disabled} placeholder="예금주명을 입력해주세요" />
+        <Input value={holder} onChange={(e) => onHolderChange(e.target.value)} disabled={disabled} placeholder="예금주명 2자 이상 입력" />
       </div>
     </div>
   );

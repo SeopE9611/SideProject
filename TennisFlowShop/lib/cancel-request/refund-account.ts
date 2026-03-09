@@ -21,9 +21,27 @@ const toDigits = (value: unknown) => toTrimmedString(value).replace(/\D/g, '');
  * - holder: 예금주명 2자 이상
  */
 export const RefundAccountSchema = z.object({
-  bank: z.preprocess(toTrimmedString, z.string().min(1).refine((value) => isRefundBankCode(value), { message: '지원하지 않는 은행 코드입니다.' })),
-  account: z.preprocess(toDigits, z.string().min(8).max(20)),
-  holder: z.preprocess(toTrimmedString, z.string().min(2).max(30)),
+  bank: z.preprocess(
+    toTrimmedString,
+    z
+      .string()
+      .min(1, { message: '환불 은행을 선택해주세요.' })
+      .refine((value) => isRefundBankCode(value), { message: '지원하지 않는 환불 은행입니다.' }),
+  ),
+  account: z.preprocess(
+    toDigits,
+    z
+      .string()
+      .min(8, { message: '계좌번호는 숫자 8자 이상으로 입력해주세요.' })
+      .max(20, { message: '계좌번호는 숫자 20자 이하로 입력해주세요.' }),
+  ),
+  holder: z.preprocess(
+    toTrimmedString,
+    z
+      .string()
+      .min(2, { message: '예금주명은 2자 이상 입력해주세요.' })
+      .max(30, { message: '예금주명은 30자 이하로 입력해주세요.' }),
+  ),
 });
 
 export function getRefundBankLabel(bank?: string | null) {

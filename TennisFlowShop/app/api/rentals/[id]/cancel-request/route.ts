@@ -157,7 +157,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json(
         {
           ok: false,
-          message: 'INVALID_REFUND_ACCOUNT',
+          errorCode: 'INVALID_REFUND_ACCOUNT',
+          message: '환불 계좌 정보를 정확히 입력해주세요.',
           detail: '환불 계좌 정보를 정확히 입력해주세요.',
           fieldErrors: parsedRefundAccount.error.flatten().fieldErrors,
         },
