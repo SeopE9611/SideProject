@@ -22,11 +22,10 @@ import PackagePassStatusSelect from '@/app/features/packages/components/PackageP
 import PackageCurrentStatusSelect from '@/app/features/packages/components/PackageCurrentStatusSelect';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { getMerchandisingBadgeSpec, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 type PackageDetail = AdminPackageDetailDto;
 type OperationsHistoryItem = AdminPackageOperationHistoryDto;
-
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
 const toDateSafe = (v: string | Date | null | undefined) => {
   if (!v) return null;
@@ -160,8 +159,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
     error,
     isLoading,
     mutate,
-  } = useSWR<{ item: PackageDetail }>(`/api/admin/package-orders/${packageId}`, fetcher, {
+  } = useSWR<{ item: PackageDetail }>(`/api/admin/package-orders/${packageId}`, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   const data = resp?.item;

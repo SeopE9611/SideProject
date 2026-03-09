@@ -17,7 +17,8 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { type PackageConfig, type GeneralSettings, DEFAULT_PACKAGE_CONFIGS, DEFAULT_GENERAL_SETTINGS } from '@/lib/package-settings';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
-import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
+import { adminMutator } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
 import { getMerchandisingBadgeSpec } from '@/lib/badge-style';
 
@@ -57,8 +58,9 @@ export default function PackageSettingsClient() {
     }
   };
 
-  const { data, isLoading, error } = useSWR<PackageSettingsResponse>('/api/admin/packages/settings', adminFetcher, {
+  const { data, isLoading, error } = useSWR<PackageSettingsResponse>('/api/admin/packages/settings', authenticatedSWRFetcher, {
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   const [editingPackage, setEditingPackage] = useState<string | null>(null);

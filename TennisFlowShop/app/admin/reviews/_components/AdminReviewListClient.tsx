@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
 import { Switch } from '@/components/ui/switch';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from '@/types/admin/reviews';
 import { Award, Calendar, Eye, EyeOff, Loader2, MessageSquare, MoreHorizontal, Search, Star, ThumbsUp, Trash2, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
@@ -38,11 +39,6 @@ function mapApiToViewModel(page: Page | null): Page | null {
 }
 
 const LIMIT = 10;
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then((r) => {
-    if (!r.ok) throw new Error('불러오기 실패');
-    return r.json();
-  });
 
 // 검색 디바운스
 function useDebounced<T>(value: T, delay = 350) {
@@ -67,7 +63,10 @@ export default function AdminReviewListClient() {
   }, [qDebounced, status, type]);
 
   // ---- KPI ----
-  const { data: metrics } = useSWR<{ total: number; avg: number; five: number; byType: { product: number; service: number } }>('/api/admin/reviews/metrics', fetcher);
+  const { data: metrics } = useSWR<{ total: number; avg: number; five: number; byType: { product: number; service: number } }>('/api/admin/reviews/metrics', authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // ---- 리스트 ----
   const getKey = useCallback(
@@ -84,7 +83,7 @@ export default function AdminReviewListClient() {
     [qDebounced, status, type, showDeleted],
   );
 
-  const { data: rawData, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, fetcher, { revalidateFirstPage: true, revalidateOnFocus: false });
+  const { data: rawData, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, authenticatedSWRFetcher, { revalidateFirstPage: true, revalidateOnFocus: false, revalidateOnReconnect: false });
   const data = useMemo(() => (rawData ? rawData.map((page) => mapApiToViewModel(page) as Page) : undefined), [rawData]);
   const rows = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
   const hasMore = useMemo(() => (data?.length ? data[data.length - 1].items.length === LIMIT : false), [data]);

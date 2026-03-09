@@ -6,7 +6,6 @@ import { useDebouncedValue } from '@/app/admin/packages/_hooks/useDebouncedValue
 import {
   DEFAULT_PACKAGE_LIST_FILTERS,
   badgeSizeCls,
-  fetcher,
   normalizePackagePaymentStatus,
   packageTypeColors,
   type PackageListItem,
@@ -26,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 import { getPaymentStatusBadgeSpec } from '@/lib/badge-style';
@@ -169,9 +169,10 @@ export default function PackageOrdersClient() {
   );
 
   // SWR은 디바운스된 키를 사용
-  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/admin/package-orders?${queryString}`, fetcher, {
+  const { data, error, isValidating, mutate } = useSWR<PackagesResponse>(`/api/admin/package-orders?${queryString}`, authenticatedSWRFetcher, {
     dedupingInterval: 1000,
     revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;

@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 import { Loader2, RefreshCcw, Send, Search, Mail, Clock, AlertCircle, CheckCircle2, XCircle, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -36,11 +37,6 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 const LIMIT = 10;
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then(async (r) => {
-    if (!r.ok) throw new Error((await r.text()) || '요청 실패');
-    return r.json();
-  });
 
 function useDebounced<T>(value: T, delay = 350) {
   const [debounced, setDebounced] = useState(value);
@@ -119,7 +115,7 @@ export default function AdminNotificationsClient() {
     return `/api/admin/notifications/outbox?${queryString}`;
   }, [page, status, qDebounced]);
 
-  const { data, error, isValidating, mutate } = useSWR<PageRes>(key, fetcher, { revalidateOnFocus: false });
+  const { data, error, isValidating, mutate } = useSWR<PageRes>(key, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
   const rows = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
@@ -135,7 +131,7 @@ export default function AdminNotificationsClient() {
     setDetail(null);
     try {
       setDetailLoading(true);
-      const j = await fetcher(`/api/admin/notifications/outbox/${id}`);
+      const j = await authenticatedSWRFetcher<OutboxDetail>(`/api/admin/notifications/outbox/${id}`);
       setDetail(j);
     } catch (error: unknown) {
       showErrorToast(getErrorMessage(error, '상세 불러오기 실패'));
