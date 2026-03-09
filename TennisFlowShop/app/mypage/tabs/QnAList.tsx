@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -22,11 +23,7 @@ type QnaPage = { items: Qna[]; total: number };
 
 const LIMIT = 10;
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) throw new Error('문의 목록을 불러오지 못했습니다.');
-  return res.json();
-};
+const fetcher = (url: string) => authenticatedSWRFetcher<QnaPage>(url);
 
 
 
@@ -74,6 +71,8 @@ export default function QnAList() {
 
   const { data, size, setSize, isValidating, error } = useSWRInfinite<QnaPage>(getKey, fetcher, {
     revalidateFirstPage: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   // 누적 리스트

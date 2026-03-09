@@ -9,10 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, CreditCard, Package, ArrowRight, Briefcase, CheckCircle, AlertCircle, XCircle, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { racketBrandLabel } from '@/lib/constants';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import CancelRentalDialog from '@/app/mypage/rentals/_components/CancelRentalDialog';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+type RentalsResponse = {
+  items: unknown[];
+};
+
+const fetcher = (url: string) => authenticatedSWRFetcher<RentalsResponse>(url);
 
 const LIMIT = 5;
 
@@ -99,7 +104,10 @@ const RentalsListSkeleton = ({ count = 3 }: { count?: number }) => (
   </div>
 );
 export default function RentalsList() {
-  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(getKey, fetcher);
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(getKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const handleWithdrawCancelRequest = async (rentalId: string) => {
     if (!confirm('대여 취소 요청을 철회하시겠습니까?')) return;

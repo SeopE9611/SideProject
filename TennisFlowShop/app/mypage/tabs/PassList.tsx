@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Ticket } from 'lucide-react';
@@ -25,10 +26,13 @@ type PassItem = {
 
 type Res = { items: PassItem[] };
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+const fetcher = (url: string) => authenticatedSWRFetcher<Res>(url);
 
 export default function PassList() {
-  const { data, isLoading, error, mutate } = useSWR<Res>('/api/passes/me', fetcher);
+  const { data, isLoading, error, mutate } = useSWR<Res>('/api/passes/me', fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const [now, setNow] = useState(0);
 
   useEffect(() => {

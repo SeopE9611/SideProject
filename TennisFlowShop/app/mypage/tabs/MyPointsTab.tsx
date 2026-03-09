@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { PointTransactionListItem } from '@/lib/types/points';
 import { fallbackReason, parsePointRefKey, pointTxStatusLabel, pointTxTypeLabel, safeLocalDateTime, shortId } from '@/lib/points.display';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import Link from 'next/link';
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, ChevronLeft, ChevronRight, RefreshCw, Coins, ArrowRight, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ type PointsHistoryRes = {
   debt?: number;
 };
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => authenticatedSWRFetcher<PointsHistoryRes>(url);
 
 const fmt = (n: number) => new Intl.NumberFormat('ko-KR').format(n);
 
@@ -29,9 +30,15 @@ export default function MyPointsTab() {
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, isLoading, mutate } = useSWR<PointsHistoryRes>(`/api/points/me/history?page=${page}&limit=${limit}`, fetcher);
+  const { data, isLoading, mutate } = useSWR<PointsHistoryRes>(`/api/points/me/history?page=${page}&limit=${limit}`, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
-  const { data: allData } = useSWR<PointsHistoryRes>(`/api/points/me/history?page=1&limit=10000`, fetcher);
+  const { data: allData } = useSWR<PointsHistoryRes>(`/api/points/me/history?page=1&limit=10000`, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const totalPages = useMemo(() => {
     const total = data?.total ?? 0;
