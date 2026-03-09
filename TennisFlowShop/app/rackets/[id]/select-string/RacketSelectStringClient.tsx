@@ -209,27 +209,6 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     }
   };
 
-  if (isLoadingInitial) {
-    return (
-      <SiteContainer variant="wide" className="py-16 space-y-6">
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <Skeleton className="mx-auto h-8 w-40" />
-          <Skeleton className="mx-auto h-4 w-96 max-w-full" />
-        </div>
-        <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <div key={idx} className="rounded-2xl border border-border bg-card p-5 space-y-3">
-              <Skeleton className="aspect-square w-full rounded-xl" />
-              <Skeleton className="h-5 w-2/3" />
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ))}
-        </div>
-      </SiteContainer>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
@@ -299,43 +278,46 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
         {/* 스트링 목록 */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-foreground text-center">사용 가능한 스트링</h2>
-          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">
-            {products.map((p: any) => {
-              const stringId = String(p._id);
-              const stringImage = p?.images?.[0] ?? p?.imageUrl;
-              const manageStock = Boolean(p?.inventory?.manageStock);
-              const stock = typeof p?.inventory?.stock === 'number' ? p.inventory.stock : undefined;
-              const lowStock = typeof p?.inventory?.lowStock === 'number' ? p.inventory.lowStock : 5;
-              const isSoldOut = manageStock && typeof stock === 'number' && stock <= 0;
-              const isShort = manageStock && typeof stock === 'number' && stock < workCount;
+          {isLoadingInitial ? (
+            <div className="rounded-2xl border border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground">스트링 목록을 준비하고 있습니다.</div>
+          ) : (
+            <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6 items-start">
+              {products.map((p: any) => {
+                const stringId = String(p._id);
+                const stringImage = p?.images?.[0] ?? p?.imageUrl;
+                const manageStock = Boolean(p?.inventory?.manageStock);
+                const stock = typeof p?.inventory?.stock === 'number' ? p.inventory.stock : undefined;
+                const lowStock = typeof p?.inventory?.lowStock === 'number' ? p.inventory.lowStock : 5;
+                const isSoldOut = manageStock && typeof stock === 'number' && stock <= 0;
+                const isShort = manageStock && typeof stock === 'number' && stock < workCount;
 
-              const isCurrent = Boolean(selectedStringIdForHighlight) && selectedStringIdForHighlight === stringId && isFromCart;
+                const isCurrent = Boolean(selectedStringIdForHighlight) && selectedStringIdForHighlight === stringId && isFromCart;
 
-              return (
-                <div
-                  key={stringId}
-                  className={[
-                    'group relative overflow-hidden border rounded-2xl bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
-                    isCurrent ? 'border-border ring-2 ring-ring' : 'border-border hover:border-border',
-                  ].join(' ')}
-                >
-                  <div className="p-5 flex flex-col h-full">
-                    <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
-                      {stringImage ? (
-                        <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                      ) : (
-                        <div className="text-muted-foreground">
-                          <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
+                return (
+                  <div
+                    key={stringId}
+                    className={[
+                      'group relative overflow-hidden border rounded-2xl bg-card transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+                      isCurrent ? 'border-border ring-2 ring-ring' : 'border-border hover:border-border',
+                    ].join(' ')}
+                  >
+                    <div className="p-5 flex flex-col h-full">
+                      <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
+                        {stringImage ? (
+                          <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                        ) : (
+                          <div className="text-muted-foreground">
+                            <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
 
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between gap-2">
@@ -353,42 +335,43 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
                       {isSoldOut && <p className="text-xs text-destructive">품절</p>}
                     </div>
 
-                    {/* 버튼 영역 */}
-                    {isFromCart ? (
-                      <Button variant="cardAction" className="mt-4 w-full font-medium rounded-xl py-5 transition-all duration-300" onClick={() => handleSelectString(p)}>
-                        <span className="flex items-center justify-center gap-2">
-                          이 스트링으로 변경
-                          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </span>
-                      </Button>
-                    ) : (
-                      <div className="mt-4 grid grid-cols-1 gap-2">
-                        <Button
-                          variant="cardAction"
-                          className="w-full font-medium rounded-xl py-5 transition-all duration-300"
-                          disabled={isSoldOut || isShort}
-                          onClick={() => handleSelectString(p)}
-                        >
+                      {/* 버튼 영역 */}
+                      {isFromCart ? (
+                        <Button variant="cardAction" className="mt-4 w-full font-medium rounded-xl py-5 transition-all duration-300" onClick={() => handleSelectString(p)}>
                           <span className="flex items-center justify-center gap-2">
-                            바로 결제
+                            이 스트링으로 변경
                             <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </span>
                         </Button>
+                      ) : (
+                        <div className="mt-4 grid grid-cols-1 gap-2">
+                          <Button
+                            variant="cardAction"
+                            className="w-full font-medium rounded-xl py-5 transition-all duration-300"
+                            disabled={isSoldOut || isShort}
+                            onClick={() => handleSelectString(p)}
+                          >
+                            <span className="flex items-center justify-center gap-2">
+                              바로 결제
+                              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </span>
+                          </Button>
 
-                        <Button variant="outline" className="w-full rounded-xl py-5 font-medium" disabled={isSoldOut || isShort} onClick={() => handleAddToCart(p)}>
-                          장바구니 담기
-                        </Button>
-                      </div>
-                    )}
+                          <Button variant="outline" className="w-full rounded-xl py-5 font-medium" disabled={isSoldOut || isShort} onClick={() => handleAddToCart(p)}>
+                            장바구니 담기
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {hasMore && (

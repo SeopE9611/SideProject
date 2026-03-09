@@ -39,27 +39,6 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
     router.push(url);
   };
 
-  if (isLoadingInitial) {
-    return (
-      <SiteContainer variant="wide" className="py-16 space-y-6">
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <Skeleton className="mx-auto h-8 w-40" />
-          <Skeleton className="mx-auto h-4 w-96 max-w-full" />
-        </div>
-        <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <div key={idx} className="rounded-2xl border border-border bg-card p-5 space-y-3">
-              <Skeleton className="aspect-square w-full rounded-xl" />
-              <Skeleton className="h-5 w-2/3" />
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ))}
-        </div>
-      </SiteContainer>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-8 bp-md:py-12 space-y-8 bp-md:space-y-10">
@@ -119,40 +98,44 @@ export default function RentalSelectStringClient({ racket, period }: { racket: R
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-foreground text-center">사용 가능한 스트링</h2>
 
-          <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-            {(products ?? []).map((p: any) => {
-              const stringImage = p?.images?.[0] ?? p?.imageUrl;
-              const id = String(p?._id ?? '');
+          {isLoadingInitial ? (
+            <div className="rounded-2xl border border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground">스트링 목록을 준비하고 있습니다.</div>
+          ) : (
+            <div className="grid grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
+              {(products ?? []).map((p: any) => {
+                const stringImage = p?.images?.[0] ?? p?.imageUrl;
+                const id = String(p?._id ?? '');
 
-              return (
-                <div key={id} className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                  <div className="p-5 flex flex-col h-full">
-                    {/* String Image */}
-                    <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
-                      {stringImage ? <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 없음</div>}
+                return (
+                  <div key={id} className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                    <div className="p-5 flex flex-col h-full">
+                      {/* String Image */}
+                      <div className="mb-4 rounded-xl overflow-hidden bg-muted/30 aspect-square flex items-center justify-center">
+                        {stringImage ? <img src={stringImage || '/placeholder.svg'} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">이미지 없음</div>}
+                      </div>
+
+                      {/* String Info */}
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">{p.name}</h3>
+                        {p.shortDescription ? <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{p.shortDescription}</p> : null}
+                        <p className="text-xl font-bold text-foreground">{Number(p.price ?? 0).toLocaleString()}원</p>
+                      </div>
+
+                      {/* Select Button */}
+                      <Button className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300" onClick={() => goCheckout(id)}>
+                        <span className="flex items-center justify-center gap-2">
+                          선택하기
+                          <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </Button>
                     </div>
-
-                    {/* String Info */}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">{p.name}</h3>
-                      {p.shortDescription ? <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{p.shortDescription}</p> : null}
-                      <p className="text-xl font-bold text-foreground">{Number(p.price ?? 0).toLocaleString()}원</p>
-                    </div>
-
-                    {/* Select Button */}
-                    <Button className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300" onClick={() => goCheckout(id)}>
-                      <span className="flex items-center justify-center gap-2">
-                        선택하기
-                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                    </Button>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Load More */}
           {hasMore && (
