@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, AlertTriangle, Truck } from 'lucide-react';
 import ShippingForm from '@/app/admin/applications/stringing/[id]/shipping-update/shipping-form';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 type Application = {
   _id: string;
@@ -18,19 +19,16 @@ type Application = {
   };
 };
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then((r) => {
-    if (!r.ok) throw new Error('신청서 조회 실패');
-    return r.json();
-  });
-
 export interface Props {
   applicationId: string;
   onSuccess?: () => void;
 }
 
 export default function ShippingFormClient({ applicationId, onSuccess }: Props) {
-  const { data, error, isLoading } = useSWR<Application>(`/api/admin/applications/stringing/${applicationId}`, fetcher);
+  const { data, error, isLoading } = useSWR<Application>(`/api/admin/applications/stringing/${applicationId}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const shippingInfo = data?.shippingInfo ?? {};
   const invoice = shippingInfo.invoice ?? {};

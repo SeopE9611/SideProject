@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { adminFetcher, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { racketBrandLabel } from '@/lib/constants';
 import { AlertTriangle, CheckCircle, Edit, Eye, MoreVertical, Package, Plus, Search, XCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -17,7 +18,11 @@ import { MdSportsTennis } from 'react-icons/md';
 import useSWR from 'swr';
 
 function StockChip({ id, total }: { id: string; total: number }) {
-  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, adminFetcher, { dedupingInterval: 5000 });
+  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, authenticatedSWRFetcher, {
+    dedupingInterval: 5000,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const qty = Math.max(1, total ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
@@ -61,7 +66,10 @@ function ConditionBadge({ condition }: { condition: string }) {
 }
 
 export default function AdminRacketsClient() {
-  const { data, isLoading, error } = useSWR<{ items: Item[]; total: number; page: number; pageSize: number }>('/api/admin/rackets?page=1&pageSize=50', adminFetcher);
+  const { data, isLoading, error } = useSWR<{ items: Item[]; total: number; page: number; pageSize: number }>('/api/admin/rackets?page=1&pageSize=50', authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

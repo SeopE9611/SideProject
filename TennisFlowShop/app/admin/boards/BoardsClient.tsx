@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from '@/lib/board-public-url-policy';
 import { adminPostVisibilityBadgeVariant, adminReportStatusBadgeVariant, adminReportTargetBadgeVariant } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 type PostItem = {
   id: string;
@@ -45,11 +46,8 @@ type ReportItem = {
   comment: { id: string | null; content: string; nickname: string; status: string } | null;
 };
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(await res.text().catch(() => 'Request failed'));
-  return res.json();
-};
+type PostsResponse = { items?: PostItem[]; total?: number };
+type ReportsResponse = { items?: ReportItem[]; total?: number };
 
 const boardLabel: Record<string, string> = {
   notice: '공지',
@@ -148,9 +146,15 @@ export default function BoardsClient() {
     return `/api/admin/community/reports?${qs.toString()}`;
   }, [reportPage, reportType, reportStatus, reportQ]);
 
-  const { data: postsData, error: postsErr, isLoading: postsLoading, mutate: mutatePosts } = useSWR(tab === 'posts' ? postsUrl : null, fetcher);
+  const { data: postsData, error: postsErr, isLoading: postsLoading, mutate: mutatePosts } = useSWR<PostsResponse>(tab === 'posts' ? postsUrl : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
-  const { data: reportsData, error: reportsErr, isLoading: reportsLoading, mutate: mutateReports } = useSWR(tab === 'reports' ? reportsUrl : null, fetcher);
+  const { data: reportsData, error: reportsErr, isLoading: reportsLoading, mutate: mutateReports } = useSWR<ReportsResponse>(tab === 'reports' ? reportsUrl : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const posts: PostItem[] = (postsData?.items ?? []).map((item: any) => {
     // 서버 스키마 정합성: views/likes/commentsCount 실필드만 사용

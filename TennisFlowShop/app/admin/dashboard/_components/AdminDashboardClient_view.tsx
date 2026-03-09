@@ -16,19 +16,11 @@ import type { DashboardMetrics } from '@/types/admin/dashboard';
 import { formatAdminKRW, formatAdminNumber, formatIsoToKstShort } from '@/lib/admin/formatters';
 import { labelOrderStatus, labelPaymentStatus, labelStringingStatus } from '@/lib/admin/status-labels';
 import { adminRichTooltipClass } from '@/lib/tooltip-style';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 // ----------------------------- 타입 -----------------------------
 
 // ----------------------------- 유틸 -----------------------------
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { credentials: 'include' });
-  if (!res.ok) {
-    const msg = await res.text().catch(() => '');
-    throw new Error(msg || `Request failed: ${res.status}`);
-  }
-  return (await res.json()) as DashboardMetrics;
-};
 
 // ----------------------------- 상태 라벨(표시용) -----------------------------
 // DB 값은 그대로 두고, 화면에서만 "pending" 같은 레거시 영문 상태를 한글로 정리
@@ -211,8 +203,9 @@ function getCancelQueueQuickSignal(status?: string, refundAccountReady?: boolean
 // ----------------------------- 메인 -----------------------------
 
 export default function AdminDashboardClient() {
-  const { data, error, isLoading, mutate } = useSWR('/api/admin/dashboard/metrics', fetcher, {
-    revalidateOnFocus: true,
+  const { data, error, isLoading, mutate } = useSWR<DashboardMetrics>('/api/admin/dashboard/metrics', authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   if (isLoading) {

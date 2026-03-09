@@ -6,9 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditCard, Play, RotateCcw, XCircle, Undo2, Clock } from 'lucide-react';
-import { adminFetcher } from '@/lib/admin/adminFetcher';
-
-const fetcher = (url: string) => adminFetcher<{ ok: boolean; items: HistoryItem[]; page: number; pageSize: number; total: number; hasPrev: boolean; hasNext: boolean }>(url, { cache: 'no-store' });
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 type HistoryItem = {
   _id: string;
@@ -145,8 +143,10 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
     total: number;
     hasPrev: boolean;
     hasNext: boolean;
-  }>(`/api/admin/rentals/${id}/history?page=${page}&pageSize=${pageSize}`, fetcher, {
+  }>(`/api/admin/rentals/${id}/history?page=${page}&pageSize=${pageSize}`, authenticatedSWRFetcher, {
     keepPreviousData: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   });
 
   const items = useMemo(() => {

@@ -33,7 +33,7 @@ import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/produc
 import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/productFormOptions';
 import { createSearchKeywords } from './hooks/useKeywordGenerator';
 import { adminFormHintTooltipClass } from '@/lib/tooltip-style';
-import { fetchProductDetail } from './actions/productActions';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { parseSearchKeywordsInput } from './table/productTableUtils';
 import {
   MAX_PRODUCT_IMAGE_COUNT,
@@ -108,7 +108,10 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   // 재고 관리가 실제로 수정되었는지 추적할 플래그
   const [inventoryDirty, setInventoryDirty] = useState(false);
 
-  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/admin/products/${productId}`, fetchProductDetail);
+  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/admin/products/${productId}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 추가 특성 정보
   const [additionalFeatures, setAdditionalFeatures] = useState('');

@@ -10,11 +10,21 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { racketBrandLabel } from '@/lib/constants';
 import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+type AdminRacketDetail = RacketForm & {
+  id: string;
+  brand: string;
+  model: string;
+  quantity?: number;
+};
 
 function StockChip({ id, total }: { id: string; total: number }) {
-  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, (u) => fetch(u, { credentials: 'include' }).then((r) => r.json()), { dedupingInterval: 5000 });
+  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, authenticatedSWRFetcher, {
+    dedupingInterval: 5000,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const qty = Math.max(1, total ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
@@ -27,7 +37,10 @@ function StockChip({ id, total }: { id: string; total: number }) {
 
 export default function AdminRacketEditClient({ id }: { id: string }) {
   const r = useRouter();
-  const { data, isLoading, error } = useSWR(`/api/admin/rackets/${id}`, fetcher);
+  const { data, isLoading, error } = useSWR<AdminRacketDetail>(`/api/admin/rackets/${id}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const confirmLeave = (e: React.MouseEvent) => {
     const hasUnsaved = typeof window !== 'undefined' && window.history.state?.__unsaved === true;

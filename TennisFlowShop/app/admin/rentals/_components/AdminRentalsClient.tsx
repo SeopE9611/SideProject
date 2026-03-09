@@ -22,7 +22,8 @@ import { AdminBadgeRow, BadgeItem } from '@/components/admin/AdminBadgeRow';
 import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
-import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { racketBrandLabel } from '@/lib/constants';
 import { adminRichTooltipClass } from '@/lib/tooltip-style';
 import type { AdminRentalListItemDto, AdminRentalPaymentFilter, AdminRentalShippingFilter, AdminRentalsListResponseDto } from '@/types/admin/rentals';
@@ -261,7 +262,10 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
     return () => clearTimeout(timer);
   }, [searchTerm, status, payFilter, shipFilter, from, to, page, sortBy, sortDirection]);
 
-  const { data: apiData, isLoading, mutate, error } = useSWR<AdminRentalsListResponseDto>(key, adminFetcher);
+  const { data: apiData, isLoading, mutate, error } = useSWR<AdminRentalsListResponseDto>(key, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const data = useMemo(() => mapApiToViewModel(apiData), [apiData]);
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
 
