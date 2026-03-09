@@ -150,7 +150,7 @@ export default function OrderDetailPage() {
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-16">
+          <div className="relative container mx-auto px-4 py-10 md:py-16">
             <div className="text-center text-foreground">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
                 <Package className="w-8 h-8 animate-pulse" />
@@ -161,7 +161,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
           <div className="max-w-4xl mx-auto">
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex justify-center items-center py-16">
@@ -187,7 +187,7 @@ export default function OrderDetailPage() {
         {/* Hero Section */}
         <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
           <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-16">
+          <div className="relative container mx-auto px-4 py-10 md:py-16">
             <div className="text-center text-foreground">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
                 <Package className="w-8 h-8" />
@@ -198,7 +198,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
           <div className="max-w-4xl mx-auto">
             <Card className="shadow-2xl border-0 bg-card/80 backdrop-blur-sm">
               <CardContent className="flex flex-col items-center justify-center py-16">
@@ -237,7 +237,7 @@ export default function OrderDetailPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
         <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="relative container mx-auto px-4 py-16">
+        <div className="relative container mx-auto px-4 py-10 md:py-16">
           <div className="text-center text-foreground">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
               <Package className="w-8 h-8" />
@@ -254,10 +254,10 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      <div className="container mx-auto py-12 px-4 md:px-6">
+      <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <Button variant="ghost" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group" onClick={handleGoBack}>
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               주문 목록으로 돌아가기
@@ -266,8 +266,8 @@ export default function OrderDetailPage() {
 
           {/* String Service Alert */}
           {order.shippingInfo?.withStringService && (
-            <Card className="mb-8 border-2 border-border bg-card">
-              <CardContent className="p-6">
+            <Card className="mb-6 border-2 border-border bg-card md:mb-8">
+              <CardContent className="p-4 md:p-6">
                 {!hasStringingApplication ? (
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-full flex items-center justify-center">
@@ -307,7 +307,7 @@ export default function OrderDetailPage() {
 
           {/* 비회원 조회에서도 신청서 상세 진입 없이 핵심 맥락을 확인할 수 있게 요약 노출 */}
           {order.shippingInfo?.withStringService && hasStringingApplication && latestStringingApplication && (
-            <Card className="mb-8 border border-border bg-card">
+            <Card className="mb-6 border border-border bg-card md:mb-8">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">교체 서비스 접수 요약</CardTitle>
               </CardHeader>
@@ -344,9 +344,9 @@ export default function OrderDetailPage() {
             </Card>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="space-y-6 md:space-y-8 lg:col-span-2">
               {/* 주문 정보 */}
               <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
                 <CardHeader className="pb-6">
