@@ -726,20 +726,9 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
 // ======== 스트링 신청서 취소 요청 (마이페이지) ========
 export async function handleStringingCancelRequest(req: Request, { params }: { params: { id: string } }) {
   try {
-    // 1) 인증 체크 (주문/신청 공통 패턴과 동일)
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
+    // 인증/인가는 route.ts에서 선행 처리
 
-    if (!token) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
-
-    const payload = verifyAccessToken(token);
-    if (!payload) {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
-
-    // 2) 파라미터 검증
+    // 1) 파라미터 검증
     const { id } = params;
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
