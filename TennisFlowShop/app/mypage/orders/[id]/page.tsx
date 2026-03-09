@@ -15,9 +15,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     redirect(`/login?next=${encodeURIComponent(target)}`);
   }
   return (
-    <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">마이페이지</h1>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+    <div className="container py-6 bp-sm:py-8">
+      <h1 className="mb-6 text-2xl font-bold bp-sm:mb-8 bp-sm:text-3xl">마이페이지</h1>
+      <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 md:grid-cols-4">
         {/* 사이드바 */}
         <div className="md:col-span-1">
           <UserSidebar />

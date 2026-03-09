@@ -277,8 +277,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
   return (
     <main className="w-full">
-      <SiteContainer variant="wide" className="py-4 bp-sm:py-6 space-y-6 bp-sm:space-y-8">
-        <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg">
+      <SiteContainer variant="wide" className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 space-y-5 bp-sm:space-y-8 bp-md:px-6">
+        <div className="bg-muted/30 rounded-2xl border border-border p-4 shadow-lg bp-sm:p-6 bp-md:p-8">
           {/* 헤더: 제목과 액션 버튼 */}
           <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 bp-md:gap-6">
             {/* 제목 섹션 */}
@@ -321,8 +321,8 @@ export default function OrderDetailClient({ orderId }: Props) {
           </div>
 
           {/* 주문 상태 및 요약 섹션 */}
-          <div className="mt-8">
-            <div className="grid grid-cols-1 bp-md:grid-cols-3 gap-6">
+          <div className="mt-5 bp-sm:mt-8">
+            <div className="grid grid-cols-1 gap-4 bp-sm:gap-6 bp-md:grid-cols-3">
               <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -364,7 +364,7 @@ export default function OrderDetailClient({ orderId }: Props) {
         {orderDetail.shippingInfo?.withStringService && (
           <>
             {totalSlots > 0 && remainingSlots > 0 ? (
-              <div className="bg-muted/30 border border-border rounded-xl p-6 shadow-lg">
+              <div className="bg-muted/30 border border-border rounded-xl p-4 shadow-lg bp-sm:p-6">
                 <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
                   <div className="flex items-start bp-sm:items-center space-x-3 min-w-0">
                     <div className="bg-warning/10 dark:bg-warning/15 rounded-full p-2">
@@ -389,7 +389,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
               </div>
             ) : totalSlots > 0 ? (
-              <div className="bg-success/10 dark:bg-success/15 border border-border rounded-xl p-6 shadow-lg mt-4">
+              <div className="mt-4 bg-success/10 dark:bg-success/15 border border-border rounded-xl p-4 shadow-lg bp-sm:p-6">
                 <div className="flex flex-col bp-md:flex-row bp-md:items-start bp-md:justify-between gap-4">
                   <div className="flex items-start space-x-3">
                     <div className="bg-success/10 dark:bg-success/15 rounded-full p-2 mt-1">
@@ -448,7 +448,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
             <div id="reviews-cta" className="mt-4">
               {allReviewed ? (
-                <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/10 p-6 shadow-sm dark:bg-primary/20">
+                <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-sm dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
                   <div className="flex items-center gap-3 text-primary">
                     <CheckCircle className="h-6 w-6" />
                     <div>
@@ -463,7 +463,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </Link>
                 </div>
               ) : (
-                <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-xl p-6 shadow-sm flex items-center justify-between">
+                <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-xl p-4 shadow-sm flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
                   <div className="flex items-center gap-3">
                     <Clock className="h-6 w-6 text-warning" />
                     <div>
@@ -488,7 +488,7 @@ export default function OrderDetailClient({ orderId }: Props) {
           </>
         )}
 
-        <div className="grid gap-8 bp-lg:grid-cols-2">
+        <div className="grid gap-6 bp-sm:gap-8 bp-lg:grid-cols-2">
           {/* 고객 정보 */}
           <Card variant="elevatedGradient">
             <CardHeader variant="sectionGradient">
