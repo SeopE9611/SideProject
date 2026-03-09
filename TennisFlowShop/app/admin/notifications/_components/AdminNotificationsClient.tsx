@@ -116,9 +116,11 @@ export default function AdminNotificationsClient() {
   }, [page, status, qDebounced]);
 
   const { data, error, isValidating, mutate } = useSWR<PageRes>(key, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
-  const rows = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
+  // 초기 로딩에는 undefined를 유지해 "실제 0/빈값"과 구분한다.
+  const isInitialLoading = !data && !error;
+  const rows = data?.items;
+  const total = data?.total;
+  const totalPages = Math.max(1, Math.ceil((total ?? 0) / LIMIT));
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -182,6 +184,7 @@ export default function AdminNotificationsClient() {
 
   const isServerCountsSupported = Boolean(data?.counts);
   const stats = useMemo(() => {
+    if (!data) return null;
     if (data?.counts) return data.counts;
     if (!data?.items) return { queued: 0, failed: 0, sent: 0 };
     return {
@@ -226,7 +229,7 @@ export default function AdminNotificationsClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 대기 상태인 알림 수">대기 중</p>
-                <p className="mt-2 text-3xl font-bold">{stats.queued}</p>
+                <p className="mt-2 text-3xl font-bold">{isInitialLoading ? <Skeleton className="h-8 w-16" /> : (stats?.queued ?? '-')}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                 <Clock className="h-6 w-6 text-primary" />
@@ -240,7 +243,7 @@ export default function AdminNotificationsClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 실패 상태인 알림 수">실패</p>
-                <p className="mt-2 text-3xl font-bold">{stats.failed}</p>
+                <p className="mt-2 text-3xl font-bold">{isInitialLoading ? <Skeleton className="h-8 w-16" /> : (stats?.failed ?? '-')}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive dark:bg-destructive/15">
                 <XCircle className="h-6 w-6 text-destructive" />
@@ -254,7 +257,7 @@ export default function AdminNotificationsClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground" title="현재 검색 조건 전체에서 발송 완료 상태인 알림 수">발송 완료</p>
-                <p className="mt-2 text-3xl font-bold">{stats.sent}</p>
+                <p className="mt-2 text-3xl font-bold">{isInitialLoading ? <Skeleton className="h-8 w-16" /> : (stats?.sent ?? '-')}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20">
                 <CheckCircle2 className="h-6 w-6 text-primary" />
@@ -284,7 +287,7 @@ export default function AdminNotificationsClient() {
                   전체
                   {status === 'all' && (
                     <Badge variant="secondary" className="ml-1">
-                      {total}
+                      {total ?? '-'}
                     </Badge>
                   )}
                 </TabsTrigger>
@@ -292,7 +295,7 @@ export default function AdminNotificationsClient() {
                   대기
                   {status === 'queued' && (
                     <Badge variant="secondary" className="ml-1">
-                      {total}
+                      {total ?? '-'}
                     </Badge>
                   )}
                 </TabsTrigger>
@@ -300,7 +303,7 @@ export default function AdminNotificationsClient() {
                   실패
                   {status === 'failed' && (
                     <Badge variant="secondary" className="ml-1">
-                      {total}
+                      {total ?? '-'}
                     </Badge>
                   )}
                 </TabsTrigger>
@@ -308,7 +311,7 @@ export default function AdminNotificationsClient() {
                   완료
                   {status === 'sent' && (
                     <Badge variant="secondary" className="ml-1">
-                      {total}
+                      {total ?? '-'}
                     </Badge>
                   )}
                 </TabsTrigger>
@@ -334,14 +337,21 @@ export default function AdminNotificationsClient() {
           ) : null}
 
           <div className="space-y-3">
-            {rows.length === 0 ? (
+            {isInitialLoading ? (
+              <div className="space-y-3 rounded-lg border border-border/40 p-5">
+                <Skeleton className="h-5 w-44" />
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-4 w-full" />
+                ))}
+              </div>
+            ) : (rows?.length ?? 0) === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border/40 py-12">
                 <Mail className="mb-3 h-12 w-12 text-muted-foreground/40" />
                 <p className="text-sm font-medium text-muted-foreground">알림 데이터가 없습니다</p>
                 <p className="text-xs text-muted-foreground">필터를 조정하거나 새로운 알림을 기다려주세요</p>
               </div>
             ) : (
-              rows.map((it) => (
+              (rows ?? []).map((it) => (
                 <Card key={it.id} className="group border-border/40 bg-card/30 backdrop-blur transition-all hover:border-border/60 hover:shadow-md">
                   <CardContent className="p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -443,10 +453,10 @@ export default function AdminNotificationsClient() {
             )}
           </div>
 
-          {rows.length > 0 && (
+          {(rows?.length ?? 0) > 0 && (
             <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
               <div className="text-sm text-muted-foreground">
-                총 <span className="font-semibold text-foreground">{total}</span>건(현재 필터) · 페이지당 {LIMIT}건 · 페이지 <span className="font-semibold text-foreground">{page}</span> / {totalPages}
+                총 <span className="font-semibold text-foreground">{total ?? '-'}</span>건(현재 필터) · 페이지당 {LIMIT}건 · 페이지 <span className="font-semibold text-foreground">{page}</span> / {totalPages}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="border-border/40 hover:border-border/60">
