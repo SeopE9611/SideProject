@@ -16,11 +16,11 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
 
   return (
     <html lang="ko">
-      <body className="m-0 flex min-h-screen items-center justify-center bg-background p-4 text-foreground bp-sm:p-8 bp-md:p-16">
+      <body className="m-0 flex min-h-screen items-center justify-center bg-background p-3 text-foreground bp-sm:p-6 bp-md:p-16">
         <Card className="relative w-full max-w-2xl overflow-hidden border border-border bg-card shadow-xl">
           <div className="h-1.5 w-full bg-destructive" />
 
-          <CardContent className="p-8">
+          <CardContent className="p-6 bp-sm:p-8">
             <div className="mb-6 grid h-14 w-14 place-content-center rounded-2xl bg-destructive text-destructive-foreground">
               <AlertTriangle className="h-7 w-7" />
             </div>
@@ -41,7 +41,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-wrap gap-3 px-8 pb-8">
+          <CardFooter className="flex flex-wrap gap-3 px-6 pb-6 bp-sm:px-8 bp-sm:pb-8">
             <Button type="button" onClick={() => reset()} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <RefreshCw className="h-4 w-4" />
               다시 시도

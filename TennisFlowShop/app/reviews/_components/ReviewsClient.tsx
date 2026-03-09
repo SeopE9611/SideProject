@@ -104,9 +104,9 @@ export default function ReviewsClient() {
       {/* Tennis court background pattern */}
       <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
 
-      <div className="relative z-10 container mx-auto px-4 py-8 space-y-6">
+      <div className="relative z-10 container mx-auto px-4 py-6 md:py-8 space-y-4 md:space-y-6">
         {/* Header with tennis theme */}
-        <div className="text-center space-y-4 mb-8">
+        <div className="text-center space-y-3 md:space-y-4 mb-6 md:mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center">
               <Trophy className="h-6 w-6 text-foreground" />
@@ -119,7 +119,7 @@ export default function ReviewsClient() {
         {/* Control panel with tennis court styling */}
         <Card className="border-0 bg-card/80 dark:bg-card backdrop-blur-sm shadow-lg rounded-3xl overflow-hidden">
           <div className="h-1 bg-muted/30" />
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex flex-wrap items-center gap-4">
               {/* Tabs with tennis court styling */}
               <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
@@ -186,7 +186,7 @@ export default function ReviewsClient() {
 
         {/* Loading skeleton */}
         {isFirstLoading && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <ReviewSkeleton />
             <div className="hidden lg:block">
               <ReviewSkeleton />
@@ -198,13 +198,13 @@ export default function ReviewsClient() {
         {!isFirstLoading && (
           <>
             {items.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {items.map((it) => (
                   <ReviewCard key={it._id} item={it} isAdmin={isAdmin} isLoggedIn={isLoggedIn} onMutate={() => mutate()} />
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+              <div className="flex flex-col items-center justify-center gap-4 py-12 md:py-20 text-center">
                 <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center">
                   <MessageSquareText className="h-8 w-8 text-muted-foreground" />
                 </div>
@@ -222,7 +222,7 @@ export default function ReviewsClient() {
                   onClick={() => setSize(size + 1)}
                   disabled={isValidating}
                   variant="outline"
-                  className="rounded-full px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                  className="rounded-full px-6 md:px-8 py-2 bg-card/80 dark:bg-card backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
                 >
                   {isValidating ? (
                     <>

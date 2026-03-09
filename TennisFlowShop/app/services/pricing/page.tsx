@@ -46,9 +46,9 @@ export default async function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
       <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12 space-y-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 space-y-8 md:space-y-12">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-6">
+          <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4 md:mb-6">
             <Wrench className="h-5 w-5 text-primary" />
             <span className="text-sm font-semibold text-primary">장착 서비스 정책</span>
           </div>
@@ -57,8 +57,8 @@ export default async function PricingPage() {
         </div>
 
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-center">장착 서비스 요금 안내</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="text-2xl font-bold mb-4 md:mb-6 text-center">장착 서비스 요금 안내</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {basicServices.map((service) => (
               <Card key={service.name}>
                 <CardHeader className="text-center">
@@ -93,8 +93,8 @@ export default async function PricingPage() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-center">스트링 가격대별 안내</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <h2 className="text-2xl font-bold mb-4 md:mb-6 text-center">스트링 가격대별 안내</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             {primarySummaries.map((category) => (
               <Card key={category.key}>
                 <CardHeader>
@@ -141,7 +141,7 @@ export default async function PricingPage() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold mb-6 text-center">하이브리드 조합 안내</h2>
+          <h2 className="text-2xl font-bold mb-4 md:mb-6 text-center">하이브리드 조합 안내</h2>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -160,7 +160,7 @@ export default async function PricingPage() {
           </Card>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-2">
+        <section className="grid gap-4 md:gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>추가 서비스 / 무료 지원</CardTitle>

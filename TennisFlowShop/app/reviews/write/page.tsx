@@ -706,10 +706,10 @@ export default function ReviewWritePage() {
   if (!allowGuestCheckout && !authChecked) {
     return (
       <div className="min-h-screen bg-muted/30">
-        <div className="relative mx-auto max-w-7xl px-4 py-8">
-          <div className="grid lg:grid-cols-[400px_1fr] gap-8 min-h-[80vh]">
+        <div className="relative mx-auto max-w-7xl px-4 py-6 md:py-8">
+          <div className="grid lg:grid-cols-[400px_1fr] gap-6 md:gap-8 min-h-[80vh]">
             <Card className="rounded-2xl">
-              <CardContent className="space-y-4 p-6">
+              <CardContent className="space-y-4 p-4 md:p-6">
                 <Skeleton className="h-6 w-44" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
@@ -717,7 +717,7 @@ export default function ReviewWritePage() {
               </CardContent>
             </Card>
             <Card className="rounded-2xl">
-              <CardContent className="space-y-4 p-6">
+              <CardContent className="space-y-4 p-4 md:p-6">
                 <Skeleton className="h-8 w-56" />
                 <Skeleton className="h-32 w-full" />
                 <Skeleton className="h-32 w-full" />
@@ -737,12 +737,12 @@ export default function ReviewWritePage() {
     <div className="min-h-screen bg-muted/30">
       <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-8">
-        <div className="grid lg:grid-cols-[400px_1fr] gap-8 min-h-[80vh]">
+      <div className="relative mx-auto max-w-7xl px-4 py-6 md:py-8">
+        <div className="grid lg:grid-cols-[400px_1fr] gap-6 md:gap-8 min-h-[80vh]">
           {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-primary/10 border border-primary/20 text-foreground p-6 shadow-xl overflow-hidden dark:bg-primary/20">
+            <div className="relative rounded-2xl bg-primary/10 border border-primary/20 text-foreground p-4 md:p-6 shadow-xl overflow-hidden dark:bg-primary/20">
               {/* 코트 라인 장식 */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
@@ -769,7 +769,7 @@ export default function ReviewWritePage() {
 
             {/* 현재 상품 정보 */}
             {mode === 'product' && currentMeta && (
-              <div className="rounded-xl bg-card dark:bg-muted p-5 shadow-lg ring-1 ring-ring">
+              <div className="rounded-xl bg-card dark:bg-muted p-4 md:p-5 shadow-lg ring-1 ring-ring">
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-ring shrink-0">
                     {currentMeta.image ? <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-muted text-foreground">IMG</div>}
@@ -788,7 +788,7 @@ export default function ReviewWritePage() {
 
             {/* 다른 상품들 (세로 리스트) */}
             {mode === 'product' && orderItems && orderItems.length > 1 && (
-              <div className="rounded-xl bg-card dark:bg-muted p-5 shadow-lg ring-1 ring-ring">
+              <div className="rounded-xl bg-card dark:bg-muted p-4 md:p-5 shadow-lg ring-1 ring-ring">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <div className="w-1 h-4 bg-muted rounded-full"></div>이 주문의 다른 상품
                 </h3>
@@ -830,16 +830,16 @@ export default function ReviewWritePage() {
 
             <div className="rounded-2xl bg-card dark:bg-muted shadow-xl ring-1 ring-ring overflow-hidden">
               {/* 폼 헤더 */}
-              <div className="bg-muted/50 px-6 py-4 border-b border-border">
+              <div className="bg-muted/50 px-4 md:px-6 py-4 border-b border-border">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-foreground">리뷰 작성</h2>
                 </div>
               </div>
 
-              <form onSubmit={onSubmit} className="p-6 space-y-8">
+              <form onSubmit={onSubmit} className="p-4 md:p-6 space-y-6 md:space-y-8">
                 {/* 서비스 모드: 대상 신청서 선택 ( selector는 항상 조작 가능하게 오버레이 밖으로 분리) */}
                 {mode === 'service' && (
-                  <div className="mb-8">
+                  <div className="mb-6 md:mb-8">
                     <div className="flex items-end justify-between gap-3">
                       <div className="min-w-0">
                         <Label className="text-sm font-semibold text-foreground mb-1 block">대상 신청서</Label>
