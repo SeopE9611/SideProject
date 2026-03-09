@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { AlertTriangle, ArrowLeft, Calendar, Check, Clock, FileText, Loader2, Package, Truck } from 'lucide-react';
@@ -69,18 +70,15 @@ function focusById(id: string) {
   el.scrollIntoView?.({ block: 'center' });
 }
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: 'include' }).then((r) => {
-    if (!r.ok) throw new Error('데이터 로드 실패');
-    return r.json();
-  });
-
 // ──────────────────────────────────────────────────────────────
 // Wrapper: 데이터 로드/분기만 담당 (훅 순서 안정)
 // ──────────────────────────────────────────────────────────────
 export default function ShippingFormClient({ applicationId }: { applicationId: string }) {
   const router = useRouter();
-  const { data, error, isLoading } = useSWR<Application>(`/api/applications/stringing/${applicationId}`, fetcher);
+  const { data, error, isLoading } = useSWR<Application>(`/api/applications/stringing/${applicationId}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const searchParams = useSearchParams();
   const returnTo = searchParams.get('return'); // 예: /mypage?tab=applications
 

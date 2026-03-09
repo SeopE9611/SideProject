@@ -4,12 +4,13 @@
  import useSWR from 'swr';
  import { Copy, Truck } from 'lucide-react';
 
- import { Badge } from '@/components/ui/badge';
- import { Button } from '@/components/ui/button';
- import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
- import { Separator } from '@/components/ui/separator';
- import { Skeleton } from '@/components/ui/skeleton';
- import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
  type CourierCode =
    | 'cj'
    | 'hanjin'
@@ -38,9 +39,7 @@
    };
  };
 
- const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
-
- function courierLabel(code?: CourierCode) {
+function courierLabel(code?: CourierCode) {
    switch (code) {
      case 'cj':
        return 'CJ대한통운';
@@ -79,8 +78,11 @@
   * - Activity API에는 invoice가 없으므로, 모달이 열릴 때만 주문 상세 API를 호출합니다.
   */
  export default function OrderShippingInfoDialog({ orderId, className }: { orderId: string; className?: string }) {
-   const [open, setOpen] = useState(false);
-   const { data, isLoading } = useSWR<OrderDetail>(open ? `/api/orders/${orderId}` : null, fetcher);
+  const [open, setOpen] = useState(false);
+  const { data, isLoading } = useSWR<OrderDetail>(open ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
    const invoice = data?.shippingInfo?.invoice;
    const courier = invoice?.courier;
