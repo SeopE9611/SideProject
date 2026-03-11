@@ -310,9 +310,16 @@ export default function RacketFinderClient() {
   const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
   const { data, error, isLoading } = useSWR(swrKey, fetcher);
 
-  const items = (data?.items ?? []) as FinderRacket[];
-  const total = Number(data?.total ?? 0);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // 검색 이후에도 loading/error/success를 분리해서 헤더 요약이 0개/1페이지로 먼저 보이지 않게 처리
+  const hasDataError = hasSearched && Boolean(error);
+  const hasResolvedData = hasSearched && !isLoading && !hasDataError && Boolean(data);
+  const hasResolvedTotal = hasResolvedData && typeof data?.total === 'number';
+  const hasResolvedTotalPages = hasResolvedTotal;
+
+  const items = (hasResolvedData ? data?.items ?? [] : []) as FinderRacket[];
+  const total = hasResolvedTotal ? Number(data?.total ?? 0) : null;
+  // total이 확정되지 않은 상태에서는 내부 보수값(1)만 사용하고, UI 표기는 분기해서 '-' 처리
+  const totalPages = hasResolvedTotalPages ? Math.max(1, Math.ceil((total ?? 0) / pageSize)) : 1;
 
   const apply = () => {
     const next = draft;
@@ -602,10 +609,10 @@ export default function RacketFinderClient() {
               {hasSearched ? (
                 <>
                   <Badge variant={getMerchandisingBadgeSpec('recommended').variant} className="rounded-lg px-3 py-1 font-semibold">
-                    {total.toLocaleString()}개
+                    {isLoading ? '준비 중' : hasDataError ? '-' : `${(total ?? 0).toLocaleString()}개`}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    페이지 {page} / {totalPages}
+                    페이지 {isLoading || hasDataError ? '-' : page} / {hasResolvedTotalPages ? totalPages : '-'}
                   </span>
                 </>
               ) : (
@@ -639,7 +646,7 @@ export default function RacketFinderClient() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  disabled={!hasSearched || page <= 1}
+                  disabled={!hasSearched || isLoading || hasDataError || !hasResolvedTotalPages || page <= 1}
                   onClick={() => {
                     const nextPage = Math.max(1, page - 1);
                     setPage(nextPage);
@@ -652,7 +659,7 @@ export default function RacketFinderClient() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  disabled={!hasSearched || page >= totalPages}
+                  disabled={!hasSearched || isLoading || hasDataError || !hasResolvedTotalPages || page >= totalPages}
                   onClick={() => {
                     const nextPage = Math.min(totalPages, page + 1);
                     setPage(nextPage);

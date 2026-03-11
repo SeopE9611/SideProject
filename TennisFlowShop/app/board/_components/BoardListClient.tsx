@@ -489,12 +489,19 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, (url: string) => boardFetcher<ListResponse>(url));
   const listError = parseApiError(error, config.errorMessage);
 
-  const items = data?.items ?? [];
-  const total = data?.total ?? 0;
+  // 로딩/에러/성공을 분리해서 헤더 수치가 0건처럼 먼저 보이지 않게 처리
+  const hasDataError = Boolean(error);
+  const hasResolvedData = !isLoading && !hasDataError && Boolean(data);
+  const hasResolvedTotal = hasResolvedData && typeof data?.total === 'number';
+
+  const items = hasResolvedData ? (data?.items ?? []) : [];
+  const total = hasResolvedTotal ? data!.total : null;
+  const shouldShowEmptyState = hasResolvedData && items.length === 0;
+  const shouldShowRows = hasResolvedData && items.length > 0;
   const activeMarketFilterCount = useMemo(() => MARKET_FILTER_KEYS.filter((key) => (searchParams.get(key) ?? '').trim() !== '').length, [searchParams]);
 
-  // 전체 페이지 수 계산
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_LIMIT));
+  // total이 확정된 경우에만 실제 페이지 수를 계산하고, 미확정 상태에서는 내부 보수값(1)만 사용
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil((total ?? 0) / PAGE_LIMIT)) : 1;
   const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
   const pageEnd = Math.min(totalPages, pageStart + 2);
   const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
@@ -575,9 +582,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 <p className="mt-0.5 text-xs text-muted-foreground">{config.cardDescription}</p>
               </div>
             </div>
-            {total > 0 && (
+            {hasResolvedTotal && (total ?? 0) > 0 && (
               <Badge variant="secondary" className="hidden items-center gap-1 px-2.5 py-0.5 text-xs sm:inline-flex">
-                <span className="font-semibold tabular-nums">{total.toLocaleString()}</span>건
+                <span className="font-semibold tabular-nums">{(total ?? 0).toLocaleString()}</span>건
               </Badge>
             )}
           </CardHeader>
@@ -588,7 +595,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-xs text-muted-foreground">
-                    총 <span className="font-semibold">{total.toLocaleString()}</span>개의 글이 있습니다.
+                    총 <span className="font-semibold">{hasResolvedTotal ? (total ?? 0).toLocaleString() : '-'}</span>개의 글이 있습니다.
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <span className="hidden text-muted-foreground sm:inline">정렬:</span>
@@ -869,7 +876,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             {isLoading && <ListSkeleton />}
             {error && !isLoading && <ErrorBox message={listError.message} status={listError.status} fallbackMessage={config.errorMessage} />}
 
-            {!isLoading && !error && items.length === 0 && (
+            {shouldShowEmptyState && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/20 px-4 py-12 text-center">
                 <PackageSearch className="h-8 w-8 text-muted-foreground/50" />
                 <p className="text-sm font-medium text-foreground">{activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}</p>
@@ -890,7 +897,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               </div>
             )}
 
-            {!isLoading && !error && items.length > 0 && (
+            {shouldShowRows && (
               <>
                 {/* 데스크탑: 테이블형 리스트 */}
                 <div className="hidden text-sm md:block">
@@ -1266,7 +1273,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   })}
                 </div>
                 {/* 하단: 검색 + 페이지네이션 */}
-                {total > 0 && (
+                {hasResolvedTotal && (total ?? 0) > 0 && (
                   <div className="mt-8 space-y-4">
                     {/* 검색 폼 */}
                     <form onSubmit={handleSearchSubmit} className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 px-3 py-3 sm:flex-row sm:items-center">
