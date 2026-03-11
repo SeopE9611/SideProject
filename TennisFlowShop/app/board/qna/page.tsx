@@ -69,8 +69,10 @@ export default async function Page({ searchParams }: { searchParams?: Promise<Re
 
   // 3) 서버 프리로드 (실패해도 페이지 전체가 죽지 않게 방어)
   // try/catch 안에서는 "데이터"만 만들고, JSX는 밖에서 한 번만 return
-  let initialItems: any[] = [];
-  let initialTotal = 0;
+  let initialItems: any[] | null = null;
+  let initialTotal: number | null = null;
+  let initialLoadError = false;
+  let initialErrorMessage: string | null = null;
 
   try {
     const res = await getBoardList({
@@ -86,7 +88,21 @@ export default async function Page({ searchParams }: { searchParams?: Promise<Re
     initialTotal = res.total;
   } catch (e) {
     console.error('Failed to preload QnA list', e);
+    initialLoadError = true;
+    initialErrorMessage = e instanceof Error ? e.message : null;
   }
 
-  return <QnaPageClient initialItems={initialItems} initialTotal={initialTotal} initialPage={page} initialCategory={initialCategory} initialAnswerFilter={initialAnswerFilter} initialKeyword={initialKeyword} initialField={initialField} />;
+  return (
+    <QnaPageClient
+      initialItems={initialItems}
+      initialTotal={initialTotal}
+      initialLoadError={initialLoadError}
+      initialErrorMessage={initialErrorMessage ?? undefined}
+      initialPage={page}
+      initialCategory={initialCategory}
+      initialAnswerFilter={initialAnswerFilter}
+      initialKeyword={initialKeyword}
+      initialField={initialField}
+    />
+  );
 }

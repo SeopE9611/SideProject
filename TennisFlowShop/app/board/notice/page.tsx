@@ -41,11 +41,22 @@ async function fetchNotices(opts: { page: number; limit: number; q: string; fiel
       // productId: null,
     });
 
-    return { items, total };
+    return {
+      items,
+      total,
+      initialLoadError: false,
+      initialErrorMessage: null,
+    };
   } catch (error) {
     // 서버 렌더링 시 쿼리 실패해도 전체 페이지가 터지지 않도록 방어
     console.error('Failed to load notices from DB', error);
-    return { items: [], total: 0 };
+    return {
+      // 프리로드 실패를 빈 목록(0건)으로 오인하지 않도록 null로 전달
+      items: null,
+      total: null,
+      initialLoadError: true,
+      initialErrorMessage: error instanceof Error ? error.message : null,
+    };
   }
 }
 
@@ -67,7 +78,17 @@ export default async function Page({ searchParams }: { searchParams?: Promise<Re
 
   const q = rawQ;
 
-  const { items, total } = await fetchNotices({ page, limit, q, field });
+  const { items, total, initialLoadError, initialErrorMessage } = await fetchNotices({ page, limit, q, field });
 
-  return <NoticeListClient initialItems={items} initialTotal={total} initialPage={page} initialKeyword={q} initialField={field} />;
+  return (
+    <NoticeListClient
+      initialItems={items}
+      initialTotal={total}
+      initialLoadError={initialLoadError}
+      initialErrorMessage={initialErrorMessage ?? undefined}
+      initialPage={page}
+      initialKeyword={q}
+      initialField={field}
+    />
+  );
 }

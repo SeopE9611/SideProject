@@ -14,8 +14,12 @@ import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import useSWR from 'swr';
 
 type Props = {
-  initialItems: any[];
-  initialTotal: number;
+  initialItems: any[] | null;
+  initialTotal: number | null;
+  // 서버 프리로드 자체 실패 여부를 별도로 받아서
+  // 빈 목록(실제 0건)과 명확히 분리합니다.
+  initialLoadError: boolean;
+  initialErrorMessage?: string;
   // URL 쿼리로 직접 진입하는 경우(/board/notice?page=...&q=...)
   // 서버 프리로드와 클라이언트 SWR key를 일치시켜 "한 번 튐"을 줄임.
   initialPage?: number;
@@ -38,7 +42,7 @@ function AdminNoticeWriteButton() {
   );
 }
 
-export default function NoticeListClient({ initialItems, initialTotal, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
+export default function NoticeListClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
   type NoticeItem = {
     _id: string;
     title: string;
@@ -102,12 +106,13 @@ export default function NoticeListClient({ initialItems, initialTotal, initialPa
   const initialKey = `/api/boards?${initialQs.toString()}`;
 
   // fallbackData는 "초기 진입 키"에서만 제공해야 페이지/검색 전환 시 튐이 사라짐
+  const hasInitialResolvedData = !initialLoadError && !!initialItems && initialTotal !== null;
   const fallbackData: BoardListRes | undefined =
-    key === initialKey
+    key === initialKey && hasInitialResolvedData
       ? {
           ok: true,
-          items: (initialItems as NoticeItem[]) ?? [],
-          total: initialTotal,
+          items: initialItems as NoticeItem[],
+          total: initialTotal as number,
           page: initialPage,
           limit,
         }
@@ -123,9 +128,20 @@ export default function NoticeListClient({ initialItems, initialTotal, initialPa
   // 초기(SSR fallback)에서의 revalidate는 "로딩 UI"로 취급하지 않기
   const isBusy = key !== initialKey && (isLoading || isValidating);
 
-  const items: NoticeItem[] = data?.items ?? initialItems ?? [];
-  const total: number = data?.total ?? initialTotal ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+  // 상태 분리: preload 실패 / fetch 실패 / 로딩 / 실제 데이터 확정
+  const hasPreloadError = initialLoadError && key === initialKey && !data;
+  const hasFetchError = !!error;
+  const hasDataError = hasPreloadError || hasFetchError;
+  const hasResolvedData = !!data;
+
+  const items: NoticeItem[] = data?.items ?? [];
+  const total: number | null = data?.total ?? null;
+  const shouldShowSearchEmptyState = !isBusy && !hasDataError && hasResolvedData && items.length === 0;
+
+  // total이 확정되지 않은(preload 실패/초기 로딩) 상황에서
+  // 0건/1페이지처럼 굳어 보이지 않게 기본 페이징만 안전 처리
+  const resolvedTotalForPaging = total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(resolvedTotalForPaging / limit));
   const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
   const pageEnd = Math.min(totalPages, pageStart + 2);
   const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
@@ -231,8 +247,14 @@ export default function NoticeListClient({ initialItems, initialTotal, initialPa
           </CardHeader>
           <CardContent className="p-5 sm:p-6 md:p-8">
             <div className="space-y-4 sm:space-y-5">
-              {error && <ErrorBox message={listError.message} status={listError.status} fallbackMessage="공지 목록을 불러오지 못했습니다." />}
-              {!isBusy && !error && items.length === 0 && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>}
+              {hasDataError && (
+                <ErrorBox
+                  message={hasPreloadError ? initialErrorMessage || '공지 목록을 불러오지 못했습니다.' : listError.message}
+                  status={hasPreloadError ? 500 : listError.status}
+                  fallbackMessage="공지 목록을 불러오지 못했습니다."
+                />
+              )}
+              {shouldShowSearchEmptyState && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>}
               {items.map((notice) => {
                 const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
 
