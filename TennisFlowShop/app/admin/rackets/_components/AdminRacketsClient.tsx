@@ -75,8 +75,11 @@ export default function AdminRacketsClient() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [conditionFilter, setConditionFilter] = useState<string>('all');
 
-  const items = data?.items ?? [];
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
+  // 로딩/에러/실데이터를 분리해서 상단 설명과 본문 상태가 충돌하지 않도록 관리한다.
+  const hasDataError = !!commonErrorMessage;
+  const hasResolvedData = !isLoading && !hasDataError && !!data;
+  const items = hasResolvedData ? data?.items ?? [] : [];
   const filteredItems = useMemo(() => {
     if (!items.length) return [];
 
@@ -97,6 +100,14 @@ export default function AdminRacketsClient() {
     const sold = filteredItems.filter((item) => item.status === 'sold').length;
     return { total, available, rented, sold };
   }, [filteredItems]);
+
+  const listDescription = useMemo(() => {
+    if (isLoading && !data) return <Skeleton className="h-4 w-56" />;
+    if (hasDataError) return '라켓 목록을 불러오는 중 문제가 발생했습니다.';
+    if (!hasResolvedData) return '라켓 목록을 준비 중입니다.';
+    if (filteredItems.length === 0) return '조건에 맞는 라켓이 없습니다.';
+    return `총 ${filteredItems.length}개의 라켓이 검색되었습니다.`;
+  }, [isLoading, data, hasDataError, hasResolvedData, filteredItems.length]);
 
   return (
     <div className={['min-h-screen', 'bg-background'].join(' ')}>
@@ -159,7 +170,7 @@ export default function AdminRacketsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary">라켓 목록</CardTitle>
-                <CardDescription className="text-muted-foreground">{isLoading && !data ? <Skeleton className="h-4 w-56" /> : filteredItems.length > 0 ? `총 ${filteredItems.length}개의 라켓이 검색되었습니다.` : '조건에 맞는 라켓이 없습니다.'}</CardDescription>
+                <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
               </div>
               <Button
                 asChild
