@@ -462,9 +462,11 @@ export default function CheckoutPage() {
   // - balance: 원장 기준 총 잔액(캐시)
   // - debt: 회수해야 하지만 이미 사용되어 "부족했던" 금액(채무)
   // - available: 실제로 지금 결제에 사용할 수 있는 포인트 = max(0, balance - debt)
-  const [pointsBalance, setPointsBalance] = useState(0);
-  const [pointsDebt, setPointsDebt] = useState(0);
-  const [pointsAvailable, setPointsAvailable] = useState(0);
+  // 3차 보완: 조회 실패/미도착을 실제 0포인트로 오해하지 않도록 null 가능 상태로 관리한다.
+  const [pointsBalance, setPointsBalance] = useState<number | null>(null);
+  const [pointsDebt, setPointsDebt] = useState<number | null>(null);
+  const [pointsAvailable, setPointsAvailable] = useState<number | null>(null);
+  const [pointsFetchError, setPointsFetchError] = useState<string | null>(null);
 
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
@@ -479,7 +481,9 @@ export default function CheckoutPage() {
   const maxPointsByPolicy = user ? Math.max(0, total - shippingFee) : 0;
 
   // debt 방식에서는 "사용 가능 포인트" 기준으로 제한해야 함
-  const maxPointsToUseRaw = Math.min(pointsAvailable, maxPointsByPolicy);
+  const resolvedPointsAvailable = pointsAvailable ?? 0;
+  const resolvedPointsDebt = pointsDebt ?? 0;
+  const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
   const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
 
   const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
@@ -745,9 +749,10 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!user) {
       // 비회원/로그아웃 상태에서는 포인트 사용 불가
-      setPointsBalance(0);
-      setPointsDebt(0);
-      setPointsAvailable(0);
+      setPointsBalance(null);
+      setPointsDebt(null);
+      setPointsAvailable(null);
+      setPointsFetchError(null);
       setUseAllPoints(false);
       setPointsToUse(0);
 
@@ -755,8 +760,17 @@ export default function CheckoutPage() {
     }
 
     let cancelled = false;
+    // 사용자 전환/재조회 시 이전 값을 잠시 비우고 로딩 상태를 명확히 만든다.
+    setPointsBalance(null);
+    setPointsDebt(null);
+    setPointsAvailable(null);
+    setPointsFetchError(null);
+
     fetch('/api/points/me', { credentials: 'include' })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) throw new Error('POINTS_FETCH_FAILED');
+        return res.json();
+      })
       .then((data) => {
         if (cancelled) return;
 
@@ -775,12 +789,17 @@ export default function CheckoutPage() {
         setPointsBalance(bal);
         setPointsDebt(debt);
         setPointsAvailable(available);
+        setPointsFetchError(null);
       })
       .catch(() => {
         if (cancelled) return;
-        setPointsBalance(0);
-        setPointsDebt(0);
-        setPointsAvailable(0);
+        // 실패 상태를 0으로 덮지 않고, 화면에서 에러 상태로 분기할 수 있도록 null 유지
+        setPointsBalance(null);
+        setPointsDebt(null);
+        setPointsAvailable(null);
+        setPointsFetchError('포인트 정보를 불러오지 못했습니다.');
+        setUseAllPoints(false);
+        setPointsToUse(0);
       });
 
     return () => {
@@ -1389,14 +1408,16 @@ export default function CheckoutPage() {
                     <div className="mt-2 bg-background p-3 bp-sm:p-4 rounded-lg border border-border">
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">사용 가능 포인트</span>
-                        <span className="font-semibold">{user ? `${pointsAvailable.toLocaleString()}P` : '로그인 필요'}</span>
+                        <span className="font-semibold">{user ? pointsFetchError ? '-' : pointsAvailable === null ? '-' : `${pointsAvailable.toLocaleString()}P` : '로그인 필요'}</span>
                       </div>
 
-                      {user && pointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {pointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
+                      {user && pointsFetchError && <p className="mt-1 text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>}
+
+                      {user && !pointsFetchError && resolvedPointsDebt > 0 && <p className="mt-1 text-xs text-destructive">회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.</p>}
 
                       <div className="mt-3 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-sm">
-                          <Checkbox id="useAllPoints" checked={useAllPoints} onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))} disabled={!user || pointsAvailable <= 0 || maxPointsToUse <= 0} />
+                          <Checkbox id="useAllPoints" checked={useAllPoints} onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))} disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0} />
                           <Label htmlFor="useAllPoints" className="text-sm font-medium">
                             전액 사용
                           </Label>
@@ -1412,7 +1433,7 @@ export default function CheckoutPage() {
                             max={maxPointsToUse}
                             className="w-28 text-right"
                             value={pointsInput}
-                            disabled={!user || pointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
+                            disabled={!user || !!pointsFetchError || pointsAvailable === null || resolvedPointsAvailable <= 0 || maxPointsToUse <= 0 || useAllPoints}
                             onFocus={(e) => {
                               setIsEditingPoints(true);
                               const el = e.currentTarget;
