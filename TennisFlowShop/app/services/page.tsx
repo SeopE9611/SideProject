@@ -274,7 +274,7 @@ export default async function ServicesPage() {
       {/* 서비스 소개 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40" id="string-types">
         <div className="container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <Badge variant="info" className="mb-4">
               <Star className="w-4 h-4 mr-2" />
               프리미엄 스트링 컬렉션
@@ -287,7 +287,7 @@ export default async function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 md:gap-8">
             {stringTypes.map((type) => (
               <Card key={type.id} className="group relative overflow-hidden border border-border shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-card">
                 <div className="h-2 bg-muted"></div>
@@ -300,7 +300,7 @@ export default async function ServicesPage() {
                   <CardDescription className="text-base">{type.description}</CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 md:space-y-6">
                   {/* 성능 차트 */}
                   <div className="bg-muted/50 dark:bg-card rounded-xl p-4">
                     <h4 className="font-semibold mb-3 text-center">성능 특성</h4>
@@ -440,11 +440,11 @@ export default async function ServicesPage() {
           </div>
 
           {/* 추가 서비스 */}
-          <div className="bg-card/95 backdrop-blur-sm dark:bg-card/95 rounded-2xl p-8">
+          <div className="bg-card/95 backdrop-blur-sm dark:bg-card/95 rounded-2xl p-4 md:p-8">
             <h3 className="text-2xl font-bold mb-6 text-center text-foreground">추가 서비스</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
-                <div key={service.title} className="border border-border rounded-xl p-6 hover:shadow-lg transition-shadow duration-300">
+                <div key={service.title} className="border border-border rounded-xl p-4 md:p-6 hover:shadow-lg transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center text-primary mr-3">{service.icon}</div>
@@ -467,7 +467,7 @@ export default async function ServicesPage() {
       {/* 장착 과정 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
         <div className="container">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <Badge variant="info" className="mb-4">
               <Shield className="w-4 h-4 mr-2" />
               전문적인 프로세스
@@ -480,13 +480,13 @@ export default async function ServicesPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-4 gap-6 md:gap-8">
             {processSteps.map((step) => (
               <div key={step.step} className="relative group">
                 {processSteps.indexOf(step) < processSteps.length - 1 && <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-primary/20 dark:bg-primary/30 transform translate-x-4 z-0"></div>}
 
                 <Card className="relative z-10 text-center border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-card">
-                  <CardContent className="p-5 bp-md:p-8">
+                  <CardContent className="p-4 bp-md:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
                       <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary text-sm font-bold shadow-lg">{step.step}</div>

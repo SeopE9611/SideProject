@@ -665,14 +665,14 @@ export default function CartPageClient() {
         ) : (
           <div className="mx-auto max-w-2xl">
             <Card className="backdrop-blur-sm bg-card/95 dark:bg-card/95 border-0 shadow-2xl text-center overflow-hidden">
-              <div className="bg-muted p-12 dark:bg-background">
+              <div className="bg-muted p-8 md:p-12 dark:bg-background">
                 <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary shadow-xl dark:bg-primary/20">
                   <PackageOpen className="h-12 w-12" />
                 </div>
                 <h2 className="mb-4 text-3xl font-bold text-foreground">장바구니가 비어있습니다</h2>
-                <p className="mb-8 text-lg text-muted-foreground">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
+                <p className="mb-6 md:mb-8 text-lg text-muted-foreground">마음에 드는 테니스 용품을 장바구니에 담아보세요!</p>
                 <Button
-                  className="transform bg-primary px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
+                  className="transform bg-primary px-6 md:px-8 py-3 font-semibold text-primary-foreground shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-2xl"
                   size="lg"
                   asChild
                 >
