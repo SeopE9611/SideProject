@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
+import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
 import Image from 'next/image';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
@@ -247,7 +248,7 @@ export default function OrderDetailPage() {
             <div className="mt-4">
               <Badge variant={badgeToneVariant(getOrderStatusTone(order.status))} className="gap-2 px-4 py-2 text-lg font-semibold">
                 {getStatusIcon(order.status)}
-                {order.status}
+                {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
               </Badge>
             </div>
           </div>

@@ -955,6 +955,22 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
       return new NextResponse('배송 정보가 필요합니다.', { status: 400 });
     }
 
+    const normalizeMethod = (raw: unknown): 'delivery' | 'quick' | 'visit' | null => {
+      const s = String(raw ?? '').trim().toLowerCase();
+      if (!s) return null;
+      if (['visit', 'pickup', '방문', '방문수령', '매장'].includes(s)) return 'visit';
+      if (['quick', '퀵', '퀵배송'].includes(s)) return 'quick';
+      if (['delivery', 'courier', 'parcel', 'ship', 'shipping', '택배', '택배배송'].includes(s)) return 'delivery';
+      return null;
+    };
+
+    const prevMethodNormalized = normalizeMethod((app as any)?.shippingInfo?.shippingMethod);
+    const nextMethodNormalized = normalizeMethod((newShippingInfo as any)?.shippingMethod);
+    // 정책: 방문 수령 접수 건은 기본 운영에서 배송 방식 변경을 허용하지 않는다.
+    if (prevMethodNormalized === 'visit' && nextMethodNormalized && nextMethodNormalized !== 'visit') {
+      return NextResponse.json({ ok: false, message: '방문 수령 신청은 배송 방식 변경이 불가합니다. 예외 전환은 별도 관리자 절차를 통해 진행해주세요.' }, { status: 400 });
+    }
+
     // 기존 배송 정보와 병합 (신청서 기준)
     const mergedShippingInfo: any = {
       ...(app as any).shippingInfo,

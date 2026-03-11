@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -20,14 +21,18 @@ interface ShippingFormProps {
   initialCourier?: string;
   initialTrackingNumber?: string;
   onSuccess?: () => void;
+  isVisitPickup?: boolean;
 }
 
-export default function ShippingForm({ applicationId, initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, onSuccess }: ShippingFormProps) {
-  const [shippingMethod, setShippingMethod] = useState<string>(initialShippingMethod || '');
+export default function ShippingForm({ applicationId, initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, onSuccess, isVisitPickup = false }: ShippingFormProps) {
+  const normalizedInitialMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
+  const fixedVisitMethod = 'visit';
+  const [shippingMethod, setShippingMethod] = useState<string>(isVisitPickup ? fixedVisitMethod : normalizedInitialMethod || '');
 
   useEffect(() => {
-    setShippingMethod(initialShippingMethod || '');
-  }, [initialShippingMethod]);
+    const normalized = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
+    setShippingMethod(isVisitPickup ? fixedVisitMethod : normalized || '');
+  }, [initialShippingMethod, isVisitPickup]);
 
   const [estimatedDelivery, setEstimatedDelivery] = useState<string>(initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '');
   const [courier, setCourier] = useState('');
@@ -35,6 +40,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const isEdit = Boolean(initialShippingMethod || initialEstimatedDelivery || initialCourier || initialTrackingNumber);
+  const cardTitle = isVisitPickup ? (isEdit ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isEdit ? '배송 정보 수정' : '배송 정보 등록';
 
   /**
    * ---- 이탈(탭 닫기/새로고침/뒤로가기/링크이동) 보호 ----
@@ -42,12 +48,13 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
    * 택배 배송이 아닌 경우에는 courier/tracking을 ''로 정규화해서 비교한다.
    */
   const baseline = useMemo(() => {
-    const baseMethod = String(initialShippingMethod ?? '').trim();
+    const normalizedBaseMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
+    const baseMethod = isVisitPickup ? fixedVisitMethod : normalizedBaseMethod;
     const baseEstimated = initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '';
 
     // 방문 수령(visit) 등 택배가 아닌 경우, 택배정보는 의미 없으므로 baseline에서도 ''로 맞춘다.
-    const baseCourier = baseMethod === 'delivery' ? String(initialCourier ?? '') : '';
-    const baseTracking = baseMethod === 'delivery' ? String(initialTrackingNumber ?? '') : '';
+    const baseCourier = baseMethod === 'delivery' || baseMethod === 'courier' ? String(initialCourier ?? '') : '';
+    const baseTracking = baseMethod === 'delivery' || baseMethod === 'courier' ? String(initialTrackingNumber ?? '') : '';
 
     return {
       shippingMethod: baseMethod,
@@ -55,15 +62,15 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
       courier: baseCourier,
       trackingNumber: baseTracking,
     };
-  }, [initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber]);
+  }, [initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, isVisitPickup]);
 
   const isDirty = useMemo(() => {
-    const curMethod = String(shippingMethod ?? '').trim();
-    const curCourier = curMethod === 'delivery' ? courier : '';
-    const curTracking = curMethod === 'delivery' ? trackingNumber : '';
+    const curMethod = isVisitPickup ? fixedVisitMethod : String(shippingMethod ?? '').trim();
+    const curCourier = curMethod === 'delivery' || curMethod === 'courier' ? courier : '';
+    const curTracking = curMethod === 'delivery' || curMethod === 'courier' ? trackingNumber : '';
 
     return baseline.shippingMethod !== curMethod || baseline.estimatedDelivery !== estimatedDelivery || baseline.courier !== curCourier || baseline.trackingNumber !== curTracking;
-  }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber]);
+  }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber, isVisitPickup]);
 
   // 저장 중에는 confirm을 띄우지 않도록(UX)
   useUnsavedChangesGuard(isDirty && !isSubmitting);
@@ -77,7 +84,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   }, [initialTrackingNumber]);
 
   useEffect(() => {
-    if (shippingMethod !== 'delivery') {
+    if (!['delivery', 'courier'].includes(shippingMethod)) {
       setCourier('');
       setTrackingNumber('');
     }
@@ -86,7 +93,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!shippingMethod) {
+    if (!shippingMethod && !isVisitPickup) {
       showErrorToast('배송 방법을 선택해주세요');
       return;
     }
@@ -96,7 +103,9 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
       return;
     }
 
-    if (shippingMethod === 'delivery') {
+    const effectiveMethod = isVisitPickup ? fixedVisitMethod : shippingMethod;
+
+    if (effectiveMethod === 'delivery' || effectiveMethod === 'courier') {
       if (!courier) {
         showErrorToast('택배사를 선택해주세요');
         return;
@@ -115,17 +124,17 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           shippingInfo: {
-            shippingMethod: shippingMethod,
+            shippingMethod: effectiveMethod,
             estimatedDate: estimatedDelivery,
             invoice: {
-              courier: shippingMethod === 'delivery' ? courier : '',
-              trackingNumber: shippingMethod === 'delivery' ? trackingNumber : '',
+              courier: effectiveMethod === 'delivery' || effectiveMethod === 'courier' ? courier : '',
+              trackingNumber: effectiveMethod === 'delivery' || effectiveMethod === 'courier' ? trackingNumber : '',
             },
           },
         }),
       });
 
-      showSuccessToast('배송 정보가 업데이트되었습니다');
+      showSuccessToast(isVisitPickup ? '방문 수령 정보가 업데이트되었습니다' : '배송 정보가 업데이트되었습니다');
 
       router.refresh();
       onSuccess?.();
@@ -141,23 +150,27 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{isEdit ? '배송 정보 수정' : '배송 정보 등록'}</CardTitle>
+        <CardTitle>{cardTitle}</CardTitle>
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="shipping-method">배송 방법</Label>
-            <Select value={shippingMethod} onValueChange={setShippingMethod}>
-              <SelectTrigger id="shipping-method">
-                <SelectValue placeholder="배송 방법을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="delivery">택배 배송</SelectItem>
-                <SelectItem value="quick">퀵 배송 (당일)</SelectItem>
-                <SelectItem value="visit">방문 수령</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="shipping-method">{isVisitPickup ? '수령 방법' : '배송 방법'}</Label>
+            {isVisitPickup ? (
+              <Input id="shipping-method" value="방문 수령" readOnly disabled />
+            ) : (
+              <Select value={shippingMethod} onValueChange={setShippingMethod}>
+                <SelectTrigger id="shipping-method">
+                  <SelectValue placeholder="배송 방법을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="delivery">택배 배송</SelectItem>
+                  <SelectItem value="quick">퀵 배송 (당일)</SelectItem>
+                  <SelectItem value="visit">방문 수령</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -165,7 +178,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
             <Input id="estimated-delivery" type="date" value={estimatedDelivery} onChange={(e) => setEstimatedDelivery(e.target.value)} min={new Date().toISOString().split('T')[0]} />
           </div>
 
-          {shippingMethod === 'delivery' && (
+          {!isVisitPickup && (shippingMethod === 'delivery' || shippingMethod === 'courier') && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="courier">택배사</Label>

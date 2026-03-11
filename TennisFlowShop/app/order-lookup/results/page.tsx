@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
 import { hasCompletedStringingApplication, normalizeStringingApplicationId } from '@/app/order-lookup/_lib/stringing-status';
+import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -353,7 +354,7 @@ export default function OrderLookupResultsPage() {
                           <div className="flex items-center gap-3">
                             <Badge variant={badgeToneVariant(getOrderStatusTone(order.status))} className="gap-1 px-3 py-1.5 text-sm font-medium">
                               {getStatusIcon(order.status)}
-                              {order.status}
+                              {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                             </Badge>
                           </div>
                         </div>
