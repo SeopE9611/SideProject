@@ -40,8 +40,7 @@ function toIsoOrNull(value: string | Date | null | undefined): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-function mapApiToViewModel(response?: AdminRentalsListResponseDto): { items: RentalRow[]; total: number } {
-  if (!response) return { items: [], total: 0 };
+function mapApiToViewModel(response: AdminRentalsListResponseDto): { items: RentalRow[]; total: number } {
   return {
     total: response.total,
     items: response.items.map((item) => ({
@@ -266,14 +265,17 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
-  const data = useMemo(() => mapApiToViewModel(apiData), [apiData]);
+  // 3차 보완: API 응답 미확정(undefined)과 실제 빈 목록을 분리한다.
+  const hasResolvedData = !!apiData;
+  const hasDataError = !!error;
+  const data = useMemo(() => (apiData ? mapApiToViewModel(apiData) : null), [apiData]);
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
 
   useEffect(() => {
     if (commonErrorMessage) showErrorToast(commonErrorMessage);
   }, [commonErrorMessage]);
 
-  const filteredRentals = data.items.filter((rental) => {
+  const filteredRentals = (data?.items ?? []).filter((rental) => {
     const searchMatch =
       rental.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rental.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -283,7 +285,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
     return searchMatch;
   });
 
-  const viewItems = data.items.filter((r) => {
+  const viewItems = (data?.items ?? []).filter((r) => {
     const pay = derivePaymentStatus(r);
     const ship = deriveShippingStatus(r);
     const okPay = payFilter === 'all' ? true : payFilter === pay;
@@ -409,7 +411,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
     return items;
   }
 
-  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
+  const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : null;
   const thClasses = 'px-4 py-2 text-center align-middle border-b border-border font-semibold text-foreground';
   const tdClasses = 'px-3 py-4 align-middle text-center';
 
@@ -595,7 +597,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
       <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            {data ? (
+            {hasResolvedData && data ? (
               <>
                 <CardTitle className="text-base font-medium">대여 목록</CardTitle>
                 <p className="text-xs text-muted-foreground">총 {data.total}개의 대여</p>
@@ -668,7 +670,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
                     ))}
                   </TableRow>
                 ))
-              ) : !data || data.items.length === 0 ? (
+              ) : hasResolvedData && !hasDataError && data && data.items.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className={tdClasses}>
                     <div className="flex flex-col items-center gap-2">
@@ -884,7 +886,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
             </TableBody>
           </Table>
 
-          {totalPages > 1 && (
+          {totalPages && totalPages > 1 && (
             <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
               <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
                 이전
@@ -900,7 +902,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
                   </span>
                 ),
               )}
-              <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}>
+              <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.min(totalPages ?? 1, p + 1))} disabled={!totalPages || page >= totalPages}>
                 다음
               </Button>
             </div>

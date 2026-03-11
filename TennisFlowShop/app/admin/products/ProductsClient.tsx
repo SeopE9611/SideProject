@@ -144,11 +144,16 @@ export default function ProductsClient() {
     keepPreviousData: true, // SWR v2 전환 중 깜빡임 줄어듬
   });
 
+  // 3차 보완: data 미확정(undefined)과 실제 빈 목록([])을 명확히 분리한다.
   const items = data?.items ?? [];
+  const hasResolvedData = !!data;
+  const hasDataError = !!error;
+  const isListLoadingState = (isLoading || isValidating) && !hasResolvedData;
+  const isActualEmptyState = hasResolvedData && !hasDataError && items.length === 0;
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
+  const totalPages = hasResolvedData ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null;
+  const currentPage = totalPages ? Math.min(page, totalPages) : null;
 
   // 전역 카운트(필터 무시)
   const totalsByStatus = data?.totalsByStatus ?? { active: 0, low_stock: 0, out_of_stock: 0 };
@@ -264,7 +269,7 @@ export default function ProductsClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? '-' : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{hasResolvedData ? c.value : '-'}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
@@ -278,7 +283,7 @@ export default function ProductsClient() {
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
-                <CardDescription className="text-foreground">{isLoading && !data ? '상품 목록을 준비하고 있습니다.' : total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
+                <CardDescription className="text-foreground">{!hasResolvedData ? '상품 목록을 준비하고 있습니다.' : hasDataError ? '상품 목록을 불러오지 못했습니다.' : total > 0 ? `총 ${total}개의 스트링이 검색되었습니다.` : '조건에 맞는 스트링이 없습니다.'}</CardDescription>
               </div>
               <Button
                 asChild
@@ -360,13 +365,13 @@ export default function ProductsClient() {
                   </TableHeader>
 
                   <TableBody>
-                    {(isLoading || isValidating) && items.length === 0 ? (
+                    {isListLoadingState ? (
                       <TableRow className="border-0">
                         <TableCell colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
                           상품 목록을 불러오는 중입니다.
                         </TableCell>
                       </TableRow>
-                    ) : items.length === 0 ? (
+                    ) : isActualEmptyState ? (
                       <TableRow className="border-0">
                         <TableCell colSpan={8} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
@@ -440,7 +445,9 @@ export default function ProductsClient() {
                     )}
 
                     {/* 마지막 페이지 보정용 필러 행(로딩/빈상태 제외) */}
-                    {!(isLoading || isValidating) &&
+                    {hasResolvedData &&
+                      !hasDataError &&
+                      !(isLoading || isValidating) &&
                       items.length > 0 &&
                       Array.from({ length: Math.max(0, PAGE_SIZE - items.length) }).map((_, i) => (
                         <TableRow key={`filler-${i}`} className="pointer-events-none">
@@ -458,12 +465,12 @@ export default function ProductsClient() {
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {currentPage} / {totalPages}
+                  {currentPage ?? '-'} / {totalPages ?? '-'}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages) - 1))} disabled={currentPage <= 1} className="border-border hover:bg-muted dark:hover:bg-muted">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages ?? 1) - 1))} disabled={!currentPage || currentPage <= 1} className="border-border hover:bg-muted dark:hover:bg-muted">
                   이전
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, Math.min(p, totalPages) + 1))} disabled={currentPage >= totalPages} className="border-border hover:bg-muted dark:hover:bg-muted">
+                <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages ?? 1, Math.min(p, totalPages ?? 1) + 1))} disabled={!currentPage || !totalPages || currentPage >= totalPages} className="border-border hover:bg-muted dark:hover:bg-muted">
                   다음
                 </Button>
               </div>
