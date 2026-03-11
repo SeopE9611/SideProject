@@ -71,6 +71,8 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
   const items: TxItem[] | null = hasResolvedItems ? (data?.items as TxItem[]) : null;
   const total: number | null = hasResolvedTotal ? (data?.total as number) : null;
   const totalPages = total === null ? 1 : Math.max(1, Math.ceil(total / limit));
+  const hasResolvedTotalPages = hasResolvedTotal && total !== null;
+  const shouldShowResolvedPageInfo = hasResolvedTotalPages && !hasDataError && !isLoading && !isPageTransitionLoading;
   const shouldShowRows = !!items && items.length > 0;
   const shouldShowEmptyState = !!items && items.length === 0;
 
@@ -204,13 +206,13 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
           <div className="p-3 border-b flex items-center justify-between">
             <div className="font-medium">포인트 히스토리</div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+              <Button variant="outline" size="sm" disabled={!shouldShowResolvedPageInfo || page <= 1} onClick={() => setPage((p) => p - 1)}>
                 이전
               </Button>
               <div className="text-sm">
-                {page} / {totalPages}
+                {shouldShowResolvedPageInfo ? `${page} / ${totalPages}` : '- / -'}
               </div>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+              <Button variant="outline" size="sm" disabled={!shouldShowResolvedPageInfo || page >= totalPages} onClick={() => setPage((p) => p + 1)}>
                 다음
               </Button>
             </div>
