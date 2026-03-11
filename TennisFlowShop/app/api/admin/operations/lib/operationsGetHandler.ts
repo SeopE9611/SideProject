@@ -23,7 +23,7 @@ import type {
 import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
-import { isVisitPickupOrder } from '@/lib/order-shipping';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
@@ -411,6 +411,7 @@ export async function handleAdminOperationsGet(req: Request) {
       userSnapshot: 1,
       guestInfo: 1,
       items: 1,
+      shippingInfo: 1,
       cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
@@ -727,6 +728,10 @@ export async function handleAdminOperationsGet(req: Request) {
     const shippingMethod = getString(asDoc(o?.shippingInfo)?.shippingMethod) ?? getString(asDoc(o?.shippingInfo)?.deliveryMethod);
     const hasOutboundTracking = Boolean(getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim());
     const statusLabel = normalizeOrderStatus(o.status);
+    const statusDisplayLabel = getOrderStatusLabelForDisplay(statusLabel, {
+      shippingMethod,
+      deliveryMethod: getString(asDoc(o?.shippingInfo)?.deliveryMethod),
+    });
     const paymentLabel = normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status));
     const cancel = normalizeCancelRequest(o);
     return {
@@ -736,6 +741,7 @@ export async function handleAdminOperationsGet(req: Request) {
       customer: cust,
       title: summarizeOrderItems(o.items),
       statusLabel,
+      statusDisplayLabel,
       paymentLabel,
       amount: Number(o.totalPrice ?? 0),
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
