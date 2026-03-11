@@ -328,6 +328,10 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
     return 0;
   });
 
+  const hasSourceItems = hasResolvedData && (data?.items.length ?? 0) > 0;
+  const shouldShowActualEmpty = hasResolvedData && !hasDataError && (data?.items.length ?? 0) === 0;
+  const shouldShowSearchEmpty = hasResolvedData && !hasDataError && hasSourceItems && sortedRentals.length === 0;
+
   const markRefund = async (id: string, mark: boolean) => {
     if (busyId) return;
     setBusyId(id);
@@ -597,7 +601,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
       <Card className="rounded-xl border-border bg-card shadow-md px-4 py-5">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            {hasResolvedData && data ? (
+            {hasResolvedData && !hasDataError && data ? (
               <>
                 <CardTitle className="text-base font-medium">대여 목록</CardTitle>
                 <p className="text-xs text-muted-foreground">총 {data.total}개의 대여</p>
@@ -670,7 +674,13 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
                     ))}
                   </TableRow>
                 ))
-              ) : hasResolvedData && !hasDataError && data && data.items.length === 0 ? (
+              ) : hasDataError ? (
+                <TableRow>
+                  <TableCell colSpan={9} className={tdClasses}>
+                    데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+                  </TableCell>
+                </TableRow>
+              ) : shouldShowActualEmpty ? (
                 <TableRow>
                   <TableCell colSpan={9} className={tdClasses}>
                     <div className="flex flex-col items-center gap-2">
@@ -679,7 +689,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : sortedRentals.length === 0 ? (
+              ) : shouldShowSearchEmpty ? (
                 <TableRow>
                   <TableCell colSpan={9} className={tdClasses}>
                     검색 결과가 없습니다.
@@ -886,7 +896,7 @@ function getCancelQuickSignal(cancelRequest: RentalRow['cancelRequest']): { labe
             </TableBody>
           </Table>
 
-          {totalPages && totalPages > 1 && (
+          {!hasDataError && totalPages && totalPages > 1 && (
             <div className="mt-6 flex justify-center items-center gap-1 flex-wrap">
               <Button size="sm" variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}>
                 이전
