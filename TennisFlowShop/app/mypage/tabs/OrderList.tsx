@@ -10,9 +10,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { ArrowRight, Ban, Calendar, CheckCircle, Clock, CreditCard, MessageSquarePlus, MoreVertical, Package, ShoppingBag, Truck, Undo2, User } from 'lucide-react';
+import { ArrowRight, Ban, Calendar, CheckCircle, Clock, CreditCard, MessageSquarePlus, MoreVertical, Package, ShoppingBag, Truck, Undo2, User, Store } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { mutate as globalMutate } from 'swr';
@@ -32,7 +32,7 @@ interface Order {
   items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null; kind?: 'racket' | 'string' | 'product' }>;
   totalPrice: number;
   userSnapshot?: { name: string; email: string };
-  shippingInfo?: { deliveryMethod?: string; withStringService?: boolean };
+  shippingInfo?: { deliveryMethod?: string; shippingMethod?: string; withStringService?: boolean };
   isStringServiceApplied?: boolean;
   stringingApplicationId?: string | null; // API가 최신순(updatedAt/createdAt desc) 기준으로 고른 대표 신청서 ID
   stringService?: {
@@ -52,10 +52,10 @@ interface Order {
 
 const fetcher = (url: string) => authenticatedSWRFetcher<OrderResponse>(url);
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string, isVisitPickup: boolean) => {
   switch (status) {
     case '배송중':
-      return <Truck className="h-4 w-4 text-primary" />;
+      return isVisitPickup ? <Store className="h-4 w-4 text-primary" /> : <Truck className="h-4 w-4 text-primary" />;
     case '배송완료':
       return <CheckCircle className="h-4 w-4 text-primary" />;
     case '대기중':
@@ -353,7 +353,7 @@ export default function OrderList() {
 
                 {/* 상태/취소 관련 영역 */}
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                  {getStatusIcon(order.status)}
+                  {getStatusIcon(order.status, isVisitPickupOrder(order.shippingInfo))}
                   <Badge variant={getOrderStatusBadgeSpec(order.status).variant} className="px-3 py-1 text-xs font-medium">
                     {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                   </Badge>

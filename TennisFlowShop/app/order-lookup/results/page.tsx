@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft, Package, Search, CheckCircle2, Clock, Truck, Shield } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Calendar, User, Phone, CreditCard, ArrowLeft, Package, Search, CheckCircle2, Clock, Truck, Shield, Store } from 'lucide-react';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -38,18 +38,19 @@ interface Order {
   status: '배송준비중' | '배송중' | '배송완료' | '주문취소';
   shippingInfo?: {
     deliveryMethod?: string;
+    shippingMethod?: string;
     withStringService?: boolean;
   };
   isStringServiceApplied?: boolean;
   stringingApplicationId?: string | null;
 }
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string, isVisitPickup: boolean) => {
   switch (status) {
     case '배송완료':
       return <CheckCircle2 className="w-4 h-4" />;
     case '배송중':
-      return <Truck className="w-4 h-4" />;
+      return isVisitPickup ? <Store className="w-4 h-4" /> : <Truck className="w-4 h-4" />;
     case '배송준비중':
       return <Clock className="w-4 h-4" />;
     default:
@@ -152,6 +153,7 @@ export default function OrderLookupResultsPage() {
               status: o.status ?? '배송준비중',
               shippingInfo: {
                 deliveryMethod: o.shippingInfo?.deliveryMethod,
+                shippingMethod: o.shippingInfo?.shippingMethod,
                 withStringService: o.shippingInfo?.withStringService,
               },
               isStringServiceApplied: o.isStringServiceApplied,
@@ -353,7 +355,7 @@ export default function OrderLookupResultsPage() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge variant={badgeToneVariant(getOrderStatusTone(order.status))} className="gap-1 px-3 py-1.5 text-sm font-medium">
-                              {getStatusIcon(order.status)}
+                              {getStatusIcon(order.status, isVisitPickupOrder(order.shippingInfo))}
                               {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                             </Badge>
                           </div>

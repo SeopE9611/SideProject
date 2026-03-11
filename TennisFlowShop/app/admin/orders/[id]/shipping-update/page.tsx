@@ -83,7 +83,8 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   }
 
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
-  const method = String(order?.shippingInfo?.shippingMethod ?? '').trim();
+  const rawMethod = order?.shippingInfo?.shippingMethod ?? order?.shippingInfo?.deliveryMethod ?? '';
+  const method = String(rawMethod).trim();
   const date = String(order?.shippingInfo?.estimatedDate ?? '').trim();
   const courier = String(order?.shippingInfo?.invoice?.courier ?? '').trim();
   const tracking = String(order?.shippingInfo?.invoice?.trackingNumber ?? '').trim();
@@ -112,7 +113,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
 
         <ShippingFormClient
           orderId={order._id}
-          initialShippingMethod={order.shippingInfo?.shippingMethod ?? ''}
+          initialShippingMethod={rawMethod}
           initialEstimatedDelivery={order.shippingInfo?.estimatedDate ?? ''}
           initialCourier={order.shippingInfo?.invoice?.courier ?? ''}
           initialTrackingNumber={order.shippingInfo?.invoice?.trackingNumber ?? ''}
