@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield, Store } from 'lucide-react';
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
@@ -26,6 +26,7 @@ interface OrderDetail {
     phone: string;
     address: string;
     deliveryMethod?: string;
+    shippingMethod?: string;
     withStringService?: boolean;
   };
   isStringServiceApplied?: boolean;
@@ -68,12 +69,12 @@ function getGuestOrderModeClient(): GuestOrderMode {
   return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'legacy';
 }
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string, isVisitPickup: boolean) => {
   switch (status) {
     case '배송완료':
       return <CheckCircle className="w-5 h-5" />;
     case '배송중':
-      return <Truck className="w-5 h-5" />;
+      return isVisitPickup ? <Store className="w-5 h-5" /> : <Truck className="w-5 h-5" />;
     case '배송준비중':
       return <Clock className="w-5 h-5" />;
     default:
@@ -226,7 +227,8 @@ export default function OrderDetailPage() {
     return null;
   }
 
-  const orderShippingMethod = normalizeOrderShippingMethod(order.shippingInfo?.deliveryMethod);
+  const rawShippingMethod = order.shippingInfo?.shippingMethod ?? order.shippingInfo?.deliveryMethod;
+  const orderShippingMethod = normalizeOrderShippingMethod(rawShippingMethod);
   // 비회원 주문 상세도 공용 방문 수령 판별 유틸로 통일해 화면/서버 정책 판단 기준을 맞춘다.
   const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
   const orderShippingReadLabels = getOrderShippingReadLabels(orderShippingMethod);
@@ -248,7 +250,7 @@ export default function OrderDetailPage() {
             <p className="text-xl text-muted-foreground">주문번호: {order._id.slice(-8)}</p>
             <div className="mt-4">
               <Badge variant={badgeToneVariant(getOrderStatusTone(order.status))} className="gap-2 px-4 py-2 text-lg font-semibold">
-                {getStatusIcon(order.status)}
+                {getStatusIcon(order.status, isVisitPickup)}
                 {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
               </Badge>
             </div>

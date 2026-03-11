@@ -12,6 +12,7 @@ type Application = {
   _id: string;
   shippingInfo?: {
     shippingMethod?: string;
+    deliveryMethod?: string;
     estimatedDate?: string;
     invoice?: {
       courier?: string;
@@ -35,7 +36,8 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const invoice = shippingInfo.invoice ?? {};
 
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
-  const method = String(shippingInfo.shippingMethod ?? '').trim();
+  const rawMethod = shippingInfo.shippingMethod ?? shippingInfo.deliveryMethod ?? '';
+  const method = String(rawMethod).trim();
   const date = String(shippingInfo.estimatedDate ?? '').trim();
   const courier = String(invoice.courier ?? '').trim();
   const tracking = String(invoice.trackingNumber ?? '').trim();
@@ -95,7 +97,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
     content = (
       <ShippingForm
         applicationId={applicationId}
-        initialShippingMethod={shippingInfo.shippingMethod || ''}
+        initialShippingMethod={rawMethod}
         initialEstimatedDelivery={shippingInfo.estimatedDate || ''}
         initialCourier={invoice.courier || ''}
         initialTrackingNumber={invoice.trackingNumber || ''}

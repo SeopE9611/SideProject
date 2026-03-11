@@ -176,7 +176,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
                   <SelectValue placeholder="배송 방법을 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="delivery">택배 배송</SelectItem>
+                  <SelectItem value="courier">택배 배송</SelectItem>
                   <SelectItem value="quick">퀵 배송 (당일)</SelectItem>
                   <SelectItem value="visit">방문 수령</SelectItem>
                 </SelectContent>
