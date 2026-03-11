@@ -23,7 +23,10 @@ export function useWishlist() {
     { keepPreviousData: true, revalidateOnFocus: false }
   );
 
-  const ids = new Set((data?.items ?? []).map((i) => i.id));
+  // 조회 실패/미확정을 실제 빈 목록과 분리하기 위해 nullable로 보관한다.
+  const items = data?.items ?? null;
+  const total = data?.total ?? null;
+  const ids = new Set((items ?? []).map((i) => i.id));
   const has = (productId: string) => ids.has(productId);
 
   async function add(productId: string) {
@@ -57,9 +60,14 @@ export function useWishlist() {
     await mutate();
   }
 
+  const hasResolvedData = Array.isArray(items) && typeof total === 'number';
+  const hasDataError = Boolean(error);
+
   return {
-    items: data?.items ?? [],
-    total: data?.total ?? 0,
+    items,
+    total,
+    hasResolvedData,
+    hasDataError,
     has,
     add,
     remove,
