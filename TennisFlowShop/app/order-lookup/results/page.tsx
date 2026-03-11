@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
 import { hasCompletedStringingApplication, normalizeStringingApplicationId } from '@/app/order-lookup/_lib/stringing-status';
-import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, '');
@@ -334,8 +334,8 @@ export default function OrderLookupResultsPage() {
                 <div className="space-y-4 md:space-y-6">
                   {orders.map((order, index) => {
                     const hasStringingApplication = hasCompletedStringingApplication(order);
-                    const normalizedDeliveryMethod = order.shippingInfo?.deliveryMethod?.replace(/\s/g, '');
-                    const isVisitPickup = normalizedDeliveryMethod === '방문수령';
+                    // 비회원 조회도 관리자/마이페이지와 동일한 공용 방문 수령 판별 유틸을 사용해 정책 일관성을 유지한다.
+                    const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
 
                     return (
                     <Card key={order.id} className="overflow-hidden border-2 border-border hover:border-border transition-all duration-200 hover:shadow-lg">

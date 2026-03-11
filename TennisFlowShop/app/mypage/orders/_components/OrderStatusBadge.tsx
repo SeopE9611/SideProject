@@ -8,6 +8,10 @@ import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
 
+// NOTE:
+// 현재 마이페이지 주문 화면은 `app/features/orders/components/OrderStatusBadge` 공용 컴포넌트를 사용 중입니다.
+// 이 파일은 레거시 호환 목적으로 유지하며, 추후 정리 대상임을 명시합니다.
+
 type Props = {
   orderId: string;
   initialStatus: string;
