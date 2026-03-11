@@ -630,15 +630,13 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 </div>
 
-                {showDeliveryOnlyFields && (
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">예상 수령일</p>
-                      <p className="font-semibold text-foreground">{formatDate(orderDetail.shippingInfo.estimatedDate)}</p>
-                    </div>
+                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">예상 수령일</p>
+                    <p className="font-semibold text-foreground">{orderDetail.shippingInfo?.estimatedDate ? formatDate(orderDetail.shippingInfo.estimatedDate) : '미등록'}</p>
                   </div>
-                )}
+                </div>
 
                 {!showDeliveryOnlyFields && <p className="text-sm text-muted-foreground">방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.</p>}
 
