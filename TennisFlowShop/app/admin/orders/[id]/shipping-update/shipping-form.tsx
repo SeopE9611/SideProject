@@ -24,6 +24,8 @@ interface ShippingFormProps {
   isVisitPickupOrder?: boolean;
 }
 
+const isCourierShippingMethod = (method: string) => normalizeOrderShippingMethod(method) === 'courier';
+
 export default function ShippingForm({ initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, orderId, onSuccess, isVisitPickupOrder = false }: ShippingFormProps) {
   // 빈 문자열로 초기화해서 Controlled 컴포넌트로 통일
   const normalizedInitialShippingMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
@@ -53,7 +55,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
 
   // 배송 수단이 바뀔 때, 택배 정보 초기화
   useEffect(() => {
-    if (!['delivery', 'courier'].includes(shippingMethod)) {
+    if (!isCourierShippingMethod(shippingMethod)) {
       setCourier('');
       setTrackingNumber('');
     }
@@ -75,8 +77,8 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
     const baseEstimated = initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '';
 
     // 택배배송이 아니면 택배정보는 의미 없으므로 baseline에서도 ''로 맞춘다
-    const baseCourier = baseMethod === 'delivery' || baseMethod === 'courier' ? String(initialCourier ?? '') : '';
-    const baseTracking = baseMethod === 'delivery' || baseMethod === 'courier' ? String(initialTrackingNumber ?? '') : '';
+    const baseCourier = isCourierShippingMethod(baseMethod) ? String(initialCourier ?? '') : '';
+    const baseTracking = isCourierShippingMethod(baseMethod) ? String(initialTrackingNumber ?? '') : '';
 
     return {
       shippingMethod: baseMethod,
@@ -88,8 +90,8 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
 
   const isDirty = useMemo(() => {
     const currentMethod = isVisitPickupOrder ? fixedVisitMethod : shippingMethod;
-    const curCourier = currentMethod === 'delivery' || currentMethod === 'courier' ? courier : '';
-    const curTracking = currentMethod === 'delivery' || currentMethod === 'courier' ? trackingNumber : '';
+    const curCourier = isCourierShippingMethod(currentMethod) ? courier : '';
+    const curTracking = isCourierShippingMethod(currentMethod) ? trackingNumber : '';
 
     return baseline.shippingMethod !== currentMethod || baseline.estimatedDelivery !== estimatedDelivery || baseline.courier !== curCourier || baseline.trackingNumber !== curTracking;
   }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber, isVisitPickupOrder]);
@@ -112,7 +114,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
 
     const effectiveMethod = isVisitPickupOrder ? fixedVisitMethod : shippingMethod;
 
-    if (effectiveMethod === 'delivery' || effectiveMethod === 'courier') {
+    if (isCourierShippingMethod(effectiveMethod)) {
       if (!courier) {
         showErrorToast('택배사를 선택해주세요');
         return;
@@ -136,10 +138,10 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
           shippingMethod: effectiveMethod, // 공통 필드
           estimatedDate: estimatedDelivery, // 공통 필드
           courier:
-            effectiveMethod === 'delivery' || effectiveMethod === 'courier'
+            isCourierShippingMethod(effectiveMethod)
               ? courier // 택배 선택 시 입력값
               : '', // 그 외는 빈 문자열로 초기화
-          trackingNumber: effectiveMethod === 'delivery' || effectiveMethod === 'courier' ? trackingNumber : '',
+          trackingNumber: isCourierShippingMethod(effectiveMethod) ? trackingNumber : '',
         }),
       });
 
@@ -189,10 +191,10 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
             <Input id="estimated-delivery" type="date" value={estimatedDelivery} onChange={(e) => setEstimatedDelivery(e.target.value)} min={new Date().toISOString().split('T')[0]} />
           </div>
 
-          {!isVisitPickupOrder && (shippingMethod === 'delivery' || shippingMethod === 'courier') && (
+          {!isVisitPickupOrder && isCourierShippingMethod(shippingMethod) && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="delivery">택배사</Label>
+                <Label htmlFor="courier">택배사</Label>
                 <Select value={courier} onValueChange={setCourier}>
                   <SelectTrigger id="courier">
                     <SelectValue placeholder="택배사를 선택하세요" />

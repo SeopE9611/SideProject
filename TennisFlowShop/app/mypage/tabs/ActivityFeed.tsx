@@ -337,8 +337,9 @@ export default function ActivityFeed() {
   const total = data?.[0]?.total ?? 0;
   const hasMore = flat.length < total;
 
-  // 주문 단위 UX: 배송 정보 모달 / 구매확정 / 리뷰 CTA
-  const canShowOrderShippingInfo = (status?: string) => status === '배송중' || status === '배송완료' || status === '구매확정';
+  // 주문 단위 UX: 배송/수령 정보 모달 / 구매확정 / 리뷰 CTA
+  // - 방문 수령 주문도 내부 raw status는 배송중/배송완료를 쓰므로 동일 기준을 유지한다.
+  const canShowOrderDeliveryInfo = (status?: string) => status === '배송중' || status === '배송완료' || status === '구매확정';
   const canShowOrderReviewCta = (status?: string) => status === '배송완료' || status === '구매확정';
 
   // 교체 서비스(스트링 교체 신청서) CTA 조건
@@ -828,7 +829,7 @@ export default function ActivityFeed() {
                         </Button>
 
                         {/* 배송중/배송완료/구매확정 상태에서 배송 정보 모달 제공 */}
-                        {g.kind === 'order' && g.order && g.order.id && canShowOrderShippingInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg flex-1 min-w-[160px] bg-transparent" /> : null}
+                        {g.kind === 'order' && g.order && g.order.id && canShowOrderDeliveryInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg flex-1 min-w-[160px] bg-transparent" /> : null}
                       </div>
                     </div>
                   );
@@ -943,7 +944,7 @@ export default function ActivityFeed() {
                                   </Link>
                                 </Button>
                                 {/*배송 정보 모달: 배송중/배송완료/구매확정에서 노출 */}
-                                {g.kind === 'order' && g.order && g.order.id && canShowOrderShippingInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg bg-transparent" /> : null}
+                                {g.kind === 'order' && g.order && g.order.id && canShowOrderDeliveryInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg bg-transparent" /> : null}
 
                                 {/* 리뷰 작성하기: 배송완료/구매확정에서 노출 */}
                                 {g.kind === 'order' && g.order && g.order.id && canShowOrderReviewCta(g.order.status) ? <ActivityOrderReviewCTA orderId={g.order.id} orderStatus={g.order.status} className="rounded-lg" /> : null}

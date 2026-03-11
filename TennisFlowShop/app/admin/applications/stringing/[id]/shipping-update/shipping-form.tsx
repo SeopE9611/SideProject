@@ -24,6 +24,8 @@ interface ShippingFormProps {
   isVisitPickup?: boolean;
 }
 
+const isCourierShippingMethod = (method: string) => normalizeOrderShippingMethod(method) === 'courier';
+
 export default function ShippingForm({ applicationId, initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, onSuccess, isVisitPickup = false }: ShippingFormProps) {
   const normalizedInitialMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
   const fixedVisitMethod = 'visit';
@@ -53,8 +55,8 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
     const baseEstimated = initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '';
 
     // 방문 수령(visit) 등 택배가 아닌 경우, 택배정보는 의미 없으므로 baseline에서도 ''로 맞춘다.
-    const baseCourier = baseMethod === 'delivery' || baseMethod === 'courier' ? String(initialCourier ?? '') : '';
-    const baseTracking = baseMethod === 'delivery' || baseMethod === 'courier' ? String(initialTrackingNumber ?? '') : '';
+    const baseCourier = isCourierShippingMethod(baseMethod) ? String(initialCourier ?? '') : '';
+    const baseTracking = isCourierShippingMethod(baseMethod) ? String(initialTrackingNumber ?? '') : '';
 
     return {
       shippingMethod: baseMethod,
@@ -66,8 +68,8 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
 
   const isDirty = useMemo(() => {
     const curMethod = isVisitPickup ? fixedVisitMethod : String(shippingMethod ?? '').trim();
-    const curCourier = curMethod === 'delivery' || curMethod === 'courier' ? courier : '';
-    const curTracking = curMethod === 'delivery' || curMethod === 'courier' ? trackingNumber : '';
+    const curCourier = isCourierShippingMethod(curMethod) ? courier : '';
+    const curTracking = isCourierShippingMethod(curMethod) ? trackingNumber : '';
 
     return baseline.shippingMethod !== curMethod || baseline.estimatedDelivery !== estimatedDelivery || baseline.courier !== curCourier || baseline.trackingNumber !== curTracking;
   }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber, isVisitPickup]);
@@ -84,7 +86,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   }, [initialTrackingNumber]);
 
   useEffect(() => {
-    if (!['delivery', 'courier'].includes(shippingMethod)) {
+    if (!isCourierShippingMethod(shippingMethod)) {
       setCourier('');
       setTrackingNumber('');
     }
@@ -105,7 +107,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
 
     const effectiveMethod = isVisitPickup ? fixedVisitMethod : shippingMethod;
 
-    if (effectiveMethod === 'delivery' || effectiveMethod === 'courier') {
+    if (isCourierShippingMethod(effectiveMethod)) {
       if (!courier) {
         showErrorToast('택배사를 선택해주세요');
         return;
@@ -127,8 +129,8 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
             shippingMethod: effectiveMethod,
             estimatedDate: estimatedDelivery,
             invoice: {
-              courier: effectiveMethod === 'delivery' || effectiveMethod === 'courier' ? courier : '',
-              trackingNumber: effectiveMethod === 'delivery' || effectiveMethod === 'courier' ? trackingNumber : '',
+              courier: isCourierShippingMethod(effectiveMethod) ? courier : '',
+              trackingNumber: isCourierShippingMethod(effectiveMethod) ? trackingNumber : '',
             },
           },
         }),
@@ -178,7 +180,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
             <Input id="estimated-delivery" type="date" value={estimatedDelivery} onChange={(e) => setEstimatedDelivery(e.target.value)} min={new Date().toISOString().split('T')[0]} />
           </div>
 
-          {!isVisitPickup && (shippingMethod === 'delivery' || shippingMethod === 'courier') && (
+          {!isVisitPickup && isCourierShippingMethod(shippingMethod) && (
             <>
               <div className="space-y-2">
                 <Label htmlFor="courier">택배사</Label>

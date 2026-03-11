@@ -15,6 +15,8 @@ export type AdminOperationItem = {
   customer: { name: string; email: string };
   title: string;
   statusLabel: string;
+  // 현재는 order kind에서만 방문 수령 문맥 치환용으로 주입된다.
+  // (stringing/rental은 statusLabel 그대로 사용)
   statusDisplayLabel?: string;
   paymentLabel?: string;
   amount: number;

@@ -1063,6 +1063,7 @@ export default function OperationsClient() {
                       const isOpen = !!openGroups[g.key];
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                       const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
+                      // statusDisplayLabel은 현재 order에서만 내려오며, 다른 kind는 statusLabel을 그대로 사용한다.
                       const childStatusSummary = summarizeByKind(children, (it) => it.statusDisplayLabel ?? it.statusLabel);
                       const reviewReasons = collectReviewReasons(g);
                       const groupGuide = inferNextActionForOperationGroup(g.items);

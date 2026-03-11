@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { getOrderDeliveryInfoTitle, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
  type CourierCode =
    | 'cj'
@@ -25,6 +26,8 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
  type OrderDetail = {
    shippingInfo?: {
+     shippingMethod?: string;
+     deliveryMethod?: string;
      name?: string;
      phone?: string;
      address?: string;
@@ -84,9 +87,11 @@ function courierLabel(code?: CourierCode) {
     revalidateOnReconnect: false,
   });
 
-   const invoice = data?.shippingInfo?.invoice;
-   const courier = invoice?.courier;
-   const trackingNumber = invoice?.trackingNumber;
+  const invoice = data?.shippingInfo?.invoice;
+  const isVisitPickup = isVisitPickupOrder(data?.shippingInfo);
+  const infoTitle = getOrderDeliveryInfoTitle(data?.shippingInfo);
+  const courier = invoice?.courier;
+  const trackingNumber = invoice?.trackingNumber;
    const hasInvoice = Boolean(courier || trackingNumber);
 
    const addressText = useMemo(() => {
@@ -101,13 +106,13 @@ function courierLabel(code?: CourierCode) {
        <DialogTrigger asChild>
          <Button type="button" size="sm" variant="outline" className={className}>
            <Truck className="mr-2 h-4 w-4" />
-           배송 정보
+           배송/수령 정보
          </Button>
        </DialogTrigger>
 
        <DialogContent className="max-w-lg">
          <DialogHeader>
-           <DialogTitle>배송 정보</DialogTitle>
+           <DialogTitle>{infoTitle}</DialogTitle>
          </DialogHeader>
 
          {isLoading ? (
@@ -136,8 +141,17 @@ function courierLabel(code?: CourierCode) {
            </div>
          ) : !hasInvoice ? (
            <div className="space-y-2 text-sm">
-             <p className="text-muted-foreground">아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.</p>
-             <p className="text-muted-foreground">관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수 있습니다.</p>
+             {isVisitPickup ? (
+               <>
+                 <p className="text-muted-foreground">방문 수령 주문입니다. 방문 일정/상태는 주문 상세에서 확인해주세요.</p>
+                 <p className="text-muted-foreground">운송장 정보가 없는 것이 정상일 수 있습니다.</p>
+               </>
+             ) : (
+               <>
+                 <p className="text-muted-foreground">아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.</p>
+                 <p className="text-muted-foreground">관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수 있습니다.</p>
+               </>
+             )}
            </div>
          ) : (
            <div className="space-y-4">
