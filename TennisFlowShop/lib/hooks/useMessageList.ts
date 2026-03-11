@@ -13,8 +13,13 @@ export function useMessageList(box: 'inbox' | 'send' | 'admin', page: number, li
     revalidateOnReconnect: false,
   });
 
-  const items = data && data.ok ? data.items : [];
-  const total = data && data.ok ? data.total : 0;
+  // 조회 실패/미확정 상태를 실제 빈 목록(0개)과 혼동하지 않기 위해 상태를 분리한다.
+  const hasResolvedData = Boolean(data && data.ok);
+  const hasDataError = Boolean(error) || Boolean(data && !data.ok);
 
-  return { items, total, data, error, isLoading, mutate, key };
+  const items = data?.ok ? data.items : null;
+  const total = data?.ok ? data.total : null;
+  const errorMessage = data && !data.ok ? data.error : null;
+
+  return { items, total, data, error, errorMessage, hasResolvedData, hasDataError, isLoading, mutate, key };
 }

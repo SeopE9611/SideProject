@@ -291,7 +291,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(isAdmin ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}` : null, fetcher, { revalidateOnFocus: false });
 
   const { has, toggle, isValidating } = useWishlist();
-  const isWishlisted = has(product._id);
+  const wishState = has(product._id);
+  const isWishlisted = wishState === true;
+  // 위시리스트 미확정(unknown) 상태를 false(찜 안 함)와 분리한다.
+  const isWishlistUnknown = wishState === null;
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -590,7 +593,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   const handleWishlist = async () => {
-    if (busy) return;
+    if (busy || isWishlistUnknown) return;
     setBusy(true);
     try {
       await toggle(product._id); // 항상 서버에 요청
@@ -803,11 +806,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       )}
                       <Button
                         variant="outline"
-                        disabled={busy}
+                        disabled={busy || isWishlistUnknown}
                         onClick={handleWishlist}
-                        className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? 'bg-destructive/10 border-border text-destructive dark:bg-destructive/15 dark:border-border dark:text-destructive' : ''}`}
+                        className={`w-full h-10 sm:h-11 text-sm ${isWishlisted ? 'bg-destructive/10 border-border text-destructive dark:bg-destructive/15 dark:border-border dark:text-destructive' : ''} ${isWishlistUnknown ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        aria-disabled={busy || isWishlistUnknown}
+                        aria-label={isWishlistUnknown ? '위시리스트 상태 확인 중' : '위시리스트'}
                       >
-                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'text-destructive fill-current' : ''}`} />
+                        <Heart className={`mr-2 h-4 w-4 ${isWishlisted ? 'text-destructive fill-current' : isWishlistUnknown ? 'text-muted-foreground/70' : ''}`} />
                         위시리스트
                       </Button>
                     </div>

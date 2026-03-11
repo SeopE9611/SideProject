@@ -27,7 +27,11 @@ export function useWishlist() {
   const items = data?.items ?? null;
   const total = data?.total ?? null;
   const ids = new Set((items ?? []).map((i) => i.id));
-  const has = (productId: string) => ids.has(productId);
+  // 위시리스트가 아직 미확정/null이면 false로 단정하지 않고 unknown(null)로 유지한다.
+  const has = (productId: string): boolean | null => {
+    if (!Array.isArray(items)) return null;
+    return ids.has(productId);
+  };
 
   async function add(productId: string) {
     const res = await fetch('/api/wishlist', {
@@ -49,7 +53,9 @@ export function useWishlist() {
   }
 
   async function toggle(productId: string) {
-    if (has(productId)) await remove(productId);
+    const state = has(productId);
+    // unknown(null) 상태에서 잘못 remove로 가지 않도록 add 경로로 보수 처리한다.
+    if (state === true) await remove(productId);
     else await add(productId);
   }
 
