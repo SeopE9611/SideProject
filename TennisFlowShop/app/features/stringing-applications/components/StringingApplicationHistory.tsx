@@ -127,6 +127,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
 
   const {
     data: res,
+    error,
     isValidating,
     mutate: mutateHistory,
   } = useSWR<HistoryResponse>(url, fetcher, {
@@ -138,12 +139,18 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
     if (onHistoryMutate) onHistoryMutate(mutateHistory);
   }, [mutateHistory, onHistoryMutate]);
 
-  const isLoading = !res && isValidating;
-  const history = res?.history ?? [];
-  const total = res?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / LIMIT));
+  // 처리 이력의 로딩/에러/빈 상태를 분리해 실패가 빈 내역처럼 보이지 않게 한다.
+  const hasResolvedData = !!res;
+  const hasDataError = !!error;
+  const isLoading = !res && isValidating && !hasDataError;
+  const isPageTransitionLoading = !isLoading && isValidating && !hasDataError;
+  const history = hasResolvedData && !hasDataError && Array.isArray(res.history) ? res.history : null;
+  const total = hasResolvedData && !hasDataError && typeof res.total === 'number' ? res.total : null;
+  const totalPages = total === null ? 1 : Math.max(1, Math.ceil(total / LIMIT));
 
-  const historyItems = [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const historyItems = history ? [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
+  const shouldShowRows = !!history && historyItems.length > 0;
+  const shouldShowEmptyState = !!history && historyItems.length === 0;
 
   return (
     <Card className="md:col-span-3 rounded-xl border border-border/60 bg-card text-card-foreground shadow-md dark:bg-card">
@@ -157,7 +164,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
       </CardHeader>
 
       <CardContent>
-        {isLoading ? (
+        {isLoading || isPageTransitionLoading ? (
           Array.from({ length: LIMIT }).map((_, i) => (
             <div key={i} className="flex animate-pulse space-x-4 py-3">
               <div className="h-10 w-10 rounded-full bg-muted" />
@@ -167,9 +174,11 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
               </div>
             </div>
           ))
-        ) : historyItems.length === 0 ? (
+        ) : hasDataError ? (
+          <div className="py-10 text-center text-destructive">처리 이력을 불러올 수 없습니다.</div>
+        ) : shouldShowEmptyState ? (
           <div className="py-10 text-center text-muted-foreground">아직 처리 이력이 없습니다.</div>
-        ) : (
+        ) : shouldShowRows ? (
           historyItems.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
             return (
@@ -206,7 +215,7 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
               </div>
             );
           })
-        )}
+        ) : null}
 
         {totalPages > 1 && (
           <div className="mt-6 flex justify-center gap-3">

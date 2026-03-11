@@ -84,6 +84,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   // useSWRInfinite 훅: pages[0]은 page=1 응답, pages[1]은 page=2 응답...
   const {
     data: pages,
+    error,
     size,
     setSize,
     isValidating,
@@ -109,7 +110,14 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   }, []);
 
   // “지금 보여줄” 현재 페이지 데이터
-  const pageData = pages?.[page - 1] ?? { history: [], total: 0 };
+  // 현재 페이지 데이터 확정/에러/페이지 전환 로딩 상태를 분리한다.
+  const pageData = pages?.[page - 1];
+  const hasDataError = !!error;
+  const isInitialLoading = pages === undefined && !hasDataError;
+  const isPageTransitionLoading = !isInitialLoading && !hasDataError && (page > size || !pageData);
+  const hasResolvedPageData = !!pageData && !hasDataError;
+  const pageHistory = hasResolvedPageData && Array.isArray(pageData.history) ? pageData.history : null;
+  const hasResolvedTotal = hasResolvedPageData && typeof pageData.total === 'number';
 
   // 내림차순 정렬 (최신 먼저)
   const toTime = (raw: string) => {
@@ -117,9 +125,11 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
     return Number.isNaN(t) ? 0 : t; // Invalid Date면 0으로 밀어버림
   };
 
-  const pageItems = [...pageData.history].sort((a, b) => toTime(b.date) - toTime(a.date));
+  const pageItems = pageHistory ? [...pageHistory].sort((a, b) => toTime(b.date) - toTime(a.date)) : [];
 
-  const totalPages = Math.max(1, Math.ceil(pageData.total / LIMIT));
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil(pageData.total / LIMIT)) : 1;
+  const shouldShowRows = hasResolvedPageData && pageItems.length > 0;
+  const shouldShowEmptyState = hasResolvedPageData && pageItems.length === 0;
 
   // 날짜 안전 포멧 함수
   const formatHistoryDate = (raw: string) => {
@@ -142,7 +152,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
       </CardHeader>
       <CardContent>
         {/* 로딩 중일 때 스켈레톤 5줄 */}
-        {pages === undefined ? (
+        {isInitialLoading || isPageTransitionLoading ? (
           Array.from({ length: LIMIT }).map((_, i) => (
             <div key={i} className="flex animate-pulse space-x-4 py-3">
               <div className="h-10 w-10 rounded-full bg-muted/80" />
@@ -152,10 +162,12 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
               </div>
             </div>
           ))
+        ) : hasDataError ? (
+          <div className="py-10 text-center text-destructive">처리 이력을 불러올 수 없습니다.</div>
         ) : /* 빈 상태일 때 메시지 */
-        pageData.history.length === 0 ? (
+        shouldShowEmptyState ? (
           <div className="py-10 text-center text-muted-foreground">아직 처리 이력이 없습니다.</div>
-        ) : (
+        ) : shouldShowRows ? (
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status);
@@ -174,7 +186,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
               </div>
             );
           })
-        )}
+        ) : null}
 
         {/* 페이지네이션 */}
         {totalPages > 1 && (

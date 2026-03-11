@@ -30,7 +30,13 @@ export default function MyPointsTab() {
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, isLoading, mutate } = useSWR<PointsHistoryRes>(`/api/points/me/history?page=${page}&limit=${limit}`, fetcher, {
+  const {
+    data,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+  } = useSWR<PointsHistoryRes>(`/api/points/me/history?page=${page}&limit=${limit}`, fetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -40,10 +46,24 @@ export default function MyPointsTab() {
     revalidateOnReconnect: false,
   });
 
+  // 데이터가 성공적으로 확정되었는지/에러인지를 분리해 0/빈값 오판을 방지한다.
+  const hasResolvedData = !!data;
+  const hasDataError = !!error || (hasResolvedData && data.ok === false);
+  const hasResolvedTotal = hasResolvedData && !hasDataError && typeof data.total === 'number';
+  const isInitialLoading = isLoading && !data;
+  // 페이지 이동 직후 새 페이지 데이터가 아직 확정되지 않은 상태를 빈 상태와 분리한다.
+  const isPageTransitionLoading = !isInitialLoading && isValidating && !hasDataError;
+
+  const pointsBalance = hasResolvedData && !hasDataError && typeof data.balance === 'number' ? data.balance : null;
+  const pointsDebt = hasResolvedData && !hasDataError && typeof data.debt === 'number' ? data.debt : null;
+  const pointsItems = hasResolvedData && !hasDataError && Array.isArray(data.items) ? data.items : null;
+  const shouldShowRows = !!pointsItems && pointsItems.length > 0;
+  const shouldShowEmptyState = !!pointsItems && pointsItems.length === 0;
+
   const totalPages = useMemo(() => {
-    const total = data?.total ?? 0;
-    return Math.max(1, Math.ceil(total / limit));
-  }, [data?.total]);
+    if (!hasResolvedTotal) return 1;
+    return Math.max(1, Math.ceil(data.total / limit));
+  }, [data?.total, hasResolvedTotal]);
 
   const stats = useMemo(() => {
     if (!allData?.items) return { earned: 0, spent: 0, recentTrend: 0 };
@@ -61,20 +81,7 @@ export default function MyPointsTab() {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
-  const isInitialLoading = isLoading && !data;
-
-  const pointsData =
-    data ??
-    ({
-      ok: true,
-      balance: 0,
-      items: [],
-      total: 0,
-      page,
-      limit,
-    } as PointsHistoryRes);
-
-  if (!isInitialLoading && !data?.ok) {
+  if (!isInitialLoading && hasDataError) {
     return (
       <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
         <CardContent className="flex flex-col items-center justify-center py-10 bp-sm:py-14">
@@ -121,11 +128,11 @@ export default function MyPointsTab() {
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-primary">보유 포인트</p>
-              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-tight">{fmt(pointsData.balance)}P</p>
-              {typeof pointsData.debt === 'number' && pointsData.debt > 0 && (
+              <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-tight">{pointsBalance === null ? '-' : `${fmt(pointsBalance)}P`}</p>
+              {typeof pointsDebt === 'number' && pointsDebt > 0 && pointsBalance !== null && (
                 <p className="text-xs text-primary flex items-center gap-1">
                   <span>사용 가능:</span>
-                  <span className="font-bold">{fmt(Math.max(0, pointsData.balance - pointsData.debt))}P</span>
+                  <span className="font-bold">{fmt(Math.max(0, pointsBalance - pointsDebt))}P</span>
                 </p>
               )}
             </div>
@@ -178,7 +185,7 @@ export default function MyPointsTab() {
               </div>
               <div>
                 <CardTitle className="text-lg bp-sm:text-xl">포인트 내역</CardTitle>
-                <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">전체 {pointsData.total}건</p>
+                <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">전체 {hasResolvedTotal ? data.total : '-'}건</p>
               </div>
             </div>
             <Button onClick={() => mutate()} variant="outline" size="sm" className="gap-2">
@@ -189,7 +196,9 @@ export default function MyPointsTab() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {pointsData.items.length === 0 ? (
+          {isPageTransitionLoading ? (
+            <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground mx-4 my-4">포인트 내역을 불러오는 중입니다...</div>
+          ) : shouldShowEmptyState ? (
             <div className="flex flex-col items-center justify-center py-10 bp-sm:py-14 px-4">
               <div className="bg-muted/50 rounded-full p-4 mb-4">
                 <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
@@ -199,7 +208,7 @@ export default function MyPointsTab() {
             </div>
           ) : (
             <div className="divide-y divide-border">
-              {pointsData.items.map((it, idx) => (
+              {pointsItems?.map((it, idx) => (
                 <div
                   key={it.id}
                   className="group relative p-4 bp-sm:p-5 bp-lg:p-6 hover:bg-muted/30 dark:hover:bg-card transition-colors duration-200"
@@ -273,7 +282,7 @@ export default function MyPointsTab() {
           )}
         </CardContent>
 
-        {pointsData.items.length > 0 && (
+        {shouldShowRows && (
           <div className="border-t bg-muted/30 dark:bg-card/30 px-4 bp-sm:px-6 py-4">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground tabular-nums">
