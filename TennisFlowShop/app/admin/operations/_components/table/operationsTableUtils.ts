@@ -11,6 +11,7 @@ export type OpItem = {
   customer: { name: string; email: string };
   title: string;
   statusLabel: string;
+  statusDisplayLabel?: string;
   paymentLabel?: string;
   amount: number;
   amountNote?: string;

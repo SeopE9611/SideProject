@@ -1063,7 +1063,7 @@ export default function OperationsClient() {
                       const isOpen = !!openGroups[g.key];
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                       const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-                      const childStatusSummary = summarizeByKind(children, (it) => it.statusLabel);
+                      const childStatusSummary = summarizeByKind(children, (it) => it.statusDisplayLabel ?? it.statusLabel);
                       const reviewReasons = collectReviewReasons(g);
                       const groupGuide = inferNextActionForOperationGroup(g.items);
                       const groupCancelRequested = g.items.some((it) => it.cancel?.status === 'requested');
@@ -1113,7 +1113,7 @@ export default function OperationsClient() {
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="flex flex-col items-start gap-1">
-                                <Badge variant={opsBadgeVariant(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel))} className={cn(badgeBase, badgeSizeSm)}>{g.anchor.statusLabel}</Badge>
+                                <Badge variant={opsBadgeVariant(opsStatusBadgeTone(g.anchor.kind, g.anchor.statusLabel))} className={cn(badgeBase, badgeSizeSm)}>{g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}</Badge>
                                 {g.anchor.paymentLabel ? (
                                   (() => {
                                     const pay = getPaymentStatusBadgeSpec(g.anchor.paymentLabel);
@@ -1282,7 +1282,7 @@ export default function OperationsClient() {
                           <Badge variant={opsBadgeVariant(opsKindBadgeTone(g.anchor.kind))} className={cn(badgeBase, badgeSizeSm)}>{opsKindLabel(g.anchor.kind)}</Badge>
                         </div>
                         <div className="text-sm font-medium">{g.anchor.customer?.name || '-'}</div>
-                        <div className="text-xs text-muted-foreground">상태: {g.anchor.statusLabel}</div>
+                        <div className="text-xs text-muted-foreground">상태: {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}</div>
                         {g.anchor.paymentLabel ? <div className="text-xs text-muted-foreground">결제: {g.anchor.paymentLabel}</div> : null}
                         <div className="flex flex-wrap items-center gap-1">
                           {(() => {
