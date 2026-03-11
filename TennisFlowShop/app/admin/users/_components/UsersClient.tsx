@@ -134,7 +134,7 @@ export default function UsersClient() {
 
   const { page, searchQuery, roleFilter, signupFilter, sort, statusFilter, loginFilter } = state;
 
-  const { data, error, isLoading, mutate, rows, total } = useUserList({
+  const { data, isLoading, mutate, rows, total, hasResolvedData, hasDataError, errorMessage } = useUserList({
     page,
     limit,
     searchQuery,
@@ -163,7 +163,9 @@ export default function UsersClient() {
   };
 
   // 선택된 행의 현재 상태를 계산
-  const selectedRows = useMemo(() => (selectedUsers.length ? rows.filter((r) => selectedUsers.includes(r.id)) : []), [rows, selectedUsers]);
+  const safeRows = rows ?? [];
+
+  const selectedRows = useMemo(() => (selectedUsers.length ? safeRows.filter((r) => selectedUsers.includes(r.id)) : []), [safeRows, selectedUsers]);
 
   // 각각 가능 여부
   const canSuspend = useMemo(() => selectedRows.some((u) => !u.isDeleted && !u.isSuspended), [selectedRows]);
@@ -171,30 +173,38 @@ export default function UsersClient() {
   const hasSelection = selectedUsers.length > 0;
   const canSoftDelete = useMemo(() => selectedRows.some((u) => !u.isDeleted), [selectedRows]);
 
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  const pageItems = buildPageItems(page, totalPages);
+  const hasResolvedTotal = hasResolvedData && !hasDataError && typeof total === 'number';
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil(total / limit)) : 1;
+  const shouldShowResolvedPagination = hasResolvedTotal && !hasDataError;
+  const pageItems = shouldShowResolvedPagination ? buildPageItems(page, totalPages) : [];
 
   const kpiValues = useMemo(() => {
     const counters = (data as UsersListPayload | undefined)?.counters;
 
     return {
-      active: counters?.active ?? rows.filter((u) => !u.isDeleted && !u.isSuspended).length,
-      deleted: counters?.deleted ?? rows.filter((u) => u.isDeleted).length,
-      admins: counters?.admins ?? rows.filter((u) => u.role === 'admin').length,
-      suspended: counters?.suspended ?? rows.filter((u) => u.isSuspended && !u.isDeleted).length,
-      total: counters?.total ?? total,
+      active: counters?.active ?? safeRows.filter((u) => !u.isDeleted && !u.isSuspended).length,
+      deleted: counters?.deleted ?? safeRows.filter((u) => u.isDeleted).length,
+      admins: counters?.admins ?? safeRows.filter((u) => u.role === 'admin').length,
+      suspended: counters?.suspended ?? safeRows.filter((u) => u.isSuspended && !u.isDeleted).length,
+      total: counters?.total ?? (typeof total === 'number' ? total : 0),
     };
-  }, [data, rows, total]);
+  }, [data, safeRows, total]);
 
   const kpiStatus = useMemo<'loading' | 'error' | 'ready'>(() => {
     if (isLoading && !data) return 'loading';
-    if (error) return 'error';
+    if (hasDataError) return 'error';
     return 'ready';
-  }, [data, error, isLoading]);
+  }, [data, hasDataError, isLoading]);
+
+  // 테이블 상태 분기: loading -> error -> actual empty -> data rows
+  const shouldShowLoadingRows = isLoading && !hasResolvedData;
+  const shouldShowErrorRow = hasDataError;
+  const shouldShowEmptyRow = !shouldShowLoadingRows && !shouldShowErrorRow && hasResolvedData && safeRows.length === 0;
+  const shouldShowDataRows = !shouldShowLoadingRows && !shouldShowErrorRow && safeRows.length > 0;
 
   // 선택
-  const isAllSelected = rows.length > 0 && selectedUsers.length === rows.length;
-  const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < rows.length;
+  const isAllSelected = safeRows.length > 0 && selectedUsers.length === safeRows.length;
+  const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < safeRows.length;
   const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
   // 삭제된 회원이 하나라도 선택
@@ -206,7 +216,7 @@ export default function UsersClient() {
     if (input instanceof HTMLInputElement) input.indeterminate = isPartiallySelected;
   }, [isPartiallySelected]);
 
-  const handleSelectAll = () => setSelectedUsers(isAllSelected ? [] : rows.map((u) => u.id));
+  const handleSelectAll = () => setSelectedUsers(isAllSelected ? [] : safeRows.map((u) => u.id));
   const handleSelectUser = (id: string) => setSelectedUsers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   // 복사 공통
@@ -222,7 +232,7 @@ export default function UsersClient() {
   const goToPage = (p: number) => setPage(Math.max(1, Math.min(totalPages, p)));
 
   // 공용: 선택된 row의 이메일
-  const selectedEmails = rows
+  const selectedEmails = safeRows
     .filter((r) => selectedUsers.includes(r.id))
     .map((r) => r.email)
     .filter(Boolean);
@@ -677,12 +687,12 @@ export default function UsersClient() {
       <div className="border-0 bg-card/80 shadow-lg backdrop-blur-sm rounded-xl max-w-[1120px] mx-auto">
         <div className="flex items-center justify-between px-4 sm:px-5 pt-4">
           <h2 className="text-lg font-semibold text-foreground">회원 목록</h2>
-          <p className="text-sm text-muted-foreground">총 {total}명의 회원</p>
+          <p className="text-sm text-muted-foreground">총 {hasResolvedTotal ? total : '-'}명의 회원</p>
         </div>
 
         <div className="relative overflow-x-hidden px-3 sm:px-4 pb-3">
           <div className="relative rounded-2xl border border-border shadow-sm min-w-0">
-            <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={isLoading && rows.length === 0}>
+            <Table className="w-full table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs [&_th]:text-center [&_td]:text-center" aria-busy={shouldShowLoadingRows}>
               {/* 열 폭 고정: 체크 / 회원 / 권한 / 전화 / 주소 / 활동 / 상태 / 작업 */}
               <colgroup>
                 <col style={{ width: '40px' }} />
@@ -712,8 +722,7 @@ export default function UsersClient() {
 
               <TableBody>
                 {/* 로딩 스켈레톤 */}
-                {isLoading &&
-                  rows.length === 0 &&
+                {shouldShowLoadingRows &&
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={`sk-${i}`} className="border-b last:border-0">
                       <TableCell className={td}>
@@ -744,9 +753,27 @@ export default function UsersClient() {
                     </TableRow>
                   ))}
 
+                {/* 조회 실패 */}
+                {shouldShowErrorRow && (
+                  <TableRow>
+                    <TableCell colSpan={8} className={cn(td, 'py-6 text-destructive')}>
+                      회원 목록을 불러오지 못했습니다. {errorMessage || '잠시 후 다시 시도해 주세요.'}
+                    </TableCell>
+                  </TableRow>
+                )}
+
+                {/* 실제 빈 데이터 */}
+                {shouldShowEmptyRow && (
+                  <TableRow>
+                    <TableCell colSpan={8} className={cn(td, 'py-8 text-muted-foreground')}>
+                      조회된 회원이 없습니다.
+                    </TableCell>
+                  </TableRow>
+                )}
+
                 {/* 데이터 */}
-                {rows.length > 0 &&
-                  rows.map((u) => {
+                {shouldShowDataRows &&
+                  safeRows.map((u) => {
                     const statusKey: UserStatusKey = u.isDeleted ? 'deleted' : u.isSuspended ? 'suspended' : 'active';
                     const joined = splitDateTime(u.createdAt);
                     const last = splitDateTime(u.lastLoginAt);
@@ -862,13 +889,15 @@ export default function UsersClient() {
           {/* 페이지네이션 */}
           <div className="relative mt-3 h-10">
             <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex items-center justify-center gap-1">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(1)} disabled={!shouldShowResolvedPagination || page <= 1} aria-label="첫 페이지">
                 <ChevronsLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page - 1)} disabled={!shouldShowResolvedPagination || page <= 1} aria-label="이전">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {pageItems.map((it, i) =>
+              {!shouldShowResolvedPagination ? (
+                <span className="px-2 text-muted-foreground select-none">-</span>
+              ) : pageItems.map((it, i) =>
                 typeof it === 'number' ? (
                   <Button key={i} variant={it === page ? 'default' : 'outline'} className="h-8 min-w-8 px-2" onClick={() => goToPage(it)} aria-current={it === page ? 'page' : undefined}>
                     {it}
@@ -879,10 +908,10 @@ export default function UsersClient() {
                   </span>
                 )
               )}
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(page + 1)} disabled={!shouldShowResolvedPagination || page >= totalPages} aria-label="다음">
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={page >= totalPages} aria-label="끝 페이지">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => goToPage(totalPages)} disabled={!shouldShowResolvedPagination || page >= totalPages} aria-label="끝 페이지">
                 <ChevronsRight className="h-4 w-4" />
               </Button>
             </div>

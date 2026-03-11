@@ -53,9 +53,24 @@ export function useUserList(filters: UserListFilters) {
     revalidateOnReconnect: false,
   });
 
+  // 로딩/실패/실데이터를 소비처에서 명확히 분기할 수 있도록 상태를 분리한다.
+  // - 실패/미확정 상태를 rows=[]/total=0으로 숨기지 않는다.
+  const hasDataError = Boolean(swr.error);
+  const hasResolvedData = Boolean(swr.data) && !hasDataError;
+
+  // 데이터가 확정된 경우에만 rows/total을 노출한다.
+  const rows = hasResolvedData ? ((Array.isArray(swr.data?.items) ? swr.data.items : []) as UserListItem[]) : null;
+  const totalValue = swr.data?.total;
+  const total = hasResolvedData && typeof totalValue === 'number' && Number.isFinite(totalValue) ? totalValue : null;
+
+  const errorMessage = swr.error instanceof Error ? swr.error.message : null;
+
   return {
     ...swr,
-    rows: (swr.data?.items as UserListItem[]) ?? [],
-    total: Number(swr.data?.total ?? 0),
+    rows,
+    total,
+    hasResolvedData,
+    hasDataError,
+    errorMessage,
   };
 }
