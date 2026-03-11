@@ -339,7 +339,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       </div>
 
       <SiteContainer variant="wide" className="py-8 pb-28 md:pb-24">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-5">
           {/* 상품 이미지 */}
           <div className="lg:col-span-3 space-y-4">
             <Card className="overflow-hidden border-0 shadow-2xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
@@ -392,7 +392,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
           {/* 상품 정보 */}
           <div className="lg:col-span-2 space-y-4">
             <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 <div className="space-y-4">
                   {/* 브랜드와 제품명 */}
                   <div>
@@ -523,7 +523,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
         </div>
 
         {/* 스펙 카드 */}
-        <Card className="mt-8 border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-card/90">
+        <Card className="mt-6 border-0 bg-card/90 shadow-xl backdrop-blur-sm md:mt-8 dark:bg-card/90">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={(v) => updateTabInUrl(v as any)} className="w-full">
               <TabsList className="w-full grid grid-cols-3 h-16 bg-muted/30 rounded-t-lg">
@@ -548,15 +548,15 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="description" className="p-8">
+              <TabsContent value="description" className="p-4 md:p-8">
                 <div className="prose max-w-none">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="mb-4 flex items-center gap-3 md:mb-6">
                     <div className="w-12 h-12 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
                       <FileText className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold text-foreground">상품 설명</h3>
                   </div>
-                  <div className="bg-muted p-6 rounded-lg">
+                  <div className="rounded-lg bg-muted p-4 md:p-6">
                     <p className="text-foreground leading-relaxed text-lg">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은 {racket.condition}이며, 전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
                       {racket?.rental?.enabled && ' 대여 서비스도 이용 가능합니다.'}
@@ -565,9 +565,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 </div>
               </TabsContent>
 
-              <TabsContent value="specifications" className="p-8">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 mb-6">
+              <TabsContent value="specifications" className="p-4 md:p-8">
+                <div className="space-y-4 md:space-y-6">
+                  <div className="mb-4 flex items-center gap-3 md:mb-6">
                     <div className="w-12 h-12 rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
                       <Settings className="h-6 w-6" />
                     </div>
@@ -626,8 +626,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   </div>
                 </div>
               </TabsContent>
-              <TabsContent value="reviews" className="p-8">
-                <div className="space-y-6">
+              <TabsContent value="reviews" className="p-4 md:p-8">
+                <div className="space-y-4 md:space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-primary text-primary-foreground rounded-lg flex items-center justify-center">
@@ -822,7 +822,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-muted p-6 rounded-lg border border-border text-muted-foreground">아직 등록된 리뷰가 없습니다.</div>
+                    <div className="rounded-lg border border-border bg-muted p-4 text-muted-foreground md:p-6">아직 등록된 리뷰가 없습니다.</div>
                   )}
                 </div>
               </TabsContent>

@@ -359,7 +359,7 @@ export default function FreeBoardWriteClient() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
+      <SiteContainer variant="wide" className="space-y-6 py-6 bp-sm:py-8 bp-md:space-y-8 bp-md:py-10">
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -403,8 +403,8 @@ export default function FreeBoardWriteClient() {
             </div>
           </CardHeader>
 
-          <CardContent className="p-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
+          <CardContent className="p-4 md:p-6">
+            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
               {/* 분류 선택 */}
               <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
@@ -491,7 +491,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
+                      className="cursor-pointer rounded-lg border-2 border-dashed border-border bg-card p-4 text-center transition-colors hover:border-border md:p-6 dark:hover:border-border"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {

@@ -31,7 +31,7 @@ const QnAListSkeleton = ({ count = 4 }: { count?: number }) => (
   <div className="space-y-4">
     {Array.from({ length: count }).map((_, idx) => (
       <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-6">
+        <CardContent className="space-y-4 p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
               <Skeleton className="h-6 w-20 rounded-full" />
@@ -96,12 +96,12 @@ export default function QnAList() {
   if (!isInitialLoading && !isValidating && qnas.length === 0) {
     return (
       <Card className="relative overflow-hidden border-0 bg-muted/30">
-        <CardContent className="p-12 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
+        <CardContent className="p-8 text-center md:p-12">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
             <MessageCircleQuestion className="h-10 w-10 text-primary" />
           </div>
           <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
-          <p className="mb-6 text-foreground">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
+          <p className="mb-4 text-foreground md:mb-6">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
           <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200">
             <Link href="/board/qna/write" className="inline-flex items-center gap-2">
               문의하기
@@ -115,7 +115,7 @@ export default function QnAList() {
 
   // 목록
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? (
         <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">Q&A 내역을 불러오는 중입니다...</div>
       ) : null}
@@ -125,7 +125,7 @@ export default function QnAList() {
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
-          <CardContent className="relative p-6">
+          <CardContent className="relative p-4 md:p-6">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">

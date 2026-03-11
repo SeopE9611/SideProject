@@ -308,7 +308,7 @@ const res = await communityFetch('/api/boards', {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8 space-y-8">
+      <div className="container mx-auto space-y-6 px-4 py-6 md:space-y-8 md:py-8">
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -352,8 +352,8 @@ const res = await communityFetch('/api/boards', {
             </div>
           </CardHeader>
 
-          <CardContent className="p-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
+          <CardContent className="p-4 md:p-6">
+            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
               {/* 분류 선택 */}
               <div className="space-y-2">
                 <Label>분류</Label>
@@ -412,7 +412,7 @@ const res = await communityFetch('/api/boards', {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer bg-card"
+                      className="cursor-pointer rounded-lg border-2 border-dashed border-border bg-card p-4 text-center transition-colors hover:border-border md:p-6 dark:hover:border-border"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
