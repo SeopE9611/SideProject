@@ -26,6 +26,7 @@ import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher'
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { readCancelRequestError } from '@/lib/cancel-request/refund-account-client';
+import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
@@ -606,6 +607,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   const hasTracking = Boolean(trackingNo);
   const selfShip = data.shippingInfo?.selfShip;
   const invoice = data.shippingInfo?.invoice;
+  const isCourierShipping = normalizeOrderShippingMethod(shippingMethod) === 'courier';
 
   const hasStoreShippingInfo = Boolean(shippingMethod) || Boolean(invoice?.trackingNumber) || Boolean(invoice?.shippedAt);
 
@@ -1314,7 +1316,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <p className="text-sm font-semibold text-foreground">매장 발송</p>
                   {hasStoreShippingInfo ? (
                     <div className="mt-2 space-y-1 text-sm text-foreground">
-                      {shippingMethod === 'delivery' && invoice?.trackingNumber ? (
+                      {isCourierShipping && invoice?.trackingNumber ? (
                         <>
                           <p>택배사: {getCourierLabel(invoice.courier)}</p>
                           <p>

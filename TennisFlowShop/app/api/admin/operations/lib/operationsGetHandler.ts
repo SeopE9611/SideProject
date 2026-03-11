@@ -728,6 +728,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const shippingMethod = getString(asDoc(o?.shippingInfo)?.shippingMethod) ?? getString(asDoc(o?.shippingInfo)?.deliveryMethod);
     const hasOutboundTracking = Boolean(getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim());
     const statusLabel = normalizeOrderStatus(o.status);
+    // NOTE: statusDisplayLabel은 현재 order 문맥(방문 수령 노출 문구)에서만 사용한다.
     const statusDisplayLabel = getOrderStatusLabelForDisplay(statusLabel, {
       shippingMethod,
       deliveryMethod: getString(asDoc(o?.shippingInfo)?.deliveryMethod),
