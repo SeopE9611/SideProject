@@ -54,15 +54,25 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
     return `/api/admin/users/${userId}/points/history?page=${page}&limit=${limit}`;
   }, [userId, page]);
 
-  const { data, mutate, isLoading } = useSWR<UserPointHistoryResponse>(historyUrl, authenticatedSWRFetcher, {
+  const { data, error, mutate, isLoading, isValidating } = useSWR<UserPointHistoryResponse>(historyUrl, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
 
-  const balance = typeof data?.balance === 'number' ? data.balance : 0;
-  const items: TxItem[] = Array.isArray(data?.items) ? data.items : [];
-  const total = typeof data?.total === 'number' ? data.total : 0;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+  // 조회 성공/실패/미확정 상태를 분리해 실패가 0건처럼 보이지 않게 처리한다.
+  const hasResolvedData = !!data;
+  const hasDataError = !!error;
+  const hasResolvedBalance = hasResolvedData && !hasDataError && typeof data.balance === 'number';
+  const hasResolvedItems = hasResolvedData && !hasDataError && Array.isArray(data.items);
+  const hasResolvedTotal = hasResolvedData && !hasDataError && typeof data.total === 'number';
+  const isPageTransitionLoading = !isLoading && isValidating && !hasDataError;
+
+  const balance: number | null = hasResolvedBalance ? (data?.balance as number) : null;
+  const items: TxItem[] | null = hasResolvedItems ? (data?.items as TxItem[]) : null;
+  const total: number | null = hasResolvedTotal ? (data?.total as number) : null;
+  const totalPages = total === null ? 1 : Math.max(1, Math.ceil(total / limit));
+  const shouldShowRows = !!items && items.length > 0;
+  const shouldShowEmptyState = !!items && items.length === 0;
 
   // 조정 폼
   const [amount, setAmount] = useState('');
@@ -152,7 +162,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            포인트 관리{userName ? ` - ${userName}` : ''} {userId ? `(잔액: ${balance.toLocaleString()}P)` : ''}
+            포인트 관리{userName ? ` - ${userName}` : ''} {userId ? `(잔액: ${balance === null ? '-' : `${balance.toLocaleString()}P`})` : ''}
           </DialogTitle>
         </DialogHeader>
 
@@ -207,7 +217,7 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
           </div>
 
           <div className="p-3">
-            {isLoading ? (
+            {isLoading || isPageTransitionLoading ? (
               <div className="space-y-2">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div key={index} className="rounded border p-2">
@@ -225,11 +235,13 @@ export default function UserPointsDialog({ open, onOpenChange, userId, userName 
                   </div>
                 ))}
               </div>
-            ) : items.length === 0 ? (
+            ) : hasDataError ? (
+              <div className="text-sm text-destructive">내역을 불러오지 못했습니다.</div>
+            ) : shouldShowEmptyState ? (
               <div className="text-sm text-muted-foreground">내역이 없습니다.</div>
             ) : (
               <div className="grid gap-2">
-                {items.map((tx) => (
+                {items?.map((tx) => (
                   <div key={tx.id} className="flex items-start justify-between border rounded-md p-2">
                     <div className="grid gap-1">
                       <div className="text-sm">
