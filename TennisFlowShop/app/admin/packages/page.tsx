@@ -194,6 +194,7 @@ export default function PackageOrdersClient() {
     if (!hasResolvedTotal || totalCount === null) return null;
     return Math.max(1, Math.ceil(totalCount / limit));
   }, [hasResolvedTotal, totalCount, limit]);
+  const hasResolvedTotalPages = totalPages !== null;
 
   const metrics = data?.metrics;
 
@@ -220,7 +221,8 @@ export default function PackageOrdersClient() {
 
   // 페이지 번호 목록(앞·뒤 ... 처리)
   const pageItems = useMemo<(number | string)[]>(() => {
-    const t = totalPages ?? 1,
+    if (!hasResolvedTotalPages || !totalPages) return [];
+    const t = totalPages,
       c = page;
     if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
     const items: (number | string)[] = [1];
@@ -231,7 +233,8 @@ export default function PackageOrdersClient() {
     if (end < t - 1) items.push('…');
     items.push(t);
     return items;
-  }, [page, totalPages]);
+  }, [hasResolvedTotalPages, page, totalPages]);
+  const shouldRenderPaginationNumbers = hasResolvedTotalPages;
 
   // totalPages가 줄어든 경우 현재 페이지를 자동 보정
   useEffect(() => {
@@ -918,17 +921,18 @@ export default function PackageOrdersClient() {
                   <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page - 1)} disabled={!totalPages || page <= 1} aria-label="이전">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  {pageItems.map((it, idx) =>
-                    typeof it === 'number' ? (
-                      <Button key={idx} variant={it === page ? 'default' : 'outline'} className="h-9 min-w-9 px-3" aria-current={it === page ? 'page' : undefined} onClick={() => goToPage(it)}>
-                        {it}
-                      </Button>
-                    ) : (
-                      <span key={idx} className="px-2 text-muted-foreground select-none">
-                        …
-                      </span>
-                    ),
-                  )}
+                  {shouldRenderPaginationNumbers &&
+                    pageItems.map((it, idx) =>
+                      typeof it === 'number' ? (
+                        <Button key={idx} variant={it === page ? 'default' : 'outline'} className="h-9 min-w-9 px-3" aria-current={it === page ? 'page' : undefined} onClick={() => goToPage(it)}>
+                          {it}
+                        </Button>
+                      ) : (
+                        <span key={idx} className="px-2 text-muted-foreground select-none">
+                          …
+                        </span>
+                      ),
+                    )}
                   <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page + 1)} disabled={!totalPages || page >= totalPages} aria-label="다음">
                     <ChevronRight className="h-4 w-4" />
                   </Button>

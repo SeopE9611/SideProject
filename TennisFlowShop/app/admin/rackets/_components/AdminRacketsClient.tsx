@@ -101,6 +101,14 @@ export default function AdminRacketsClient() {
     return { total, available, rented, sold };
   }, [filteredItems]);
 
+  const kpiStatus = hasDataError ? 'error' : isLoading && !data ? 'loading' : hasResolvedData ? 'ready' : 'pending';
+
+  const renderKpiValue = (value: number) => {
+    if (kpiStatus === 'loading') return <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" />;
+    if (kpiStatus !== 'ready') return '-';
+    return value;
+  };
+
   const listDescription = useMemo(() => {
     if (isLoading && !data) return <Skeleton className="h-4 w-56" />;
     if (hasDataError) return '라켓 목록을 불러오는 중 문제가 발생했습니다.';
@@ -156,7 +164,7 @@ export default function AdminRacketsClient() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{isLoading && !data ? <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" /> : c.value}</p>
+                    <p className="text-3xl font-bold text-foreground">{renderKpiValue(c.value)}</p>
                   </div>
                   <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
