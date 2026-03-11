@@ -61,7 +61,7 @@ const ApplicationsListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
     {Array.from({ length: count }).map((_, idx) => (
       <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-6">
+        <CardContent className="space-y-4 p-4 md:p-6">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-2">
               <Skeleton className="h-4 w-28" />
@@ -317,7 +317,7 @@ export default function ApplicationsClient() {
   const isInitialLoading = !data && isValidating;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-6 text-center text-sm text-muted-foreground">
           신청 내역을 불러오는 중입니다.
@@ -325,12 +325,12 @@ export default function ApplicationsClient() {
       ) : null}
       {!isInitialLoading && applications.length === 0 ? (
         <Card className="relative overflow-hidden border-0 bg-muted/30">
-          <CardContent className="p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30">
+          <CardContent className="p-8 text-center md:p-12">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
               <FileText className="h-10 w-10 text-success" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">신청 내역이 없습니다</h3>
-            <p className="mb-6 text-muted-foreground">아직 신청하신 서비스가 없습니다.</p>
+            <p className="mb-4 text-muted-foreground md:mb-6">아직 신청하신 서비스가 없습니다.</p>
           </CardContent>
         </Card>
       ) : null}
@@ -385,8 +385,8 @@ export default function ApplicationsClient() {
                 <div className="h-full w-full bg-card rounded-lg" />
               </div>
 
-              <CardContent className="relative p-6">
-                <div className="flex items-start justify-between mb-6">
+              <CardContent className="relative p-4 md:p-6">
+                <div className="mb-4 flex items-start justify-between md:mb-6">
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">
                       {isStringService ? <LayoutGrid className={`h-6 w-6 ${isStringService ? 'text-warning' : 'text-success'}`} /> : <GraduationCap className="h-6 w-6 text-success" />}
@@ -447,7 +447,7 @@ export default function ApplicationsClient() {
                     })()}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="mb-4 grid grid-cols-1 gap-3 md:mb-6 md:grid-cols-2 md:gap-4">
                   {isStringService ? (
                     <>
                       {/* 방문 수령(매장 방문)일 때만 희망일시 카드 표시 */}

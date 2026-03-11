@@ -473,7 +473,7 @@ export default function NoticeWritePage() {
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild className="p-2">
               <Link href="/board/notice">
@@ -521,7 +521,7 @@ export default function NoticeWritePage() {
                 <span>{editId ? '공지사항 수정' : '새 공지사항 작성'}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="space-y-6 p-4 md:space-y-8 md:p-8">
               <div className="space-y-3">
                 <Label htmlFor="category" className="text-base font-semibold">
                   카테고리 <span className="text-destructive">*</span>
@@ -637,7 +637,7 @@ export default function NoticeWritePage() {
                 </Label>
                 <div className="space-y-4">
                   <div
-                    className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-border dark:hover:border-border transition-colors cursor-pointer"
+                    className="cursor-pointer rounded-lg border-2 border-dashed border-border p-4 text-center transition-colors hover:border-border md:p-6 dark:hover:border-border"
                     role="button"
                     tabIndex={0}
                     onClick={(e) => {
@@ -745,7 +745,7 @@ export default function NoticeWritePage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between p-8 border-t bg-card">
+            <CardFooter className="flex justify-between border-t bg-card p-4 md:p-8">
               <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/notice" onClick={guardLeave}>
                   취소
