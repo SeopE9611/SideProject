@@ -9,7 +9,8 @@ export interface Props {
   initialCourier?: string;
   initialTrackingNumber?: string;
   onSuccess?: () => void;
+  isVisitPickupOrder?: boolean;
 }
-export default function ShippingFormClient({ orderId, initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, onSuccess }: Props) {
-  return <ShippingForm orderId={orderId} initialShippingMethod={initialShippingMethod} initialEstimatedDelivery={initialEstimatedDelivery} initialCourier={initialCourier} initialTrackingNumber={initialTrackingNumber} onSuccess={onSuccess} />;
+export default function ShippingFormClient({ orderId, initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, onSuccess, isVisitPickupOrder }: Props) {
+  return <ShippingForm orderId={orderId} initialShippingMethod={initialShippingMethod} initialEstimatedDelivery={initialEstimatedDelivery} initialCourier={initialCourier} initialTrackingNumber={initialTrackingNumber} onSuccess={onSuccess} isVisitPickupOrder={isVisitPickupOrder} />;
 }

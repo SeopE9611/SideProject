@@ -54,6 +54,12 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     }
     if (!normalizedMethod || !estimatedDate) return NextResponse.json({ success: false, message: '모든 필드를 입력해주세요.' }, { status: 400 });
 
+    const isOriginalVisitPickup = isVisitPickupOrder(order?.shippingInfo);
+    // 정책: 방문 수령으로 접수된 주문은 방문 수령으로만 운영한다.
+    if (isOriginalVisitPickup && normalizedMethod !== 'visit') {
+      return NextResponse.json({ ok: false, message: '방문 수령 주문은 배송 방식 변경이 불가합니다. 예외 전환은 별도 관리자 절차를 통해 진행해주세요.' }, { status: 400 });
+    }
+
     const est = new Date(estimatedDate);
     if (!Number.isFinite(est.getTime())) return NextResponse.json({ success: false, message: '예상 수령일 값이 올바르지 않습니다.' }, { status: 400 });
 

@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowRight, Ban, Calendar, CheckCircle, Clock, CreditCard, MessageSquarePlus, MoreVertical, Package, ShoppingBag, Truck, Undo2, User } from 'lucide-react';
 import Link from 'next/link';
@@ -354,7 +355,7 @@ export default function OrderList() {
                 <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                   {getStatusIcon(order.status)}
                   <Badge variant={getOrderStatusBadgeSpec(order.status).variant} className="px-3 py-1 text-xs font-medium">
-                    {order.status}
+                    {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                   </Badge>
 
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}

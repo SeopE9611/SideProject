@@ -390,7 +390,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">주문 상태</span>
                 </div>
-                <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} />
+                <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} shippingMethod={orderDetail.shippingInfo} />
               </div>
             </div>
           </div>

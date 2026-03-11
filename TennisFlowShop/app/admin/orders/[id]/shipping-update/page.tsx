@@ -1,8 +1,9 @@
 import ShippingFormClient from './ShippingFormClient';
 import { headers } from 'next/headers';
 import Link from 'next/link';
-import { Truck } from 'lucide-react';
+import { Store, Truck } from 'lucide-react';
 import { redirect } from 'next/navigation';
+import { isVisitPickupOrder } from '@/lib/order-shipping';
 
 type StringingApplicationLite = { id?: string; status?: string; createdAt?: string };
 
@@ -87,8 +88,15 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
   const courier = String(order?.shippingInfo?.invoice?.courier ?? '').trim();
   const tracking = String(order?.shippingInfo?.invoice?.trackingNumber ?? '').trim();
   const isRegistered = Boolean(method || date || courier || tracking);
-  const pageTitle = isRegistered ? '배송 정보 수정' : '배송 정보 등록';
-  const pageDesc = isRegistered ? '배송 방법과 예상 수령일을 수정할 수 있습니다.' : '배송 방법과 예상 수령일을 등록할 수 있습니다.';
+  const isVisitPickup = isVisitPickupOrder(order?.shippingInfo);
+  const pageTitle = isVisitPickup ? (isRegistered ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isRegistered ? '배송 정보 수정' : '배송 정보 등록';
+  const pageDesc = isVisitPickup
+    ? isRegistered
+      ? '방문 수령 준비를 위한 예상 수령일 정보를 수정할 수 있습니다.'
+      : '방문 수령 준비를 위한 예상 수령일 정보를 등록할 수 있습니다.'
+    : isRegistered
+      ? '배송 방법과 예상 수령일을 수정할 수 있습니다.'
+      : '배송 방법과 예상 수령일을 등록할 수 있습니다.';
 
   return (
     <div className="min-h-screen bg-muted/30 py-8 px-4">
@@ -96,7 +104,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
         {/* 헤더 */}
         <div className="text-center mb-8">
           <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            <Truck className="h-8 w-8 text-primary mx-auto" />
+            {isVisitPickup ? <Store className="h-8 w-8 text-primary mx-auto" /> : <Truck className="h-8 w-8 text-primary mx-auto" />}
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground">{pageDesc}</p>
@@ -108,6 +116,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
           initialEstimatedDelivery={order.shippingInfo?.estimatedDate ?? ''}
           initialCourier={order.shippingInfo?.invoice?.courier ?? ''}
           initialTrackingNumber={order.shippingInfo?.invoice?.trackingNumber ?? ''}
+          isVisitPickupOrder={isVisitPickup}
         />
       </div>
     </div>

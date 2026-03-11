@@ -3,6 +3,7 @@
 import useSWR from 'swr';
 import { Badge } from '@/components/ui/badge';
 import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec } from '@/lib/badge-style';
+import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
 import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json());
@@ -10,9 +11,10 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((re
 type Props = {
   orderId: string;
   initialStatus: string;
+  shippingMethod?: any;
 };
 
-export function OrderStatusBadge({ orderId, initialStatus }: Props) {
+export function OrderStatusBadge({ orderId, initialStatus, shippingMethod }: Props) {
   const { data } = useSWR<{ status: string }>(`/api/orders/${orderId}/status`, fetcher, {
     fallbackData: { status: initialStatus },
     revalidateOnMount: true, //  mount 될 때 강제 fetch
@@ -21,5 +23,5 @@ export function OrderStatusBadge({ orderId, initialStatus }: Props) {
   });
 
   const spec = getOrderStatusBadgeSpec(data?.status);
-  return <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>{data?.status}</Badge>;
+  return <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>{getOrderStatusLabelForDisplay(data?.status ?? initialStatus, shippingMethod)}</Badge>;
 }
