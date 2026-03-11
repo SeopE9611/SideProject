@@ -126,14 +126,14 @@ function CommunityLatestCard({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
             <ErrorBox message={`${title} 불러오기에 실패했습니다.`} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">{emptyText}</div>
+            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">{emptyText}</div>
           ) : (
             items.map((post) => (
               <div key={post.id} className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -286,14 +286,14 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
             <ErrorBox message="공지 불러오기에 실패했습니다." />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">등록된 공지가 없습니다.</div>
+            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">등록된 공지가 없습니다.</div>
           ) : (
             items.map((notice) => (
               <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -385,14 +385,14 @@ function QnaCard({ items, isLoading, error }: { items: QnaItem[]; isLoading?: bo
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
             <ErrorBox message="Q&A 불러오기에 실패했습니다." />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">등록된 문의가 없습니다.</div>
+            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">등록된 문의가 없습니다.</div>
           ) : (
             items.map((qna) => (
               <div key={qna._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -464,14 +464,14 @@ function ReviewCard({ items, isLoading, error }: { items: ReviewItem[]; isLoadin
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6">
+      <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
             <ErrorBox message="리뷰 불러오기에 실패했습니다." />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">등록된 리뷰가 없습니다.</div>
+            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">등록된 리뷰가 없습니다.</div>
           ) : (
             items.map((review) => (
               <div key={review._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -516,7 +516,7 @@ function CommunityIntroCard() {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-6 space-y-4 text-sm text-muted-foreground">
+      <CardContent className="p-4 md:p-6 space-y-4 text-sm text-muted-foreground">
         <p>자유게시판, 중고거래, 장비 사용기, 리뷰까지 한 곳에서 빠르게 둘러볼 수 있어요.</p>
 
         <div className="grid gap-2 sm:grid-cols-4">
@@ -587,9 +587,9 @@ export default function BoardPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-6 bp-md:space-y-8">
         {/* 헤더 섹션 */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 bp-md:space-y-4">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
               <MessageSquare className="h-6 w-6" />
@@ -604,7 +604,7 @@ export default function BoardPage() {
         <CommunityIntroCard />
 
         {/* 최신글 섹션 4개: 리뷰 → 자게 → 중고 → 사용기 */}
-        <div className="space-y-6">
+        <div className="space-y-5 bp-md:space-y-6">
           <ReviewCard items={reviews} isLoading={rLoading} error={rError} />
 
           <CommunityLatestCard

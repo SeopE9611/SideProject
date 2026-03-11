@@ -172,7 +172,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
       {/* Tennis court line accent */}
       <div className="h-1 bg-primary/70" />
 
-      <CardContent className="p-6 space-y-4 relative">
+      <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 relative">
         {busy && (
           <div className="absolute inset-0 bg-card/80 dark:bg-card backdrop-blur-sm flex items-center justify-center z-10 rounded-3xl">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />

@@ -270,8 +270,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        <div className="flex flex-col space-y-6">
+      <div className="container mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
+        <div className="flex flex-col space-y-4 md:space-y-6">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild className="p-2">
               <Link href="/support">
@@ -368,8 +368,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-6">
-            <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
+          <CardContent className="p-4 md:p-6">
+            <div className="mb-4 md:mb-6 flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Select
                   value={category}
@@ -516,7 +516,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
 
                   const CardInner = (
                     <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-border">
-                      <CardContent className="p-6">
+                      <CardContent className="p-4 md:p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-2">
@@ -583,7 +583,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
               {!isLoading && !error && items.length === 0 && <div className="text-sm text-muted-foreground">{keyword.trim() ? '검색 결과가 없습니다.' : '등록된 문의가 없습니다.'}</div>}
             </div>
 
-            <div className="mt-8 flex items-center justify-center">
+            <div className="mt-6 md:mt-8 flex items-center justify-center">
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button variant="outline" size="icon" className="bg-card" onClick={() => movePage(1)} disabled={page <= 1 || isBusy}>
                   <span className="sr-only">첫 페이지</span>«
