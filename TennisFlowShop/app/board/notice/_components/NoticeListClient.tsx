@@ -133,10 +133,14 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   const hasFetchError = !!error;
   const hasDataError = hasPreloadError || hasFetchError;
   const hasResolvedData = !!data;
+  const normalizedKeyword = keyword.trim();
+  const hasSearchKeyword = normalizedKeyword.length > 0;
 
   const items: NoticeItem[] = data?.items ?? [];
   const total: number | null = data?.total ?? null;
-  const shouldShowSearchEmptyState = !isBusy && !hasDataError && hasResolvedData && items.length === 0;
+  const shouldShowLoadingState = isBusy && !hasResolvedData;
+  const shouldShowActualEmptyState = !isBusy && !hasDataError && hasResolvedData && !hasSearchKeyword && items.length === 0;
+  const shouldShowSearchEmptyState = !isBusy && !hasDataError && hasResolvedData && hasSearchKeyword && items.length === 0;
 
   // total이 확정되지 않은(preload 실패/초기 로딩) 상황에서
   // 0건/1페이지처럼 굳어 보이지 않게 기본 페이징만 안전 처리
@@ -247,15 +251,18 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
           </CardHeader>
           <CardContent className="p-5 sm:p-6 md:p-8">
             <div className="space-y-4 sm:space-y-5">
-              {hasDataError && (
+              {!shouldShowLoadingState && hasDataError && (
                 <ErrorBox
                   message={hasPreloadError ? initialErrorMessage || '공지 목록을 불러오지 못했습니다.' : listError.message}
                   status={hasPreloadError ? 500 : listError.status}
                   fallbackMessage="공지 목록을 불러오지 못했습니다."
                 />
               )}
-              {shouldShowSearchEmptyState && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>}
-              {items.map((notice) => {
+              {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">등록된 공지사항이 없습니다.</div>}
+              {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && shouldShowSearchEmptyState && (
+                <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>
+              )}
+              {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && !shouldShowSearchEmptyState && items.map((notice) => {
                 const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
 
                 return (
