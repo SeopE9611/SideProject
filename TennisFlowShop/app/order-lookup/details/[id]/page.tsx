@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, CreditCard, ShoppingBag, CheckCircle, Package, User, Phone, Truck, Clock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { bankLabelMap } from '@/lib/constants';
-import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import Image from 'next/image';
 import LoginGate from '@/components/system/LoginGate';
 import { badgeToneVariant, getOrderStatusTone } from '@/lib/badge-style';
@@ -227,7 +227,8 @@ export default function OrderDetailPage() {
   }
 
   const orderShippingMethod = normalizeOrderShippingMethod(order.shippingInfo?.deliveryMethod);
-  const isVisitPickup = orderShippingMethod === 'visit';
+  // 비회원 주문 상세도 공용 방문 수령 판별 유틸로 통일해 화면/서버 정책 판단 기준을 맞춘다.
+  const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
   const orderShippingReadLabels = getOrderShippingReadLabels(orderShippingMethod);
   const shippingCardTitle = orderShippingReadLabels.sectionTitle;
   const shippingAddressLabel = orderShippingReadLabels.primaryLabel;

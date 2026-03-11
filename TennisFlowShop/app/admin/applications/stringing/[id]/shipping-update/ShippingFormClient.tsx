@@ -3,10 +3,10 @@
 import useSWR from 'swr';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, AlertTriangle, Truck } from 'lucide-react';
+import { Loader2, AlertTriangle, Store, Truck } from 'lucide-react';
 import ShippingForm from '@/app/admin/applications/stringing/[id]/shipping-update/shipping-form';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { isVisitPickupOrder } from '@/lib/order-shipping';
 
 type Application = {
   _id: string;
@@ -41,7 +41,8 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const tracking = String(invoice.trackingNumber ?? '').trim();
   const isRegistered = Boolean(method || date || courier || tracking);
 
-  const isVisitPickup = normalizeOrderShippingMethod(method) === 'visit';
+  // stringing 배송 정보 화면도 주문과 동일한 공용 유틸로 방문 수령 여부를 판별한다.
+  const isVisitPickup = isVisitPickupOrder(shippingInfo);
   const pageTitle = data
     ? isVisitPickup
       ? isRegistered
@@ -109,7 +110,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
       <div className="container mx-auto max-w-2xl">
         <div className="text-center mb-8">
           <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            <Truck className="h-8 w-8 text-primary mx-auto" />
+            {isVisitPickup ? <Store className="h-8 w-8 text-primary mx-auto" /> : <Truck className="h-8 w-8 text-primary mx-auto" />}
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground">{pageDesc}</p>
