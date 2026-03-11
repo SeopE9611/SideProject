@@ -49,8 +49,11 @@ type BoardListRes = {
 
 type Props = {
   // 서버 프리로드(=URL searchParams 반영) 결과
-  initialItems: QnaItem[];
-  initialTotal: number;
+  initialItems: QnaItem[] | null;
+  initialTotal: number | null;
+  // 서버 프리로드 실패를 빈 목록과 구분하기 위한 상태
+  initialLoadError: boolean;
+  initialErrorMessage?: string;
 
   // URL ↔ SSR 프리로드 ↔ 클라 초기 상태를 “동일하게” 맞추기 위한 값들
   initialPage?: number;
@@ -60,7 +63,7 @@ type Props = {
   initialField?: 'all' | 'title' | 'content' | 'title_content';
 };
 
-export default function QnaPageClient({ initialItems, initialTotal, initialPage = 1, initialCategory = 'all', initialAnswerFilter = 'all', initialKeyword = '', initialField = 'all' }: Props) {
+export default function QnaPageClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialCategory = 'all', initialAnswerFilter = 'all', initialKeyword = '', initialField = 'all' }: Props) {
   type MeRes = { id: string; role?: string | null };
   async function meFetcher(url: string): Promise<MeRes | null> {
     const res = await fetch(url, { credentials: 'include' });
@@ -117,12 +120,13 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const initialKey = `/api/boards?${initialQs.toString()}`;
 
   // key가 초기키와 같을 때만 SSR 프리로드를 fallbackData로 공급
+  const hasInitialResolvedData = !initialLoadError && !!initialItems && initialTotal !== null;
   const fallbackData: BoardListRes | undefined =
-    key === initialKey
+    key === initialKey && hasInitialResolvedData
       ? {
           ok: true,
-          items: initialItems ?? [],
-          total: initialTotal ?? 0,
+          items: initialItems as QnaItem[],
+          total: initialTotal as number,
           page: initialPage,
           limit,
         }
@@ -242,11 +246,18 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const isInitialLoading = isLoading && !data && !error;
   const isBusy = uiLoading || isInitialLoading;
 
+  // 상태 분리: preload 실패 / fetch 실패 / 로딩 / 데이터 확정
+  const hasPreloadError = initialLoadError && key === initialKey && !data;
+  const hasFetchError = !!error;
+  const hasDataError = hasPreloadError || hasFetchError;
+  const hasResolvedData = !!data;
+
   const serverItems: QnaItem[] = data?.items ?? [];
   const items = serverItems;
 
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const total: number | null = data?.total ?? null;
+  const resolvedTotalForPaging = total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(resolvedTotalForPaging / limit));
   const pageStart = Math.max(1, Math.min(page - 1, totalPages - 2));
   const pageEnd = Math.min(totalPages, pageStart + 2);
   const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
@@ -267,6 +278,10 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
   const answeredCount = serverItems.filter((q) => !!q.answer).length;
   const waitingCount = serverItems.filter((q) => !q.answer).length;
   const totalViews = serverItems.reduce((sum, q) => sum + (q.viewCount ?? 0), 0);
+
+  // empty state는 "성공적으로 데이터가 확정된 경우"에만 노출
+  const shouldShowActualEmptyState = !isBusy && !hasDataError && hasResolvedData && !keyword.trim() && items.length === 0;
+  const shouldShowSearchEmptyState = !isBusy && !hasDataError && hasResolvedData && !!keyword.trim() && items.length === 0;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -505,10 +520,16 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
             </Dialog>
 
             <div className="space-y-4">
-              {error && <ErrorBox message={listError.message} status={listError.status} fallbackMessage="Q&A 목록을 불러오지 못했습니다." />}
+              {hasDataError && (
+                <ErrorBox
+                  message={hasPreloadError ? initialErrorMessage || 'Q&A 목록을 불러오지 못했습니다.' : listError.message}
+                  status={hasPreloadError ? 500 : listError.status}
+                  fallbackMessage="Q&A 목록을 불러오지 못했습니다."
+                />
+              )}
 
               {!isLoading &&
-                !error &&
+                !hasDataError &&
                 items.map((qna) => {
                   const canOpenSecret = !qna.isSecret || isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
 
@@ -580,7 +601,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialPage 
                   );
                 })}
 
-              {!isLoading && !error && items.length === 0 && <div className="text-sm text-muted-foreground">{keyword.trim() ? '검색 결과가 없습니다.' : '등록된 문의가 없습니다.'}</div>}
+              {shouldShowSearchEmptyState && <div className="text-sm text-muted-foreground">검색 결과가 없습니다.</div>}
+              {shouldShowActualEmptyState && <div className="text-sm text-muted-foreground">등록된 문의가 없습니다.</div>}
             </div>
 
             <div className="mt-6 md:mt-8 flex items-center justify-center">
