@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
 import { useCartStore } from '@/app/store/cartStore';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import clsx from 'clsx';
 import { useState } from 'react';
 
@@ -16,7 +16,7 @@ type Props = {
 };
 
 export default function WishlistSidebar({ className, variant = 'sidebar' }: Props) {
-  const { items, clear, remove } = useWishlist();
+  const { items, clear, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
   const add = useCartStore((s) => s.addItem);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
@@ -24,15 +24,35 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
     try {
       setRemovingId(id);
       await remove(id); // 서버 삭제 + SWR 갱신
+    } catch {
+      showErrorToast('위시리스트 삭제에 실패했습니다.');
     } finally {
       setRemovingId(null);
     }
   }
 
-  if (items.length === 0) return null;
+  const resolvedItems = items ?? [];
+  // 사이드바 숨김은 실제 빈 데이터가 확정된 경우에만 허용한다.
+  if (!isLoading && !hasDataError && hasResolvedData && resolvedItems.length === 0) return null;
 
-  const title = `내 위시리스트${variant === 'inline' ? ` (${items.length}개)` : ''}`;
-  const list = variant === 'inline' ? items : items.slice(0, 5);
+  if (hasDataError) {
+    return (
+      <Card variant="muted" className={clsx('mt-6', className)}>
+        <CardContent className="p-4 text-sm text-muted-foreground">위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</CardContent>
+      </Card>
+    );
+  }
+
+  if (isLoading && !hasResolvedData) {
+    return (
+      <Card variant="muted" className={clsx('mt-6', className)}>
+        <CardContent className="p-4 text-sm text-muted-foreground">위시리스트를 불러오는 중입니다.</CardContent>
+      </Card>
+    );
+  }
+
+  const title = `내 위시리스트${variant === 'inline' ? ` (${resolvedItems.length}개)` : ''}`;
+  const list = variant === 'inline' ? resolvedItems : resolvedItems.slice(0, 5);
 
   return (
     <Card variant="muted" className={clsx('mt-6', className)}>
@@ -42,7 +62,16 @@ export default function WishlistSidebar({ className, variant = 'sidebar' }: Prop
             <Heart className="h-5 w-5 text-foreground" />
             {title}
           </CardTitle>
-          <Button size="sm" variant="outline" onClick={clear} className="border-border bg-transparent hover:bg-primary/10 dark:hover:bg-primary/20">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              clear().catch(() => {
+                showErrorToast('위시리스트 비우기에 실패했습니다.');
+              });
+            }}
+            className="border-border bg-transparent hover:bg-primary/10 dark:hover:bg-primary/20"
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             위시리스트 비우기
           </Button>

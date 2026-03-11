@@ -15,7 +15,8 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
   const router = useRouter();
   const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
-  const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
+  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(!loading && !!user);
+  const resolvedUnreadCount = unreadStatus === 'ready' ? unreadCount ?? 0 : null;
 
   if (loading) {
     return (
@@ -61,7 +62,7 @@ export function UserNavMobile({ setOpen }: UserNavMobileProps) {
         마이페이지
       </Button>
       <Button variant="outline" className="w-full justify-center" onClick={() => { setOpen(false); router.push('/messages'); }}>
-        쪽지함{unreadCount > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+        쪽지함{resolvedUnreadCount !== null && resolvedUnreadCount > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{resolvedUnreadCount > 99 ? '99+' : resolvedUnreadCount}</span>}
       </Button>
       <Button
         variant="outline"

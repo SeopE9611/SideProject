@@ -187,7 +187,8 @@ const Header = () => {
 
   const { user, loading } = useCurrentUser();
   const isAdmin = user?.role === 'admin';
-  const { count: unreadCount } = useUnreadMessageCount(!loading && !!user);
+  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(!loading && !!user);
+  const resolvedUnreadCount = unreadStatus === 'ready' ? unreadCount ?? 0 : null;
 
   // 소셜 로그인 제공자 배지
   const socialProviders = user?.socialProviders ?? [];
@@ -694,8 +695,8 @@ const Header = () => {
                     aria-label="쪽지함"
                   >
                     <Mail className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    {resolvedUnreadCount !== null && resolvedUnreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">{resolvedUnreadCount > 99 ? '99+' : resolvedUnreadCount}</span>
                     )}
                     <span className="sr-only">쪽지함</span>
                   </Button>
@@ -934,7 +935,7 @@ const Header = () => {
                 )}
 
                 <div className="max-w-[140px] overflow-hidden">
-                  <UserNav unreadCount={unreadCount} />
+                  <UserNav unreadCount={resolvedUnreadCount} />
                 </div>
                 <ThemeToggle />
               </div>

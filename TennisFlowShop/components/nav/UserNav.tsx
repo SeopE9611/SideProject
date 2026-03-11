@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 
 type UserNavProps = {
-  unreadCount?: number;
+  unreadCount?: number | null;
 };
 
 export function UserNav({ unreadCount }: UserNavProps) {
@@ -19,8 +19,8 @@ export function UserNav({ unreadCount }: UserNavProps) {
   const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
   const shouldPollUnread = unreadCount == null;
-  const { count } = useUnreadMessageCount(shouldPollUnread && !loading && !!user);
-  const resolvedUnread = unreadCount ?? count;
+  const { count, status } = useUnreadMessageCount(shouldPollUnread && !loading && !!user);
+  const resolvedUnread = shouldPollUnread ? (status === 'ready' ? count ?? 0 : null) : unreadCount;
 
   if (loading) {
     return (
@@ -88,7 +88,7 @@ export function UserNav({ unreadCount }: UserNavProps) {
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/messages')}>
           <Mail className="mr-2 h-4 w-4" />
-          쪽지함 {resolvedUnread > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{resolvedUnread > 99 ? '99+' : resolvedUnread}</span>}
+          쪽지함 {resolvedUnread !== null && resolvedUnread > 0 && <span className="shrink-0 rounded-full bg-destructive text-destructive-foreground text-[10px] leading-none px-1.5 py-[2px]">{resolvedUnread > 99 ? '99+' : resolvedUnread}</span>}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push('/admin/dashboard')}>

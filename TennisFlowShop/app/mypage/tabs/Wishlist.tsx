@@ -8,21 +8,44 @@ import { Button } from '@/components/ui/button';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { useWishlist } from '@/app/features/wishlist/useWishlist';
 import { useCartStore } from '@/app/store/cartStore';
-import { showSuccessToast } from '@/lib/toast';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 
 const LIMIT = 12;
 
 export default function Wishlist() {
-  const { items, remove } = useWishlist();
+  const { items, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
   const addItem = useCartStore((s) => s.addItem);
 
   // '더 보기' 노출 개수
   const [visible, setVisible] = useState(LIMIT);
 
-  const hasMore = useMemo(() => items.length > visible, [items.length, visible]);
-  const visibleItems = useMemo(() => items.slice(0, visible), [items, visible]);
+  const resolvedItems = items ?? [];
+  const hasMore = useMemo(() => resolvedItems.length > visible, [resolvedItems.length, visible]);
+  const visibleItems = useMemo(() => resolvedItems.slice(0, visible), [resolvedItems, visible]);
 
-  if (items.length === 0) {
+  // empty state는 로딩/에러가 아닌 실제 데이터 확정 후 length===0일 때만 노출한다.
+  const shouldShowEmptyState = hasResolvedData && !isLoading && !hasDataError && resolvedItems.length === 0;
+
+  if (isLoading && !hasResolvedData) {
+    return (
+      <Card className="relative overflow-hidden border-0">
+        <CardContent className="p-8 md:p-12 text-center text-muted-foreground">위시리스트를 불러오는 중입니다.</CardContent>
+      </Card>
+    );
+  }
+
+  if (hasDataError) {
+    return (
+      <Card className="relative overflow-hidden border-0">
+        <CardContent className="p-8 md:p-12 text-center">
+          <h3 className="mb-2 text-xl font-semibold">위시리스트를 불러오지 못했습니다</h3>
+          <p className="text-muted-foreground">잠시 후 다시 시도해주세요.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (shouldShowEmptyState) {
     return (
       <Card className="relative overflow-hidden border-0">
         <CardContent className="p-8 md:p-12 text-center">
@@ -78,9 +101,11 @@ export default function Wishlist() {
                   variant="outline"
                   className="border-destructive hover:bg-destructive/10 dark:border-destructive dark:hover:bg-destructive/15 bg-transparent"
                   onClick={() => {
-                    remove(it.id);
+                    remove(it.id).catch(() => {
+                      showErrorToast('위시리스트 삭제에 실패했습니다.');
+                    });
                     // 현재 페이지에서 바로 사라지도록, 노출 개수 보정
-                    setVisible((v) => Math.min(v, Math.max(0, items.length - 1)));
+                    setVisible((v) => Math.min(v, Math.max(0, resolvedItems.length - 1)));
                   }}
                 >
                   <Trash2 className="h-4 w-4 mr-2" /> 삭제

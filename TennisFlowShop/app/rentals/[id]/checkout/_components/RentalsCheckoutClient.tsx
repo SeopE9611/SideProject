@@ -155,9 +155,11 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   // --- 포인트(보증금 제외) ---
   const POINT_UNIT = 100; // 구매 체크아웃과 동일: 100P 단위
-  const [pointsBalance, setPointsBalance] = useState(0);
-  const [pointsDebt, setPointsDebt] = useState(0);
-  const pointsAvailable = Math.max(0, pointsBalance - pointsDebt);
+  const [pointsBalance, setPointsBalance] = useState<number | null>(null);
+  const [pointsDebt, setPointsDebt] = useState<number | null>(null);
+  // 포인트 조회 상태를 분리해 실패/미확정을 실제 0P로 오해하지 않게 한다.
+  const [pointsStatus, setPointsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const pointsAvailable = pointsStatus === 'ready' ? Math.max(0, (pointsBalance ?? 0) - (pointsDebt ?? 0)) : 0;
 
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsInput, setPointsInput] = useState('0');
@@ -165,7 +167,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
   // 정책: 보증금(initial.deposit)에는 포인트 적용 금지 → (총액 - 보증금)까지만 가능
   const maxPointsByPolicy = Math.max(0, total - initial.deposit);
-  const maxPointsToUse = Math.min(pointsAvailable, maxPointsByPolicy);
+  const maxPointsToUse = pointsStatus === 'ready' ? Math.min(pointsAvailable, maxPointsByPolicy) : 0;
   const normalizePoints = (raw: number) => Math.floor(raw / POINT_UNIT) * POINT_UNIT;
   const clampPoints = (raw: number) => {
     const normalized = normalizePoints(raw);
@@ -174,7 +176,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   };
 
   // 실제 적용될 포인트(게스트면 0으로 강제)
-  const appliedPoints = userId ? clampPoints(pointsToUse) : 0;
+  const appliedPoints = userId && pointsStatus === 'ready' ? clampPoints(pointsToUse) : 0;
   const payableTotal = Math.max(0, total - appliedPoints);
 
   const [refundBank, setRefundBank] = useState<'shinhan' | 'kookmin' | 'woori' | ''>('');
@@ -291,25 +293,46 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
   useEffect(() => {
     let cancelled = false;
 
-    // 게스트면 포인트 0으로 정리
+    // 게스트면 포인트 상태를 초기화
     if (!userId) {
-      setPointsBalance(0);
-      setPointsDebt(0);
+      setPointsStatus('idle');
+      setPointsBalance(null);
+      setPointsDebt(null);
       setUseAllPoints(false);
       setPointsToUse(0);
       setPointsInput('0');
       return;
     }
 
+    setPointsStatus('loading');
+
     fetch('/api/points/me', { credentials: 'include' })
-      .then(async (res) => (res.ok ? res.json() : null))
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`points fetch failed: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
-        if (!data || cancelled) return;
-        setPointsBalance(Number(data.balance ?? 0));
-        setPointsDebt(Number(data.debt ?? 0));
+        if (cancelled) return;
+        const nextBalance = Number(data?.balance);
+        const nextDebt = Number(data?.debt);
+        if (!Number.isFinite(nextBalance) || !Number.isFinite(nextDebt)) {
+          throw new Error('invalid points payload');
+        }
+        setPointsBalance(nextBalance);
+        setPointsDebt(nextDebt);
+        setPointsStatus('ready');
       })
       .catch(() => {
-        /* 포인트 조회 실패해도 결제 자체는 진행 가능 */
+        if (cancelled) return;
+        // 조회 실패를 0P로 덮지 않고 오류 상태로 분리한다.
+        setPointsStatus('error');
+        setPointsBalance(null);
+        setPointsDebt(null);
+        setUseAllPoints(false);
+        setPointsToUse(0);
+        setPointsInput('0');
       });
 
     return () => {
@@ -1082,11 +1105,17 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
                     <div className="rounded-lg border border-border p-4 bg-background/40 dark:bg-muted/30 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-semibold text-foreground">포인트 사용</span>
-                        <span className="text-xs text-muted-foreground">사용 가능 {pointsAvailable.toLocaleString()}P</span>
+                        <span className="text-xs text-muted-foreground">
+                          {pointsStatus === 'ready' ? `사용 가능 ${pointsAvailable.toLocaleString()}P` : pointsStatus === 'loading' ? '포인트 조회 중' : pointsStatus === 'error' ? '포인트 조회 실패' : '로그인 시 조회'}
+                        </span>
                       </div>
 
                       {!userId ? (
                         <div className="text-sm text-muted-foreground">로그인 시 포인트 사용이 가능합니다.</div>
+                      ) : pointsStatus === 'loading' ? (
+                        <div className="text-sm text-muted-foreground">포인트를 불러오는 중입니다.</div>
+                      ) : pointsStatus === 'error' ? (
+                        <div className="text-sm text-destructive">포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.</div>
                       ) : (
                         <>
                           <div className="flex items-center gap-2">
@@ -1109,7 +1138,7 @@ export default function RentalsCheckoutClient({ initial }: { initial: Initial })
 
                           <Input
                             value={pointsInput}
-                            disabled={useAllPoints || maxPointsToUse <= 0}
+                            disabled={pointsStatus !== 'ready' || useAllPoints || maxPointsToUse <= 0}
                             onChange={(e) => {
                               const raw = e.target.value.replace(/[^\d]/g, '');
                               setPointsInput(raw);
