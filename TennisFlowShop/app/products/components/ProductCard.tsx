@@ -56,7 +56,7 @@ function getFeatureEntries(features?: Record<string, number>) {
 
 // shadcn Button의 hover:bg-accent / hover:text-accent-foreground 간섭을 피하기 위해
 // 순수 <button>으로 구현한 위시리스트 토글 버튼
-function WishButton({ inWish, onToggle, size = 'md' }: { inWish: boolean; onToggle: (e: React.MouseEvent) => void; size?: 'sm' | 'md' }) {
+function WishButton({ inWish, disabled = false, onToggle, size = 'md' }: { inWish: boolean; disabled?: boolean; onToggle: (e: React.MouseEvent) => void; size?: 'sm' | 'md' }) {
   const dim = size === 'sm' ? 'h-8 w-8 sm:h-9 sm:w-9' : 'h-9 w-9 sm:h-10 sm:w-10';
   const iconDim = size === 'sm' ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-3.5 h-3.5 sm:w-4 sm:h-4';
 
@@ -64,12 +64,16 @@ function WishButton({ inWish, onToggle, size = 'md' }: { inWish: boolean; onTogg
     <button
       type="button"
       onClick={onToggle}
-      title={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
+      disabled={disabled}
+      aria-disabled={disabled}
+      aria-label={inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
+      title={disabled ? '위시리스트 상태 확인 중' : inWish ? '위시리스트에서 제거' : '위시리스트에 추가'}
       className={cn(
         dim,
         'flex-shrink-0 rounded-md border shadow-md',
         'transition-all duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        disabled && 'cursor-not-allowed opacity-60',
         // 비활성 기본
         !inWish && [
           'border-border bg-card text-muted-foreground',
@@ -118,7 +122,10 @@ const ProductCard = React.memo(
     const ratingAvg = Number(product.ratingAvg ?? product.ratingAverage ?? 0);
     const ratingCount = Number(product.ratingCount ?? 0);
     const { has, toggle } = useWishlist();
-    const inWish = has(product._id);
+    const wishState = has(product._id);
+    const inWish = wishState === true;
+    // unknown(null)에서는 false 외형으로 단정하지 않기 위해 버튼을 비활성화한다.
+    const isWishUnknown = wishState === null;
 
     const inventory = product.inventory;
     const stockRaw = typeof inventory?.stock === 'number' ? inventory.stock : null;
@@ -244,6 +251,7 @@ const ProductCard = React.memo(
 
                 <WishButton
                   inWish={inWish}
+                  disabled={isWishUnknown}
                   onToggle={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -312,6 +320,7 @@ const ProductCard = React.memo(
               */}
               <WishButton
                 inWish={inWish}
+                disabled={isWishUnknown}
                 onToggle={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
