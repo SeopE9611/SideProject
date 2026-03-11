@@ -153,8 +153,8 @@ export default function QnaDetailPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="container py-6 md:py-8">
+        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
           <div className="mb-6 flex items-center justify-between gap-3">
             <div>
               <div className="mb-2 text-sm text-muted-foreground">
@@ -238,7 +238,7 @@ export default function QnaDetailPage() {
                       <h1 className="text-3xl font-bold text-foreground leading-tight">{qna.title}</h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-7 w-7 border-2 border-border">
                           <AvatarFallback className="text-xs font-medium bg-muted text-foreground">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
@@ -261,7 +261,7 @@ export default function QnaDetailPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="p-8 space-y-6">
+            <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
               {!isLoading && error && (
                 <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
                   <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{errorBody}</div>
@@ -336,7 +336,7 @@ export default function QnaDetailPage() {
             )}
 
             {(isAuthor || isAdmin) && qna && (
-              <CardFooter className="flex justify-end gap-3 border-t border-border bg-muted/50 p-6">
+              <CardFooter className="flex justify-end gap-3 border-t border-border bg-muted/50 p-4 md:p-6">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
                     <Pencil className="mr-2 h-4 w-4" />
@@ -359,7 +359,7 @@ export default function QnaDetailPage() {
                   <h2 className="text-lg font-semibold text-foreground">관리자 답변 작성</h2>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 space-y-4">
+              <CardContent className="p-4 md:p-6 space-y-4">
                 <Textarea
                   value={answerText}
                   onChange={(e) => setAnswerText(e.target.value)}
@@ -441,7 +441,7 @@ export default function QnaDetailPage() {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6 border border-border">
                         <AvatarFallback className="text-xs font-medium bg-muted text-foreground">{(qna.answer.authorName ?? '관리자').slice(0, 1)}</AvatarFallback>
@@ -457,7 +457,7 @@ export default function QnaDetailPage() {
                 </div>
               </CardHeader>
 
-              <CardContent className="p-6">
+              <CardContent className="p-4 md:p-6">
                 {!isEditing ? (
                   <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
                     <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{String(qna.answer.content || '')}</div>
