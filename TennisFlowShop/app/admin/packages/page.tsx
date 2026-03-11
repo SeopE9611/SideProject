@@ -182,26 +182,35 @@ export default function PackageOrdersClient() {
   }, [commonErrorMessage]);
 
   // 데이터 준비
-  const packages: PackageListItem[] = data?.items ?? [];
-  const totalPages = useMemo(() => Math.max(1, Math.ceil((data?.total ?? 0) / limit)), [data?.total, limit]);
+  // 로딩/에러/실데이터를 분리해서, 미확정 상태가 0건처럼 보이지 않도록 처리한다.
+  const hasDataError = !!error;
+  const hasResolvedData = !isValidating && !hasDataError && !!data;
+  const hasResolvedTotal = hasResolvedData && typeof data?.total === 'number';
+  const packages: PackageListItem[] | null = hasResolvedData ? (Array.isArray(data?.items) ? data.items : []) : null;
+  const totalCount: number | null = hasResolvedTotal ? (data?.total ?? 0) : null;
+  const shouldShowRows = !!packages && packages.length > 0;
+  const shouldShowEmptyState = hasResolvedData && !hasDataError && !!packages && packages.length === 0;
+  const totalPages = useMemo(() => {
+    if (!hasResolvedTotal || totalCount === null) return null;
+    return Math.max(1, Math.ceil(totalCount / limit));
+  }, [hasResolvedTotal, totalCount, limit]);
 
   const metrics = data?.metrics;
-  const totalCount = data?.total ?? 0;
 
   // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
-  const kpiTotal = metrics?.total ?? totalCount;
+  const kpiTotal = metrics?.total ?? totalCount ?? 0;
 
   // 활성 패키지 수
-  const kpiActive = metrics?.active ?? packages.filter((p) => p.passStatus === '활성').length;
+  const kpiActive = metrics?.active ?? (packages?.filter((p) => p.passStatus === '활성').length ?? 0);
 
   // 총 매출
-  const kpiRevenue = metrics?.revenue ?? packages.reduce((sum, p) => sum + p.price, 0);
+  const kpiRevenue = metrics?.revenue ?? (packages?.reduce((sum, p) => sum + p.price, 0) ?? 0);
 
   // 만료 예정
   const kpiExpSoon = useMemo(() => {
     if (metrics?.expirySoon !== undefined) return metrics.expirySoon;
 
-    return packages.filter((p) => {
+    return (packages ?? []).filter((p) => {
       const exp = p.expiryDate ?? null;
       const days = getDaysUntilExpiry(exp);
       const s = computeListStatus(p.paymentStatus, exp);
@@ -211,7 +220,7 @@ export default function PackageOrdersClient() {
 
   // 페이지 번호 목록(앞·뒤 ... 처리)
   const pageItems = useMemo<(number | string)[]>(() => {
-    const t = totalPages,
+    const t = totalPages ?? 1,
       c = page;
     if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1);
     const items: (number | string)[] = [1];
@@ -226,6 +235,7 @@ export default function PackageOrdersClient() {
 
   // totalPages가 줄어든 경우 현재 페이지를 자동 보정
   useEffect(() => {
+    if (!totalPages) return;
     if (page > totalPages) {
       setPage(totalPages);
     }
@@ -249,7 +259,10 @@ export default function PackageOrdersClient() {
     );
   }
 
-  const goToPage = (p: number) => setPage(Math.min(totalPages, Math.max(1, p)));
+  const goToPage = (p: number) => {
+    if (!totalPages) return;
+    setPage(Math.min(totalPages, Math.max(1, p)));
+  };
 
   const SortIcon = (k: SortKey) => (
     <ChevronDown className={cn('inline-block h-3 w-3 shrink-0 align-middle transition-transform', sortBy === k ? 'opacity-80' : 'opacity-50', sortBy === k && sortDirection === 'desc' && 'rotate-180')} aria-hidden="true" />
@@ -644,13 +657,13 @@ export default function PackageOrdersClient() {
             <div className="flex items-center justify-between">
               <CardTitle>패키지 목록</CardTitle>
               <p className="text-sm text-muted-foreground" aria-live="polite">
-                총 {totalCount}개의 패키지
+                총 {hasResolvedTotal && totalCount !== null ? totalCount : '-'}개의 패키지
               </p>
             </div>
           </CardHeader>
           <CardContent className="overflow-x-auto md:overflow-x-visible relative px-3 sm:px-4">
             <div className="relative overflow-x-hidden overflow-y-auto rounded-2xl border border-border shadow-sm max-h-[60vh] min-w-0">
-              <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs" aria-busy={isValidating && packages.length === 0}>
+              <Table className="w-full table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs" aria-busy={isValidating && !shouldShowRows}>
                 <TableHeader className="sticky top-0 bg-card shadow-sm">
                   <TableRow>
                     <TableHead className={cn(thClasses, 'w-[120px]')}>패키지 ID</TableHead>
@@ -687,7 +700,7 @@ export default function PackageOrdersClient() {
                 </TableHeader>
 
                 <TableBody>
-                  {isValidating && packages.length === 0 && (
+                  {!hasDataError && isValidating && !shouldShowRows && (
                     <TableRow>
                       <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
                         패키지 목록을 불러오는 중입니다.
@@ -696,7 +709,7 @@ export default function PackageOrdersClient() {
                   )}
 
                   {/** 빈 상태 */}
-                  {!isValidating && packages.length === 0 && (
+                  {shouldShowEmptyState && (
                     <TableRow>
                       <TableCell colSpan={11} className="py-12">
                         <div className="flex flex-col items-center gap-3 text-center">
@@ -725,9 +738,9 @@ export default function PackageOrdersClient() {
                   )}
 
                   {/** 정상 렌더 */}
-                  {!isValidating && packages.length > 0 && (
+                  {shouldShowRows && (
                     <>
-                      {packages.map((pkg) => {
+                      {packages!.map((pkg) => {
                         // 진행률 계산(used / (used + remaining))
                         const { percent: progressPercentage, total: currentTotal } = calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
 
@@ -899,10 +912,10 @@ export default function PackageOrdersClient() {
               {/* pagination */}
               <div className="relative mt-4 h-12">
                 <div className="absolute inset-x-0 top-[55%] -translate-y-1/2 flex items-center justify-center gap-1">
-                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(1)} disabled={page <= 1} aria-label="첫 페이지">
+                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(1)} disabled={!totalPages || page <= 1} aria-label="첫 페이지">
                     <ChevronsLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page - 1)} disabled={page <= 1} aria-label="이전">
+                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page - 1)} disabled={!totalPages || page <= 1} aria-label="이전">
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   {pageItems.map((it, idx) =>
@@ -916,10 +929,10 @@ export default function PackageOrdersClient() {
                       </span>
                     ),
                   )}
-                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page + 1)} disabled={page >= totalPages} aria-label="다음">
+                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(page + 1)} disabled={!totalPages || page >= totalPages} aria-label="다음">
                     <ChevronRight className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(totalPages)} disabled={page >= totalPages} aria-label="끝 페이지">
+                  <Button variant="outline" size="icon" className="h-9 w-9 bg-transparent" onClick={() => goToPage(totalPages ?? page)} disabled={!totalPages || page >= totalPages} aria-label="끝 페이지">
                     <ChevronsRight className="h-4 w-4" />
                   </Button>
                 </div>

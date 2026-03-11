@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CreditCard, Play, RotateCcw, XCircle, Undo2, Clock } from 'lucide-react';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
 
 type HistoryItem = {
   _id: string;
@@ -135,7 +136,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
   const pageSize = 5;
   const isVisitPickup = servicePickupMethod === 'SHOP_VISIT';
 
-  const { data, isLoading } = useSWR<{
+  const { data, isLoading, error } = useSWR<{
     ok: boolean;
     items: HistoryItem[];
     page: number;
@@ -149,13 +150,22 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
     revalidateOnReconnect: false,
   });
 
+  // 이력 조회 실패를 빈 이력으로 오인하지 않도록 상태를 분리한다.
+  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
+  const hasDataError = !!commonErrorMessage;
+  const hasResolvedData = !isLoading && !hasDataError && !!data;
+
   const items = useMemo(() => {
+    if (!hasResolvedData) return [];
     const raw = data?.items ?? [];
     if (filter === 'all') return raw;
     return raw.filter((h) => h.action === filter);
-  }, [data?.items, filter]);
+  }, [hasResolvedData, data?.items, filter]);
 
-  const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
+  const shouldShowHistoryEmpty = hasResolvedData && items.length === 0;
+  const shouldShowHistoryRows = hasResolvedData && items.length > 0;
+
+  const totalPages = hasResolvedData ? Math.max(1, Math.ceil(data.total / data.pageSize)) : null;
 
   return (
     <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-muted/30">
@@ -185,11 +195,13 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
           </div>
         )}
 
-        {!isLoading && items.length === 0 && <div className="py-6 text-center text-sm text-muted-foreground">아직 처리 이력이 없습니다.</div>}
+        {!isLoading && hasDataError && <div className="py-6 text-center text-sm text-destructive">{commonErrorMessage}</div>}
+
+        {shouldShowHistoryEmpty && <div className="py-6 text-center text-sm text-muted-foreground">아직 처리 이력이 없습니다.</div>}
 
         {/* 실제 이력 리스트 */}
         <div className="space-y-3">
-          {items.map((h) => {
+          {shouldShowHistoryRows && items.map((h) => {
             const meta = getActionMeta(h.action, isVisitPickup);
             const dateStr = new Intl.DateTimeFormat('ko-KR', {
               year: 'numeric',
@@ -218,11 +230,11 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
 
         {/* 페이지 이동 */}
         <div className="mt-4 flex items-center justify-between">
-          <Button size="sm" variant="outline" disabled={!data?.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+          <Button size="sm" variant="outline" disabled={!hasResolvedData || !data?.hasPrev} onClick={() => setPage((p) => Math.max(1, p - 1))}>
             이전
           </Button>
-          <span className="text-sm text-muted-foreground">{data ? `${page} / ${totalPages}` : '-'}</span>
-          <Button size="sm" variant="outline" disabled={!data?.hasNext} onClick={() => setPage((p) => (data?.hasNext ? p + 1 : p))}>
+          <span className="text-sm text-muted-foreground">{hasResolvedData && totalPages ? `${page} / ${totalPages}` : '-'}</span>
+          <Button size="sm" variant="outline" disabled={!hasResolvedData || !data?.hasNext} onClick={() => setPage((p) => (data?.hasNext ? p + 1 : p))}>
             다음
           </Button>
         </div>
