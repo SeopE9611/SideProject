@@ -60,6 +60,13 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   return '발송 접수';
 }
 
+function needsInboundTracking(collectionMethod?: string | null): boolean {
+  const normalized = String(collectionMethod ?? '')
+    .trim()
+    .toLowerCase();
+  return ['self_ship', 'self_send', 'self-ship'].includes(normalized);
+}
+
 function getTensionSummary(lines: any[]): string | null {
   const set = Array.from(
     new Set(
@@ -285,6 +292,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         status: app.status ?? 'draft',
         createdAt: app.createdAt ?? null,
         updatedAt: app.updatedAt ?? null,
+        needsInboundTracking: needsInboundTracking(app?.collectionMethod),
         racketCount: lines.length,
         receptionLabel: getReceptionLabel(app?.collectionMethod),
         tensionSummary: getTensionSummary(lines),

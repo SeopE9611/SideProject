@@ -102,6 +102,7 @@ interface OrderDetail {
     id: string;
     status: string;
     createdAt?: string | null;
+    needsInboundTracking?: boolean;
     racketCount?: number;
     receptionLabel?: string;
     tensionSummary?: string | null;
@@ -251,6 +252,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const primaryStringingAppId = orderDetail?.stringingApplicationId ?? (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
+  const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
   const selfShipStatusLabel = hasSelfShipTracking ? '등록 완료' : '미등록';
@@ -645,13 +647,15 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">예상 수령일</p>
-                    <p className="font-semibold text-foreground">{orderDetail.shippingInfo?.estimatedDate ? formatDate(orderDetail.shippingInfo.estimatedDate) : '미등록'}</p>
+                {showDeliveryOnlyFields && (
+                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">예상 수령일</p>
+                      <p className="font-semibold text-foreground">{orderDetail.shippingInfo?.estimatedDate ? formatDate(orderDetail.shippingInfo.estimatedDate) : '미등록'}</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {!showDeliveryOnlyFields && <p className="text-sm text-muted-foreground">방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.</p>}
 
@@ -681,7 +685,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 )}
 
 
-                {primaryStringingAppId && (
+                {shouldShowInboundShippingBlock && (
                   <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
