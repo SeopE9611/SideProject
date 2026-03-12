@@ -156,7 +156,12 @@ export default function BoardsClient() {
     revalidateOnReconnect: false,
   });
 
-  const posts: PostItem[] = (postsData?.items ?? []).map((item: any) => {
+  const hasResolvedPostsData = !!postsData;
+  const hasPostsDataError = !!postsErr;
+  const hasResolvedPostsTotal = hasResolvedPostsData && typeof postsData?.total === 'number';
+  const postsRaw: PostItem[] | null = hasResolvedPostsData ? (Array.isArray(postsData?.items) ? postsData.items : []) : null;
+
+  const posts: PostItem[] = (postsRaw ?? []).map((item: any) => {
     // 서버 스키마 정합성: views/likes/commentsCount 실필드만 사용
     const views = Number(item?.views ?? 0);
     const likes = Number(item?.likes ?? 0);
@@ -169,12 +174,30 @@ export default function BoardsClient() {
       commentsCount: Number.isFinite(commentsCount) ? commentsCount : 0,
     } as PostItem;
   });
-  const postsTotal: number = postsData?.total ?? 0;
-  const postsTotalPages = Math.max(1, Math.ceil(postsTotal / LIMIT));
+  const postsTotal: number | null = hasResolvedPostsTotal ? (postsData?.total ?? 0) : null;
+  const postsTotalPages = postsTotal === null ? null : Math.max(1, Math.ceil(postsTotal / LIMIT));
 
-  const reports: ReportItem[] = reportsData?.items ?? [];
-  const reportsTotal: number = reportsData?.total ?? 0;
-  const reportsTotalPages = Math.max(1, Math.ceil(reportsTotal / LIMIT));
+  const hasResolvedReportsData = !!reportsData;
+  const hasReportsDataError = !!reportsErr;
+  const hasResolvedReportsTotal = hasResolvedReportsData && typeof reportsData?.total === 'number';
+  const reports: ReportItem[] | null = hasResolvedReportsData ? (Array.isArray(reportsData?.items) ? reportsData.items : []) : null;
+  const reportsTotal: number | null = hasResolvedReportsTotal ? (reportsData?.total ?? 0) : null;
+  const reportsTotalPages = reportsTotal === null ? null : Math.max(1, Math.ceil(reportsTotal / LIMIT));
+
+  const postsPublicCount = postsRaw ? posts.filter((p) => p.status === 'public').length : null;
+  const postsHiddenCount = postsRaw ? posts.filter((p) => p.status === 'hidden').length : null;
+  const reportsPendingCount = reports ? reports.filter((r) => r.status === 'pending').length : null;
+
+  const hasPostFilterApplied = postType !== 'all' || postStatus !== 'all' || postQ.trim().length > 0;
+  const hasReportFilterApplied = reportType !== 'all' || reportStatus !== 'all' || reportQ.trim().length > 0;
+
+  const shouldShowPostsEmptyState = hasResolvedPostsData && !hasPostsDataError && !!postsRaw && postsRaw.length === 0;
+  const isPostsActualEmptyState = shouldShowPostsEmptyState && postsTotal === 0;
+  const isPostsSearchEmptyState = shouldShowPostsEmptyState && !isPostsActualEmptyState;
+
+  const shouldShowReportsEmptyState = hasResolvedReportsData && !hasReportsDataError && !!reports && reports.length === 0;
+  const isReportsActualEmptyState = shouldShowReportsEmptyState && reportsTotal === 0;
+  const isReportsSearchEmptyState = shouldShowReportsEmptyState && !isReportsActualEmptyState;
 
   const switchTab = (next: 'posts' | 'reports') => {
     const qs = new URLSearchParams(sp.toString());
@@ -228,7 +251,7 @@ export default function BoardsClient() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">전체 게시글</p>
-                <p className="text-2xl font-bold">{postsTotal.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{postsTotal === null ? '-' : postsTotal.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -242,7 +265,7 @@ export default function BoardsClient() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">공개 게시글</p>
-                <p className="text-2xl font-bold">{posts.filter((p) => p.status === 'public').length}</p>
+                <p className="text-2xl font-bold">{postsPublicCount === null ? '-' : postsPublicCount.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -256,7 +279,7 @@ export default function BoardsClient() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">대기 중 신고</p>
-                <p className="text-2xl font-bold">{reports.filter((r) => r.status === 'pending').length}</p>
+                <p className="text-2xl font-bold">{reportsPendingCount === null ? '-' : reportsPendingCount.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -270,7 +293,7 @@ export default function BoardsClient() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">숨김 게시글</p>
-                <p className="text-2xl font-bold">{posts.filter((p) => p.status === 'hidden').length}</p>
+                <p className="text-2xl font-bold">{postsHiddenCount === null ? '-' : postsHiddenCount.toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -333,7 +356,7 @@ export default function BoardsClient() {
                   <RefreshCcw className="h-4 w-4" />
                 </Button>
 
-                <div className="ml-auto text-sm font-medium">총 {postsTotal.toLocaleString()}건</div>
+                <div className="ml-auto text-sm font-medium">총 {postsTotal === null ? '-' : postsTotal.toLocaleString()}건</div>
               </div>
 
               {postsLoading && (
@@ -344,12 +367,12 @@ export default function BoardsClient() {
                 </div>
               )}
 
-              {postsErr && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
+              {hasPostsDataError && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">게시글 목록 로드 실패: {(postsErr as any)?.message ?? 'error'}</div>}
 
-              {!postsLoading && !postsErr && (
+              {!postsLoading && !hasPostsDataError && (
                 <>
                   <div className="space-y-3">
-                    {posts.map((p) => (
+                    {(posts ?? []).map((p) => (
                       <Card key={p.id} className="group border-border/40 bg-background/50 backdrop-blur hover:border-border/60 hover:shadow-md transition-all duration-200">
                         <CardContent className="p-5">
                           {/**
@@ -445,17 +468,23 @@ export default function BoardsClient() {
                       </Card>
                     ))}
 
-                    {posts.length === 0 && (
+                    {shouldShowPostsEmptyState && (
                       <Card className="border-dashed border-border/40">
                         <CardContent className="flex flex-col items-center justify-center py-16">
                           <FileText className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                          <p className="text-sm text-muted-foreground">표시할 게시글이 없습니다.</p>
+                          <p className="text-sm text-muted-foreground">
+                            {isPostsActualEmptyState
+                              ? '등록된 게시글이 없습니다.'
+                              : isPostsSearchEmptyState && hasPostFilterApplied
+                                ? '검색/필터 조건에 맞는 게시글이 없습니다.'
+                                : '표시할 게시글이 없습니다.'}
+                          </p>
                         </CardContent>
                       </Card>
                     )}
                   </div>
 
-                  {posts.length > 0 && (
+                  {!!posts && posts.length > 0 && postsTotal !== null && postsTotalPages !== null && (
                     <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
                       <div className="text-sm text-muted-foreground">
                         총 <span className="font-semibold text-foreground">{postsTotal}</span>건 · 페이지 <span className="font-semibold text-foreground">{postPage}</span> / {postsTotalPages}
@@ -511,7 +540,7 @@ export default function BoardsClient() {
                   <RefreshCcw className="h-4 w-4" />
                 </Button>
 
-                <div className="ml-auto text-sm font-medium">총 {reportsTotal.toLocaleString()}건</div>
+                <div className="ml-auto text-sm font-medium">총 {reportsTotal === null ? '-' : reportsTotal.toLocaleString()}건</div>
               </div>
 
               {reportsLoading && (
@@ -522,12 +551,12 @@ export default function BoardsClient() {
                 </div>
               )}
 
-              {reportsErr && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
+              {hasReportsDataError && <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">신고 목록 로드 실패: {(reportsErr as any)?.message ?? 'error'}</div>}
 
-              {!reportsLoading && !reportsErr && (
+              {!reportsLoading && !hasReportsDataError && (
                 <>
                   <div className="space-y-3">
-                    {reports.map((r) => {
+                    {(reports ?? []).map((r) => {
                       const isPending = r.status === 'pending';
                       // 신고 대상 링크는 공개 URL 우선, 실패 시 관리자 상세 fallback 규칙을 동일 적용한다.
                       const publicLink = buildBoardPublicUrl({
@@ -624,17 +653,23 @@ export default function BoardsClient() {
                       );
                     })}
 
-                    {reports.length === 0 && (
+                    {shouldShowReportsEmptyState && (
                       <Card className="border-dashed border-border/40">
                         <CardContent className="flex flex-col items-center justify-center py-16">
                           <ShieldAlert className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                          <p className="text-sm text-muted-foreground">표시할 신고가 없습니다.</p>
+                          <p className="text-sm text-muted-foreground">
+                            {isReportsActualEmptyState
+                              ? '등록된 신고가 없습니다.'
+                              : isReportsSearchEmptyState && hasReportFilterApplied
+                                ? '검색/필터 조건에 맞는 신고가 없습니다.'
+                                : '표시할 신고가 없습니다.'}
+                          </p>
                         </CardContent>
                       </Card>
                     )}
                   </div>
 
-                  {reports.length > 0 && (
+                  {!!reports && reports.length > 0 && reportsTotal !== null && reportsTotalPages !== null && (
                     <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
                       <div className="text-sm text-muted-foreground">
                         총 <span className="font-semibold text-foreground">{reportsTotal}</span>건 · 페이지 <span className="font-semibold text-foreground">{reportPage}</span> / {reportsTotalPages}
