@@ -107,6 +107,13 @@ interface OrderDetail {
     tensionSummary?: string | null;
     stringNames?: string[];
     reservationLabel?: string | null;
+    shippingInfo?: {
+      selfShip?: {
+        courier?: string | null;
+        trackingNo?: string | null;
+        shippedAt?: string | null;
+      } | null;
+    } | null;
   }[];
 }
 interface Props {
@@ -242,6 +249,14 @@ export default function OrderDetailClient({ orderId }: Props) {
   // - API 계약: stringingApplicationId는 최신 신청서(updatedAt/createdAt desc)
   // - 하위 호환 fallback: 요약 리스트 첫 원소(동일 정렬 계약)
   const primaryStringingAppId = orderDetail?.stringingApplicationId ?? (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
+
+  const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
+  const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
+  const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
+  const selfShipStatusLabel = hasSelfShipTracking ? '등록 완료' : '미등록';
+  const selfShipCourierLabel = selfShipInfo?.courier?.trim() || '미등록';
+  const selfShipTrackingNoLabel = selfShipInfo?.trackingNo?.trim() || '미등록';
+
 
   // 취소 요청 상태/라벨 계산
   const cancelLabel = getCancelRequestLabel(orderDetail);
@@ -663,6 +678,36 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </div>
                     </div>
                   </>
+                )}
+
+
+                {primaryStringingAppId && (
+                  <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
+                        <p className="text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
+                      </div>
+                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&orderId=${orderId}` }).toString()}`}>
+                        <Button size="sm" variant="outline" className="h-8">{hasSelfShipTracking ? '라켓 발송 수정' : '라켓 발송 등록'}</Button>
+                      </Link>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
+                      <p>
+                        <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">택배사:</span> {selfShipCourierLabel}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">운송장 번호:</span> {selfShipTrackingNoLabel}
+                      </p>
+                      <p>
+                        <span className="text-muted-foreground">발송일:</span> {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : '미등록'}
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
             </CardContent>

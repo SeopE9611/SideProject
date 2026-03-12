@@ -346,8 +346,8 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
             </div>
             <div className="w-12 h-px bg-muted/30"></div>
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">{isEdit ? '자가발송 운송장 수정' : '자가발송 운송장 입력'}</h1>
-          <p className="text-muted-foreground leading-relaxed">{isEdit ? '이미 등록된 운송장 정보를 수정할 수 있습니다.' : '라켓을 발송하신 뒤, 택배사와 송장번호를 입력해 주세요.'}</p>
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">{isEdit ? '라켓 발송 정보 수정' : '라켓 발송 정보 등록'}</h1>
+          <p className="text-muted-foreground leading-relaxed">매장으로 보내는 라켓의 택배사와 운송장 번호를 입력해 주세요.</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
@@ -361,7 +361,7 @@ function SelfShipForm({ applicationId, application, returnTo }: { applicationId:
                 <div className="space-y-2">
                   <h3 className="font-semibold text-foreground">아직 발송 전이신가요?</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    발송 후 이 페이지에서 운송장(택배사/송장번호)을 등록하셔도 됩니다.
+                    라켓 발송 후 이 페이지에서 발송 정보(택배사/운송장 번호)를 등록하셔도 됩니다.
                     <br />
                     발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
                   </p>

@@ -603,9 +603,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 방문 예약인 경우에만 의미 있는 희망 일시 라벨
   const visitTimeLabel = isVisit ? formatVisitTimeRange(data.stringDetails.preferredDate, data.stringDetails.preferredTime, data.visitDurationMinutes ?? null, data.visitSlotCount ?? null) : '예약 불필요';
 
-  const trackingNo = data?.shippingInfo?.selfShip?.trackingNo ?? data?.shippingInfo?.invoice?.trackingNumber ?? null;
-  const hasTracking = Boolean(trackingNo);
   const selfShip = data.shippingInfo?.selfShip;
+  const hasTracking = Boolean(selfShip?.trackingNo);
   const invoice = data.shippingInfo?.invoice;
   const isCourierShipping = normalizeOrderShippingMethod(shippingMethod) === 'courier';
 
@@ -655,7 +654,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   >
                     <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
                       <Truck className="w-4 h-4 mr-2" />
-                      {hasTracking ? '운송장 수정하기' : '운송장 등록하기'}
+                      {hasTracking ? '라켓 발송 수정' : '라켓 발송 등록'}
                     </Button>
                   </Link>
                 )}
@@ -665,7 +664,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <Button asChild variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
                     <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
                       <Truck className="mr-1 h-4 w-4" />
-                      {invoice?.trackingNumber ? '운송장 수정하기' : '운송장 등록하기'}
+                      {invoice?.trackingNumber ? '반송 운송장 수정' : '반송 운송장 등록'}
                     </Link>
                   </Button>
                 )}
@@ -1288,13 +1287,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
               <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
                 <Truck className="h-5 w-5 text-foreground" />
-                <CardTitle className="mt-2 text-lg font-semibold">운송장 정보</CardTitle>
+                <CardTitle className="mt-2 text-lg font-semibold">배송 방향별 운송 정보</CardTitle>
               </CardHeader>
 
               <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
                 {/* 자가 발송(사용자 → 매장) */}
                 <div className="rounded-lg border border-dashed border-border p-4">
-                  <p className="text-sm font-semibold text-foreground">자가 발송</p>
+                  <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
+                  <p className="mt-1 text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 정보를 확인합니다.</p>
                   {data.shippingInfo?.selfShip?.trackingNo ? (
                     <div className="mt-2 space-y-1 text-sm text-foreground">
                       <p>택배사: {data.shippingInfo.selfShip.courier || '미입력'}</p>
@@ -1307,13 +1307,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       <p>발송일: {data.shippingInfo.selfShip.shippedAt ? new Date(data.shippingInfo.selfShip.shippedAt).toLocaleDateString('ko-KR') : '-'}</p>
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">등록된 자가 발송 운송장이 없습니다.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">등록된 라켓 발송 정보가 없습니다.</p>
                   )}
                 </div>
 
                 {/* 매장 발송(매장 → 사용자) */}
                 <div className="rounded-lg border border-dashed border-border p-4">
-                  <p className="text-sm font-semibold text-foreground">매장 발송</p>
+                  <p className="text-sm font-semibold text-foreground">반송 정보</p>
                   {hasStoreShippingInfo ? (
                     <div className="mt-2 space-y-1 text-sm text-foreground">
                       {isCourierShipping && invoice?.trackingNumber ? (
@@ -1336,7 +1336,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                       )}
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">등록된 매장 발송 운송장이 없습니다.</p>
+                    <p className="mt-2 text-sm text-muted-foreground">등록된 반송 운송장 정보가 없습니다.</p>
                   )}
                 </div>
               </CardContent>
@@ -1373,7 +1373,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <Truck className="h-5 w-5 text-foreground" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">자가 발송 완료</p>
+                        <p className="text-sm font-medium text-foreground">라켓 발송 완료</p>
                         {/* 날짜 */}
                         <p className="mt-1 text-sm text-muted-foreground">{selfShip.shippedAt ? new Date(selfShip.shippedAt).toLocaleDateString('ko-KR') : '운송장 번호가 등록되었습니다.'}</p>
                         {/* 택배사 + 운송장번호 + 조회 링크 */}
@@ -1393,7 +1393,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                         <Truck className="h-5 w-5 text-primary dark:text-foreground" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">매장 발송</p>
+                        <p className="text-sm font-medium text-foreground">반송 운송장 등록</p>
                         <p className="mt-1 text-sm text-muted-foreground">{invoice.shippedAt ? new Date(invoice.shippedAt).toLocaleDateString('ko-KR') : '고객에게 발송을 위한 운송장 번호가 등록되었습니다.'}</p>
                         <p className="mt-1 text-sm text-muted-foreground">
                           {getCourierLabel(invoice.courier) + ' · '}

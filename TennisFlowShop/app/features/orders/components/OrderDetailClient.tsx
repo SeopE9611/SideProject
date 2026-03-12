@@ -88,6 +88,13 @@ interface OrderDetail {
     stringNames?: string[];
     reservationLabel?: string | null;
     racketCount?: number;
+    shippingInfo?: {
+      selfShip?: {
+        courier?: string | null;
+        trackingNo?: string | null;
+        shippedAt?: string | null;
+      } | null;
+    } | null;
   }[];
 }
 
@@ -386,7 +393,7 @@ export default function OrderDetailClient({ orderId }: Props) {
     // 연결 주문(주문 + 교체서비스 신청서)인 경우:
     // 배송정보/운송장은 신청서에서 단일 관리 → 신청서 배송등록 페이지로 이동
     if (isShippingManagedByApplication && linkedStringingAppId) {
-      showSuccessToast('이 주문은 교체서비스 신청서와 연결되어 있어 배송 정보는 신청서에서 관리합니다.');
+      showSuccessToast('이 주문은 교체서비스 신청서와 연결되어 있어 라켓 발송 정보는 신청서에서 관리합니다.');
       router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`);
       return;
     }
@@ -434,7 +441,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <Button onClick={handleShippingUpdate} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Truck className="mr-2 h-4 w-4" />
                   {/* 방문 수령 주문은 배송 용어 대신 수령 용어로 노출 */}
-                  {isVisitPickup ? (isShippingManagedByApplication ? '신청서 방문 수령 정보 관리' : '방문 수령 정보 업데이트') : isShippingManagedByApplication ? '신청서 배송 정보 관리' : '배송 정보 업데이트'}
+                  {isVisitPickup ? (isShippingManagedByApplication ? '신청서 수령 정보 확인' : '방문 수령 정보 업데이트') : isShippingManagedByApplication ? '라켓 발송 정보 확인' : '배송 정보 업데이트'}
                 </Button>
               </div>
             </div>
@@ -761,7 +768,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     <div className="flex items-start gap-2">
                       <LinkIcon className="mt-0.5 h-4 w-4 shrink-0" />
                       <div className="space-y-2">
-                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 {isVisitPickup ? '수령 준비 정보' : '배송 정보'}를 신청서에서 관리합니다.</p>
+                        <p className="font-medium">이 주문은 교체서비스 신청서와 연결되어 있어 {isVisitPickup ? '수령 준비 정보' : '라켓 발송 정보'}를 신청서에서 관리합니다.</p>
                         <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
                           <Truck className="h-4 w-4 text-primary" />
                           <div>
@@ -769,6 +776,12 @@ export default function OrderDetailClient({ orderId }: Props) {
                             <p className="font-semibold text-primary">{shippingMethodLabel}</p>
                           </div>
                         </div>
+                        {latestLinkedApplication && (
+                          <div className="rounded-lg border border-border/60 bg-card/70 p-3 text-sm dark:bg-card/30">
+                            <p className="font-medium text-foreground">라켓 발송 상태: {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo ? '등록됨' : '미등록'}</p>
+                            <p className="mt-1 text-muted-foreground">운송장: {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo ?? '미등록'}</p>
+                          </div>
+                        )}
                         <div className="flex flex-wrap gap-2">
                           <Button size="sm" variant="outline" className="bg-transparent" asChild>
                             <Link href={`/admin/applications/stringing/${linkedStringingAppId}`}>신청서 상세 보기</Link>
@@ -776,11 +789,11 @@ export default function OrderDetailClient({ orderId }: Props) {
 
                           <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`)}>
                             <Truck className="mr-2 h-4 w-4" />
-                            {isVisitPickup ? '수령 준비 정보 등록/수정' : '배송 정보 등록/수정'}
+                            {isVisitPickup ? '수령 준비 정보 등록/수정' : '라켓 발송 정보 확인/수정'}
                           </Button>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">주문(상품) 쪽 운송장/배송정보는 혼선을 방지하기 위해 사용하지 않습니다.</p>
+                        <p className="text-xs text-muted-foreground">주문(상품) 운송장 대신 신청서의 라켓 발송 정보를 기준으로 관리합니다.</p>
                       </div>
                     </div>
                   </div>
