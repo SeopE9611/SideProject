@@ -81,6 +81,7 @@ interface OrderDetail {
   stringingApplications?: {
     id: string;
     status: string;
+    needsInboundTracking?: boolean;
     createdAt?: string | null;
     updatedAt?: string | null;
     receptionLabel?: string | null;
@@ -181,6 +182,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       })
       .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
   })();
+  const shouldShowLinkedSelfShipSummary = latestLinkedApplication?.needsInboundTracking === true;
 
   // 연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
   // - 주문 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
@@ -771,7 +773,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                             <p className="font-semibold text-primary">{shippingMethodLabel}</p>
                           </div>
                         </div>
-                        {latestLinkedApplication && (
+                        {shouldShowLinkedSelfShipSummary && latestLinkedApplication && (
                           <div className="rounded-lg border border-border/60 bg-card/70 p-3 text-sm dark:bg-card/30">
                             <p className="font-medium text-foreground">라켓 발송 상태: {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo ? '등록됨' : '미등록'}</p>
                             <p className="mt-1 text-muted-foreground">운송장: {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo ?? '미등록'}</p>
