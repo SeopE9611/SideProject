@@ -7,7 +7,7 @@ import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
 import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
 import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
 import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
-import OrderList from '@/app/mypage/tabs/OrderList';
+import TransactionFlowList from '@/app/mypage/tabs/TransactionFlowList';
 import PassList from '@/app/mypage/tabs/PassList';
 import QnAList from '@/app/mypage/tabs/QnAList';
 import RentalsList from '@/app/mypage/tabs/RentalsList';
@@ -116,6 +116,8 @@ export default function MypageClient({ user }: Props) {
     // 탭 전환 시, 다른 도메인의 상세 id는 정리
     if (value !== 'orders') {
       newParams.delete('orderId');
+      newParams.delete('flowType');
+      newParams.delete('flowId');
     }
     if (value !== 'applications') {
       newParams.delete('applicationId');
@@ -130,6 +132,8 @@ export default function MypageClient({ user }: Props) {
   const orderId = searchParams.get('orderId');
   const selectedApplicationId = searchParams.get('applicationId');
   const selectedRentalId = searchParams.get('rentalId');
+  const flowType = searchParams.get('flowType');
+  const flowId = searchParams.get('flowId');
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
@@ -314,13 +318,29 @@ export default function MypageClient({ user }: Props) {
                           <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg bp-sm:text-xl">주문 내역</CardTitle>
-                          <CardDescription className="text-xs bp-sm:text-sm">최근 주문 내역을 확인하실 수 있습니다.</CardDescription>
+                          <CardTitle className="text-lg bp-sm:text-xl">통합 거래 흐름</CardTitle>
+                          <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여 흐름을 한 곳에서 확인하세요.</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-3 bp-sm:p-6">
-                      <Suspense fallback={null}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
+                      <Suspense fallback={null}>
+                        {flowType === 'order' && flowId ? (
+                          <OrderDetailClient orderId={flowId} />
+                        ) : flowType === 'application' && flowId ? (
+                          <ApplicationDetail id={flowId} />
+                        ) : flowType === 'rental' && flowId ? (
+                          <RentalsDetailClient id={flowId} />
+                        ) : orderId ? (
+                          <OrderDetailClient orderId={orderId} />
+                        ) : selectedApplicationId ? (
+                          <ApplicationDetail id={selectedApplicationId} />
+                        ) : selectedRentalId ? (
+                          <RentalsDetailClient id={selectedRentalId} />
+                        ) : (
+                          <TransactionFlowList />
+                        )}
+                      </Suspense>
                     </CardContent>
                   </Card>
                 </TabsContent>
