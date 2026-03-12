@@ -197,27 +197,36 @@ export default function PackageOrdersClient() {
   const hasResolvedTotalPages = totalPages !== null;
 
   const metrics = data?.metrics;
+  const hasResolvedMetrics = hasResolvedData && !!metrics;
 
   // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
-  const kpiTotal = metrics?.total ?? totalCount ?? 0;
+  const kpiTotal: number | null = hasResolvedMetrics
+    ? (typeof metrics?.total === 'number' ? metrics.total : totalCount)
+    : totalCount;
 
   // 활성 패키지 수
-  const kpiActive = metrics?.active ?? (packages?.filter((p) => p.passStatus === '활성').length ?? 0);
+  const kpiActive: number | null = hasResolvedMetrics
+    ? (typeof metrics?.active === 'number' ? metrics.active : (packages?.filter((pkg) => pkg.passStatus === '활성').length ?? null))
+    : null;
 
   // 총 매출
-  const kpiRevenue = metrics?.revenue ?? (packages?.reduce((sum, p) => sum + p.price, 0) ?? 0);
+  const kpiRevenue: number | null = hasResolvedMetrics
+    ? (typeof metrics?.revenue === 'number' ? metrics.revenue : (packages?.reduce((sum, pkg) => sum + pkg.price, 0) ?? null))
+    : null;
 
   // 만료 예정
-  const kpiExpSoon = useMemo(() => {
-    if (metrics?.expirySoon !== undefined) return metrics.expirySoon;
+  const kpiExpSoon = useMemo<number | null>(() => {
+    if (!hasResolvedData) return null;
+    if (typeof metrics?.expirySoon === 'number') return metrics.expirySoon;
+    if (!packages) return null;
 
-    return (packages ?? []).filter((p) => {
-      const exp = p.expiryDate ?? null;
+    return packages.filter((pkg) => {
+      const exp = pkg.expiryDate ?? null;
       const days = getDaysUntilExpiry(exp);
-      const s = computeListStatus(p.paymentStatus, exp);
+      const s = computeListStatus(pkg.paymentStatus, exp);
       return s.label !== '취소' && days <= 30 && days > 0;
     }).length;
-  }, [metrics?.expirySoon, packages]);
+  }, [hasResolvedData, metrics?.expirySoon, packages]);
 
   // 페이지 번호 목록(앞·뒤 ... 처리)
   const pageItems = useMemo<(number | string)[]>(() => {
@@ -234,7 +243,7 @@ export default function PackageOrdersClient() {
     items.push(t);
     return items;
   }, [hasResolvedTotalPages, page, totalPages]);
-  const shouldRenderPaginationNumbers = hasResolvedTotalPages;
+  const shouldRenderPaginationNumbers = hasResolvedTotalPages && !isInitialLoading;
 
   // totalPages가 줄어든 경우 현재 페이지를 자동 보정
   useEffect(() => {
@@ -499,7 +508,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
-                  <div className="text-3xl font-bold text-foreground">{isInitialLoading ? '-' : kpiTotal}</div>
+                  <div className="text-3xl font-bold text-foreground">{kpiTotal === null ? '-' : kpiTotal}</div>
                 </div>
                 <div className="bg-primary/10 rounded-xl p-3 text-foreground dark:bg-primary/20">
                   <Package className="h-6 w-6" />
@@ -513,7 +522,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
-                  <div className="text-3xl font-bold text-success">{isInitialLoading ? '-' : kpiActive}</div>
+                  <div className="text-3xl font-bold text-success">{kpiActive === null ? '-' : kpiActive}</div>
                 </div>
                 <div className="bg-success/10 dark:bg-success/15 rounded-xl p-3">
                   <Calendar className="h-6 w-6 text-success" />
@@ -527,7 +536,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">총 매출</p>
-                  <div className="text-3xl font-bold text-foreground">{isInitialLoading ? '집계 중' : formatCurrency(kpiRevenue)}</div>
+                  <div className="text-3xl font-bold text-foreground">{kpiRevenue === null ? '집계 중' : formatCurrency(kpiRevenue)}</div>
                 </div>
                 <div className="bg-muted rounded-xl p-3">
                   <CreditCard className="h-6 w-6 text-foreground" />
@@ -541,7 +550,7 @@ export default function PackageOrdersClient() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
-                  <div className="text-3xl font-bold text-warning">{isInitialLoading ? '-' : kpiExpSoon}</div>
+                  <div className="text-3xl font-bold text-warning">{kpiExpSoon === null ? '-' : kpiExpSoon}</div>
                 </div>
                 <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-3">
                   <Calendar className="h-6 w-6 text-warning" />
