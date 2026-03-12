@@ -189,15 +189,12 @@ export default function BoardsClient() {
   const reportsPendingCount = reports ? reports.filter((r) => r.status === 'pending').length : null;
 
   const hasPostFilterApplied = postType !== 'all' || postStatus !== 'all' || postQ.trim().length > 0;
-  const hasReportFilterApplied = reportType !== 'all' || reportStatus !== 'pending' || reportQ.trim().length > 0;
 
   const shouldShowPostsEmptyState = hasResolvedPostsData && !hasPostsDataError && !!postsRaw && postsRaw.length === 0;
   const isPostsActualEmptyState = shouldShowPostsEmptyState && !hasPostFilterApplied;
   const isPostsSearchEmptyState = shouldShowPostsEmptyState && hasPostFilterApplied;
 
   const shouldShowReportsEmptyState = hasResolvedReportsData && !hasReportsDataError && !!reports && reports.length === 0;
-  const isReportsActualEmptyState = shouldShowReportsEmptyState && !hasReportFilterApplied;
-  const isReportsSearchEmptyState = shouldShowReportsEmptyState && hasReportFilterApplied;
 
   const switchTab = (next: 'posts' | 'reports') => {
     const qs = new URLSearchParams(sp.toString());
@@ -658,11 +655,7 @@ export default function BoardsClient() {
                         <CardContent className="flex flex-col items-center justify-center py-16">
                           <ShieldAlert className="h-12 w-12 text-muted-foreground/50 mb-3" />
                           <p className="text-sm text-muted-foreground">
-                            {isReportsActualEmptyState
-                              ? '등록된 신고가 없습니다.'
-                              : isReportsSearchEmptyState && hasReportFilterApplied
-                                ? '검색/필터 조건에 맞는 신고가 없습니다.'
-                                : '표시할 신고가 없습니다.'}
+                            현재 조건에 맞는 신고가 없습니다.
                           </p>
                         </CardContent>
                       </Card>
