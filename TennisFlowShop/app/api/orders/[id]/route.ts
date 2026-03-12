@@ -279,6 +279,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       const stringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
       const preferredDate = String(app?.stringDetails?.preferredDate ?? '').trim();
       const preferredTime = String(app?.stringDetails?.preferredTime ?? '').trim();
+      const selfShip = app?.shippingInfo?.selfShip ?? null;
       return {
         id: app._id?.toString(),
         status: app.status ?? 'draft',
@@ -289,6 +290,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         tensionSummary: getTensionSummary(lines),
         stringNames,
         reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+        shippingInfo: {
+          selfShip: selfShip
+            ? {
+                courier: selfShip.courier ?? null,
+                trackingNo: selfShip.trackingNo ?? null,
+                shippedAt: selfShip.shippedAt ?? null,
+              }
+            : null,
+        },
       };
     });
 
