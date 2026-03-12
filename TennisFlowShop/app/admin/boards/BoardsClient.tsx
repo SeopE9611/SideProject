@@ -189,15 +189,15 @@ export default function BoardsClient() {
   const reportsPendingCount = reports ? reports.filter((r) => r.status === 'pending').length : null;
 
   const hasPostFilterApplied = postType !== 'all' || postStatus !== 'all' || postQ.trim().length > 0;
-  const hasReportFilterApplied = reportType !== 'all' || reportStatus !== 'all' || reportQ.trim().length > 0;
+  const hasReportFilterApplied = reportType !== 'all' || reportStatus !== 'pending' || reportQ.trim().length > 0;
 
   const shouldShowPostsEmptyState = hasResolvedPostsData && !hasPostsDataError && !!postsRaw && postsRaw.length === 0;
-  const isPostsActualEmptyState = shouldShowPostsEmptyState && postsTotal === 0;
-  const isPostsSearchEmptyState = shouldShowPostsEmptyState && !isPostsActualEmptyState;
+  const isPostsActualEmptyState = shouldShowPostsEmptyState && !hasPostFilterApplied;
+  const isPostsSearchEmptyState = shouldShowPostsEmptyState && hasPostFilterApplied;
 
   const shouldShowReportsEmptyState = hasResolvedReportsData && !hasReportsDataError && !!reports && reports.length === 0;
-  const isReportsActualEmptyState = shouldShowReportsEmptyState && reportsTotal === 0;
-  const isReportsSearchEmptyState = shouldShowReportsEmptyState && !isReportsActualEmptyState;
+  const isReportsActualEmptyState = shouldShowReportsEmptyState && !hasReportFilterApplied;
+  const isReportsSearchEmptyState = shouldShowReportsEmptyState && hasReportFilterApplied;
 
   const switchTab = (next: 'posts' | 'reports') => {
     const qs = new URLSearchParams(sp.toString());

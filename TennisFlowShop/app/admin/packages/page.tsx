@@ -197,21 +197,20 @@ export default function PackageOrdersClient() {
   const hasResolvedTotalPages = totalPages !== null;
 
   const metrics = data?.metrics;
-  const hasResolvedMetrics = hasResolvedData && !!metrics;
 
   // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
-  const kpiTotal: number | null = hasResolvedMetrics
+  const kpiTotal: number | null = hasResolvedData
     ? (typeof metrics?.total === 'number' ? metrics.total : totalCount)
-    : totalCount;
+    : null;
 
   // 활성 패키지 수
-  const kpiActive: number | null = hasResolvedMetrics
-    ? (typeof metrics?.active === 'number' ? metrics.active : (packages?.filter((pkg) => pkg.passStatus === '활성').length ?? null))
+  const kpiActive: number | null = hasResolvedData
+    ? (typeof metrics?.active === 'number' ? metrics.active : (packages?.filter((pkg) => pkg.passStatus === '활성').length ?? 0))
     : null;
 
   // 총 매출
-  const kpiRevenue: number | null = hasResolvedMetrics
-    ? (typeof metrics?.revenue === 'number' ? metrics.revenue : (packages?.reduce((sum, pkg) => sum + pkg.price, 0) ?? null))
+  const kpiRevenue: number | null = hasResolvedData
+    ? (typeof metrics?.revenue === 'number' ? metrics.revenue : (packages?.reduce((sum, pkg) => sum + pkg.price, 0) ?? 0))
     : null;
 
   // 만료 예정
