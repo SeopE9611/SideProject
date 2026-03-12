@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck, Store, Handshake } from 'lucide-react';
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 export const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, previousPageData: any) => {
   // orderId가 없으면 요청 중단
@@ -68,7 +69,7 @@ function getIconProps(status: string, isVisitPickup: boolean) {
 }
 
 const LIMIT = 5;
-const fetcher = (u: string) => fetch(u, { credentials: 'include' }).then((r) => r.json());
+const fetcher = (url: string) => authenticatedSWRFetcher<HistoryResponse>(url);
 
 interface HistoryItem {
   status: string;

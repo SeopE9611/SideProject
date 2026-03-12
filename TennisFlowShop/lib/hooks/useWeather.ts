@@ -10,7 +10,25 @@ type WeatherResponse = {
   description: string;
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string): Promise<WeatherResponse> => {
+  const response = await fetch(url);
+  const contentType = response.headers.get('content-type') ?? '';
+  const isJson = contentType.includes('application/json');
+
+  if (!response.ok) {
+    throw new Error(`HTTP_${response.status}`);
+  }
+
+  if (!isJson) {
+    throw new Error('INVALID_CONTENT_TYPE');
+  }
+
+  try {
+    return (await response.json()) as WeatherResponse;
+  } catch (error) {
+    throw error instanceof Error ? error : new Error('INVALID_JSON');
+  }
+};
 
 export function useWeather() {
   const { data, error, isLoading } = useSWR<WeatherResponse>('/api/weather', fetcher, {
