@@ -25,10 +25,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { buildQueryString } from '@/lib/admin/urlQuerySync';
 import { useAdminListQueryState } from '@/lib/admin/useAdminListQueryState';
 import { getPaymentStatusBadgeSpec } from '@/lib/badge-style';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, CreditCard, Eye, Filter, MoreHorizontal, Package, Search, X } from 'lucide-react';
@@ -199,19 +199,13 @@ export default function PackageOrdersClient() {
   const metrics = data?.metrics;
 
   // 총 개수 (현재 필터/검색/정렬 조건 기준 전체)
-  const kpiTotal: number | null = hasResolvedData
-    ? (typeof metrics?.total === 'number' ? metrics.total : totalCount)
-    : null;
+  const kpiTotal: number | null = hasResolvedData ? (typeof metrics?.total === 'number' ? metrics.total : totalCount) : null;
 
   // 활성 패키지 수
-  const kpiActive: number | null = hasResolvedData
-    ? (typeof metrics?.active === 'number' ? metrics.active : (packages?.filter((pkg) => pkg.passStatus === '활성').length ?? 0))
-    : null;
+  const kpiActive: number | null = hasResolvedData ? (typeof metrics?.active === 'number' ? metrics.active : (packages?.filter((pkg) => pkg.passStatus === '활성').length ?? 0)) : null;
 
   // 총 매출
-  const kpiRevenue: number | null = hasResolvedData
-    ? (typeof metrics?.revenue === 'number' ? metrics.revenue : (packages?.reduce((sum, pkg) => sum + pkg.price, 0) ?? 0))
-    : null;
+  const kpiRevenue: number | null = hasResolvedData ? (typeof metrics?.revenue === 'number' ? metrics.revenue : (packages?.reduce((sum, pkg) => sum + pkg.price, 0) ?? 0)) : null;
 
   // 만료 예정
   const kpiExpSoon = useMemo<number | null>(() => {
@@ -226,6 +220,9 @@ export default function PackageOrdersClient() {
       return s.label !== '취소' && days <= 30 && days > 0;
     }).length;
   }, [hasResolvedData, metrics?.expirySoon, packages]);
+
+  // 공통 로딩 플래그
+  const isInitialLoading = isValidating && !data;
 
   // 페이지 번호 목록(앞·뒤 ... 처리)
   const pageItems = useMemo<(number | string)[]>(() => {
@@ -481,9 +478,6 @@ export default function PackageOrdersClient() {
   function getExpirySource(pkg: PackageListItem): string | null {
     return pkg?.expiryDate ?? null;
   }
-
-  // 공통 로딩 플래그
-  const isInitialLoading = isValidating && !data;
 
   return (
     <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
