@@ -5,6 +5,7 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 
 // 상태별로 아이콘 컴포넌트와 클래스 리턴하는 헬퍼 함수
 function getIconProps(status: string) {
@@ -61,7 +62,7 @@ function getIconProps(status: string) {
 }
 
 const LIMIT = 5;
-const fetcher = (u: string) => fetch(u, { credentials: 'include' }).then((r) => r.json());
+const fetcher = (url: string) => authenticatedSWRFetcher<HistoryResponse>(url);
 
 interface HistoryItem {
   status: string;

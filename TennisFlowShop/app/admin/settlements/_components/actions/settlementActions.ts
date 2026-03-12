@@ -1,1 +1,3 @@
-export const fetchWithCredentials = <T,>(url: string) => fetch(url, { credentials: 'include' }).then((res) => res.json() as Promise<T>);
+import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+
+export const fetchWithCredentials = <T,>(url: string) => authenticatedSWRFetcher<T>(url);
