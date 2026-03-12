@@ -169,14 +169,22 @@ export default function OrderDetailClient({ orderId }: Props) {
   const summaryCardClass = 'flex min-h-[112px] flex-col items-start justify-start gap-1 rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm';
   const summaryBadgeClass = cn(badgeBase, badgeSizeSm, 'inline-flex w-fit self-start');
 
+  // 연결 신청서는 최신 수정/생성 시각 기준(updatedAt ?? createdAt 내림차순)으로 단일 기준 계산
+  const latestLinkedApplication = (() => {
+    const apps = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications.filter((app) => Boolean(app?.id)) : [];
+    if (apps.length === 0) return null;
+    return apps
+      .map((app, idx) => {
+        const raw = app.updatedAt ?? app.createdAt;
+        const ts = raw ? new Date(raw).getTime() : Number.NaN;
+        return { app, ts: Number.isFinite(ts) ? ts : -idx, idx };
+      })
+      .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
+  })();
+
   // 연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
   // - 주문 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
-  const linkedStringingAppId = (() => {
-    const list = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications : [];
-    const latest = list.filter((a) => a?.id).sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0]?.id;
-
-    return latest ?? orderDetail.stringingApplicationId ?? null;
-  })();
+  const linkedStringingAppId = latestLinkedApplication?.id ?? orderDetail.stringingApplicationId ?? null;
   const isShippingManagedByApplication = Boolean(linkedStringingAppId);
 
   // 관리자 상세에서 “수령/배송(사용자가 체크아웃에서 선택한 값)”을 한눈에 보기 위한 배지
@@ -243,19 +251,6 @@ export default function OrderDetailClient({ orderId }: Props) {
     }
 
     return docs;
-  })();
-
-  // 연결 신청서는 최신 수정/생성 시각 기준으로 요약값을 우선 노출
-  const latestLinkedApplication = (() => {
-    const apps = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications.filter((app) => Boolean(app?.id)) : [];
-    if (apps.length === 0) return null;
-    return apps
-      .map((app, idx) => {
-        const raw = app.updatedAt ?? app.createdAt;
-        const ts = raw ? new Date(raw).getTime() : Number.NaN;
-        return { app, ts: Number.isFinite(ts) ? ts : -idx, idx };
-      })
-      .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
   })();
 
   const linkedApplicationForGuide = latestLinkedApplication;
