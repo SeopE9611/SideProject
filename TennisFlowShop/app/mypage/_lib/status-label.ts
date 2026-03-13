@@ -22,6 +22,15 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   rejected: '거절',
 };
 
+const PAYMENT_STATUS_LABEL_MAP: Record<string, string> = {
+  paid: '결제완료',
+  pending: '결제대기',
+  failed: '결제실패',
+  canceled: '결제취소',
+  cancelled: '결제취소',
+  refunded: '환불완료',
+};
+
 export function getMypageUserStatusLabel(status?: string | null) {
   const raw = String(status ?? '').trim();
   if (!raw) return '상태 미정';
@@ -29,3 +38,9 @@ export function getMypageUserStatusLabel(status?: string | null) {
   return STATUS_LABEL_MAP[raw.toLowerCase()] ?? raw;
 }
 
+export function getMypagePaymentStatusLabel(status?: string | null) {
+  const raw = String(status ?? '').trim();
+  if (!raw) return '상태 미정';
+
+  return PAYMENT_STATUS_LABEL_MAP[raw.toLowerCase()] ?? raw;
+}
