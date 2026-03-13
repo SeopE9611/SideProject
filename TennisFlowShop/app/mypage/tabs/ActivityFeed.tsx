@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
-import { getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
+import { getMypagePaymentStatusLabel, getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
@@ -134,8 +134,8 @@ function applicationStatusLabel(app?: ActivityApplicationSummary | null) {
 
 function paymentBadgeSpec(g: ActivityGroup) {
   if (g.kind !== 'order') return null;
-  const p = g.order?.paymentStatus ?? '';
-  if (!p) return null;
+  const p = getMypagePaymentStatusLabel(g.order?.paymentStatus);
+  if (!p || p === '상태 미정') return null;
   return getPaymentStatusBadgeSpec(p);
 }
 
@@ -932,7 +932,7 @@ export default function ActivityFeed() {
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
                                   <Badge variant={paymentBadgeSpec(g)?.variant ?? 'neutral'} className="text-xs rounded-md font-medium shrink-0">
-                                    {g.order.paymentStatus}
+                                    {getMypagePaymentStatusLabel(g.order?.paymentStatus)}
                                   </Badge>
                                 )}
                               </div>
