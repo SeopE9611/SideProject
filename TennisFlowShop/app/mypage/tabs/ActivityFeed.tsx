@@ -969,7 +969,7 @@ export default function ActivityFeed() {
 
                                 {g.kind !== 'application' && linkedCount > 1 ? (
                                   <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
-                                    <Link href="/mypage?tab=orders">신청서 {linkedCount}건 보기</Link>
+                                    <Link href="/mypage?tab=orders">거래 내역에서 확인</Link>
                                   </Button>
                                 ) : null}
 
