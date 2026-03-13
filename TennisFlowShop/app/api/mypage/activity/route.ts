@@ -124,6 +124,17 @@ function compareByUpdatedThenCreatedDesc(a: Pick<ActivityApplicationSummary, 'up
   return b.updatedAt.localeCompare(a.updatedAt) || b.createdAt.localeCompare(a.createdAt);
 }
 
+function isActionableInboundTracking(app?: Pick<ActivityApplicationSummary, 'needsInboundTracking' | 'hasTracking'> | null) {
+  return Boolean(app?.needsInboundTracking && !app?.hasTracking);
+}
+
+function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
+  // 정책:
+  // 1) 사용자 액션(운송장 등록)이 필요한 신청서를 우선 대표로 노출
+  // 2) 없으면 최신 업데이트 신청서를 대표로 사용
+  return apps.find((app) => isActionableInboundTracking(app)) ?? apps[0];
+}
+
 function calcOrderTotal(o: any): number {
   // 기존 /api/users/me/orders 로직의 축약판(총액이 있으면 우선, 없으면 items 합산)
   const explicit = o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
@@ -402,7 +413,7 @@ export async function GET(req: Request) {
     const first = items[0] ?? null;
 
     const linkedApps = appByOrderId.get(orderId) ?? [];
-    const linked = linkedApps[0];
+    const linked = pickPrimaryLinkedApplication(linkedApps);
     const hasRacketItem = items.some((item: any) => item?.kind === 'racket' || item?.kind === 'used_racket');
     const hasStringItem = items.some((item: any) => item?.kind === 'string');
     const hasProductItem = items.some((item: any) => !['racket', 'used_racket', 'string'].includes(String(item?.kind ?? '')));
@@ -456,7 +467,7 @@ export async function GET(req: Request) {
   for (const r of rentals as any[]) {
     const rentalId = String(r._id);
     const linkedApps = appByRentalId.get(rentalId) ?? [];
-    const linked = linkedApps[0];
+    const linked = pickPrimaryLinkedApplication(linkedApps);
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
     const updatedAt = toISO(r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp());
