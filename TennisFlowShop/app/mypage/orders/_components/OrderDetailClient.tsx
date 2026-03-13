@@ -141,8 +141,9 @@ function getCancelRequestLabel(order: any): string | null {
   }
 }
 
-export default function OrderDetailClient({ orderId, backUrl = '/mypage?tab=orders', linkedApplicationHrefBuilder }: Props) {
+export default function OrderDetailClient({ orderId, backUrl, linkedApplicationHrefBuilder }: Props) {
   const router = useRouter();
+  const resolvedBackUrl = backUrl ?? '/mypage?tab=orders';
 
   // 편집 모드 전체 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -256,9 +257,9 @@ export default function OrderDetailClient({ orderId, backUrl = '/mypage?tab=orde
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
   const getApplicationHref = (applicationId: string) => {
     if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
-    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}${backUrl === '/mypage?tab=activity' ? '&from=activity' : '&from=orders'}`;
+    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}${resolvedBackUrl === '/mypage?tab=activity' ? '&from=activity' : '&from=orders'}`;
   };
-  const flowFrom = backUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
+  const flowFrom = resolvedBackUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
   const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
@@ -364,7 +365,7 @@ export default function OrderDetailClient({ orderId, backUrl = '/mypage?tab=orde
 
             {/* 액션 버튼 섹션 */}
             <div className="flex flex-wrap gap-2 shrink-0 bp-md:justify-end">
-              <Button variant="outline" size="sm" onClick={() => router.push(backUrl)} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20">
+              <Button variant="outline" size="sm" onClick={() => router.push(backUrl ?? '/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 주문 목록으로 돌아가기
               </Button>
