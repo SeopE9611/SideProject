@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CancelStringingDialog from "@/app/mypage/applications/_components/CancelStringingDialog";
 import CancelOrderDialog from "@/app/mypage/orders/_components/CancelOrderDialog";
 import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
+import ActivityOrderReviewCTA from "@/app/mypage/tabs/_components/ActivityOrderReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
@@ -530,11 +531,7 @@ export default function TransactionFlowList() {
 
                 {g.kind === "order" && orderId ? (
                   <>
-                    <Button asChild size="sm" variant="outline" className="bg-transparent">
-                      <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders#reviews-cta`}>
-                        리뷰 작성
-                      </Link>
-                    </Button>
+                    <ActivityOrderReviewCTA orderId={orderId} orderStatus={status} className="bg-transparent" />
 
                     {status === "배송완료" ? (
                       <Button size="sm" variant="outline" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
@@ -556,7 +553,7 @@ export default function TransactionFlowList() {
                     {primaryLinkedApplicationId ? (
                       <Button asChild size="sm" variant="outline" className="bg-transparent">
                         <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&from=orders`}>
-                          연결 신청서 보기
+                          {linkedCount > 1 ? `연결 신청 ${linkedCount}건 보기` : "연결 신청서 보기"}
                         </Link>
                       </Button>
                     ) : null}
