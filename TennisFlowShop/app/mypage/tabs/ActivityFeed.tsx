@@ -505,7 +505,7 @@ export default function ActivityFeed() {
 
   //  카드에서 이동 링크/CTA를 일관되게 만들기 위한 헬퍼
   const linksOf = (g: ActivityGroup) => {
-    const detailHref = g.kind === 'order' ? `/mypage?tab=orders&orderId=${g.order?.id}` : g.kind === 'rental' ? `/mypage?tab=rentals&rentalId=${g.rental?.id}` : `/mypage?tab=applications&applicationId=${g.application?.id}`;
+    const detailHref = g.kind === 'order' ? `/mypage?tab=orders&flowType=order&flowId=${g.order?.id}` : g.kind === 'rental' ? `/mypage?tab=orders&flowType=rental&flowId=${g.rental?.id}` : `/mypage?tab=orders&flowType=application&flowId=${g.application?.id}`;
 
     // 주문/대여 카드에 붙는 “연결 신청서”
     const linkedApp = g.kind !== 'application' ? g.application : null;
@@ -518,7 +518,7 @@ export default function ActivityFeed() {
     const shippingHref = appForShipping ? `/services/applications/${appForShipping.id}/shipping?return=${encodeURIComponent('/mypage?tab=activity')}` : '#';
     const shippingLabel = appForShipping && appForShipping.hasTracking ? '운송장 수정' : '운송장 등록';
 
-    const appDetailHref = linkedApp ? `/mypage?tab=applications&applicationId=${linkedApp.id}` : null;
+    const appDetailHref = linkedApp ? `/mypage?tab=orders&flowType=application&flowId=${linkedApp.id}` : null;
 
     return { detailHref, appDetailHref, shippingHref, shippingLabel };
   };
@@ -958,7 +958,7 @@ export default function ActivityFeed() {
 
                                 {g.kind !== 'application' && linkedCount > 1 ? (
                                   <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
-                                    <Link href="/mypage?tab=applications">신청서 {linkedCount}건 보기</Link>
+                                    <Link href="/mypage?tab=orders">신청서 {linkedCount}건 보기</Link>
                                   </Button>
                                 ) : null}
 

@@ -108,6 +108,18 @@ const STATUS_LABEL_MAP: Record<string, string> = {
   rejected: '거절',
 };
 
+const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
+  if (group.kind === 'order') return getOrderStatusBadgeSpec(label);
+  if (group.kind === 'rental') return getRentalStatusBadgeSpec(label);
+
+  const normalized = label.trim();
+  if (normalized === '승인') return getApplicationStatusBadgeSpec('접수완료');
+  if (normalized === '거절') return getApplicationStatusBadgeSpec('취소');
+  if (normalized === '환불') return getApplicationStatusBadgeSpec('취소');
+  if (normalized === '반납완료') return getApplicationStatusBadgeSpec('교체완료');
+  return getApplicationStatusBadgeSpec(label);
+};
+
 const getUserFacingStatusLabel = (status?: string | null) => {
   const raw = String(status ?? '').trim();
   if (!raw) return '상태 미정';
@@ -185,7 +197,7 @@ export default function TransactionFlowList() {
       {items.map((g) => {
         const status = g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status;
         const userStatusLabel = getUserFacingStatusLabel(status);
-        const statusBadgeSpec = g.kind === 'order' ? getOrderStatusBadgeSpec(userStatusLabel) : g.kind === 'rental' ? getRentalStatusBadgeSpec(userStatusLabel) : getApplicationStatusBadgeSpec(userStatusLabel);
+        const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
         const amount = g.kind === 'order' ? g.order?.totalPrice : g.kind === 'rental' ? g.rental?.totalAmount : null;
         const linkedCount = g.kind === 'order' ? g.order?.linkedApplicationCount ?? 0 : g.kind === 'rental' ? g.rental?.linkedApplicationCount ?? 0 : 0;
         const needsTrackingAction = Boolean(g.application?.needsInboundTracking && !g.application?.hasTracking);
@@ -203,14 +215,16 @@ export default function TransactionFlowList() {
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <Badge variant="outline">{FLOW_TYPE_LABEL[g.flowType]}</Badge>
-                <Badge variant="outline">결제/주문 금액 {formatAmount(amount)}</Badge>
-                {linkedCount > 0 ? (
-                  <Badge variant="secondary" className="gap-1">
-                    <Link2 className="h-3 w-3" /> 연결 신청 {linkedCount}건
-                  </Badge>
-                ) : (
-                  <Badge variant="outline">연결 신청 없음</Badge>
-                )}
+                {g.flowType !== 'application_only' ? <Badge variant="outline">결제/주문 금액 {formatAmount(amount)}</Badge> : null}
+                {g.flowType !== 'application_only' ? (
+                  linkedCount > 0 ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <Link2 className="h-3 w-3" /> 연결 신청 {linkedCount}건
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline">연결 신청 없음</Badge>
+                  )
+                ) : null}
               </div>
 
               <div className="flex flex-wrap items-center gap-2">

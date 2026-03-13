@@ -297,13 +297,13 @@ export async function GET(req: Request) {
 
   /**
    * order 기반 신청서의 "라켓 포함 여부"를 미리 계산
-   * - order.items[].kind === 'racket' 이면: 매장 라켓(구매) 기반 → 고객 입고/운송장 불필요
+   * - order.items[].kind === 'racket' | 'used_racket' 이면: 매장 라켓(구매/중고) 기반 → 고객 입고/운송장 불필요
    * - (Activity API는 take만큼만 로드하므로, 여기서는 로드된 orders 범위에서만 판단하면 충분)
    */
   const orderHasRacketById = new Map<string, boolean>();
   for (const o of orders as any[]) {
     const items = Array.isArray(o.items) ? o.items : [];
-    const hasRacket = items.some((it: any) => it?.kind === 'racket');
+    const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
     orderHasRacketById.set(String(o._id), hasRacket);
   }
 
