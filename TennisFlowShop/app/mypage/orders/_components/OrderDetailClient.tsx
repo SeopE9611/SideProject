@@ -119,6 +119,7 @@ interface OrderDetail {
 }
 interface Props {
   orderId: string;
+  backUrl?: string;
   linkedApplicationHrefBuilder?: (applicationId: string) => string;
 }
 
@@ -140,7 +141,7 @@ function getCancelRequestLabel(order: any): string | null {
   }
 }
 
-export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilder }: Props) {
+export default function OrderDetailClient({ orderId, backUrl = '/mypage?tab=orders', linkedApplicationHrefBuilder }: Props) {
   const router = useRouter();
 
   // 편집 모드 전체 토글
@@ -255,8 +256,9 @@ export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilde
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
   const getApplicationHref = (applicationId: string) => {
     if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
-    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}`;
+    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}${backUrl === '/mypage?tab=activity' ? '&from=activity' : '&from=orders'}`;
   };
+  const flowFrom = backUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
   const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
@@ -362,7 +364,7 @@ export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilde
 
             {/* 액션 버튼 섹션 */}
             <div className="flex flex-wrap gap-2 shrink-0 bp-md:justify-end">
-              <Button variant="outline" size="sm" onClick={() => router.push('/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20">
+              <Button variant="outline" size="sm" onClick={() => router.push(backUrl)} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 주문 목록으로 돌아가기
               </Button>
@@ -697,7 +699,7 @@ export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilde
                         <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
                         <p className="text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
                       </div>
-                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}` }).toString()}`}>
+                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=${flowFrom}` }).toString()}`}>
                         <Button size="sm" variant="outline" className="h-8">{hasSelfShipTracking ? '라켓 발송 수정' : '라켓 발송 등록'}</Button>
                       </Link>
                     </div>
