@@ -212,13 +212,13 @@ export default function TransactionFlowList() {
     try {
       setConfirmingOrderId(orderId);
       const res = await fetch(`/api/orders/${orderId}/confirm`, {
-        method: "PATCH",
+        method: "POST",
         credentials: "include",
       });
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
-        showErrorToast(data?.message || "구매확정 처리 중 오류가 발생했습니다.");
+        showErrorToast(data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.");
         return;
       }
 
