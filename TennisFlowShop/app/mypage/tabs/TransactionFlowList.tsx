@@ -67,6 +67,14 @@ const formatAmount = (amount?: number | null) => {
   return `${amount.toLocaleString()}원`;
 };
 
+const FLOW_TYPE_LABEL: Record<FlowType, string> = {
+  order_only: '주문 단독',
+  order_plus_stringing: '주문 + 교체서비스',
+  rental_only: '대여 단독',
+  rental_plus_stringing: '대여 + 교체서비스',
+  application_only: '교체서비스 단독',
+};
+
 function FlowListSkeleton() {
   return (
     <div className="space-y-4">
@@ -144,13 +152,13 @@ export default function TransactionFlowList() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold text-foreground">{g.flowLabel}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">생성일 {formatDate(g.sortAt)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">최근 업데이트 {formatDate(g.sortAt)}</p>
                 </div>
-                <Badge variant={statusBadgeSpec.variant}>{statusBadgeSpec.label}</Badge>
+                <Badge variant={statusBadgeSpec.variant}>{status ?? '상태 미정'}</Badge>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <Badge variant="outline">흐름 유형: {g.flowType}</Badge>
+                <Badge variant="outline">흐름 유형: {FLOW_TYPE_LABEL[g.flowType]}</Badge>
                 <Badge variant="outline">금액: {formatAmount(amount)}</Badge>
                 {linkedCount > 0 ? (
                   <Badge variant="secondary" className="gap-1">

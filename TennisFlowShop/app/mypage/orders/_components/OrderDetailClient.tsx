@@ -119,6 +119,7 @@ interface OrderDetail {
 }
 interface Props {
   orderId: string;
+  linkedApplicationHrefBuilder?: (applicationId: string) => string;
 }
 
 // 주문 취소 요청 상태 텍스트를 계산하는 헬퍼
@@ -139,7 +140,7 @@ function getCancelRequestLabel(order: any): string | null {
   }
 }
 
-export default function OrderDetailClient({ orderId }: Props) {
+export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilder }: Props) {
   const router = useRouter();
 
   // 편집 모드 전체 토글
@@ -252,6 +253,10 @@ export default function OrderDetailClient({ orderId }: Props) {
   const primaryStringingAppId = orderDetail?.stringingApplicationId ?? (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
+  const getApplicationHref = (applicationId: string) => {
+    if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
+    return `/mypage?tab=applications&applicationId=${applicationId}`;
+  };
   const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
@@ -481,7 +486,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                               </div>
                               {app.stringNames && app.stringNames.length > 0 && <p className="text-[11px] text-success">스트링: {app.stringNames.join(', ')}</p>}
                               {app.tensionSummary && <p className="text-[11px] text-success">텐션: {app.tensionSummary}</p>}
-                              <Link className="w-full bp-sm:w-auto" href={`/mypage?tab=applications&applicationId=${app.id}`}>
+                              <Link className="w-full bp-sm:w-auto" href={getApplicationHref(app.id)}>
                                 <Button variant="outline" className="h-7 px-2 text-xs">
                                   신청 상세
                                 </Button>
@@ -496,7 +501,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <div className="flex items-center gap-2">
                     {/* [호환용] 리스트가 없고, 대표 신청 ID만 있는 경우 단일 버튼 유지 */}
                     {!hasLinkedStringingApps && primaryStringingAppId && (
-                      <Link className="w-full bp-sm:w-auto" href={`/mypage?tab=applications&applicationId=${primaryStringingAppId}`}>
+                      <Link className="w-full bp-sm:w-auto" href={getApplicationHref(primaryStringingAppId)}>
                         <Button variant="outline" className="border-border text-success dark:border-border dark:text-success dark:hover:bg-success/15 bg-transparent">
                           신청 상세 보기
                         </Button>
