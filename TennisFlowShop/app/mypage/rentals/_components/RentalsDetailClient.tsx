@@ -164,13 +164,7 @@ const formatDateTime = (dateString: string) => {
 };
 const fmtDateOnly = (v?: string | Date | null) => (v ? new Date(v).toLocaleDateString('ko-KR') : '-');
 
-type Props = {
-  id: string;
-  backUrl?: string;
-  applicationUrl?: string | null;
-};
-
-export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=rentals', applicationUrl }: Props) {
+export default function RentalsDetailClient({ id }: { id: string }) {
   const [data, setData] = useState<Rental | null>(null);
   const refreshRental = async () => {
     try {
@@ -242,17 +236,10 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=rentals
 
   // 신청서 보기 링크: "마이페이지 탭" 방식으로 통일
   const applicationHref = useMemo(() => {
-    if (applicationUrl) return applicationUrl;
     const appId = data?.stringingApplicationId;
     if (!appId) return null;
-
-    if (backUrl === '/mypage?tab=orders' || backUrl === '/mypage?tab=activity') {
-      const from = backUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
-      return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}&from=${from}`;
-    }
-
     return `/mypage?tab=applications&applicationId=${encodeURIComponent(appId)}`;
-  }, [applicationUrl, backUrl, data?.stringingApplicationId]);
+  }, [data?.stringingApplicationId]);
 
   // 교체 신청하기 링크(대여 기반 신청)
   const applyHref = `/services/apply?rentalId=${encodeURIComponent(id)}`;
@@ -362,7 +349,7 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=rentals
             )}
 
             <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
-              <Link href={backUrl}>
+              <Link href="/mypage?tab=rentals">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 목록으로 돌아가기
               </Link>

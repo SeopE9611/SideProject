@@ -13,7 +13,6 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
-import { getMypagePaymentStatusLabel, getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
@@ -112,30 +111,20 @@ function statusBadgeSpec(g: ActivityGroup) {
   const kind = g.kind;
 
   if (kind === 'order') {
-    return getOrderStatusBadgeSpec(getMypageUserStatusLabel(g.order?.status));
+    return getOrderStatusBadgeSpec(g.order?.status);
   }
 
   if (kind === 'application') {
-    return getApplicationStatusBadgeSpec(getMypageUserStatusLabel(g.application?.status));
+    return getApplicationStatusBadgeSpec(g.application?.status);
   }
 
-  return getRentalStatusBadgeSpec(getMypageUserStatusLabel(g.rental?.status));
-}
-
-function primaryStatusLabel(g: ActivityGroup) {
-  if (g.kind === 'order') return getMypageUserStatusLabel(g.order?.status);
-  if (g.kind === 'rental') return getMypageUserStatusLabel(g.rental?.status);
-  return getMypageUserStatusLabel(g.application?.status);
-}
-
-function applicationStatusLabel(app?: ActivityApplicationSummary | null) {
-  return getMypageUserStatusLabel(app?.status);
+  return getRentalStatusBadgeSpec(g.rental?.status);
 }
 
 function paymentBadgeSpec(g: ActivityGroup) {
   if (g.kind !== 'order') return null;
-  const p = getMypagePaymentStatusLabel(g.order?.paymentStatus);
-  if (!p || p === '상태 미정') return null;
+  const p = g.order?.paymentStatus ?? '';
+  if (!p) return null;
   return getPaymentStatusBadgeSpec(p);
 }
 
@@ -442,35 +431,11 @@ export default function ActivityFeed() {
 
         // 연결 신청서가 있는 경우: 신청 상태/운송장 여부도 검색 힌트로 포함
         const linkedApp = g.kind !== 'application' ? g.application : null;
-        const orderRawStatus = g.order?.status ?? '';
-        const orderRawPaymentStatus = g.order?.paymentStatus ?? '';
-        const rentalRawStatus = g.rental?.status ?? '';
-        const appRawStatus = g.application?.status ?? '';
-        const linkedRawStatus = linkedApp?.status ?? '';
+        const appStatus = (linkedApp?.status ?? g.application?.status ?? '').toLowerCase();
 
-        const orderLabelStatus = getMypageUserStatusLabel(g.order?.status);
-        const orderLabelPaymentStatus = getMypagePaymentStatusLabel(g.order?.paymentStatus);
-        const rentalLabelStatus = getMypageUserStatusLabel(g.rental?.status);
-        const appLabelStatus = getMypageUserStatusLabel(g.application?.status);
-        const linkedLabelStatus = getMypageUserStatusLabel(linkedApp?.status);
+        const extra = (g.kind === 'order' ? `${g.order?.paymentStatus ?? ''} ${g.order?.status ?? ''}` : '') + (g.kind === 'rental' ? `${g.rental?.status ?? ''}` : '') + (g.kind === 'application' ? `${g.application?.racketType ?? ''}` : '');
 
-        const extra = [
-          orderRawStatus,
-          orderLabelStatus,
-          orderRawPaymentStatus,
-          orderLabelPaymentStatus,
-          rentalRawStatus,
-          rentalLabelStatus,
-          appRawStatus,
-          appLabelStatus,
-          linkedRawStatus,
-          linkedLabelStatus,
-          g.application?.racketType ?? '',
-        ]
-          .join(' ')
-          .toLowerCase();
-
-        const haystack = `${title} ${kind} ${extra}`.toLowerCase();
+        const haystack = `${title} ${kind} ${appStatus} ${extra}`.toLowerCase();
         return haystack.includes(keyword);
       });
     }
@@ -540,7 +505,7 @@ export default function ActivityFeed() {
 
   //  카드에서 이동 링크/CTA를 일관되게 만들기 위한 헬퍼
   const linksOf = (g: ActivityGroup) => {
-    const detailHref = g.kind === 'order' ? `/mypage?tab=orders&flowType=order&flowId=${g.order?.id}&from=activity` : g.kind === 'rental' ? `/mypage?tab=orders&flowType=rental&flowId=${g.rental?.id}&from=activity` : `/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=activity`;
+    const detailHref = g.kind === 'order' ? `/mypage?tab=orders&orderId=${g.order?.id}` : g.kind === 'rental' ? `/mypage?tab=rentals&rentalId=${g.rental?.id}` : `/mypage?tab=applications&applicationId=${g.application?.id}`;
 
     // 주문/대여 카드에 붙는 “연결 신청서”
     const linkedApp = g.kind !== 'application' ? g.application : null;
@@ -553,7 +518,7 @@ export default function ActivityFeed() {
     const shippingHref = appForShipping ? `/services/applications/${appForShipping.id}/shipping?return=${encodeURIComponent('/mypage?tab=activity')}` : '#';
     const shippingLabel = appForShipping && appForShipping.hasTracking ? '운송장 수정' : '운송장 등록';
 
-    const appDetailHref = linkedApp ? `/mypage?tab=orders&flowType=application&flowId=${linkedApp.id}&from=activity` : null;
+    const appDetailHref = linkedApp ? `/mypage?tab=applications&applicationId=${linkedApp.id}` : null;
 
     return { detailHref, appDetailHref, shippingHref, shippingLabel };
   };
@@ -712,11 +677,11 @@ export default function ActivityFeed() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md">
-                                {primaryStatusLabel(g)}
+                                {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                               </Badge>
                               {g.kind !== 'application' && app && (
-                                <Badge variant={getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant} className="text-xs rounded-md font-medium">
-                                  교체 {applicationStatusLabel(app)}
+                                <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
+                                  교체 {app.status}
                                 </Badge>
                               )}
                               <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
@@ -832,11 +797,11 @@ export default function ActivityFeed() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md">
-                              {primaryStatusLabel(g)}
+                              {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                             </Badge>
                             {g.kind !== 'application' && app && (
-                              <Badge variant={getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant} className="text-xs rounded-md font-medium">
-                                교체 {applicationStatusLabel(app)}
+                              <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
+                                교체 {app.status}
                               </Badge>
                             )}
                             <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
@@ -932,11 +897,11 @@ export default function ActivityFeed() {
                                     <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">{kindIcon(g.kind)}</span>
 
                                     <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md font-medium">
-                                      {primaryStatusLabel(g)}
+                                      {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
                                     </Badge>
                                     {g.kind !== 'application' && app && (
-                                      <Badge variant={getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant} className="text-xs rounded-md font-medium">
-                                        교체 {applicationStatusLabel(app)}
+                                      <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
+                                        교체 {app.status}
                                       </Badge>
                                     )}
 
@@ -956,7 +921,7 @@ export default function ActivityFeed() {
 
                                 {g.kind === 'order' && g.order?.paymentStatus && (
                                   <Badge variant={paymentBadgeSpec(g)?.variant ?? 'neutral'} className="text-xs rounded-md font-medium shrink-0">
-                                    {getMypagePaymentStatusLabel(g.order?.paymentStatus)}
+                                    {g.order.paymentStatus}
                                   </Badge>
                                 )}
                               </div>
@@ -993,7 +958,7 @@ export default function ActivityFeed() {
 
                                 {g.kind !== 'application' && linkedCount > 1 ? (
                                   <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
-                                    <Link href="/mypage?tab=orders">거래 내역에서 전체 신청 보기</Link>
+                                    <Link href="/mypage?tab=applications">신청서 {linkedCount}건 보기</Link>
                                   </Button>
                                 ) : null}
 

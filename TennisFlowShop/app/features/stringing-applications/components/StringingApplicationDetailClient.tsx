@@ -553,7 +553,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     linkedDocs.push({
       kind: 'rental',
       id: rid,
-      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}`,
+      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage/rentals/${encodeURIComponent(rid)}`,
       subtitle: '연결된 대여',
     });
   }
@@ -869,7 +869,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
         {/* 연결 문서(공용 카드) */}
         {linkedDocs.length > 0 && <LinkedDocsCard docs={linkedDocs} description={linkedDocsDescription} className="mb-4" />}
 
-        {isAdmin && (data.orderId || data.rentalId) && (
+        {(data.orderId || data.rentalId) && (
           <Card className="mb-8 border border-primary/20 bg-primary/5">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">연결 업무 기준 관리자 할 일</CardTitle>

@@ -7,7 +7,7 @@ import { UserSidebar } from '@/app/mypage/orders/_components/UserSidebar';
 import RentalsDetailClient from '@/app/mypage/rentals/_components/RentalsDetailClient';
 import ActivityFeed from '@/app/mypage/tabs/ActivityFeed';
 import MyPointsTab from '@/app/mypage/tabs/MyPointsTab';
-import TransactionFlowList from '@/app/mypage/tabs/TransactionFlowList';
+import OrderList from '@/app/mypage/tabs/OrderList';
 import PassList from '@/app/mypage/tabs/PassList';
 import QnAList from '@/app/mypage/tabs/QnAList';
 import RentalsList from '@/app/mypage/tabs/RentalsList';
@@ -45,18 +45,6 @@ export default function MypageClient({ user }: Props) {
   // 로딩/실패/실제값(0 포함)을 구분하기 위해 null을 사용한다.
   const [ordersCount, setOrdersCount] = useState<number | null>(null);
   const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
-
-  const resolveFlowBackUrl = (from: string | null) => {
-    if (from === 'activity') return '/mypage?tab=activity';
-    return '/mypage?tab=orders';
-  };
-
-  const buildFlowFromQuery = (from: string | null) => {
-    if (from === 'activity' || from === 'orders') {
-      return `&from=${encodeURIComponent(from)}`;
-    }
-    return '';
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -128,9 +116,6 @@ export default function MypageClient({ user }: Props) {
     // 탭 전환 시, 다른 도메인의 상세 id는 정리
     if (value !== 'orders') {
       newParams.delete('orderId');
-      newParams.delete('flowType');
-      newParams.delete('flowId');
-      newParams.delete('from');
     }
     if (value !== 'applications') {
       newParams.delete('applicationId');
@@ -145,11 +130,6 @@ export default function MypageClient({ user }: Props) {
   const orderId = searchParams.get('orderId');
   const selectedApplicationId = searchParams.get('applicationId');
   const selectedRentalId = searchParams.get('rentalId');
-  const flowType = searchParams.get('flowType');
-  const flowId = searchParams.get('flowId');
-  const from = searchParams.get('from');
-  const flowBackUrl = resolveFlowBackUrl(from);
-  const flowFromQuery = buildFlowFromQuery(from);
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
@@ -258,7 +238,7 @@ export default function MypageClient({ user }: Props) {
                       </TabsTrigger>
                       <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">거래 내역</span>
+                        <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">주문 내역</span>
                       </TabsTrigger>
 
                       <TabsTrigger
@@ -325,7 +305,7 @@ export default function MypageClient({ user }: Props) {
                   </Card>
                 </TabsContent>
 
-                {/* 거래 내역 탭 */}
+                {/* 주문 내역 탭 */}
                 <TabsContent value="orders" className="mt-0">
                   <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-muted border-b border-border p-4 bp-sm:p-6">
@@ -334,37 +314,13 @@ export default function MypageClient({ user }: Props) {
                           <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg bp-sm:text-xl">거래 내역</CardTitle>
-                          <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여를 한 곳에서 확인하세요.</CardDescription>
+                          <CardTitle className="text-lg bp-sm:text-xl">주문 내역</CardTitle>
+                          <CardDescription className="text-xs bp-sm:text-sm">최근 주문 내역을 확인하실 수 있습니다.</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-3 bp-sm:p-6">
-                      <Suspense fallback={null}>
-                        {flowType === 'order' && flowId ? (
-                          <OrderDetailClient
-                            orderId={flowId}
-                            backUrl={flowBackUrl}
-                            linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`}
-                          />
-                        ) : flowType === 'application' && flowId ? (
-                          <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
-                        ) : flowType === 'rental' && flowId ? (
-                          <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
-                        ) : orderId ? (
-                          <OrderDetailClient
-                            orderId={orderId}
-                            backUrl="/mypage?tab=orders"
-                            linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`}
-                          />
-                        ) : selectedApplicationId ? (
-                          <ApplicationDetail id={selectedApplicationId} backUrl="/mypage?tab=orders" />
-                        ) : selectedRentalId ? (
-                          <RentalsDetailClient id={selectedRentalId} backUrl="/mypage?tab=orders" />
-                        ) : (
-                          <TransactionFlowList />
-                        )}
-                      </Suspense>
+                      <Suspense fallback={null}>{orderId ? <OrderDetailClient orderId={orderId} /> : <OrderList />}</Suspense>
                     </CardContent>
                   </Card>
                 </TabsContent>

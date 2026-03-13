@@ -167,18 +167,13 @@
 'use client';
 import StringingApplicationDetailClient from '@/app/features/stringing-applications/components/StringingApplicationDetailClient';
 
-type Props = {
-  id: string;
-  backUrl?: string;
-};
-
-export default function ApplicationDetail({ id, backUrl = '/mypage?tab=applications' }: Props) {
+export default function ApplicationDetail({ id }: { id: string }) {
   return (
     <StringingApplicationDetailClient
       id={id}
       baseUrl={process.env.NEXT_PUBLIC_API_URL || ''}
-      /** 뒤로 가기 경로 기본값: 내 신청내역 */
-      backUrl={backUrl}
+      /** 뒤로 가기 경로를 내 신청내역으로 */
+      backUrl="/mypage?tab=applications"
       /** 일반 사용자 모드 */
       isAdmin={false}
       userEditableStatuses={['검토 중', '접수완료']}

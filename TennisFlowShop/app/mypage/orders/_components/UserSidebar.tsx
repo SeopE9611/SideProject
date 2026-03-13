@@ -19,7 +19,7 @@ export function UserSidebar() {
       
     },
     {
-      label: '거래 내역',
+      label: '주문 내역',
       value: 'orders',
       icon: ClipboardList,
       

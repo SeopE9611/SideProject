@@ -31,10 +31,6 @@ type ActivityOrderSummary = {
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
   cancelReasonSummary?: string | null;
-  hasRacketItem: boolean;
-  hasStringItem: boolean;
-  hasProductItem: boolean;
-  linkedApplicationCount: number;
 };
 
 type ActivityRentalSummary = {
@@ -53,14 +49,6 @@ type ActivityRentalSummary = {
   applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
   cancelStatus?: string | null;
-  linkedApplicationCount: number;
-};
-
-type FlowType = 'order_only' | 'order_plus_stringing' | 'rental_only' | 'rental_plus_stringing' | 'application_only';
-
-type DetailTarget = {
-  type: 'order' | 'application' | 'rental';
-  id: string;
 };
 
 type ActivityApplicationSummary = {
@@ -86,27 +74,7 @@ export type ActivityGroup = {
   order?: ActivityOrderSummary;
   rental?: ActivityRentalSummary;
   application?: ActivityApplicationSummary;
-  flowType: FlowType;
-  flowLabel: string;
-  detailTarget: DetailTarget;
 };
-
-function getOrderFlowLabel(opts: { hasRacketItem: boolean; hasStringItem: boolean; hasProductItem: boolean; linkedApplicationCount: number }): string {
-  const { hasRacketItem, hasStringItem, hasProductItem, linkedApplicationCount } = opts;
-  const hasLinked = linkedApplicationCount > 0;
-
-  if (!hasLinked) {
-    if (hasRacketItem && hasStringItem) return '라켓 + 스트링 주문';
-    if (hasRacketItem) return hasProductItem ? '라켓 포함 주문' : '라켓 주문';
-    if (hasStringItem) return '스트링 단품 주문';
-    return '일반 상품 주문';
-  }
-
-  if (hasRacketItem && hasStringItem) return '라켓 구매 + 스트링 + 교체서비스';
-  if (hasStringItem) return '스트링 구매 + 교체서비스';
-  if (hasRacketItem) return '라켓 구매 + 교체서비스';
-  return '주문 + 교체서비스';
-}
 
 function toISO(v: any): string {
   // Date/string/number 모두 안전하게 ISO로 변환
@@ -122,17 +90,6 @@ function isoMax(...values: Array<string | null | undefined>): string {
 
 function compareByUpdatedThenCreatedDesc(a: Pick<ActivityApplicationSummary, 'updatedAt' | 'createdAt'>, b: Pick<ActivityApplicationSummary, 'updatedAt' | 'createdAt'>) {
   return b.updatedAt.localeCompare(a.updatedAt) || b.createdAt.localeCompare(a.createdAt);
-}
-
-function isActionableInboundTracking(app?: Pick<ActivityApplicationSummary, 'needsInboundTracking' | 'hasTracking'> | null) {
-  return Boolean(app?.needsInboundTracking && !app?.hasTracking);
-}
-
-function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
-  // 정책:
-  // 1) 사용자 액션(운송장 등록)이 필요한 신청서를 우선 대표로 노출
-  // 2) 없으면 최신 업데이트 신청서를 대표로 사용
-  return apps.find((app) => isActionableInboundTracking(app)) ?? apps[0];
 }
 
 function calcOrderTotal(o: any): number {
@@ -297,13 +254,13 @@ export async function GET(req: Request) {
 
   /**
    * order 기반 신청서의 "라켓 포함 여부"를 미리 계산
-   * - order.items[].kind === 'racket' | 'used_racket' 이면: 매장 라켓(구매/중고) 기반 → 고객 입고/운송장 불필요
+   * - order.items[].kind === 'racket' 이면: 매장 라켓(구매) 기반 → 고객 입고/운송장 불필요
    * - (Activity API는 take만큼만 로드하므로, 여기서는 로드된 orders 범위에서만 판단하면 충분)
    */
   const orderHasRacketById = new Map<string, boolean>();
   for (const o of orders as any[]) {
     const items = Array.isArray(o.items) ? o.items : [];
-    const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+    const hasRacket = items.some((it: any) => it?.kind === 'racket');
     orderHasRacketById.set(String(o._id), hasRacket);
   }
 
@@ -413,10 +370,7 @@ export async function GET(req: Request) {
     const first = items[0] ?? null;
 
     const linkedApps = appByOrderId.get(orderId) ?? [];
-    const linked = pickPrimaryLinkedApplication(linkedApps);
-    const hasRacketItem = items.some((item: any) => item?.kind === 'racket' || item?.kind === 'used_racket');
-    const hasStringItem = items.some((item: any) => item?.kind === 'string');
-    const hasProductItem = items.some((item: any) => !['racket', 'used_racket', 'string'].includes(String(item?.kind ?? '')));
+    const linked = linkedApps[0];
 
     const rawCancelStatus = o?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
@@ -434,12 +388,6 @@ export async function GET(req: Request) {
       key: `order:${orderId}`,
       kind: 'order',
       sortAt,
-      flowType: linkedApps.length > 0 ? 'order_plus_stringing' : 'order_only',
-      flowLabel: getOrderFlowLabel({ hasRacketItem, hasStringItem, hasProductItem, linkedApplicationCount: linkedApps.length }),
-      detailTarget: {
-        type: 'order',
-        id: orderId,
-      },
       order: {
         id: orderId,
         createdAt,
@@ -455,10 +403,6 @@ export async function GET(req: Request) {
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: rawCancelStatus,
         cancelReasonSummary,
-        hasRacketItem,
-        hasStringItem,
-        hasProductItem,
-        linkedApplicationCount: linkedApps.length,
       },
       application: linked, // 연결 신청서가 있으면 같이 내려줌(카드에서 CTA 가능)
     });
@@ -467,7 +411,7 @@ export async function GET(req: Request) {
   for (const r of rentals as any[]) {
     const rentalId = String(r._id);
     const linkedApps = appByRentalId.get(rentalId) ?? [];
-    const linked = pickPrimaryLinkedApplication(linkedApps);
+    const linked = linkedApps[0];
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
     const updatedAt = toISO(r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp());
@@ -479,12 +423,6 @@ export async function GET(req: Request) {
       key: `rental:${rentalId}`,
       kind: 'rental',
       sortAt,
-      flowType: linkedApps.length > 0 ? 'rental_plus_stringing' : 'rental_only',
-      flowLabel: linkedApps.length > 0 ? '라켓 대여 + 교체서비스' : '라켓 대여',
-      detailTarget: {
-        type: 'rental',
-        id: rentalId,
-      },
       rental: {
         id: rentalId,
         createdAt,
@@ -501,7 +439,6 @@ export async function GET(req: Request) {
         applicationSummaries: linkedApps,
         stringingApplicationId: linked?.id ?? null,
         cancelStatus: r?.cancelRequest?.status ?? null,
-        linkedApplicationCount: linkedApps.length,
       },
       application: linked,
     });
@@ -533,12 +470,6 @@ export async function GET(req: Request) {
       key: `application:${String(doc._id)}`,
       kind: 'application',
       sortAt,
-      flowType: 'application_only',
-      flowLabel: '교체서비스 단독 신청',
-      detailTarget: {
-        type: 'application',
-        id: String(doc._id),
-      },
       application: {
         id: String(doc._id),
         createdAt,
