@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getRentalStatusBadgeSpec, getWorkflowMetaBadgeSpec } from '@/lib/badge-style';
+import { getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
 import { ShoppingBag, Wrench, Briefcase, X, Search, Filter, Clock, CheckCircle2, AlertCircle, ArrowRight, Package, TrendingUp, Activity, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useSearchParams } from 'next/navigation';
@@ -111,14 +112,24 @@ function statusBadgeSpec(g: ActivityGroup) {
   const kind = g.kind;
 
   if (kind === 'order') {
-    return getOrderStatusBadgeSpec(g.order?.status);
+    return getOrderStatusBadgeSpec(getMypageUserStatusLabel(g.order?.status));
   }
 
   if (kind === 'application') {
-    return getApplicationStatusBadgeSpec(g.application?.status);
+    return getApplicationStatusBadgeSpec(getMypageUserStatusLabel(g.application?.status));
   }
 
-  return getRentalStatusBadgeSpec(g.rental?.status);
+  return getRentalStatusBadgeSpec(getMypageUserStatusLabel(g.rental?.status));
+}
+
+function primaryStatusLabel(g: ActivityGroup) {
+  if (g.kind === 'order') return getMypageUserStatusLabel(g.order?.status);
+  if (g.kind === 'rental') return getMypageUserStatusLabel(g.rental?.status);
+  return getMypageUserStatusLabel(g.application?.status);
+}
+
+function applicationStatusLabel(app?: ActivityApplicationSummary | null) {
+  return getMypageUserStatusLabel(app?.status);
 }
 
 function paymentBadgeSpec(g: ActivityGroup) {
@@ -677,11 +688,11 @@ export default function ActivityFeed() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md">
-                                {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
+                                {primaryStatusLabel(g)}
                               </Badge>
                               {g.kind !== 'application' && app && (
-                                <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
-                                  교체 {app.status}
+                                <Badge variant={getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant} className="text-xs rounded-md font-medium">
+                                  교체 {applicationStatusLabel(app)}
                                 </Badge>
                               )}
                               <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
@@ -797,11 +808,11 @@ export default function ActivityFeed() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md">
-                              {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
+                              {primaryStatusLabel(g)}
                             </Badge>
                             {g.kind !== 'application' && app && (
-                              <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
-                                교체 {app.status}
+                              <Badge variant={getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant} className="text-xs rounded-md font-medium">
+                                교체 {applicationStatusLabel(app)}
                               </Badge>
                             )}
                             <span className="text-xs text-muted-foreground">{formatDate(date)}</span>
@@ -897,11 +908,11 @@ export default function ActivityFeed() {
                                     <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">{kindIcon(g.kind)}</span>
 
                                     <Badge variant={statusBadgeSpec(g).variant} className="text-xs rounded-md font-medium">
-                                      {g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status}
+                                      {primaryStatusLabel(g)}
                                     </Badge>
                                     {g.kind !== 'application' && app && (
-                                      <Badge variant={getApplicationStatusBadgeSpec(app.status).variant} className="text-xs rounded-md font-medium">
-                                        교체 {app.status}
+                                      <Badge variant={getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant} className="text-xs rounded-md font-medium">
+                                        교체 {applicationStatusLabel(app)}
                                       </Badge>
                                     )}
 

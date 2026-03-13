@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
+import { getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
 import { ArrowRight, Link2, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
@@ -84,30 +85,6 @@ const FLOW_TYPE_META_LABEL: Record<FlowType, string> = {
   application_only: '교체서비스',
 };
 
-const STATUS_LABEL_MAP: Record<string, string> = {
-  // order
-  pending: '대기중',
-  processing: '처리중',
-  paid: '결제완료',
-  shipped: '배송중',
-  delivered: '배송완료',
-  confirmed: '구매확정',
-  canceled: '취소',
-  cancelled: '취소',
-  refunded: '환불',
-  // rental
-  out: '대여중',
-  returned: '반납완료',
-  // application
-  requested: '접수완료',
-  received: '접수완료',
-  reviewing: '검토 중',
-  in_progress: '작업 중',
-  completed: '교체완료',
-  approved: '승인',
-  rejected: '거절',
-};
-
 const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
   if (group.kind === 'order') return getOrderStatusBadgeSpec(label);
   if (group.kind === 'rental') return getRentalStatusBadgeSpec(label);
@@ -118,16 +95,6 @@ const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
   if (normalized === '환불') return getApplicationStatusBadgeSpec('취소');
   if (normalized === '반납완료') return getApplicationStatusBadgeSpec('교체완료');
   return getApplicationStatusBadgeSpec(label);
-};
-
-const getUserFacingStatusLabel = (status?: string | null) => {
-  const raw = String(status ?? '').trim();
-  if (!raw) return '상태 미정';
-
-  const direct = STATUS_LABEL_MAP[raw.toLowerCase()];
-  if (direct) return direct;
-
-  return raw;
 };
 
 function FlowListSkeleton() {
@@ -196,7 +163,7 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {items.map((g) => {
         const status = g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status;
-        const userStatusLabel = getUserFacingStatusLabel(status);
+        const userStatusLabel = getMypageUserStatusLabel(status);
         const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
         const amount = g.kind === 'order' ? g.order?.totalPrice : g.kind === 'rental' ? g.rental?.totalAmount : null;
         const linkedCount = g.kind === 'order' ? g.order?.linkedApplicationCount ?? 0 : g.kind === 'rental' ? g.rental?.linkedApplicationCount ?? 0 : 0;
@@ -236,7 +203,7 @@ export default function TransactionFlowList() {
 
                 {needsTrackingAction ? (
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>운송장 등록</Link>
+                    <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>신청서 확인</Link>
                   </Button>
                 ) : null}
               </div>
