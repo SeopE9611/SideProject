@@ -255,7 +255,7 @@ export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilde
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
   const getApplicationHref = (applicationId: string) => {
     if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
-    return `/mypage?tab=applications&applicationId=${applicationId}`;
+    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}`;
   };
   const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
@@ -697,7 +697,7 @@ export default function OrderDetailClient({ orderId, linkedApplicationHrefBuilde
                         <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
                         <p className="text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
                       </div>
-                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&orderId=${orderId}` }).toString()}`}>
+                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}` }).toString()}`}>
                         <Button size="sm" variant="outline" className="h-8">{hasSelfShipTracking ? '라켓 발송 수정' : '라켓 발송 등록'}</Button>
                       </Link>
                     </div>

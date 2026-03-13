@@ -170,7 +170,7 @@ export default function MypageClient({ user }: Props) {
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (ordersCount ?? '-')}</div>
-                  <div className="text-xs bp-sm:text-sm text-muted-foreground">총 주문</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">총 거래(주문)</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
@@ -242,7 +242,7 @@ export default function MypageClient({ user }: Props) {
                       </TabsTrigger>
                       <TabsTrigger value="orders" className="w-full flex flex-col items-center gap-1 bp-sm:gap-2 py-2.5 bp-sm:py-3 px-2 bp-sm:px-4 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md min-w-0">
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">주문 내역</span>
+                        <span className="text-[11px] bp-sm:text-xs font-medium whitespace-nowrap">거래 내역</span>
                       </TabsTrigger>
 
                       <TabsTrigger
@@ -319,7 +319,7 @@ export default function MypageClient({ user }: Props) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg bp-sm:text-xl">통합 거래 흐름</CardTitle>
-                          <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여 흐름을 한 곳에서 확인하세요.</CardDescription>
+                          <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여를 통합 거래 흐름으로 확인하세요.</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
