@@ -65,6 +65,20 @@ const KIND_PRIORITY: Record<LinkedDocKind, number> = {
   stringing_application: 2,
 };
 
+
+function getDocLabel(kind: LinkedDocKind) {
+  switch (kind) {
+    case 'order':
+      return { idLabel: '주문번호', ctaLabel: '주문 상세 보기' };
+    case 'rental':
+      return { idLabel: '대여번호', ctaLabel: '대여 상세 보기' };
+    case 'stringing_application':
+      return { idLabel: '신청번호', ctaLabel: '신청 상세 보기' };
+    default:
+      return { idLabel: '문서번호', ctaLabel: '상세 보기' };
+  }
+}
+
 function sortDocs(docs: LinkedDocItem[]) {
   // 운영 관점에서 “정산/기준 문서”를 먼저 보게: 주문 → 대여 → 신청서
   return [...docs].sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
@@ -101,13 +115,14 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
               const kindLabel = opsKindLabel(d.kind);
               const badgeVariant = opsBadgeVariant(opsKindBadgeTone(d.kind));
               const short = shortenId(String(d.id));
+              const { idLabel, ctaLabel } = getDocLabel(d.kind);
 
               return (
                 <div key={`${d.kind}:${d.id}`} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <Badge variant={badgeVariant} className={`${badgeBase} ${badgeSizeSm}`}>{kindLabel}</Badge>
-                      <p className="text-sm text-muted-foreground">주문번호 : ({short})</p>
+                      <p className="text-sm text-muted-foreground">{idLabel} : ({short})</p>
                     </div>
                   </div>
 
@@ -119,7 +134,7 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
                     <Link href={d.href} aria-label="상세 보기">
                       <Button type="button" variant="outline" size="sm">
                         <ExternalLink className="h-4 w-4" />
-                        주문 상세 보기
+                        {ctaLabel}
                       </Button>
                     </Link>
                   </div>
