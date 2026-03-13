@@ -90,6 +90,11 @@ const FLOW_TYPE_META_LABEL: Record<FlowType, string> = {
   application_only: "교체서비스",
 };
 
+const normalizeLabel = (value?: string | null) =>
+  String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
+
 const isFilledText = (value?: string | null) =>
   Boolean(value && value.trim() && value.trim() !== "-");
 
@@ -97,20 +102,15 @@ const getRepresentativeTitle = (group: ActivityGroup) => {
   if (group.kind === "order") {
     const firstItemName = group.order?.firstItemName?.trim();
     const itemsCount = group.order?.itemsCount ?? 0;
-    const linkedCount = group.order?.linkedApplicationCount ?? 0;
     const baseName = isFilledText(firstItemName) ? firstItemName : "주문 상품";
-    const itemSummary =
-      itemsCount > 1 ? `${baseName} 외 ${itemsCount - 1}건` : baseName;
-    return linkedCount > 0 ? `${itemSummary} + 교체서비스` : itemSummary;
+    return itemsCount > 1 ? `${baseName} 외 ${itemsCount - 1}건` : baseName;
   }
 
   if (group.kind === "rental") {
     const brand = group.rental?.brand?.trim() ?? "";
     const model = group.rental?.model?.trim() ?? "";
-    const linkedCount = group.rental?.linkedApplicationCount ?? 0;
     const racketName = `${brand} ${model}`.trim() || "라켓";
-    const rentalSummary = `${racketName} 대여`;
-    return linkedCount > 0 ? `${rentalSummary} + 교체서비스` : rentalSummary;
+    return `${racketName} 대여`;
   }
 
   const racketType = group.application?.racketType?.trim();
@@ -235,6 +235,11 @@ export default function TransactionFlowList() {
         const needsTrackingAction = Boolean(
           g.application?.needsInboundTracking && !g.application?.hasTracking,
         );
+        const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
+        const normalizedFlowLabel = normalizeLabel(g.flowLabel);
+        const shouldShowFlowBadge =
+          Boolean(normalizedFlowLabel) &&
+          normalizedFlowLabel !== normalizedMetaLabel;
 
         return (
           <Card
@@ -264,7 +269,9 @@ export default function TransactionFlowList() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <Badge variant="outline">{g.flowLabel}</Badge>
+                {shouldShowFlowBadge ? (
+                  <Badge variant="outline">{g.flowLabel}</Badge>
+                ) : null}
                 {g.flowType !== "application_only" && linkedCount > 0 ? (
                   <Badge variant="secondary">
                     교체서비스 {linkedCount}건 연결

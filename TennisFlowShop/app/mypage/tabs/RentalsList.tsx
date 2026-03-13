@@ -22,6 +22,7 @@ import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
 
 type RentalsResponse = {
   items: unknown[];
@@ -68,14 +69,9 @@ const getStatusBadgeVariant = (status: string) => {
 };
 
 const getStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
-    pending: "대기중",
-    paid: "결제완료",
-    out: "대여중",
-    returned: "반납완료",
-    canceled: "취소됨",
-  };
-  return labels[status] || status;
+  const baseLabel = getMypageUserStatusLabel(status);
+  if (baseLabel === "취소") return "취소됨";
+  return baseLabel;
 };
 
 const formatDate = (dateString: string) => {
