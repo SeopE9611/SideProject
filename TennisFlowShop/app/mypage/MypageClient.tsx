@@ -326,17 +326,17 @@ export default function MypageClient({ user }: Props) {
                     <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         {flowType === 'order' && flowId ? (
-                          <OrderDetailClient orderId={flowId} />
+                          <OrderDetailClient orderId={flowId} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`} />
                         ) : flowType === 'application' && flowId ? (
-                          <ApplicationDetail id={flowId} />
+                          <ApplicationDetail id={flowId} backUrl="/mypage?tab=orders" />
                         ) : flowType === 'rental' && flowId ? (
-                          <RentalsDetailClient id={flowId} />
+                          <RentalsDetailClient id={flowId} backUrl="/mypage?tab=orders" />
                         ) : orderId ? (
-                          <OrderDetailClient orderId={orderId} />
+                          <OrderDetailClient orderId={orderId} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`} />
                         ) : selectedApplicationId ? (
-                          <ApplicationDetail id={selectedApplicationId} />
+                          <ApplicationDetail id={selectedApplicationId} backUrl="/mypage?tab=orders" />
                         ) : selectedRentalId ? (
-                          <RentalsDetailClient id={selectedRentalId} />
+                          <RentalsDetailClient id={selectedRentalId} backUrl="/mypage?tab=orders" />
                         ) : (
                           <TransactionFlowList />
                         )}
