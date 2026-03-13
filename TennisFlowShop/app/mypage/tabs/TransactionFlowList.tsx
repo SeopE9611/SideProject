@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import CancelStringingDialog from "@/app/mypage/applications/_components/CancelStringingDialog";
+import CancelOrderDialog from "@/app/mypage/orders/_components/CancelOrderDialog";
+import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
+import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   getApplicationStatusBadgeSpec,
@@ -11,9 +15,11 @@ import {
   getRentalStatusBadgeSpec,
 } from "@/lib/badge-style";
 import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
-import { ArrowRight, Calendar, CreditCard, Link2, Package } from "lucide-react";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { ArrowRight, Calendar, CheckCircle, CreditCard, Link2, Package, Undo2, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { mutate as globalMutate } from "swr";
 import useSWRInfinite from "swr/infinite";
 
 type FlowDetailType = "order" | "application" | "rental";
@@ -30,6 +36,8 @@ type ActivityApplicationSummary = {
   racketType?: string;
   hasTracking: boolean;
   needsInboundTracking?: boolean;
+  userConfirmedAt?: string | null;
+  cancelStatus?: string | null;
 };
 
 type ActivityGroup = {
@@ -40,18 +48,27 @@ type ActivityGroup = {
   flowLabel: string;
   detailTarget: { type: FlowDetailType; id: string };
   order?: {
+    id?: string;
     status: string;
     totalPrice: number;
     firstItemName?: string;
     itemsCount: number;
     linkedApplicationCount: number;
+    cancelStatus?: string | null;
+    applicationSummaries?: ActivityApplicationSummary[];
   };
   rental?: {
+    id?: string;
     status: string;
     brand?: string;
     model?: string;
     totalAmount?: number;
     linkedApplicationCount: number;
+    stringingApplicationId?: string | null;
+    withStringService?: boolean;
+    cancelStatus?: string | null;
+    hasOutboundShipping?: boolean;
+    applicationSummaries?: ActivityApplicationSummary[];
   };
   application?: ActivityApplicationSummary;
 };
@@ -148,6 +165,12 @@ function FlowListSkeleton() {
 }
 
 export default function TransactionFlowList() {
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
+  const [cancelOrderDialogId, setCancelOrderDialogId] = useState<string | null>(null);
+  const [cancelApplicationDialogId, setCancelApplicationDialogId] = useState<string | null>(null);
+  const [isCancelApplicationSubmitting, setIsCancelApplicationSubmitting] = useState(false);
+
   const getKey = (
     pageIndex: number,
     previousPageData: ActivityResponse | null,
@@ -171,6 +194,156 @@ export default function TransactionFlowList() {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
     });
+
+  const refreshRelatedQueries = async () => {
+    await Promise.all([
+      globalMutate((key) => typeof key === "string" && key.startsWith("/api/mypage/activity"), undefined, { revalidate: true }),
+      globalMutate((key) => typeof key === "string" && key.startsWith("/api/users/me/orders"), undefined, { revalidate: true }),
+      globalMutate((key) => typeof key === "string" && key.startsWith("/api/me/rentals"), undefined, { revalidate: true }),
+      globalMutate((key) => typeof key === "string" && key.startsWith("/api/applications/me"), undefined, { revalidate: true }),
+      globalMutate((key) => typeof key === "string" && key.startsWith("/api/points/me"), undefined, { revalidate: true }),
+    ]);
+  };
+
+  const handleConfirmPurchase = async (orderId: string) => {
+    if (confirmingOrderId) return;
+    if (!window.confirm("구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
+
+    try {
+      setConfirmingOrderId(orderId);
+      const res = await fetch(`/api/orders/${orderId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || data?.ok === false) {
+        showErrorToast(data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.");
+        return;
+      }
+
+      showSuccessToast("구매확정이 완료되었습니다.");
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("구매확정 처리 중 오류가 발생했습니다.");
+    } finally {
+      setConfirmingOrderId(null);
+    }
+  };
+
+  const handleWithdrawOrderCancelRequest = async (orderId: string) => {
+    if (!window.confirm("주문 취소 요청을 철회하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel-request-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showErrorToast(body?.message || "주문 취소 요청 철회 중 오류가 발생했습니다.");
+        return;
+      }
+      showSuccessToast("주문 취소 요청을 철회했습니다.");
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("주문 취소 요청 철회 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleWithdrawRentalCancelRequest = async (rentalId: string) => {
+    if (!window.confirm("대여 취소 요청을 철회하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/rentals/${rentalId}/cancel-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showErrorToast(body?.message || "대여 취소 요청 철회 중 오류가 발생했습니다.");
+        return;
+      }
+      showSuccessToast("대여 취소 요청을 철회했습니다.");
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("대여 취소 요청 철회 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleWithdrawApplicationCancelRequest = async (applicationId: string) => {
+    if (!window.confirm("신청 취소 요청을 철회하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/applications/${applicationId}/cancel-request-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showErrorToast(body?.message || "신청 취소 요청 철회 중 오류가 발생했습니다.");
+        return;
+      }
+      showSuccessToast("신청 취소 요청을 철회했습니다.");
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("신청 취소 요청 철회 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleConfirmApplication = async (applicationId: string) => {
+    if (confirmingApplicationId) return;
+    if (!window.confirm("교체 확정 처리할까요?\n확정 시 포인트가 지급되며 되돌릴 수 없습니다.")) return;
+
+    try {
+      setConfirmingApplicationId(applicationId);
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || data?.ok === false) {
+        showErrorToast(data?.message || "교체 확정에 실패했습니다.");
+        return;
+      }
+      showSuccessToast(data?.already ? data?.message || "이미 교체확정된 신청입니다." : "교체 확정이 완료되었습니다.");
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("교체 확정 중 오류가 발생했습니다.");
+    } finally {
+      setConfirmingApplicationId(null);
+    }
+  };
+
+  const handleApplicationCancelRequest = async (params: { reasonCode: string; reasonText?: string; refundAccount: { bank: string; account: string; holder: string } }) => {
+    if (!cancelApplicationDialogId) return;
+    try {
+      setIsCancelApplicationSubmitting(true);
+      const res = await fetch(`/api/applications/stringing/${cancelApplicationDialogId}/cancel-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showErrorToast(body?.message || "신청 취소 요청 처리 중 오류가 발생했습니다.");
+        return;
+      }
+
+      showSuccessToast("신청 취소 요청이 접수되었습니다.");
+      setCancelApplicationDialogId(null);
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast("신청 취소 요청 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsCancelApplicationSubmitting(false);
+    }
+  };
 
   const items = useMemo(
     () => (data ? data.flatMap((d) => d.items) : []),
@@ -212,6 +385,14 @@ export default function TransactionFlowList() {
   return (
     <div className="space-y-4">
       {items.map((g) => {
+        const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
+        const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
+        const applicationId = g.application?.id ?? (g.kind === "application" ? g.detailTarget.id : undefined);
+        const primaryLinkedApplicationId = g.kind === "order"
+          ? g.order?.applicationSummaries?.[0]?.id
+          : g.kind === "rental"
+            ? g.rental?.applicationSummaries?.[0]?.id
+            : undefined;
         const status =
           g.kind === "order"
             ? g.order?.status
@@ -347,6 +528,96 @@ export default function TransactionFlowList() {
                   </Link>
                 </Button>
 
+                {g.kind === "order" && orderId ? (
+                  <>
+                    <Button asChild size="sm" variant="outline" className="bg-transparent">
+                      <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders#reviews-cta`}>
+                        리뷰 작성
+                      </Link>
+                    </Button>
+
+                    {status === "배송완료" ? (
+                      <Button size="sm" variant="outline" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
+                        <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                        {confirmingOrderId === orderId ? "처리 중..." : "구매확정"}
+                      </Button>
+                    ) : null}
+
+                    {g.order?.cancelStatus === "requested" ? (
+                      <Button size="sm" variant="destructive" onClick={() => handleWithdrawOrderCancelRequest(orderId)}>
+                        <Undo2 className="mr-1 h-3.5 w-3.5" />취소 요청 철회
+                      </Button>
+                    ) : ["대기중", "결제완료"].includes(status ?? "") ? (
+                      <Button size="sm" variant="destructive" onClick={() => setCancelOrderDialogId(orderId)}>
+                        <XCircle className="mr-1 h-3.5 w-3.5" />취소 요청
+                      </Button>
+                    ) : null}
+
+                    {primaryLinkedApplicationId ? (
+                      <Button asChild size="sm" variant="outline" className="bg-transparent">
+                        <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&from=orders`}>
+                          연결 신청서 보기
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </>
+                ) : null}
+
+                {g.kind === "rental" && rentalId ? (
+                  <>
+                    {g.rental?.stringingApplicationId ? (
+                      <Button asChild size="sm" variant="outline" className="bg-transparent">
+                        <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&from=orders`}>
+                          신청서 보기
+                        </Link>
+                      </Button>
+                    ) : g.rental?.withStringService ? (
+                      <Button asChild size="sm">
+                        <Link href={`/services/apply?rentalId=${rentalId}`}>교체 신청하기</Link>
+                      </Button>
+                    ) : null}
+
+                    {g.rental?.cancelStatus === "requested" ? (
+                      <Button size="sm" variant="destructive" onClick={() => handleWithdrawRentalCancelRequest(rentalId)}>
+                        <Undo2 className="mr-1 h-3.5 w-3.5" />대여 취소 철회
+                      </Button>
+                    ) : ["pending", "paid"].includes(status ?? "") && !g.rental?.hasOutboundShipping ? (
+                      <CancelRentalDialog rentalId={rentalId} onSuccess={refreshRelatedQueries} />
+                    ) : null}
+                  </>
+                ) : null}
+
+                {g.kind === "application" && applicationId ? (
+                  <>
+                    {(g.application?.needsInboundTracking ?? false) ? (
+                      <Button asChild size="sm" variant="outline" className="bg-transparent">
+                        <Link href={`/services/applications/${applicationId}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`}>
+                          {g.application?.hasTracking ? "운송장 수정" : "운송장 등록"}
+                        </Link>
+                      </Button>
+                    ) : null}
+
+                    {status === "교체완료" && !g.application?.userConfirmedAt ? (
+                      <Button size="sm" variant="outline" disabled={confirmingApplicationId === applicationId} onClick={() => handleConfirmApplication(applicationId)}>
+                        <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                        {confirmingApplicationId === applicationId ? "처리 중..." : "교체확정"}
+                      </Button>
+                    ) : null}
+
+                    <ServiceReviewCTA applicationId={applicationId} status={status} />
+
+                    {g.application?.cancelStatus === "requested" || g.application?.cancelStatus === "요청" ? (
+                      <Button size="sm" variant="destructive" onClick={() => handleWithdrawApplicationCancelRequest(applicationId)}>
+                        <Undo2 className="mr-1 h-3.5 w-3.5" />신청 취소 철회
+                      </Button>
+                    ) : ["접수완료", "검토 중"].includes(status ?? "") ? (
+                      <Button size="sm" variant="destructive" onClick={() => setCancelApplicationDialogId(applicationId)}>
+                        <XCircle className="mr-1 h-3.5 w-3.5" />신청 취소 요청
+                      </Button>
+                    ) : null}
+                  </>
+                ) : null}
+
                 {needsTrackingAction ? (
                   <Button asChild size="sm" variant="default">
                     <Link
@@ -373,6 +644,15 @@ export default function TransactionFlowList() {
           </Button>
         </div>
       ) : null}
+
+      <CancelOrderDialog open={Boolean(cancelOrderDialogId)} onOpenChange={(open) => !open && setCancelOrderDialogId(null)} orderId={cancelOrderDialogId ?? ""} />
+
+      <CancelStringingDialog
+        open={Boolean(cancelApplicationDialogId)}
+        onOpenChange={(open) => !open && setCancelApplicationDialogId(null)}
+        onConfirm={handleApplicationCancelRequest}
+        isSubmitting={isCancelApplicationSubmitting}
+      />
     </div>
   );
 }
