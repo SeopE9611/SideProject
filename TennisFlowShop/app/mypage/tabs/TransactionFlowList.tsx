@@ -75,6 +75,49 @@ const FLOW_TYPE_LABEL: Record<FlowType, string> = {
   application_only: '교체서비스 단독',
 };
 
+
+const FLOW_TYPE_META_LABEL: Record<FlowType, string> = {
+  order_only: '주문',
+  order_plus_stringing: '주문 + 교체서비스',
+  rental_only: '대여',
+  rental_plus_stringing: '대여 + 교체서비스',
+  application_only: '교체서비스',
+};
+
+const STATUS_LABEL_MAP: Record<string, string> = {
+  // order
+  pending: '대기중',
+  processing: '처리중',
+  paid: '결제완료',
+  shipped: '배송중',
+  delivered: '배송완료',
+  confirmed: '구매확정',
+  canceled: '취소',
+  cancelled: '취소',
+  refunded: '환불',
+  // rental
+  out: '대여중',
+  returned: '반납완료',
+  // application
+  requested: '접수완료',
+  received: '접수완료',
+  reviewing: '검토 중',
+  in_progress: '작업 중',
+  completed: '교체완료',
+  approved: '승인',
+  rejected: '거절',
+};
+
+const getUserFacingStatusLabel = (status?: string | null) => {
+  const raw = String(status ?? '').trim();
+  if (!raw) return '상태 미정';
+
+  const direct = STATUS_LABEL_MAP[raw.toLowerCase()];
+  if (direct) return direct;
+
+  return raw;
+};
+
 function FlowListSkeleton() {
   return (
     <div className="space-y-4">
@@ -141,7 +184,8 @@ export default function TransactionFlowList() {
     <div className="space-y-4">
       {items.map((g) => {
         const status = g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status;
-        const statusBadgeSpec = g.kind === 'order' ? getOrderStatusBadgeSpec(status) : g.kind === 'rental' ? getRentalStatusBadgeSpec(status) : getApplicationStatusBadgeSpec(status);
+        const userStatusLabel = getUserFacingStatusLabel(status);
+        const statusBadgeSpec = g.kind === 'order' ? getOrderStatusBadgeSpec(userStatusLabel) : g.kind === 'rental' ? getRentalStatusBadgeSpec(userStatusLabel) : getApplicationStatusBadgeSpec(userStatusLabel);
         const amount = g.kind === 'order' ? g.order?.totalPrice : g.kind === 'rental' ? g.rental?.totalAmount : null;
         const linkedCount = g.kind === 'order' ? g.order?.linkedApplicationCount ?? 0 : g.kind === 'rental' ? g.rental?.linkedApplicationCount ?? 0 : 0;
         const needsTrackingAction = Boolean(g.application?.needsInboundTracking && !g.application?.hasTracking);
@@ -152,17 +196,17 @@ export default function TransactionFlowList() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold text-foreground">{g.flowLabel}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">최근 업데이트 {formatDate(g.sortAt)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{FLOW_TYPE_META_LABEL[g.flowType]} · 최근 업데이트 {formatDate(g.sortAt)}</p>
                 </div>
-                <Badge variant={statusBadgeSpec.variant}>{status ?? '상태 미정'}</Badge>
+                <Badge variant={statusBadgeSpec.variant}>{userStatusLabel}</Badge>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
-                <Badge variant="outline">흐름 유형: {FLOW_TYPE_LABEL[g.flowType]}</Badge>
-                <Badge variant="outline">금액: {formatAmount(amount)}</Badge>
+                <Badge variant="outline">{FLOW_TYPE_LABEL[g.flowType]}</Badge>
+                <Badge variant="outline">결제/주문 금액 {formatAmount(amount)}</Badge>
                 {linkedCount > 0 ? (
                   <Badge variant="secondary" className="gap-1">
-                    <Link2 className="h-3 w-3" /> 교체서비스 연결 {linkedCount}건
+                    <Link2 className="h-3 w-3" /> 연결 신청 {linkedCount}건
                   </Badge>
                 ) : (
                   <Badge variant="outline">연결 신청 없음</Badge>
