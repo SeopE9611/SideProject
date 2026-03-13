@@ -325,7 +325,7 @@ export default function MypageClient({ user }: Props) {
                   </Card>
                 </TabsContent>
 
-                {/* 주문 내역 탭 */}
+                {/* 거래 내역 탭 */}
                 <TabsContent value="orders" className="mt-0">
                   <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
                     <CardHeader className="bg-muted border-b border-border p-4 bp-sm:p-6">
@@ -334,8 +334,8 @@ export default function MypageClient({ user }: Props) {
                           <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg bp-sm:text-xl">통합 거래 흐름</CardTitle>
-                          <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여를 통합 거래 흐름으로 확인하세요.</CardDescription>
+                          <CardTitle className="text-lg bp-sm:text-xl">거래 내역</CardTitle>
+                          <CardDescription className="text-xs bp-sm:text-sm">주문·신청·대여를 한 곳에서 확인하세요.</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
