@@ -229,14 +229,14 @@ export default function TransactionFlowList() {
 
               <div className="flex flex-wrap items-center gap-2">
                 <Button asChild size="sm" variant="default">
-                  <Link href={`/mypage?tab=orders&flowType=${g.detailTarget.type}&flowId=${g.detailTarget.id}`}>
+                  <Link href={`/mypage?tab=orders&flowType=${g.detailTarget.type}&flowId=${g.detailTarget.id}&from=orders`}>
                     상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </Link>
                 </Button>
 
                 {needsTrackingAction ? (
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}`}>운송장 등록</Link>
+                    <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>운송장 등록</Link>
                   </Button>
                 ) : null}
               </div>

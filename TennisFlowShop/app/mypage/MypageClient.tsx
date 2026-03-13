@@ -46,6 +46,18 @@ export default function MypageClient({ user }: Props) {
   const [ordersCount, setOrdersCount] = useState<number | null>(null);
   const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
 
+  const resolveFlowBackUrl = (from: string | null) => {
+    if (from === 'activity') return '/mypage?tab=activity';
+    return '/mypage?tab=orders';
+  };
+
+  const buildFlowFromQuery = (from: string | null) => {
+    if (from === 'activity' || from === 'orders') {
+      return `&from=${encodeURIComponent(from)}`;
+    }
+    return '';
+  };
+
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
@@ -118,6 +130,7 @@ export default function MypageClient({ user }: Props) {
       newParams.delete('orderId');
       newParams.delete('flowType');
       newParams.delete('flowId');
+      newParams.delete('from');
     }
     if (value !== 'applications') {
       newParams.delete('applicationId');
@@ -134,6 +147,9 @@ export default function MypageClient({ user }: Props) {
   const selectedRentalId = searchParams.get('rentalId');
   const flowType = searchParams.get('flowType');
   const flowId = searchParams.get('flowId');
+  const from = searchParams.get('from');
+  const flowBackUrl = resolveFlowBackUrl(from);
+  const flowFromQuery = buildFlowFromQuery(from);
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
@@ -326,13 +342,21 @@ export default function MypageClient({ user }: Props) {
                     <CardContent className="p-3 bp-sm:p-6">
                       <Suspense fallback={null}>
                         {flowType === 'order' && flowId ? (
-                          <OrderDetailClient orderId={flowId} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`} />
+                          <OrderDetailClient
+                            orderId={flowId}
+                            backUrl={flowBackUrl}
+                            linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`}
+                          />
                         ) : flowType === 'application' && flowId ? (
-                          <ApplicationDetail id={flowId} backUrl="/mypage?tab=orders" />
+                          <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
                         ) : flowType === 'rental' && flowId ? (
-                          <RentalsDetailClient id={flowId} backUrl="/mypage?tab=orders" />
+                          <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
                         ) : orderId ? (
-                          <OrderDetailClient orderId={orderId} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`} />
+                          <OrderDetailClient
+                            orderId={orderId}
+                            backUrl="/mypage?tab=orders"
+                            linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`}
+                          />
                         ) : selectedApplicationId ? (
                           <ApplicationDetail id={selectedApplicationId} backUrl="/mypage?tab=orders" />
                         ) : selectedRentalId ? (

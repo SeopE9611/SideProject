@@ -245,9 +245,12 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=rentals
     if (applicationUrl) return applicationUrl;
     const appId = data?.stringingApplicationId;
     if (!appId) return null;
-    if (backUrl === '/mypage?tab=orders') {
-      return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}`;
+
+    if (backUrl === '/mypage?tab=orders' || backUrl === '/mypage?tab=activity') {
+      const from = backUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
+      return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}&from=${from}`;
     }
+
     return `/mypage?tab=applications&applicationId=${encodeURIComponent(appId)}`;
   }, [applicationUrl, backUrl, data?.stringingApplicationId]);
 
