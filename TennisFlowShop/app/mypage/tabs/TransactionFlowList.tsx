@@ -203,7 +203,7 @@ export default function TransactionFlowList() {
 
                 {needsTrackingAction ? (
                   <Button asChild size="sm" variant="outline">
-                    <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>신청서 확인</Link>
+                    <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>교체 신청서 확인</Link>
                   </Button>
                 ) : null}
               </div>

@@ -442,11 +442,35 @@ export default function ActivityFeed() {
 
         // 연결 신청서가 있는 경우: 신청 상태/운송장 여부도 검색 힌트로 포함
         const linkedApp = g.kind !== 'application' ? g.application : null;
-        const appStatus = (linkedApp?.status ?? g.application?.status ?? '').toLowerCase();
+        const orderRawStatus = g.order?.status ?? '';
+        const orderRawPaymentStatus = g.order?.paymentStatus ?? '';
+        const rentalRawStatus = g.rental?.status ?? '';
+        const appRawStatus = g.application?.status ?? '';
+        const linkedRawStatus = linkedApp?.status ?? '';
 
-        const extra = (g.kind === 'order' ? `${g.order?.paymentStatus ?? ''} ${g.order?.status ?? ''}` : '') + (g.kind === 'rental' ? `${g.rental?.status ?? ''}` : '') + (g.kind === 'application' ? `${g.application?.racketType ?? ''}` : '');
+        const orderLabelStatus = getMypageUserStatusLabel(g.order?.status);
+        const orderLabelPaymentStatus = getMypagePaymentStatusLabel(g.order?.paymentStatus);
+        const rentalLabelStatus = getMypageUserStatusLabel(g.rental?.status);
+        const appLabelStatus = getMypageUserStatusLabel(g.application?.status);
+        const linkedLabelStatus = getMypageUserStatusLabel(linkedApp?.status);
 
-        const haystack = `${title} ${kind} ${appStatus} ${extra}`.toLowerCase();
+        const extra = [
+          orderRawStatus,
+          orderLabelStatus,
+          orderRawPaymentStatus,
+          orderLabelPaymentStatus,
+          rentalRawStatus,
+          rentalLabelStatus,
+          appRawStatus,
+          appLabelStatus,
+          linkedRawStatus,
+          linkedLabelStatus,
+          g.application?.racketType ?? '',
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        const haystack = `${title} ${kind} ${extra}`.toLowerCase();
         return haystack.includes(keyword);
       });
     }
@@ -969,7 +993,7 @@ export default function ActivityFeed() {
 
                                 {g.kind !== 'application' && linkedCount > 1 ? (
                                   <Button asChild size="sm" variant="outline" className="rounded-lg bg-transparent">
-                                    <Link href="/mypage?tab=orders">거래 내역에서 확인</Link>
+                                    <Link href="/mypage?tab=orders">거래 내역에서 전체 신청 보기</Link>
                                   </Button>
                                 ) : null}
 
