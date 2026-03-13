@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
-import { ArrowRight, Link2, Package } from 'lucide-react';
+import { ArrowRight, Calendar, CreditCard, Link2, Package } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import useSWRInfinite from 'swr/infinite';
@@ -18,6 +18,7 @@ type FlowType = 'order_only' | 'order_plus_stringing' | 'rental_only' | 'rental_
 type ActivityApplicationSummary = {
   id: string;
   status: string;
+  racketType?: string;
   hasTracking: boolean;
   needsInboundTracking?: boolean;
 };
@@ -32,10 +33,14 @@ type ActivityGroup = {
   order?: {
     status: string;
     totalPrice: number;
+    firstItemName?: string;
+    itemsCount: number;
     linkedApplicationCount: number;
   };
   rental?: {
     status: string;
+    brand?: string;
+    model?: string;
     totalAmount?: number;
     linkedApplicationCount: number;
   };
@@ -83,6 +88,32 @@ const FLOW_TYPE_META_LABEL: Record<FlowType, string> = {
   rental_only: '대여',
   rental_plus_stringing: '대여 + 교체서비스',
   application_only: '교체서비스',
+};
+
+const isFilledText = (value?: string | null) => Boolean(value && value.trim() && value.trim() !== '-');
+
+const getRepresentativeTitle = (group: ActivityGroup) => {
+  if (group.kind === 'order') {
+    const firstItemName = group.order?.firstItemName?.trim();
+    const itemsCount = group.order?.itemsCount ?? 0;
+    const linkedCount = group.order?.linkedApplicationCount ?? 0;
+    const baseName = isFilledText(firstItemName) ? firstItemName : '주문 상품';
+    const itemSummary = itemsCount > 1 ? `${baseName} 외 ${itemsCount - 1}건` : baseName;
+    return linkedCount > 0 ? `${itemSummary} + 교체서비스` : itemSummary;
+  }
+
+  if (group.kind === 'rental') {
+    const brand = group.rental?.brand?.trim() ?? '';
+    const model = group.rental?.model?.trim() ?? '';
+    const linkedCount = group.rental?.linkedApplicationCount ?? 0;
+    const racketName = `${brand} ${model}`.trim() || '라켓';
+    const rentalSummary = `${racketName} 대여`;
+    return linkedCount > 0 ? `${rentalSummary} + 교체서비스` : rentalSummary;
+  }
+
+  const racketType = group.application?.racketType?.trim();
+  if (isFilledText(racketType)) return racketType as string;
+  return '교체서비스 신청';
 };
 
 const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
@@ -170,39 +201,72 @@ export default function TransactionFlowList() {
         const needsTrackingAction = Boolean(g.application?.needsInboundTracking && !g.application?.hasTracking);
 
         return (
-          <Card key={g.key} className="border-0 bg-card">
-            <CardContent className="space-y-4 p-4 bp-sm:p-6">
+          <Card key={g.key} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute inset-0 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ padding: '1px' }}>
+              <div className="h-full w-full rounded-lg bg-card" />
+            </div>
+            <CardContent className="relative space-y-4 p-4 bp-sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-base font-semibold text-foreground">{g.flowLabel}</p>
+                  <p className="text-base font-semibold text-foreground">{getRepresentativeTitle(g)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{FLOW_TYPE_META_LABEL[g.flowType]} · 최근 업데이트 {formatDate(g.sortAt)}</p>
                 </div>
                 <Badge variant={statusBadgeSpec.variant}>{userStatusLabel}</Badge>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
+                <Badge variant="outline">{g.flowLabel}</Badge>
                 <Badge variant="outline">{FLOW_TYPE_LABEL[g.flowType]}</Badge>
-                {g.flowType !== 'application_only' ? <Badge variant="outline">결제/주문 금액 {formatAmount(amount)}</Badge> : null}
-                {g.flowType !== 'application_only' ? (
-                  linkedCount > 0 ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Link2 className="h-3 w-3" /> 연결 신청 {linkedCount}건
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">연결 신청 없음</Badge>
-                  )
-                ) : null}
+                {g.flowType !== 'application_only' ? linkedCount > 0 ? <Badge variant="secondary">교체서비스 포함</Badge> : <Badge variant="outline">교체서비스 미포함</Badge> : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <Button asChild size="sm" variant="default">
+              <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
+                {g.flowType !== 'application_only' ? (
+                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">결제/주문 금액</p>
+                      <p className="font-medium text-foreground">{formatAmount(amount)}</p>
+                    </div>
+                  </div>
+                ) : null}
+
+                {g.flowType !== 'application_only' ? (
+                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">연결 신청</p>
+                      <p className="font-medium text-foreground">{linkedCount > 0 ? `${linkedCount}건` : '없음'}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">신청 분류</p>
+                      <p className="font-medium text-foreground">교체서비스 단독</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">최근 업데이트</p>
+                    <p className="font-medium text-foreground">{formatDate(g.sortAt)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4">
+                <Button asChild size="sm" variant="outline" className="bg-transparent">
                   <Link href={`/mypage?tab=orders&flowType=${g.detailTarget.type}&flowId=${g.detailTarget.id}&from=orders`}>
                     상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </Link>
                 </Button>
 
                 {needsTrackingAction ? (
-                  <Button asChild size="sm" variant="outline">
+                  <Button asChild size="sm" variant="default">
                     <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>교체 신청서 확인</Link>
                   </Button>
                 ) : null}
