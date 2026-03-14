@@ -540,6 +540,13 @@ export default function TransactionFlowList() {
 
                   const actions: ActionDef[] = [];
 
+                  const canRenderOrderReview = ["배송완료", "구매확정"].includes(
+                    status ?? "",
+                  );
+                  const canRenderServiceReview = ["교체완료", "완료", "completed"].includes(
+                    status ?? "",
+                  );
+
                   if (g.kind === "order" && orderId) {
                     if (primaryLinkedApplicationId) {
                       actions.push({
@@ -589,11 +596,13 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    actions.push({
-                      key: "order-review",
-                      priority: 4,
-                      node: <ActivityOrderReviewCTA key="order-review" orderId={orderId} orderStatus={status} className="bg-transparent" />,
-                    });
+                    if (canRenderOrderReview) {
+                      actions.push({
+                        key: "order-review",
+                        priority: 4,
+                        node: <ActivityOrderReviewCTA key="order-review" orderId={orderId} orderStatus={status} className="bg-transparent" />,
+                      });
+                    }
                   }
 
                   if (g.kind === "rental" && rentalId) {
@@ -691,11 +700,13 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    actions.push({
-                      key: "application-review",
-                      priority: 4,
-                      node: <ServiceReviewCTA key="application-review" applicationId={applicationId} status={status} />,
-                    });
+                    if (canRenderServiceReview) {
+                      actions.push({
+                        key: "application-review",
+                        priority: 4,
+                        node: <ServiceReviewCTA key="application-review" applicationId={applicationId} status={status} />,
+                      });
+                    }
                   }
 
                   if (needsTrackingAction) {
