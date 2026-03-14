@@ -19,6 +19,7 @@ import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { ArrowRight, Calendar, CheckCircle, ChevronDown, CreditCard, Link2, Package, Undo2, XCircle } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { mutate as globalMutate } from "swr";
 import useSWRInfinite from "swr/infinite";
@@ -83,6 +84,21 @@ type ActivityResponse = {
 
 const LIMIT = 5;
 const fetcher = (url: string) => authenticatedSWRFetcher<ActivityResponse>(url);
+
+type FlowScope = "all" | "todo" | "order" | "application" | "rental";
+
+const FLOW_SCOPE_OPTIONS: Array<{ value: FlowScope; label: string }> = [
+  { value: "all", label: "전체" },
+  { value: "todo", label: "해야 할 일" },
+  { value: "order", label: "주문" },
+  { value: "application", label: "서비스 신청" },
+  { value: "rental", label: "대여" },
+];
+
+const parseScope = (value: string | null): FlowScope => {
+  if (value === "todo" || value === "order" || value === "application" || value === "rental") return value;
+  return "all";
+};
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -166,6 +182,9 @@ function FlowListSkeleton() {
 }
 
 export default function TransactionFlowList() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const scope = parseScope(searchParams.get("scope"));
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
   const [expandedSecondaryKey, setExpandedSecondaryKey] = useState<string | null>(null);
@@ -187,6 +206,9 @@ export default function TransactionFlowList() {
     const params = new URLSearchParams();
     params.set("page", String(page));
     params.set("pageSize", String(LIMIT));
+    if (scope !== "all") {
+      params.set("scope", scope);
+    }
     return `/api/mypage/activity?${params.toString()}`;
   };
 
@@ -347,6 +369,17 @@ export default function TransactionFlowList() {
     }
   };
 
+  const handleScopeChange = (nextScope: FlowScope) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "orders");
+    if (nextScope === "all") {
+      params.delete("scope");
+    } else {
+      params.set("scope", nextScope);
+    }
+    router.replace(`/mypage?${params.toString()}`, { scroll: false });
+  };
+
   const items = useMemo(
     () => (data ? data.flatMap((d) => d.items) : []),
     [data],
@@ -386,6 +419,20 @@ export default function TransactionFlowList() {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {FLOW_SCOPE_OPTIONS.map((option) => (
+          <Button
+            key={option.value}
+            type="button"
+            size="sm"
+            variant={scope === option.value ? "default" : "outline"}
+            className={scope === option.value ? "" : "bg-transparent"}
+            onClick={() => handleScopeChange(option.value)}
+          >
+            {option.label}
+          </Button>
+        ))}
+      </div>
       {items.map((g) => {
         const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
         const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
@@ -556,7 +603,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="order-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
                             <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&from=orders`}>
-                              {linkedCount > 1 ? `연결 신청 ${linkedCount}건 보기` : "연결 신청서 보기"}
+                              연결 신청서 보기
                             </Link>
                           </Button>
                         ),
@@ -709,7 +756,7 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (needsTrackingAction) {
+                  if (needsTrackingAction && (!primaryLinkedApplicationId || primaryLinkedApplicationId !== g.application?.id)) {
                     actions.push({
                       key: "application-open-sheet",
                       priority: 3,

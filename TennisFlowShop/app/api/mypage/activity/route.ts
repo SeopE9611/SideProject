@@ -15,6 +15,12 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
 }
 
 type ActivityKind = 'order' | 'rental' | 'application';
+type ActivityScope = 'all' | 'todo' | 'order' | 'application' | 'rental';
+
+function parseScopeParam(v: string | null): ActivityScope {
+  if (v === 'todo' || v === 'order' || v === 'application' || v === 'rental') return v;
+  return 'all';
+}
 
 type ActivityOrderSummary = {
   id: string;
@@ -198,6 +204,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
   const pageSize = parseIntParam(url.searchParams.get('pageSize'), { defaultValue: 10, min: 1, max: 50 });
+  const scope = parseScopeParam(url.searchParams.get('scope'));
   const skip = (page - 1) * pageSize;
 
   // 병합형 페이지네이션의 현실적인 구현:
@@ -207,22 +214,11 @@ export async function GET(req: Request) {
 
   const db = (await clientPromise).db();
 
-  // 3) total 계산(“그룹 수” 기준)
-  // - 주문(orders) + 대여(rental_orders) + 단독 신청서(standalone apps)
-  // - orderId/rentalId 연결 신청서는 그룹에 흡수되므로 standalone만 count
   const standaloneAppsFilter = {
     userId,
     status: { $ne: 'draft' },
     $and: [{ $or: [{ orderId: { $exists: false } }, { orderId: null }] }, { $or: [{ rentalId: { $exists: false } }, { rentalId: null }] }],
   };
-
-  const [ordersTotal, rentalsTotal, standaloneAppsTotal] = await Promise.all([
-    db.collection('orders').countDocuments({ userId }),
-    db.collection('rental_orders').countDocuments({ userId }),
-    db.collection('stringing_applications').countDocuments(standaloneAppsFilter),
-  ]);
-
-  const total = ordersTotal + rentalsTotal + standaloneAppsTotal;
 
   // 4) 후보 데이터 로드
   const [orders, rentals, standaloneApps] = await Promise.all([
@@ -557,14 +553,33 @@ export async function GET(req: Request) {
     });
   }
 
-  // 7) 정렬 + 페이지 슬라이스
-  groups.sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime());
-  const paged = groups.slice(skip, skip + pageSize);
+  // 7) scope 필터 + 정렬 + 페이지 슬라이스
+  const scopedGroups = groups.filter((group) => {
+    if (scope === 'all') return true;
+    if (scope === 'order') return group.kind === 'order';
+    if (scope === 'rental') return group.kind === 'rental';
+    if (scope === 'application') return group.kind === 'application';
+
+    if (scope === 'todo') {
+      const status = String(group.kind === 'order' ? group.order?.status ?? '' : group.kind === 'rental' ? group.rental?.status ?? '' : group.application?.status ?? '');
+      const isDone =
+        (group.kind === 'order' && /구매확정|배송완료|취소|환불/.test(status)) ||
+        (group.kind === 'application' && /교체완료|취소/.test(status)) ||
+        (group.kind === 'rental' && /returned|canceled|반납완료|취소/.test(status));
+      const needsInboundAction = Boolean(group.application?.needsInboundTracking && !group.application?.hasTracking);
+      return !isDone || needsInboundAction;
+    }
+
+    return true;
+  });
+
+  scopedGroups.sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime());
+  const paged = scopedGroups.slice(skip, skip + pageSize);
 
   return NextResponse.json({
     page,
     pageSize,
-    total,
+    total: scopedGroups.length,
     items: paged,
   });
 }
