@@ -80,7 +80,7 @@ export default function RentalsSuccessClient({ data }: Props) {
     (Boolean(hintedStringingApplicationId) && hintedStringingApplicationId !== dbStringingApplicationId);
 
   const stringingApplicationHref = dbStringingApplicationId
-    ? `/mypage?tab=applications&applicationId=${encodeURIComponent(dbStringingApplicationId)}`
+    ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(dbStringingApplicationId)}&from=orders`
     : null;
   // 방문수령/배송 오해 방지
   const isPickup = data.shipping?.shippingMethod === 'pickup';
@@ -294,7 +294,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   className="flex-1 h-12 bg-muted/30 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
                   asChild
                 >
-                  <Link href="/mypage?tab=rentals" className="flex items-center gap-2">
+                  <Link href="/mypage?tab=orders" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     대여 내역 확인
                     <ArrowRight className="h-4 w-4" />

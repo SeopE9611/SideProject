@@ -286,7 +286,7 @@ export default function OrderList() {
         const isConfirmed = order.status === '구매확정';
 
         // 버튼/메뉴 분기용 값 (모바일 핵심 1~2개 + 더보기)
-        const detailHref = `/mypage?tab=orders&orderId=${order.id}`;
+        const detailHref = `/mypage?tab=orders&flowType=order&flowId=${order.id}&from=orders`;
         const showConfirm = order.status !== '취소' && order.status !== '환불';
         const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
         // 신청서 연결 여부(있으면 "교체 신청" 대신 "신청서 보기"로 유도)
@@ -311,7 +311,7 @@ export default function OrderList() {
 
         const stringServiceCTAHref =
           stringServiceCTAKind === 'view' && order.stringingApplicationId
-            ? `/mypage?tab=applications&applicationId=${order.stringingApplicationId}`
+            ? `/mypage?tab=orders&flowType=application&flowId=${order.stringingApplicationId}&from=orders`
             : stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add'
               ? `/services/apply?orderId=${order.id}`
               : null;
