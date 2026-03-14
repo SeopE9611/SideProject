@@ -1563,7 +1563,7 @@ export default function StringServiceApplyPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => safePush('/mypage?tab=rentals')}
+                    onClick={() => safePush('/mypage?tab=orders')}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     대여 내역

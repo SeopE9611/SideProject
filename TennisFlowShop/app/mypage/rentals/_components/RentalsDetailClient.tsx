@@ -170,7 +170,7 @@ type Props = {
   applicationUrl?: string | null;
 };
 
-export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=rentals', applicationUrl }: Props) {
+export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders', applicationUrl }: Props) {
   const [data, setData] = useState<Rental | null>(null);
   const refreshRental = async () => {
     try {
@@ -251,7 +251,7 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=rentals
       return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}&from=${from}`;
     }
 
-    return `/mypage?tab=applications&applicationId=${encodeURIComponent(appId)}`;
+    return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}&from=orders`;
   }, [applicationUrl, backUrl, data?.stringingApplicationId]);
 
   // 교체 신청하기 링크(대여 기반 신청)

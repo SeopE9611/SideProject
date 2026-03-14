@@ -544,7 +544,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     linkedDocs.push({
       kind: 'order',
       id: String(data.orderId),
-      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&orderId=${data.orderId}`,
+      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&from=orders`,
       subtitle: '연결된 주문',
     });
   }
@@ -553,7 +553,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     linkedDocs.push({
       kind: 'rental',
       id: rid,
-      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}`,
+      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}&from=orders`,
       subtitle: '연결된 대여',
     });
   }

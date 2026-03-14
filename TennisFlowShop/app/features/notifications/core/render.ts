@@ -89,7 +89,7 @@ function pickPhone(app: ApplicationCtx) {
 
 // SMS 공통 포맷
 function makeSms(prefix: string, ctx: { name?: string; when?: string; id: string; baseUrl: string }) {
-  const lines = [`[테니스 플로우] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/mypage?tab=applications&applicationId=${ctx.id}`];
+  const lines = [`[테니스 플로우] ${prefix}`, `${ctx.name ?? ''}님`, `일정: ${ctx.when ?? '미정'}`, `신청번호: ${ctx.id}`, `상세보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`];
   return lines.filter(Boolean).join('\n');
 }
 
@@ -183,7 +183,7 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
 
     // 각 이벤트 블록의 CTA 링크+ 자가발송 CTA 병합
     const ctasBase = [
-      { label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=applications&applicationId=${app.applicationId}` },
+      { label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=orders&flowType=application&flowId=${app.applicationId}&from=orders` },
       { label: '일정 변경', url: `${baseUrl}/services/apply?orderId=${app.orderId}` },
     ];
     const maybeSelfShip = selfShipCta(app, baseUrl);
@@ -205,7 +205,7 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
     const title = `신청 상태 업데이트`;
     const pre = `${app.status} · ${whenPretty ?? '미정'} · ${ref}`;
     const rows: [string, string][] = [['현재 상태', String(app.status)], ...(whenPretty ? ([['일정', whenPretty]] as [string, string][]) : []), ['신청번호', `#${app.applicationId}`]];
-    const ctasBase = [{ label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=applications&applicationId=${app.applicationId}` }];
+    const ctasBase = [{ label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=orders&flowType=application&flowId=${app.applicationId}&from=orders` }];
     const maybeSelfShip = selfShipCta(app, baseUrl);
     const ctas = maybeSelfShip ? [...ctasBase, maybeSelfShip] : ctasBase;
     const html = wrapEmail({ title, badge: String(app.status), preheader: pre, rows, ctas });
@@ -225,7 +225,7 @@ export async function renderForEvent(event: EventType, ctx: { user?: UserCtx; ap
       ['신청번호', `#${app.applicationId}`],
     ];
     const ctasBase = [
-      { label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=applications&applicationId=${app.applicationId}` },
+      { label: '신청서 상세 보기', url: `${baseUrl}/mypage?tab=orders&flowType=application&flowId=${app.applicationId}&from=orders` },
       { label: '일정 변경', url: `${baseUrl}/services/apply?orderId=${app.orderId}` },
     ];
     const maybeSelfShip = selfShipCta(app, baseUrl);

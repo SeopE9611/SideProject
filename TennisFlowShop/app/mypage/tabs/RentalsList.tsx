@@ -339,7 +339,7 @@ export default function RentalsList() {
                   className="bg-transparent"
                 >
                   <Link
-                    href={`/mypage?tab=rentals&rentalId=${r.id}`}
+                    href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}
                     className="inline-flex items-center gap-1"
                   >
                     상세보기
@@ -355,7 +355,7 @@ export default function RentalsList() {
                     className="bg-transparent"
                   >
                     <Link
-                      href={`/mypage?tab=applications&applicationId=${r.stringingApplicationId}`}
+                      href={`/mypage?tab=orders&flowType=application&flowId=${r.stringingApplicationId}&from=orders`}
                       className="inline-flex items-center gap-1"
                     >
                       신청서 보기

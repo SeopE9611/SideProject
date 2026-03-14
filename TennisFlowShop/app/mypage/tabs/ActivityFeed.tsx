@@ -540,7 +540,7 @@ export default function ActivityFeed() {
 
   //  카드에서 이동 링크/CTA를 일관되게 만들기 위한 헬퍼
   const linksOf = (g: ActivityGroup) => {
-    const detailHref = g.kind === 'order' ? `/mypage?tab=orders&flowType=order&flowId=${g.order?.id}&from=activity` : g.kind === 'rental' ? `/mypage?tab=orders&flowType=rental&flowId=${g.rental?.id}&from=activity` : `/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=activity`;
+    const detailHref = g.kind === 'order' ? `/mypage?tab=orders&flowType=order&flowId=${g.order?.id}&from=orders` : g.kind === 'rental' ? `/mypage?tab=orders&flowType=rental&flowId=${g.rental?.id}&from=orders` : `/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`;
 
     // 주문/대여 카드에 붙는 “연결 신청서”
     const linkedApp = g.kind !== 'application' ? g.application : null;
@@ -548,12 +548,10 @@ export default function ActivityFeed() {
     // 운송장 등록/수정은 “신청서 id”가 기준
     const appForShipping = g.kind === 'application' ? g.application : linkedApp;
 
-    // return 쿼리를 붙여야 저장 후 다시 Activity 탭으로 복귀할 수 있음
-    // ("/mypage?tab=activity" 안에 ?가 있어서 반드시 encodeURIComponent 필요)
-    const shippingHref = appForShipping ? `/services/applications/${appForShipping.id}/shipping?return=${encodeURIComponent('/mypage?tab=activity')}` : '#';
+    const shippingHref = appForShipping ? `/services/applications/${appForShipping.id}/shipping?return=${encodeURIComponent('/mypage?tab=orders')}` : '#';
     const shippingLabel = appForShipping && appForShipping.hasTracking ? '운송장 수정' : '운송장 등록';
 
-    const appDetailHref = linkedApp ? `/mypage?tab=orders&flowType=application&flowId=${linkedApp.id}&from=activity` : null;
+    const appDetailHref = linkedApp ? `/mypage?tab=orders&flowType=application&flowId=${linkedApp.id}&from=orders` : null;
 
     return { detailHref, appDetailHref, shippingHref, shippingLabel };
   };

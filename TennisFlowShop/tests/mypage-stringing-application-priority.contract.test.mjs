@@ -44,5 +44,5 @@ test('주문 상세 API도 대표/요약 신청서를 동일 최신순으로 정
 test('마이페이지 CTA는 API가 준 대표 신청서 ID(stringingApplicationId)로 신청서 보기 링크를 만든다', () => {
   const orderList = read('app/mypage/tabs/OrderList.tsx');
 
-  assert.ok(orderList.includes("`/mypage?tab=applications&applicationId=${order.stringingApplicationId}`"));
+  assert.ok(orderList.includes("`/mypage?tab=orders&flowType=application&flowId=${order.stringingApplicationId}&from=orders`"));
 });

@@ -16,7 +16,7 @@ type Props = {
 
 export default function RentalApplyHandoffClient({ href, rentalId, seconds = 12, backHref }: Props) {
   const safeHref = typeof href === 'string' && href.length > 0 ? href : `/services/apply?rentalId=${encodeURIComponent(String(rentalId))}`;
-  const safeBackHref = typeof backHref === 'string' && backHref.length > 0 ? backHref : `/mypage?tab=rentals&rentalId=${encodeURIComponent(String(rentalId))}`;
+  const safeBackHref = typeof backHref === 'string' && backHref.length > 0 ? backHref : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(rentalId))}&from=orders`;
   const safeSuccessHref = `/rentals/success?id=${encodeURIComponent(String(rentalId))}`;
   const router = useRouter();
   const [remain, setRemain] = useState(seconds);

@@ -624,7 +624,7 @@ export default function ApplicationsClient() {
                       size="sm"
                       onClick={() =>
                         router.push(
-                          `/mypage?tab=applications&applicationId=${app.id}`,
+                          `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`,
                         )
                       }
                       className="bg-transparent"
@@ -640,7 +640,7 @@ export default function ApplicationsClient() {
                         variant="outline"
                         className="bg-transparent"
                       >
-                        <Link href={`/mypage?tab=orders&orderId=${orderId}`}>
+                        <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders`}>
                           원 주문 보기
                         </Link>
                       </Button>
@@ -652,7 +652,7 @@ export default function ApplicationsClient() {
                         variant="outline"
                         className="bg-transparent"
                       >
-                        <Link href={`/mypage?tab=rentals&rentalId=${rentalId}`}>
+                        <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&from=orders`}>
                           원 대여 보기
                         </Link>
                       </Button>
@@ -679,7 +679,7 @@ export default function ApplicationsClient() {
                           size="sm"
                           onClick={() =>
                             router.push(
-                              `/services/applications/${app.id}/shipping?return=${encodeURIComponent("/mypage?tab=applications")}`,
+                              `/services/applications/${app.id}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`,
                             )
                           }
                         >
