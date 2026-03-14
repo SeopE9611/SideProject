@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { CalendarCheck, ClipboardList, Heart, MessageCircleQuestion, Star, UserCog, ChevronRight, Ticket, MessageSquare, RectangleGoggles, Handshake, Signature, Briefcase, ReceiptCent, Layers } from 'lucide-react';
+import { ClipboardList, Heart, MessageCircleQuestion, UserCog, ChevronRight, Ticket, MessageSquare, ReceiptCent } from 'lucide-react';
 
 export function UserSidebar() {
   const searchParams = useSearchParams();
@@ -13,28 +13,10 @@ export function UserSidebar() {
   // 메뉴 항목 정의
   const menuItems = [
     {
-      label: '전체 내역 보기',
-      value: 'activity',
-      icon: Layers,
-      
-    },
-    {
-      label: '거래 내역',
+      label: '거래/이용 내역',
       value: 'orders',
       icon: ClipboardList,
-      
-    },
-    {
-      label: '신청 내역',
-      value: 'applications',
-      icon: CalendarCheck,
-      
-    },
-    {
-      label: '대여 내역',
-      value: 'rentals',
-      icon: Briefcase,
-      
+
     },
     {
       label: '위시리스트',
