@@ -83,6 +83,7 @@ type ActivityGroup = {
     stringingApplicationId?: string | null;
     withStringService?: boolean;
     cancelStatus?: string | null;
+    shippingMethod?: string;
     hasOutboundShipping?: boolean;
     outboundTrackingNumber?: string | null;
     applicationSummaries?: ActivityApplicationSummary[];
@@ -215,10 +216,10 @@ const shortId = (value?: string | null) => {
 };
 
 const getApplicationTitle = (app?: ActivityApplicationSummary) => {
-  const racketType = app?.racketType?.trim();
-  const baseTitle = isFilledText(racketType) ? (racketType as string) : "교체서비스 신청";
-  const applicationShortId = shortId(app?.id);
-  return applicationShortId ? `${baseTitle} #${applicationShortId}` : baseTitle;
+  if (!app) return "교체서비스 신청";
+  if (app.orderId) return "주문 연계 교체서비스 신청";
+  if (app.rentalId) return "대여 연계 교체서비스 신청";
+  return "단독 교체서비스 신청";
 };
 
 const getApplicationCollectionLabel = (app?: ActivityApplicationSummary) => {
@@ -239,6 +240,21 @@ const getRentalReturnStatusLabel = (status?: string | null) => {
   if (normalized === "반납완료") return "반납완료";
   if (normalized === "취소") return "반납 없음";
   return "반납 대기";
+};
+
+const getRentalShippingStatusMeta = (rental?: ActivityGroup["rental"]) => {
+  const shippingMethod = String(rental?.shippingMethod ?? "").trim().toLowerCase();
+  const isVisitPickup = shippingMethod === "pickup" || shippingMethod === "visit";
+  if (isVisitPickup) {
+    return {
+      label: "수령 상태",
+      value: rental?.hasOutboundShipping ? "수령 준비 완료" : "수령 준비중",
+    };
+  }
+  return {
+    label: "출고 상태",
+    value: rental?.hasOutboundShipping ? "출고됨" : "출고 준비중",
+  };
 };
 
 const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
@@ -480,7 +496,15 @@ export default function TransactionFlowList() {
           <CardContent className="p-8 text-center">
             <Package className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              표시할 거래 흐름이 없습니다.
+              {scope === "application"
+                ? "표시할 서비스 신청이 없습니다."
+                : scope === "todo"
+                  ? "지금 처리할 항목이 없습니다."
+                  : scope === "rental"
+                    ? "표시할 대여 내역이 없습니다."
+                    : scope === "order"
+                      ? "표시할 주문 내역이 없습니다."
+                      : "표시할 거래/이용 내역이 없습니다."}
             </p>
           </CardContent>
         </Card>
@@ -565,7 +589,7 @@ export default function TransactionFlowList() {
                     {displayTitle}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}
+                    {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}{prefersApplicationView && displayApplication?.id ? ` · #${shortId(displayApplication.id) ?? "-"}` : ""}
                   </p>
                 </div>
                 <Badge variant={displayStatusBadgeSpec.variant}>
@@ -640,8 +664,8 @@ export default function TransactionFlowList() {
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                       <Truck className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">출고 상태</p>
-                        <p className="font-medium text-foreground">{g.rental?.hasOutboundShipping ? "출고됨" : "출고 준비중"}</p>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">{getRentalShippingStatusMeta(g.rental).label}</p>
+                        <p className="font-medium text-foreground">{getRentalShippingStatusMeta(g.rental).value}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
@@ -690,32 +714,9 @@ export default function TransactionFlowList() {
                     </div>
                   </>
                 ) : null}
-
-                {!prefersApplicationView ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3 bp-lg:col-span-4">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">{displayDateLabel}</p>
-                      <p className="font-medium text-foreground">{formatDate(displayDateValue)}</p>
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border/60 pt-3 md:pt-4">
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="bg-transparent"
-                >
-                  <Link
-                    href={`/mypage?tab=orders&flowType=${detailTargetType}&flowId=${detailTargetId}&${flowQuery}`}
-                  >
-                    상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                  </Link>
-                </Button>
-
                 {(() => {
                   type ActionDef = {
                     key: string;
@@ -726,6 +727,19 @@ export default function TransactionFlowList() {
                   };
 
                   const actions: ActionDef[] = [];
+
+                  const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 1;
+                  actions.push({
+                    key: "flow-detail",
+                    priority: detailPriority,
+                    node: (
+                      <Button key="flow-detail" asChild size="sm" variant="outline" className="bg-transparent">
+                        <Link href={`/mypage?tab=orders&flowType=${detailTargetType}&flowId=${detailTargetId}&${flowQuery}`}>
+                          상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    ),
+                  });
 
                   const canRenderOrderReview = ["배송완료", "구매확정"].includes(normalizedStatus);
 
@@ -938,7 +952,7 @@ export default function TransactionFlowList() {
                             )
                           }
                         >
-                          {isSecondaryOpen ? "보조 작업 닫기" : `보조 작업 보기 (${secondaryActions.length})`}
+                          {isSecondaryOpen ? "관련 작업 닫기" : `관련 작업 보기 (${secondaryActions.length})`}
                           <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isSecondaryOpen ? "rotate-180" : ""}`} />
                         </Button>
                       ) : null}

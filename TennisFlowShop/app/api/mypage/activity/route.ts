@@ -65,6 +65,7 @@ type ActivityRentalSummary = {
   createdAt: string;
   updatedAt: string;
   status: string;
+  shippingMethod?: string;
   brand?: string;
   model?: string;
   days?: number;
@@ -544,6 +545,7 @@ export async function GET(req: Request) {
         createdAt,
         updatedAt,
         status: r.status ?? '',
+        shippingMethod: String(r?.shipping?.shippingMethod ?? ''),
         brand: r.brand,
         model: r.model,
         days: r.days,
