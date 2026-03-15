@@ -15,9 +15,9 @@ import {
   getOrderStatusBadgeSpec,
   getRentalStatusBadgeSpec,
 } from "@/lib/badge-style";
-import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
+import { getMypageNormalizedStatus, getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowRight, Calendar, CheckCircle, ChevronDown, CreditCard, Link2, Package, Undo2, XCircle } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle, ChevronDown, CreditCard, Link2, Package, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -34,6 +34,7 @@ type FlowType =
 
 type ActivityApplicationSummary = {
   id: string;
+  createdAt?: string;
   status: string;
   racketType?: string;
   hasTracking: boolean;
@@ -46,11 +47,13 @@ type ActivityGroup = {
   key: string;
   kind: "order" | "application" | "rental";
   sortAt: string;
+  createdAt?: string;
   flowType: FlowType;
   flowLabel: string;
   detailTarget: { type: FlowDetailType; id: string };
   order?: {
     id?: string;
+    createdAt?: string;
     status: string;
     totalPrice: number;
     firstItemName?: string;
@@ -62,6 +65,7 @@ type ActivityGroup = {
   };
   rental?: {
     id?: string;
+    createdAt?: string;
     status: string;
     brand?: string;
     model?: string;
@@ -169,40 +173,44 @@ const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
 const isApplicationTrackingNeeded = (app?: ActivityApplicationSummary) =>
   Boolean(app?.needsInboundTracking && !app?.hasTracking);
 
-const isApplicationCancelWithdrawable = (app?: ActivityApplicationSummary) =>
-  app?.cancelStatus === "requested" || app?.cancelStatus === "요청";
-
 const isApplicationConfirmNeeded = (app?: ActivityApplicationSummary) =>
-  app?.status === "교체완료" && !app?.userConfirmedAt;
+  getMypageNormalizedStatus(app?.status) === "교체완료" && !app?.userConfirmedAt;
 
-const isApplicationCancelable = (app?: ActivityApplicationSummary) =>
-  ["접수완료", "검토 중"].includes(app?.status ?? "");
+const isApplicationTodoActionable = (app?: ActivityApplicationSummary) =>
+  isApplicationTrackingNeeded(app) || isApplicationConfirmNeeded(app);
+
+const getLinkedApplicationStatusSummary = (apps: ActivityApplicationSummary[] = []) => {
+  if (apps.length === 0) return null;
+  const latest = [...apps].sort((a, b) => {
+    const aTime = new Date(a.createdAt ?? 0).getTime();
+    const bTime = new Date(b.createdAt ?? 0).getTime();
+    return bTime - aTime;
+  })[0];
+  const label = getMypageUserStatusLabel(latest?.status);
+  return `${label} · ${apps.length}건 연결`;
+};
 
 const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (group.kind === "order") {
-    if (group.order?.cancelStatus === "requested") return "취소 요청 철회 가능";
-    if (["배송완료"].includes(group.order?.status ?? "")) return "구매확정 필요";
+    if (getMypageNormalizedStatus(group.order?.status) === "배송완료") return "구매확정 필요";
     const actionableApplication = group.order?.applicationSummaries?.find((app) =>
-      isApplicationTrackingNeeded(app) || isApplicationCancelWithdrawable(app) || isApplicationConfirmNeeded(app) || isApplicationCancelable(app),
+      isApplicationTodoActionable(app),
     );
     if (isApplicationTrackingNeeded(actionableApplication)) return "운송장 등록 필요";
-    if (isApplicationCancelWithdrawable(actionableApplication)) return "신청 취소 철회 가능";
     if (isApplicationConfirmNeeded(actionableApplication)) return "교체확정 필요";
-    if (isApplicationCancelable(actionableApplication)) return "신청 취소 가능";
     return null;
   }
 
   if (group.kind === "rental") {
-    if (group.rental?.cancelStatus === "requested") return "취소 요청 철회 가능";
-    if (["pending", "paid"].includes(group.rental?.status ?? "") && !group.rental?.hasOutboundShipping) return "출고 전 취소 가능";
+    const actionableApplication = group.rental?.applicationSummaries?.find((app) => isApplicationTodoActionable(app));
+    if (isApplicationTrackingNeeded(actionableApplication)) return "운송장 등록 필요";
+    if (isApplicationConfirmNeeded(actionableApplication)) return "교체확정 필요";
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService) return "교체서비스 신청 필요";
     return null;
   }
 
   if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
-  if (isApplicationCancelWithdrawable(group.application)) return "신청 취소 철회 가능";
   if (isApplicationConfirmNeeded(group.application)) return "교체확정 필요";
-  if (isApplicationCancelable(group.application)) return "신청 취소 가능";
   return null;
 };
 
@@ -297,65 +305,6 @@ export default function TransactionFlowList() {
     }
   };
 
-  const handleWithdrawOrderCancelRequest = async (orderId: string) => {
-    if (!window.confirm("주문 취소 요청을 철회하시겠습니까?")) return;
-    try {
-      const res = await fetch(`/api/orders/${orderId}/cancel-request-withdraw`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        showErrorToast(body?.message || "주문 취소 요청 철회 중 오류가 발생했습니다.");
-        return;
-      }
-      showSuccessToast("주문 취소 요청을 철회했습니다.");
-      await refreshRelatedQueries();
-    } catch (e) {
-      console.error(e);
-      showErrorToast("주문 취소 요청 철회 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleWithdrawRentalCancelRequest = async (rentalId: string) => {
-    if (!window.confirm("대여 취소 요청을 철회하시겠습니까?")) return;
-    try {
-      const res = await fetch(`/api/rentals/${rentalId}/cancel-withdraw`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        showErrorToast(body?.message || "대여 취소 요청 철회 중 오류가 발생했습니다.");
-        return;
-      }
-      showSuccessToast("대여 취소 요청을 철회했습니다.");
-      await refreshRelatedQueries();
-    } catch (e) {
-      console.error(e);
-      showErrorToast("대여 취소 요청 철회 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleWithdrawApplicationCancelRequest = async (applicationId: string) => {
-    if (!window.confirm("신청 취소 요청을 철회하시겠습니까?")) return;
-    try {
-      const res = await fetch(`/api/applications/${applicationId}/cancel-request-withdraw`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        showErrorToast(body?.message || "신청 취소 요청 철회 중 오류가 발생했습니다.");
-        return;
-      }
-      showSuccessToast("신청 취소 요청을 철회했습니다.");
-      await refreshRelatedQueries();
-    } catch (e) {
-      console.error(e);
-      showErrorToast("신청 취소 요청 철회 중 오류가 발생했습니다.");
-    }
-  };
 
   const handleConfirmApplication = async (applicationId: string) => {
     if (confirmingApplicationId) return;
@@ -499,6 +448,7 @@ export default function TransactionFlowList() {
             : g.kind === "rental"
               ? g.rental?.status
               : g.application?.status;
+        const normalizedStatus = getMypageNormalizedStatus(status);
         const userStatusLabel = getMypageUserStatusLabel(status);
         const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
         const amount =
@@ -513,6 +463,7 @@ export default function TransactionFlowList() {
             : g.kind === "rental"
               ? (g.rental?.linkedApplicationCount ?? 0)
               : 0;
+        const linkedApps = g.kind === "order" ? (g.order?.applicationSummaries ?? []) : g.kind === "rental" ? (g.rental?.applicationSummaries ?? []) : [];
         const needsTrackingAction = Boolean(
           g.application?.needsInboundTracking && !g.application?.hasTracking,
         );
@@ -541,8 +492,7 @@ export default function TransactionFlowList() {
                     {getRepresentativeTitle(g)}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {FLOW_TYPE_META_LABEL[g.flowType]} · 최근 업데이트{" "}
-                    {formatDate(g.sortAt)}
+                    {FLOW_TYPE_META_LABEL[g.flowType]} · {g.kind === "order" ? "주문일" : g.kind === "rental" ? "대여일" : "신청일"} {formatDate(g.kind === "order" ? (g.order?.createdAt ?? g.sortAt) : g.kind === "rental" ? (g.rental?.createdAt ?? g.sortAt) : (g.application?.createdAt ?? g.createdAt ?? g.sortAt))}
                   </p>
                 </div>
                 <Badge variant={statusBadgeSpec.variant}>
@@ -559,7 +509,7 @@ export default function TransactionFlowList() {
                 ) : null}
                 {g.flowType !== "application_only" && linkedCount > 0 ? (
                   <Badge variant="secondary">
-                    교체서비스 {linkedCount}건 연결
+                    {getLinkedApplicationStatusSummary(linkedApps)}
                   </Badge>
                 ) : null}
               </div>
@@ -579,19 +529,19 @@ export default function TransactionFlowList() {
                   </div>
                 ) : null}
 
-                {g.flowType !== "application_only" ? (
+                {g.flowType !== "application_only" && linkedCount > 0 ? (
                   <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                     <Link2 className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        연결 신청
+                        연결 신청 상태
                       </p>
                       <p className="font-medium text-foreground">
-                        {linkedCount > 0 ? `${linkedCount}건` : "없음"}
+                        {getLinkedApplicationStatusSummary(linkedApps)}
                       </p>
                     </div>
                   </div>
-                ) : (
+                ) : g.flowType === "application_only" ? (
                   <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                     <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -603,22 +553,22 @@ export default function TransactionFlowList() {
                       </p>
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      최근 업데이트
+                      {g.kind === "order" ? "주문일" : g.kind === "rental" ? "대여일" : "신청일"}
                     </p>
                     <p className="font-medium text-foreground">
-                      {formatDate(g.sortAt)}
+                      {formatDate(g.kind === "order" ? (g.order?.createdAt ?? g.sortAt) : g.kind === "rental" ? (g.rental?.createdAt ?? g.sortAt) : (g.application?.createdAt ?? g.createdAt ?? g.sortAt))}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4">
+              <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border/60 pt-3 md:pt-4">
                 <Button
                   asChild
                   size="sm"
@@ -642,12 +592,8 @@ export default function TransactionFlowList() {
 
                   const actions: ActionDef[] = [];
 
-                  const canRenderOrderReview = ["배송완료", "구매확정"].includes(
-                    status ?? "",
-                  );
-                  const canRenderServiceReview = ["교체완료", "완료", "completed"].includes(
-                    status ?? "",
-                  );
+                  const canRenderOrderReview = ["배송완료", "구매확정"].includes(normalizedStatus);
+                  const canRenderServiceReview = normalizedStatus === "교체완료";
 
                   if (g.kind === "order" && orderId) {
                     if (primaryLinkedApplicationId) {
@@ -665,17 +611,7 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (g.order?.cancelStatus === "requested") {
-                      actions.push({
-                        key: "order-cancel-withdraw",
-                        priority: 1,
-                        node: (
-                          <Button key="order-cancel-withdraw" size="sm" variant="destructive" onClick={() => handleWithdrawOrderCancelRequest(orderId)}>
-                            <Undo2 className="mr-1 h-3.5 w-3.5" />취소 요청 철회
-                          </Button>
-                        ),
-                      });
-                    } else if (["대기중", "결제완료"].includes(status ?? "")) {
+                    if (["대기중", "결제완료"].includes(normalizedStatus) && g.order?.cancelStatus !== "requested") {
                       actions.push({
                         key: "order-cancel-request",
                         priority: 1,
@@ -685,12 +621,12 @@ export default function TransactionFlowList() {
                           </Button>
                         ),
                       });
-                    } else if (status === "배송완료") {
+                    } else if (normalizedStatus === "배송완료") {
                       actions.push({
                         key: "order-confirm",
                         priority: 2,
                         node: (
-                          <Button key="order-confirm" size="sm" variant="outline" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
+                          <Button key="order-confirm" size="sm" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
                             {confirmingOrderId === orderId ? "처리 중..." : "구매확정"}
                           </Button>
@@ -708,17 +644,7 @@ export default function TransactionFlowList() {
                   }
 
                   if (g.kind === "rental" && rentalId) {
-                    if (g.rental?.cancelStatus === "requested") {
-                      actions.push({
-                        key: "rental-cancel-withdraw",
-                        priority: 1,
-                        node: (
-                          <Button key="rental-cancel-withdraw" size="sm" variant="destructive" onClick={() => handleWithdrawRentalCancelRequest(rentalId)}>
-                            <Undo2 className="mr-1 h-3.5 w-3.5" />대여 취소 철회
-                          </Button>
-                        ),
-                      });
-                    } else if (["pending", "paid"].includes(status ?? "") && !g.rental?.hasOutboundShipping) {
+                    if (["pending", "paid", "대기중", "결제완료"].includes(normalizedStatus) && !g.rental?.hasOutboundShipping) {
                       actions.push({
                         key: "rental-cancel-request",
                         priority: 1,
@@ -767,17 +693,7 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (g.application?.cancelStatus === "requested" || g.application?.cancelStatus === "요청") {
-                      actions.push({
-                        key: "application-cancel-withdraw",
-                        priority: 1,
-                        node: (
-                          <Button key="application-cancel-withdraw" size="sm" variant="destructive" onClick={() => handleWithdrawApplicationCancelRequest(applicationId)}>
-                            <Undo2 className="mr-1 h-3.5 w-3.5" />신청 취소 철회
-                          </Button>
-                        ),
-                      });
-                    } else if (["접수완료", "검토 중"].includes(status ?? "")) {
+                    if (["접수완료", "검토 중"].includes(normalizedStatus)) {
                       actions.push({
                         key: "application-cancel-request",
                         priority: 1,
@@ -789,12 +705,12 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (status === "교체완료" && !g.application?.userConfirmedAt) {
+                    if (normalizedStatus === "교체완료" && !g.application?.userConfirmedAt) {
                       actions.push({
                         key: "application-confirm",
                         priority: 2,
                         node: (
-                          <Button key="application-confirm" size="sm" variant="outline" disabled={confirmingApplicationId === applicationId} onClick={() => handleConfirmApplication(applicationId)}>
+                          <Button key="application-confirm" size="sm" disabled={confirmingApplicationId === applicationId} onClick={() => handleConfirmApplication(applicationId)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
                             {confirmingApplicationId === applicationId ? "처리 중..." : "교체확정"}
                           </Button>
@@ -855,7 +771,7 @@ export default function TransactionFlowList() {
                             )
                           }
                         >
-                          보조 액션 {secondaryActions.length}개
+                          추가 작업 {secondaryActions.length}개
                           <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isSecondaryOpen ? "rotate-180" : ""}`} />
                         </Button>
                       ) : null}

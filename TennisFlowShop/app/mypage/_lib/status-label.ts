@@ -38,6 +38,10 @@ export function getMypageUserStatusLabel(status?: string | null) {
   return STATUS_LABEL_MAP[raw.toLowerCase()] ?? raw;
 }
 
+export function getMypageNormalizedStatus(status?: string | null) {
+  return getMypageUserStatusLabel(status).trim();
+}
+
 export function getMypagePaymentStatusLabel(status?: string | null) {
   const raw = String(status ?? '').trim();
   if (!raw) return '상태 미정';
