@@ -587,6 +587,7 @@ export default function TransactionFlowList() {
                     key: string;
                     priority: number;
                     pinInline?: boolean;
+                    forceSecondary?: boolean;
                     node: React.ReactNode;
                   };
 
@@ -615,6 +616,7 @@ export default function TransactionFlowList() {
                       actions.push({
                         key: "order-cancel-request",
                         priority: 1,
+                        forceSecondary: true,
                         node: (
                           <Button key="order-cancel-request" size="sm" variant="destructive" onClick={() => setCancelOrderDialogId(orderId)}>
                             <XCircle className="mr-1 h-3.5 w-3.5" />취소 요청
@@ -648,6 +650,7 @@ export default function TransactionFlowList() {
                       actions.push({
                         key: "rental-cancel-request",
                         priority: 1,
+                        forceSecondary: true,
                         node: <CancelRentalDialog key="rental-cancel-request" rentalId={rentalId} onSuccess={refreshRelatedQueries} />,
                       });
                     }
@@ -697,6 +700,7 @@ export default function TransactionFlowList() {
                       actions.push({
                         key: "application-cancel-request",
                         priority: 1,
+                        forceSecondary: true,
                         node: (
                           <Button key="application-cancel-request" size="sm" variant="destructive" onClick={() => setCancelApplicationDialogId(applicationId)}>
                             <XCircle className="mr-1 h-3.5 w-3.5" />신청 취소 요청
@@ -742,9 +746,11 @@ export default function TransactionFlowList() {
                   }
 
                   const sortedActions = actions.sort((a, b) => a.priority - b.priority);
-                  const shouldUseSecondary = sortedActions.length > 3;
+                  const forcedSecondary = sortedActions.filter((a) => a.forceSecondary);
+                  const inlineEligible = sortedActions.filter((a) => !a.forceSecondary);
+                  const shouldUseSecondary = inlineEligible.length > 3 || forcedSecondary.length > 0;
                   const pinnedInline = sortedActions.filter((a) => a.pinInline);
-                  const nonPinned = sortedActions.filter((a) => !a.pinInline);
+                  const nonPinned = inlineEligible.filter((a) => !a.pinInline);
 
                   const primaryCount = shouldUseSecondary ? 1 : nonPinned.length;
                   const inlineActions = [
@@ -752,7 +758,7 @@ export default function TransactionFlowList() {
                     ...nonPinned.slice(0, primaryCount),
                   ];
                   const secondaryActions = shouldUseSecondary
-                    ? nonPinned.slice(primaryCount)
+                    ? [...nonPinned.slice(primaryCount), ...forcedSecondary]
                     : [];
                   const isSecondaryOpen = expandedSecondaryKey === g.key;
 
