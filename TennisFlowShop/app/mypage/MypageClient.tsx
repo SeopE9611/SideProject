@@ -43,15 +43,28 @@ export default function MypageClient({ user }: Props) {
   const [ordersCount, setOrdersCount] = useState<number | null>(null);
   const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
 
-  const resolveFlowBackUrl = (from: string | null) => {
-    return '/mypage?tab=orders';
+  const resolveOrdersScope = (scope: string | null) => {
+    if (scope === 'todo' || scope === 'order' || scope === 'application' || scope === 'rental') {
+      return scope;
+    }
+    return null;
   };
 
-  const buildFlowFromQuery = (from: string | null) => {
-    if (from === 'orders') {
-      return `&from=${encodeURIComponent(from)}`;
-    }
-    return '';
+  const resolveFlowBackUrl = (_from: string | null, scope: string | null) => {
+    const params = new URLSearchParams();
+    params.set('tab', 'orders');
+    const resolvedScope = resolveOrdersScope(scope);
+    if (resolvedScope) params.set('scope', resolvedScope);
+    return `/mypage?${params.toString()}`;
+  };
+
+  const buildFlowFromQuery = (from: string | null, scope: string | null) => {
+    if (from !== 'orders') return '';
+    const params = new URLSearchParams();
+    params.set('from', from);
+    const resolvedScope = resolveOrdersScope(scope);
+    if (resolvedScope) params.set('scope', resolvedScope);
+    return `&${params.toString()}`;
   };
 
   useEffect(() => {
@@ -170,6 +183,7 @@ export default function MypageClient({ user }: Props) {
       newParams.delete('flowType');
       newParams.delete('flowId');
       newParams.delete('from');
+      newParams.delete('scope');
     }
     newParams.delete('applicationId');
     newParams.delete('rentalId');
@@ -183,8 +197,10 @@ export default function MypageClient({ user }: Props) {
   const flowType = searchParams.get('flowType');
   const flowId = searchParams.get('flowId');
   const from = searchParams.get('from');
-  const flowBackUrl = resolveFlowBackUrl(from);
-  const flowFromQuery = buildFlowFromQuery(from);
+  const scope = searchParams.get('scope');
+  const flowBackUrl = resolveFlowBackUrl(from, scope);
+  const flowFromQuery = buildFlowFromQuery(from, scope);
+  const ordersFlowFromQuery = buildFlowFromQuery('orders', scope);
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
@@ -346,13 +362,13 @@ export default function MypageClient({ user }: Props) {
                         ) : orderId ? (
                           <OrderDetailClient
                             orderId={orderId}
-                            backUrl="/mypage?tab=orders"
-                            linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}`}
+                            backUrl={flowBackUrl}
+                            linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`}
                           />
                         ) : selectedApplicationId ? (
-                          <ApplicationDetail id={selectedApplicationId} backUrl="/mypage?tab=orders" />
+                          <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
                         ) : selectedRentalId ? (
-                          <RentalsDetailClient id={selectedRentalId} backUrl="/mypage?tab=orders" />
+                          <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
                         ) : (
                           <TransactionFlowList />
                         )}

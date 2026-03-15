@@ -144,6 +144,9 @@ function getCancelRequestLabel(order: any): string | null {
 export default function OrderDetailClient({ orderId, backUrl, linkedApplicationHrefBuilder }: Props) {
   const router = useRouter();
   const resolvedBackUrl = backUrl ?? '/mypage?tab=orders';
+  const resolvedBackQuery = new URLSearchParams(resolvedBackUrl.split('?')[1] ?? '');
+  const resolvedScope = resolvedBackQuery.get('scope');
+  const flowScopeQuery = resolvedScope ? `&scope=${encodeURIComponent(resolvedScope)}` : '';
 
   // 편집 모드 전체 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -257,9 +260,8 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
   const getApplicationHref = (applicationId: string) => {
     if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
-    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}${resolvedBackUrl === '/mypage?tab=activity' ? '&from=activity' : '&from=orders'}`;
+    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}&from=orders${flowScopeQuery}`;
   };
-  const flowFrom = resolvedBackUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
   const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
@@ -700,7 +702,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                         <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
                         <p className="text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
                       </div>
-                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=${flowFrom}` }).toString()}`}>
+                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`}>
                         <Button size="sm" variant="outline" className="h-8">{hasSelfShipTracking ? '라켓 발송 수정' : '라켓 발송 등록'}</Button>
                       </Link>
                     </div>

@@ -381,6 +381,15 @@ export default function TransactionFlowList() {
     router.replace(`/mypage?${params.toString()}`, { scroll: false });
   };
 
+  const flowQuery = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("from", "orders");
+    if (scope !== "all") {
+      params.set("scope", scope);
+    }
+    return params.toString();
+  }, [scope]);
+
   const items = useMemo(
     () => (data ? data.flatMap((d) => d.items) : []),
     [data],
@@ -568,7 +577,7 @@ export default function TransactionFlowList() {
                   className="bg-transparent"
                 >
                   <Link
-                    href={`/mypage?tab=orders&flowType=${g.detailTarget.type}&flowId=${g.detailTarget.id}&from=orders`}
+                    href={`/mypage?tab=orders&flowType=${g.detailTarget.type}&flowId=${g.detailTarget.id}&${flowQuery}`}
                   >
                     상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </Link>
@@ -599,8 +608,8 @@ export default function TransactionFlowList() {
                         pinInline: true,
                         node: (
                           <Button key="order-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&from=orders`}>
-                              연결 신청서 보기
+                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&${flowQuery}`}>
+                              대표 신청서 보기
                             </Link>
                           </Button>
                         ),
@@ -674,7 +683,7 @@ export default function TransactionFlowList() {
                         priority: 2,
                         node: (
                           <Button key="rental-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&from=orders`}>
+                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}>
                               신청서 보기
                             </Link>
                           </Button>
@@ -701,7 +710,7 @@ export default function TransactionFlowList() {
                         pinInline: true,
                         node: (
                           <Button key="application-shipping" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/services/applications/${applicationId}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`}>
+                            <Link href={`/services/applications/${applicationId}/shipping?return=${encodeURIComponent(`/mypage?tab=orders&${flowQuery}`)}`}>
                               {g.application?.hasTracking ? "운송장 수정" : "운송장 등록"}
                             </Link>
                           </Button>
@@ -759,7 +768,7 @@ export default function TransactionFlowList() {
                       priority: 3,
                       node: (
                         <Button key="application-open-sheet" asChild size="sm" variant="default">
-                          <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`}>
+                          <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&${flowQuery}`}>
                             교체 신청서 확인
                           </Link>
                         </Button>
