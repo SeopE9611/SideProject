@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { showErrorToast } from '@/lib/toast';
-import { ClipboardList, Heart, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User, UserCheck } from 'lucide-react';
+import { ClipboardList, Heart, ListTodo, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
@@ -43,6 +43,7 @@ export default function MypageClient({ user }: Props) {
   const [ordersCount, setOrdersCount] = useState<number | null>(null);
   const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
   const [activityFlowCount, setActivityFlowCount] = useState<number | null>(null);
+  const [todoCount, setTodoCount] = useState<number | null>(null);
 
   const resolveOrdersScope = (scope: string | null) => {
     if (scope === 'todo' || scope === 'order' || scope === 'application' || scope === 'rental') {
@@ -128,10 +129,11 @@ export default function MypageClient({ user }: Props) {
     };
 
     (async () => {
-      const [ordersResult, applicationsResult, activityResult] = await Promise.allSettled([
+      const [ordersResult, applicationsResult, activityResult, todoResult] = await Promise.allSettled([
         fetch('/api/users/me/orders', { signal: controller.signal }).then((res) => parseCountResponse(res, 'orders')),
         fetch('/api/applications/me', { signal: controller.signal }).then((res) => parseCountResponse(res, 'applications')),
         fetch('/api/mypage/activity?page=1&pageSize=1', { signal: controller.signal }).then((res) => parseCountResponse(res, 'activity')),
+        fetch('/api/mypage/activity?page=1&pageSize=1&scope=todo', { signal: controller.signal }).then((res) => parseCountResponse(res, 'activity')),
       ]);
 
       if (!mounted) return;
@@ -156,6 +158,12 @@ export default function MypageClient({ user }: Props) {
         setActivityFlowCount(activityResult.value);
       } else if (!(activityResult.reason instanceof DOMException && activityResult.reason.name === 'AbortError')) {
         setActivityFlowCount(null);
+      }
+
+      if (todoResult.status === 'fulfilled') {
+        setTodoCount(todoResult.value);
+      } else if (!(todoResult.reason instanceof DOMException && todoResult.reason.name === 'AbortError')) {
+        setTodoCount(null);
       }
 
       setSummaryLoading(false);
@@ -258,9 +266,9 @@ export default function MypageClient({ user }: Props) {
                   <div className="text-xs bp-sm:text-sm text-muted-foreground">주문 건수</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1">
-                  <UserCheck className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{user.role === 'admin' ? '관리자' : '일반 회원'}</div>
-                  <div className="text-xs bp-sm:text-sm text-muted-foreground">회원 구분</div>
+                  <ListTodo className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (todoCount ?? '-')}</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">해야 할 일</div>
                 </div>
               </div>
             </div>
