@@ -209,6 +209,9 @@ const getApplicationOriginLabel = (app?: ActivityApplicationSummary) => {
   return "단독 신청";
 };
 
+const isStandaloneApplication = (app?: ActivityApplicationSummary) =>
+  Boolean(app && !app.orderId && !app.rentalId);
+
 const shortId = (value?: string | null) => {
   const normalized = String(value ?? "").trim();
   if (!normalized) return null;
@@ -570,6 +573,10 @@ export default function TransactionFlowList() {
           : g.detailTarget.id;
         const displayMetaLabel = prefersApplicationView ? "교체서비스 신청" : FLOW_TYPE_META_LABEL[g.flowType];
         const showLinkedStatusBadge = g.flowType !== "application_only" && linkedCount > 0 && !prefersApplicationView;
+        const standaloneApplicationIdMeta =
+          isStandaloneApplication(displayApplication) && displayApplication?.id
+            ? ` · #${shortId(displayApplication.id) ?? "-"}`
+            : "";
 
         return (
           <Card
@@ -589,7 +596,7 @@ export default function TransactionFlowList() {
                     {displayTitle}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}{prefersApplicationView && displayApplication?.id ? ` · #${shortId(displayApplication.id) ?? "-"}` : ""}
+                    {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}{standaloneApplicationIdMeta}
                   </p>
                 </div>
                 <Badge variant={displayStatusBadgeSpec.variant}>
