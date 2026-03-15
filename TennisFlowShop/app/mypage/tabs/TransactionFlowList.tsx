@@ -166,6 +166,46 @@ const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
   return getApplicationStatusBadgeSpec(label);
 };
 
+const isApplicationTrackingNeeded = (app?: ActivityApplicationSummary) =>
+  Boolean(app?.needsInboundTracking && !app?.hasTracking);
+
+const isApplicationCancelWithdrawable = (app?: ActivityApplicationSummary) =>
+  app?.cancelStatus === "requested" || app?.cancelStatus === "요청";
+
+const isApplicationConfirmNeeded = (app?: ActivityApplicationSummary) =>
+  app?.status === "교체완료" && !app?.userConfirmedAt;
+
+const isApplicationCancelable = (app?: ActivityApplicationSummary) =>
+  ["접수완료", "검토 중"].includes(app?.status ?? "");
+
+const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
+  if (group.kind === "order") {
+    if (group.order?.cancelStatus === "requested") return "취소 요청 철회 가능";
+    if (["배송완료"].includes(group.order?.status ?? "")) return "구매확정 필요";
+    const actionableApplication = group.order?.applicationSummaries?.find((app) =>
+      isApplicationTrackingNeeded(app) || isApplicationCancelWithdrawable(app) || isApplicationConfirmNeeded(app) || isApplicationCancelable(app),
+    );
+    if (isApplicationTrackingNeeded(actionableApplication)) return "운송장 등록 필요";
+    if (isApplicationCancelWithdrawable(actionableApplication)) return "신청 취소 철회 가능";
+    if (isApplicationConfirmNeeded(actionableApplication)) return "교체확정 필요";
+    if (isApplicationCancelable(actionableApplication)) return "신청 취소 가능";
+    return null;
+  }
+
+  if (group.kind === "rental") {
+    if (group.rental?.cancelStatus === "requested") return "취소 요청 철회 가능";
+    if (["pending", "paid"].includes(group.rental?.status ?? "") && !group.rental?.hasOutboundShipping) return "출고 전 취소 가능";
+    if (!group.rental?.stringingApplicationId && group.rental?.withStringService) return "교체서비스 신청 필요";
+    return null;
+  }
+
+  if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
+  if (isApplicationCancelWithdrawable(group.application)) return "신청 취소 철회 가능";
+  if (isApplicationConfirmNeeded(group.application)) return "교체확정 필요";
+  if (isApplicationCancelable(group.application)) return "신청 취소 가능";
+  return null;
+};
+
 function FlowListSkeleton() {
   return (
     <div className="space-y-4">
@@ -430,6 +470,9 @@ export default function TransactionFlowList() {
           </Button>
         ))}
       </div>
+      {scope === "todo" ? (
+        <p className="text-xs text-muted-foreground">각 카드에 지금 필요한 행동 이유를 함께 표시합니다.</p>
+      ) : null}
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
           <CardContent className="p-8 text-center">
@@ -476,6 +519,7 @@ export default function TransactionFlowList() {
         const shouldShowFlowBadge =
           Boolean(normalizedFlowLabel) &&
           normalizedFlowLabel !== normalizedMetaLabel;
+        const todoPrimaryReason = scope === "todo" ? getTodoPrimaryReason(g) : null;
 
         return (
           <Card
@@ -505,6 +549,9 @@ export default function TransactionFlowList() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
+                {todoPrimaryReason ? (
+                  <Badge variant="default">해야 할 일: {todoPrimaryReason}</Badge>
+                ) : null}
                 {shouldShowFlowBadge ? (
                   <Badge variant="outline">{g.flowLabel}</Badge>
                 ) : null}
@@ -609,7 +656,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="order-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
                             <Link href={`/mypage?tab=orders&flowType=application&flowId=${primaryLinkedApplicationId}&${flowQuery}`}>
-                              대표 신청서 보기
+                              교체서비스 보기
                             </Link>
                           </Button>
                         ),
@@ -684,7 +731,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="rental-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
                             <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}>
-                              신청서 보기
+                              교체서비스 보기
                             </Link>
                           </Button>
                         ),
@@ -769,7 +816,7 @@ export default function TransactionFlowList() {
                       node: (
                         <Button key="application-open-sheet" asChild size="sm" variant="default">
                           <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&${flowQuery}`}>
-                            교체 신청서 확인
+                            교체서비스 보기
                           </Link>
                         </Button>
                       ),
