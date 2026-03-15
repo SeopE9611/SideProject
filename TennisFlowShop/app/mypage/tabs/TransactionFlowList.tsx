@@ -502,6 +502,8 @@ export default function TransactionFlowList() {
         const prefersApplicationView = scope === "application" && Boolean(g.application);
         const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
         const displayApplication = g.application;
+        const isApplicationActionContext = g.kind === "application" || prefersApplicationView;
+        const applicationActionTarget = displayApplication;
         const displayTitle = prefersApplicationView
           ? (isFilledText(displayApplication?.racketType) ? displayApplication?.racketType?.trim() ?? "교체서비스 신청" : "교체서비스 신청")
           : getRepresentativeTitle(g);
@@ -522,6 +524,7 @@ export default function TransactionFlowList() {
         const detailTargetId = prefersApplicationView && displayApplication?.id
           ? displayApplication.id
           : g.detailTarget.id;
+        const displayMetaLabel = prefersApplicationView ? "교체서비스 신청" : FLOW_TYPE_META_LABEL[g.flowType];
         const showLinkedStatusBadge = g.flowType !== "application_only" && linkedCount > 0 && !prefersApplicationView;
 
         return (
@@ -542,7 +545,7 @@ export default function TransactionFlowList() {
                     {displayTitle}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {FLOW_TYPE_META_LABEL[g.flowType]} · {displayDateLabel} {formatDate(displayDateValue)}
+                    {displayMetaLabel} · {displayDateLabel} {formatDate(displayDateValue)}
                   </p>
                 </div>
                 <Badge variant={displayStatusBadgeSpec.variant}>
@@ -701,22 +704,8 @@ export default function TransactionFlowList() {
                   const actions: ActionDef[] = [];
 
                   const canRenderOrderReview = ["배송완료", "구매확정"].includes(normalizedStatus);
-                  const canRenderServiceReview = displayUserStatusLabel === "교체완료";
 
-                  if (prefersApplicationView && applicationId) {
-                    actions.push({
-                      key: "application-primary-detail",
-                      priority: -1,
-                      pinInline: true,
-                      node: (
-                        <Button key="application-primary-detail" asChild size="sm">
-                          <Link href={`/mypage?tab=orders&flowType=application&flowId=${applicationId}&${flowQuery}`}>
-                            신청서 보기
-                          </Link>
-                        </Button>
-                      ),
-                    });
-
+                  if (prefersApplicationView) {
                     if (orderId) {
                       actions.push({
                         key: "application-linked-order",
@@ -828,53 +817,53 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (g.kind === "application" && applicationId) {
-                    if (g.application?.needsInboundTracking ?? false) {
+                  if (isApplicationActionContext && applicationActionTarget?.id) {
+                    if (applicationActionTarget.needsInboundTracking ?? false) {
                       actions.push({
                         key: "application-shipping",
                         priority: 0,
                         pinInline: true,
                         node: (
                           <Button key="application-shipping" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/services/applications/${applicationId}/shipping?return=${encodeURIComponent(`/mypage?tab=orders&${flowQuery}`)}`}>
-                              {g.application?.hasTracking ? "운송장 수정" : "운송장 등록"}
+                            <Link href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(`/mypage?tab=orders&${flowQuery}`)}`}>
+                              {applicationActionTarget.hasTracking ? "운송장 수정" : "운송장 등록"}
                             </Link>
                           </Button>
                         ),
                       });
                     }
 
-                    if (["접수완료", "검토 중"].includes(normalizedStatus)) {
+                    if (["접수완료", "검토 중"].includes(getMypageNormalizedStatus(applicationActionTarget.status))) {
                       actions.push({
                         key: "application-cancel-request",
                         priority: 1,
                         forceSecondary: true,
                         node: (
-                          <Button key="application-cancel-request" size="sm" variant="destructive" onClick={() => setCancelApplicationDialogId(applicationId)}>
+                          <Button key="application-cancel-request" size="sm" variant="destructive" onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}>
                             <XCircle className="mr-1 h-3.5 w-3.5" />신청 취소 요청
                           </Button>
                         ),
                       });
                     }
 
-                    if (normalizedStatus === "교체완료" && !g.application?.userConfirmedAt) {
+                    if (getMypageNormalizedStatus(applicationActionTarget.status) === "교체완료" && !applicationActionTarget.userConfirmedAt) {
                       actions.push({
                         key: "application-confirm",
                         priority: 2,
                         node: (
-                          <Button key="application-confirm" size="sm" disabled={confirmingApplicationId === applicationId} onClick={() => handleConfirmApplication(applicationId)}>
+                          <Button key="application-confirm" size="sm" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingApplicationId === applicationId ? "처리 중..." : "교체확정"}
+                            {confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체확정"}
                           </Button>
                         ),
                       });
                     }
 
-                    if (canRenderServiceReview) {
+                    if (getMypageUserStatusLabel(applicationActionTarget.status) === "교체완료") {
                       actions.push({
                         key: "application-review",
                         priority: 4,
-                        node: <ServiceReviewCTA key="application-review" applicationId={applicationId} status={status} />,
+                        node: <ServiceReviewCTA key="application-review" applicationId={applicationActionTarget.id} status={applicationActionTarget.status} />,
                       });
                     }
                   }
