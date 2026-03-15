@@ -654,7 +654,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               </div>
             </div>
             <TooltipProvider>
-              <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
                 {!isAdmin && needsInboundTracking && (
                   <Link
@@ -668,13 +668,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </Button>
                   </Link>
                 )}
-
-                <Link href={backUrl}>
-                  <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    신청 목록으로 돌아가기
-                  </Button>
-                </Link>
 
                 {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
                 {isAdmin && (
@@ -714,6 +707,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   </TooltipTrigger>
                   {!isEditableAllowed && <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>}
                 </Tooltip>
+
+                <Link href={backUrl}>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    신청 목록
+                  </Button>
+                </Link>
               </div>
 
               {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
@@ -788,6 +788,9 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           {!isAdmin && (
             <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
               <p className="text-sm font-semibold text-foreground">진행 단계</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                현재 단계: <span className="font-medium text-foreground">{userProgressSteps[currentStepIndex]?.label ?? '접수완료'}</span>
+              </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {userProgressSteps.map((step, index) => (
                   <Badge key={step.key} variant={index <= currentStepIndex ? 'info' : 'neutral'}>
