@@ -157,10 +157,14 @@ function isApplicationTodoActionable(app?: ActivityApplicationSummary | null) {
 function isOrderTodoActionable(group: ActivityGroup) {
   if (group.kind !== 'order') return false;
   const status = String(group.order?.status ?? '');
+  const hasActionableLinkedApplication =
+    group.order?.applicationSummaries?.some((app) => isApplicationTodoActionable(app)) ?? false;
+
   return Boolean(
     group.order?.cancelStatus === 'requested' ||
       ['대기중', '결제완료'].includes(status) ||
       status === '배송완료' ||
+      hasActionableLinkedApplication ||
       isApplicationTodoActionable(group.application),
   );
 }
