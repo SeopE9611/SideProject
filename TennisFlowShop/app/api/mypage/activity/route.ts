@@ -55,6 +55,7 @@ type ActivityRentalSummary = {
   deposit?: number;
   fee?: number;
   withStringService: boolean;
+  hasOutboundShipping: boolean;
   stringingApplicationIds: string[];
   applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
@@ -139,6 +140,39 @@ function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
   // 1) 사용자 액션(운송장 등록)이 필요한 신청서를 우선 대표로 노출
   // 2) 없으면 최신 업데이트 신청서를 대표로 사용
   return apps.find((app) => isActionableInboundTracking(app)) ?? apps[0];
+}
+
+function isApplicationTodoActionable(app?: ActivityApplicationSummary | null) {
+  if (!app) return false;
+  const status = String(app.status ?? '');
+  return Boolean(
+    (app.needsInboundTracking && !app.hasTracking) ||
+      app.cancelStatus === 'requested' ||
+      app.cancelStatus === '요청' ||
+      ['접수완료', '검토 중'].includes(status) ||
+      (status === '교체완료' && !app.userConfirmedAt),
+  );
+}
+
+function isOrderTodoActionable(group: ActivityGroup) {
+  if (group.kind !== 'order') return false;
+  const status = String(group.order?.status ?? '');
+  return Boolean(
+    group.order?.cancelStatus === 'requested' ||
+      ['대기중', '결제완료'].includes(status) ||
+      status === '배송완료' ||
+      isApplicationTodoActionable(group.application),
+  );
+}
+
+function isRentalTodoActionable(group: ActivityGroup) {
+  if (group.kind !== 'rental') return false;
+  const status = String(group.rental?.status ?? '');
+  return Boolean(
+    group.rental?.cancelStatus === 'requested' ||
+      (['pending', 'paid'].includes(status) && !group.rental?.hasOutboundShipping) ||
+      (!group.rental?.stringingApplicationId && group.rental?.withStringService),
+  );
 }
 
 function calcOrderTotal(o: any): number {
@@ -261,6 +295,7 @@ export async function GET(req: Request) {
             amount: 1,
             stringingApplicationId: 1,
             stringing: 1,
+            shipping: 1,
             cancelRequest: 1,
           },
         },
@@ -470,6 +505,7 @@ export async function GET(req: Request) {
     const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
 
     const withStringService = Boolean(r?.stringing?.requested) || Boolean(r?.stringingApplicationId);
+    const outboundTracking = typeof r?.shipping?.outbound?.trackingNumber === 'string' ? r.shipping.outbound.trackingNumber.trim() : '';
 
     groups.push({
       key: `rental:${rentalId}`,
@@ -493,6 +529,7 @@ export async function GET(req: Request) {
         deposit: r?.amount?.deposit,
         fee: r?.amount?.fee,
         withStringService,
+        hasOutboundShipping: Boolean(outboundTracking),
         stringingApplicationIds: linkedApps.map((app) => app.id),
         applicationSummaries: linkedApps,
         stringingApplicationId: linked?.id ?? null,
@@ -561,33 +598,9 @@ export async function GET(req: Request) {
     if (scope === 'application') return group.kind === 'application';
 
     if (scope === 'todo') {
-      const status = String(group.kind === 'order' ? group.order?.status ?? '' : group.kind === 'rental' ? group.rental?.status ?? '' : group.application?.status ?? '');
-      const orderNeedsAction =
-        group.kind === 'order' &&
-        Boolean(
-          group.order?.cancelStatus === 'requested' ||
-            ['대기중', '결제완료'].includes(status) ||
-            status === '배송완료' ||
-            group.order?.stringingApplicationId,
-        );
-
-      const applicationNeedsAction =
-        group.kind === 'application' &&
-        Boolean(
-          (group.application?.needsInboundTracking && !group.application?.hasTracking) ||
-            group.application?.cancelStatus === 'requested' ||
-            group.application?.cancelStatus === '요청' ||
-            ['접수완료', '검토 중'].includes(status) ||
-            (status === '교체완료' && !group.application?.userConfirmedAt),
-        );
-
-      const rentalNeedsAction =
-        group.kind === 'rental' &&
-        Boolean(
-          group.rental?.cancelStatus === 'requested' ||
-            ['pending', 'paid'].includes(status) ||
-            (!group.rental?.stringingApplicationId && group.rental?.withStringService),
-        );
+      const applicationNeedsAction = group.kind === 'application' && isApplicationTodoActionable(group.application);
+      const orderNeedsAction = isOrderTodoActionable(group);
+      const rentalNeedsAction = isRentalTodoActionable(group);
 
       return orderNeedsAction || applicationNeedsAction || rentalNeedsAction;
     }
