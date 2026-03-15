@@ -73,7 +73,7 @@ export default function OrderReviewCTA({ orderId, reviewAllDone, unreviewedCount
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ''}`}>
         <Button size={size} variant="outline" asChild>
-          <Link href={`/mypage?tab=orders&orderId=${orderId}#reviews-cta`}>리뷰 작성하기</Link>
+          <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders#reviews-cta`}>리뷰 작성하기</Link>
         </Button>
         {unreviewedBadge}
       </div>

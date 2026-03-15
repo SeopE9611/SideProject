@@ -562,12 +562,34 @@ export async function GET(req: Request) {
 
     if (scope === 'todo') {
       const status = String(group.kind === 'order' ? group.order?.status ?? '' : group.kind === 'rental' ? group.rental?.status ?? '' : group.application?.status ?? '');
-      const isDone =
-        (group.kind === 'order' && /구매확정|배송완료|취소|환불/.test(status)) ||
-        (group.kind === 'application' && /교체완료|취소/.test(status)) ||
-        (group.kind === 'rental' && /returned|canceled|반납완료|취소/.test(status));
-      const needsInboundAction = Boolean(group.application?.needsInboundTracking && !group.application?.hasTracking);
-      return !isDone || needsInboundAction;
+      const orderNeedsAction =
+        group.kind === 'order' &&
+        Boolean(
+          group.order?.cancelStatus === 'requested' ||
+            ['대기중', '결제완료'].includes(status) ||
+            status === '배송완료' ||
+            group.order?.stringingApplicationId,
+        );
+
+      const applicationNeedsAction =
+        group.kind === 'application' &&
+        Boolean(
+          (group.application?.needsInboundTracking && !group.application?.hasTracking) ||
+            group.application?.cancelStatus === 'requested' ||
+            group.application?.cancelStatus === '요청' ||
+            ['접수완료', '검토 중'].includes(status) ||
+            (status === '교체완료' && !group.application?.userConfirmedAt),
+        );
+
+      const rentalNeedsAction =
+        group.kind === 'rental' &&
+        Boolean(
+          group.rental?.cancelStatus === 'requested' ||
+            ['pending', 'paid'].includes(status) ||
+            (!group.rental?.stringingApplicationId && group.rental?.withStringService),
+        );
+
+      return orderNeedsAction || applicationNeedsAction || rentalNeedsAction;
     }
 
     return true;

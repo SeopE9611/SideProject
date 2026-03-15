@@ -56,6 +56,7 @@ type ActivityGroup = {
     firstItemName?: string;
     itemsCount: number;
     linkedApplicationCount: number;
+    stringingApplicationId?: string | null;
     cancelStatus?: string | null;
     applicationSummaries?: ActivityApplicationSummary[];
   };
@@ -404,19 +405,6 @@ export default function TransactionFlowList() {
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <Card className="border-0 bg-card">
-        <CardContent className="p-8 text-center">
-          <Package className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            표시할 거래 흐름이 없습니다.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
@@ -433,14 +421,23 @@ export default function TransactionFlowList() {
           </Button>
         ))}
       </div>
-      {items.map((g) => {
+      {items.length === 0 ? (
+        <Card className="border-0 bg-card">
+          <CardContent className="p-8 text-center">
+            <Package className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              표시할 거래 흐름이 없습니다.
+            </p>
+          </CardContent>
+        </Card>
+      ) : items.map((g) => {
         const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
         const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
         const applicationId = g.application?.id ?? (g.kind === "application" ? g.detailTarget.id : undefined);
         const primaryLinkedApplicationId = g.kind === "order"
-          ? g.order?.applicationSummaries?.[0]?.id
+          ? (g.order?.stringingApplicationId ?? g.order?.applicationSummaries?.[0]?.id)
           : g.kind === "rental"
-            ? g.rental?.applicationSummaries?.[0]?.id
+            ? (g.rental?.stringingApplicationId ?? g.rental?.applicationSummaries?.[0]?.id)
             : undefined;
         const status =
           g.kind === "order"
