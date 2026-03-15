@@ -995,7 +995,7 @@ export default function ActivityFeed() {
                                   </Button>
                                 ) : null}
 
-                                {/* 더보기: 운송장 수정(보조), 구매확정, 교체확정, 리뷰 작성, 신청서 보기 */}
+                                {/* 더보기: 운송장 수정(보조), 구매확정, 교체확정, 리뷰 작성, 교체서비스 보기 */}
                                 {showMore && (
                                   <DropdownMenu open={openMenuKey === menuKey} onOpenChange={(open) => setOpenMenuKey(open ? menuKey : null)}>
                                     <DropdownMenuTrigger asChild>
@@ -1017,7 +1017,7 @@ export default function ActivityFeed() {
                                       {/* 주문/대여 카드에서 연결 신청서로 바로 이동 */}
                                       {appDetailHref && g.kind !== 'application' ? (
                                         <DropdownMenuItem asChild>
-                                          <Link href={appDetailHref}>교체 신청서 보기</Link>
+                                          <Link href={appDetailHref}>교체서비스 보기</Link>
                                         </DropdownMenuItem>
                                       ) : null}
 

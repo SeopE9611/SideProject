@@ -289,7 +289,7 @@ export default function OrderList() {
         const detailHref = `/mypage?tab=orders&flowType=order&flowId=${order.id}&from=orders`;
         const showConfirm = order.status !== '취소' && order.status !== '환불';
         const canConfirm = showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
-        // 신청서 연결 여부(있으면 "교체 신청" 대신 "신청서 보기"로 유도)
+        // 신청서 연결 여부(있으면 "교체 신청" 대신 "교체서비스 보기"로 유도)
         const hasLinkedApplication = Boolean(order.stringingApplicationId);
         const totalSlots = order.stringService?.totalSlots ?? 0;
         const usedSlots = order.stringService?.usedSlots ?? 0;
@@ -315,9 +315,9 @@ export default function OrderList() {
             : stringServiceCTAKind === 'apply' || stringServiceCTAKind === 'add'
               ? `/services/apply?orderId=${order.id}`
               : null;
-        const stringServiceCTALabel = stringServiceCTAKind === 'add' ? '추가 신청' : stringServiceCTAKind === 'view' ? '신청서 보기' : stringServiceCTAKind === 'done' ? '교체 신청 완료' : '교체 신청';
+        const stringServiceCTALabel = stringServiceCTAKind === 'add' ? '추가 신청' : stringServiceCTAKind === 'view' ? '교체서비스 보기' : stringServiceCTAKind === 'done' ? '교체 신청 완료' : '교체 신청';
 
-        // 모바일 보조 CTA: "교체 신청" 또는 "신청서 보기" 중 하나라도 있으면 2버튼 레이아웃
+        // 모바일 보조 CTA: "교체 신청" 또는 "교체서비스 보기" 중 하나라도 있으면 2버튼 레이아웃
         const showMobileSecondCTA = Boolean(stringServiceCTAHref);
 
         return (

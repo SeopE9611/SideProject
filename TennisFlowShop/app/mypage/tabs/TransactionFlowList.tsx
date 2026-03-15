@@ -471,7 +471,9 @@ export default function TransactionFlowList() {
         ))}
       </div>
       {scope === "todo" ? (
-        <p className="text-xs text-muted-foreground">각 카드에 지금 필요한 행동 이유를 함께 표시합니다.</p>
+        <p className="text-xs text-muted-foreground">
+          해야 할 일은 구매확정·운송장 등록·교체확정처럼 지금 바로 처리할 항목만 모아 보여줍니다.
+        </p>
       ) : null}
       {items.length === 0 ? (
         <Card className="border-0 bg-card">

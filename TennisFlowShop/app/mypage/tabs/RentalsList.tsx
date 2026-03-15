@@ -358,7 +358,7 @@ export default function RentalsList() {
                       href={`/mypage?tab=orders&flowType=application&flowId=${r.stringingApplicationId}&from=orders`}
                       className="inline-flex items-center gap-1"
                     >
-                      신청서 보기
+                      교체서비스 보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
