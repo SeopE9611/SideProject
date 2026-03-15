@@ -538,13 +538,21 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 주문 취소 요청 여부
   const hasOrderCancelRequested = data.orderCancelStatus === 'requested' || data.orderCancelStatus === '요청';
 
+  const backQuery = new URLSearchParams(backUrl.split('?')[1] ?? '');
+  const ordersScope = backQuery.get('scope');
+  const flowQuery = new URLSearchParams();
+  flowQuery.set('from', 'orders');
+  if (ordersScope) {
+    flowQuery.set('scope', ordersScope);
+  }
+
   // 연결 문서(표시 전용)
   const linkedDocs: LinkedDocItem[] = [];
   if (data.orderId) {
     linkedDocs.push({
       kind: 'order',
       id: String(data.orderId),
-      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&from=orders`,
+      href: isAdmin ? `/admin/orders/${data.orderId}` : `/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}`,
       subtitle: '연결된 주문',
     });
   }
@@ -553,7 +561,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
     linkedDocs.push({
       kind: 'rental',
       id: rid,
-      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}&from=orders`,
+      href: isAdmin ? `/admin/rentals/${encodeURIComponent(rid)}` : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}&${flowQuery.toString()}`,
       subtitle: '연결된 대여',
     });
   }
@@ -649,7 +657,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {!isAdmin && needsInboundTracking && (
                   <Link
                     href={`/services/applications/${data.id}/shipping?${new URLSearchParams({
-                      return: `/mypage/applications/${data.id}`,
+                      return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
                     }).toString()}`}
                   >
                     <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">

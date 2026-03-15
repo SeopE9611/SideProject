@@ -246,12 +246,18 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
     const appId = data?.stringingApplicationId;
     if (!appId) return null;
 
-    if (backUrl === '/mypage?tab=orders' || backUrl === '/mypage?tab=activity') {
-      const from = backUrl === '/mypage?tab=activity' ? 'activity' : 'orders';
-      return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}&from=${from}`;
+    const backQuery = new URLSearchParams(backUrl.split('?')[1] ?? '');
+    const scope = backQuery.get('scope');
+    const params = new URLSearchParams();
+    params.set('tab', 'orders');
+    params.set('flowType', 'application');
+    params.set('flowId', appId);
+    params.set('from', 'orders');
+    if (scope) {
+      params.set('scope', scope);
     }
 
-    return `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(appId)}&from=orders`;
+    return `/mypage?${params.toString()}`;
   }, [applicationUrl, backUrl, data?.stringingApplicationId]);
 
   // 교체 신청하기 링크(대여 기반 신청)
