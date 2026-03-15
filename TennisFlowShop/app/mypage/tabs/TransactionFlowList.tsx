@@ -40,6 +40,7 @@ type ActivityApplicationSummary = {
   status: string;
   racketType?: string;
   hasTracking: boolean;
+  inboundRequired?: boolean;
   needsInboundTracking?: boolean;
   collectionMethod?: string;
   orderId?: string | null;
@@ -161,9 +162,7 @@ const getRepresentativeTitle = (group: ActivityGroup) => {
     return `${racketName} 대여`;
   }
 
-  const racketType = group.application?.racketType?.trim();
-  if (isFilledText(racketType)) return racketType as string;
-  return "교체서비스 신청";
+  return getApplicationTitle(group.application);
 };
 
 const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
@@ -209,9 +208,35 @@ const getApplicationOriginLabel = (app?: ActivityApplicationSummary) => {
   return "단독 신청";
 };
 
+const shortId = (value?: string | null) => {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) return null;
+  return normalized.slice(-6).toUpperCase();
+};
+
+const getApplicationTitle = (app?: ActivityApplicationSummary) => {
+  const racketType = app?.racketType?.trim();
+  const baseTitle = isFilledText(racketType) ? (racketType as string) : "교체서비스 신청";
+
+  if (app?.orderId) {
+    return `${baseTitle} · 주문 #${shortId(app.orderId) ?? "-"}`;
+  }
+  if (app?.rentalId) {
+    return `${baseTitle} · 대여 #${shortId(app.rentalId) ?? "-"}`;
+  }
+  return `${baseTitle} · 단독`;
+};
+
+const getApplicationCollectionLabel = (app?: ActivityApplicationSummary) => {
+  if (!app) return "-";
+  if (!app.inboundRequired) return "입고 불필요(연계 처리)";
+  return collectionMethodLabel(app.collectionMethod);
+};
+
 const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
   if (!app) return "-";
-  if (!app.needsInboundTracking) return "운송장 불필요";
+  if (!app.inboundRequired) return "운송장 입력 대상 아님";
+  if (!app.needsInboundTracking) return "운송장 입력 선택 사항";
   return app.hasTracking ? "운송장 등록됨" : "운송장 등록 필요";
 };
 
@@ -505,7 +530,7 @@ export default function TransactionFlowList() {
         const isApplicationActionContext = g.kind === "application" || prefersApplicationView;
         const applicationActionTarget = displayApplication;
         const displayTitle = prefersApplicationView
-          ? (isFilledText(displayApplication?.racketType) ? displayApplication?.racketType?.trim() ?? "교체서비스 신청" : "교체서비스 신청")
+          ? getApplicationTitle(displayApplication)
           : getRepresentativeTitle(g);
         const displayStatus = prefersApplicationView ? displayApplication?.status : status;
         const displayUserStatusLabel = getMypageUserStatusLabel(displayStatus);
@@ -580,7 +605,7 @@ export default function TransactionFlowList() {
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">배송 상태</p>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">주문 상태</p>
                         <p className="font-medium text-foreground">{getMypageUserStatusLabel(g.order?.status)}</p>
                       </div>
                     </div>
@@ -639,8 +664,8 @@ export default function TransactionFlowList() {
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">수거 방식</p>
-                        <p className="font-medium text-foreground">{collectionMethodLabel(displayApplication?.collectionMethod)}</p>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">접수 방식</p>
+                        <p className="font-medium text-foreground">{getApplicationCollectionLabel(displayApplication)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
@@ -660,8 +685,12 @@ export default function TransactionFlowList() {
                     <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                       <Link2 className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">연계 정보</p>
-                        <p className="font-medium text-foreground">{getApplicationOriginLabel(displayApplication) ?? "-"}</p>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">연계 원본</p>
+                        <p className="font-medium text-foreground">
+                          {getApplicationOriginLabel(displayApplication)}
+                          {displayApplication?.orderId ? ` · #${shortId(displayApplication.orderId) ?? "-"}` : ""}
+                          {displayApplication?.rentalId ? ` · #${shortId(displayApplication.rentalId) ?? "-"}` : ""}
+                        </p>
                       </div>
                     </div>
                   </>
@@ -920,7 +949,7 @@ export default function TransactionFlowList() {
                       ) : null}
 
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="flex w-full flex-wrap gap-2 pt-1">
+                        <div className="flex w-full flex-wrap justify-end gap-2 pt-1">
                           {secondaryActions.map((action) => action.node)}
                         </div>
                       ) : null}
