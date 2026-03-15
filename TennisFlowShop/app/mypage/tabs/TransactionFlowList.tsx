@@ -203,8 +203,8 @@ const getLinkedApplicationStatusSummary = (apps: ActivityApplicationSummary[] = 
 
 const getApplicationOriginLabel = (app?: ActivityApplicationSummary) => {
   if (!app) return null;
-  if (app.orderId) return "주문 연계";
-  if (app.rentalId) return "대여 연계";
+  if (app.orderId) return "주문";
+  if (app.rentalId) return "대여";
   return "단독 신청";
 };
 
@@ -217,14 +217,8 @@ const shortId = (value?: string | null) => {
 const getApplicationTitle = (app?: ActivityApplicationSummary) => {
   const racketType = app?.racketType?.trim();
   const baseTitle = isFilledText(racketType) ? (racketType as string) : "교체서비스 신청";
-
-  if (app?.orderId) {
-    return `${baseTitle} · 주문 #${shortId(app.orderId) ?? "-"}`;
-  }
-  if (app?.rentalId) {
-    return `${baseTitle} · 대여 #${shortId(app.rentalId) ?? "-"}`;
-  }
-  return `${baseTitle} · 단독`;
+  const applicationShortId = shortId(app?.id);
+  return applicationShortId ? `${baseTitle} #${applicationShortId}` : baseTitle;
 };
 
 const getApplicationCollectionLabel = (app?: ActivityApplicationSummary) => {
@@ -520,11 +514,12 @@ export default function TransactionFlowList() {
         );
         const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
         const normalizedFlowLabel = normalizeLabel(g.flowLabel);
-        const shouldShowFlowBadge =
-          Boolean(normalizedFlowLabel) &&
-          normalizedFlowLabel !== normalizedMetaLabel;
         const todoPrimaryReason = scope === "todo" ? getTodoPrimaryReason(g) : null;
         const prefersApplicationView = scope === "application" && Boolean(g.application);
+        const shouldShowFlowBadge =
+          !prefersApplicationView &&
+          Boolean(normalizedFlowLabel) &&
+          normalizedFlowLabel !== normalizedMetaLabel;
         const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
         const displayApplication = g.application;
         const isApplicationActionContext = g.kind === "application" || prefersApplicationView;
@@ -943,7 +938,7 @@ export default function TransactionFlowList() {
                             )
                           }
                         >
-                          추가 작업 {secondaryActions.length}개
+                          {isSecondaryOpen ? "보조 작업 닫기" : `보조 작업 보기 (${secondaryActions.length})`}
                           <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isSecondaryOpen ? "rotate-180" : ""}`} />
                         </Button>
                       ) : null}
