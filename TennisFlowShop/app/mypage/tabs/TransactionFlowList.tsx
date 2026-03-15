@@ -15,12 +15,13 @@ import {
   getOrderStatusBadgeSpec,
   getRentalStatusBadgeSpec,
 } from "@/lib/badge-style";
-import { getMypageNormalizedStatus, getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
+import { getMypageNormalizedStatus, getMypagePaymentStatusLabel, getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowRight, Calendar, CheckCircle, ChevronDown, CreditCard, Link2, Package, XCircle } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle, ChevronDown, CreditCard, Link2, Package, Truck, Undo2, Wallet, Wrench, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { collectionMethodLabel, orderShippingMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { mutate as globalMutate } from "swr";
 import useSWRInfinite from "swr/infinite";
 
@@ -35,10 +36,14 @@ type FlowType =
 type ActivityApplicationSummary = {
   id: string;
   createdAt?: string;
+  updatedAt?: string;
   status: string;
   racketType?: string;
   hasTracking: boolean;
   needsInboundTracking?: boolean;
+  collectionMethod?: string;
+  orderId?: string | null;
+  rentalId?: string | null;
   userConfirmedAt?: string | null;
   cancelStatus?: string | null;
 };
@@ -55,6 +60,8 @@ type ActivityGroup = {
     id?: string;
     createdAt?: string;
     status: string;
+    paymentStatus?: string;
+    shippingMethod?: string;
     totalPrice: number;
     firstItemName?: string;
     itemsCount: number;
@@ -70,11 +77,13 @@ type ActivityGroup = {
     brand?: string;
     model?: string;
     totalAmount?: number;
+    days?: number;
     linkedApplicationCount: number;
     stringingApplicationId?: string | null;
     withStringService?: boolean;
     cancelStatus?: string | null;
     hasOutboundShipping?: boolean;
+    outboundTrackingNumber?: string | null;
     applicationSummaries?: ActivityApplicationSummary[];
   };
   application?: ActivityApplicationSummary;
@@ -182,12 +191,35 @@ const isApplicationTodoActionable = (app?: ActivityApplicationSummary) =>
 const getLinkedApplicationStatusSummary = (apps: ActivityApplicationSummary[] = []) => {
   if (apps.length === 0) return null;
   const latest = [...apps].sort((a, b) => {
-    const aTime = new Date(a.createdAt ?? 0).getTime();
-    const bTime = new Date(b.createdAt ?? 0).getTime();
-    return bTime - aTime;
+    const aUpdated = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
+    const bUpdated = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime();
+    if (bUpdated !== aUpdated) return bUpdated - aUpdated;
+    const aCreated = new Date(a.createdAt ?? 0).getTime();
+    const bCreated = new Date(b.createdAt ?? 0).getTime();
+    return bCreated - aCreated;
   })[0];
   const label = getMypageUserStatusLabel(latest?.status);
   return `${label} · ${apps.length}건 연결`;
+};
+
+const getApplicationOriginLabel = (app?: ActivityApplicationSummary) => {
+  if (!app) return null;
+  if (app.orderId) return "주문 연계";
+  if (app.rentalId) return "대여 연계";
+  return "단독 신청";
+};
+
+const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
+  if (!app) return "-";
+  if (!app.needsInboundTracking) return "운송장 불필요";
+  return app.hasTracking ? "운송장 등록됨" : "운송장 등록 필요";
+};
+
+const getRentalReturnStatusLabel = (status?: string | null) => {
+  const normalized = getMypageNormalizedStatus(status);
+  if (normalized === "반납완료") return "반납완료";
+  if (normalized === "취소") return "반납 없음";
+  return "반납 대기";
 };
 
 const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
@@ -451,12 +483,6 @@ export default function TransactionFlowList() {
         const normalizedStatus = getMypageNormalizedStatus(status);
         const userStatusLabel = getMypageUserStatusLabel(status);
         const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
-        const amount =
-          g.kind === "order"
-            ? g.order?.totalPrice
-            : g.kind === "rental"
-              ? g.rental?.totalAmount
-              : null;
         const linkedCount =
           g.kind === "order"
             ? (g.order?.linkedApplicationCount ?? 0)
@@ -473,6 +499,30 @@ export default function TransactionFlowList() {
           Boolean(normalizedFlowLabel) &&
           normalizedFlowLabel !== normalizedMetaLabel;
         const todoPrimaryReason = scope === "todo" ? getTodoPrimaryReason(g) : null;
+        const prefersApplicationView = scope === "application" && Boolean(g.application);
+        const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
+        const displayApplication = g.application;
+        const displayTitle = prefersApplicationView
+          ? (isFilledText(displayApplication?.racketType) ? displayApplication?.racketType?.trim() ?? "교체서비스 신청" : "교체서비스 신청")
+          : getRepresentativeTitle(g);
+        const displayStatus = prefersApplicationView ? displayApplication?.status : status;
+        const displayUserStatusLabel = getMypageUserStatusLabel(displayStatus);
+        const displayStatusBadgeSpec = prefersApplicationView
+          ? getStatusBadgeSpec({ ...g, kind: "application" }, displayUserStatusLabel)
+          : statusBadgeSpec;
+        const displayDateLabel = displayKind === "order" ? "주문일" : displayKind === "rental" ? "대여일" : "신청일";
+        const displayDateValue = displayKind === "order"
+          ? (g.order?.createdAt ?? g.sortAt)
+          : displayKind === "rental"
+            ? (g.rental?.createdAt ?? g.sortAt)
+            : (displayApplication?.createdAt ?? g.createdAt ?? g.sortAt);
+        const detailTargetType: FlowDetailType = prefersApplicationView
+          ? "application"
+          : g.detailTarget.type;
+        const detailTargetId = prefersApplicationView && displayApplication?.id
+          ? displayApplication.id
+          : g.detailTarget.id;
+        const showLinkedStatusBadge = g.flowType !== "application_only" && linkedCount > 0 && !prefersApplicationView;
 
         return (
           <Card
@@ -489,14 +539,14 @@ export default function TransactionFlowList() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-semibold text-foreground">
-                    {getRepresentativeTitle(g)}
+                    {displayTitle}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {FLOW_TYPE_META_LABEL[g.flowType]} · {g.kind === "order" ? "주문일" : g.kind === "rental" ? "대여일" : "신청일"} {formatDate(g.kind === "order" ? (g.order?.createdAt ?? g.sortAt) : g.kind === "rental" ? (g.rental?.createdAt ?? g.sortAt) : (g.application?.createdAt ?? g.createdAt ?? g.sortAt))}
+                    {FLOW_TYPE_META_LABEL[g.flowType]} · {displayDateLabel} {formatDate(displayDateValue)}
                   </p>
                 </div>
-                <Badge variant={statusBadgeSpec.variant}>
-                  {userStatusLabel}
+                <Badge variant={displayStatusBadgeSpec.variant}>
+                  {displayUserStatusLabel}
                 </Badge>
               </div>
 
@@ -507,65 +557,122 @@ export default function TransactionFlowList() {
                 {shouldShowFlowBadge ? (
                   <Badge variant="outline">{g.flowLabel}</Badge>
                 ) : null}
-                {g.flowType !== "application_only" && linkedCount > 0 ? (
+                {showLinkedStatusBadge ? (
                   <Badge variant="secondary">
                     {getLinkedApplicationStatusSummary(linkedApps)}
                   </Badge>
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 bp-sm:grid-cols-2 bp-lg:grid-cols-3">
-                {g.flowType !== "application_only" ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                {displayKind === "order" ? (
+                  <>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">결제 금액</p>
+                        <p className="font-medium text-foreground">{formatAmount(g.order?.totalPrice)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">배송 상태</p>
+                        <p className="font-medium text-foreground">{getMypageUserStatusLabel(g.order?.status)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Wallet className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">결제 상태</p>
+                        <p className="font-medium text-foreground">{getMypagePaymentStatusLabel(g.order?.paymentStatus)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">수령 방식</p>
+                        <p className="font-medium text-foreground">{orderShippingMethodLabel(g.order?.shippingMethod)}</p>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+
+                {displayKind === "rental" ? (
+                  <>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">대여 금액</p>
+                        <p className="font-medium text-foreground">{formatAmount(g.rental?.totalAmount)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">대여 기간</p>
+                        <p className="font-medium text-foreground">{typeof g.rental?.days === "number" ? `${g.rental.days}일` : "-"}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">출고 상태</p>
+                        <p className="font-medium text-foreground">{g.rental?.hasOutboundShipping ? "출고됨" : "출고 준비중"}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Undo2 className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">반납 상태</p>
+                        <p className="font-medium text-foreground">{getRentalReturnStatusLabel(g.rental?.status)}</p>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+
+                {displayKind === "application" ? (
+                  <>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">수거 방식</p>
+                        <p className="font-medium text-foreground">{collectionMethodLabel(displayApplication?.collectionMethod)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">운송장 상태</p>
+                        <p className="font-medium text-foreground">{getApplicationTrackingLabel(displayApplication)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Wrench className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">진행 단계</p>
+                        <p className="font-medium text-foreground">{displayUserStatusLabel}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                      <Link2 className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">연계 정보</p>
+                        <p className="font-medium text-foreground">{getApplicationOriginLabel(displayApplication) ?? "-"}</p>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+
+                {!prefersApplicationView ? (
+                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3 bp-lg:col-span-4">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        결제/주문 금액
-                      </p>
-                      <p className="font-medium text-foreground">
-                        {formatAmount(amount)}
-                      </p>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">{displayDateLabel}</p>
+                      <p className="font-medium text-foreground">{formatDate(displayDateValue)}</p>
                     </div>
                   </div>
                 ) : null}
-
-                {g.flowType !== "application_only" && linkedCount > 0 ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                    <Link2 className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        연결 신청 상태
-                      </p>
-                      <p className="font-medium text-foreground">
-                        {getLinkedApplicationStatusSummary(linkedApps)}
-                      </p>
-                    </div>
-                  </div>
-                ) : g.flowType === "application_only" ? (
-                  <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                        신청 분류
-                      </p>
-                      <p className="font-medium text-foreground">
-                        교체서비스 단독
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      {g.kind === "order" ? "주문일" : g.kind === "rental" ? "대여일" : "신청일"}
-                    </p>
-                    <p className="font-medium text-foreground">
-                      {formatDate(g.kind === "order" ? (g.order?.createdAt ?? g.sortAt) : g.kind === "rental" ? (g.rental?.createdAt ?? g.sortAt) : (g.application?.createdAt ?? g.createdAt ?? g.sortAt))}
-                    </p>
-                  </div>
-                </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border/60 pt-3 md:pt-4">
@@ -576,7 +683,7 @@ export default function TransactionFlowList() {
                   className="bg-transparent"
                 >
                   <Link
-                    href={`/mypage?tab=orders&flowType=${g.detailTarget.type}&flowId=${g.detailTarget.id}&${flowQuery}`}
+                    href={`/mypage?tab=orders&flowType=${detailTargetType}&flowId=${detailTargetId}&${flowQuery}`}
                   >
                     상세 보기 <ArrowRight className="ml-1 h-3.5 w-3.5" />
                   </Link>
@@ -594,9 +701,50 @@ export default function TransactionFlowList() {
                   const actions: ActionDef[] = [];
 
                   const canRenderOrderReview = ["배송완료", "구매확정"].includes(normalizedStatus);
-                  const canRenderServiceReview = normalizedStatus === "교체완료";
+                  const canRenderServiceReview = displayUserStatusLabel === "교체완료";
 
-                  if (g.kind === "order" && orderId) {
+                  if (prefersApplicationView && applicationId) {
+                    actions.push({
+                      key: "application-primary-detail",
+                      priority: -1,
+                      pinInline: true,
+                      node: (
+                        <Button key="application-primary-detail" asChild size="sm">
+                          <Link href={`/mypage?tab=orders&flowType=application&flowId=${applicationId}&${flowQuery}`}>
+                            신청서 보기
+                          </Link>
+                        </Button>
+                      ),
+                    });
+
+                    if (orderId) {
+                      actions.push({
+                        key: "application-linked-order",
+                        priority: 5,
+                        forceSecondary: true,
+                        node: (
+                          <Button key="application-linked-order" asChild size="sm" variant="outline" className="bg-transparent">
+                            <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}`}>연계 주문 보기</Link>
+                          </Button>
+                        ),
+                      });
+                    }
+
+                    if (rentalId) {
+                      actions.push({
+                        key: "application-linked-rental",
+                        priority: 5,
+                        forceSecondary: true,
+                        node: (
+                          <Button key="application-linked-rental" asChild size="sm" variant="outline" className="bg-transparent">
+                            <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}`}>연계 대여 보기</Link>
+                          </Button>
+                        ),
+                      });
+                    }
+                  }
+
+                  if (g.kind === "order" && orderId && !prefersApplicationView) {
                     if (primaryLinkedApplicationId) {
                       actions.push({
                         key: "order-linked-application",
@@ -645,7 +793,7 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (g.kind === "rental" && rentalId) {
+                  if (g.kind === "rental" && rentalId && !prefersApplicationView) {
                     if (["pending", "paid", "대기중", "결제완료"].includes(normalizedStatus) && !g.rental?.hasOutboundShipping) {
                       actions.push({
                         key: "rental-cancel-request",

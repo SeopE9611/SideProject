@@ -44,6 +44,7 @@ type ActivityOrderSummary = {
   updatedAt: string;
   status: string;
   paymentStatus: string;
+  shippingMethod: string;
   totalPrice: number;
   firstItemName: string;
   itemsCount: number;
@@ -72,6 +73,7 @@ type ActivityRentalSummary = {
   fee?: number;
   withStringService: boolean;
   hasOutboundShipping: boolean;
+  outboundTrackingNumber: string | null;
   stringingApplicationIds: string[];
   applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
@@ -100,6 +102,7 @@ type ActivityApplicationSummary = {
   cancelReasonSummary?: string | null;
   inboundRequired: boolean; // 고객→매장 입고가 필요한가?
   needsInboundTracking: boolean; // 입고가 필요하고 + 자가발송(self_ship)이라 운송장 입력이 필요한가?
+  collectionMethod: string;
 };
 
 export type ActivityGroup = {
@@ -429,6 +432,7 @@ export async function GET(req: Request) {
       cancelReasonSummary,
       inboundRequired,
       needsInboundTracking,
+      collectionMethod,
     };
 
     if (doc.orderId) {
@@ -494,6 +498,7 @@ export async function GET(req: Request) {
         updatedAt,
         status: o.status ?? '',
         paymentStatus: o.paymentStatus ?? '',
+        shippingMethod: String(o?.shippingInfo?.shippingMethod ?? o?.shippingInfo?.method ?? o?.shippingInfo?.type ?? ''),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? '(상품명 없음)',
         itemsCount: items.length,
@@ -547,6 +552,7 @@ export async function GET(req: Request) {
         fee: r?.amount?.fee,
         withStringService,
         hasOutboundShipping: Boolean(outboundTracking),
+        outboundTrackingNumber: outboundTracking || null,
         stringingApplicationIds: linkedApps.map((app) => app.id),
         applicationSummaries: linkedApps,
         stringingApplicationId: linked?.id ?? null,
@@ -603,6 +609,7 @@ export async function GET(req: Request) {
         cancelReasonSummary,
         inboundRequired,
         needsInboundTracking,
+        collectionMethod,
       },
     });
   }
