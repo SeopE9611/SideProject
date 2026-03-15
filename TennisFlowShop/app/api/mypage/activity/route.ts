@@ -22,6 +22,22 @@ function parseScopeParam(v: string | null): ActivityScope {
   return 'all';
 }
 
+
+function normalizeMypageStatus(status?: string | null): string {
+  const raw = String(status ?? '').trim();
+  if (!raw) return '';
+  const lower = raw.toLowerCase();
+
+  if (['pending', '대기중'].includes(lower)) return '대기중';
+  if (['paid', '결제완료'].includes(lower)) return '결제완료';
+  if (['delivered', '배송완료'].includes(lower)) return '배송완료';
+  if (['requested', '접수완료', 'received'].includes(lower)) return '접수완료';
+  if (['reviewing', '검토중', '검토 중'].includes(lower)) return '검토 중';
+  if (['completed', '완료', '교체완료'].includes(lower)) return '교체완료';
+
+  return raw;
+}
+
 type ActivityOrderSummary = {
   id: string;
   createdAt: string;
@@ -144,26 +160,21 @@ function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
 
 function isApplicationTodoActionable(app?: ActivityApplicationSummary | null) {
   if (!app) return false;
-  const status = String(app.status ?? '');
+  const status = normalizeMypageStatus(app.status);
   return Boolean(
     (app.needsInboundTracking && !app.hasTracking) ||
-      app.cancelStatus === 'requested' ||
-      app.cancelStatus === '요청' ||
-      ['접수완료', '검토 중'].includes(status) ||
       (status === '교체완료' && !app.userConfirmedAt),
   );
 }
 
 function isOrderTodoActionable(group: ActivityGroup) {
   if (group.kind !== 'order') return false;
-  const status = String(group.order?.status ?? '');
+  const status = normalizeMypageStatus(group.order?.status);
   const hasActionableLinkedApplication =
     group.order?.applicationSummaries?.some((app) => isApplicationTodoActionable(app)) ?? false;
 
   return Boolean(
-    group.order?.cancelStatus === 'requested' ||
-      ['대기중', '결제완료'].includes(status) ||
-      status === '배송완료' ||
+    status === '배송완료' ||
       hasActionableLinkedApplication ||
       isApplicationTodoActionable(group.application),
   );
@@ -171,10 +182,12 @@ function isOrderTodoActionable(group: ActivityGroup) {
 
 function isRentalTodoActionable(group: ActivityGroup) {
   if (group.kind !== 'rental') return false;
-  const status = String(group.rental?.status ?? '');
+  const hasActionableLinkedApplication =
+    group.rental?.applicationSummaries?.some((app) => isApplicationTodoActionable(app)) ?? false;
+
   return Boolean(
-    group.rental?.cancelStatus === 'requested' ||
-      (['pending', 'paid'].includes(status) && !group.rental?.hasOutboundShipping) ||
+    hasActionableLinkedApplication ||
+      isApplicationTodoActionable(group.application) ||
       (!group.rental?.stringingApplicationId && group.rental?.withStringService),
   );
 }
@@ -599,7 +612,7 @@ export async function GET(req: Request) {
     if (scope === 'all') return true;
     if (scope === 'order') return group.kind === 'order';
     if (scope === 'rental') return group.kind === 'rental';
-    if (scope === 'application') return group.kind === 'application';
+    if (scope === 'application') return group.kind === 'application' || Boolean(group.application);
 
     if (scope === 'todo') {
       const applicationNeedsAction = group.kind === 'application' && isApplicationTodoActionable(group.application);
