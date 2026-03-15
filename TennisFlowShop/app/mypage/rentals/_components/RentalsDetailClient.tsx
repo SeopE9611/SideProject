@@ -240,7 +240,7 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
   // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
   const canApplyStringService = withStringService && !data?.stringingApplicationId;
 
-  // 신청서 보기 링크: "마이페이지 탭" 방식으로 통일
+  // 교체서비스 보기 링크: "마이페이지 탭" 방식으로 통일
   const applicationHref = useMemo(() => {
     if (applicationUrl) return applicationUrl;
     const appId = data?.stringingApplicationId;
@@ -374,13 +374,13 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
               </Link>
             </Button>
             {/* 교체 서비스 CTA
- - 신청서 ID가 있으면: 신청서 보기
+ - 신청서 ID가 있으면: 교체서비스 보기
  - ID가 없지만 교체 서비스 포함이면: 교체 신청하기(레거시/예외 케이스 보정) */}
             {applicationHref ? (
               <Link href={applicationHref}>
                 <Button className="gap-2">
                   <Wrench className="h-4 w-4" />
-                  신청서 보기
+                  교체서비스 보기
                 </Button>
               </Link>
             ) : canApplyStringService ? (
