@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { racketBrandLabel } from '@/lib/constants';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { AlertCircle, ArrowLeft, Briefcase, Calendar, CheckCircle, Clock, CreditCard, Package, TrendingUp, Truck, Wrench, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -202,18 +203,17 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         const msg = body?.message ?? '대여 취소 요청 철회 중 오류가 발생했습니다.';
-        // 프로젝트에서 사용하는 토스트 유틸 있으면 그걸 사용해도 됨
-        alert(msg);
+        showErrorToast(msg);
         return;
       }
 
       // 성공 시 상세 상태에서만 cancelRequest 제거
       setData((prev) => (prev ? { ...prev, cancelRequest: null } : prev));
 
-      alert('대여 취소 요청을 철회했습니다.');
+      showSuccessToast('대여 취소 요청을 철회했습니다.');
     } catch (e) {
       console.error(e);
-      alert('대여 취소 요청 철회 중 오류가 발생했습니다.');
+      showErrorToast('대여 취소 요청 철회 중 오류가 발생했습니다.');
     } finally {
       setWithdrawing(false);
     }
@@ -342,6 +342,7 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
               <Briefcase className="h-8 w-8 text-primary" />
             </div>
             <div>
+              <h1 className="text-2xl font-bold text-foreground">대여 상세</h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <p className="text-muted-foreground">대여번호: {data.id}</p>
 
@@ -355,27 +356,7 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
           </div>
 
           <div className="sm:ml-auto flex items-center gap-2">
-            {/* 버튼은 항상 노출하되, 조건을 만족하지 않으면 비활성화 */}
-            <CancelRentalDialog rentalId={data.id} onSuccess={refreshRental} disabled={!canRequestCancel} />
-
-            {data?.status === 'out' && (
-              <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
-                <Link href={`/mypage/rentals/${data.id}/return-shipping`}>
-                  <Truck className="h-4 w-4 mr-2" />
-                  {data?.shipping?.return?.trackingNumber ? '반납 운송장 수정' : '반납 운송장 등록'}
-                </Link>
-              </Button>
-            )}
-
-            <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
-              <Link href={backUrl}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                목록으로 돌아가기
-              </Link>
-            </Button>
-            {/* 교체 서비스 CTA
- - 신청서 ID가 있으면: 교체서비스 보기
- - ID가 없지만 교체 서비스 포함이면: 교체 신청하기(레거시/예외 케이스 보정) */}
+            {/* 교체 서비스 CTA */}
             {applicationHref ? (
               <Link href={applicationHref}>
                 <Button className="gap-2">
@@ -391,6 +372,25 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
                 </Button>
               </Link>
             ) : null}
+
+            {data?.status === 'out' && (
+              <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
+                <Link href={`/mypage/rentals/${data.id}/return-shipping`}>
+                  <Truck className="h-4 w-4 mr-2" />
+                  {data?.shipping?.return?.trackingNumber ? '반납 운송장 수정' : '반납 운송장 등록'}
+                </Link>
+              </Button>
+            )}
+
+            {/* 버튼은 항상 노출하되, 조건을 만족하지 않으면 비활성화 */}
+            <CancelRentalDialog rentalId={data.id} onSuccess={refreshRental} disabled={!canRequestCancel} />
+
+            <Button variant="outline" size="sm" asChild className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground">
+              <Link href={backUrl}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                목록으로 돌아가기
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -454,27 +454,32 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
         </div>
       )}
 
-      {withStringService && data.applicationSummary && (
+      {withStringService && (
         <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
           <CardHeader className="bg-muted/30 border-b">
             <CardTitle className="flex items-center space-x-2">
               <Wrench className="h-5 w-5 text-primary" />
-              <span>교체 서비스 접수 요약</span>
+              <span>연결된 교체서비스</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-2 text-sm">
-            {/* 신청 상세로 들어가기 전 핵심 정보만 먼저 확인 */}
-            <p><span className="text-muted-foreground">신청 상태:</span> <span className="font-semibold text-foreground">{data.applicationSummary.status}</span></p>
-            <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold text-foreground">{data.applicationSummary.receptionLabel}</span></p>
-            <p><span className="text-muted-foreground">라인 수:</span> <span className="font-semibold text-foreground">{data.applicationSummary.lineCount}개</span></p>
-            {data.applicationSummary.stringNames.length > 0 && (
-              <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold text-foreground">{data.applicationSummary.stringNames.join(', ')}</span></p>
-            )}
-            {data.applicationSummary.tensionSummary && (
-              <p><span className="text-muted-foreground">텐션:</span> <span className="font-semibold text-foreground">{data.applicationSummary.tensionSummary}</span></p>
-            )}
-            {data.applicationSummary.reservationLabel && (
-              <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-semibold text-foreground">{data.applicationSummary.reservationLabel}</span></p>
+            {data.applicationSummary ? (
+              <>
+                <p><span className="text-muted-foreground">신청 상태:</span> <span className="font-semibold text-foreground">{data.applicationSummary.status}</span></p>
+                <p><span className="text-muted-foreground">접수 방식:</span> <span className="font-semibold text-foreground">{data.applicationSummary.receptionLabel}</span></p>
+                <p><span className="text-muted-foreground">라인 수:</span> <span className="font-semibold text-foreground">{data.applicationSummary.lineCount}개</span></p>
+                {data.applicationSummary.stringNames.length > 0 && (
+                  <p><span className="text-muted-foreground">선택 스트링:</span> <span className="font-semibold text-foreground">{data.applicationSummary.stringNames.join(', ')}</span></p>
+                )}
+                {data.applicationSummary.tensionSummary && (
+                  <p><span className="text-muted-foreground">텐션:</span> <span className="font-semibold text-foreground">{data.applicationSummary.tensionSummary}</span></p>
+                )}
+                {data.applicationSummary.reservationLabel && (
+                  <p><span className="text-muted-foreground">방문 예약:</span> <span className="font-semibold text-foreground">{data.applicationSummary.reservationLabel}</span></p>
+                )}
+              </>
+            ) : (
+              <p className="text-muted-foreground">교체서비스가 포함된 대여입니다. 신청 상세에서 접수 상태를 확인할 수 있습니다.</p>
             )}
             {applicationHref && (
               <div className="pt-2">
@@ -589,6 +594,33 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
                   <p className="text-xl font-bold text-primary">{total.toLocaleString()}원</p>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-xl bg-muted/30 overflow-hidden">
+          <CardHeader className="bg-muted/30 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <Truck className="h-5 w-5 text-primary" />
+              <span>수령/반납 안내</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-sm text-muted-foreground">수령 정보</p>
+              <p className="text-sm font-semibold text-foreground mt-1">
+                {data.shipping?.outbound?.trackingNumber
+                  ? `${getCourierLabel(data.shipping.outbound.courier)} · ${data.shipping.outbound.trackingNumber}`
+                  : '출고 운송장 등록 전입니다.'}
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-sm text-muted-foreground">반납 정보</p>
+              <p className="text-sm font-semibold text-foreground mt-1">
+                {data.shipping?.return?.trackingNumber
+                  ? `${getCourierLabel(data.shipping.return.courier)} · ${data.shipping.return.trackingNumber}`
+                  : '반납 운송장이 아직 등록되지 않았습니다.'}
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -526,6 +526,15 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 확정 버튼 노출/활성 조건 (ApplicationsClient 규칙에 맞게 "상태 기반"으로 단순화)
   const confirmableStatuses = ['반송완료', '교체완료', '완료'];
   const canConfirmExchange = !isAdmin && !isCancelled && !isCancelRequested && !isUserConfirmed && confirmableStatuses.includes(data.status);
+  const userProgressSteps = [
+    { key: '접수완료', label: '접수 완료' },
+    { key: '검토 중', label: '검토 중' },
+    { key: '작업 중', label: '작업 중' },
+    { key: '교체완료', label: '교체 완료' },
+    { key: '반송완료', label: '반송 완료' },
+    { key: '완료', label: '확정 완료' },
+  ];
+  const currentStepIndex = userProgressSteps.findIndex((step) => step.key === data.status);
 
   // 라켓 종류 요약 문자열
   const racketTypeSummary =
@@ -646,13 +655,6 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             </div>
             <TooltipProvider>
               <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
-                <Link href={backUrl}>
-                  <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    신청 목록으로 돌아가기
-                  </Button>
-                </Link>
-
                 {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
                 {!isAdmin && needsInboundTracking && (
                   <Link
@@ -666,6 +668,13 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                     </Button>
                   </Link>
                 )}
+
+                <Link href={backUrl}>
+                  <Button variant="outline" size="sm" className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    신청 목록으로 돌아가기
+                  </Button>
+                </Link>
 
                 {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
                 {isAdmin && (
@@ -764,17 +773,30 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           {data.orderId && (
             <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground">
               <Truck className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">수령/배송(주문)</span>
+              <span className="font-medium">주문 수령 방식</span>
               <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass('danger')}`}>{linkedOrderPickupBadge?.label ?? '선택 없음'}</Badge>
             </div>
           )}
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-foreground">
             <Truck className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">수령/배송(반환)</span>
+            <span className="font-medium">반환 방식</span>
             <Badge className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}>{shippingMethodBadge.label}</Badge>
             {shippingMethodBadge.label === '선택 없음' && <span className="text-xs text-muted-foreground">반환 방식이 아직 선택되지 않았습니다.</span>}
           </div>
+
+          {!isAdmin && (
+            <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
+              <p className="text-sm font-semibold text-foreground">진행 단계</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {userProgressSteps.map((step, index) => (
+                  <Badge key={step.key} variant={index <= currentStepIndex ? 'info' : 'neutral'}>
+                    {step.label}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
           {/* 취소 요청 상태 안내 (관리자용) */}
           {isAdmin && cancelInfo && (
             <AdminCancelRequestCard
@@ -1359,7 +1381,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   <Clock className="h-5 w-5 text-primary" />
                   <span>신청 타임라인</span>
                 </CardTitle>
-                <CardDescription>신청 접수부터 운송장 등록까지의 주요 진행 상태입니다.</CardDescription>
+                <CardDescription>접수, 작업, 반송, 확정까지의 진행 흐름을 확인할 수 있습니다.</CardDescription>
               </CardHeader>
               <CardContent className="p-4 bp-sm:p-6">
                 <div className="space-y-4">
