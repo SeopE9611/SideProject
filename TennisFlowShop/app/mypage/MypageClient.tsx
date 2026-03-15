@@ -42,6 +42,7 @@ export default function MypageClient({ user }: Props) {
   // 로딩/실패/실제값(0 포함)을 구분하기 위해 null을 사용한다.
   const [ordersCount, setOrdersCount] = useState<number | null>(null);
   const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
+  const [activityFlowCount, setActivityFlowCount] = useState<number | null>(null);
 
   const resolveOrdersScope = (scope: string | null) => {
     if (scope === 'todo' || scope === 'order' || scope === 'application' || scope === 'rental') {
@@ -114,7 +115,7 @@ export default function MypageClient({ user }: Props) {
     let mounted = true;
     const controller = new AbortController();
 
-    const parseCountResponse = async (res: Response, label: 'orders' | 'applications') => {
+    const parseCountResponse = async (res: Response, label: 'orders' | 'applications' | 'activity') => {
       if (!res.ok) {
         throw new Error(`${label} fetch failed: ${res.status}`);
       }
@@ -127,9 +128,10 @@ export default function MypageClient({ user }: Props) {
     };
 
     (async () => {
-      const [ordersResult, applicationsResult] = await Promise.allSettled([
+      const [ordersResult, applicationsResult, activityResult] = await Promise.allSettled([
         fetch('/api/users/me/orders', { signal: controller.signal }).then((res) => parseCountResponse(res, 'orders')),
         fetch('/api/applications/me', { signal: controller.signal }).then((res) => parseCountResponse(res, 'applications')),
+        fetch('/api/mypage/activity?page=1&pageSize=1', { signal: controller.signal }).then((res) => parseCountResponse(res, 'activity')),
       ]);
 
       if (!mounted) return;
@@ -148,6 +150,12 @@ export default function MypageClient({ user }: Props) {
         // 실패를 0으로 보이지 않게 null로 분리한다.
         setApplicationsCount(null);
         showErrorToast('신청 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      }
+
+      if (activityResult.status === 'fulfilled') {
+        setActivityFlowCount(activityResult.value);
+      } else if (!(activityResult.reason instanceof DOMException && activityResult.reason.name === 'AbortError')) {
+        setActivityFlowCount(null);
       }
 
       setSummaryLoading(false);
@@ -236,18 +244,23 @@ export default function MypageClient({ user }: Props) {
               <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-6">
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (ordersCount ?? '-')}</div>
-                  <div className="text-xs bp-sm:text-sm text-muted-foreground">총 주문</div>
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (activityFlowCount ?? '-')}</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">거래/이용 흐름</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                   <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (applicationsCount ?? '-')}</div>
-                  <div className="text-xs bp-sm:text-sm text-muted-foreground">서비스 신청</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">서비스 신청 누적</div>
+                </div>
+                <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
+                  <ClipboardList className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
+                  <div className="text-xl bp-sm:text-2xl font-bold mb-1">{summaryLoading ? <Skeleton className="mx-auto h-7 w-10" /> : (ordersCount ?? '-')}</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">주문 건수</div>
                 </div>
                 <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border col-span-2 bp-lg:col-span-1">
                   <UserCheck className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
                   <div className="text-xl bp-sm:text-2xl font-bold mb-1">{user.role === 'admin' ? '관리자' : '일반 회원'}</div>
-                  <div className="text-xs bp-sm:text-sm text-muted-foreground">회원 등급</div>
+                  <div className="text-xs bp-sm:text-sm text-muted-foreground">회원 구분</div>
                 </div>
               </div>
             </div>
