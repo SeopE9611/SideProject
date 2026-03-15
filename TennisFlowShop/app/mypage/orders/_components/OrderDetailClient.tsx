@@ -436,6 +436,10 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
         )}
         {orderDetail.shippingInfo?.withStringService && (
           <>
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <p className="text-sm font-semibold text-foreground">연결된 교체서비스 요약</p>
+              <p className="text-xs text-muted-foreground mt-1">신청 가능 여부, 남은 신청 수량, 연결된 신청 상세를 한 곳에서 확인할 수 있어요.</p>
+            </div>
             {totalSlots > 0 && remainingSlots > 0 ? (
               <div className="bg-muted/30 border border-border rounded-xl p-4 shadow-lg bp-sm:p-6">
                 <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
@@ -455,7 +459,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                   <div className="flex justify-center bp-md:justify-end">
                     <Link className="w-full bp-sm:max-w-xs bp-md:w-auto" href={`/services/apply?orderId=${orderDetail._id}`}>
                       <Button variant="default" className="w-full shadow-lg">
-                        {hasSubmittedStringingApplication ? '스트링 장착 서비스 추가 신청하기' : '스트링 장착 서비스 신청하기'}
+                        {hasSubmittedStringingApplication ? '교체서비스 추가 신청하기' : '교체서비스 신청하기'}
                       </Button>
                     </Link>
                   </div>
@@ -567,7 +571,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
             <CardHeader variant="sectionGradient">
               <CardTitle className="flex items-center space-x-2">
                 <User className="h-5 w-5 text-primary" />
-                <span>내 정보</span>
+                <span>주문자 정보</span>
               </CardTitle>
             </CardHeader>
             {editingCustomer ? (
