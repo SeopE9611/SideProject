@@ -489,6 +489,26 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                   />
                 </div>
 
+                {(keyword.trim() || field !== 'all') && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setUiLoading(true);
+                      const nextPage = 1;
+                      setPage(nextPage);
+                      setInputKeyword('');
+                      setKeyword('');
+                      setInputField('all');
+                      setField('all');
+                      pushUrl({ page: nextPage, category, answerFilter, keyword: '', field: 'all' });
+                    }}
+                    disabled={isBusy}
+                  >
+                    전체 보기
+                  </Button>
+                )}
+
                 <Button
                   type="button"
                   onClick={() => {
@@ -628,7 +648,23 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                 <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
                   <p className="text-sm font-medium text-foreground">검색 결과가 없습니다.</p>
                   <p className="mt-1 text-xs text-muted-foreground">검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요.</p>
-                  <div className="mt-3">
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setInputKeyword('');
+                        setKeyword('');
+                        setInputField('all');
+                        setField('all');
+                        const nextPage = 1;
+                        setPage(nextPage);
+                        pushUrl({ page: nextPage, category, answerFilter, keyword: '', field: 'all' });
+                      }}
+                    >
+                      검색 해제
+                    </Button>
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/board/qna">전체 문의 보기</Link>
                     </Button>
