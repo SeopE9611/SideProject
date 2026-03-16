@@ -8,6 +8,7 @@ import useSWR from 'swr';
 import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { getCategoryBadgeText } from '@/app/board/_components/board-config';
 import ErrorBox from '@/app/board/_components/ErrorBox';
+import PinnedNoticeStrip from '@/app/board/_components/PinnedNoticeStrip';
 import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,15 @@ type ListResponse = {
   total: number;
   page: number;
   limit: number;
+};
+
+type NoticePinnedResponse = {
+  items?: Array<{
+    _id: string;
+    title: string;
+    createdAt: string | Date;
+    isPinned?: boolean;
+  }>;
 };
 
 const MARKET_FILTER_KEYS = [
@@ -270,6 +280,24 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const { user, loading } = useCurrentUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>('/api/boards?type=notice&page=1&limit=5', boardFetcher, {
+    revalidateOnFocus: false,
+    keepPreviousData: true,
+  });
+
+  const pinnedNotices = useMemo(
+    () =>
+      (pinnedNoticeData?.items ?? [])
+        .filter((notice) => notice.isPinned)
+        .slice(0, 3)
+        .map((notice) => ({
+          _id: notice._id,
+          title: notice.title,
+          createdAt: notice.createdAt,
+        })),
+    [pinnedNoticeData?.items],
+  );
 
   // 모달 핸들러
   const [composeOpen, setComposeOpen] = useState(false);
@@ -543,7 +571,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             <p className="mt-1 text-sm text-foreground md:text-base">{config.boardDescription}</p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
               <Link href="/board">게시판 홈으로</Link>
             </Button>
@@ -871,6 +899,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 </Button>
               </div>
             )}
+
+            <PinnedNoticeStrip items={pinnedNotices} />
 
             {/* 로딩/에러/빈 상태 처리 */}
             {isLoading && <ListSkeleton />}
