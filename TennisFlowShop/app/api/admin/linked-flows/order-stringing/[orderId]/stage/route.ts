@@ -1,12 +1,17 @@
+import { onScheduleConfirmed, onStatusUpdated } from '@/app/features/notifications/triggers/stringing';
+import { issuePassesForPaidOrder } from '@/lib/passes.service';
 import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
+import { ClientSession, ObjectId } from 'mongodb';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
+import clientPromise from '@/lib/mongodb';
 import {
   buildLinkedFlowStagePreview,
   inferLinkedFlowStage,
+  isApplicationClosedForLinkedAutomation,
   isLinkedFlowStage,
   LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
+  mapOrderStatusToPaymentStatus,
   mapStageToApplicationStatus,
   mapStageToOrderStatus,
 } from '@/lib/admin/linked-flow-stage';
@@ -21,17 +26,24 @@ function getOrderIdCandidates(orderId: ObjectId) {
   return [orderId, String(orderId)];
 }
 
-function pickLatestLinkedApplication(applications: any[]) {
-  if (!applications.length) return null;
+async function pickLatestLinkedApplication(collection: any, orderId: ObjectId, session?: ClientSession) {
+  const rows = await collection
+    .find(
+      {
+        orderId: { $in: getOrderIdCandidates(orderId) },
+        status: { $nin: ['draft', '취소'] },
+        $or: [{ 'cancelRequest.status': { $exists: false } }, { 'cancelRequest.status': { $nin: ['approved', '승인'] } }],
+      },
+      {
+        projection: { _id: 1, status: 1, updatedAt: 1, createdAt: 1, stringDetails: 1, orderId: 1, customer: 1, userSnapshot: 1, guestName: 1, guestEmail: 1, cancelRequest: 1 } as any,
+        session,
+      },
+    )
+    .sort({ updatedAt: -1, createdAt: -1 })
+    .limit(1)
+    .toArray();
 
-  const sorted = [...applications].sort((a, b) => {
-    const aDate = new Date((a?.updatedAt ?? a?.createdAt ?? 0) as any).getTime();
-    const bDate = new Date((b?.updatedAt ?? b?.createdAt ?? 0) as any).getTime();
-    return bDate - aDate;
-  });
-
-  const nonDraft = sorted.find((doc) => String(doc?.status ?? '').trim() !== 'draft');
-  return nonDraft ?? sorted[0] ?? null;
+  return rows[0] ?? null;
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ orderId: string }> }) {
@@ -59,102 +71,192 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
   }
 
   const _id = new ObjectId(orderId);
-  const order = await guard.db.collection('orders').findOne({ _id }, { projection: { _id: 1, status: 1, updatedAt: 1 } as any });
-
-  if (!order) {
-    return NextResponse.json({ success: false, message: 'ORDER_NOT_FOUND' }, { status: 404 });
-  }
-
-  const previousOrderStatus = String((order as any).status ?? '').trim();
-  if (LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(previousOrderStatus as any)) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'ORDER_STATUS_BLOCKED',
-        orderStatus: previousOrderStatus,
-        blockedStatuses: LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
-      },
-      { status: 400 },
-    );
-  }
-
-  const applications = await guard.db
-    .collection('stringing_applications')
-    .find(
-      {
-        orderId: { $in: getOrderIdCandidates(_id) },
-      },
-      {
-        projection: { _id: 1, status: 1, updatedAt: 1, createdAt: 1 } as any,
-      },
-    )
-    .limit(20)
-    .toArray();
-
-  const app = pickLatestLinkedApplication(applications as any[]);
-
-  if (!app) {
-    return NextResponse.json({ success: false, message: 'LINKED_APPLICATION_NOT_FOUND' }, { status: 404 });
-  }
-
-  const previousApplicationStatus = String((app as any).status ?? '').trim();
   const stage = rawStage;
-
-  const nextOrderStatus = mapStageToOrderStatus(stage);
-  const nextApplicationStatus = mapStageToApplicationStatus(stage);
-
   const now = new Date();
-  const currentInferred = inferLinkedFlowStage(previousOrderStatus, previousApplicationStatus);
 
-  const orderHistoryEntry = {
-    status: nextOrderStatus,
-    date: now,
-    description: `[관리자 대표단계 변경] ${currentInferred ? `${currentInferred} → ` : ''}${stage} (연결 신청서 동기화)`,
-  };
+  const client = await clientPromise;
+  const mongoSession = client.startSession();
 
-  const applicationHistoryEntry = {
-    status: nextApplicationStatus,
-    date: now,
-    description: `[관리자 대표단계 변경] ${currentInferred ? `${currentInferred} → ` : ''}${stage} (연결 주문 동기화)`,
-  };
+  let resultPayload: any = null;
 
-  await guard.db.collection('orders').updateOne(
-    { _id },
-    {
-      $set: { status: nextOrderStatus, updatedAt: now },
-      $push: { history: orderHistoryEntry },
-    } as any,
-  );
+  try {
+    await mongoSession.withTransaction(async () => {
+      const orders = guard.db.collection('orders');
+      const applications = guard.db.collection('stringing_applications');
 
-  await guard.db.collection('stringing_applications').updateOne(
-    { _id: (app as any)._id },
-    {
-      $set: { status: nextApplicationStatus, updatedAt: now },
-      $push: { history: applicationHistoryEntry },
-    } as any,
-  );
+      const order = await orders.findOne({ _id }, { projection: { _id: 1, status: 1, paymentStatus: 1, updatedAt: 1 } as any, session: mongoSession });
 
-  const previewText = buildLinkedFlowStagePreview({
-    stage,
-    orderPreviousStatus: previousOrderStatus,
-    orderNextStatus: nextOrderStatus,
-    applicationPreviousStatus: previousApplicationStatus,
-    applicationNextStatus: nextApplicationStatus,
-  });
+      if (!order) {
+        throw new Error('ORDER_NOT_FOUND');
+      }
+
+      const previousOrderStatus = String((order as any).status ?? '').trim();
+      if (LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(previousOrderStatus as any)) {
+        throw new Error(`ORDER_STATUS_BLOCKED:${previousOrderStatus}`);
+      }
+
+      const app = await pickLatestLinkedApplication(applications, _id, mongoSession);
+      if (!app) {
+        throw new Error('LINKED_APPLICATION_NOT_FOUND');
+      }
+
+      const previousApplicationStatus = String((app as any).status ?? '').trim();
+      if (isApplicationClosedForLinkedAutomation({ status: previousApplicationStatus, cancelRequestStatus: (app as any)?.cancelRequest?.status })) {
+        throw new Error('APPLICATION_STATUS_BLOCKED');
+      }
+
+      const nextOrderStatus = mapStageToOrderStatus(stage);
+      const nextApplicationStatus = mapStageToApplicationStatus(stage);
+      const nextPaymentStatus = mapOrderStatusToPaymentStatus(nextOrderStatus);
+      const currentInferred = inferLinkedFlowStage(previousOrderStatus, previousApplicationStatus);
+
+      const orderHistoryEntry = {
+        status: nextOrderStatus,
+        date: now,
+        description: `[관리자 대표단계 변경] ${currentInferred ? `${currentInferred} → ` : ''}${stage} (연결 신청서 동기화)`,
+      };
+
+      const applicationHistoryEntry = {
+        status: nextApplicationStatus,
+        date: now,
+        description: `[관리자 대표단계 변경] ${currentInferred ? `${currentInferred} → ` : ''}${stage} (연결 주문 동기화)`,
+      };
+
+      const orderSetFields: Record<string, any> = { status: nextOrderStatus, updatedAt: now };
+      if (nextPaymentStatus) orderSetFields.paymentStatus = nextPaymentStatus;
+
+      const orderUpdateRes = await orders.updateOne(
+        { _id },
+        {
+          $set: orderSetFields,
+          $push: { history: orderHistoryEntry },
+        } as any,
+        { session: mongoSession },
+      );
+
+      if (!orderUpdateRes.matchedCount) {
+        throw new Error('ORDER_NOT_FOUND');
+      }
+
+      const appUpdateOps: Record<string, any> = {
+        $set: { status: nextApplicationStatus, updatedAt: now },
+        $push: { history: applicationHistoryEntry },
+      };
+      if (nextApplicationStatus !== 'draft') {
+        appUpdateOps.$unset = { expireAt: '' };
+      }
+
+      const appUpdateRes = await applications.updateOne({ _id: (app as any)._id }, appUpdateOps as any, { session: mongoSession });
+
+      if (!appUpdateRes.matchedCount) {
+        throw new Error('LINKED_APPLICATION_NOT_FOUND');
+      }
+
+      const becamePaid = (order as any).paymentStatus !== '결제완료' && nextPaymentStatus === '결제완료';
+
+      resultPayload = {
+        stage,
+        now,
+        becamePaid,
+        orderId: String((order as any)._id),
+        appId: String((app as any)._id),
+        previousOrderStatus,
+        nextOrderStatus,
+        previousApplicationStatus,
+        nextApplicationStatus,
+        previewText: buildLinkedFlowStagePreview({
+          stage,
+          orderPreviousStatus: previousOrderStatus,
+          orderNextStatus: nextOrderStatus,
+          applicationPreviousStatus: previousApplicationStatus,
+          applicationNextStatus: nextApplicationStatus,
+        }),
+      };
+    });
+  } catch (e: any) {
+    const message = String(e?.message ?? '');
+    if (message === 'ORDER_NOT_FOUND') {
+      return NextResponse.json({ success: false, message: 'ORDER_NOT_FOUND' }, { status: 404 });
+    }
+    if (message === 'LINKED_APPLICATION_NOT_FOUND') {
+      return NextResponse.json({ success: false, message: '진행중인 연결 신청서를 찾을 수 없습니다.' }, { status: 404 });
+    }
+    if (message.startsWith('ORDER_STATUS_BLOCKED:')) {
+      const orderStatus = message.split(':')[1] || '';
+      return NextResponse.json(
+        {
+          success: false,
+          message: '주문이 종료 상태이므로 대표 단계를 변경할 수 없습니다.',
+          orderStatus,
+          blockedStatuses: LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
+        },
+        { status: 400 },
+      );
+    }
+    if (message === 'APPLICATION_STATUS_BLOCKED') {
+      return NextResponse.json({ success: false, message: '취소/종료된 신청서는 대표 단계 변경 대상이 아닙니다.' }, { status: 400 });
+    }
+
+    console.error('[admin linked-flow stage] transaction failed:', e);
+    return NextResponse.json(
+      { success: false, message: '대표 단계 변경 처리 중 오류가 발생했습니다. 저장이 완료되지 않았습니다.' },
+      { status: 500 },
+    );
+  } finally {
+    await mongoSession.endSession();
+  }
+
+  try {
+    if (resultPayload?.becamePaid) {
+      const updatedOrder = await guard.db.collection('orders').findOne({ _id: new ObjectId(resultPayload.orderId) });
+      if (updatedOrder) {
+        await issuePassesForPaidOrder(guard.db, updatedOrder);
+      }
+    }
+
+    const appDoc = await guard.db.collection('stringing_applications').findOne({ _id: new ObjectId(resultPayload.appId) });
+    if (appDoc) {
+      const userCtx = {
+        name: appDoc?.customer?.name ?? appDoc?.userSnapshot?.name ?? appDoc?.guestName ?? undefined,
+        email: appDoc?.customer?.email ?? appDoc?.userSnapshot?.email ?? appDoc?.guestEmail,
+      };
+
+      const appCtx = {
+        applicationId: String(appDoc._id),
+        orderId: appDoc?.orderId ? String(appDoc.orderId) : null,
+        status: resultPayload.nextApplicationStatus,
+        stringDetails: appDoc?.stringDetails,
+        shippingInfo: appDoc?.shippingInfo,
+      };
+
+      const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${String(appDoc._id)}`;
+
+      await onStatusUpdated({ user: userCtx, application: appCtx, adminDetailUrl });
+      if (resultPayload.nextApplicationStatus === '접수완료') {
+        const hasSchedule = Boolean(appDoc?.stringDetails?.preferredDate) && Boolean(appDoc?.stringDetails?.preferredTime);
+        if (hasSchedule) {
+          await onScheduleConfirmed({ user: userCtx, application: appCtx });
+        }
+      }
+    }
+  } catch (sideEffectError) {
+    console.error('[admin linked-flow stage] post side-effect failed:', sideEffectError);
+  }
 
   return NextResponse.json({
     success: true,
-    stage,
+    stage: resultPayload.stage,
     order: {
-      id: String((order as any)._id),
-      previousStatus: previousOrderStatus,
-      nextStatus: nextOrderStatus,
+      id: resultPayload.orderId,
+      previousStatus: resultPayload.previousOrderStatus,
+      nextStatus: resultPayload.nextOrderStatus,
+      paymentStatus: mapOrderStatusToPaymentStatus(resultPayload.nextOrderStatus),
     },
     application: {
-      id: String((app as any)._id),
-      previousStatus: previousApplicationStatus,
-      nextStatus: nextApplicationStatus,
+      id: resultPayload.appId,
+      previousStatus: resultPayload.previousApplicationStatus,
+      nextStatus: resultPayload.nextApplicationStatus,
     },
-    previewText,
+    previewText: resultPayload.previewText,
   });
 }
