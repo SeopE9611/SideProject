@@ -142,7 +142,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const navListQuery = useMemo(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('openProfile');
-    if (!params.get('limit')) params.set('limit', '20');
+    if (!params.get('limit')) params.set('limit', '10');
     if (!params.get('page')) params.set('page', '1');
     params.set('type', config.boardType);
     return params.toString();
