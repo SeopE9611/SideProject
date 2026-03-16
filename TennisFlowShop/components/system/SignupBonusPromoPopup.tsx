@@ -103,7 +103,7 @@ export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) 
             <div className="mt-2 text-2xl font-black">회원가입 시 {promo.amount.toLocaleString('ko-KR')}P 지급</div>
             <div className="mt-2 text-sm text-muted-foreground">{periodText ? `기간: ${periodText}` : '지금 가입하면 자동으로 지급됩니다.'}</div>
           </div>
-          <img src="/funny.png" alt="프로모션" className="absolute right-2 top-1/2 -translate-y-1/2 h-40 w-auto opacity-95" />
+          {/* <img src="/funny.png" alt="프로모션" className="absolute right-2 top-1/2 -translate-y-1/2 h-40 w-auto opacity-95" /> */}
         </div>
 
         <div className="p-6 space-y-4">
