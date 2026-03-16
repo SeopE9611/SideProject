@@ -532,6 +532,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
   // 확정 버튼 노출/활성 조건 (ApplicationsClient 규칙에 맞게 "상태 기반"으로 단순화)
   const confirmableStatuses = ['반송완료', '교체완료', '완료'];
   const canConfirmExchange = !isAdmin && !isCancelled && !isCancelRequested && !isUserConfirmed && confirmableStatuses.includes(data.status);
+  const showConfirmExchangeButton = canConfirmExchange || isUserConfirmed;
   const userProgressSteps = [
     { key: '접수완료', label: '접수 완료' },
     { key: '검토 중', label: '검토 중' },
@@ -717,19 +718,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
                 {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} className="w-auto h-9 px-3 text-sm" />}
 
-                {/* 사용자: 교체확정 버튼 */}
-                {!isAdmin && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-block">
-                        <Button size="sm" disabled={!canConfirmExchange || isConfirmSubmitting} onClick={handleConfirmExchange}>
-                          <CheckCircle2 className="w-4 h-4 mr-2" />
-                          {isConfirmSubmitting ? '확정 중...' : isUserConfirmed ? '확정 완료' : '교체 확정'}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    {!canConfirmExchange && <TooltipContent>{isUserConfirmed ? '이미 교체 확정된 신청입니다.' : '교체완료/반송완료 이후에 확정할 수 있습니다.'}</TooltipContent>}
-                  </Tooltip>
+                {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
+                {!isAdmin && showConfirmExchangeButton && (
+                  <Button size="sm" disabled={!canConfirmExchange || isConfirmSubmitting} onClick={handleConfirmExchange}>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {isConfirmSubmitting ? '확정 중...' : isUserConfirmed ? '교체서비스 확정 완료' : '교체서비스 확정'}
+                  </Button>
                 )}
 
                 <Link href={backUrl} className="basis-full sm:basis-auto">
@@ -853,6 +847,12 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                 {!isCancelled && isCancelRequested && <span className="italic">취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.</span>}
 
                 {!isCancelled && !isCancelRequested && <span>{new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.</span>}
+                {!isCancelled && !isCancelRequested && !canConfirmExchange && !isUserConfirmed && (
+                  <span className="block">교체 완료 후 교체서비스 확정을 진행할 수 있습니다.</span>
+                )}
+                {!isCancelled && !isCancelRequested && (
+                  <span className="block">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</span>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2 justify-end">

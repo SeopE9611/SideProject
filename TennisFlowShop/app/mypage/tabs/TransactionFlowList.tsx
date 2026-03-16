@@ -494,6 +494,9 @@ export default function TransactionFlowList() {
           해야 할 일은 구매확정·운송장 등록·교체확정처럼 지금 바로 처리할 항목만 모아 보여줍니다.
         </p>
       ) : null}
+      <p className="text-xs text-muted-foreground">
+        주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
+      </p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
           <CardContent className="p-8 text-center">
@@ -515,10 +518,16 @@ export default function TransactionFlowList() {
         const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
         const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
         const applicationId = g.application?.id ?? (g.kind === "application" ? g.detailTarget.id : undefined);
+        const linkedApps = g.kind === "order" ? (g.order?.applicationSummaries ?? []) : g.kind === "rental" ? (g.rental?.applicationSummaries ?? []) : [];
+        const linkedActionableApplication = linkedApps.find((app) => isApplicationTodoActionable(app));
+        const prefersApplicationView = scope === "application" && Boolean(g.application);
+        const displayApplication = g.application;
+        const isDirectApplicationCard = g.kind === "application" || prefersApplicationView;
+        const applicationActionTarget = displayApplication ?? linkedActionableApplication;
         const primaryLinkedApplicationId = g.kind === "order"
-          ? (g.order?.stringingApplicationId ?? g.order?.applicationSummaries?.[0]?.id)
+          ? (g.order?.stringingApplicationId ?? linkedActionableApplication?.id ?? g.order?.applicationSummaries?.[0]?.id)
           : g.kind === "rental"
-            ? (g.rental?.stringingApplicationId ?? g.rental?.applicationSummaries?.[0]?.id)
+            ? (g.rental?.stringingApplicationId ?? linkedActionableApplication?.id ?? g.rental?.applicationSummaries?.[0]?.id)
             : undefined;
         const status =
           g.kind === "order"
@@ -535,22 +544,16 @@ export default function TransactionFlowList() {
             : g.kind === "rental"
               ? (g.rental?.linkedApplicationCount ?? 0)
               : 0;
-        const linkedApps = g.kind === "order" ? (g.order?.applicationSummaries ?? []) : g.kind === "rental" ? (g.rental?.applicationSummaries ?? []) : [];
-        const needsTrackingAction = Boolean(
-          g.application?.needsInboundTracking && !g.application?.hasTracking,
-        );
+        const needsTrackingAction = Boolean(applicationActionTarget?.needsInboundTracking && !applicationActionTarget?.hasTracking);
         const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
         const normalizedFlowLabel = normalizeLabel(g.flowLabel);
         const todoPrimaryReason = scope === "todo" ? getTodoPrimaryReason(g) : null;
-        const prefersApplicationView = scope === "application" && Boolean(g.application);
         const shouldShowFlowBadge =
           !prefersApplicationView &&
           Boolean(normalizedFlowLabel) &&
           normalizedFlowLabel !== normalizedMetaLabel;
         const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
-        const displayApplication = g.application;
-        const isApplicationActionContext = g.kind === "application" || prefersApplicationView;
-        const applicationActionTarget = displayApplication;
+        const isApplicationActionContext = Boolean(applicationActionTarget) && (isDirectApplicationCard || scope === "todo");
         const displayTitle = prefersApplicationView
           ? getApplicationTitle(displayApplication)
           : getRepresentativeTitle(g);
@@ -812,7 +815,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="order-confirm" size="sm" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingOrderId === orderId ? "처리 중..." : "구매확정"}
+                            {confirmingOrderId === orderId ? "처리 중..." : "주문 구매확정"}
                           </Button>
                         ),
                       });
@@ -878,7 +881,7 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (["접수완료", "검토 중"].includes(getMypageNormalizedStatus(applicationActionTarget.status))) {
+                    if (isDirectApplicationCard && ["접수완료", "검토 중"].includes(getMypageNormalizedStatus(applicationActionTarget.status))) {
                       actions.push({
                         key: "application-cancel-request",
                         priority: 1,
@@ -895,10 +898,11 @@ export default function TransactionFlowList() {
                       actions.push({
                         key: "application-confirm",
                         priority: 2,
+                        pinInline: scope === "todo",
                         node: (
                           <Button key="application-confirm" size="sm" disabled={confirmingApplicationId === applicationActionTarget.id} onClick={() => handleConfirmApplication(applicationActionTarget.id)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체확정"}
+                            {confirmingApplicationId === applicationActionTarget.id ? "처리 중..." : "교체서비스 확정"}
                           </Button>
                         ),
                       });
