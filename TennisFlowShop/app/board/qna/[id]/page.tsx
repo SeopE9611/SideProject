@@ -301,7 +301,7 @@ export default function QnaDetailPage() {
                           <Badge variant="secondary">{qna.attachments.length}개</Badge>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
                           {qna.attachments.map((att: any, i: number) => {
                             const url = typeof att === 'string' ? att : att?.url;
                             const name = typeof att === 'string' ? `attachment-${i}` : att?.name || `attachment-${i}`;
@@ -322,10 +322,10 @@ export default function QnaDetailPage() {
                                 </button>
                               </div>
                             ) : (
-                              <div key={i} className="p-3 rounded-lg border border-border bg-card transition-colors duration-200 hover:bg-muted/40">
-                                <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-primary hover:text-primary font-medium break-all">
+                              <div key={i} className="rounded-lg border border-border bg-card p-3 transition-colors duration-200 hover:bg-muted/40 sm:p-4">
+                                <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary">
                                   <FileText className="h-4 w-4 flex-shrink-0" />
-                                  {name}
+                                  <span className="truncate">{name}</span>
                                 </a>
                               </div>
                             );
