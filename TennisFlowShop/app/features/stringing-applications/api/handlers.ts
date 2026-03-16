@@ -169,6 +169,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           projection: {
             items: 1,
             status: 1,
+            paymentStatus: 1,
             cancelRequest: 1,
             shippingInfo: 1,
             servicePickupMethod: 1,
@@ -291,6 +292,8 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       userConfirmedAt: (app as any).userConfirmedAt instanceof Date ? (app as any).userConfirmedAt.toISOString() : typeof (app as any).userConfirmedAt === 'string' ? (app as any).userConfirmedAt : null,
       // 주문 cancelRequest도 한글/영문 혼재 가능 → 표준화해서 내려야 UI가 안 깨짐
       orderCancelStatus: normalizeCancelStatus(order?.cancelRequest?.status) ?? 'none',
+      orderStatus: order?.status ?? null,
+      orderPaymentStatus: order?.paymentStatus ?? null,
       customer: {
         name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? '-',
         email: app.customer?.email ?? app.userSnapshot?.email ?? app.guestEmail ?? '-',

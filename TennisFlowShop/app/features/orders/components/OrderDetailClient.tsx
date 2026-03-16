@@ -10,6 +10,7 @@ import PaymentMethodDetail from '@/app/features/orders/components/PaymentMethodD
 import RequestEditForm from '@/app/features/orders/components/RequestEditForm';
 import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
+import LinkedFlowStageCard from '@/components/admin/LinkedFlowStageCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -530,6 +531,20 @@ export default function OrderDetailClient({ orderId }: Props) {
               />
             )}
           </div>
+
+          {latestLinkedApplication?.id && latestLinkedApplication?.status && (
+            <LinkedFlowStageCard
+              className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
+              orderId={orderId}
+              orderStatus={localStatus}
+              applicationStatus={latestLinkedApplication.status}
+              onSaved={async () => {
+                await mutateOrder();
+                await mutateHistory();
+                router.refresh();
+              }}
+            />
+          )}
 
           {/* 주문 상태 및 요약 */}
           <Card className="mb-6 overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring">
