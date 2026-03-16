@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Eye, FileText, MessageSquare, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Eye, FileText, MessageSquare, ThumbsUp } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -63,6 +63,10 @@ type Props = {
 };
 
 type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
+type CommunityNavListResponse = {
+  ok: true;
+  items: Array<{ id: string; title: string }>;
+};
 
 // 작성자 프로필 모달 상태
 type AuthorOverview = {
@@ -135,6 +139,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
   const searchParams = useSearchParams();
   const listQuery = searchParams.toString();
   const listHref = listQuery ? `${config.routePrefix}?${listQuery}` : config.routePrefix;
+  const navListQuery = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('openProfile');
+    if (!params.get('limit')) params.set('limit', '20');
+    if (!params.get('page')) params.set('page', '1');
+    params.set('type', config.boardType);
+    return params.toString();
+  }, [searchParams, config.boardType]);
 
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
@@ -236,6 +248,21 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   const item = data && data.ok ? data.item : null;
   const detailError = parseApiError(error, '글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+  const { data: navListData } = useSWR<CommunityNavListResponse>(item ? `/api/community/posts?${navListQuery}` : null, (url: string) => boardFetcher<CommunityNavListResponse>(url), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000,
+  });
+
+  const { prevPost, nextPost } = useMemo(() => {
+    if (!item || !navListData?.items?.length) return { prevPost: null, nextPost: null };
+    const idx = navListData.items.findIndex((candidate) => candidate.id === item.id);
+    if (idx < 0) return { prevPost: null, nextPost: null };
+    return {
+      prevPost: idx < navListData.items.length - 1 ? navListData.items[idx + 1] : null,
+      nextPost: idx > 0 ? navListData.items[idx - 1] : null,
+    };
+  }, [item, navListData]);
 
   // 목록에서 프로필 오픈하면 상세에서 쿼리 감지하여 모달 자동 오픈
   useEffect(() => {
@@ -1446,7 +1473,44 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 </div>
               )}
 
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs text-muted-foreground">
+              <section className="mt-8 space-y-3 border-t pt-4" aria-label="글 이동">
+                <div className="grid gap-2 md:grid-cols-2">
+                  {([
+                    { key: 'prev', label: '이전 글', icon: ChevronLeft, target: prevPost },
+                    { key: 'next', label: '다음 글', icon: ChevronRight, target: nextPost },
+                  ] as const).map(({ key, label, icon: Icon, target }) => (
+                    <Button
+                      key={key}
+                      asChild={!!target}
+                      variant="outline"
+                      className="h-auto min-h-16 justify-start px-4 py-3 text-left"
+                      disabled={!target}
+                    >
+                      {target ? (
+                        <Link href={`${config.routePrefix}/${target.id}${listQuery ? `?${listQuery}` : ''}`}>
+                          <div className="flex w-full items-start gap-3">
+                            <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">{label}</p>
+                              <p className="line-clamp-2 text-sm font-medium text-foreground">{target.title}</p>
+                            </div>
+                          </div>
+                        </Link>
+                      ) : (
+                        <span className="flex w-full items-start gap-3 text-muted-foreground">
+                          <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span className="min-w-0">
+                            <span className="block text-xs">{label}</span>
+                            <span className="block line-clamp-1 text-sm">이동할 글이 없습니다.</span>
+                          </span>
+                        </span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </section>
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
                 <div className="flex flex-wrap items-center gap-2">
