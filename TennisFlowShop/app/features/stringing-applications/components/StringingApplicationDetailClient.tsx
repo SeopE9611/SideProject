@@ -214,6 +214,12 @@ const getCourierLabel = (courier?: string | null) => {
 // 시간(시/분)을 2자리 문자열로 포맷
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
+const toShortApplicationId = (value?: string | null) => {
+  const normalized = String(value ?? '').trim();
+  if (!normalized) return '-';
+  return normalized.slice(-6).toUpperCase();
+};
+
 /**
  * 방문 예약 일시를 "YYYY-MM-DD HH:mm ~ HH:mm (n슬롯 / 총 m분)" 형태로 포맷.
  *
@@ -650,7 +656,7 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
               <div className="bg-card rounded-full p-3 shadow-md">{isAdmin ? <Settings className="h-8 w-8 text-foreground" /> : <Target className="h-8 w-8 text-foreground" />}</div>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">{isAdmin ? '스트링 신청 관리' : '스트링 신청 상세'}</h1>
-                <p className="mt-1 text-muted-foreground">신청 ID: {data.id}</p>
+                <p className="mt-1 text-muted-foreground">신청 번호: #{toShortApplicationId(data.id)}</p>
               </div>
             </div>
             <TooltipProvider>

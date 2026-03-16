@@ -380,7 +380,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                 className={cn(isEditMode ? '' : 'bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20')}
               >
                 <Pencil className="mr-1 h-4 w-4" />
-                {isEditMode ? '편집 종료' : '편집 모드'}
+                {isEditMode ? '수정 종료' : '주문 정보 수정'}
               </Button>
 
               {canShowCancelButton && (

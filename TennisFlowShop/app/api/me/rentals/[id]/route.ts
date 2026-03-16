@@ -111,6 +111,7 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
 
     shipping: {
       // 운송장/배송 정보
+      shippingMethod: doc.shipping?.shippingMethod ?? null,
       outbound: doc.shipping?.outbound ?? null,
       return: doc.shipping?.return ?? null,
     },
