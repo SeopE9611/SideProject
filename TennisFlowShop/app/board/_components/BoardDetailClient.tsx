@@ -1510,16 +1510,19 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 </div>
               </section>
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-                <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
+              <div className="mt-6 space-y-3 text-xs text-muted-foreground">
+                <span className="block">게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
-                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-                  {item && (
-                    <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="w-full gap-1 sm:w-auto">
-                      <ThumbsUp className="h-3 w-3" />
+                {item && (
+                  <div className="w-full">
+                    <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="h-11 w-full gap-1 text-sm">
+                      <ThumbsUp className="h-4 w-4" />
                       {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
                     </Button>
-                  )}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-1.5">
 
                   <Dialog
                     open={openReport}
@@ -1532,7 +1535,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     }}
                   >
                     <DialogTrigger asChild>
-                      <Button type="button" variant="ghost" size="sm" className="w-full gap-1 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 sm:w-auto">
+                      <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15">
                         신고하기
                       </Button>
                     </DialogTrigger>
@@ -1613,20 +1616,23 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                           if (!confirmLeaveIfDirty()) return;
                           router.push(`${config.routePrefix}/${item.id}/edit`);
                         }}
+                        className="h-8 px-2 text-xs"
                       >
                         수정
                       </Button>
 
-                      <Button type="button" variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
+                      <Button type="button" variant="ghost" size="sm" onClick={handleDelete} disabled={isDeleting} className="h-8 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15">
                         {isDeleting ? '삭제 중...' : '삭제'}
                       </Button>
                     </>
                   )}
+                </div>
 
-                  <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
+                  <Button asChild variant="outline" size="sm" className="w-full">
                     <Link href={listHref}>목록으로</Link>
                   </Button>
-                  <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Button asChild variant="outline" size="sm" className="w-full">
                     <Link href={`${config.routePrefix}/write`}>새 글 작성</Link>
                   </Button>
                 </div>

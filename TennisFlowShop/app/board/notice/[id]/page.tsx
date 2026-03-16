@@ -384,27 +384,28 @@ export default function NoticeDetailPage() {
                             return (
                               <div
                                 key={`file-${i}`}
-                                className="flex items-center justify-between p-4 rounded-lg border border-border bg-card transition-colors duration-200 hover:bg-muted/40"
+                                className="rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40"
                               >
-                                <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className="flex-shrink-0 w-10 h-10 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                                <div className="flex min-w-0 items-center gap-3">
+                                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
                                     <FileText className="h-5 w-5" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <div className="font-medium text-foreground truncate">{name}</div>
-                                    {size && <div className="text-sm text-muted-foreground">{size}</div>}
+                                    <div className="truncate font-medium text-foreground">{name}</div>
+                                    {size && <div className="text-sm text-muted-foreground truncate">{size}</div>}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+
+                                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-0 sm:flex sm:flex-wrap sm:justify-end">
                                   {isPdf && (
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                                       <a href={url} target="_blank" rel="noreferrer">
                                         <ExternalLink className="h-4 w-4 mr-1" />
                                         미리보기
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="outline" asChild>
+                                  <Button size="sm" variant="outline" asChild className="w-full sm:w-auto">
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드
