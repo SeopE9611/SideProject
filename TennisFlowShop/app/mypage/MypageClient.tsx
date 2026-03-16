@@ -16,10 +16,10 @@ import { getSocialProviderBadgeSpec } from '@/lib/badge-style';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { showErrorToast } from '@/lib/toast';
 import { ClipboardList, Heart, ListTodo, MessageCircleQuestion, MessageSquare, ReceiptCent, Target, Ticket, Trophy, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect } from 'react';
+import useSWR from 'swr';
 
 type Props = {
   user: {
@@ -31,19 +31,27 @@ type Props = {
   };
 };
 
-// 주문, 신청서 카운터 상태관리
-
 export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [summaryLoading, setSummaryLoading] = useState(true);
 
-  // 주문, 신청서 카운터 상태관리
-  // 로딩/실패/실제값(0 포함)을 구분하기 위해 null을 사용한다.
-  const [ordersCount, setOrdersCount] = useState<number | null>(null);
-  const [applicationsCount, setApplicationsCount] = useState<number | null>(null);
-  const [activityFlowCount, setActivityFlowCount] = useState<number | null>(null);
-  const [todoCount, setTodoCount] = useState<number | null>(null);
+  const countFetcher = async (url: string) => {
+    const res = await fetch(url, { credentials: 'include' });
+    if (!res.ok) {
+      throw new Error(`count fetch failed: ${res.status}`);
+    }
+    const data = (await res.json().catch(() => null)) as { total?: unknown } | null;
+    if (typeof data?.total !== 'number') {
+      throw new Error('count total is not a number');
+    }
+    return data.total;
+  };
+
+  const { data: ordersCount, isLoading: isOrdersLoading } = useSWR('/api/users/me/orders', countFetcher, { revalidateOnFocus: true });
+  const { data: applicationsCount, isLoading: isApplicationsLoading } = useSWR('/api/applications/me', countFetcher, { revalidateOnFocus: true });
+  const { data: activityFlowCount, isLoading: isActivityLoading } = useSWR('/api/mypage/activity?page=1&pageSize=1', countFetcher, { revalidateOnFocus: true });
+  const { data: todoCount, isLoading: isTodoLoading } = useSWR('/api/mypage/activity?page=1&pageSize=1&scope=todo', countFetcher, { revalidateOnFocus: true });
+  const summaryLoading = isOrdersLoading || isApplicationsLoading || isActivityLoading || isTodoLoading;
 
   const resolveOrdersScope = (scope: string | null) => {
     if (scope === 'todo' || scope === 'order' || scope === 'application' || scope === 'rental') {
@@ -111,69 +119,6 @@ export default function MypageClient({ user }: Props) {
     const query = nextParams.toString();
     router.replace(query ? `/mypage?${query}` : '/mypage', { scroll: false });
   }, [router, searchParams]);
-
-  useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-
-    const parseCountResponse = async (res: Response, label: 'orders' | 'applications' | 'activity') => {
-      if (!res.ok) {
-        throw new Error(`${label} fetch failed: ${res.status}`);
-      }
-
-      const data = (await res.json().catch(() => null)) as { total?: unknown } | null;
-      if (typeof data?.total !== 'number') {
-        throw new Error(`${label} total is not a number`);
-      }
-      return data.total;
-    };
-
-    (async () => {
-      const [ordersResult, applicationsResult, activityResult, todoResult] = await Promise.allSettled([
-        fetch('/api/users/me/orders', { signal: controller.signal }).then((res) => parseCountResponse(res, 'orders')),
-        fetch('/api/applications/me', { signal: controller.signal }).then((res) => parseCountResponse(res, 'applications')),
-        fetch('/api/mypage/activity?page=1&pageSize=1', { signal: controller.signal }).then((res) => parseCountResponse(res, 'activity')),
-        fetch('/api/mypage/activity?page=1&pageSize=1&scope=todo', { signal: controller.signal }).then((res) => parseCountResponse(res, 'activity')),
-      ]);
-
-      if (!mounted) return;
-
-      if (ordersResult.status === 'fulfilled') {
-        setOrdersCount(ordersResult.value);
-      } else if (!(ordersResult.reason instanceof DOMException && ordersResult.reason.name === 'AbortError')) {
-        // 실패를 0으로 보이지 않게 null로 분리한다.
-        setOrdersCount(null);
-        showErrorToast('주문 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
-      }
-
-      if (applicationsResult.status === 'fulfilled') {
-        setApplicationsCount(applicationsResult.value);
-      } else if (!(applicationsResult.reason instanceof DOMException && applicationsResult.reason.name === 'AbortError')) {
-        // 실패를 0으로 보이지 않게 null로 분리한다.
-        setApplicationsCount(null);
-        showErrorToast('신청 카운트 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
-      }
-
-      if (activityResult.status === 'fulfilled') {
-        setActivityFlowCount(activityResult.value);
-      } else if (!(activityResult.reason instanceof DOMException && activityResult.reason.name === 'AbortError')) {
-        setActivityFlowCount(null);
-      }
-
-      if (todoResult.status === 'fulfilled') {
-        setTodoCount(todoResult.value);
-      } else if (!(todoResult.reason instanceof DOMException && todoResult.reason.name === 'AbortError')) {
-        setTodoCount(null);
-      }
-
-      setSummaryLoading(false);
-    })();
-
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
-  }, []);
 
   if (!user) {
     return (
