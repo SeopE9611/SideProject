@@ -67,9 +67,13 @@ async function fetcherAllow401<T>(url: string): Promise<T | null> {
 
   return data as T;
 }
-const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
+const fmt = (v: string | Date) =>
+  new Date(v)
+    .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    .replace(/\.\s/g, '.')
+    .replace(/\.$/, '');
 const supportMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base';
-const supportMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground';
+const supportMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground';
 const supportMobileActionBadgeWrapClass = 'w-full shrink-0 sm:w-auto';
 
 function FiveLineSkeleton() {
@@ -170,8 +174,8 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                     {/* 메타 정보 */}
                     <div className={supportMobileMetaWrapClass}>
                       <span>{fmt(notice.createdAt)}</span>
-                      <span className="flex items-center">
-                        <Eye className="h-3 w-3 mr-1" />
+                      <span className="inline-flex items-center gap-1">
+                        <Eye className="h-3.5 w-3.5" />
                         {notice.viewCount ?? 0}
                       </span>
                       {(notice.hasImage || notice.hasFile) && (
@@ -303,8 +307,8 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                       <div className={supportMobileMetaWrapClass}>
                         <span>{qna.authorName ?? '익명'}</span>
                         <span>{fmt(qna.createdAt)}</span>
-                        <span className="flex items-center">
-                          <MessageSquare className="h-3 w-3 mr-1" />
+                        <span className="inline-flex items-center gap-1">
+                          <MessageSquare className="h-3.5 w-3.5" />
                           답변 {qna.answer ? 1 : 0}개
                         </span>
                         {(qna.hasImage || qna.hasFile) && (

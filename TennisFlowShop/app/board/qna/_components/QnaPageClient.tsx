@@ -28,7 +28,7 @@ const CAT_LABELS: Record<string, string> = {
 const CODE_TO_LABEL = CAT_LABELS; // 가독성용 alias
 const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]));
 const qnaMobileTitleClampClass = 'min-w-0 line-clamp-2 font-semibold leading-snug sm:line-clamp-1';
-const qnaMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-muted-foreground';
+const qnaMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs sm:text-sm text-muted-foreground';
 
 type QnaItem = {
   _id: string;
@@ -85,7 +85,11 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
     return data as MeRes;
   }
 
-  const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
+  const fmt = (v: string | Date) =>
+    new Date(v)
+      .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+      .replace(/\.\s/g, '.')
+      .replace(/\.$/, '');
 
   // 필터/페이지 상태: "URL 기반 초기값"으로 시작해야 튐이 사라짐
   const [category, setCategory] = useState<string>(initialCategory);
@@ -614,13 +618,13 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
 
                               <span>{fmt(qna.createdAt)}</span>
 
-                              <span className="flex items-center">
-                                <MessageSquare className="h-4 w-4 mr-1" />
+                              <span className="inline-flex items-center gap-1">
+                                <MessageSquare className="h-3.5 w-3.5" />
                                 답변 {qna.answer ? 1 : 0}개
                               </span>
 
-                              <span className="flex items-center">
-                                <Users className="h-4 w-4 mr-1" />
+                              <span className="inline-flex items-center gap-1">
+                                <Users className="h-3.5 w-3.5" />
                                 {qna.viewCount ?? 0}
                               </span>
                             </div>
