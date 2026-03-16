@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
+import { isApplicationClosedForLinkedAutomation, isOrderBlockedForLinkedAutomation } from '@/lib/admin/linked-flow-stage';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { badgeBase, badgeSizeSm, badgeToneClass, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
@@ -598,6 +599,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, 'application');
+  const hasOrderStatus = Boolean(String(data.orderStatus ?? '').trim());
+  const isLinkedStageBlockedByOrder = hasOrderStatus ? isOrderBlockedForLinkedAutomation(data.orderStatus) : false;
+  const isLinkedStageBlockedByApplication = isApplicationClosedForLinkedAutomation({
+    status: data.status,
+    cancelRequestStatus: data.cancelRequest?.status ?? null,
+  });
+  const linkedStageDisabledReason = !hasOrderStatus
+    ? '주문 상태를 확인할 수 없어 대표 단계를 안전하게 변경할 수 없습니다.'
+    : isLinkedStageBlockedByOrder
+      ? `주문 상태(${data.orderStatus})에서는 대표 단계를 변경할 수 없습니다.`
+      : isLinkedStageBlockedByApplication
+        ? '신청서가 취소되었거나 취소 승인 완료 상태여서 대표 단계를 변경할 수 없습니다.'
+        : null;
+
 
   // 자가발송/운송장 등록 여부 계산
   // "고객→매장" 기준은 collectionMethod만 사용
@@ -833,12 +848,14 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
           )}
         </div>
 
-        {isAdmin && data.orderId && (
+        {isAdmin && data.orderId && hasOrderStatus && (
           <LinkedFlowStageCard
             className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
             orderId={String(data.orderId)}
-            orderStatus={data.orderStatus ?? '결제완료'}
+            orderStatus={String(data.orderStatus)}
             applicationStatus={data.status}
+            disabled={Boolean(linkedStageDisabledReason)}
+            disabledReason={linkedStageDisabledReason}
             onSaved={async () => {
               await mutate();
               await historyMutateRef.current?.();

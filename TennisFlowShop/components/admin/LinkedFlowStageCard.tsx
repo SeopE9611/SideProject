@@ -40,10 +40,12 @@ interface Props {
   orderStatus: string;
   applicationStatus: string;
   className?: string;
+  disabled?: boolean;
+  disabledReason?: string | null;
   onSaved?: (result: LinkedFlowStagePatchResponse) => Promise<void> | void;
 }
 
-export default function LinkedFlowStageCard({ orderId, orderStatus, applicationStatus, className, onSaved }: Props) {
+export default function LinkedFlowStageCard({ orderId, orderStatus, applicationStatus, className, disabled = false, disabledReason = null, onSaved }: Props) {
   const currentStage = useMemo(() => inferLinkedFlowStage(orderStatus, applicationStatus), [orderStatus, applicationStatus]);
   const [selectedStage, setSelectedStage] = useState<LinkedFlowStage>(currentStage ?? '신청접수');
   const [isPending, startTransition] = useTransition();
@@ -67,6 +69,11 @@ export default function LinkedFlowStageCard({ orderId, orderStatus, applicationS
   const isSameStage = currentStage === selectedStage;
 
   const handleSave = () => {
+    if (disabled) {
+      if (disabledReason) showErrorToast(disabledReason);
+      return;
+    }
+
     if (isSameStage) {
       showSuccessToast('변경 사항이 없습니다.');
       return;
@@ -113,7 +120,7 @@ export default function LinkedFlowStageCard({ orderId, orderStatus, applicationS
         <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">단계 선택</p>
-            <Select value={selectedStage} onValueChange={(value) => setSelectedStage(value as LinkedFlowStage)} disabled={isPending}>
+            <Select value={selectedStage} onValueChange={(value) => setSelectedStage(value as LinkedFlowStage)} disabled={isPending || disabled}>
               <SelectTrigger>
                 <SelectValue placeholder="대표 단계를 선택하세요" />
               </SelectTrigger>
@@ -127,12 +134,13 @@ export default function LinkedFlowStageCard({ orderId, orderStatus, applicationS
             </Select>
           </div>
 
-          <Button onClick={handleSave} disabled={isPending || isSameStage}>
+          <Button onClick={handleSave} disabled={isPending || isSameStage || disabled}>
             {isPending ? '저장 중...' : '저장'}
           </Button>
         </div>
 
         <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground break-keep">{previewText}</div>
+        {disabledReason && <p className="text-xs text-destructive break-keep">{disabledReason}</p>}
         <p className="text-xs text-muted-foreground break-keep">일반 진행 단계만 이 카드에서 변경 가능합니다. 취소/환불/구매확정은 기존 개별 액션 또는 기존 플로우를 사용해 주세요.</p>
       </CardContent>
     </Card>

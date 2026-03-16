@@ -11,6 +11,8 @@ import {
   isApplicationClosedForLinkedAutomation,
   isLinkedFlowStage,
   LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
+  LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
+  LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
   mapOrderStatusToPaymentStatus,
   mapStageToApplicationStatus,
   mapStageToOrderStatus,
@@ -22,17 +24,13 @@ type StageBody = {
   stage?: unknown;
 };
 
-function getOrderIdCandidates(orderId: ObjectId) {
-  return [orderId, String(orderId)];
-}
-
 async function pickLatestLinkedApplication(collection: any, orderId: ObjectId, session?: ClientSession) {
   const rows = await collection
     .find(
       {
-        orderId: { $in: getOrderIdCandidates(orderId) },
-        status: { $nin: ['draft', '취소'] },
-        $or: [{ 'cancelRequest.status': { $exists: false } }, { 'cancelRequest.status': { $nin: ['approved', '승인'] } }],
+        orderId: { $in: [orderId, String(orderId)] },
+        status: { $nin: [...LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES] },
+        $or: [{ 'cancelRequest.status': { $exists: false } }, { 'cancelRequest.status': { $nin: [...LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES] } }],
       },
       {
         projection: { _id: 1, status: 1, updatedAt: 1, createdAt: 1, stringDetails: 1, orderId: 1, customer: 1, userSnapshot: 1, guestName: 1, guestEmail: 1, cancelRequest: 1 } as any,

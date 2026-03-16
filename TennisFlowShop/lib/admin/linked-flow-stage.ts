@@ -6,6 +6,8 @@ export const LINKED_FLOW_STAGE_LIST: readonly LinkedFlowStage[] = LINKED_FLOW_ST
 
 export const LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES = ['취소', '환불', '구매확정'] as const;
 export const LINKED_FLOW_AUTOMATION_BLOCKED_APPLICATION_STATUSES = ['취소'] as const;
+export const LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES = ['draft', '취소'] as const;
+export const LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES = ['approved', '승인'] as const;
 
 const STAGE_TO_ORDER_STATUS: Record<LinkedFlowStage, string> = {
   결제대기: '대기중',
@@ -63,6 +65,21 @@ export function isApplicationClosedForLinkedAutomation(input: { status?: string 
   if (cancelStatus === 'approved' || cancelStatus === '승인') return true;
 
   return false;
+}
+
+export function isOrderBlockedForLinkedAutomation(orderStatus?: string | null): boolean {
+  const status = String(orderStatus ?? '').trim();
+  return LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(status as any);
+}
+
+export function isApplicationEligibleForLinkedStage(input: { status?: string | null; cancelRequestStatus?: string | null }): boolean {
+  const status = String(input.status ?? '').trim();
+  const cancelStatus = String(input.cancelRequestStatus ?? '').trim();
+
+  if (LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES.includes(status as any)) return false;
+  if (LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES.includes(cancelStatus as any)) return false;
+
+  return true;
 }
 
 export function inferLinkedFlowStage(orderStatus?: string | null, applicationStatus?: string | null): LinkedFlowStage | null {
