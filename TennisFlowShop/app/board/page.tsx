@@ -2,7 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Bell, Dumbbell, Eye, MessageSquare, Plus, ShoppingBag, Star } from 'lucide-react';
+import { ArrowRight, Bell, Dumbbell, Eye, MessageSquare, Plus, ShoppingBag, Star, Pin } from 'lucide-react';
 import useSWR from 'swr';
 
 import SiteContainer from '@/components/layout/SiteContainer';
@@ -310,8 +310,8 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
 
                         {/* 고정 */}
                         {notice.isPinned && (
-                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
-                            고정
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
+                            <Pin className="h-3 w-3" />
                           </Badge>
                         )}
 

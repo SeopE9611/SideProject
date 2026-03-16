@@ -155,31 +155,25 @@ export default function QnaDetailPage() {
     <div className="min-h-screen bg-muted/30">
       <div className="container py-6 md:py-8">
         <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div className="mb-2 text-sm text-muted-foreground">
-                <span className="font-medium text-primary">고객센터</span>
-                <span className="mx-1">›</span>
-                <span>Q&amp;A</span>
-              </div>
-
-              {/* Q&A 목록으로 돌아가기 */}
-              <Link
-                href="/board/qna"
-                onClick={confirmLeave}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border rounded-full shadow-sm hover:bg-background hover:text-foreground transition-colors dark:bg-card dark:text-muted-foreground dark:border-border dark:hover:border-border"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Q&amp;A 목록으로 돌아가기
-              </Link>
+          <div className="mb-6 space-y-3">
+            <div className="text-sm text-muted-foreground">
+              <span className="font-medium text-primary">고객센터</span>
+              <span className="mx-1">›</span>
+              <span>Q&amp;A</span>
             </div>
-
-            {/* 고객센터 홈으로 이동 버튼 */}
-            <Button asChild variant="outline" size="sm" className="shrink-0">
-              <Link href="/support" onClick={confirmLeave}>
-                고객센터 홈으로
-              </Link>
-            </Button>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/board/qna" onClick={confirmLeave}>
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  Q&amp;A 목록으로
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/support" onClick={confirmLeave}>
+                  고객센터 홈으로
+                </Link>
+              </Button>
+            </div>
           </div>
 
           <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
@@ -304,7 +298,7 @@ export default function QnaDetailPage() {
                                 </button>
                               </div>
                             ) : (
-                              <div key={i} className="p-3 bg-background hover:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200">
+                              <div key={i} className="p-3 rounded-lg border border-border bg-card transition-colors duration-200 hover:bg-muted/40">
                                 <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-primary hover:text-primary font-medium break-all">
                                   <FileText className="h-4 w-4 flex-shrink-0" />
                                   {name}
@@ -494,7 +488,7 @@ export default function QnaDetailPage() {
           )}
 
           <div className="flex justify-between items-center pt-4">
-            <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:hover:bg-card">
+            <Button variant="outline" size="lg" asChild className="px-8">
               <Link href="/board/qna" onClick={confirmLeave}>
                 <ArrowUp className="mr-2 h-4 w-4" />
                 목록으로 돌아가기

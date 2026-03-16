@@ -33,7 +33,7 @@ function AdminNoticeWriteButton() {
   if (loading || user?.role !== 'admin') return null;
 
   return (
-    <Button asChild size="sm" className="bg-muted/30 h-10 sm:h-11 text-sm sm:text-base">
+    <Button asChild size="sm" variant="outline" className="h-10 sm:h-11 text-sm sm:text-base">
       <Link href="/board/notice/write">
         <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
         작성하기
@@ -239,7 +239,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                     setField(inputField);
                   }}
                   size="sm"
-                  className="bg-muted/30 h-10 sm:h-11 text-sm sm:text-base"
+                  variant="outline"
+                  className="h-10 sm:h-11 text-sm sm:text-base"
                   disabled={isBusy}
                 >
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
@@ -273,9 +274,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center flex-wrap gap-2 sm:gap-2.5 mb-2 sm:mb-3 min-w-0">
                             {notice.isPinned && (
-                              <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
-                                <Pin className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
-                                고정
+                              <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`} title="고정 공지" aria-label="고정 공지">
+                                <Pin className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               </Badge>
                             )}
 

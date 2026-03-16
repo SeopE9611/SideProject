@@ -151,27 +151,23 @@ export default function NoticeDetailPage() {
     <div className="min-h-screen bg-muted/30">
       <div className="container py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <div>
-              <div className="mb-2 text-sm text-muted-foreground">
-                <span className="font-medium text-success">고객센터</span>
-                <span className="mx-1">›</span>
-                <span>공지사항</span>
-              </div>
-
-              {/* 공지 목록으로 돌아가기 */}
-              <Link
-                href="/board/notice"
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-muted-foreground bg-card border border-border rounded-full shadow-sm hover:bg-background hover:text-foreground transition-colors dark:bg-card dark:text-muted-foreground dark:border-border dark:hover:border-border"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                공지사항 목록으로 돌아가기
-              </Link>
+          <div className="mb-6 space-y-3">
+            <div className="text-sm text-muted-foreground">
+              <span className="font-medium text-success">고객센터</span>
+              <span className="mx-1">›</span>
+              <span>공지사항</span>
             </div>
-
-            <Button asChild variant="outline" size="sm" className="shrink-0">
-              <Link href="/support">고객센터 홈으로</Link>
-            </Button>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/board/notice">
+                  <ArrowLeft className="h-4 w-4 mr-1" />
+                  공지사항 목록으로
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/support">고객센터 홈으로</Link>
+              </Button>
+            </div>
           </div>
 
           <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
@@ -194,24 +190,21 @@ export default function NoticeDetailPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-3 mb-4">
                         {notice.isPinned && (
-                          <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`}>
-                            <Pin className="h-3 w-3 mr-1" />
-                            고정
+                          <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`} title="고정 공지" aria-label="고정 공지">
+                            <Pin className="h-3 w-3" />
                           </Badge>
                         )}
                         <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
                           {notice.category || '일반'}
                         </Badge>
                         {imageAtts.length > 0 && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`}>
-                            <ImageIcon className="h-3 w-3 mr-1" />
-                            이미지 {imageAtts.length}개
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`} title="이미지 첨부" aria-label="이미지 첨부">
+                            <ImageIcon className="h-3 w-3" />
                           </Badge>
                         )}
                         {fileAtts.length > 0 && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`}>
-                            <FileText className="h-3 w-3 mr-1" />
-                            첨부파일 {fileAtts.length}개
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`} title="첨부파일 있음" aria-label="첨부파일 있음">
+                            <FileText className="h-3 w-3" />
                           </Badge>
                         )}
                       </div>
@@ -281,9 +274,6 @@ export default function NoticeDetailPage() {
                         <div className="flex items-center gap-2">
                           <ImageIcon className="h-5 w-5" />
                           <h2 className="text-xl font-semibold text-foreground">이미지</h2>
-                          <Badge variant="secondary" className="ml-2">
-                            {imageAtts.length}개
-                          </Badge>
                         </div>
 
                         {imageAtts.length === 1 ? (
@@ -346,9 +336,6 @@ export default function NoticeDetailPage() {
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5" />
                           <h2 className="text-xl font-semibold text-foreground">첨부파일</h2>
-                          <Badge variant="secondary" className="ml-2">
-                            {fileAtts.length}개
-                          </Badge>
                         </div>
 
                         <div className="grid gap-3">
@@ -363,7 +350,7 @@ export default function NoticeDetailPage() {
                             return (
                               <div
                                 key={`file-${i}`}
-                                className="flex items-center justify-between p-4 bg-background hover:bg-card dark:hover:bg-card rounded-lg border border-border transition-colors duration-200"
+                                className="flex items-center justify-between p-4 rounded-lg border border-border bg-card transition-colors duration-200 hover:bg-muted/40"
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className="flex-shrink-0 w-10 h-10 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-lg flex items-center justify-center">
@@ -383,7 +370,7 @@ export default function NoticeDetailPage() {
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" asChild className="bg-muted/30">
+                                  <Button size="sm" variant="outline" asChild>
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드
@@ -418,7 +405,7 @@ export default function NoticeDetailPage() {
 
             <CardFooter className="border-t border-border bg-muted/30 p-6">
               <div className="w-full flex justify-center">
-                <Button variant="outline" size="lg" asChild className="px-8 bg-card hover:bg-card dark:hover:bg-card">
+                <Button variant="outline" size="lg" asChild className="px-8">
                   <Link href="/board/notice">
                     <ArrowUp className="mr-2 h-4 w-4" />
                     목록으로 돌아가기
