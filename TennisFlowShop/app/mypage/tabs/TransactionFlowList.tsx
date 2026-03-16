@@ -524,6 +524,7 @@ export default function TransactionFlowList() {
         const displayApplication = g.application;
         const isDirectApplicationCard = g.kind === "application" || prefersApplicationView;
         const applicationActionTarget = displayApplication ?? linkedActionableApplication;
+        const actionableApplicationId = applicationActionTarget?.id;
         const primaryLinkedApplicationId = g.kind === "order"
           ? (g.order?.stringingApplicationId ?? linkedActionableApplication?.id ?? g.order?.applicationSummaries?.[0]?.id)
           : g.kind === "rental"
@@ -917,13 +918,17 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (needsTrackingAction && (!primaryLinkedApplicationId || primaryLinkedApplicationId !== g.application?.id)) {
+                  if (
+                    needsTrackingAction &&
+                    actionableApplicationId &&
+                    (!primaryLinkedApplicationId || primaryLinkedApplicationId !== actionableApplicationId)
+                  ) {
                     actions.push({
                       key: "application-open-sheet",
                       priority: 3,
                       node: (
                         <Button key="application-open-sheet" asChild size="sm" variant="default">
-                          <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&${flowQuery}`}>
+                          <Link href={`/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>
                             교체서비스 보기
                           </Link>
                         </Button>
