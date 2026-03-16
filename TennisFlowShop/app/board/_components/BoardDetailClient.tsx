@@ -117,7 +117,7 @@ function DetailSkeleton() {
           </div>
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-3/4" />
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
               <Skeleton className="h-3 w-16" />
               <Skeleton className="h-3 w-24" />
               <Skeleton className="h-3 w-12" />
@@ -1123,7 +1123,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <p className="mt-1 text-sm text-muted-foreground md:text-base">{config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.</p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
             <Button
               type="button"
               variant="outline"
@@ -1174,7 +1174,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <CardHeader className="space-y-3 border-b bg-muted/30">
               <div className="flex items-start gap-3">
                 <div className="flex-1 space-y-2">
-                  <CardTitle className="text-base md:text-lg">
+                  <CardTitle className="text-base leading-snug md:text-lg">
                     {typeof item.postNo === 'number' && <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">{item.postNo}</span>}
 
                     {/* 카테고리 뱃지 */}
@@ -1189,7 +1189,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {item.title}
                   </CardTitle>
 
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground md:text-sm">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted-foreground md:text-sm">
                     {/* 작성자 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -1249,21 +1249,21 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       <Eye className="h-3 w-3" />
                       조회 {item.views ?? 0}
                     </span>
-                    <span>·</span>
+                    <span className="hidden text-border sm:inline">·</span>
 
                     {/* 댓글 수 */}
                     <span className="inline-flex items-center gap-1">
                       <MessageSquare className="h-3 w-3" />
                       댓글 {item.commentsCount ?? 0}
                     </span>
-                    <span>·</span>
+                    <span className="hidden text-border sm:inline">·</span>
 
                     {/* 추천 수 */}
                     <span className="inline-flex items-center gap-1">
                       <ThumbsUp className="h-3 w-3" />
                       추천 {item.likes ?? 0}
                     </span>
-                    <span>·</span>
+                    <span className="hidden text-border sm:inline">·</span>
                     {/* 작성일시 */}
                     <span>{fmtDateTime(item.createdAt)}</span>
                   </div>
@@ -1513,9 +1513,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                   {item && (
-                    <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="flex items-center gap-1">
+                    <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="w-full gap-1 sm:w-auto">
                       <ThumbsUp className="h-3 w-3" />
                       {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
                     </Button>
@@ -1532,7 +1532,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     }}
                   >
                     <DialogTrigger asChild>
-                      <Button type="button" variant="ghost" size="sm" className="gap-1 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15">
+                      <Button type="button" variant="ghost" size="sm" className="w-full gap-1 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15 sm:w-auto">
                         신고하기
                       </Button>
                     </DialogTrigger>
@@ -1623,10 +1623,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     </>
                   )}
 
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                     <Link href={listHref}>목록으로</Link>
                   </Button>
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                     <Link href={`${config.routePrefix}/write`}>새 글 작성</Link>
                   </Button>
                 </div>
@@ -1755,7 +1755,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <span className="text-xs font-medium text-muted-foreground">
                       {commentPage} / {totalCommentPages}
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
                       <Button type="button" variant="outline" size="sm" disabled={commentPage <= 1} onClick={() => setCommentPage((p) => Math.max(1, p - 1))} className="h-8 px-4 text-xs">
                         이전
                       </Button>

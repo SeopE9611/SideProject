@@ -372,7 +372,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                               </Badge>
                             )}
 
-                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">{notice.title}</h3>
+                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 line-clamp-2 leading-snug sm:line-clamp-1">{notice.title}</h3>
 
                             {(notice.hasImage || notice.hasFile) && (
                               <div className="flex items-center gap-1 sm:gap-1.5">
@@ -397,7 +397,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                           </div>
 
                           {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm sm:text-base text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm md:text-base text-muted-foreground">
                             <span>{fmt(notice.createdAt)}</span>
                             <span className="flex items-center">
                               <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />

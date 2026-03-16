@@ -99,11 +99,11 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-muted/30 border-b">
         <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Bell className="h-5 w-5 text-primary" />
             <span className="font-semibold">공지사항</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {isAdmin && (
               <Button asChild size="sm" variant="ghost" className="h-8 px-3 border-border">
                 <Link href="/board/notice/write">
@@ -143,7 +143,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     {/* 제목 줄 */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {!!notice.category && (
                           <Badge variant={getNoticeCategoryBadgeSpec(notice.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
@@ -158,7 +158,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`/board/notice/${notice._id}?${supportQuery}`} className="font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/notice/${notice._id}?${supportQuery}`} className="flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors hover:text-primary dark:hover:text-primary sm:line-clamp-1 sm:text-base">
                           {notice.title}
                         </Link>
                       </div>
@@ -273,7 +273,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       {/* 제목 줄 */}
-                      <div className="flex items-center justify-between gap-2 mb-1">
+                      <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap min-w-0">
                           <Badge variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={qna.category ?? undefined}>
                             {qna.category ?? '일반문의'}
@@ -286,11 +286,11 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                             </Badge>
                           )}
 
-                          <span className="font-semibold text-foreground flex-1 min-w-0 truncate">{qna.title}</span>
+                          <span className="flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug text-foreground sm:line-clamp-1 sm:text-base">{qna.title}</span>
                         </div>
 
                         {/* 답변완료/대기 뱃지는 그대로 유지 */}
-                        <div className="shrink-0">
+                        <div className="w-full shrink-0 sm:w-auto">
                           <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
                             {qna.answer ? '답변 완료' : '답변 대기'}
                           </Badge>
