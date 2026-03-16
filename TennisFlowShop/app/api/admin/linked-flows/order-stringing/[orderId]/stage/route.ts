@@ -110,6 +110,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
       const nextPaymentStatus = mapOrderStatusToPaymentStatus(nextOrderStatus);
       const currentInferred = inferLinkedFlowStage(previousOrderStatus, previousApplicationStatus);
 
+      if (currentInferred === stage && previousOrderStatus === nextOrderStatus && previousApplicationStatus === nextApplicationStatus) {
+        resultPayload = {
+          stage,
+          now,
+          becamePaid: false,
+          noop: true,
+          message: '변경 사항이 없습니다.',
+          orderId: String((order as any)._id),
+          appId: String((app as any)._id),
+          previousOrderStatus,
+          nextOrderStatus,
+          previousApplicationStatus,
+          nextApplicationStatus,
+          previewText: buildLinkedFlowStagePreview({
+            stage,
+            orderPreviousStatus: previousOrderStatus,
+            orderNextStatus: nextOrderStatus,
+            applicationPreviousStatus: previousApplicationStatus,
+            applicationNextStatus: nextApplicationStatus,
+          }),
+        };
+        return;
+      }
+
       const orderHistoryEntry = {
         status: nextOrderStatus,
         date: now,
@@ -207,14 +231,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
   }
 
   try {
-    if (resultPayload?.becamePaid) {
+    if (!resultPayload?.noop && resultPayload?.becamePaid) {
       const updatedOrder = await guard.db.collection('orders').findOne({ _id: new ObjectId(resultPayload.orderId) });
       if (updatedOrder) {
         await issuePassesForPaidOrder(guard.db, updatedOrder);
       }
     }
 
-    const appDoc = await guard.db.collection('stringing_applications').findOne({ _id: new ObjectId(resultPayload.appId) });
+    const appDoc = resultPayload?.noop ? null : await guard.db.collection('stringing_applications').findOne({ _id: new ObjectId(resultPayload.appId) });
     if (appDoc) {
       const userCtx = {
         name: appDoc?.customer?.name ?? appDoc?.userSnapshot?.name ?? appDoc?.guestName ?? undefined,
@@ -245,6 +269,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ orderI
 
   return NextResponse.json({
     success: true,
+    noop: Boolean(resultPayload.noop),
+    message: resultPayload.message,
     stage: resultPayload.stage,
     order: {
       id: resultPayload.orderId,

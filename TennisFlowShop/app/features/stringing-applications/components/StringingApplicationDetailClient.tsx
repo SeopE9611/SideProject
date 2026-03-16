@@ -15,6 +15,7 @@ import CancelStringingDialog from '@/app/mypage/applications/_components/CancelS
 import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import { useStringingStore } from '@/app/store/stringingStore';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
+import LinkedFlowStageCard from '@/components/admin/LinkedFlowStageCard';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,8 @@ interface ApplicationDetail {
   orderId?: string;
   rentalId?: string;
   orderCancelStatus?: string;
+  orderStatus?: string | null;
+  orderPaymentStatus?: string | null;
   customer: {
     name: string;
     email: string;
@@ -829,6 +832,20 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
             />
           )}
         </div>
+
+        {isAdmin && data.orderId && (
+          <LinkedFlowStageCard
+            className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
+            orderId={String(data.orderId)}
+            orderStatus={data.orderStatus ?? '결제완료'}
+            applicationStatus={data.status}
+            onSaved={async () => {
+              await mutate();
+              await historyMutateRef.current?.();
+              router.refresh();
+            }}
+          />
+        )}
 
         {/* 상태 카드 */}
         <Card className="border border-border shadow-xl bg-card overflow-hidden mb-6 bp-sm:mb-8">
