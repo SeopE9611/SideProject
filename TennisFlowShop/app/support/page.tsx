@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare, Lock } from 'lucide-react';
+import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare, Lock, ImageIcon, Paperclip, Pin } from 'lucide-react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec } from '@/lib/badge-style';
 import { useState } from 'react';
 
@@ -20,6 +20,8 @@ type NoticeItem = {
   viewCount?: number;
   isPinned?: boolean;
   category?: string | null;
+  hasImage?: boolean;
+  hasFile?: boolean;
 };
 
 type QnaItem = {
@@ -32,6 +34,8 @@ type QnaItem = {
   isSecret?: boolean;
   answer?: any;
   viewCount?: number;
+  hasImage?: boolean;
+  hasFile?: boolean;
 };
 
 type BoardsMainRes = { ok?: boolean; notices?: NoticeItem[]; qna?: QnaItem[] };
@@ -139,8 +143,8 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {notice.isPinned && (
-                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
-                            고정
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
+                            <Pin className="h-3 w-3" />
                           </Badge>
                         )}
 
@@ -158,6 +162,12 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         <Eye className="h-3 w-3 mr-1" />
                         {notice.viewCount ?? 0}
                       </span>
+                      {(notice.hasImage || notice.hasFile) && (
+                        <span className="flex items-center gap-1.5" aria-label="첨부 정보">
+                          {notice.hasImage && (<span title="이미지 첨부" aria-label="이미지 첨부"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
+                          {notice.hasFile && (<span title="첨부파일 있음" aria-label="첨부파일 있음"><Paperclip className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -220,7 +230,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                 닫기
               </Button>
               {!viewerId && secretBlock.item?._id && (
-                <Button asChild className="bg-muted/30">
+                <Button asChild>
                   <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
                 </Button>
               )}
@@ -274,6 +284,12 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                           <MessageSquare className="h-3 w-3 mr-1" />
                           답변 {qna.answer ? 1 : 0}개
                         </span>
+                        {(qna.hasImage || qna.hasFile) && (
+                          <span className="flex items-center gap-1.5" aria-label="첨부 정보">
+                            {qna.hasImage && (<span title="이미지 첨부" aria-label="이미지 첨부"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
+                            {qna.hasFile && (<span title="첨부파일 있음" aria-label="첨부파일 있음"><Paperclip className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

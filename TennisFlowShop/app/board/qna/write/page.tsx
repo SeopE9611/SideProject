@@ -391,7 +391,8 @@ export default function QnaWritePage() {
       if (!res.ok || !json?.ok) {
         throw new Error(json?.error || '저장 실패(로그인/권한을 확인해주세요)');
       }
-      router.replace('/board/qna');
+      const createdId = typeof json?.id === 'string' ? json.id : null;
+      router.replace(createdId ? `/board/qna/${createdId}` : '/board/qna');
     } catch (e: any) {
       setFormError(e?.message || '저장 중 오류가 발생했습니다.');
       showErrorToast(e?.message || '저장 중 오류가 발생했습니다.');

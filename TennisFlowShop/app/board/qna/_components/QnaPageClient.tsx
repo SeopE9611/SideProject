@@ -374,7 +374,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                 {(isBusy || isValidating) && <div className="h-4 w-4 border-2 border-border border-t-foreground rounded-full animate-spin" />}
               </div>
 
-              <Button asChild className="bg-muted/30">
+              <Button asChild variant="outline">
                 <Link href="/board/qna/write">
                   <Plus className="h-4 w-4 mr-2" />
                   문의하기
@@ -480,7 +480,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                     setField(inputField);
                     pushUrl({ page: nextPage, category, answerFilter, keyword: inputKeyword, field: inputField });
                   }}
-                  className="bg-muted/30"
+                  variant="outline"
                   disabled={isBusy}
                 >
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
@@ -511,7 +511,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                     닫기
                   </Button>
                   {!viewerId && secretBlock.item?._id && (
-                    <Button asChild className="bg-muted/30">
+                    <Button asChild variant="outline">
                       <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
                     </Button>
                   )}
