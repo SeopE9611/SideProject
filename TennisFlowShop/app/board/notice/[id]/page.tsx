@@ -384,9 +384,9 @@ export default function NoticeDetailPage() {
                             return (
                               <div
                                 key={`file-${i}`}
-                                className="rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40"
+                                className="rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40 sm:flex sm:items-center sm:justify-between sm:gap-4"
                               >
-                                <div className="flex min-w-0 items-center gap-3">
+                                <div className="flex min-w-0 items-center gap-3 sm:flex-1">
                                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
                                     <FileText className="h-5 w-5" />
                                   </div>
@@ -396,7 +396,7 @@ export default function NoticeDetailPage() {
                                   </div>
                                 </div>
 
-                                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-0 sm:flex sm:flex-wrap sm:justify-end">
+                                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-0 sm:shrink-0 sm:flex sm:flex-wrap sm:justify-end">
                                   {isPdf && (
                                     <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                                       <a href={url} target="_blank" rel="noreferrer">
@@ -405,7 +405,7 @@ export default function NoticeDetailPage() {
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="outline" asChild className="w-full sm:w-auto">
+                                  <Button size="sm" variant="outline" asChild className={`w-full sm:w-auto ${isPdf ? '' : 'col-span-2'}`}>
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드
