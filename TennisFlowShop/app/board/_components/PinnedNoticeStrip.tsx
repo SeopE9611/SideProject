@@ -12,11 +12,14 @@ export type PinnedNoticeItem = {
 };
 
 function fmtDate(value: string | Date) {
-  return new Date(value).toLocaleDateString('ko-KR', {
+  return new Date(value)
+    .toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  });
+    })
+    .replace(/\.\s/g, '.')
+    .replace(/\.$/, '');
 }
 
 export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[] }) {
@@ -46,7 +49,7 @@ export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[]
             </Badge>
             <div className="min-w-0 flex-1">
               <p className={pinnedNoticeMobileTitleClampClass}>{notice.title}</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{fmtDate(notice.createdAt)}</p>
+              <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{fmtDate(notice.createdAt)}</p>
             </div>
           </Link>
         ))}

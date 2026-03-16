@@ -68,9 +68,13 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
     limit: number;
   };
 
-  const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
+  const fmt = (v: string | Date) =>
+    new Date(v)
+      .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+      .replace(/\.\s/g, '.')
+      .replace(/\.$/, '');
   const noticeMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 leading-snug sm:line-clamp-1';
-  const noticeMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm md:text-base text-muted-foreground';
+  const noticeMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs sm:text-sm md:text-base text-muted-foreground';
   const noticeMobileActionGroupClass = 'flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto';
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
@@ -402,8 +406,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                           {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
                           <div className={noticeMobileMetaWrapClass}>
                             <span>{fmt(notice.createdAt)}</span>
-                            <span className="flex items-center">
-                              <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />
+                            <span className="inline-flex items-center gap-1">
+                              <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               {notice.viewCount ?? 0}
                             </span>
                           </div>

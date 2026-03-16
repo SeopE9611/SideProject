@@ -98,16 +98,13 @@ const formatPriceInput = (value: string) => {
 const normalizePriceQueryValue = (value: string) => stripNonDigits(value);
 
 const fmtDateTime = (v: string | Date) =>
-  new Date(v).toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  new Date(v)
+    .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+    .replace(/\.\s/g, '.')
+    .replace(/\.$/, '');
 
 const boardListMobileTitleClampClass = 'line-clamp-2 font-medium leading-snug text-foreground';
-const boardListMobileMetaWrapClass = 'mt-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-muted-foreground';
+const boardListMobileMetaWrapClass = 'mt-1.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground';
 
 // 판매상태 배지 variant 매핑
 function saleStatusBadgeVariant(status?: string | null): 'success' | 'warning' | 'neutral' {
@@ -1277,7 +1274,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         )}
 
                         {/* 하단 메타 */}
-                        <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 border-t border-border/40 pt-1.5 text-[10px] text-muted-foreground">
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-1.5 text-[10px] leading-relaxed text-muted-foreground">
                           <span>
                             {post.nickname || '회원'} &middot; {fmtDateTime(post.createdAt)}
                           </span>
@@ -1317,17 +1314,17 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             <span className="text-border">{'|'}</span>
                             <span>{fmtDateTime(post.createdAt)}</span>
                           </div>
-                          <div className="flex items-center gap-2 tabular-nums">
-                            <span className="flex items-center gap-0.5">
-                              <MessageSquare className="h-3 w-3" />
+                          <div className="flex items-center gap-2 tabular-nums leading-none">
+                            <span className="inline-flex items-center gap-1">
+                              <MessageSquare className="h-3.5 w-3.5" />
                               {post.commentsCount ?? 0}
                             </span>
-                            <span className="flex items-center gap-0.5">
-                              <Eye className="h-3 w-3" />
+                            <span className="inline-flex items-center gap-1">
+                              <Eye className="h-3.5 w-3.5" />
                               {post.views ?? 0}
                             </span>
-                            <span className="flex items-center gap-0.5">
-                              <ThumbsUp className="h-3 w-3" />
+                            <span className="inline-flex items-center gap-1">
+                              <ThumbsUp className="h-3.5 w-3.5" />
                               {post.likes ?? 0}
                             </span>
                           </div>
