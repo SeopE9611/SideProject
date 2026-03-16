@@ -9,6 +9,11 @@ import { deductPoints, grantPoints } from '@/lib/points.service';
 import { z } from 'zod';
 import { getAdminCancelPolicyMessage, isAdminCancelableOrderStatus } from '@/lib/orders/cancel-refund-policy';
 import { getOrderStatusLabelForDisplay } from '@/lib/order-shipping';
+import {
+  LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
+  LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
+  isApplicationEligibleForLinkedStage,
+} from '@/lib/admin/linked-flow-stage';
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -243,14 +248,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
-    // 스트링 서비스 신청 존재 여부
-    // - draft(초안)와 취소(취소 완료)는 제외
+    // 대표 stage 카드 기준과 동일: draft/취소/cancelRequest 승인 제외 + 최신 1건
     const [linkedApp] = await db
       .collection('stringing_applications')
       .find(
         {
-          orderId: order._id,
-          status: { $nin: ['draft', '취소'] },
+          orderId: { $in: [order._id, String(order._id)] },
+          status: { $nin: [...LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES] },
+          $or: [{ 'cancelRequest.status': { $exists: false } }, { 'cancelRequest.status': { $nin: [...LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES] } }],
         },
         { projection: { _id: 1, createdAt: 1, updatedAt: 1 } },
       )
@@ -268,7 +273,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const apps = await db
       .collection('stringing_applications')
       .find({
-        orderId: order._id,
+        orderId: { $in: [order._id, String(order._id)] },
         status: { $ne: '취소' },
       })
       .sort({ updatedAt: -1, createdAt: -1 })
@@ -290,6 +295,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return {
         id: app._id?.toString(),
         status: app.status ?? 'draft',
+        cancelRequestStatus: app?.cancelRequest?.status ?? null,
         createdAt: app.createdAt ?? null,
         updatedAt: app.updatedAt ?? null,
         needsInboundTracking: needsInboundTracking(app?.collectionMethod),
@@ -309,6 +315,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         },
       };
     });
+
+    const latestActiveLinkedApplication = stringingApplications.find((app: any) =>
+      isApplicationEligibleForLinkedStage({
+        status: app?.status,
+        cancelRequestStatus: app?.cancelRequestStatus,
+      }),
+    ) ?? null;
 
     return NextResponse.json({
       ...order, // 원문은 펴주되,
@@ -340,6 +353,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         usedSlots,
         remainingSlots,
       },
+      // 대표 stage 카드용 신청서(서버 변경 대상과 동일 기준)
+      latestActiveLinkedApplication,
       // 주문 1건에 연결된 모든 신청서 요약 리스트
       stringingApplications,
     });

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { inferNextActionForOperationGroup } from '@/lib/admin/next-action-guidance';
+import { isApplicationClosedForLinkedAutomation, isOrderBlockedForLinkedAutomation } from '@/lib/admin/linked-flow-stage';
 import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec, getPaymentStatusBadgeSpec, getShippingMethodBadge } from '@/lib/badge-style';
 import { buildAdminCancelRequestView, normalizeAdminCancelRequestStatus } from '@/lib/cancel-request/admin-cancel-request-view';
 import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
@@ -79,9 +80,30 @@ interface OrderDetail {
     note?: string | null; // (선택) 설명/메모용
   } | null;
   // 이 주문과 연결된 모든 스트링 신청서 요약 리스트
+  latestActiveLinkedApplication?: {
+    id: string;
+    status: string;
+    cancelRequestStatus?: string | null;
+    needsInboundTracking?: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    receptionLabel?: string | null;
+    tensionSummary?: string | null;
+    stringNames?: string[];
+    reservationLabel?: string | null;
+    racketCount?: number;
+    shippingInfo?: {
+      selfShip?: {
+        courier?: string | null;
+        trackingNo?: string | null;
+        shippedAt?: string | null;
+      } | null;
+    } | null;
+  } | null;
   stringingApplications?: {
     id: string;
     status: string;
+    cancelRequestStatus?: string | null;
     needsInboundTracking?: boolean;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -171,18 +193,21 @@ export default function OrderDetailClient({ orderId }: Props) {
   const summaryCardClass = 'flex min-h-[112px] flex-col items-start justify-start gap-1 rounded-xl border border-border/60 bg-card/70 p-3.5 backdrop-blur-sm';
   const summaryBadgeClass = cn(badgeBase, badgeSizeSm, 'inline-flex w-fit self-start');
 
-  // 연결 신청서는 최신 수정/생성 시각 기준(updatedAt ?? createdAt 내림차순)으로 단일 기준 계산
-  const latestLinkedApplication = (() => {
-    const apps = Array.isArray(orderDetail.stringingApplications) ? orderDetail.stringingApplications.filter((app) => Boolean(app?.id)) : [];
-    if (apps.length === 0) return null;
-    return apps
-      .map((app, idx) => {
-        const raw = app.updatedAt ?? app.createdAt;
-        const ts = raw ? new Date(raw).getTime() : Number.NaN;
-        return { app, ts: Number.isFinite(ts) ? ts : -idx, idx };
+  // 대표 stage 카드/연결 가이드용 기준 신청서: 서버에서 선별한 latestActiveLinkedApplication 우선 사용
+  const latestLinkedApplication = orderDetail.latestActiveLinkedApplication ?? null;
+  const isLinkedStageBlockedByOrder = isOrderBlockedForLinkedAutomation(localStatus);
+  const isLinkedStageBlockedByApplication = latestLinkedApplication
+    ? isApplicationClosedForLinkedAutomation({
+        status: latestLinkedApplication.status,
+        cancelRequestStatus: latestLinkedApplication.cancelRequestStatus,
       })
-      .sort((a, b) => (b.ts !== a.ts ? b.ts - a.ts : a.idx - b.idx))[0]?.app;
-  })();
+    : false;
+  const linkedStageBlockedReason = isLinkedStageBlockedByOrder
+    ? `주문 상태(${localStatus})에서는 대표 단계를 변경할 수 없습니다.`
+    : isLinkedStageBlockedByApplication
+      ? '신청서가 취소되었거나 취소 승인 완료 상태여서 대표 단계를 변경할 수 없습니다.'
+      : null;
+
   const shouldShowLinkedSelfShipSummary = latestLinkedApplication?.needsInboundTracking === true;
 
   // 연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
@@ -538,6 +563,8 @@ export default function OrderDetailClient({ orderId }: Props) {
               orderId={orderId}
               orderStatus={localStatus}
               applicationStatus={latestLinkedApplication.status}
+              disabled={Boolean(linkedStageBlockedReason)}
+              disabledReason={linkedStageBlockedReason}
               onSaved={async () => {
                 await mutateOrder();
                 await mutateHistory();
