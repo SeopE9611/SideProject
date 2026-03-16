@@ -159,7 +159,7 @@ export default function QnaDetailPage() {
       alert('삭제 실패');
       return;
     }
-    router.replace('/board/qna');
+    router.replace(listHref);
   }
 
   return (

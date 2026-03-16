@@ -120,7 +120,7 @@ export default function NoticeDetailPage() {
       return;
     }
     showSuccessToast('삭제되었습니다.');
-    router.replace('/board/notice');
+    router.replace(listHref);
   };
 
   const attachments = Array.isArray(notice?.attachments) ? notice!.attachments : [];
