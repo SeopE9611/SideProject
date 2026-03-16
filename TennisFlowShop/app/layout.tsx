@@ -19,6 +19,7 @@ import AppShell from '@/components/layout/AppShell';
 import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
 import 'spoqa-han-sans/css/SpoqaHanSansNeo.css';
 import RootScrollLockBridge from '@/components/system/RootScrollLockBridge';
+import ScrollToTopOnPathChange from '@/components/system/ScrollToTopOnPathChange';
 
 declare global {
   interface Window {
@@ -134,6 +135,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <SessionWatcher />
         <ClaimsAutoLinker />
         <RootScrollLockBridge />
+        <ScrollToTopOnPathChange />
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
