@@ -583,7 +583,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                       <CardContent className="p-4 md:p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-2">
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
                               <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                                 {qna.category ?? '일반문의'}
                               </Badge>
@@ -600,9 +600,9 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                               </Badge>
                             </div>
 
-                            <h3 className="text-lg font-semibold text-foreground hover:text-success dark:hover:text-success transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
+                            <h3 className="mb-3 min-w-0 text-base font-semibold leading-snug text-foreground transition-colors hover:text-success dark:hover:text-success line-clamp-2 sm:text-lg sm:line-clamp-1">{displayTitle}</h3>
 
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-muted-foreground">
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
                                   <AvatarFallback className="text-xs">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>

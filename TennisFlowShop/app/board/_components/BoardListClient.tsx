@@ -920,7 +920,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 <PackageSearch className="h-8 w-8 text-muted-foreground/50" />
                 <p className="text-sm font-medium text-foreground">{qParam ? '검색 결과가 없습니다' : activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}</p>
                 <p className="text-xs text-muted-foreground">{qParam ? '검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요' : activeMarketFilterCount > 0 ? '필터 조건을 변경하거나 초기화해 보세요' : config.emptyDescription}</p>
-                <div className="mt-2 flex items-center gap-2">
+                <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-start">
                   {qParam && (
                     <Button type="button" variant="outline" size="sm" onClick={handleSearchReset}>
                       검색 해제
@@ -1241,7 +1241,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         </div>
 
                         {/* 제목 */}
-                        <div className="mt-1.5 flex items-start gap-1">
+                        <div className="mt-1.5 flex items-start gap-1.5">
                           <span className="line-clamp-2 text-[13px] font-medium leading-snug text-foreground">{post.title}</span>
                           {post.commentsCount ? <span className="mt-px shrink-0 text-[11px] font-medium text-primary">[{post.commentsCount}]</span> : null}
                           {post.images && post.images.length > 0 && <ImageIcon className="mt-0.5 h-3 w-3 shrink-0 text-primary/60" aria-label="이미지 첨부 있음" />}
@@ -1257,7 +1257,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         )}
 
                         {/* 하단 메타 */}
-                        <div className="mt-2 flex items-center justify-between border-t border-border/40 pt-1.5 text-[10px] text-muted-foreground">
+                        <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 border-t border-border/40 pt-1.5 text-[10px] text-muted-foreground">
                           <span>
                             {post.nickname || '회원'} &middot; {fmtDateTime(post.createdAt)}
                           </span>
@@ -1292,7 +1292,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 3줄: 작성자/날짜 + 카운트들 */}
                         <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-muted-foreground">
-                          <div className="flex min-w-0 flex-wrap items-center gap-1">
+                          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                             <span>{post.nickname || '회원'}</span>
                             <span className="text-border">{'|'}</span>
                             <span>{fmtDateTime(post.createdAt)}</span>

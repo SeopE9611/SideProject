@@ -172,7 +172,7 @@ export default function QnaDetailPage() {
               <span className="mx-1">›</span>
               <span>Q&amp;A</span>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
               <Button asChild variant="outline" size="sm">
                 <Link href={listHref} onClick={confirmLeave}>
                   <ArrowLeft className="h-4 w-4 mr-1" />
@@ -198,7 +198,7 @@ export default function QnaDetailPage() {
                 )}
                 {!isLoading && error && (
                   <div className="space-y-3">
-                    <h1 className="text-3xl font-bold text-foreground leading-tight">{errorTitle}</h1>
+                    <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">{errorTitle}</h1>
                   </div>
                 )}
                 {!isLoading && !error && qna && (
@@ -240,22 +240,22 @@ export default function QnaDetailPage() {
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary shadow-lg dark:bg-primary/20 flex-shrink-0 mt-1">
                         <MessageSquare className="h-5 w-5" />
                       </div>
-                      <h1 className="text-3xl font-bold text-foreground leading-tight">{qna.title}</h1>
+                      <h1 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">{qna.title}</h1>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Avatar className="h-7 w-7 border-2 border-border">
                           <AvatarFallback className="text-xs font-medium bg-muted text-foreground">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{qna.authorName ?? '익명'}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span className="font-medium">작성일</span>
                         <span>{fmt(qna.createdAt)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Eye className="h-4 w-4" />
                         <span className="font-medium">조회수</span>
                         <span className="font-semibold text-primary">{qna.viewCount ?? 0}</span>
@@ -354,7 +354,7 @@ export default function QnaDetailPage() {
             )}
 
             {(isAuthor || isAdmin) && qna && (
-              <CardFooter className="flex justify-end gap-3 border-t border-border bg-muted/50 p-4 md:p-6">
+              <CardFooter className="flex flex-wrap justify-end gap-2 border-t border-border bg-muted/50 p-4 md:p-6">
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
                     <Pencil className="mr-2 h-4 w-4" />
@@ -412,7 +412,7 @@ export default function QnaDetailPage() {
             <Card className="shadow-lg border-2 border-border bg-muted/40 backdrop-blur-sm">
               <CardHeader className="border-b border-border bg-muted/60">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
                         <MessageCircle className="h-4 w-4 text-primary" />
@@ -459,7 +459,7 @@ export default function QnaDetailPage() {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6">
                     <div className="flex items-center gap-2">
                       <Avatar className="h-6 w-6 border border-border">
                         <AvatarFallback className="text-xs font-medium bg-muted text-foreground">{(qna.answer.authorName ?? '관리자').slice(0, 1)}</AvatarFallback>
