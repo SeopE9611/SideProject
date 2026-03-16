@@ -69,6 +69,9 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   };
 
   const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
+  const noticeMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 leading-snug sm:line-clamp-1';
+  const noticeMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm md:text-base text-muted-foreground';
+  const noticeMobileActionGroupClass = 'flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto';
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
   // 입력용 상태 (타이핑 중)
@@ -255,7 +258,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                 <span className="text-lg sm:text-xl md:text-2xl">공지사항 목록</span>
               </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <div className={noticeMobileActionGroupClass}>
                 <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
                   <SelectTrigger className="w-full sm:w-[140px] bg-card text-sm sm:text-base h-10 sm:h-11">
                     <SelectValue placeholder="검색 조건" />
@@ -372,7 +375,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                               </Badge>
                             )}
 
-                            <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 line-clamp-2 leading-snug sm:line-clamp-1">{notice.title}</h3>
+                            <h3 className={`${noticeMobileTitleClampClass} text-base sm:text-lg md:text-xl font-semibold text-foreground transition-colors hover:text-primary dark:hover:text-primary`}>{notice.title}</h3>
 
                             {(notice.hasImage || notice.hasFile) && (
                               <div className="flex items-center gap-1 sm:gap-1.5">
@@ -397,7 +400,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                           </div>
 
                           {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm md:text-base text-muted-foreground">
+                          <div className={noticeMobileMetaWrapClass}>
                             <span>{fmt(notice.createdAt)}</span>
                             <span className="flex items-center">
                               <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />

@@ -106,6 +106,9 @@ const fmtDateTime = (v: string | Date) =>
     minute: '2-digit',
   });
 
+const boardListMobileTitleClampClass = 'line-clamp-2 font-medium leading-snug text-foreground';
+const boardListMobileMetaWrapClass = 'mt-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-muted-foreground';
+
 // 판매상태 배지 variant 매핑
 function saleStatusBadgeVariant(status?: string | null): 'success' | 'warning' | 'neutral' {
   if (status === 'selling') return 'success';
@@ -1259,7 +1262,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 제목 */}
                         <div className="mt-1.5 flex items-start gap-1.5">
-                          <span className="line-clamp-2 text-[13px] font-medium leading-snug text-foreground">{post.title}</span>
+                          <span className={`${boardListMobileTitleClampClass} text-[13px]`}>{post.title}</span>
                           {post.commentsCount ? <span className="mt-px shrink-0 text-[11px] font-medium text-primary">[{post.commentsCount}]</span> : null}
                           {post.images && post.images.length > 0 && <ImageIcon className="mt-0.5 h-3 w-3 shrink-0 text-primary/60" aria-label="이미지 첨부 있음" />}
                         </div>
@@ -1302,13 +1305,13 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 2줄: 제목 */}
                         <div className="mt-1 flex items-start gap-1">
-                          <span className="line-clamp-2 text-sm font-medium text-foreground">{post.title}</span>
+                          <span className={`${boardListMobileTitleClampClass} text-sm`}>{post.title}</span>
                           {post.images && post.images.length > 0 && <ImageIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/70" aria-label="이미지 첨부 있음" />}
                           {post.attachments && post.attachments.length > 0 && <Paperclip className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-label="파일 첨부 있음" />}
                         </div>
 
                         {/* 3줄: 작성자/날짜 + 카운트들 */}
-                        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-muted-foreground">
+                        <div className={boardListMobileMetaWrapClass}>
                           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                             <span>{post.nickname || '회원'}</span>
                             <span className="text-border">{'|'}</span>

@@ -27,6 +27,8 @@ const CAT_LABELS: Record<string, string> = {
 };
 const CODE_TO_LABEL = CAT_LABELS; // 가독성용 alias
 const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]));
+const qnaMobileTitleClampClass = 'min-w-0 line-clamp-2 font-semibold leading-snug sm:line-clamp-1';
+const qnaMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-muted-foreground';
 
 type QnaItem = {
   _id: string;
@@ -600,9 +602,9 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                               </Badge>
                             </div>
 
-                            <h3 className="mb-3 min-w-0 text-base font-semibold leading-snug text-foreground transition-colors hover:text-success dark:hover:text-success line-clamp-2 sm:text-lg sm:line-clamp-1">{displayTitle}</h3>
+                            <h3 className={`${qnaMobileTitleClampClass} mb-3 text-base text-foreground transition-colors hover:text-success dark:hover:text-success sm:text-lg`}>{displayTitle}</h3>
 
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-muted-foreground">
+                            <div className={qnaMobileMetaWrapClass}>
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
                                   <AvatarFallback className="text-xs">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
