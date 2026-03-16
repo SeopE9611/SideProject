@@ -280,6 +280,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const { user, loading } = useCurrentUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pageParam = useMemo(() => {
+    const rawPage = searchParams.get('page');
+    const parsedPage = rawPage ? Number.parseInt(rawPage, 10) : 1;
+    return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  }, [searchParams]);
   const currentListQuery = searchParams.toString();
   const buildDetailHref = (postId: string | number) => {
     const base = `${config.routePrefix}/${postId}`;
@@ -329,7 +334,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   useEffect(() => {
     setBrand(brandParam ?? '');
-    setPage(1);
   }, [brandParam]);
 
   // 사용자의 게시물 검색
@@ -352,11 +356,6 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   // UI에서 사용할 카테고리 상태 (전체 포함)
   const [category, setCategory] = useState<string>(categoryParam ?? 'all');
 
-  // authorId 바뀌면 페이지는 1로
-  useEffect(() => {
-    setPage(1);
-  }, [authorId]);
-
   // URL의 category가 바뀌면 상태도 동기화
   useEffect(() => {
     if (categoryParam) {
@@ -364,8 +363,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     } else {
       setCategory('all');
     }
-    setPage(1);
   }, [categoryParam]);
+
+  // page는 URL query를 기준으로 동기화합니다.
+  useEffect(() => {
+    setPage(pageParam);
+  }, [pageParam]);
 
   // URL 쿼리가 바뀌면 검색 입력값도 동기화
   useEffect(() => {
@@ -396,6 +399,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     const sp = new URLSearchParams(searchParams.toString());
     if (next === 'all') sp.delete('category');
     else sp.set('category', next);
+    sp.delete('page');
 
     // 라켓/스트링이 아니면 brand 제거
     if (!config.brandOptionsByCategory || !config.brandOptionsByCategory[next]) sp.delete('brand');
@@ -448,6 +452,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
     if (!nextBrand) sp.delete('brand');
     else sp.set('brand', nextBrand);
+    sp.delete('page');
 
     router.push(`${config.routePrefix}?${sp.toString()}`);
   };
@@ -544,7 +549,19 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
 
   const movePage = (nextPage: number) => {
-    setPage(Math.max(1, Math.min(totalPages, nextPage)));
+    const clampedPage = Math.max(1, Math.min(totalPages, nextPage));
+    setPage(clampedPage);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (clampedPage <= 1) params.delete('page');
+    else params.set('page', String(clampedPage));
+
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${config.routePrefix}?${queryString}` : config.routePrefix;
+    const currentUrl = currentListQuery ? `${config.routePrefix}?${currentListQuery}` : config.routePrefix;
+    if (nextUrl !== currentUrl) {
+      router.replace(nextUrl);
+    }
   };
 
   const handlePageJump = (e: any) => {
