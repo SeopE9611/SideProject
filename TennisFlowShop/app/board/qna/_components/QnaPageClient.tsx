@@ -147,6 +147,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
 
   const pathname = usePathname();
   const detailQuery = buildSearchParams({ page, category, answerFilter, keyword, field });
+  const listHref = detailQuery ? `/board/qna?${detailQuery}` : '/board/qna';
 
   // 현재 사용자(비로그인= null) — 비밀글 클릭 차단 판단에 사용
   const { data: me } = useSWR<MeRes | null>('/api/users/me', meFetcher, {
@@ -525,14 +526,14 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                 </DialogHeader>
                 <DialogFooter className="flex-wrap gap-2 sm:justify-end">
                   <Button variant="outline" asChild>
-                    <Link href="/board/qna">목록으로 돌아가기</Link>
+                    <Link href={listHref}>목록으로 돌아가기</Link>
                   </Button>
                   <Button variant="outline" asChild>
                     <Link href="/support">고객센터 홈</Link>
                   </Button>
                   {!viewerId && secretBlock.item?._id && (
                     <Button asChild>
-                      <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
+                      <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}${detailQuery ? `?${detailQuery}` : ''}`)}`}>로그인하고 확인</Link>
                     </Button>
                   )}
                 </DialogFooter>

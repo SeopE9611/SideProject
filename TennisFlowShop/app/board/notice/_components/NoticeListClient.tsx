@@ -11,7 +11,6 @@ import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
-import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 
 type Props = {
@@ -44,12 +43,6 @@ function AdminNoticeWriteButton() {
 }
 
 export default function NoticeListClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
-  const searchParams = useSearchParams();
-  const currentListQuery = searchParams.toString();
-  const buildDetailHref = (noticeId: string) => {
-    const base = `/board/notice/${noticeId}`;
-    return currentListQuery ? `${base}?${currentListQuery}` : base;
-  };
   type NoticeItem = {
     _id: string;
     title: string;
@@ -87,6 +80,25 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   const [page, setPage] = useState(initialPage);
   const [pageJump, setPageJump] = useState('');
   const limit = 20;
+
+  const buildListQueryFromState = () => {
+    const sp = new URLSearchParams();
+
+    if (page !== 1) sp.set('page', String(page));
+    if (keyword.trim()) {
+      sp.set('q', keyword.trim());
+      sp.set('field', field);
+    }
+
+    return sp.toString();
+  };
+
+  const buildDetailHref = (noticeId: string) => {
+    const base = `/board/notice/${noticeId}`;
+    const listQuery = buildListQueryFromState();
+    return listQuery ? `${base}?${listQuery}` : base;
+  };
+
   // 목록 불러오기 (검색 파라미터 포함)
   const qs = new URLSearchParams({
     type: 'notice',

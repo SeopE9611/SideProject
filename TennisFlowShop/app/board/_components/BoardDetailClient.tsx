@@ -643,7 +643,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
       });
 
       // 삭제 성공 - 목록으로 이동
-      router.push(config.routePrefix);
+      router.push(listHref);
       router.refresh();
     } catch (err) {
       console.error(err);
