@@ -94,6 +94,7 @@ function ErrorBox({ message = '데이터를 불러오는 중 오류가 발생했
 // ---------------------- 공지 카드 ----------------------
 
 function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[]; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
+  const supportQuery = 'from=support&returnTo=%2Fsupport';
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-muted/30 border-b">
@@ -127,7 +128,15 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">등록된 공지가 없습니다.</div>
+            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+              <p className="text-sm font-medium text-foreground">등록된 공지가 없습니다.</p>
+              <p className="mt-1 text-xs text-muted-foreground">새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.</p>
+              <div className="mt-3">
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/board/notice">공지 전체보기</Link>
+                </Button>
+              </div>
+            </div>
           ) : (
             items.map((notice) => (
               <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
@@ -149,14 +158,14 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`/board/notice/${notice._id}`} className="font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`/board/notice/${notice._id}?${supportQuery}`} className="font-semibold text-foreground hover:text-primary dark:hover:text-primary transition-colors flex-1 min-w-0 truncate">
                           {notice.title}
                         </Link>
                       </div>
                     </div>
 
                     {/* 메타 정보 */}
-                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <span>{fmt(notice.createdAt)}</span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
@@ -184,6 +193,7 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
 
 function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaItem[]; viewerId?: string | null; isAdmin?: boolean; isLoading?: boolean; error?: any }) {
   const [secretBlock, setSecretBlock] = useState<{ open: boolean; item?: QnaItem }>({ open: false });
+  const supportQuery = 'from=support&returnTo=%2Fsupport';
 
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
@@ -219,19 +229,21 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
               </DialogTitle>
               <DialogDescription className="space-y-2">
                 <span className="block">
-                  이 글은 <b>비밀글</b>로 설정되어 있어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                  이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
                 </span>
-                <span className="block">관리자 답변이 달려도 공개되지 않습니다.</span>
-                {!viewerId ? <span className="block">작성자라면 로그인 후 확인해 주세요.</span> : <span className="block">현재 계정으로는 열람 권한이 없습니다.</span>}
+                {!viewerId ? <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span> : <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setSecretBlock({ open: false })}>
-                닫기
+            <DialogFooter className="flex-wrap gap-2 sm:justify-end">
+              <Button variant="outline" asChild>
+                <Link href="/board/qna">목록으로 돌아가기</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/support">고객센터 홈</Link>
               </Button>
               {!viewerId && secretBlock.item?._id && (
                 <Button asChild>
-                  <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
+                  <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}?${supportQuery}`)}`}>로그인하고 확인</Link>
                 </Button>
               )}
             </DialogFooter>
@@ -243,7 +255,15 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">등록된 문의가 없습니다.</div>
+            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+              <p className="text-sm font-medium text-foreground">등록된 문의가 없습니다.</p>
+              <p className="mt-1 text-xs text-muted-foreground">궁금한 점이 있다면 첫 문의를 남겨주세요.</p>
+              <div className="mt-3">
+                <Button asChild size="sm">
+                  <Link href="/board/qna/write">문의하기</Link>
+                </Button>
+              </div>
+            </div>
           ) : (
             items.map((qna) => {
               const canOpenSecret = !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
@@ -277,7 +297,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                         <span>{qna.authorName ?? '익명'}</span>
                         <span>{fmt(qna.createdAt)}</span>
                         <span className="flex items-center">
@@ -306,7 +326,7 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
 
               // 권한 있거나 일반글: 상세로 이동
               return (
-                <Link key={qna._id} href={`/board/qna/${qna._id}`} className="block">
+                <Link key={qna._id} href={`/board/qna/${qna._id}?${supportQuery}`} className="block">
                   {RowInner}
                 </Link>
               );

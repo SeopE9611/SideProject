@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import useSWR from 'swr';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec } from '@/lib/badge-style';
 import type { BoardPost } from '@/lib/types/board';
@@ -20,6 +20,7 @@ type QnaItem = BoardPost & { type: 'qna' };
 export default function QnaDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   type FetchError = Error & { status?: number; info?: unknown };
 
   function isRecord(v: unknown): v is Record<string, unknown> {
@@ -89,6 +90,16 @@ export default function QnaDetailPage() {
     if (status === 403) return '작성자/관리자만 볼 수 있는 글일 수 있습니다.';
     return '페이지를 새로고침하거나 잠시 후 다시 시도해주세요.';
   })();
+
+  const returnTo = searchParams.get('returnTo');
+  const from = searchParams.get('from');
+  const detailQuery = searchParams.toString();
+  const listParams = new URLSearchParams(searchParams.toString());
+  listParams.delete('from');
+  listParams.delete('returnTo');
+  const listQuery = listParams.toString();
+  const listHref = listQuery ? `/board/qna?${listQuery}` : '/board/qna';
+  const supportHref = from === 'support' || returnTo === '/support' ? '/support' : '/support';
 
   const fmt = (v?: string | Date) =>
     v
@@ -163,13 +174,13 @@ export default function QnaDetailPage() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href="/board/qna" onClick={confirmLeave}>
+                <Link href={listHref} onClick={confirmLeave}>
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Q&amp;A 목록으로
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link href="/support" onClick={confirmLeave}>
+                <Link href={supportHref} onClick={confirmLeave}>
                   고객센터 홈으로
                 </Link>
               </Button>
@@ -259,6 +270,19 @@ export default function QnaDetailPage() {
               {!isLoading && error && (
                 <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
                   <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{errorBody}</div>
+                  <div className="not-prose mt-5 flex flex-wrap gap-2">
+                    {(error as FetchError | undefined)?.status === 401 && (
+                      <Button asChild>
+                          <Link href={`/login?next=${encodeURIComponent(`/board/qna/${id}${detailQuery ? `?${detailQuery}` : ''}`)}`}>로그인하고 다시 보기</Link>
+                      </Button>
+                    )}
+                    <Button variant="outline" asChild>
+                      <Link href={listHref}>Q&amp;A 목록으로</Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link href={supportHref}>고객센터 홈</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
               {!isLoading && !error && qna && (
@@ -489,7 +513,7 @@ export default function QnaDetailPage() {
 
           <div className="flex justify-between items-center pt-4">
             <Button variant="outline" size="lg" asChild className="px-8">
-              <Link href="/board/qna" onClick={confirmLeave}>
+              <Link href={listHref} onClick={confirmLeave}>
                 <ArrowUp className="mr-2 h-4 w-4" />
                 목록으로 돌아가기
               </Link>
