@@ -56,6 +56,7 @@ type Rental = {
   withStringService?: boolean;
 
   shipping?: {
+    shippingMethod?: string;
     outbound?: {
       courier?: string;
       trackingNumber?: string;
@@ -77,6 +78,13 @@ type Rental = {
     requestedAt?: string;
     processedAt?: string;
   } | null;
+};
+
+const normalizeRentalShippingMethod = (value?: string | null) => {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (normalized === 'pickup' || normalized === 'visit') return 'pickup';
+  if (normalized === 'delivery' || normalized === 'courier') return 'delivery';
+  return '';
 };
 
 // 안전 라벨/URL 헬퍼
@@ -316,6 +324,8 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
   });
 
   const hasOutboundShipping = !!data.shipping?.outbound?.trackingNumber;
+  const rentalShippingMethod = normalizeRentalShippingMethod(data.shipping?.shippingMethod);
+  const isVisitPickup = rentalShippingMethod === 'pickup';
 
   // 대기중/결제완료 + 아직 취소요청이 아닌 경우에만 '활성화' 허용 (버튼 자체는 항상 노출)
   const canRequestCancel =
@@ -355,7 +365,7 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
             </div>
           </div>
 
-          <div className="sm:ml-auto flex items-center gap-2">
+          <div className="sm:ml-auto flex flex-wrap items-center gap-2 sm:justify-end">
             {/* 교체 서비스 CTA */}
             {applicationHref ? (
               <Link href={applicationHref}>
@@ -609,7 +619,11 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
             <div className="rounded-lg bg-muted/50 p-3">
               <p className="text-sm text-muted-foreground">수령 정보</p>
               <p className="text-sm font-semibold text-foreground mt-1">
-                {data.shipping?.outbound?.trackingNumber
+                {isVisitPickup
+                  ? data.shipping?.outbound?.trackingNumber
+                    ? `매장 수령 준비 완료 · ${data.shipping.outbound.trackingNumber}`
+                    : '매장 수령 준비 중입니다.'
+                  : data.shipping?.outbound?.trackingNumber
                   ? `${getCourierLabel(data.shipping.outbound.courier)} · ${data.shipping.outbound.trackingNumber}`
                   : '출고 운송장 등록 전입니다.'}
               </p>
@@ -617,7 +631,11 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
             <div className="rounded-lg bg-muted/50 p-3">
               <p className="text-sm text-muted-foreground">반납 정보</p>
               <p className="text-sm font-semibold text-foreground mt-1">
-                {data.shipping?.return?.trackingNumber
+                {isVisitPickup
+                  ? data.shipping?.return?.trackingNumber
+                    ? `매장 반환 접수 완료 · ${data.shipping.return.trackingNumber}`
+                    : '매장 반환 접수 전입니다.'
+                  : data.shipping?.return?.trackingNumber
                   ? `${getCourierLabel(data.shipping.return.courier)} · ${data.shipping.return.trackingNumber}`
                   : '반납 운송장이 아직 등록되지 않았습니다.'}
               </p>
@@ -651,13 +669,19 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
                   <Truck className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">출고 운송장 등록</p>
+                  <p className="text-sm font-medium text-foreground">{isVisitPickup ? '매장 수령 준비 완료' : '출고 운송장 등록'}</p>
                   <p className="text-xs text-muted-foreground">{fmtDateOnly(data.shipping.outbound.shippedAt)}</p>
                   <p className="text-sm mt-1">
-                    {getCourierLabel(data.shipping.outbound.courier)} ·{' '}
-                    <a className="underline underline-offset-2" href={getTrackHref(data.shipping.outbound.courier, data.shipping.outbound.trackingNumber)} target="_blank" rel="noreferrer">
-                      {data.shipping.outbound.trackingNumber ?? '-'}
-                    </a>
+                    {isVisitPickup ? (
+                      <>준비 확인 번호 · {data.shipping.outbound.trackingNumber ?? '-'}</>
+                    ) : (
+                      <>
+                        {getCourierLabel(data.shipping.outbound.courier)} ·{' '}
+                        <a className="underline underline-offset-2" href={getTrackHref(data.shipping.outbound.courier, data.shipping.outbound.trackingNumber)} target="_blank" rel="noreferrer">
+                          {data.shipping.outbound.trackingNumber ?? '-'}
+                        </a>
+                      </>
+                    )}
                   </p>
                 </div>
               </div>
@@ -680,13 +704,19 @@ export default function RentalsDetailClient({ id, backUrl = '/mypage?tab=orders'
                   <Truck className="h-5 w-5 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">반납 운송장 등록</p>
+                  <p className="text-sm font-medium text-foreground">{isVisitPickup ? '매장 반환 접수 완료' : '반납 운송장 등록'}</p>
                   <p className="text-xs text-muted-foreground">{fmtDateOnly(data.shipping.return.shippedAt)}</p>
                   <p className="text-sm mt-1">
-                    {getCourierLabel(data.shipping.return.courier)} ·{' '}
-                    <a className="underline underline-offset-2" href={getTrackHref(data.shipping.return.courier, data.shipping.return.trackingNumber)} target="_blank" rel="noreferrer">
-                      {data.shipping.return.trackingNumber ?? '-'}
-                    </a>
+                    {isVisitPickup ? (
+                      <>접수 번호 · {data.shipping.return.trackingNumber ?? '-'}</>
+                    ) : (
+                      <>
+                        {getCourierLabel(data.shipping.return.courier)} ·{' '}
+                        <a className="underline underline-offset-2" href={getTrackHref(data.shipping.return.courier, data.shipping.return.trackingNumber)} target="_blank" rel="noreferrer">
+                          {data.shipping.return.trackingNumber ?? '-'}
+                        </a>
+                      </>
+                    )}
                   </p>
                 </div>
               </div>

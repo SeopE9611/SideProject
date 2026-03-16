@@ -475,14 +475,14 @@ export default function TransactionFlowList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {FLOW_SCOPE_OPTIONS.map((option) => (
           <Button
             key={option.value}
             type="button"
             size="sm"
             variant={scope === option.value ? "default" : "outline"}
-            className={scope === option.value ? "" : "bg-transparent"}
+            className={`justify-center ${scope === option.value ? "" : "bg-transparent"}`}
             onClick={() => handleScopeChange(option.value)}
           >
             {option.label}
@@ -959,7 +959,7 @@ export default function TransactionFlowList() {
                             )
                           }
                         >
-                          {isSecondaryOpen ? "관련 작업 닫기" : `관련 작업 보기 (${secondaryActions.length})`}
+                          {isSecondaryOpen ? "기타 작업 닫기" : `기타 작업 더보기 (${secondaryActions.length})`}
                           <ChevronDown className={`ml-1 h-3.5 w-3.5 transition-transform ${isSecondaryOpen ? "rotate-180" : ""}`} />
                         </Button>
                       ) : null}
