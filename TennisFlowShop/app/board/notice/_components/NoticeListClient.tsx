@@ -11,6 +11,7 @@ import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 
 type Props = {
@@ -43,6 +44,12 @@ function AdminNoticeWriteButton() {
 }
 
 export default function NoticeListClient({ initialItems, initialTotal, initialLoadError, initialErrorMessage, initialPage = 1, initialKeyword = '', initialField = 'all' }: Props) {
+  const searchParams = useSearchParams();
+  const currentListQuery = searchParams.toString();
+  const buildDetailHref = (noticeId: string) => {
+    const base = `/board/notice/${noticeId}`;
+    return currentListQuery ? `${base}?${currentListQuery}` : base;
+  };
   type NoticeItem = {
     _id: string;
     title: string;
@@ -259,15 +266,33 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                   fallbackMessage="공지 목록을 불러오지 못했습니다."
                 />
               )}
-              {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">등록된 공지사항이 없습니다.</div>}
+              {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && (
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+                  <p className="text-sm font-medium text-foreground">등록된 공지사항이 없습니다.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요.</p>
+                  <div className="mt-3">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/support">고객센터 홈으로</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
               {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && shouldShowSearchEmptyState && (
-                <div className="py-8 sm:py-10 md:py-12 text-center text-sm sm:text-base text-muted-foreground">검색 결과가 없습니다.</div>
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+                  <p className="text-sm font-medium text-foreground">검색 결과가 없습니다.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요.</p>
+                  <div className="mt-3">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/board/notice">전체 공지 보기</Link>
+                    </Button>
+                  </div>
+                </div>
               )}
               {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && !shouldShowSearchEmptyState && items.map((notice) => {
                 const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
 
                 return (
-                  <Link key={notice._id} href={`/board/notice/${notice._id}`}>
+                  <Link key={notice._id} href={buildDetailHref(notice._id)}>
                     <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
                     <CardContent className="p-5 sm:p-6 md:p-7">
                       <div className="flex items-start justify-between">
@@ -310,7 +335,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                           </div>
 
                           {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
-                          <div className="flex items-center space-x-3 sm:space-x-4 text-sm sm:text-base text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm sm:text-base text-muted-foreground">
                             <span>{fmt(notice.createdAt)}</span>
                             <span className="flex items-center">
                               <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-1" />

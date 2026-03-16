@@ -146,6 +146,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
   const [uiLoading, setUiLoading] = useState(false);
 
   const pathname = usePathname();
+  const detailQuery = buildSearchParams({ page, category, answerFilter, keyword, field });
 
   // 현재 사용자(비로그인= null) — 비밀글 클릭 차단 판단에 사용
   const { data: me } = useSWR<MeRes | null>('/api/users/me', meFetcher, {
@@ -516,19 +517,21 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                   </DialogTitle>
                   <DialogDescription className="space-y-2">
                     <span className="block">
-                      이 글은 <b>비밀글</b>로 설정되어 있어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
+                      이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
                     </span>
 
-                    <span className="block">관리자 답변이 달려도 공개되지 않습니다.</span>
-                    {!viewerId ? <span className="block">작성자라면 로그인 후 확인해 주세요.</span> : <span className="block">현재 계정으로는 열람 권한이 없습니다.</span>}
+                    {!viewerId ? <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span> : <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>}
                   </DialogDescription>
                 </DialogHeader>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setSecretBlock({ open: false })}>
-                    닫기
+                <DialogFooter className="flex-wrap gap-2 sm:justify-end">
+                  <Button variant="outline" asChild>
+                    <Link href="/board/qna">목록으로 돌아가기</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/support">고객센터 홈</Link>
                   </Button>
                   {!viewerId && secretBlock.item?._id && (
-                    <Button asChild variant="outline">
+                    <Button asChild>
                       <Link href={`/login?next=${encodeURIComponent(`/board/qna/${secretBlock.item._id}`)}`}>로그인하고 확인</Link>
                     </Button>
                   )}
@@ -578,8 +581,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
 
                             <h3 className="text-lg font-semibold text-foreground hover:text-success dark:hover:text-success transition-colors mb-3 flex-1 min-w-0 truncate">{displayTitle}</h3>
 
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <div className="flex items-center space-x-2">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
                                   <AvatarFallback className="text-xs">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
                                 </Avatar>
@@ -614,7 +617,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                   }
 
                   return (
-                    <Link key={qna._id} href={`/board/qna/${qna._id}`}>
+                    <Link key={qna._id} href={`/board/qna/${qna._id}${detailQuery ? `?${detailQuery}` : ''}`}>
                       {CardInner}
                     </Link>
                   );
@@ -623,7 +626,12 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
               {shouldShowSearchEmptyState && (
                 <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
                   <p className="text-sm font-medium text-foreground">검색 결과가 없습니다.</p>
-                  <p className="mt-1 text-xs text-muted-foreground">검색어를 바꾸거나 필터를 초기화해 보세요.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요.</p>
+                  <div className="mt-3">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/board/qna">전체 문의 보기</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
               {shouldShowActualEmptyState && (

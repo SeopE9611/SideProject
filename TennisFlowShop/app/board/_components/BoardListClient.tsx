@@ -280,6 +280,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
   const { user, loading } = useCurrentUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const currentListQuery = searchParams.toString();
+  const buildDetailHref = (postId: string | number) => {
+    const base = `${config.routePrefix}/${postId}`;
+    return currentListQuery ? `${base}?${currentListQuery}` : base;
+  };
 
   const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>('/api/boards?type=notice&page=1&limit=5', boardFetcher, {
     revalidateOnFocus: false,
@@ -969,7 +974,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       return isMarket ? (
                         <Link
                           key={post.id}
-                          href={`${config.routePrefix}/${post.postNo ?? post.id}`}
+                          href={buildDetailHref(post.postNo ?? post.id)}
                           className={['group grid grid-cols-[44px_64px_minmax(0,1fr)_110px_72px_90px_88px_52px] items-center px-3 py-2.5 text-sm transition-colors', isSold ? 'opacity-45 hover:opacity-65' : 'hover:bg-muted/40'].join(' ')}
                         >
                           {/* 번호 */}
@@ -1094,7 +1099,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
                         </Link>
                       ) : (
-                        <Link key={post.id} href={`${config.routePrefix}/${post.postNo ?? post.id}`} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm transition-colors hover:bg-muted/50">
+                        <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm transition-colors hover:bg-muted/50">
                           {/* 번호 */}
                           <div className="text-center text-xs tabular-nums text-muted-foreground">{typeof post.postNo === 'number' ? post.postNo : '-'}</div>
 
@@ -1199,7 +1204,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     const isSold = post.marketMeta?.saleStatus === 'sold';
 
                     return isMarket ? (
-                      <Link key={post.id} href={`${config.routePrefix}/${post.postNo ?? post.id}`} className={['block rounded-lg border border-border bg-card px-3 py-3 transition-colors active:bg-muted/30', isSold ? 'opacity-45' : ''].join(' ')}>
+                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className={['block rounded-lg border border-border bg-card px-3 py-3 transition-colors active:bg-muted/30', isSold ? 'opacity-45' : ''].join(' ')}>
                         {/* 상단: 가격 + 상태/등급 뱃지 */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
@@ -1260,7 +1265,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         </div>
                       </Link>
                     ) : (
-                      <Link key={post.id} href={`${config.routePrefix}/${post.postNo ?? post.id}`} className="block rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/30 active:bg-muted/40">
+                      <Link key={post.id} href={buildDetailHref(post.postNo ?? post.id)} className="block rounded-lg border border-border bg-card px-3 py-2.5 transition-colors hover:border-primary/30 active:bg-muted/40">
                         {/* 1줄: 번호 + 분류 뱃지 */}
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span className="text-[11px] tabular-nums">{typeof post.postNo === 'number' ? post.postNo : '-'}</span>
@@ -1277,8 +1282,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         </div>
 
                         {/* 3줄: 작성자/날짜 + 카운트들 */}
-                        <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                          <div className="flex items-center gap-1">
+                        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-muted-foreground">
+                          <div className="flex min-w-0 flex-wrap items-center gap-1">
                             <span>{post.nickname || '회원'}</span>
                             <span className="text-border">{'|'}</span>
                             <span>{fmtDateTime(post.createdAt)}</span>

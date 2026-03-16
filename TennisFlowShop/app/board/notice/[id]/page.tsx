@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import useSWR from 'swr';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { getNoticeCategoryBadgeSpec, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -15,6 +15,7 @@ import { communityFetch } from '@/lib/community/communityFetch.client';
 export default function NoticeDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   type FetchError = Error & { status?: number; info?: unknown };
 
   function isRecord(v: unknown): v is Record<string, unknown> {
@@ -92,6 +93,12 @@ export default function NoticeDetailPage() {
     if (status === 403) return '관리자에게 문의해주세요.';
     return '페이지를 새로고침하거나 잠시 후 다시 시도해주세요.';
   })();
+  const detailQuery = searchParams.toString();
+  const listParams = new URLSearchParams(searchParams.toString());
+  listParams.delete('from');
+  listParams.delete('returnTo');
+  const listQuery = listParams.toString();
+  const listHref = listQuery ? `/board/notice?${listQuery}` : '/board/notice';
 
   // 관리자 정보 로드
   const { data: me } = useSWR('/api/users/me', fetcher);
@@ -159,7 +166,7 @@ export default function NoticeDetailPage() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href="/board/notice">
+                <Link href={listHref}>
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   공지사항 목록으로
                 </Link>
@@ -180,8 +187,22 @@ export default function NoticeDetailPage() {
                   </div>
                 )}
                 {error && (
-                  <div className="text-center py-8">
+                  <div className="text-center py-8 space-y-3">
                     <div className="text-destructive text-lg font-semibold">{errorTitle}</div>
+                    <p className="text-sm text-muted-foreground">{errorBody}</p>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {(error as FetchError | undefined)?.status === 401 && (
+                        <Button asChild>
+                          <Link href={`/login?next=${encodeURIComponent(`/board/notice/${id}${detailQuery ? `?${detailQuery}` : ''}`)}`}>로그인하고 다시 보기</Link>
+                        </Button>
+                      )}
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={listHref}>공지 목록으로</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/support">고객센터 홈으로</Link>
+                      </Button>
+                    </div>
                   </div>
                 )}
                 {!isLoading && !error && notice && (
@@ -406,7 +427,7 @@ export default function NoticeDetailPage() {
             <CardFooter className="border-t border-border bg-muted/30 p-6">
               <div className="w-full flex justify-center">
                 <Button variant="outline" size="lg" asChild className="px-8">
-                  <Link href="/board/notice">
+                  <Link href={listHref}>
                     <ArrowUp className="mr-2 h-4 w-4" />
                     목록으로 돌아가기
                   </Link>

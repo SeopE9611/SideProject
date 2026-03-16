@@ -133,6 +133,8 @@ function DetailSkeleton() {
 export default function BoardDetailClient({ id, config }: Props & { config: BoardTypeConfig }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const listQuery = searchParams.toString();
+  const listHref = listQuery ? `${config.routePrefix}?${listQuery}` : config.routePrefix;
 
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
@@ -1084,7 +1086,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <div className="mb-1 text-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
-              <Link href={config.routePrefix} className="text-muted-foreground underline-offset-2 hover:underline">
+              <Link href={listHref} className="text-muted-foreground underline-offset-2 hover:underline">
                 {config.boardTitle}
               </Link>
               <span className="mx-1">›</span>
@@ -1102,14 +1104,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               className="gap-1 bg-transparent"
               onClick={() => {
                 if (!confirmLeaveIfDirty()) return;
-                router.push(config.routePrefix);
+                router.push(listHref);
               }}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
             <Button asChild variant="outline" size="sm">
-              <Link href={config.routePrefix}>목록으로</Link>
+              <Link href={listHref}>목록으로</Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/board">게시판 홈</Link>
@@ -1130,7 +1132,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               />
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
-                  <Link href={config.routePrefix}>목록으로</Link>
+                  <Link href={listHref}>목록으로</Link>
                 </Button>
                 <Button asChild size="sm">
                   <Link href={`${config.routePrefix}/write`}>새 글 작성하기</Link>
@@ -1558,7 +1560,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   )}
 
                   <Button asChild variant="outline" size="sm">
-                    <Link href={config.routePrefix}>목록으로</Link>
+                    <Link href={listHref}>목록으로</Link>
                   </Button>
                   <Button asChild variant="outline" size="sm">
                     <Link href={`${config.routePrefix}/write`}>새 글 작성</Link>
