@@ -1,5 +1,6 @@
 'use client';
 import ErrorBox from '@/app/board/_components/ErrorBox';
+import PinnedNoticeStrip from '@/app/board/_components/PinnedNoticeStrip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,15 @@ type QnaItem = {
   answer?: { authorName?: string; createdAt?: string | Date; updatedAt?: string | Date } | undefined;
   viewCount?: number;
   isSecret?: boolean;
+};
+
+type NoticePinnedResponse = {
+  items?: Array<{
+    _id: string;
+    title: string;
+    createdAt: string | Date;
+    isPinned?: boolean;
+  }>;
 };
 
 type BoardListRes = {
@@ -224,6 +234,13 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
+
+  const { data: pinnedNoticeData } = useSWR<NoticePinnedResponse>('/api/boards?type=notice&page=1&limit=5', (url) => boardFetcher<NoticePinnedResponse>(url), {
+    revalidateOnFocus: false,
+    keepPreviousData: true,
+  });
+
+  const pinnedNotices = (pinnedNoticeData?.items ?? []).filter((notice) => notice.isPinned).slice(0, 3).map((notice) => ({ _id: notice._id, title: notice.title, createdAt: notice.createdAt }));
 
   const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, (url) => boardFetcher<BoardListRes>(url), {
     keepPreviousData: true,
@@ -528,6 +545,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                 />
               )}
 
+              <PinnedNoticeStrip items={pinnedNotices} />
+
               {!isLoading &&
                 !hasDataError &&
                 items.map((qna) => {
@@ -601,8 +620,28 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                   );
                 })}
 
-              {shouldShowSearchEmptyState && <div className="text-sm text-muted-foreground">검색 결과가 없습니다.</div>}
-              {shouldShowActualEmptyState && <div className="text-sm text-muted-foreground">등록된 문의가 없습니다.</div>}
+              {shouldShowSearchEmptyState && (
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+                  <p className="text-sm font-medium text-foreground">검색 결과가 없습니다.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">검색어를 바꾸거나 필터를 초기화해 보세요.</p>
+                </div>
+              )}
+              {shouldShowActualEmptyState && (
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+                  <p className="text-sm font-medium text-foreground">등록된 문의가 없습니다.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">궁금한 점이 있다면 첫 문의를 남겨 주세요.</p>
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                    <Button asChild size="sm">
+                      <Link href="/board/qna/write">
+                        <Plus className="mr-1 h-3.5 w-3.5" />문의하기
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/support">고객센터 홈</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 md:mt-8 flex items-center justify-center">
