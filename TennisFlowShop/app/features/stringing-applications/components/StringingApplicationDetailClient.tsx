@@ -708,31 +708,31 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {!isEditableAllowed && <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>}
                 </Tooltip>
 
-                <Link href={backUrl}>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
+                {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} className="w-auto h-9 px-3 text-sm" />}
+
+                {/* 사용자: 교체확정 버튼 */}
+                {!isAdmin && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-block">
+                        <Button size="sm" disabled={!canConfirmExchange || isConfirmSubmitting} onClick={handleConfirmExchange}>
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          {isConfirmSubmitting ? '확정 중...' : isUserConfirmed ? '확정 완료' : '교체 확정'}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!canConfirmExchange && <TooltipContent>{isUserConfirmed ? '이미 교체 확정된 신청입니다.' : '교체완료/반송완료 이후에 확정할 수 있습니다.'}</TooltipContent>}
+                  </Tooltip>
+                )}
+
+                <Link href={backUrl} className="basis-full sm:basis-auto">
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground/80 hover:text-muted-foreground sm:w-auto sm:justify-center sm:ml-2">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    신청 목록
+                    신청 목록으로 돌아가기
                   </Button>
                 </Link>
               </div>
-
-              {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
-              {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} className="w-auto h-9 px-3 text-sm" />}
-
-              {/* 사용자: 교체확정 버튼 */}
-              {!isAdmin && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button size="sm" disabled={!canConfirmExchange || isConfirmSubmitting} onClick={handleConfirmExchange}>
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        {isConfirmSubmitting ? '확정 중...' : isUserConfirmed ? '확정 완료' : '교체 확정'}
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!canConfirmExchange && <TooltipContent>{isUserConfirmed ? '이미 교체 확정된 신청입니다.' : '교체완료/반송완료 이후에 확정할 수 있습니다.'}</TooltipContent>}
-                </Tooltip>
-              )}
             </TooltipProvider>
           </div>
 
