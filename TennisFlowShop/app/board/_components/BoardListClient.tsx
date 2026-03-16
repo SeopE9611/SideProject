@@ -504,6 +504,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
       params.delete('searchType');
     }
 
+    // 검색/해제 시 목록 시작 지점을 예측 가능하게 1페이지로 고정
+    params.delete('page');
+
     router.push(`${config.routePrefix}?${params.toString()}`);
     setPage(1); // 검색하면 1페이지부터 다시
   };
@@ -512,6 +515,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     const params = new URLSearchParams(searchParams.toString());
     params.delete('q');
     params.delete('searchType');
+    params.delete('page');
 
     router.push(`${config.routePrefix}?${params.toString()}`);
     setSearchText('');
@@ -914,9 +918,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             {shouldShowEmptyState && (
               <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/20 px-4 py-12 text-center">
                 <PackageSearch className="h-8 w-8 text-muted-foreground/50" />
-                <p className="text-sm font-medium text-foreground">{activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}</p>
-                <p className="text-xs text-muted-foreground">{activeMarketFilterCount > 0 ? '필터 조건을 변경하거나 초기화해 보세요' : config.emptyDescription}</p>
+                <p className="text-sm font-medium text-foreground">{qParam ? '검색 결과가 없습니다' : activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}</p>
+                <p className="text-xs text-muted-foreground">{qParam ? '검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요' : activeMarketFilterCount > 0 ? '필터 조건을 변경하거나 초기화해 보세요' : config.emptyDescription}</p>
                 <div className="mt-2 flex items-center gap-2">
+                  {qParam && (
+                    <Button type="button" variant="outline" size="sm" onClick={handleSearchReset}>
+                      검색 해제
+                    </Button>
+                  )}
                   {activeMarketFilterCount > 0 && (
                     <Button type="button" variant="outline" size="sm" onClick={resetMarketFilters}>
                       <RotateCcw className="mr-1 h-3.5 w-3.5" />

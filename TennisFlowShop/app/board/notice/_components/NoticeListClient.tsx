@@ -9,8 +9,9 @@ import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getN
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
 import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 
 type Props = {
@@ -80,6 +81,23 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   const [page, setPage] = useState(initialPage);
   const [pageJump, setPageJump] = useState('');
   const limit = 20;
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const urlKeyword = searchParams.get('q') ?? '';
+    const rawField = searchParams.get('field');
+    const urlField: 'all' | 'title' | 'content' | 'title_content' = rawField === 'title' || rawField === 'content' || rawField === 'title_content' ? rawField : 'all';
+    const rawPage = Number.parseInt(searchParams.get('page') ?? '1', 10);
+    const urlPage = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+
+    setInputKeyword(urlKeyword);
+    setKeyword(urlKeyword);
+    setInputField(urlField);
+    setField(urlField);
+    setPage(urlPage);
+  }, [searchParams]);
 
   const buildListQueryFromState = () => {
     const sp = new URLSearchParams();
@@ -97,6 +115,20 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
     const base = `/board/notice/${noticeId}`;
     const listQuery = buildListQueryFromState();
     return listQuery ? `${base}?${listQuery}` : base;
+  };
+
+  const pushUrlFromState = (next: { page: number; keyword: string; field: 'all' | 'title' | 'content' | 'title_content' }) => {
+    const sp = new URLSearchParams();
+    const normalizedKeyword = next.keyword.trim();
+
+    if (next.page !== 1) sp.set('page', String(next.page));
+    if (normalizedKeyword) {
+      sp.set('q', normalizedKeyword);
+      sp.set('field', next.field);
+    }
+
+    const qs = sp.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   };
 
   // 목록 불러오기 (검색 파라미터 포함)
@@ -170,7 +202,9 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
   const visiblePages = Array.from({ length: pageEnd - pageStart + 1 }, (_, i) => pageStart + i);
 
   const movePage = (nextPage: number) => {
-    setPage(Math.max(1, Math.min(totalPages, nextPage)));
+    const safePage = Math.max(1, Math.min(totalPages, nextPage));
+    setPage(safePage);
+    pushUrlFromState({ page: safePage, keyword, field });
   };
 
   const handlePageJump = (e: any) => {
@@ -243,9 +277,11 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        setPage(1);
+                        const nextPage = 1;
+                        setPage(nextPage);
                         setKeyword(inputKeyword);
                         setField(inputField);
+                        pushUrlFromState({ page: nextPage, keyword: inputKeyword, field: inputField });
                       }
                     }}
                   />
@@ -253,9 +289,11 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                 <Button
                   type="button"
                   onClick={() => {
-                    setPage(1);
+                    const nextPage = 1;
+                    setPage(nextPage);
                     setKeyword(inputKeyword);
                     setField(inputField);
+                    pushUrlFromState({ page: nextPage, keyword: inputKeyword, field: inputField });
                   }}
                   size="sm"
                   variant="outline"
@@ -294,8 +332,20 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                   <p className="text-sm font-medium text-foreground">검색 결과가 없습니다.</p>
                   <p className="mt-1 text-xs text-muted-foreground">검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요.</p>
                   <div className="mt-3">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href="/board/notice">전체 공지 보기</Link>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setInputKeyword('');
+                        setKeyword('');
+                        setInputField('all');
+                        setField('all');
+                        setPage(1);
+                        pushUrlFromState({ page: 1, keyword: '', field: 'all' });
+                      }}
+                    >
+                      전체 공지 보기
                     </Button>
                   </div>
                 </div>
