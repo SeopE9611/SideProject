@@ -1,6 +1,8 @@
 import { Bell, Pin } from 'lucide-react';
 import Link from 'next/link';
 
+const pinnedNoticeMobileTitleClampClass = 'line-clamp-2 text-sm font-medium leading-snug text-foreground group-hover:text-primary sm:line-clamp-1';
+
 import { Badge } from '@/components/ui/badge';
 
 export type PinnedNoticeItem = {
@@ -43,7 +45,7 @@ export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[]
               <Pin className="h-3 w-3" />
             </Badge>
             <div className="min-w-0 flex-1">
-              <p className="line-clamp-2 text-sm font-medium leading-snug text-foreground group-hover:text-primary sm:line-clamp-1">{notice.title}</p>
+              <p className={pinnedNoticeMobileTitleClampClass}>{notice.title}</p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">{fmtDate(notice.createdAt)}</p>
             </div>
           </Link>

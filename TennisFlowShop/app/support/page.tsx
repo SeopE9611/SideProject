@@ -68,6 +68,9 @@ async function fetcherAllow401<T>(url: string): Promise<T | null> {
   return data as T;
 }
 const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
+const supportMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base';
+const supportMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground';
+const supportMobileActionBadgeWrapClass = 'w-full shrink-0 sm:w-auto';
 
 function FiveLineSkeleton() {
   return (
@@ -158,14 +161,14 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                         )}
 
                         {/* 말줄임 제목 (부모 flex-1 + min-w-0 중요) */}
-                        <Link href={`/board/notice/${notice._id}?${supportQuery}`} className="flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors hover:text-primary dark:hover:text-primary sm:line-clamp-1 sm:text-base">
+                        <Link href={`/board/notice/${notice._id}?${supportQuery}`} className={`${supportMobileTitleClampClass} text-foreground transition-colors hover:text-primary dark:hover:text-primary`}>
                           {notice.title}
                         </Link>
                       </div>
                     </div>
 
                     {/* 메타 정보 */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                    <div className={supportMobileMetaWrapClass}>
                       <span>{fmt(notice.createdAt)}</span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
@@ -286,18 +289,18 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                             </Badge>
                           )}
 
-                          <span className="flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug text-foreground sm:line-clamp-1 sm:text-base">{qna.title}</span>
+                          <span className={`${supportMobileTitleClampClass} text-foreground`}>{qna.title}</span>
                         </div>
 
                         {/* 답변완료/대기 뱃지는 그대로 유지 */}
-                        <div className="w-full shrink-0 sm:w-auto">
+                        <div className={supportMobileActionBadgeWrapClass}>
                           <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
                             {qna.answer ? '답변 완료' : '답변 대기'}
                           </Badge>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <div className={supportMobileMetaWrapClass}>
                         <span>{qna.authorName ?? '익명'}</span>
                         <span>{fmt(qna.createdAt)}</span>
                         <span className="flex items-center">

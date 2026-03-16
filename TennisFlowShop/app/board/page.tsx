@@ -11,6 +11,9 @@ import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getBoardCateg
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+const boardMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base';
+const boardMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground';
+
 type BoardKind = 'free' | 'market' | 'gear';
 
 type CommunityListItem = {
@@ -147,13 +150,13 @@ function CommunityLatestCard({
                           </Badge>
                         )}
 
-                        <Link href={`${listHref}/${post.id}`} className="font-semibold text-foreground hover:opacity-80 transition-colors flex-1 min-w-0 truncate">
+                        <Link href={`${listHref}/${post.id}`} className={`${boardMobileTitleClampClass} text-foreground transition-colors hover:opacity-80`}>
                           {post.title}
                         </Link>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <div className={boardMobileMetaWrapClass}>
                       <span>{post.nickname ?? '익명'}</span>
                       <span>{fmt(post.createdAt)}</span>
                       <span className="flex items-center">
