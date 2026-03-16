@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { ArrowLeft, ArrowUp, Calendar, Eye, FileText, ImageIcon, Download, ExternalLink, Clock, Bell, Pin, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowUp, Calendar, Eye, FileText, ImageIcon, Download, ExternalLink, Clock, Bell, Pin, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -99,6 +99,11 @@ export default function NoticeDetailPage() {
   listParams.delete('returnTo');
   const listQuery = listParams.toString();
   const listHref = listQuery ? `/board/notice?${listQuery}` : '/board/notice';
+  const navQueryParams = new URLSearchParams(listQuery);
+  if (!navQueryParams.get('limit')) navQueryParams.set('limit', '20');
+  if (!navQueryParams.get('page')) navQueryParams.set('page', '1');
+  navQueryParams.set('type', 'notice');
+  const navListKey = `/api/boards?${navQueryParams.toString()}`;
 
   // 관리자 정보 로드
   const { data: me } = useSWR('/api/users/me', fetcher);
@@ -124,6 +129,14 @@ export default function NoticeDetailPage() {
   };
 
   const attachments = Array.isArray(notice?.attachments) ? notice!.attachments : [];
+  const { data: navListData } = useSWR<{ ok: true; items: Array<{ _id: string; title: string }> }>(notice ? navListKey : null, (url: string) => fetch(url, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null)), {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000,
+  });
+  const navIndex = navListData?.items?.findIndex((candidate) => candidate._id === notice?._id) ?? -1;
+  const prevPost = navIndex >= 0 && navIndex < (navListData?.items?.length ?? 0) - 1 ? navListData?.items?.[navIndex + 1] : null;
+  const nextPost = navIndex > 0 ? navListData?.items?.[navIndex - 1] : null;
   const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice?.category);
   const imageAtts = attachments.filter((att: any) => {
     const url = typeof att === 'string' ? att : att?.url;
@@ -425,13 +438,44 @@ export default function NoticeDetailPage() {
             )}
 
             <CardFooter className="border-t border-border bg-muted/30 p-6">
-              <div className="w-full flex justify-center">
-                <Button variant="outline" size="lg" asChild className="px-8">
-                  <Link href={listHref}>
-                    <ArrowUp className="mr-2 h-4 w-4" />
-                    목록으로 돌아가기
-                  </Link>
-                </Button>
+              <div className="w-full space-y-3">
+                <div className="grid gap-2 md:grid-cols-2">
+                  {([
+                    { key: 'prev', label: '이전 글', icon: ChevronLeft, target: prevPost },
+                    { key: 'next', label: '다음 글', icon: ChevronRight, target: nextPost },
+                  ] as const).map(({ key, label, icon: Icon, target }) => (
+                    <Button key={key} asChild={!!target} variant="outline" className="h-auto min-h-16 justify-start px-4 py-3 text-left" disabled={!target}>
+                      {target ? (
+                        <Link href={`/board/notice/${target._id}${listQuery ? `?${listQuery}` : ''}`}>
+                          <div className="flex w-full items-start gap-3">
+                            <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-xs text-muted-foreground">{label}</p>
+                              <p className="line-clamp-2 text-sm font-medium text-foreground">{target.title}</p>
+                            </div>
+                          </div>
+                        </Link>
+                      ) : (
+                        <span className="flex w-full items-start gap-3 text-muted-foreground">
+                          <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span className="min-w-0">
+                            <span className="block text-xs">{label}</span>
+                            <span className="block line-clamp-1 text-sm">이동할 글이 없습니다.</span>
+                          </span>
+                        </span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+
+                <div className="w-full flex justify-center">
+                  <Button variant="outline" size="lg" asChild className="px-8">
+                    <Link href={listHref}>
+                      <ArrowUp className="mr-2 h-4 w-4" />
+                      목록으로 돌아가기
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </CardFooter>
           </Card>

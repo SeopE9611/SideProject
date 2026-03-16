@@ -511,18 +511,21 @@ export default function QnaDetailPage() {
             </Card>
           )}
 
-          <div className="flex justify-between items-center pt-4">
-            <Button variant="outline" size="lg" asChild className="px-8">
-              <Link href={listHref} onClick={confirmLeave}>
-                <ArrowUp className="mr-2 h-4 w-4" />
-                목록으로 돌아가기
-              </Link>
-            </Button>
-            <Button size="lg" asChild className="px-8 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href="/board/qna/write" onClick={confirmLeave}>
-                <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
-              </Link>
-            </Button>
+          <div className="pt-4 space-y-3 border-t border-border">
+            <p className="text-sm text-muted-foreground">Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록 중심으로 이동을 제공합니다.</p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button variant="outline" size="lg" asChild className="w-full justify-start px-5">
+                <Link href={listHref} onClick={confirmLeave}>
+                  <ArrowUp className="mr-2 h-4 w-4" />
+                  목록으로 돌아가기
+                </Link>
+              </Button>
+              <Button size="lg" asChild className="w-full justify-start px-5 bg-primary text-primary-foreground hover:bg-primary/90">
+                <Link href="/board/qna/write" onClick={confirmLeave}>
+                  <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
