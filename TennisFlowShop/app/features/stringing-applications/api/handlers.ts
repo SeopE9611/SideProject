@@ -967,11 +967,34 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
       return null;
     };
 
-    const prevMethodNormalized = normalizeMethod((app as any)?.shippingInfo?.shippingMethod);
+    const linkedOrder = (app as any).orderId ? await db.collection('orders').findOne({ _id: new ObjectId((app as any).orderId) }, { projection: { shippingInfo: 1, servicePickupMethod: 1 } }) : null;
+
+    const deriveVisitContext = (doc: any, order: any): boolean => {
+      const collectionRaw = doc?.collectionMethod ?? doc?.shippingInfo?.collectionMethod;
+      if (normalizeCollection(collectionRaw) === 'visit') return true;
+
+      const linkedPickup = (() => {
+        if (!order) return null;
+        const pickup = normalizeServicePickupMethod((order as any).servicePickupMethod);
+        const codeFromPickup = pickup === 'SHOP_VISIT' ? 'visit' : pickup === 'COURIER_VISIT' || pickup === 'SELF_SEND' ? 'courier' : undefined;
+        const shippingRaw = (order as any).shippingInfo?.shippingMethod ?? (order as any).shippingInfo?.deliveryMethod ?? null;
+        return normalizeOrderShippingMethod(shippingRaw) ?? codeFromPickup ?? null;
+      })();
+      if (linkedPickup === 'visit') return true;
+
+      const shippingMethodRaw = doc?.shippingInfo?.shippingMethod ?? doc?.shippingInfo?.deliveryMethod;
+      return normalizeMethod(shippingMethodRaw) === 'visit';
+    };
+
+    const isOriginalVisitContext = deriveVisitContext(app as any, linkedOrder);
     const nextMethodNormalized = normalizeMethod((newShippingInfo as any)?.shippingMethod);
-    // 정책: 방문 수령 접수 건은 기본 운영에서 배송 방식 변경을 허용하지 않는다.
-    if (prevMethodNormalized === 'visit' && nextMethodNormalized && nextMethodNormalized !== 'visit') {
-      return NextResponse.json({ ok: false, message: '방문 수령 신청은 배송 방식 변경이 불가합니다. 예외 전환은 별도 관리자 절차를 통해 진행해주세요.' }, { status: 400 });
+
+    if (isOriginalVisitContext) {
+      if (nextMethodNormalized && nextMethodNormalized !== 'visit') {
+        return NextResponse.json({ ok: false, message: '방문 수령 신청은 배송 방식 변경이 불가합니다. 예외 전환은 별도 관리자 절차를 통해 진행해주세요.' }, { status: 400 });
+      }
+    } else if (nextMethodNormalized === 'visit') {
+      return NextResponse.json({ ok: false, message: '일반 배송 신청은 방문 수령으로 변경할 수 없습니다.' }, { status: 400 });
     }
 
     // 기존 배송 정보와 병합 (신청서 기준)
@@ -1108,9 +1131,7 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
 
     // 연결된 주문에도 동일 병합
     if ((app as any).orderId) {
-      const order = await db.collection('orders').findOne({ _id: new ObjectId((app as any).orderId) });
-
-      const orderShipping = (order as any)?.shippingInfo || {};
+      const orderShipping = (linkedOrder as any)?.shippingInfo || {};
       const mergedOrderShippingInfo = {
         ...orderShipping,
         ...newShippingInfo,

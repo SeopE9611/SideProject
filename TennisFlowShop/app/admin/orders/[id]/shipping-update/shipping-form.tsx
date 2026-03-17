@@ -145,7 +145,7 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
         }),
       });
 
-      showSuccessToast(isVisitPickupOrder ? '방문 수령 정보가 업데이트되었습니다' : '배송 정보가 업데이트되었습니다');
+      showSuccessToast(isVisitPickupOrder ? (isRegistered ? '방문 수령 정보가 수정되었습니다' : '방문 수령 정보가 등록되었습니다') : isRegistered ? '배송 정보가 수정되었습니다' : '배송 정보가 등록되었습니다');
 
       router.refresh();
 
@@ -180,7 +180,6 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
                 <SelectContent>
                   <SelectItem value="courier">택배 배송</SelectItem>
                   <SelectItem value="quick">퀵 배송 (당일)</SelectItem>
-                  <SelectItem value="visit">방문 수령</SelectItem>
                 </SelectContent>
               </Select>
             )}
