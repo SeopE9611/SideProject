@@ -7,6 +7,7 @@ import { RefundAccountSchema } from '@/lib/cancel-request/refund-account';
 import { normalizeEmail } from '@/lib/claims';
 import clientPromise, { getDb } from '@/lib/mongodb';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
+import { normalizeOrderStatus, normalizePaymentStatus } from '@/lib/admin-ops-normalize';
 import { revertConsumption } from '@/lib/passes.service';
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from '@/lib/pricing';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
@@ -17,6 +18,8 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const INPROGRESS_STATUSES = ['draft', '검토 중', '접수완료', '작업 중'] as const;
+const ORDER_TERMINAL_STATUSES = new Set(['취소', '결제취소', '환불', '구매확정', '완료']);
+const ORDER_SHIPPING_PHASE_STATUSES = new Set(['배송중', '배송완료']);
 
 type ServicePickupMethod = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
 
@@ -967,7 +970,11 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
       return null;
     };
 
-    const linkedOrder = (app as any).orderId ? await db.collection('orders').findOne({ _id: new ObjectId((app as any).orderId) }, { projection: { shippingInfo: 1, servicePickupMethod: 1 } }) : null;
+    const linkedOrder = (app as any).orderId
+      ? await db
+          .collection('orders')
+          .findOne({ _id: new ObjectId((app as any).orderId) }, { projection: { shippingInfo: 1, servicePickupMethod: 1, status: 1, paymentStatus: 1, paymentInfo: 1 } })
+      : null;
 
     const deriveVisitContext = (doc: any, order: any): boolean => {
       const collectionRaw = doc?.collectionMethod ?? doc?.shippingInfo?.collectionMethod;
@@ -1047,7 +1054,9 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
     const changedCourier = prevCourierStore !== nextCourierStore;
 
     // "처음 등록인지" 여부: 이전에는 아무 정보도 없었는데 이번에 뭔가 생긴 경우
-    const isStoreRegister = !prevMethod && !prevEst && !prevTrackingStore && !prevCourierStore && (changedMethod || changedEst || changedTracking || changedCourier);
+    const hasPrevStoreShipping = Boolean(prevMethod || prevEst || prevTrackingStore || prevCourierStore);
+    const hasNextStoreShipping = Boolean(nextMethod || nextEst || nextTrackingStore || nextCourierStore);
+    const isStoreRegister = !hasPrevStoreShipping && hasNextStoreShipping;
 
     const storeChanges: string[] = [];
 
@@ -1137,11 +1146,37 @@ export async function handleUpdateShippingInfo(req: Request, { params }: { param
         ...newShippingInfo,
       };
 
+      const linkedOrderStatusRaw = String((linkedOrder as any)?.status ?? '').trim();
+      const linkedOrderStatus = normalizeOrderStatus(linkedOrderStatusRaw);
+      const linkedOrderPaymentStatus = normalizePaymentStatus(String((linkedOrder as any)?.paymentStatus ?? (linkedOrder as any)?.paymentInfo?.status ?? '').trim());
+      const linkedOrderPaid = linkedOrderPaymentStatus === '결제완료' || linkedOrderStatus === '결제완료';
+      const shouldAutoTransitLinkedOrder =
+        !isOriginalVisitContext &&
+        isStoreRegister &&
+        linkedOrderPaid &&
+        !ORDER_TERMINAL_STATUSES.has(linkedOrderStatus) &&
+        !ORDER_SHIPPING_PHASE_STATUSES.has(linkedOrderStatus);
+
+      const orderUpdateDoc: any = {
+        $set: {
+          shippingInfo: mergedOrderShippingInfo,
+        },
+      };
+
+      if (shouldAutoTransitLinkedOrder) {
+        orderUpdateDoc.$set.status = '배송중';
+        orderUpdateDoc.$push = {
+          history: {
+            status: '배송중',
+            date: now,
+            description: '스트링 신청서 배송정보 최초 등록에 따라 연결 주문 상태가 자동으로 배송중으로 전환되었습니다.',
+          },
+        };
+      }
+
       await db.collection('orders').updateOne(
         { _id: new ObjectId((app as any).orderId) },
-        {
-          $set: { shippingInfo: mergedOrderShippingInfo },
-        },
+        orderUpdateDoc,
       );
     }
 
