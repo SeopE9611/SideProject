@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec, noticePinColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from '@/lib/badge-style';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
-import { ArrowLeft, Bell, Eye, Pin, Plus, Search } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
+import { ArrowLeft, Bell, Eye, ImageIcon, Paperclip, Pin, Plus, Search } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 
 type Props = {
@@ -68,13 +68,9 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
     limit: number;
   };
 
-  const fmt = (v: string | Date) =>
-    new Date(v)
-      .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-      .replace(/\.\s/g, '.')
-      .replace(/\.$/, '');
-  const noticeMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 leading-snug sm:line-clamp-1';
-  const noticeMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs sm:text-sm md:text-base text-muted-foreground';
+  const fmt = (v: string | Date) => new Date(v).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.\s/g, '.').replace(/\.$/, '');
+  const noticeMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base';
+  const noticeMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground';
   const noticeMobileActionGroupClass = 'flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto';
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
@@ -317,11 +313,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
           <CardContent className="p-5 sm:p-6 md:p-8">
             <div className="space-y-4 sm:space-y-5">
               {!shouldShowLoadingState && hasDataError && (
-                <ErrorBox
-                  message={hasPreloadError ? initialErrorMessage || '공지 목록을 불러오지 못했습니다.' : listError.message}
-                  status={hasPreloadError ? 500 : listError.status}
-                  fallbackMessage="공지 목록을 불러오지 못했습니다."
-                />
+                <ErrorBox message={hasPreloadError ? initialErrorMessage || '공지 목록을 불러오지 못했습니다.' : listError.message} status={hasPreloadError ? 500 : listError.status} fallbackMessage="공지 목록을 불러오지 못했습니다." />
               )}
               {!shouldShowLoadingState && !hasDataError && shouldShowActualEmptyState && (
                 <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
@@ -357,67 +349,65 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                   </div>
                 </div>
               )}
-              {!shouldShowLoadingState && !hasDataError && !shouldShowActualEmptyState && !shouldShowSearchEmptyState && items.map((notice) => {
-                const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
+              {!shouldShowLoadingState &&
+                !hasDataError &&
+                !shouldShowActualEmptyState &&
+                !shouldShowSearchEmptyState &&
+                items.map((notice) => {
+                  const noticeCategoryBadge = getNoticeCategoryBadgeSpec(notice.category);
 
-                return (
-                  <Link key={notice._id} href={buildDetailHref(notice._id)}>
-                    <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01] border-border">
-                    <CardContent className="p-5 sm:p-6 md:p-7">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center flex-wrap gap-2 sm:gap-2.5 mb-2 sm:mb-3 min-w-0">
-                            {notice.isPinned && (
-                              <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`} title="고정 공지" aria-label="고정 공지">
-                                <Pin className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                              </Badge>
-                            )}
+                  return (
+                    <Link key={notice._id} href={buildDetailHref(notice._id)}>
+                      <Card className="border-border transition-colors hover:border-primary/30 hover:bg-muted/20">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
+                                <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
+                                  {notice.category && (
+                                    <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={notice.category ?? undefined}>
+                                      {notice.category}
+                                    </Badge>
+                                  )}
 
-                            {notice.category && (
-                              <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
-                                {notice.category}
-                              </Badge>
-                            )}
+                                  {notice.isPinned && (
+                                    <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
+                                      <Pin className="h-3 w-3" />
+                                    </Badge>
+                                  )}
 
-                            <h3 className={`${noticeMobileTitleClampClass} text-base sm:text-lg md:text-xl font-semibold text-foreground transition-colors hover:text-primary dark:hover:text-primary`}>{notice.title}</h3>
+                                  <span className={`${noticeMobileTitleClampClass} text-foreground transition-colors hover:text-primary dark:hover:text-primary`}>{notice.title}</span>
+                                </div>
+                              </div>
 
-                            {(notice.hasImage || notice.hasFile) && (
-                              <div className="flex items-center gap-1 sm:gap-1.5">
-                                {notice.hasImage && (
-                                  <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`}>
-                                    <svg viewBox="0 0 24 24" className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <rect x="3" y="3" width="18" height="14" rx="2" />
-                                      <path d="M3 13l4-4 5 5 3-3 6 6" />
-                                      <circle cx="8.5" cy="7.5" r="1.5" />
-                                    </svg>
-                                  </Badge>
-                                )}
-                                {notice.hasFile && (
-                                  <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`}>
-                                    <svg viewBox="0 0 24 24" className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.88 17.05a2 2 0 01-2.83-2.83l8.48-8.48" />
-                                    </svg>
-                                  </Badge>
+                              <div className={noticeMobileMetaWrapClass}>
+                                <span>{fmt(notice.createdAt)}</span>
+                                <span className="inline-flex items-center gap-1">
+                                  <Eye className="h-3.5 w-3.5" />
+                                  {notice.viewCount ?? 0}
+                                </span>
+                                {(notice.hasImage || notice.hasFile) && (
+                                  <span className="flex items-center gap-1.5" aria-label="첨부 정보">
+                                    {notice.hasImage && (
+                                      <span title="이미지 첨부" aria-label="이미지 첨부">
+                                        <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                                      </span>
+                                    )}
+                                    {notice.hasFile && (
+                                      <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                                        <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                                      </span>
+                                    )}
+                                  </span>
                                 )}
                               </div>
-                            )}
+                            </div>
                           </div>
-
-                          {notice.excerpt && <p className="text-sm sm:text-base text-muted-foreground mb-2 sm:mb-3 line-clamp-2">{notice.excerpt}</p>}
-                          <div className={noticeMobileMetaWrapClass}>
-                            <span>{fmt(notice.createdAt)}</span>
-                            <span className="inline-flex items-center gap-1">
-                              <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                              {notice.viewCount ?? 0}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
             </div>
 
             <div className="mt-8 sm:mt-10 flex items-center justify-center">

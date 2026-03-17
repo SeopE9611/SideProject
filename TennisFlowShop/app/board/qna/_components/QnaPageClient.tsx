@@ -1,7 +1,6 @@
 'use client';
 import ErrorBox from '@/app/board/_components/ErrorBox';
 import PinnedNoticeStrip from '@/app/board/_components/PinnedNoticeStrip';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from '@/lib/badge-style';
 import { boardFetcher, parseApiError } from '@/lib/fetchers/boardFetcher';
-import { ArrowLeft, Lock, MessageSquare, Plus, Search, Users } from 'lucide-react';
+import { ArrowLeft, Eye, Lock, MessageSquare, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -27,8 +26,9 @@ const CAT_LABELS: Record<string, string> = {
 };
 const CODE_TO_LABEL = CAT_LABELS; // 가독성용 alias
 const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]));
-const qnaMobileTitleClampClass = 'min-w-0 line-clamp-2 font-semibold leading-snug sm:line-clamp-1';
-const qnaMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs sm:text-sm text-muted-foreground';
+const qnaMobileTitleClampClass = 'min-w-0 flex-1 truncate text-sm font-semibold leading-snug sm:text-base';
+const qnaMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground';
+const qnaStatusBadgeWrapClass = 'shrink-0 self-start';
 
 type QnaItem = {
   _id: string;
@@ -85,11 +85,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
     return data as MeRes;
   }
 
-  const fmt = (v: string | Date) =>
-    new Date(v)
-      .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-      .replace(/\.\s/g, '.')
-      .replace(/\.$/, '');
+  const fmt = (v: string | Date) => new Date(v).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.\s/g, '.').replace(/\.$/, '');
 
   // 필터/페이지 상태: "URL 기반 초기값"으로 시작해야 튐이 사라짐
   const [category, setCategory] = useState<string>(initialCategory);
@@ -248,7 +244,10 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
     keepPreviousData: true,
   });
 
-  const pinnedNotices = (pinnedNoticeData?.items ?? []).filter((notice) => notice.isPinned).slice(0, 3).map((notice) => ({ _id: notice._id, title: notice.title, createdAt: notice.createdAt }));
+  const pinnedNotices = (pinnedNoticeData?.items ?? [])
+    .filter((notice) => notice.isPinned)
+    .slice(0, 3)
+    .map((notice) => ({ _id: notice._id, title: notice.title, createdAt: notice.createdAt }));
 
   const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(key, (url) => boardFetcher<BoardListRes>(url), {
     keepPreviousData: true,
@@ -567,13 +566,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
             </Dialog>
 
             <div className="space-y-4">
-              {hasDataError && (
-                <ErrorBox
-                  message={hasPreloadError ? initialErrorMessage || 'Q&A 목록을 불러오지 못했습니다.' : listError.message}
-                  status={hasPreloadError ? 500 : listError.status}
-                  fallbackMessage="Q&A 목록을 불러오지 못했습니다."
-                />
-              )}
+              {hasDataError && <ErrorBox message={hasPreloadError ? initialErrorMessage || 'Q&A 목록을 불러오지 못했습니다.' : listError.message} status={hasPreloadError ? 500 : listError.status} fallbackMessage="Q&A 목록을 불러오지 못했습니다." />}
 
               <PinnedNoticeStrip items={pinnedNotices} />
 
@@ -585,37 +578,37 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                   const displayTitle = qna.isSecret && !canOpenSecret ? '비밀글입니다' : qna.title;
 
                   const CardInner = (
-                    <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-border">
-                      <CardContent className="p-4 md:p-6">
+                    <Card className="border-border transition-colors hover:border-success/30 hover:bg-muted/20">
+                      <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                              <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
-                                {qna.category ?? '일반문의'}
-                              </Badge>
-
-                              {qna.isSecret && (
-                                <Badge variant="secondary" className="text-xs inline-flex items-center gap-1">
-                                  <Lock className="h-3 w-3" />
-                                  비밀글
+                            <div className="mb-1 flex items-start gap-2">
+                              <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
+                                <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
+                                  {qna.category ?? '일반문의'}
                                 </Badge>
-                              )}
 
-                              <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
-                                {qna.answer ? '답변 완료' : '답변 대기'}
-                              </Badge>
-                            </div>
+                                {qna.isSecret && (
+                                  <Badge variant="secondary" className="shrink-0 text-xs inline-flex items-center gap-1">
+                                    <Lock className="h-3 w-3" />
+                                    비밀글
+                                  </Badge>
+                                )}
 
-                            <h3 className={`${qnaMobileTitleClampClass} mb-3 text-base text-foreground transition-colors hover:text-success dark:hover:text-success sm:text-lg`}>{displayTitle}</h3>
-
-                            <div className={qnaMobileMetaWrapClass}>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarFallback className="text-xs">{(qna.authorName ?? '익명').slice(0, 1)}</AvatarFallback>
-                                </Avatar>
-                                <span>{qna.authorName ?? '익명'}</span>
+                                <span className={`${qnaMobileTitleClampClass} text-foreground transition-colors hover:text-success dark:hover:text-success`} title={displayTitle}>
+                                  {displayTitle}
+                                </span>
                               </div>
 
+                              <div className={qnaStatusBadgeWrapClass}>
+                                <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
+                                  {qna.answer ? '답변 완료' : '답변 대기'}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            <div className={qnaMobileMetaWrapClass}>
+                              <span>{qna.authorName ?? '익명'}</span>
                               <span>{fmt(qna.createdAt)}</span>
 
                               <span className="inline-flex items-center gap-1">
@@ -624,7 +617,7 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                               </span>
 
                               <span className="inline-flex items-center gap-1">
-                                <Users className="h-3.5 w-3.5" />
+                                <Eye className="h-3.5 w-3.5" />
                                 {qna.viewCount ?? 0}
                               </span>
                             </div>
@@ -684,7 +677,8 @@ export default function QnaPageClient({ initialItems, initialTotal, initialLoadE
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <Button asChild size="sm">
                       <Link href="/board/qna/write">
-                        <Plus className="mr-1 h-3.5 w-3.5" />문의하기
+                        <Plus className="mr-1 h-3.5 w-3.5" />
+                        문의하기
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm">
