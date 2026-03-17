@@ -1,16 +1,16 @@
 'use client';
-import Link from 'next/link';
-import { ArrowLeft, ArrowUp, Calendar, Eye, FileText, ImageIcon, Download, ExternalLink, Clock, Bell, Pin, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import useSWR from 'swr';
+import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec, noticePinColor } from '@/lib/badge-style';
+import { communityFetch } from '@/lib/community/communityFetch.client';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { ArrowLeft, ArrowUp, Bell, Calendar, ChevronLeft, ChevronRight, Clock, Download, ExternalLink, Eye, FileText, ImageIcon, Pencil, Pin, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { getNoticeCategoryBadgeSpec, badgeBaseOutlined, badgeSizeSm, attachImageColor, attachFileColor, noticePinColor } from '@/lib/badge-style';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { communityFetch } from '@/lib/community/communityFetch.client';
+import useSWR from 'swr';
 
 export default function NoticeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -325,11 +325,7 @@ export default function NoticeDetailPage() {
                               aria-label="이미지 확대 보기"
                             >
                               <div className="relative">
-                                <img
-                                  src={(typeof imageAtts[0] === 'string' ? imageAtts[0] : imageAtts[0].url) as string}
-                                  alt={(imageAtts[0] as any)?.name || 'image-1'}
-                                  className="w-full h-auto max-h-[70vh] object-contain bg-muted/30"
-                                />
+                                <img src={(typeof imageAtts[0] === 'string' ? imageAtts[0] : imageAtts[0].url) as string} alt={(imageAtts[0] as any)?.name || 'image-1'} className="w-full h-auto max-h-[70vh] object-contain bg-muted/30" />
                                 <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/10 transition-colors duration-300 flex items-center justify-center">
                                   <ExternalLink className="h-8 w-8 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                 </div>
@@ -382,10 +378,7 @@ export default function NoticeDetailPage() {
                             const isPdf = mime === 'application/pdf' || /\.pdf$/i.test(name);
 
                             return (
-                              <div
-                                key={`file-${i}`}
-                                className="rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40 sm:flex sm:items-center sm:justify-between sm:gap-4"
-                              >
+                              <div key={`file-${i}`} className="rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40 sm:flex sm:items-center sm:justify-between sm:gap-4">
                                 <div className="flex min-w-0 items-center gap-3 sm:flex-1">
                                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
                                     <FileText className="h-5 w-5" />
@@ -396,16 +389,16 @@ export default function NoticeDetailPage() {
                                   </div>
                                 </div>
 
-                                <div className="mt-3 grid grid-cols-2 gap-2 sm:mt-0 sm:shrink-0 sm:flex sm:flex-wrap sm:justify-end">
+                                <div className="mt-3 grid grid-cols-1 gap-2 min-[430px]:grid-cols-2 sm:mt-0 sm:shrink-0 sm:flex sm:flex-wrap sm:justify-end">
                                   {isPdf && (
-                                    <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                                    <Button variant="outline" size="sm" asChild className="w-full min-w-0 sm:w-auto">
                                       <a href={url} target="_blank" rel="noreferrer">
                                         <ExternalLink className="h-4 w-4 mr-1" />
                                         미리보기
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="outline" asChild className={`w-full sm:w-auto ${isPdf ? '' : 'col-span-2'}`}>
+                                  <Button size="sm" variant="outline" asChild className={`w-full min-w-0 sm:w-auto ${isPdf ? '' : 'min-[430px]:col-span-2'}`}>
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드
@@ -441,10 +434,12 @@ export default function NoticeDetailPage() {
             <CardFooter className="border-t border-border bg-muted/30 p-6">
               <div className="w-full space-y-3">
                 <div className="grid gap-2 md:grid-cols-2">
-                  {([
-                    { key: 'prev', label: '이전 글', icon: ChevronLeft, target: prevPost },
-                    { key: 'next', label: '다음 글', icon: ChevronRight, target: nextPost },
-                  ] as const).map(({ key, label, icon: Icon, target }) => (
+                  {(
+                    [
+                      { key: 'prev', label: '이전 글', icon: ChevronLeft, target: prevPost },
+                      { key: 'next', label: '다음 글', icon: ChevronRight, target: nextPost },
+                    ] as const
+                  ).map(({ key, label, icon: Icon, target }) => (
                     <Button key={key} asChild={!!target} variant="outline" className="h-auto min-h-16 justify-start px-4 py-3 text-left" disabled={!target}>
                       {target ? (
                         <Link href={`/board/notice/${target._id}${listQuery ? `?${listQuery}` : ''}`}>

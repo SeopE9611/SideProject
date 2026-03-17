@@ -5,6 +5,8 @@
 /* 데스크탑에서 스크롤바 유무와 관계없이 '항상 같은 폭'을 유지 (레이아웃 shift 제거) */
 html {
   scrollbar-gutter: stable;
+   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* 구형 브라우저/특정 환경 안전장치: 항상 스크롤바 레인을 잡아둠 */
