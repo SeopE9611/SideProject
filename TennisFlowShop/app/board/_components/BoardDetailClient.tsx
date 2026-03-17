@@ -1514,15 +1514,22 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 <span className="block">게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</span>
 
                 {item && (
-                  <div className="w-full">
-                    <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="h-11 w-full gap-1 text-sm">
+                  <div className="w-full md:flex md:justify-start">
+                    <Button
+                      type="button"
+                      variant={item.likedByMe ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={handleToggleLike}
+                      disabled={isLiking}
+                      className="h-11 w-full gap-1 text-sm md:w-auto md:min-w-[180px] md:px-5"
+                    >
                       <ThumbsUp className="h-4 w-4" />
                       {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
                     </Button>
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
 
                   <Dialog
                     open={openReport}
@@ -1628,11 +1635,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
-                  <Button asChild variant="outline" size="sm" className="w-full">
+                <div className="grid grid-cols-2 gap-2 md:flex md:justify-end">
+                  <Button asChild variant="outline" size="sm" className="w-full md:w-auto md:min-w-[112px]">
                     <Link href={listHref}>목록으로</Link>
                   </Button>
-                  <Button asChild variant="outline" size="sm" className="w-full">
+                  <Button asChild variant="outline" size="sm" className="w-full md:w-auto md:min-w-[112px]">
                     <Link href={`${config.routePrefix}/write`}>새 글 작성</Link>
                   </Button>
                 </div>
