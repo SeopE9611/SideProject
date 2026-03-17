@@ -84,11 +84,11 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
 
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
   const rawMethod = order?.shippingInfo?.shippingMethod ?? order?.shippingInfo?.deliveryMethod ?? '';
-  const method = String(rawMethod).trim();
+  const registeredMethod = String(order?.shippingInfo?.shippingMethod ?? '').trim();
   const date = String(order?.shippingInfo?.estimatedDate ?? '').trim();
   const courier = String(order?.shippingInfo?.invoice?.courier ?? '').trim();
   const tracking = String(order?.shippingInfo?.invoice?.trackingNumber ?? '').trim();
-  const isRegistered = Boolean(method || date || courier || tracking);
+  const isRegistered = Boolean(registeredMethod || date || courier || tracking);
   const isVisitPickup = isVisitPickupOrder(order?.shippingInfo);
   const pageTitle = isVisitPickup ? (isRegistered ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isRegistered ? '배송 정보 수정' : '배송 정보 등록';
   const pageDesc = isVisitPickup
@@ -114,6 +114,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
         <ShippingFormClient
           orderId={order._id}
           initialShippingMethod={rawMethod}
+          initialRegisteredShippingMethod={order.shippingInfo?.shippingMethod ?? ''}
           initialEstimatedDelivery={order.shippingInfo?.estimatedDate ?? ''}
           initialCourier={order.shippingInfo?.invoice?.courier ?? ''}
           initialTrackingNumber={order.shippingInfo?.invoice?.trackingNumber ?? ''}
