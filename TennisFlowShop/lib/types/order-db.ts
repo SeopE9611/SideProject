@@ -47,8 +47,10 @@ export type DBOrder = {
   } | null;
   paymentInfo?: {
     method: string;
-    bank?: 'shinhan' | 'kookmin' | 'woori';
+    status?: string;
+    bank?: 'shinhan' | 'kookmin' | 'woori' | string;
   };
+  paymentStatus?: string;
   status: string;
   userSnapshot?: {
     name: string;

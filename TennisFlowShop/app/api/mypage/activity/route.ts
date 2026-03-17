@@ -23,6 +23,21 @@ function parseScopeParam(v: string | null): ActivityScope {
 }
 
 
+
+function resolveOrderPaymentStatus(o: any): string {
+  const topLevel = String(o?.paymentStatus ?? '').trim();
+  if (topLevel) return topLevel;
+
+  const paymentInfoStatus = String(o?.paymentInfo?.status ?? '').trim().toLowerCase();
+  if (paymentInfoStatus === 'pending') return '결제대기';
+  if (paymentInfoStatus === 'paid') return '결제완료';
+  if (paymentInfoStatus === 'failed') return '결제실패';
+  if (paymentInfoStatus === 'canceled' || paymentInfoStatus === 'cancelled') return '결제취소';
+  if (paymentInfoStatus === 'refunded') return '환불완료';
+
+  return '결제대기';
+}
+
 function normalizeMypageStatus(status?: string | null): string {
   const raw = String(status ?? '').trim();
   if (!raw) return '';
@@ -288,6 +303,7 @@ export async function GET(req: Request) {
             updatedAt: 1,
             status: 1,
             paymentStatus: 1,
+            paymentInfo: 1,
             totalPrice: 1,
             total: 1,
             items: 1,
@@ -498,7 +514,7 @@ export async function GET(req: Request) {
         createdAt,
         updatedAt,
         status: o.status ?? '',
-        paymentStatus: o.paymentStatus ?? '',
+        paymentStatus: resolveOrderPaymentStatus(o),
         shippingMethod: String(o?.shippingInfo?.shippingMethod ?? o?.shippingInfo?.method ?? o?.shippingInfo?.type ?? ''),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? '(상품명 없음)',
