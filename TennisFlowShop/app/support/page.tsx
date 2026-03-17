@@ -1,15 +1,15 @@
 'use client';
 
-import useSWR from 'swr';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MessageSquare, Bell, LifeBuoy, ArrowRight, Plus, Eye, HelpCircle, MessagesSquare, Lock, ImageIcon, Paperclip, Pin } from 'lucide-react';
-import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec } from '@/lib/badge-style';
+import { Skeleton } from '@/components/ui/skeleton';
+import { badgeBaseOutlined, badgeSizeSm, getAnswerStatusBadgeSpec, getNoticeCategoryBadgeSpec, getQnaCategoryBadgeSpec } from '@/lib/badge-style';
+import { ArrowRight, Bell, Eye, ImageIcon, Lock, MessageSquare, MessagesSquare, Paperclip, Pin, Plus } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
+import useSWR from 'swr';
 
 // ---------------------- 공통 유틸 ----------------------
 
@@ -67,14 +67,11 @@ async function fetcherAllow401<T>(url: string): Promise<T | null> {
 
   return data as T;
 }
-const fmt = (v: string | Date) =>
-  new Date(v)
-    .toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
-    .replace(/\.\s/g, '.')
-    .replace(/\.$/, '');
+const fmt = (v: string | Date) => new Date(v).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\.\s/g, '.').replace(/\.$/, '');
 const supportMobileTitleClampClass = 'flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base';
 const supportMobileMetaWrapClass = 'flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground';
-const supportMobileActionBadgeWrapClass = 'w-full shrink-0 sm:w-auto';
+const supportMobileActionBadgeWrapClass = 'shrink-0 self-start';
+const supportQnaInlineTitleClass = 'min-w-0 flex-1 truncate text-sm font-semibold leading-snug sm:text-base';
 
 function FiveLineSkeleton() {
   return (
@@ -105,21 +102,21 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-muted/30 border-b">
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex flex-wrap items-center gap-2">
+        <CardTitle className="flex items-center justify-between gap-3">
+          <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
             <Bell className="h-5 w-5 text-primary" />
-            <span className="font-semibold">공지사항</span>
+            <span className="font-semibold whitespace-nowrap">공지사항</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {isAdmin && (
-              <Button asChild size="sm" variant="ghost" className="h-8 px-3 border-border">
+              <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 border-border whitespace-nowrap">
                 <Link href="/board/notice/write">
                   <Plus className="h-4 w-4 mr-1" />
                   공지 쓰기
                 </Link>
               </Button>
             )}
-            <Button asChild size="sm" variant="ghost" className="h-8 px-3">
+            <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/notice">
                 전체보기
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -180,8 +177,16 @@ function NoticeCard({ items, isAdmin, isLoading, error }: { items: NoticeItem[];
                       </span>
                       {(notice.hasImage || notice.hasFile) && (
                         <span className="flex items-center gap-1.5" aria-label="첨부 정보">
-                          {notice.hasImage && (<span title="이미지 첨부" aria-label="이미지 첨부"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
-                          {notice.hasFile && (<span title="첨부파일 있음" aria-label="첨부파일 있음"><Paperclip className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
+                          {notice.hasImage && (
+                            <span title="이미지 첨부" aria-label="이미지 첨부">
+                              <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                            </span>
+                          )}
+                          {notice.hasFile && (
+                            <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                              <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                            </span>
+                          )}
                         </span>
                       )}
                     </div>
@@ -205,19 +210,19 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
   return (
     <Card className="border-0 bg-card/90 dark:bg-card shadow-xl backdrop-blur-sm h-full">
       <CardHeader className="bg-muted/30 border-b">
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-success" />
-            <span className="font-semibold">Q&amp;A</span>
+            <span className="font-semibold whitespace-nowrap">Q&amp;A</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="ghost" className="h-8 px-3">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/qna/write">
                 <Plus className="h-4 w-4 mr-1" />
                 질문하기
               </Link>
             </Button>
-            <Button asChild size="sm" variant="ghost" className="h-8 px-3">
+            <Button asChild size="sm" variant="ghost" className="h-8 px-2 sm:px-3 whitespace-nowrap">
               <Link href="/board/qna">
                 전체보기
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -280,23 +285,24 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       {/* 제목 줄 */}
-                      <div className="mb-1 flex flex-wrap items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                      <div className="mb-1 flex items-start gap-2">
+                        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
                           <Badge variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title={qna.category ?? undefined}>
                             {qna.category ?? '일반문의'}
                           </Badge>
 
                           {qna.isSecret && (
-                            <Badge variant="secondary" className="text-xs inline-flex items-center gap-1">
+                            <Badge variant="secondary" className="shrink-0 text-xs inline-flex items-center gap-1">
                               <Lock className="h-3 w-3" />
                               비밀글
                             </Badge>
                           )}
 
-                          <span className={`${supportMobileTitleClampClass} text-foreground`}>{qna.title}</span>
+                          <span className={`${supportQnaInlineTitleClass} text-foreground`} title={qna.title}>
+                            {qna.title}
+                          </span>
                         </div>
 
-                        {/* 답변완료/대기 뱃지는 그대로 유지 */}
                         <div className={supportMobileActionBadgeWrapClass}>
                           <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`} title={qna.answer ? '답변 완료' : '답변 대기'}>
                             {qna.answer ? '답변 완료' : '답변 대기'}
@@ -313,8 +319,16 @@ function QnaCard({ items, viewerId, isAdmin, isLoading, error }: { items: QnaIte
                         </span>
                         {(qna.hasImage || qna.hasFile) && (
                           <span className="flex items-center gap-1.5" aria-label="첨부 정보">
-                            {qna.hasImage && (<span title="이미지 첨부" aria-label="이미지 첨부"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
-                            {qna.hasFile && (<span title="첨부파일 있음" aria-label="첨부파일 있음"><Paperclip className="h-3.5 w-3.5" aria-hidden="true" /></span>)}
+                            {qna.hasImage && (
+                              <span title="이미지 첨부" aria-label="이미지 첨부">
+                                <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                              </span>
+                            )}
+                            {qna.hasFile && (
+                              <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                                <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>
