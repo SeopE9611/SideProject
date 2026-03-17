@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ChevronLeft, ChevronRight, Eye, FileText, MessageSquare, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Eye, FileText, Flag, MessageSquare, MoreVertical, Pencil, ThumbsUp, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -12,8 +12,8 @@ import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialo
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -385,7 +385,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
-  // - replyDrafts: 각 댓글별로 입력 중인 답글 내용을 보관 (IME 안정성을 위해 commentId별로 분리)
+  // - replyDrafts: 각 �����글별로 입력 중인 답글 내용을 보관 (IME 안정성을 위해 commentId별로 분리)
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [isReplySubmitting, setIsReplySubmitting] = useState(false);
@@ -1194,7 +1194,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button type="button" className="font-medium underline-offset-4 hover:underline">
-                          {item.nickname || '회원'}
+                          {item.nickname || '��원'}
                         </button>
                       </DropdownMenuTrigger>
 
@@ -1268,6 +1268,50 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     <span>{fmtDateTime(item.createdAt)}</span>
                   </div>
                 </div>
+
+                {/* 더보기 메뉴 (신고/수정/삭제) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground">
+                      <MoreVertical className="h-4 w-4" />
+                      <span className="sr-only">게시글 메뉴</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-36">
+                    {isAuthor && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (!confirmLeaveIfDirty()) return;
+                            router.push(`${config.routePrefix}/${item.id}/edit`);
+                          }}
+                          className="gap-2"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          수정
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleDelete} disabled={isDeleting} className="gap-2 text-destructive focus:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                          {isDeleting ? '삭제 중...' : '삭제'}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem
+                      onClick={() => {
+                        if (!user) {
+                          showErrorToast('로그인이 필요 합니다.');
+                          return;
+                        }
+                        setOpenReport(true);
+                      }}
+                      className="gap-2 text-destructive focus:text-destructive"
+                    >
+                      <Flag className="h-4 w-4" />
+                      신고하기
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardHeader>
 
@@ -1475,17 +1519,13 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
               <section className="mt-8 space-y-3 border-t pt-4" aria-label="글 이동">
                 <div className="grid gap-2 md:grid-cols-2">
-                  {([
-                    { key: 'prev', label: '이전 글', icon: ChevronLeft, target: prevPost },
-                    { key: 'next', label: '다음 글', icon: ChevronRight, target: nextPost },
-                  ] as const).map(({ key, label, icon: Icon, target }) => (
-                    <Button
-                      key={key}
-                      asChild={!!target}
-                      variant="outline"
-                      className="h-auto min-h-16 justify-start px-4 py-3 text-left"
-                      disabled={!target}
-                    >
+                  {(
+                    [
+                      { key: 'prev', label: '이전 글', icon: ChevronLeft, target: prevPost },
+                      { key: 'next', label: '다음 글', icon: ChevronRight, target: nextPost },
+                    ] as const
+                  ).map(({ key, label, icon: Icon, target }) => (
+                    <Button key={key} asChild={!!target} variant="outline" className="h-auto min-h-16 justify-start px-4 py-3 text-left" disabled={!target}>
                       {target ? (
                         <Link href={`${config.routePrefix}/${target.id}${listQuery ? `?${listQuery}` : ''}`}>
                           <div className="flex w-full items-start gap-3">
@@ -1511,155 +1551,105 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </section>
 
               {/* 안내 문구 */}
-              <p className="mt-6 text-xs text-muted-foreground">
-                게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.
-              </p>
+              <p className="mt-6 text-xs text-muted-foreground">게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김 처리될 수 있습니다.</p>
 
-              {/* 액션 버튼 영역 */}
-              {item && (
-                <div className="mt-4 space-y-3">
-                  {/* 추천 버튼 - 모바일: 전체 너비, PC: 좌측 정렬 */}
-                  <div className="flex justify-center md:justify-start">
-                    <Button
-                      type="button"
-                      variant={item.likedByMe ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={handleToggleLike}
-                      disabled={isLiking}
-                      className="h-11 w-full gap-2 text-sm md:w-auto md:min-w-[180px] md:px-6"
-                    >
-                      <ThumbsUp className="h-4 w-4" />
-                      {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
+              {/* 게시글 신고 다이얼로그 */}
+              <Dialog
+                open={openReport}
+                onOpenChange={(next) => {
+                  if (next && !user) {
+                    showErrorToast('로그인이 필요 합니다.');
+                    return;
+                  }
+                  setOpenReport(next);
+                }}
+              >
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
+                    <p className="text-sm text-muted-foreground">허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.</p>
+                  </DialogHeader>
+
+                  <Textarea placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)" value={reason} onChange={(e) => setReason(e.target.value)} className="h-32" disabled={isReporting} />
+
+                  <DialogFooter className="gap-2 sm:justify-end">
+                    <Button type="button" variant="outline" onClick={() => setOpenReport(false)} disabled={isReporting}>
+                      취소
                     </Button>
+                    <Button type="button" variant="destructive" onClick={handleSubmitReport} disabled={isReporting}>
+                      {isReporting ? '신고 중...' : '신고하기'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* 댓글 신고 다이얼로그 */}
+              <Dialog
+                open={openCommentReport}
+                onOpenChange={(next) => {
+                  if (!next) {
+                    closeCommentReport();
+                    return;
+                  }
+                }}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>댓글 신고하기</DialogTitle>
+                    <DialogDescription>신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한 조치를 진행합니다.</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-2">
+                    {targetComment && (
+                      <div className="rounded-md border bg-muted px-3 py-2 text-xs text-muted-foreground">
+                        <div className="font-medium mb-1">신고 대상: {targetComment.nickname ?? '회원'}</div>
+                        <div className="line-clamp-2 whitespace-pre-wrap">{targetComment.content}</div>
+                      </div>
+                    )}
+
+                    <Label htmlFor="comment-report-reason">신고 사유</Label>
+                    <Textarea
+                      id="comment-report-reason"
+                      className="min-h-[100px]"
+                      value={commentReportReason}
+                      onChange={(e) => setCommentReportReason(e.target.value)}
+                      disabled={isCommentReporting}
+                      placeholder="신고 사유를 10자 이상 입력해 주세요."
+                    />
                   </div>
 
-                  {/* PC: 액션 버튼들을 한 줄로 정렬 */}
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    {/* 왼쪽: 신고/수정/삭제 버튼 그룹 */}
-                    <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
-                      <Dialog
-                        open={openReport}
-                        onOpenChange={(next) => {
-                          if (next && !user) {
-                            showErrorToast('로그인이 필요 합니다.');
-                            return;
-                          }
-                          setOpenReport(next);
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-9 px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15"
-                          >
-                            신고하기
-                          </Button>
-                        </DialogTrigger>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={closeCommentReport}>
+                      취소
+                    </Button>
+                    <Button type="button" onClick={handleSubmitCommentReport} disabled={isCommentReporting}>
+                      {isCommentReporting ? '신고 중...' : '신고하기'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-                        <DialogContent className="max-w-md">
-                          <DialogHeader>
-                            <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
-                            <p className="text-sm text-muted-foreground">허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.</p>
-                          </DialogHeader>
+              {/* 하단 액션 버튼 영역: 추천(왼쪽) + 목록/새글(오른쪽) */}
+              {item && (
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  {/* 추천 버튼 */}
+                  <Button type="button" variant={item.likedByMe ? 'default' : 'outline'} size="sm" onClick={handleToggleLike} disabled={isLiking} className="h-10 w-full gap-2 text-sm sm:w-auto sm:min-w-[160px]">
+                    <ThumbsUp className="h-4 w-4" />
+                    {isLiking ? '처리 중...' : item.likedByMe ? `추천 취소 (${item.likes ?? 0})` : `추천 (${item.likes ?? 0})`}
+                  </Button>
 
-                          <Textarea placeholder="신고 사유를 구체적으로 작성해주세요. (최소 10자)" value={reason} onChange={(e) => setReason(e.target.value)} className="h-32" disabled={isReporting} />
-
-                          <DialogFooter className="gap-2 sm:justify-end">
-                            <Button type="button" variant="outline" onClick={() => setOpenReport(false)} disabled={isReporting}>
-                              취소
-                            </Button>
-                            <Button type="button" variant="destructive" onClick={handleSubmitReport} disabled={isReporting}>
-                              {isReporting ? '신고 중...' : '신고하기'}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Dialog
-                        open={openCommentReport}
-                        onOpenChange={(next) => {
-                          if (!next) {
-                            if (!next) closeCommentReport();
-                            return;
-                          }
-                        }}
-                      >
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>댓글 신고하기</DialogTitle>
-                            <DialogDescription>신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한 조치를 진행합니다.</DialogDescription>
-                          </DialogHeader>
-
-                          <div className="space-y-2">
-                            {targetComment && (
-                              <div className="rounded-md border bg-muted px-3 py-2 text-xs text-muted-foreground">
-                                <div className="font-medium mb-1">신고 대상: {targetComment.nickname ?? '회원'}</div>
-                                <div className="line-clamp-2 whitespace-pre-wrap">{targetComment.content}</div>
-                              </div>
-                            )}
-
-                            <Label htmlFor="comment-report-reason">신고 사유</Label>
-                            <Textarea
-                              id="comment-report-reason"
-                              className="min-h-[100px]"
-                              value={commentReportReason}
-                              onChange={(e) => setCommentReportReason(e.target.value)}
-                              disabled={isCommentReporting}
-                              placeholder="신고 사유를 10자 이상 입력해 주세요."
-                            />
-                          </div>
-
-                          <DialogFooter>
-                            <Button type="button" variant="outline" onClick={closeCommentReport}>
-                              취소
-                            </Button>
-                            <Button type="button" onClick={handleSubmitCommentReport} disabled={isCommentReporting}>
-                              {isCommentReporting ? '신고 중...' : '신고하기'}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      {isAuthor && (
-                        <>
-                          <span className="hidden h-4 w-px bg-border md:block" />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (!confirmLeaveIfDirty()) return;
-                              router.push(`${config.routePrefix}/${item.id}/edit`);
-                            }}
-                            className="h-9 px-4 text-xs"
-                          >
-                            수정
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleDelete}
-                            disabled={isDeleting}
-                            className="h-9 px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15"
-                          >
-                            {isDeleting ? '삭제 중...' : '삭제'}
-                          </Button>
-                        </>
-                      )}
-                    </div>
-
-                    {/* 오른쪽: 목록/새글 버튼 그룹 */}
-                    <div className="grid grid-cols-2 gap-2 md:flex md:gap-2">
-                      <Button asChild variant="outline" size="sm" className="h-9 w-full text-xs md:w-auto md:min-w-[100px]">
-                        <Link href={listHref} onClick={onNavLinkClick}>목록으로</Link>
-                      </Button>
-                      <Button asChild variant="default" size="sm" className="h-9 w-full text-xs md:w-auto md:min-w-[100px]">
-                        <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>새 글 작성</Link>
-                      </Button>
-                    </div>
+                  {/* 목록/새글 버튼 */}
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
+                    <Button asChild variant="outline" size="sm" className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]">
+                      <Link href={listHref} onClick={onNavLinkClick}>
+                        목록으로
+                      </Link>
+                    </Button>
+                    <Button asChild variant="default" size="sm" className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]">
+                      <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>
+                        새 글 작성
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1729,7 +1719,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 {!isCommentsLoading && comments.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center">
                     <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground" />
-                    <p className="text-sm font-medium text-muted-foreground">첫 댓글을 남겨보세요</p>
+                    <p className="text-sm font-medium text-muted-foreground">첫 ��글을 남겨보세요</p>
                   </div>
                 )}
 
