@@ -55,7 +55,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     if (!normalizedMethod || !estimatedDate) return NextResponse.json({ success: false, message: '모든 필드를 입력해주세요.' }, { status: 400 });
 
     const prevShippingInfo: any = order?.shippingInfo ?? {};
-    const prevMethodRaw = prevShippingInfo?.shippingMethod ?? prevShippingInfo?.deliveryMethod ?? '';
+    const prevMethodRaw = prevShippingInfo?.shippingMethod ?? '';
     const prevEstimatedDate = String(prevShippingInfo?.estimatedDate ?? '').trim();
     const prevCourier = String(prevShippingInfo?.invoice?.courier ?? '').trim();
     const prevTracking = String(prevShippingInfo?.invoice?.trackingNumber ?? '').trim();

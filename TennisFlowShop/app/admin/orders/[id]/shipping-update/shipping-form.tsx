@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 interface ShippingFormProps {
   initialShippingMethod?: string;
+  initialRegisteredShippingMethod?: string;
   initialEstimatedDelivery?: string;
   initialCourier?: string;
   initialTrackingNumber?: string;
@@ -26,7 +27,7 @@ interface ShippingFormProps {
 
 const isCourierShippingMethod = (method: string) => normalizeOrderShippingMethod(method) === 'courier';
 
-export default function ShippingForm({ initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, orderId, onSuccess, isVisitPickupOrder = false }: ShippingFormProps) {
+export default function ShippingForm({ initialShippingMethod, initialRegisteredShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, orderId, onSuccess, isVisitPickupOrder = false }: ShippingFormProps) {
   // 빈 문자열로 초기화해서 Controlled 컴포넌트로 통일
   const normalizedInitialShippingMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
   const fixedVisitMethod = 'visit';
@@ -64,7 +65,12 @@ export default function ShippingForm({ initialShippingMethod, initialEstimatedDe
   // console.log('initialShippingMethod:', initialShippingMethod);
 
   // 기존 값이 하나라도 있으면 "수정", 아무것도 없으면 "등록"
-  const isRegistered = Boolean(String(initialShippingMethod ?? '').trim() || String(initialEstimatedDelivery ?? '').trim() || String(initialCourier ?? '').trim() || String(initialTrackingNumber ?? '').trim());
+  const isRegistered = Boolean(
+    String(initialRegisteredShippingMethod ?? '').trim() ||
+      String(initialEstimatedDelivery ?? '').trim() ||
+      String(initialCourier ?? '').trim() ||
+      String(initialTrackingNumber ?? '').trim(),
+  );
   const formTitle = isVisitPickupOrder ? (isRegistered ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isRegistered ? '배송 정보 수정' : '배송 정보 등록';
   /**
    * ---- 이탈(탭 닫기/새로고침/뒤로가기/링크이동) 보호 ----
