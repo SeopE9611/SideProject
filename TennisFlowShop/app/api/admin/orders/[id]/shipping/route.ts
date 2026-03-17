@@ -54,10 +54,20 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     }
     if (!normalizedMethod || !estimatedDate) return NextResponse.json({ success: false, message: '모든 필드를 입력해주세요.' }, { status: 400 });
 
+    const prevShippingInfo: any = order?.shippingInfo ?? {};
+    const prevMethodRaw = prevShippingInfo?.shippingMethod ?? prevShippingInfo?.deliveryMethod ?? '';
+    const prevEstimatedDate = String(prevShippingInfo?.estimatedDate ?? '').trim();
+    const prevCourier = String(prevShippingInfo?.invoice?.courier ?? '').trim();
+    const prevTracking = String(prevShippingInfo?.invoice?.trackingNumber ?? '').trim();
+    const isRegistered = Boolean(String(prevMethodRaw ?? '').trim() || prevEstimatedDate || prevCourier || prevTracking);
+
     const isOriginalVisitPickup = isVisitPickupOrder(order?.shippingInfo);
-    // 정책: 방문 수령으로 접수된 주문은 방문 수령으로만 운영한다.
+    // 정책: 체크아웃에서 확정된 주문 성격(방문/배송)을 관리자 폼에서 바꿀 수 없다.
     if (isOriginalVisitPickup && normalizedMethod !== 'visit') {
       return NextResponse.json({ ok: false, message: '방문 수령 주문은 배송 방식 변경이 불가합니다. 예외 전환은 별도 관리자 절차를 통해 진행해주세요.' }, { status: 400 });
+    }
+    if (!isOriginalVisitPickup && normalizedMethod === 'visit') {
+      return NextResponse.json({ ok: false, message: '일반 배송 주문은 방문 수령으로 변경할 수 없습니다.' }, { status: 400 });
     }
 
     const est = new Date(estimatedDate);
@@ -82,16 +92,22 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
     }
 
     const formattedDate = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(est);
-    const isVisitPickup = isVisitPickupOrder(order?.shippingInfo) || normalizedMethod === 'visit';
+    const isVisitPickup = isOriginalVisitPickup || normalizedMethod === 'visit';
     const methodLabel = shippingMethodMap[normalizedMethod] ?? '정보 없음';
     const historyDescription = isVisitPickup
-      ? `수령/배송 방법을 "${methodLabel}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`
-      : `배송 방법을 "${methodLabel}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 설정했습니다.`;
+      ? isRegistered
+        ? `수령/배송 방법을 "${methodLabel}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 수정했습니다.`
+        : `수령/배송 방법을 "${methodLabel}"으로 설정하고, 예상 수령일을 "${formattedDate}"로 등록했습니다.`
+      : isRegistered
+        ? `배송 방법을 "${methodLabel}"으로 변경하고, 예상 수령일을 "${formattedDate}"로 수정했습니다.`
+        : `배송 방법을 "${methodLabel}"으로 설정하고, 예상 수령일을 "${formattedDate}"로 등록했습니다.`;
+
+    const historyStatus = isVisitPickup ? (isRegistered ? '방문수령정보수정' : '방문수령정보등록') : isRegistered ? '배송정보수정' : '배송정보등록';
 
     await db.collection('orders').updateOne({ _id: orderId }, {
       $push: {
         history: {
-          status: '배송정보변경',
+          status: historyStatus,
           date: new Date().toISOString(),
           description: historyDescription,
         },
@@ -104,7 +120,7 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
         type: 'admin.orders.shipping.patch',
         actorId: guard.admin._id,
         targetId: orderId,
-        message: '주문 배송정보 수정',
+        message: isRegistered ? '주문 배송정보 수정' : '주문 배송정보 등록',
         diff: { shippingMethod: normalizedMethod, estimatedDate },
       },
       req,

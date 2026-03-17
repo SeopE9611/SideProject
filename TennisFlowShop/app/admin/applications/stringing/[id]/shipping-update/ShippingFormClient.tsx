@@ -10,9 +10,12 @@ import { isVisitPickupOrder } from '@/lib/order-shipping';
 
 type Application = {
   _id: string;
+  collectionMethod?: string;
+  linkedOrderPickupMethod?: string | null;
   shippingInfo?: {
     shippingMethod?: string;
     deliveryMethod?: string;
+    collectionMethod?: string;
     estimatedDate?: string;
     invoice?: {
       courier?: string;
@@ -25,6 +28,18 @@ export interface Props {
   applicationId: string;
   onSuccess?: () => void;
 }
+
+
+const isVisitContext = (app?: Application): boolean => {
+  const collection = String(app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? '').trim().toLowerCase();
+  if (collection === 'visit') return true;
+
+  const linkedPickup = String(app?.linkedOrderPickupMethod ?? '').trim().toLowerCase();
+  if (linkedPickup === 'visit') return true;
+
+  const shippingMethod = app?.shippingInfo?.shippingMethod ?? app?.shippingInfo?.deliveryMethod;
+  return isVisitPickupOrder({ shippingMethod });
+};
 
 export default function ShippingFormClient({ applicationId, onSuccess }: Props) {
   const { data, error, isLoading } = useSWR<Application>(`/api/admin/applications/stringing/${applicationId}`, authenticatedSWRFetcher, {
@@ -44,7 +59,7 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const isRegistered = Boolean(method || date || courier || tracking);
 
   // stringing 배송 정보 화면도 주문과 동일한 공용 유틸로 방문 수령 여부를 판별한다.
-  const isVisitPickup = isVisitPickupOrder(shippingInfo);
+  const isVisitPickup = isVisitContext(data);
   const pageTitle = data
     ? isVisitPickup
       ? isRegistered
