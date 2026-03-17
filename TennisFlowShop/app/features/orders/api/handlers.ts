@@ -605,6 +605,7 @@ export async function createOrder(req: Request): Promise<Response> {
             bank,
             createdAt: new Date(),
           },
+          paymentStatus: '결제대기',
 
           history: [{ status: '대기중', date: new Date(), description: '주문 생성' }],
         };
