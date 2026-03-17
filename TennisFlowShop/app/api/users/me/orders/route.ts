@@ -44,6 +44,9 @@ type OrderDoc = {
   }>;
   shippingInfo?: any;
   paymentStatus?: string;
+  paymentInfo?: {
+    status?: string;
+  };
   history?: any[];
 };
 
@@ -123,6 +126,23 @@ function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
   if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
+}
+
+function resolveOrderPaymentStatus(order: OrderDoc): string {
+  const topLevel = String(order.paymentStatus ?? '').trim();
+  if (topLevel) return topLevel;
+
+  const paymentInfoStatus = String(order.paymentInfo?.status ?? '')
+    .trim()
+    .toLowerCase();
+
+  if (paymentInfoStatus === 'pending') return '결제대기';
+  if (paymentInfoStatus === 'paid') return '결제완료';
+  if (paymentInfoStatus === 'failed') return '결제실패';
+  if (paymentInfoStatus === 'canceled' || paymentInfoStatus === 'cancelled') return '결제취소';
+  if (paymentInfoStatus === 'refunded') return '환불완료';
+
+  return '결제대기';
 }
 
 export async function GET(req: NextRequest) {
@@ -282,7 +302,7 @@ export async function GET(req: NextRequest) {
           // 체크아웃에서 온 의사 표시가 없을 때 undefined 방지
           withStringService: Boolean(order.shippingInfo?.withStringService),
         },
-        paymentStatus: order.paymentStatus ?? '결제대기',
+        paymentStatus: resolveOrderPaymentStatus(order),
 
         reviewAllDone,
         unreviewedCount,
