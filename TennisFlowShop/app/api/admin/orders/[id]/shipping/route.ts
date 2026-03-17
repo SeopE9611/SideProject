@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { requireAdmin } from '@/lib/admin.guard';
 import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
 import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
+import { normalizeOrderStatus, normalizePaymentStatus } from '@/lib/admin-ops-normalize';
 
 const shippingMethodMap: Record<string, string> = {
   courier: '택배 배송',
@@ -22,6 +23,9 @@ const BodySchema = z
     trackingNumber: z.any().optional(),
   })
   .passthrough();
+
+const ORDER_TERMINAL_STATUSES = new Set(['취소', '결제취소', '환불', '구매확정', '완료']);
+const ORDER_SHIPPING_PHASE_STATUSES = new Set(['배송중', '배송완료']);
 
 export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
@@ -84,12 +88,22 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       'shippingInfo.estimatedDate': estimatedDate,
     };
 
-    if (isCourier) {
-      setOps['shippingInfo.invoice'] = { courier: String(courier).trim(), trackingNumber: String(trackingNumber).trim() };
-      await db.collection('orders').updateOne({ _id: orderId }, { $set: setOps });
-    } else {
-      await db.collection('orders').updateOne({ _id: orderId }, { $set: setOps, $unset: { 'shippingInfo.invoice': '' } });
-    }
+    const nextMethod = String(normalizedMethod ?? shippingMethod ?? '').trim();
+    const nextEstimatedDate = String(estimatedDate ?? '').trim();
+    const nextCourier = isCourier ? String(courier ?? '').trim() : '';
+    const nextTracking = isCourier ? String(trackingNumber ?? '').trim() : '';
+    const isFirstShippingRegistration = !isRegistered && Boolean(nextMethod || nextEstimatedDate || nextCourier || nextTracking);
+
+    const currentStatusRaw = String(order?.status ?? '').trim();
+    const currentStatus = normalizeOrderStatus(currentStatusRaw);
+    const paymentStatus = normalizePaymentStatus(String(order?.paymentStatus ?? order?.paymentInfo?.status ?? '').trim());
+    const isPaymentCompleted = paymentStatus === '결제완료' || currentStatus === '결제완료';
+    const shouldAutoTransitToShipping =
+      !isOriginalVisitPickup &&
+      isFirstShippingRegistration &&
+      isPaymentCompleted &&
+      !ORDER_TERMINAL_STATUSES.has(currentStatus) &&
+      !ORDER_SHIPPING_PHASE_STATUSES.has(currentStatus);
 
     const formattedDate = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(est);
     const isVisitPickup = isOriginalVisitPickup || normalizedMethod === 'visit';
@@ -104,15 +118,39 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
 
     const historyStatus = isVisitPickup ? (isRegistered ? '방문수령정보수정' : '방문수령정보등록') : isRegistered ? '배송정보수정' : '배송정보등록';
 
-    await db.collection('orders').updateOne({ _id: orderId }, {
+    const historyEntries: any[] = [
+      {
+        status: historyStatus,
+        date: new Date().toISOString(),
+        description: historyDescription,
+      },
+    ];
+
+    if (shouldAutoTransitToShipping) {
+      historyEntries.push({
+        status: '배송중',
+        date: new Date().toISOString(),
+        description: '최초 배송정보 등록이 확인되어 주문 상태가 자동으로 배송중으로 전환되었습니다.',
+      });
+      setOps.status = '배송중';
+    }
+
+    const updateDoc: any = {
+      $set: setOps,
       $push: {
         history: {
-          status: historyStatus,
-          date: new Date().toISOString(),
-          description: historyDescription,
+          $each: historyEntries,
         },
       },
-    } as any);
+    };
+
+    if (isCourier) {
+      setOps['shippingInfo.invoice'] = { courier: String(courier).trim(), trackingNumber: String(trackingNumber).trim() };
+    } else {
+      updateDoc.$unset = { 'shippingInfo.invoice': '' };
+    }
+
+    await db.collection('orders').updateOne({ _id: orderId }, updateDoc);
 
     await appendAdminAudit(
       guard.db,
@@ -120,8 +158,18 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
         type: 'admin.orders.shipping.patch',
         actorId: guard.admin._id,
         targetId: orderId,
-        message: isRegistered ? '주문 배송정보 수정' : '주문 배송정보 등록',
-        diff: { shippingMethod: normalizedMethod, estimatedDate },
+        message: shouldAutoTransitToShipping
+          ? isRegistered
+            ? '주문 배송정보 수정 및 자동 상태 전환'
+            : '주문 배송정보 등록 및 자동 상태 전환'
+          : isRegistered
+            ? '주문 배송정보 수정'
+            : '주문 배송정보 등록',
+        diff: {
+          shippingMethod: normalizedMethod,
+          estimatedDate,
+          ...(shouldAutoTransitToShipping ? { status: { from: currentStatusRaw, to: '배송중', reason: 'first-shipping-registration' } } : {}),
+        },
       },
       req,
     );
