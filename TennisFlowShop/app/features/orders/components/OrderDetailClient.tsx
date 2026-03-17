@@ -221,10 +221,11 @@ export default function OrderDetailClient({ orderId }: Props) {
   // “사용자가 무엇을 선택했는지”는 운영자가 즉시 확인할 수 있어야 한다.
   const shippingMethodBadge = getShippingMethodBadge(orderDetail as any);
   const shippingMethodValue = orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
+  const registeredShippingMethod = orderDetail.shippingInfo?.shippingMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
   const isVisitPickup = isVisitPickupOrder(orderDetail.shippingInfo);
   const hasShippingInfoRegistered = Boolean(
-    String(shippingMethodValue ?? '').trim() ||
+    String(registeredShippingMethod ?? '').trim() ||
       String(orderDetail.shippingInfo?.estimatedDate ?? '').trim() ||
       String(orderDetail.shippingInfo?.invoice?.courier ?? '').trim() ||
       String(orderDetail.shippingInfo?.invoice?.trackingNumber ?? '').trim(),
@@ -298,7 +299,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       statusLabel: localStatus,
       paymentLabel: orderDetail.paymentStatus,
       related: linkedApplicationForGuide ? { kind: 'stringing_application', id: linkedApplicationForGuide.id, href: `/admin/applications/stringing/${linkedApplicationForGuide.id}` } : null,
-      hasShippingInfo: Boolean(shippingMethodValue || orderDetail.shippingInfo?.estimatedDate || orderDetail.shippingInfo?.invoice?.courier || orderDetail.shippingInfo?.invoice?.trackingNumber),
+      hasShippingInfo: Boolean(registeredShippingMethod || orderDetail.shippingInfo?.estimatedDate || orderDetail.shippingInfo?.invoice?.courier || orderDetail.shippingInfo?.invoice?.trackingNumber),
       hasOutboundTracking: Boolean(orderDetail.shippingInfo?.invoice?.trackingNumber),
     },
     ...(linkedApplicationForGuide
