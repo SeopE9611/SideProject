@@ -223,6 +223,12 @@ export default function OrderDetailClient({ orderId }: Props) {
   const shippingMethodValue = orderDetail.shippingInfo?.shippingMethod ?? (orderDetail.shippingInfo as any)?.deliveryMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
   const isVisitPickup = isVisitPickupOrder(orderDetail.shippingInfo);
+  const hasShippingInfoRegistered = Boolean(
+    String(shippingMethodValue ?? '').trim() ||
+      String(orderDetail.shippingInfo?.estimatedDate ?? '').trim() ||
+      String(orderDetail.shippingInfo?.invoice?.courier ?? '').trim() ||
+      String(orderDetail.shippingInfo?.invoice?.trackingNumber ?? '').trim(),
+  );
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail.shippingInfo);
 
   // 페이지네이션 없이 가져온 모든 이력 합치기
@@ -464,7 +470,17 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <Button onClick={handleShippingUpdate} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Truck className="mr-2 h-4 w-4" />
                   {/* 방문 수령 주문은 배송 용어 대신 수령 용어로 노출 */}
-                  {isVisitPickup ? (isShippingManagedByApplication ? '신청서 수령 정보 확인' : '방문 수령 정보 업데이트') : isShippingManagedByApplication ? '라켓 발송 정보 확인' : '배송 정보 업데이트'}
+                  {isVisitPickup
+                    ? isShippingManagedByApplication
+                      ? '신청서 수령 정보 확인'
+                      : hasShippingInfoRegistered
+                        ? '방문 수령 정보 수정하기'
+                        : '방문 수령 정보 등록하기'
+                    : isShippingManagedByApplication
+                      ? '라켓 발송 정보 확인'
+                      : hasShippingInfoRegistered
+                        ? '배송 정보 수정하기'
+                        : '배송 정보 등록하기'}
                 </Button>
               </div>
             </div>

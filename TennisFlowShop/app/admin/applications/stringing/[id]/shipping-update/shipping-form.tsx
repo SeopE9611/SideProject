@@ -41,8 +41,13 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const isEdit = Boolean(initialShippingMethod || initialEstimatedDelivery || initialCourier || initialTrackingNumber);
-  const cardTitle = isVisitPickup ? (isEdit ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isEdit ? '배송 정보 수정' : '배송 정보 등록';
+  const isRegistered = Boolean(
+    String(initialShippingMethod ?? '').trim() ||
+      String(initialEstimatedDelivery ?? '').trim() ||
+      String(initialCourier ?? '').trim() ||
+      String(initialTrackingNumber ?? '').trim(),
+  );
+  const cardTitle = isVisitPickup ? (isRegistered ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isRegistered ? '배송 정보 수정' : '배송 정보 등록';
 
   /**
    * ---- 이탈(탭 닫기/새로고침/뒤로가기/링크이동) 보호 ----
@@ -136,7 +141,7 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
         }),
       });
 
-      showSuccessToast(isVisitPickup ? '방문 수령 정보가 업데이트되었습니다' : '배송 정보가 업데이트되었습니다');
+      showSuccessToast(isVisitPickup ? (isRegistered ? '방문 수령 정보가 수정되었습니다' : '방문 수령 정보가 등록되었습니다') : isRegistered ? '배송 정보가 수정되었습니다' : '배송 정보가 등록되었습니다');
 
       router.refresh();
       onSuccess?.();
@@ -169,7 +174,6 @@ export default function ShippingForm({ applicationId, initialShippingMethod, ini
                 <SelectContent>
                   <SelectItem value="courier">택배 배송</SelectItem>
                   <SelectItem value="quick">퀵 배송 (당일)</SelectItem>
-                  <SelectItem value="visit">방문 수령</SelectItem>
                 </SelectContent>
               </Select>
             )}
