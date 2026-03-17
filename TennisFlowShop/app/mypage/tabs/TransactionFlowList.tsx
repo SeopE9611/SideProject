@@ -8,6 +8,7 @@ import CancelStringingDialog from "@/app/mypage/applications/_components/CancelS
 import CancelOrderDialog from "@/app/mypage/orders/_components/CancelOrderDialog";
 import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
 import ActivityOrderReviewCTA from "@/app/mypage/tabs/_components/ActivityOrderReviewCTA";
+import OrderShippingInfoDialog from "@/app/mypage/tabs/_components/OrderShippingInfoDialog";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
@@ -282,6 +283,11 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
   if (isApplicationConfirmNeeded(group.application)) return "교체확정 필요";
   return null;
+};
+
+const canShowOrderShippingInfo = (status?: string | null) => {
+  const normalized = getMypageNormalizedStatus(status);
+  return normalized === "배송중" || normalized === "배송완료" || normalized === "구매확정";
 };
 
 function FlowListSkeleton() {
@@ -783,6 +789,20 @@ export default function TransactionFlowList() {
                   }
 
                   if (g.kind === "order" && orderId && !prefersApplicationView) {
+                    if (canShowOrderShippingInfo(status)) {
+                      actions.push({
+                        key: "order-shipping-info",
+                        priority: 1,
+                        node: (
+                          <OrderShippingInfoDialog
+                            orderId={orderId}
+                            triggerLabel="배송정보 확인"
+                            className="bg-transparent"
+                          />
+                        ),
+                      });
+                    }
+
                     if (primaryLinkedApplicationId) {
                       actions.push({
                         key: "order-linked-application",

@@ -80,7 +80,15 @@ function courierLabel(code?: CourierCode) {
   * 전체내역(Activity) 카드에서 운송장/배송 정보를 빠르게 확인하기 위한 모달
   * - Activity API에는 invoice가 없으므로, 모달이 열릴 때만 주문 상세 API를 호출합니다.
   */
- export default function OrderShippingInfoDialog({ orderId, className }: { orderId: string; className?: string }) {
+export default function OrderShippingInfoDialog({
+  orderId,
+  className,
+  triggerLabel = '배송/수령 정보',
+}: {
+  orderId: string;
+  className?: string;
+  triggerLabel?: string;
+}) {
   const [open, setOpen] = useState(false);
   const { data, isLoading } = useSWR<OrderDetail>(open ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
@@ -106,7 +114,7 @@ function courierLabel(code?: CourierCode) {
        <DialogTrigger asChild>
          <Button type="button" size="sm" variant="outline" className={className}>
            <Truck className="mr-2 h-4 w-4" />
-           배송/수령 정보
+           {triggerLabel}
          </Button>
        </DialogTrigger>
 
