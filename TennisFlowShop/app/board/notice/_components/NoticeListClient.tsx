@@ -34,7 +34,7 @@ function AdminNoticeWriteButton() {
   if (loading || user?.role !== 'admin') return null;
 
   return (
-    <Button asChild size="sm" variant="outline" className="h-10 sm:h-11 text-sm sm:text-base">
+    <Button asChild size="sm" variant="outline" className="h-9 sm:h-10 text-sm sm:text-base">
       <Link href="/board/notice/write">
         <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
         작성하기
@@ -228,8 +228,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12 space-y-6 sm:space-y-8">
-        <div className="flex flex-col space-y-4 sm:space-y-6">
+      <div className="container mx-auto px-4 sm:px-6 py-7 sm:py-9 md:py-10 space-y-5 sm:space-y-7">
+        <div className="flex flex-col space-y-3 sm:space-y-5">
           <div className="flex items-center space-x-3 sm:space-x-4">
             {/* 고객센터 홈으로 돌아가는 Back 버튼 */}
             <Button variant="ghost" asChild className="p-2">
@@ -239,20 +239,20 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
             </Button>
 
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-                <Bell className="h-6 w-6 sm:h-7 sm:w-7" />
+              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+                <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
-                <p className="text-sm sm:text-base md:text-lg text-muted-foreground">테니스 플로우 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · 공지사항</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">테니스 플로우 고객센터의 주요 안내와 공지사항을 확인하실 수 있습니다.</p>
               </div>
             </div>
           </div>
         </div>
 
         <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
-          <CardHeader className="bg-muted/30 border-b p-5 sm:p-6 md:p-8">
-            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
+            <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 <span className="text-lg sm:text-xl md:text-2xl">공지사항 목록</span>
@@ -260,7 +260,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
 
               <div className={noticeMobileActionGroupClass}>
                 <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
-                  <SelectTrigger className="w-full sm:w-[140px] bg-card text-sm sm:text-base h-10 sm:h-11">
+                  <SelectTrigger className="w-full sm:w-[140px] bg-card text-sm sm:text-base h-9 sm:h-10">
                     <SelectValue placeholder="검색 조건" />
                   </SelectTrigger>
                   <SelectContent>
@@ -275,7 +275,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                   <Input
                     type="search"
                     placeholder="검색어를 입력하세요"
-                    className="w-full sm:w-[220px] pl-10 sm:pl-12 bg-card text-sm sm:text-base h-10 sm:h-11"
+                    className="w-full sm:w-[220px] pl-10 sm:pl-12 bg-card text-sm sm:text-base h-9 sm:h-10"
                     value={inputKeyword}
                     onChange={(e) => setInputKeyword(e.target.value)}
                     onKeyDown={(e) => {
@@ -300,7 +300,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
                   }}
                   size="sm"
                   variant="outline"
-                  className="h-10 sm:h-11 text-sm sm:text-base"
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                   disabled={isBusy}
                 >
                   {isBusy && <div className="h-4 w-4 border-2 border-border/30 border-t-primary-foreground rounded-full animate-spin mr-2" />}
@@ -310,8 +310,8 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-5 sm:p-6 md:p-8">
-            <div className="space-y-4 sm:space-y-5">
+          <CardContent className="p-4 sm:p-5 md:p-6">
+            <div className="space-y-3.5 sm:space-y-4">
               {!shouldShowLoadingState && hasDataError && (
                 <ErrorBox message={hasPreloadError ? initialErrorMessage || '공지 목록을 불러오지 못했습니다.' : listError.message} status={hasPreloadError ? 500 : listError.status} fallbackMessage="공지 목록을 불러오지 못했습니다." />
               )}
@@ -358,7 +358,7 @@ export default function NoticeListClient({ initialItems, initialTotal, initialLo
 
                   return (
                     <Link key={notice._id} href={buildDetailHref(notice._id)}>
-                      <Card className="border-border transition-colors hover:border-primary/30 hover:bg-muted/20">
+                      <Card className="border-border transition-colors hover:border-primary/25 hover:bg-muted/25">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
