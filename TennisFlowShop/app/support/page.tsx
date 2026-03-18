@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AsyncState from "@/components/system/AsyncState";
 import {
   Dialog,
   DialogContent,
@@ -141,11 +142,7 @@ function FiveLineSkeleton() {
 }
 
 function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했습니다." }) {
-  return (
-    <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">
-      {message}
-    </div>
-  );
+  return <AsyncState kind="error" variant="inline" title={message} />;
 }
 
 // ---------------------- 공지 카드 ----------------------
@@ -205,19 +202,12 @@ function NoticeCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
-              <p className="text-sm font-medium text-foreground">
-                등록된 공지가 없습니다.
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.
-              </p>
-              <div className="mt-3">
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/board/notice">공지 전체보기</Link>
-                </Button>
-              </div>
-            </div>
+            <AsyncState
+              kind="empty"
+              variant="card"
+              title="등록된 공지가 없습니다."
+              description="새 소식이 등록되면 이곳에서 바로 확인할 수 있어요."
+            />
           ) : (
             items.map((notice) => (
               <div
@@ -415,19 +405,12 @@ function QnaCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
-              <p className="text-sm font-medium text-foreground">
-                등록된 문의가 없습니다.
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                궁금한 점이 있다면 첫 문의를 남겨주세요.
-              </p>
-              <div className="mt-3">
-                <Button asChild size="sm">
-                  <Link href="/board/qna/write">문의하기</Link>
-                </Button>
-              </div>
-            </div>
+            <AsyncState
+              kind="empty"
+              variant="card"
+              title="등록된 문의가 없습니다."
+              description="궁금한 점이 있다면 첫 문의를 남겨주세요."
+            />
           ) : (
             items.map((qna) => {
               const canOpenSecret =
