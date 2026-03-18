@@ -47,6 +47,7 @@ interface Props {
 
 interface ApplicationDetail {
   id: string;
+  userConfirmedAt?: string | null;
   orderId?: string;
   rentalId?: string;
   orderCancelStatus?: string;
@@ -733,8 +734,8 @@ export default function StringingApplicationDetailClient({ id, baseUrl, backUrl 
                   {!isEditableAllowed && <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>}
                 </Tooltip>
 
-                {/* 사용자: 서비스 리뷰 작성 버튼 (교체완료 + 미작성일 때만 노출) */}
-                {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} className="w-auto h-9 px-3 text-sm" />}
+                {/* 사용자: 서비스 리뷰 작성 버튼 (교체확정 이후에만 노출) */}
+                {!isAdmin && <ServiceReviewCTA applicationId={data.id} status={data.status} userConfirmedAt={data.userConfirmedAt ?? null} className="w-auto h-9 px-3 text-sm" />}
 
                 {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
                 {!isAdmin && showConfirmExchangeButton && (

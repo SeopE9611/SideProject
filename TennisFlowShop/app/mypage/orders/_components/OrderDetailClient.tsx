@@ -61,6 +61,7 @@ interface OrderItem {
 interface OrderDetail {
   _id: string;
   status: string;
+  userConfirmedAt?: string | null;
   date: string;
   customer: {
     name: string;
@@ -101,6 +102,7 @@ interface OrderDetail {
   stringingApplications?: {
     id: string;
     status: string;
+    userConfirmedAt?: string | null;
     createdAt?: string | null;
     needsInboundTracking?: boolean;
     racketCount?: number;
@@ -168,7 +170,6 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
 
   // 완료 상태
-  const completedStatuses = new Set(['배송완료', '완료', '구매확정']);
   const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
   const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail?.shippingInfo);
 
@@ -177,7 +178,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
   const shippingMethodValue = orderDetail?.shippingInfo?.shippingMethod ?? (orderDetail?.shippingInfo as any)?.deliveryMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
 
-  const canShowReviewCTA = completedStatuses.has(orderDetail?.status ?? '');
+  const canShowReviewCTA = Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === '구매확정';
   const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
 
   useEffect(() => {
@@ -517,7 +518,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                       </Link>
                     )}
 
-                    {primaryStringingAppId && <ServiceReviewCTA applicationId={primaryStringingAppId} className="ml-2" />}
+                    {primaryStringingAppId && <ServiceReviewCTA applicationId={primaryStringingAppId} userConfirmedAt={primaryStringingApp?.userConfirmedAt ?? null} className="ml-2" />}
                   </div>
                 </div>
               </div>
@@ -547,7 +548,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                       <p className="font-semibold text-warning">이 주문은 리뷰를 작성하지 않았습니다.</p>
                       <p className="text-sm text-warning">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
                       {/* 방문 수령 주문은 배송완료 대신 수령 완료 문구로 안내 */}
-                      <p className="text-sm text-destructive">※{isVisitPickup ? "상품이 정상적으로 '수령 완료' 처리되면 [리뷰 작성] 버튼이 나타납니다." : "상품이 정상적으로 '배송완료' 처리가 되면 [리뷰 작성] 버튼이 나타납니다."}</p>
+                      <p className="text-sm text-destructive">※{isVisitPickup ? "상품을 구매확정하면 [리뷰 작성] 버튼이 나타납니다." : "구매확정 후 [리뷰 작성] 버튼이 나타납니다."}</p>
                     </div>
                   </div>
                   <OrderReviewCTA
@@ -556,6 +557,7 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                     unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
                     reviewNextTargetProductId={firstUnreviewed?.id ?? null}
                     orderStatus={orderDetail.status}
+                    userConfirmedAt={orderDetail.userConfirmedAt ?? null}
                     showOnlyWhenCompleted
                     loading={!reviewsReady}
                   />

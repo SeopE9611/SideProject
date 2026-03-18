@@ -25,6 +25,7 @@ type ActivityOrderSummary = {
   id: string;
   createdAt: string;
   status: string;
+  userConfirmedAt?: string | null;
   paymentStatus: string;
   totalPrice: number;
   firstItemName: string;
@@ -59,7 +60,7 @@ type ActivityApplicationSummary = {
   orderId: string | null;
   rentalId: string | null;
   hasTracking: boolean;
-  userConfirmedAt: string | null;
+  userConfirmedAt?: string | null;
   // 서버(/api/mypage/activity)에서 내려주는 “입고/운송장 필요 여부”
   // - 라켓 구매+장착(매장 라켓 기반): needsInboundTracking=false
   // - 고객 라켓 자가발송: needsInboundTracking=true
@@ -351,14 +352,14 @@ export default function ActivityFeed() {
   // 주문 단위 UX: 배송/수령 정보 모달 / 구매확정 / 리뷰 CTA
   // - 방문 수령 주문도 내부 raw status는 배송중/배송완료를 쓰므로 동일 기준을 유지한다.
   const canShowOrderDeliveryInfo = (status?: string) => status === '배송중' || status === '배송완료' || status === '구매확정';
-  const canShowOrderReviewCta = (status?: string) => status === '배송완료' || status === '구매확정';
+  const canShowOrderReviewCta = (order?: ActivityOrderSummary | null) => Boolean(order?.userConfirmedAt) || order?.status === '구매확정';
 
   // 교체 서비스(스트링 교체 신청서) CTA 조건
   // - 교체확정: 교체완료 상태이고, 아직 사용자가 확정(userConfirmedAt)하지 않은 경우에만 노출
-  // - 리뷰작성: 교체완료 상태에서 노출 (작성 여부는 리뷰 작성 페이지에서 최종 검증)
+  // - 리뷰작성: 사용자 확정(userConfirmedAt) 이후에만 노출
   const canShowStringingConfirmCta = (app?: ActivityApplicationSummary | null) => !!(app && app.status === '교체완료' && !app.userConfirmedAt);
 
-  const canShowStringingReviewCta = (app?: ActivityApplicationSummary | null) => !!(app && app.status === '교체완료');
+  const canShowStringingReviewCta = (app?: ActivityApplicationSummary | null) => Boolean(app?.userConfirmedAt);
 
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
@@ -980,7 +981,7 @@ export default function ActivityFeed() {
                                 {g.kind === 'order' && g.order && g.order.id && canShowOrderDeliveryInfo(g.order.status) ? <OrderShippingInfoDialog orderId={g.order.id} className="rounded-lg bg-transparent" /> : null}
 
                                 {/* 리뷰 작성하기: 배송완료/구매확정에서 노출 */}
-                                {g.kind === 'order' && g.order && g.order.id && canShowOrderReviewCta(g.order.status) ? <ActivityOrderReviewCTA orderId={g.order.id} orderStatus={g.order.status} className="rounded-lg" /> : null}
+                                {g.kind === 'order' && g.order && g.order.id && canShowOrderReviewCta(g.order) ? <ActivityOrderReviewCTA orderId={g.order.id} orderStatus={g.order.status} userConfirmedAt={g.order.userConfirmedAt} className="rounded-lg" /> : null}
 
                                 {/* 운송장: 액션 필요(미등록)일 때만 ‘강조’(primary)로 노출 */}
                                 {canShowShipping && hasAction ? (

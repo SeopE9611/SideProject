@@ -29,6 +29,7 @@ interface Order {
   date: string;
   total: number;
   status: string;
+  userConfirmedAt?: string | null;
   items: Array<{ name: string; quantity: number; price: number; imageUrl?: string | null; kind?: 'racket' | 'string' | 'product' }>;
   totalPrice: number;
   userSnapshot?: { name: string; email: string };
@@ -419,7 +420,7 @@ export default function OrderList() {
                     </Link>
                   </Button>
 
-                  <OrderReviewCTA orderId={order.id} reviewAllDone={order.reviewAllDone} unreviewedCount={order.unreviewedCount} reviewNextTargetProductId={order.reviewNextTargetProductId} orderStatus={order.status} showOnlyWhenCompleted />
+                  <OrderReviewCTA orderId={order.id} reviewAllDone={order.reviewAllDone} unreviewedCount={order.unreviewedCount} reviewNextTargetProductId={order.reviewNextTargetProductId} orderStatus={order.status} userConfirmedAt={order.userConfirmedAt ?? null} showOnlyWhenCompleted />
 
                   {showConfirm ? (
                     <TooltipProvider>
@@ -534,8 +535,8 @@ export default function OrderList() {
                       <DropdownMenuLabel>더보기</DropdownMenuLabel>
                       <DropdownMenuSeparator />
 
-                      {/* 리뷰 CTA: 완료 상태일 때만 노출(기존 컴포넌트 정책과 동일) */}
-                      {(['배송완료', '구매확정'].includes(order.status) || order.cancelStatus === 'requested') && (
+                      {/* 리뷰 CTA: 구매확정 이후에만 노출 */}
+                      {(Boolean(order.userConfirmedAt) || order.status === '구매확정') && (
                         <DropdownMenuItem asChild>
                           <Link href={detailHref} className="flex items-center gap-2">
                             <MessageSquarePlus className="h-4 w-4" />
