@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 
 export interface PaymentFormValues {
   depositor: string;
@@ -18,7 +18,13 @@ interface Props {
   onCancel: () => void;
 }
 
-export default function PaymentEditForm({ initialData, resourcePath, entityId, onSuccess, onCancel }: Props) {
+export default function PaymentEditForm({
+  initialData,
+  resourcePath,
+  entityId,
+  onSuccess,
+  onCancel,
+}: Props) {
   const {
     register,
     handleSubmit,
@@ -30,9 +36,9 @@ export default function PaymentEditForm({ initialData, resourcePath, entityId, o
 
   async function onSubmit(data: PaymentFormValues) {
     const res = await fetch(`${resourcePath}/${entityId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         depositor: data.depositor,
       }),
@@ -48,12 +54,22 @@ export default function PaymentEditForm({ initialData, resourcePath, entityId, o
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Label htmlFor="depositor">입금자명</Label>
-        <Input id="depositor" {...register('depositor', { required: '필수 입력입니다.' })} />
-        {errors.depositor && <p className="text-destructive text-xs">{errors.depositor.message}</p>}
+        <Input
+          id="depositor"
+          {...register("depositor", { required: "필수 입력입니다." })}
+        />
+        {errors.depositor && (
+          <p className="text-destructive text-xs">{errors.depositor.message}</p>
+        )}
       </div>
 
       <div className="flex justify-end space-x-2">
-        <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
+        <Button
+          variant="outline"
+          type="button"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           취소
         </Button>
         <Button type="submit" disabled={isSubmitting}>

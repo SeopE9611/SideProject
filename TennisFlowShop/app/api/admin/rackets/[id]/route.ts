@@ -1,27 +1,39 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { RACKET_BRANDS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern } from '@/lib/constants';
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import {
+  RACKET_BRANDS,
+  normalizeAndValidateGripSize,
+  normalizeAndValidateStringPattern,
+} from "@/lib/constants";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 
 // GET - 단일 조회
-export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
   const db = (await clientPromise).db();
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
+    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
   }
-  const doc = await db.collection('used_rackets').findOne({ _id: new ObjectId(id) });
-  if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  const doc = await db
+    .collection("used_rackets")
+    .findOne({ _id: new ObjectId(id) });
+  if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
   return NextResponse.json({ ...doc, id: doc._id.toString(), _id: undefined });
 }
 
 // PATCH - 수정
-export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -32,30 +44,33 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   try {
     body = await req.json();
   } catch (e) {
-    console.error('[admin/rackets] invalid json', e);
-    return NextResponse.json({ message: 'INVALID_JSON' }, { status: 400 });
+    console.error("[admin/rackets] invalid json", e);
+    return NextResponse.json({ message: "INVALID_JSON" }, { status: 400 });
   }
 
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ message: 'INVALID_BODY' }, { status: 400 });
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ message: "INVALID_BODY" }, { status: 400 });
   }
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
+    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
   }
   const enabled = !!body?.rental?.enabled;
-  const disabledReason = String(body?.rental?.disabledReason ?? '').trim();
+  const disabledReason = String(body?.rental?.disabledReason ?? "").trim();
   if (enabled === false && !disabledReason) {
-    return NextResponse.json({ message: '대여 불가 사유가 필요합니다.' }, { status: 400 });
+    return NextResponse.json(
+      { message: "대여 불가 사유가 필요합니다." },
+      { status: 400 },
+    );
   }
 
-  const numOrNull = (v: any) => (v == null || v === '' ? null : Number(v));
+  const numOrNull = (v: any) => (v == null || v === "" ? null : Number(v));
 
   const set: any = {
-    brand: String(body.brand ?? '')
+    brand: String(body.brand ?? "")
       .trim()
       .toLowerCase(),
-    model: String(body.model ?? '').trim(),
+    model: String(body.model ?? "").trim(),
     year: Number(body.year ?? 0) || null,
     spec: {
       weight: numOrNull(body.spec?.weight),
@@ -65,14 +80,18 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       swingWeight: numOrNull(body.spec?.swingWeight),
       stiffnessRa: numOrNull(body.spec?.stiffnessRa),
       // 서버에서도 value 검증/정규화 수행(클라이언트 우회 요청 방어)
-      pattern: normalizeAndValidateStringPattern(body.spec?.pattern ?? ''),
-      gripSize: normalizeAndValidateGripSize(body.spec?.gripSize ?? ''),
+      pattern: normalizeAndValidateStringPattern(body.spec?.pattern ?? ""),
+      gripSize: normalizeAndValidateGripSize(body.spec?.gripSize ?? ""),
     },
-    condition: body.condition ?? 'B',
+    condition: body.condition ?? "B",
     price: Number(body.price ?? 0),
     images: Array.isArray(body.images) ? body.images : [],
-    status: body.status ?? 'available',
-    searchKeywords: Array.isArray(body.searchKeywords) ? body.searchKeywords.map((k: any) => String(k).trim()).filter((k: string) => k.length > 0) : [],
+    status: body.status ?? "available",
+    searchKeywords: Array.isArray(body.searchKeywords)
+      ? body.searchKeywords
+          .map((k: any) => String(k).trim())
+          .filter((k: string) => k.length > 0)
+      : [],
     rental: {
       enabled,
       deposit: Number(body?.rental?.deposit ?? 0),
@@ -81,42 +100,70 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         d15: Number(body?.rental?.fee?.d15 ?? 0),
         d30: Number(body?.rental?.fee?.d30 ?? 0),
       },
-      disabledReason: enabled ? '' : disabledReason,
+      disabledReason: enabled ? "" : disabledReason,
     },
     quantity: Math.max(1, Number(body.quantity ?? 1)),
     updatedAt: new Date(),
   };
 
   if (!set.brand || !set.model) {
-    return NextResponse.json({ message: '브랜드/모델은 필수입니다.' }, { status: 400 });
+    return NextResponse.json(
+      { message: "브랜드/모델은 필수입니다." },
+      { status: 400 },
+    );
   }
 
   if (!set.spec.pattern) {
-    return NextResponse.json({ message: '스트링 패턴 값이 유효하지 않습니다.' }, { status: 400 });
+    return NextResponse.json(
+      { message: "스트링 패턴 값이 유효하지 않습니다." },
+      { status: 400 },
+    );
   }
   if (!set.spec.gripSize) {
-    return NextResponse.json({ message: '그립 사이즈 값이 유효하지 않습니다.' }, { status: 400 });
+    return NextResponse.json(
+      { message: "그립 사이즈 값이 유효하지 않습니다." },
+      { status: 400 },
+    );
   }
 
   const brandOk = RACKET_BRANDS.some((b) => b.value === set.brand);
   if (!brandOk) {
-    return NextResponse.json({ message: '브랜드 값이 유효하지 않습니다.' }, { status: 400 });
+    return NextResponse.json(
+      { message: "브랜드 값이 유효하지 않습니다." },
+      { status: 400 },
+    );
   }
 
-  for (const k of ['weight', 'balance', 'headSize', 'lengthIn', 'swingWeight', 'stiffnessRa'] as const) {
+  for (const k of [
+    "weight",
+    "balance",
+    "headSize",
+    "lengthIn",
+    "swingWeight",
+    "stiffnessRa",
+  ] as const) {
     const v = set.spec?.[k];
     if (v !== null && v !== undefined && !Number.isFinite(v)) {
-      return NextResponse.json({ message: `spec.${k} 값이 유효하지 않습니다.` }, { status: 400 });
+      return NextResponse.json(
+        { message: `spec.${k} 값이 유효하지 않습니다.` },
+        { status: 400 },
+      );
     }
   }
 
-  const res = await db.collection('used_rackets').updateOne({ _id: new ObjectId(id) }, { $set: set });
-  if (!res.matchedCount) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  const res = await db
+    .collection("used_rackets")
+    .updateOne({ _id: new ObjectId(id) }, { $set: set });
+  if (!res.matchedCount)
+    return NextResponse.json({ message: "Not Found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
 
 // DELETE 삭제
-export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -125,9 +172,12 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const db = (await clientPromise).db();
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
+    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
   }
-  const res = await db.collection('used_rackets').deleteOne({ _id: new ObjectId(id) });
-  if (!res.deletedCount) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  const res = await db
+    .collection("used_rackets")
+    .deleteOne({ _id: new ObjectId(id) });
+  if (!res.deletedCount)
+    return NextResponse.json({ message: "Not Found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

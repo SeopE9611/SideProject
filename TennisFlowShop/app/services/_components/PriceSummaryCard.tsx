@@ -1,9 +1,19 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card';
-import { BadgeDollarSign, Box, CalendarDays, Clock3, Package, ReceiptText, Store, Ticket, Truck } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  BadgeDollarSign,
+  Box,
+  CalendarDays,
+  Clock3,
+  Package,
+  ReceiptText,
+  Store,
+  Ticket,
+  Truck,
+} from "lucide-react";
 
-type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
+type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
 
 interface PriceSummaryProps {
   preferredDate?: string;
@@ -23,7 +33,7 @@ interface PriceSummaryProps {
   headerHint?: string; // 헤더 하단 안내문(대여/주문 기반에서 혼선 제거용)
 }
 
-const won = (n: number) => n.toLocaleString('ko-KR') + '원';
+const won = (n: number) => n.toLocaleString("ko-KR") + "원";
 
 export default function PriceSummaryCard({
   preferredDate,
@@ -42,14 +52,32 @@ export default function PriceSummaryCard({
   totalLabel,
   headerHint,
 }: PriceSummaryProps) {
-  const isCustom = stringTypes.includes('custom');
+  const isCustom = stringTypes.includes("custom");
   const isRentalBreakdown = Number(rentalDeposit) > 0 || Number(rentalFee) > 0;
 
-  const MethodIcon = collectionMethod === 'courier_pickup' ? Truck : collectionMethod === 'visit' ? Store : Box;
-  const methodText = collectionMethod === 'courier_pickup' ? '기사 방문(+3,000원)' : collectionMethod === 'visit' ? '매장 방문' : '자가 발송';
+  const MethodIcon =
+    collectionMethod === "courier_pickup"
+      ? Truck
+      : collectionMethod === "visit"
+        ? Store
+        : Box;
+  const methodText =
+    collectionMethod === "courier_pickup"
+      ? "기사 방문(+3,000원)"
+      : collectionMethod === "visit"
+        ? "매장 방문"
+        : "자가 발송";
 
-  const pickupLabel = collectionMethod === 'courier_pickup' ? '수거비(택배 기사 방문)' : '수거비';
-  const pickupHint = collectionMethod === 'courier_pickup' ? '후정산' : collectionMethod === 'visit' ? '매장 방문: 없음' : collectionMethod === 'self_ship' ? '자가 발송: 없음' : '—';
+  const pickupLabel =
+    collectionMethod === "courier_pickup" ? "수거비(택배 기사 방문)" : "수거비";
+  const pickupHint =
+    collectionMethod === "courier_pickup"
+      ? "후정산"
+      : collectionMethod === "visit"
+        ? "매장 방문: 없음"
+        : collectionMethod === "self_ship"
+          ? "자가 발송: 없음"
+          : "—";
 
   return (
     <Card className="overflow-hidden border border-border shadow-sm">
@@ -59,7 +87,9 @@ export default function PriceSummaryCard({
           <ReceiptText className="h-4 w-4" />
           <p className="text-sm font-semibold">요금 요약</p>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-1">{headerHint ?? '입력에 따라 실시간 반영됩니다'}</p>
+        <p className="text-[11px] text-muted-foreground mt-1">
+          {headerHint ?? "입력에 따라 실시간 반영됩니다"}
+        </p>
       </div>
 
       <CardContent className="pt-5">
@@ -70,14 +100,14 @@ export default function PriceSummaryCard({
               <CalendarDays className="h-4 w-4" />
               <span>희망일</span>
             </div>
-            <span className="tabular-nums">{preferredDate || '—'}</span>
+            <span className="tabular-nums">{preferredDate || "—"}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clock3 className="h-4 w-4" />
               <span>시간대</span>
             </div>
-            <span className="tabular-nums">{preferredTime || '—'}</span>
+            <span className="tabular-nums">{preferredTime || "—"}</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -97,7 +127,13 @@ export default function PriceSummaryCard({
               <BadgeDollarSign className="h-4 w-4 text-muted-foreground" />
               <div className="space-y-0.5">
                 <p className="text-sm font-medium">교체비</p>
-                <p className="text-xs text-muted-foreground">{isCustom ? '보유/커스텀 스트링: 교체비만' : stringIncluded ? '스트링 상품: 주문/대여 결제 내역 우선' : '스트링 상품: 선택 상품의 장착비 기준'}</p>
+                <p className="text-xs text-muted-foreground">
+                  {isCustom
+                    ? "보유/커스텀 스트링: 교체비만"
+                    : stringIncluded
+                      ? "스트링 상품: 주문/대여 결제 내역 우선"
+                      : "스트링 상품: 선택 상품의 장착비 기준"}
+                </p>
               </div>
             </div>
 
@@ -157,7 +193,9 @@ export default function PriceSummaryCard({
                 <p className="text-xs text-muted-foreground">{pickupHint}</p>
               </div>
             </div>
-            <p className="text-sm">{pickupFee > 0 ? `+ ${won(pickupFee)}` : '—'}</p>
+            <p className="text-sm">
+              {pickupFee > 0 ? `+ ${won(pickupFee)}` : "—"}
+            </p>
           </div>
 
           {usingPackage && (
@@ -174,15 +212,28 @@ export default function PriceSummaryCard({
 
           {/* 합계 강조 */}
           <div className="flex items-center justify-between">
-            <p className="text-base font-semibold">{totalLabel ?? '예상 결제 금액'}</p>
-            <p className="text-base font-bold tabular-nums rounded-md px-2 py-1 ring-1 ring-inset ring-ring" aria-live="polite">
+            <p className="text-base font-semibold">
+              {totalLabel ?? "예상 결제 금액"}
+            </p>
+            <p
+              className="text-base font-bold tabular-nums rounded-md px-2 py-1 ring-1 ring-inset ring-ring"
+              aria-live="polite"
+            >
               {won(total)}
             </p>
           </div>
 
           {/* 안내 */}
-          {collectionMethod === 'courier_pickup' && <p className="mt-3 text-[11px] text-muted-foreground">※ 기사 방문 수거 시 수거비 3,000원은 후정산됩니다.</p>}
-          {usingPackage && <p className="mt-1 text-[11px] text-muted-foreground">※ 패키지 적용 시 교체비는 0원으로 처리됩니다.</p>}
+          {collectionMethod === "courier_pickup" && (
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              ※ 기사 방문 수거 시 수거비 3,000원은 후정산됩니다.
+            </p>
+          )}
+          {usingPackage && (
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              ※ 패키지 적용 시 교체비는 0원으로 처리됩니다.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

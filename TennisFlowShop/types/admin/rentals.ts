@@ -1,7 +1,16 @@
-export type AdminRentalServicePickupMethod = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null;
+export type AdminRentalServicePickupMethod =
+  | "SELF_SEND"
+  | "COURIER_VISIT"
+  | "SHOP_VISIT"
+  | null;
 
-export type AdminRentalPaymentFilter = 'all' | 'unpaid' | 'paid';
-export type AdminRentalShippingFilter = 'all' | 'none' | 'outbound-set' | 'return-set' | 'both-set';
+export type AdminRentalPaymentFilter = "all" | "unpaid" | "paid";
+export type AdminRentalShippingFilter =
+  | "all"
+  | "none"
+  | "outbound-set"
+  | "return-set"
+  | "both-set";
 
 export interface AdminRentalsListRequestDto {
   page: number;
@@ -44,19 +53,25 @@ export interface AdminRentalListItemDto {
   stringingTensionSummary?: string | null;
   stringingNames?: string[];
   stringingReservationLabel?: string | null;
-  paymentStatusLabel: '결제완료' | '결제대기';
-  paymentStatusSource: 'explicit' | 'derived';
+  paymentStatusLabel: "결제완료" | "결제대기";
+  paymentStatusSource: "explicit" | "derived";
   shipping: {
-    outbound: { courier: string; trackingNumber: string; shippedAt: string | Date | null } | null;
-    return: { courier: string; trackingNumber: string; shippedAt: string | Date | null } | null;
+    outbound: {
+      courier: string;
+      trackingNumber: string;
+      shippedAt: string | Date | null;
+    } | null;
+    return: {
+      courier: string;
+      trackingNumber: string;
+      shippedAt: string | Date | null;
+    } | null;
   };
-  cancelRequest:
-    | {
-        status: 'requested' | 'approved' | 'rejected';
-        refundAccountReady?: boolean;
-        refundBankLabel?: string | null;
-      }
-    | null;
+  cancelRequest: {
+    status: "requested" | "approved" | "rejected";
+    refundAccountReady?: boolean;
+    refundBankLabel?: string | null;
+  } | null;
   customer: {
     name: string;
     email: string;

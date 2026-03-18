@@ -1,13 +1,16 @@
-import { racketBrandLabel } from '@/lib/constants';
-import { getDb } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { NextResponse } from 'next/server';
+import { racketBrandLabel } from "@/lib/constants";
+import { getDb } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { NextResponse } from "next/server";
 
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ ok: false, error: 'invalid' }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "invalid" }, { status: 400 });
   }
 
   const db = await getDb();
@@ -29,7 +32,9 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   };
 
   // 1) products 먼저
-  const prod = await db.collection('products').findOne(idFilter, { projection });
+  const prod = await db
+    .collection("products")
+    .findOne(idFilter, { projection });
 
   if (prod) {
     const rawMountingFee = (prod as any).mountingFee;
@@ -46,19 +51,24 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json(
       {
         ok: true,
-        kind: 'product' as const,
+        kind: "product" as const,
         href: `/products/${id}`,
-        name: prod.name ?? prod.title ?? '상품',
-        image: prod.thumbnail || (Array.isArray(prod.images) && prod.images[0]) || null,
+        name: prod.name ?? prod.title ?? "상품",
+        image:
+          prod.thumbnail ||
+          (Array.isArray(prod.images) && prod.images[0]) ||
+          null,
         mountingFee: safeMountingFee,
         price: safePrice,
       },
-      { headers: { 'Cache-Control': 'no-store' } },
+      { headers: { "Cache-Control": "no-store" } },
     );
   }
 
   // 2) 없으면 used_rackets도 조회
-  const racket = await db.collection('used_rackets').findOne(idFilter, { projection });
+  const racket = await db
+    .collection("used_rackets")
+    .findOne(idFilter, { projection });
 
   if (racket) {
     const rawPrice = (racket as any).price;
@@ -68,21 +78,27 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json(
       {
         ok: true,
-        kind: 'racket' as const,
+        kind: "racket" as const,
         href: `/rackets/${id}`,
         name: (() => {
-          const brand = String((racket as any).brand ?? '').trim();
-          const model = String((racket as any).model ?? '').trim();
+          const brand = String((racket as any).brand ?? "").trim();
+          const model = String((racket as any).model ?? "").trim();
           const computed = `${racketBrandLabel(brand)} ${model}`.trim();
-          return computed || (racket as any).name || (racket as any).title || '라켓';
+          return (
+            computed || (racket as any).name || (racket as any).title || "라켓"
+          );
         })(),
-        image: (racket as any).thumbnail || (Array.isArray((racket as any).images) && (racket as any).images[0]) || null,
+        image:
+          (racket as any).thumbnail ||
+          (Array.isArray((racket as any).images) &&
+            (racket as any).images[0]) ||
+          null,
         mountingFee: 0, // 라켓은 장착비 개념 없음(필요하면 정책에 맞게)
         price: safePrice,
       },
-      { headers: { 'Cache-Control': 'no-store' } },
+      { headers: { "Cache-Control": "no-store" } },
     );
   }
 
-  return NextResponse.json({ ok: false, error: 'notFound' }, { status: 404 });
+  return NextResponse.json({ ok: false, error: "notFound" }, { status: 404 });
 }

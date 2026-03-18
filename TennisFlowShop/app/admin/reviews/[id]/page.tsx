@@ -1,4 +1,4 @@
-import ReviewDetailClient from '@/app/admin/reviews/[id]/ReviewDetailClient';
+import ReviewDetailClient from "@/app/admin/reviews/[id]/ReviewDetailClient";
 
 interface Props {
   params: Promise<{ id: string }>;

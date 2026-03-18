@@ -1,12 +1,18 @@
-'use client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
-import { Search, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { SkeletonFilterDetailed } from '@/app/products/components/SkeletonProductCard';
+"use client";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { SkeletonFilterDetailed } from "@/app/products/components/SkeletonProductCard";
 
 type Props = {
   selectedBrand: string | null;
@@ -62,21 +68,41 @@ export default function RacketFilterPanel({
   }
 
   return (
-    <div className={cn('rounded-xl border border-border bg-card/80 dark:bg-card/80 backdrop-blur-sm p-6 shadow-xl')}>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card/80 dark:bg-card/80 backdrop-blur-sm p-6 shadow-xl",
+      )}
+    >
       <AnimatePresence mode="wait">
-        <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
+        <motion.div
+          key={resetKey}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.15 }}
+        >
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-2 items-center">
               <h2 className="font-bold text-xl text-foreground">필터</h2>
               {onClose && (
-                <Button variant="outline" size="sm" onClick={onClose} className="sm:hidden bg-transparent">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  className="sm:hidden bg-transparent"
+                >
                   닫기
                 </Button>
               )}
             </div>
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={onReset} className="text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onReset}
+                  className="text-xs"
+                >
                   초기화 ({activeFiltersCount})
                 </Button>
               )}
@@ -105,9 +131,11 @@ export default function RacketFilterPanel({
                   type="button"
                   aria-label="검색어 지우기"
                   onClick={() => {
-                    setSearchQuery('');
+                    setSearchQuery("");
                     onClearInput?.();
-                    const el = document.getElementById('search') as HTMLInputElement | null;
+                    const el = document.getElementById(
+                      "search",
+                    ) as HTMLInputElement | null;
                     el?.focus();
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
@@ -126,7 +154,12 @@ export default function RacketFilterPanel({
             <Label htmlFor="brand" className="mb-3 block font-medium">
               브랜드
             </Label>
-            <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
+            <Select
+              onValueChange={(value) =>
+                setSelectedBrand(value === "all" ? null : value)
+              }
+              value={selectedBrand ?? "all"}
+            >
               <SelectTrigger className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
@@ -144,7 +177,12 @@ export default function RacketFilterPanel({
           {/* 상태 등급 */}
           <div className="space-y-1.5 mb-6">
             <Label>상태 등급</Label>
-            <Select value={selectedCondition ?? 'all'} onValueChange={(v) => setSelectedCondition(v === 'all' ? null : v)}>
+            <Select
+              value={selectedCondition ?? "all"}
+              onValueChange={(v) =>
+                setSelectedCondition(v === "all" ? null : v)
+              }
+            >
               <SelectTrigger className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
@@ -163,10 +201,10 @@ export default function RacketFilterPanel({
             <div className="flex gap-2 items-center">
               <Input
                 type="number"
-                value={priceMin ?? ''}
+                value={priceMin ?? ""}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, '');
-                  onChangePriceMin(raw === '' ? null : Number(raw));
+                  const raw = e.target.value.replace(/\D/g, "");
+                  onChangePriceMin(raw === "" ? null : Number(raw));
                 }}
                 placeholder="최소"
                 className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border"
@@ -174,18 +212,26 @@ export default function RacketFilterPanel({
               <span className="text-muted-foreground">~</span>
               <Input
                 type="number"
-                value={priceMax ?? ''}
+                value={priceMax ?? ""}
                 onChange={(e) => {
-                  const raw = e.target.value.replace(/\D/g, '');
-                  onChangePriceMax(raw === '' ? null : Number(raw));
+                  const raw = e.target.value.replace(/\D/g, "");
+                  onChangePriceMax(raw === "" ? null : Number(raw));
                 }}
                 placeholder="최대"
                 className="rounded-lg border-2 border-border focus:border-border dark:focus:border-border"
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>{priceMin !== null ? `₩${priceMin.toLocaleString()}` : '최소 미설정'}</span>
-              <span>{priceMax !== null ? `₩${priceMax.toLocaleString()}` : '최대 미설정'}</span>
+              <span>
+                {priceMin !== null
+                  ? `₩${priceMin.toLocaleString()}`
+                  : "최소 미설정"}
+              </span>
+              <span>
+                {priceMax !== null
+                  ? `₩${priceMax.toLocaleString()}`
+                  : "최대 미설정"}
+              </span>
             </div>
           </div>
         </motion.div>

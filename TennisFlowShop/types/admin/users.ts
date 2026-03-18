@@ -1,8 +1,12 @@
-export type UserRoleFilter = 'all' | 'user' | 'admin';
-export type UserStatusFilter = 'all' | 'active' | 'deleted' | 'suspended';
-export type UserSortFilter = 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc';
-export type UserSignupFilter = 'all' | 'local' | 'kakao' | 'naver';
-export type UserLoginFilter = 'all' | 'nologin' | 'recent30' | 'recent90';
+export type UserRoleFilter = "all" | "user" | "admin";
+export type UserStatusFilter = "all" | "active" | "deleted" | "suspended";
+export type UserSortFilter =
+  | "created_desc"
+  | "created_asc"
+  | "name_asc"
+  | "name_desc";
+export type UserSignupFilter = "all" | "local" | "kakao" | "naver";
+export type UserLoginFilter = "all" | "nologin" | "recent30" | "recent90";
 
 export interface AdminUsersListRequestDto {
   page: number;
@@ -24,13 +28,13 @@ export interface AdminUserListItemDto {
   addressDetail: string;
   postalCode: string;
   pointsBalance: number;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   isDeleted: boolean;
   isSuspended: boolean;
   createdAt: string | null;
   updatedAt: string | null;
   lastLoginAt: string | null;
-  socialProviders: Array<'kakao' | 'naver'>;
+  socialProviders: Array<"kakao" | "naver">;
 }
 
 export interface AdminUsersCountersDto {
@@ -55,7 +59,7 @@ export interface AdminUserDetailDto {
   address?: string;
   addressDetail?: string;
   postalCode?: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   isDeleted: boolean;
   isSuspended?: boolean;
   createdAt?: string;

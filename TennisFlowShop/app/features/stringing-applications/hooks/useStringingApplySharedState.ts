@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
-export type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
+export type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
 
 export type ApplicationLine = {
   id: string;
@@ -59,7 +59,7 @@ type UseStringingApplySharedStateParams = {
   isRentalBased: boolean;
 };
 
-const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
+const normalizePhone = (s: string) => (s || "").replace(/[^0-9]/g, "");
 
 const formatPhoneForDisplay = (raw: string) => {
   const digits = normalizePhone(raw).slice(0, 11);
@@ -69,14 +69,14 @@ const formatPhoneForDisplay = (raw: string) => {
 };
 
 const parseTimeToMinutes = (time: string | null | undefined) => {
-  if (!time || typeof time !== 'string') return null;
-  const [h, m] = time.split(':').map((v) => Number(v));
+  if (!time || typeof time !== "string") return null;
+  const [h, m] = time.split(":").map((v) => Number(v));
   if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
   return h * 60 + m;
 };
 
 const formatMinutesToTime = (minutes: number) => {
-  if (!Number.isFinite(minutes)) return '';
+  if (!Number.isFinite(minutes)) return "";
   const total = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
   const h = Math.floor(total / 60);
   const m = total % 60;
@@ -84,45 +84,65 @@ const formatMinutesToTime = (minutes: number) => {
   return `${pad(h)}:${pad(m)}`;
 };
 
-export default function useStringingApplySharedState({ fromPDP, orderId, rentalId, order, pdpProductId, pdpProduct, pdpMountingFee, lockedStringStock, lockedRacketQuantity, isRentalBased }: UseStringingApplySharedStateParams) {
+export default function useStringingApplySharedState({
+  fromPDP,
+  orderId,
+  rentalId,
+  order,
+  pdpProductId,
+  pdpProduct,
+  pdpMountingFee,
+  lockedStringStock,
+  lockedRacketQuantity,
+  isRentalBased,
+}: UseStringingApplySharedStateParams) {
   const [formData, setFormData] = useState<ApplyFormData>({
-    name: '',
-    email: '',
-    phone: '',
-    racketType: '',
+    name: "",
+    email: "",
+    phone: "",
+    racketType: "",
     stringTypes: [] as string[],
-    customStringType: '',
+    customStringType: "",
     stringUseCounts: {},
-    preferredDate: '',
-    preferredTime: '',
-    requirements: '',
-    shippingName: '',
-    shippingPhone: '',
-    shippingEmail: '',
-    shippingAddress: '',
-    shippingAddressDetail: '',
-    shippingPostcode: '',
-    shippingDepositor: '',
-    shippingRequest: '',
-    shippingBank: '',
+    preferredDate: "",
+    preferredTime: "",
+    requirements: "",
+    shippingName: "",
+    shippingPhone: "",
+    shippingEmail: "",
+    shippingAddress: "",
+    shippingAddressDetail: "",
+    shippingPostcode: "",
+    shippingDepositor: "",
+    shippingRequest: "",
+    shippingBank: "",
     packageOptOut: false,
-    collectionMethod: 'self_ship',
-    pickupDate: '',
-    pickupTime: '',
-    pickupNote: '',
+    collectionMethod: "self_ship",
+    pickupDate: "",
+    pickupTime: "",
+    pickupNote: "",
     lines: [],
   });
 
-  const [visitDurationMinutesUi, setVisitDurationMinutesUi] = useState<number | null>(null);
+  const [visitDurationMinutesUi, setVisitDurationMinutesUi] = useState<
+    number | null
+  >(null);
 
-  const orderRemainingSlots = typeof (order as any)?.stringService?.remainingSlots === 'number' ? (order as any).stringService.remainingSlots : undefined;
+  const orderRemainingSlots =
+    typeof (order as any)?.stringService?.remainingSlots === "number"
+      ? (order as any).stringService.remainingSlots
+      : undefined;
 
   const isCombinedPdpMode = useMemo(() => {
     if (!orderId || !order) return false;
     const items = (order as any)?.items;
     if (!Array.isArray(items)) return false;
-    const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
-    const hasMountableString = items.some((it: any) => it?.kind === 'product' && Number(it?.mountingFee ?? 0) > 0);
+    const hasRacket = items.some(
+      (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+    );
+    const hasMountableString = items.some(
+      (it: any) => it?.kind === "product" && Number(it?.mountingFee ?? 0) > 0,
+    );
     return hasRacket && hasMountableString;
   }, [orderId, order]);
 
@@ -130,35 +150,49 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
     if (orderId && order) return null;
 
     const candidates: number[] = [];
-    if (typeof lockedStringStock === 'number' && lockedStringStock > 0) candidates.push(lockedStringStock);
-    if (isRentalBased && typeof lockedRacketQuantity === 'number' && lockedRacketQuantity > 0) candidates.push(lockedRacketQuantity);
+    if (typeof lockedStringStock === "number" && lockedStringStock > 0)
+      candidates.push(lockedStringStock);
+    if (
+      isRentalBased &&
+      typeof lockedRacketQuantity === "number" &&
+      lockedRacketQuantity > 0
+    )
+      candidates.push(lockedRacketQuantity);
 
     if (!candidates.length) return null;
     return Math.max(1, Math.min(...candidates));
   }, [orderId, order, lockedStringStock, lockedRacketQuantity, isRentalBased]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name } = e.target;
-    const rawValue = e.target.value;
-    const value = name === 'phone' || name === 'shippingPhone' ? formatPhoneForDisplay(rawValue) : rawValue;
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name } = e.target;
+      const rawValue = e.target.value;
+      const value =
+        name === "phone" || name === "shippingPhone"
+          ? formatPhoneForDisplay(rawValue)
+          : rawValue;
 
-    setFormData((prev) => {
-      const next: any = { ...prev, [name]: value };
+      setFormData((prev) => {
+        const next: any = { ...prev, [name]: value };
 
-      if (name === 'name') next.shippingName = value;
-      if (name === 'email') next.shippingEmail = value;
-      if (name === 'phone') next.shippingPhone = value;
+        if (name === "name") next.shippingName = value;
+        if (name === "email") next.shippingEmail = value;
+        if (name === "phone") next.shippingPhone = value;
 
-      return next;
-    });
-  }, []);
+        return next;
+      });
+    },
+    [],
+  );
 
   const handleStringTypesChange = useCallback(
     (ids: string[]) => {
       if (fromPDP && !orderId && !rentalId) return;
 
       setFormData((prev) => {
-        const nextUseCounts: Record<string, number> = { ...prev.stringUseCounts };
+        const nextUseCounts: Record<string, number> = {
+          ...prev.stringUseCounts,
+        };
 
         const selectedSet = new Set(ids);
         Object.keys(nextUseCounts).forEach((key) => {
@@ -168,12 +202,16 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
         });
 
         if (orderId && order) {
-          let remaining: number | undefined = typeof orderRemainingSlots === 'number' ? orderRemainingSlots : undefined;
+          let remaining: number | undefined =
+            typeof orderRemainingSlots === "number"
+              ? orderRemainingSlots
+              : undefined;
 
           ids.forEach((id) => {
-            if (id === 'custom') {
+            if (id === "custom") {
               if (nextUseCounts[id] == null) {
-                const base = remaining != null ? Math.min(1, Math.max(remaining, 0)) : 1;
+                const base =
+                  remaining != null ? Math.min(1, Math.max(remaining, 0)) : 1;
                 nextUseCounts[id] = base;
                 if (remaining != null) remaining -= base;
               }
@@ -188,7 +226,10 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
               let base = orderQty;
 
               if (remaining != null) {
-                const allowedForThis = Math.min(orderQty, Math.max(remaining, 0));
+                const allowedForThis = Math.min(
+                  orderQty,
+                  Math.max(remaining, 0),
+                );
                 base = allowedForThis;
                 remaining -= allowedForThis;
               }
@@ -199,7 +240,7 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
 
           ids.forEach((id) => {
             const v = nextUseCounts[id];
-            if (typeof v !== 'number' || v <= 0) nextUseCounts[id] = 1;
+            if (typeof v !== "number" || v <= 0) nextUseCounts[id] = 1;
           });
         } else {
           ids.forEach((id) => {
@@ -225,7 +266,7 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
 
   const getFallbackBaseMountingFee = useCallback(
     (data: ApplyFormData): number => {
-      if (data.stringTypes.includes('custom')) {
+      if (data.stringTypes.includes("custom")) {
         return 15000;
       }
 
@@ -272,14 +313,14 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
       if (prodId === pdpProductId && pdpProduct?.name) {
         return pdpProduct.name;
       }
-      if (prodId === 'custom') {
-        return formData.customStringType || '커스텀 스트링';
+      if (prodId === "custom") {
+        return formData.customStringType || "커스텀 스트링";
       }
-      return '선택한 스트링';
+      return "선택한 스트링";
     };
 
     const getMountingFee = (prodId: string): number => {
-      if (prodId === 'custom') {
+      if (prodId === "custom") {
         return 15000;
       }
 
@@ -303,10 +344,13 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
     if (isOrderMode && order) {
       const items = (order as any)?.items;
       if (Array.isArray(items)) {
-        const racketItems = items.filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
+        const racketItems = items.filter(
+          (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+        );
         if (racketItems.length === 1) {
           const r = racketItems[0] as any;
-          racketNameFromOrder = (r.name ?? r.productName ?? '').trim() || undefined;
+          racketNameFromOrder =
+            (r.name ?? r.productName ?? "").trim() || undefined;
         }
       }
     }
@@ -315,18 +359,18 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
       const stringName = getStringName(prodId);
       const lineFee = getMountingFee(prodId);
 
-      if (prodId === 'custom') {
+      if (prodId === "custom") {
         const useQtyRaw = formData.stringUseCounts.custom;
-        const useQty = typeof useQtyRaw === 'number' ? useQtyRaw : 1;
+        const useQty = typeof useQtyRaw === "number" ? useQtyRaw : 1;
 
         for (let i = 0; i < Math.max(useQty, 0); i++) {
           lines.push({
             id: `custom-${index}-${i}`,
-            racketType: '',
+            racketType: "",
             stringProductId: prodId,
             stringName,
-            tensionMain: '',
-            tensionCross: '',
+            tensionMain: "",
+            tensionCross: "",
             note: formData.requirements,
             mountingFee: lineFee,
           });
@@ -341,15 +385,18 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
         const useQty = formData.stringUseCounts[prodId] ?? orderQty;
 
         for (let i = 0; i < useQty; i++) {
-          const alias = (formData.racketType || '').trim() || racketNameFromOrder || `라켓 ${lines.length + 1}`;
+          const alias =
+            (formData.racketType || "").trim() ||
+            racketNameFromOrder ||
+            `라켓 ${lines.length + 1}`;
 
           lines.push({
             id: `${prodId}-${i}`,
             racketType: alias,
             stringProductId: prodId,
             stringName,
-            tensionMain: '',
-            tensionCross: '',
+            tensionMain: "",
+            tensionCross: "",
             note: formData.requirements,
             mountingFee: lineFee,
           });
@@ -360,38 +407,57 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
       const useQty = formData.stringUseCounts[prodId] ?? 1;
 
       for (let i = 0; i < useQty; i++) {
-        const alias = (formData.racketType || '').trim() || `라켓 ${lines.length + 1}`;
+        const alias =
+          (formData.racketType || "").trim() || `라켓 ${lines.length + 1}`;
 
         lines.push({
           id: `${prodId}-${i}`,
           racketType: alias,
           stringProductId: prodId,
           stringName,
-          tensionMain: '',
-          tensionCross: '',
+          tensionMain: "",
+          tensionCross: "",
           note: formData.requirements,
           mountingFee: lineFee,
         });
       }
     });
     return lines;
-  }, [formData, getFallbackBaseMountingFee, order, orderId, pdpProductId, pdpProduct, pdpMountingFee]);
+  }, [
+    formData,
+    getFallbackBaseMountingFee,
+    order,
+    orderId,
+    pdpProductId,
+    pdpProduct,
+    pdpMountingFee,
+  ]);
 
-  const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
+  const lineCount =
+    linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
 
   const handleLineFieldChange = useCallback(
-    <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
+    <K extends keyof ApplicationLine>(
+      index: number,
+      field: K,
+      value: ApplicationLine[K],
+    ) => {
       setFormData((prev) => {
-        const baseLines = Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
+        const baseLines =
+          Array.isArray(prev.lines) && prev.lines.length > 0
+            ? prev.lines
+            : (linesForSubmit ?? []);
 
-        const nextLines = baseLines.map((line, i) => (i === index ? { ...line, [field]: value } : line));
+        const nextLines = baseLines.map((line, i) =>
+          i === index ? { ...line, [field]: value } : line,
+        );
 
         const next: ApplyFormData = { ...prev, lines: nextLines };
-        if (index === 0 && field === 'tensionMain') {
-          next.defaultMainTension = String(value ?? '');
+        if (index === 0 && field === "tensionMain") {
+          next.defaultMainTension = String(value ?? "");
         }
-        if (index === 0 && field === 'tensionCross') {
-          next.defaultCrossTension = String(value ?? '');
+        if (index === 0 && field === "tensionCross") {
+          next.defaultCrossTension = String(value ?? "");
         }
         return next;
       });
@@ -402,9 +468,11 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
   const handleUseQtyChange = useCallback(
     (id: string, value: number) => {
       if (orderId && order && isCombinedPdpMode) {
-        if (typeof orderRemainingSlots !== 'number') return;
+        if (typeof orderRemainingSlots !== "number") return;
 
-        const ids = (formData.stringTypes ?? []).filter((t) => t && t !== 'custom');
+        const ids = (formData.stringTypes ?? []).filter(
+          (t) => t && t !== "custom",
+        );
         const sumOrderQty = ids.reduce((sum, sid) => {
           const found = order.items.find((it: any) => it.id === sid);
           const q = Number((found as any)?.quantity ?? 0);
@@ -420,25 +488,25 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
       let max: number;
 
       if (orderId && order) {
-        if (id === 'custom') {
+        if (id === "custom") {
           max = 99;
         } else {
           const item = order.items.find((it: any) => it.id === id);
           max = item?.quantity ?? 1;
         }
 
-        if (typeof orderRemainingSlots === 'number') {
+        if (typeof orderRemainingSlots === "number") {
           const otherTotal = Object.entries(formData.stringUseCounts)
             .filter(([key]) => key !== id)
-            .reduce((sum, [, v]) => sum + (typeof v === 'number' ? v : 0), 0);
+            .reduce((sum, [, v]) => sum + (typeof v === "number" ? v : 0), 0);
           const remainForThis = Math.max(orderRemainingSlots - otherTotal, 0);
           max = Math.min(max, remainForThis);
         }
       } else {
-        if (id === 'custom') {
+        if (id === "custom") {
           max = 99;
         } else {
-          max = typeof maxNonOrderQty === 'number' ? maxNonOrderQty : 99;
+          max = typeof maxNonOrderQty === "number" ? maxNonOrderQty : 99;
         }
       }
 
@@ -464,7 +532,15 @@ export default function useStringingApplySharedState({ fromPDP, orderId, rentalI
         };
       });
     },
-    [formData.stringTypes, formData.stringUseCounts, isCombinedPdpMode, maxNonOrderQty, order, orderId, orderRemainingSlots],
+    [
+      formData.stringTypes,
+      formData.stringUseCounts,
+      isCombinedPdpMode,
+      maxNonOrderQty,
+      order,
+      orderId,
+      orderRemainingSlots,
+    ],
   );
 
   const visitTimeRange = useMemo(() => {

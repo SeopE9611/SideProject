@@ -1,4 +1,4 @@
-import { bankLabelMap } from '@/lib/constants';
+import { bankLabelMap } from "@/lib/constants";
 
 interface PaymentMethodDetailProps {
   method: string;
@@ -6,7 +6,11 @@ interface PaymentMethodDetailProps {
   depositor?: string;
 }
 
-export default function PaymentMethodDetail({ method, bankKey, depositor }: PaymentMethodDetailProps) {
+export default function PaymentMethodDetail({
+  method,
+  bankKey,
+  depositor,
+}: PaymentMethodDetailProps) {
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
 
   return (

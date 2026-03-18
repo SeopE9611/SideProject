@@ -1,7 +1,7 @@
-import { RefundAccountInfo } from '@/lib/cancel-request/refund-account';
+import { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 
 /** 수거 방식: 자가 발송 / 기사 방문 수거 / 매장 방문 */
-export type CollectionMethod = 'self_ship' | 'courier_pickup' | 'visit';
+export type CollectionMethod = "self_ship" | "courier_pickup" | "visit";
 
 /** 기사 방문 수거 시 추가 정보 */
 export interface ShippingPickup {
@@ -49,7 +49,14 @@ export interface StringItem {
 }
 
 /** 신청서 상태 */
-export type ApplicationStatus = 'draft' | 'submitted' | 'reviewing' | 'accepted' | 'in_progress' | 'completed' | 'canceled';
+export type ApplicationStatus =
+  | "draft"
+  | "submitted"
+  | "reviewing"
+  | "accepted"
+  | "in_progress"
+  | "completed"
+  | "canceled";
 
 /** 신청서 기본 스키마(서버 DB용; 필요 필드만 예시) */
 export interface StringingApplication {

@@ -1,4 +1,4 @@
-import type { Db } from 'mongodb';
+import type { Db } from "mongodb";
 
 export type ExceptionItem = {
   date: string;
@@ -10,7 +10,7 @@ export type ExceptionItem = {
 };
 
 export type StringingSettings = {
-  _id: 'stringingSlots';
+  _id: "stringingSlots";
   capacity?: number;
   businessDays?: number[];
   start?: string;
@@ -21,28 +21,32 @@ export type StringingSettings = {
   bookingWindowDays?: number;
 };
 
-const SETTINGS_COLLECTION = 'settings';
-const SETTINGS_ID: StringingSettings['_id'] = 'stringingSlots';
+const SETTINGS_COLLECTION = "settings";
+const SETTINGS_ID: StringingSettings["_id"] = "stringingSlots";
 
 /**
  * 1) 설정 로드 + projection
  */
-export async function loadStringingSettings(db: Db): Promise<StringingSettings | null> {
-  const doc = await db.collection<StringingSettings>(SETTINGS_COLLECTION).findOne(
-    { _id: SETTINGS_ID },
-    {
-      projection: {
-        capacity: 1,
-        businessDays: 1,
-        start: 1,
-        end: 1,
-        interval: 1,
-        holidays: 1,
-        exceptions: 1,
-        bookingWindowDays: 1,
+export async function loadStringingSettings(
+  db: Db,
+): Promise<StringingSettings | null> {
+  const doc = await db
+    .collection<StringingSettings>(SETTINGS_COLLECTION)
+    .findOne(
+      { _id: SETTINGS_ID },
+      {
+        projection: {
+          capacity: 1,
+          businessDays: 1,
+          start: 1,
+          end: 1,
+          interval: 1,
+          holidays: 1,
+          exceptions: 1,
+          bookingWindowDays: 1,
+        },
       },
-    }
-  );
+    );
 
   return doc;
 }
@@ -53,7 +57,7 @@ export async function loadStringingSettings(db: Db): Promise<StringingSettings |
  */
 export function validateBookingWindow(
   settings: StringingSettings | null,
-  date: string
+  date: string,
 ): {
   ok: boolean;
   windowDays: number;
@@ -86,7 +90,7 @@ export function validateBookingWindow(
  */
 export function resolveDaySchedule(
   settings: StringingSettings | null,
-  date: string
+  date: string,
 ): {
   isOpen: boolean;
   capacity: number;
@@ -99,13 +103,19 @@ export function resolveDaySchedule(
 } {
   // 기본값
   let capacity = Math.max(1, Math.min(10, Number(settings?.capacity ?? 1)));
-  let start = typeof settings?.start === 'string' ? settings.start! : '10:00';
-  let end = typeof settings?.end === 'string' ? settings.end! : '19:00';
-  let interval = Number.isFinite(settings?.interval) ? Number(settings!.interval) : 30;
+  let start = typeof settings?.start === "string" ? settings.start! : "10:00";
+  let end = typeof settings?.end === "string" ? settings.end! : "19:00";
+  let interval = Number.isFinite(settings?.interval)
+    ? Number(settings!.interval)
+    : 30;
 
-  const bizDays = Array.isArray(settings?.businessDays) ? settings!.businessDays! : [1, 2, 3, 4, 5];
+  const bizDays = Array.isArray(settings?.businessDays)
+    ? settings!.businessDays!
+    : [1, 2, 3, 4, 5];
   const holidays = Array.isArray(settings?.holidays) ? settings!.holidays! : [];
-  const exceptions = Array.isArray(settings?.exceptions) ? settings!.exceptions! : [];
+  const exceptions = Array.isArray(settings?.exceptions)
+    ? settings!.exceptions!
+    : [];
 
   // 예외일 우선 적용
   const ex = exceptions.find((e) => e.date === date);
@@ -121,10 +131,10 @@ export function resolveDaySchedule(
       isOpen = true;
       if (ex.start) start = ex.start;
       if (ex.end) end = ex.end;
-      if (typeof ex.interval === 'number') {
+      if (typeof ex.interval === "number") {
         interval = Math.max(5, Math.min(240, Math.floor(ex.interval)));
       }
-      if (typeof ex.capacity === 'number') {
+      if (typeof ex.capacity === "number") {
         capacity = Math.max(1, Math.min(10, Math.floor(ex.capacity)));
       }
     }
@@ -150,7 +160,7 @@ export function resolveDaySchedule(
  * 4) 슬롯 생성 헬퍼 (HH:mm <-> 분)
  */
 const toMin = (hhmm: string): number => {
-  const [h, m] = hhmm.split(':').map(Number);
+  const [h, m] = hhmm.split(":").map(Number);
   return (h || 0) * 60 + (m || 0);
 };
 
@@ -165,7 +175,12 @@ const toHHMM = (mins: number): string => {
  * 주어진 날짜의 유효 설정을 바탕으로 전체 슬롯 리스트 생성
  * - 영업 안 하는 날이면 빈 배열 반환
  */
-export function generateAllTimesForDay(schedule: { isOpen: boolean; start: string; end: string; interval: number }): string[] {
+export function generateAllTimesForDay(schedule: {
+  isOpen: boolean;
+  start: string;
+  end: string;
+  interval: number;
+}): string[] {
   if (!schedule.isOpen) return [];
 
   const startMin = toMin(schedule.start);
@@ -196,9 +211,13 @@ export type SlotSpanResult = {
  *
  * 이 함수는 순수 함수라 DB 접근 없이도 테스트/재사용이 쉽다.
  */
-export function computeSlotSpan(allTimes: string[], preferredTime: string, slotCount: number): SlotSpanResult | null {
+export function computeSlotSpan(
+  allTimes: string[],
+  preferredTime: string,
+  slotCount: number,
+): SlotSpanResult | null {
   if (!Array.isArray(allTimes) || allTimes.length === 0) return null;
-  if (!preferredTime || typeof preferredTime !== 'string') return null;
+  if (!preferredTime || typeof preferredTime !== "string") return null;
 
   const count = Math.max(1, Math.floor(slotCount));
   if (!Number.isFinite(count) || count < 1) return null;
@@ -234,7 +253,7 @@ export function computeSpanSlotsForVisit(
     interval: number;
   },
   preferredTime: string,
-  slotCount: number
+  slotCount: number,
 ): SlotSpanResult | null {
   if (!schedule.isOpen) return null;
 
@@ -254,10 +273,15 @@ export function computeSpanSlotsForVisit(
  * 기존 findFullyBookedTimes 가 단일 슬롯만 보던 방식에서
  * 멀티 슬롯을 고려한 버전이라고 보면 된다.
  */
-export async function findFullyBookedTimesWithSpan(db: Db, date: string, capacity: number, allTimes: string[]): Promise<string[]> {
+export async function findFullyBookedTimesWithSpan(
+  db: Db,
+  date: string,
+  capacity: number,
+  allTimes: string[],
+): Promise<string[]> {
   if (!allTimes.length || capacity <= 0) return [];
 
-  const EXCLUDED = ['취소', 'draft'];
+  const EXCLUDED = ["취소", "draft"];
 
   type Doc = {
     stringDetails?: {
@@ -268,20 +292,20 @@ export async function findFullyBookedTimesWithSpan(db: Db, date: string, capacit
   };
 
   const docs = await db
-    .collection<Doc>('stringing_applications')
+    .collection<Doc>("stringing_applications")
     .find(
       {
-        'stringDetails.preferredDate': date,
-        'stringDetails.preferredTime': { $type: 'string', $ne: '' },
+        "stringDetails.preferredDate": date,
+        "stringDetails.preferredTime": { $type: "string", $ne: "" },
         status: { $nin: EXCLUDED },
       },
       {
         projection: {
-          'stringDetails.preferredTime': 1,
+          "stringDetails.preferredTime": 1,
           visitSlotCount: 1,
           status: 1,
         },
-      }
+      },
     )
     .toArray();
 
@@ -290,13 +314,16 @@ export async function findFullyBookedTimesWithSpan(db: Db, date: string, capacit
 
   for (const doc of docs) {
     const baseTime = doc.stringDetails?.preferredTime;
-    if (!baseTime || typeof baseTime !== 'string') continue;
+    if (!baseTime || typeof baseTime !== "string") continue;
 
     const time = baseTime.trim();
     if (!time) continue;
 
     // 슬롯 개수: visitSlotCount 가 있으면 그 값을, 없으면 1 슬롯으로 간주
-    const rawCount = typeof doc.visitSlotCount === 'number' ? Math.floor(doc.visitSlotCount) : 1;
+    const rawCount =
+      typeof doc.visitSlotCount === "number"
+        ? Math.floor(doc.visitSlotCount)
+        : 1;
     const slotCount = rawCount > 0 ? rawCount : 1;
 
     // 연속 슬롯(span) 계산
@@ -332,22 +359,26 @@ export async function findFullyBookedTimesWithSpan(db: Db, date: string, capacit
  * 5) 해당 날짜에서 "capacity 이상" 찬 시간대 목록 조회
  *  - 기존 aggregate 그대로 분리
  */
-export async function findFullyBookedTimes(db: Db, date: string, capacity: number): Promise<string[]> {
-  const EXCLUDED = ['취소', 'draft'];
+export async function findFullyBookedTimes(
+  db: Db,
+  date: string,
+  capacity: number,
+): Promise<string[]> {
+  const EXCLUDED = ["취소", "draft"];
 
   const rows = await db
-    .collection('stringing_applications')
+    .collection("stringing_applications")
     .aggregate([
       {
         $match: {
-          'stringDetails.preferredDate': date,
-          'stringDetails.preferredTime': { $type: 'string', $ne: '' },
+          "stringDetails.preferredDate": date,
+          "stringDetails.preferredTime": { $type: "string", $ne: "" },
           status: { $nin: EXCLUDED },
         },
       },
-      { $group: { _id: '$stringDetails.preferredTime', count: { $sum: 1 } } },
+      { $group: { _id: "$stringDetails.preferredTime", count: { $sum: 1 } } },
       { $match: { count: { $gte: capacity } } },
-      { $project: { _id: 0, time: '$_id' } },
+      { $project: { _id: 0, time: "$_id" } },
       { $sort: { time: 1 } },
     ] as any[])
     .toArray();
@@ -363,7 +394,7 @@ export async function findFullyBookedTimes(db: Db, date: string, capacity: numbe
 export async function buildSlotSummaryForDate(
   db: Db,
   date: string,
-  cap?: number
+  cap?: number,
 ): Promise<{
   closed: boolean;
   date: string;
@@ -382,7 +413,7 @@ export async function buildSlotSummaryForDate(
     // 이 함수는 에러를 던지지 않고, 상위에서 메시지를 사용하게 하기 위해
     // 여기서는 단순한 "빈 요약"만 반환하도록 한다.
     // 실제 400 응답은 핸들러에서 처리.
-    throw new Error(win.message || 'OUT_OF_WINDOW');
+    throw new Error(win.message || "OUT_OF_WINDOW");
   }
 
   // 2) 날짜별 영업 설정 계산
@@ -406,7 +437,12 @@ export async function buildSlotSummaryForDate(
   }
 
   // 5) 마감 시간 계산
-  const reservedTimes = await findFullyBookedTimesWithSpan(db, date, schedule.capacity, allTimes);
+  const reservedTimes = await findFullyBookedTimesWithSpan(
+    db,
+    date,
+    schedule.capacity,
+    allTimes,
+  );
   const reservedSet = new Set(reservedTimes);
 
   // 연속 슬롯(cap) 예약 충돌 방지를 위해, 시작 시각 기준으로 span 확보 가능 여부를 검사한다.

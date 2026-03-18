@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Calendar, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Calendar, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   id: string;
@@ -14,7 +20,7 @@ type Props = {
   model: string;
   autoOpen?: boolean;
   /** 리스트/그리드에서 버튼 크기 맞추기용 */
-  size?: 'sm' | 'default';
+  size?: "sm" | "default";
   /** 외부에서 톤 보정이 필요할 때 */
   className?: string;
   /** 카드가 <Link>로 감싸진 경우 네비게이션 막기 */
@@ -23,7 +29,17 @@ type Props = {
   full?: boolean;
 };
 
-export default function RentDialog({ id, rental, brand, model, autoOpen, size = 'default', className = '', preventCardNav = true, full = false }: Props) {
+export default function RentDialog({
+  id,
+  rental,
+  brand,
+  model,
+  autoOpen,
+  size = "default",
+  className = "",
+  preventCardNav = true,
+  full = false,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState<7 | 15 | 30>(7);
   const [loading, setLoading] = useState(false);
@@ -33,7 +49,12 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
   //   if (autoOpen) setOpen(true);
   // }, [autoOpen]);
 
-  const fee = period === 7 ? rental.fee.d7 : period === 15 ? rental.fee.d15 : rental.fee.d30;
+  const fee =
+    period === 7
+      ? rental.fee.d7
+      : period === 15
+        ? rental.fee.d15
+        : rental.fee.d30;
 
   // const safeJson = async (res: Response) => {
   //   try {
@@ -53,7 +74,11 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
     <>
       <Button
         size={size}
-        className={cn(full ? 'w-full h-12 min-w-0 justify-center gap-2' : '', 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg', className)}
+        className={cn(
+          full ? "w-full h-12 min-w-0 justify-center gap-2" : "",
+          "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg",
+          className,
+        )}
         onClick={() => setOpen(true)}
       >
         <Calendar className="mr-2 h-4 w-4" />
@@ -63,25 +88,31 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-foreground">대여 신청</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-foreground">
+              대여 신청
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="bg-muted p-4 rounded-lg border border-border">
-              <div className="text-sm text-muted-foreground mb-1">선택한 라켓</div>
+              <div className="text-sm text-muted-foreground mb-1">
+                선택한 라켓
+              </div>
               <div className="font-semibold text-foreground">
                 {brand} {model}
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="text-sm font-semibold text-foreground">기간 선택</div>
+              <div className="text-sm font-semibold text-foreground">
+                기간 선택
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {[7, 15, 30].map((d) => (
                   <button
                     key={d}
                     onClick={() => setPeriod(d as 7 | 15 | 30)}
-                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${ period === d ? 'bg-primary/10 border-primary/30 text-foreground dark:bg-primary/20' : 'border-border hover:border-border dark:hover:border-border text-foreground' }`}
+                    className={`h-12 px-3 rounded-lg border-2 font-medium transition-all ${period === d ? "bg-primary/10 border-primary/30 text-foreground dark:bg-primary/20" : "border-border hover:border-border dark:hover:border-border text-foreground"}`}
                   >
                     {d}일
                   </button>
@@ -91,31 +122,47 @@ export default function RentDialog({ id, rental, brand, model, autoOpen, size = 
 
             <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">대여 수수료</span>
-                <span className="font-bold text-foreground">{fee.toLocaleString()}원</span>
+                <span className="text-sm text-muted-foreground">
+                  대여 수수료
+                </span>
+                <span className="font-bold text-foreground">
+                  {fee.toLocaleString()}원
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">보증금</span>
-                <span className="font-bold text-foreground">{(rental.deposit ?? 0).toLocaleString()}원</span>
+                <span className="font-bold text-foreground">
+                  {(rental.deposit ?? 0).toLocaleString()}원
+                </span>
               </div>
               <div className="pt-2 border-t border-border">
-                <div className="text-xs text-muted-foreground">* 반납 완료 시 보증금 환불 (연체/파손 시 차감)</div>
+                <div className="text-xs text-muted-foreground">
+                  * 반납 완료 시 보증금 환불 (연체/파손 시 차감)
+                </div>
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={loading}
+            >
               취소
             </Button>
-            <Button className="bg-primary text-primary-foreground" onClick={onSubmit} disabled={loading}>
+            <Button
+              className="bg-primary text-primary-foreground"
+              onClick={onSubmit}
+              disabled={loading}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   처리 중...
                 </>
               ) : (
-                '대여 신청'
+                "대여 신청"
               )}
             </Button>
           </DialogFooter>

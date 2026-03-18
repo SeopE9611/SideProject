@@ -4,6 +4,7 @@
 - Files with matches: **25**
 
 ## Token counts
+
 - `text-white`: 15
 - `bg-black/10`: 11
 - `bg-black/20`: 5
@@ -23,6 +24,7 @@
 - `text-white/90`: 1
 
 ## File inventory
+
 - `app/academy/page.tsx` (2 lines)
   - L181: `<div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">`
   - L195: `<div className="absolute inset-0 bg-black/20"></div>`

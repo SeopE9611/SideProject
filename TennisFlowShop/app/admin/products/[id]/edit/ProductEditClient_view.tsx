@@ -1,40 +1,68 @@
-'use client';
+"use client";
 
 /** Responsibility: 상품 수정 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
-import type React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Save, ArrowLeft, Upload, Info, Delete, Package } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Slider } from '@/components/ui/slider';
-import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import ProductEditDialogs from './dialogs/ProductEditDialogs';
-import useSWR from 'swr';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { adminMutator } from '@/lib/admin/adminFetcher';
-import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
-import EditProductLoading from '@/app/admin/products/[id]/edit/loading';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import type { HybridSpecUnit, ProductDetailResponse } from '@/types/admin/products';
-import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/productFormOptions';
-import { createSearchKeywords } from './hooks/useKeywordGenerator';
-import { adminFormHintTooltipClass } from '@/lib/tooltip-style';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { parseSearchKeywordsInput } from './table/productTableUtils';
+import type React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Save, ArrowLeft, Upload, Info, Delete, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/lib/supabase";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import ProductEditDialogs from "./dialogs/ProductEditDialogs";
+import useSWR from "swr";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { adminMutator } from "@/lib/admin/adminFetcher";
+import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
+import EditProductLoading from "@/app/admin/products/[id]/edit/loading";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import type {
+  HybridSpecUnit,
+  ProductDetailResponse,
+} from "@/types/admin/products";
+import {
+  brands,
+  colors,
+  gauges,
+  materials,
+} from "@/app/admin/products/_lib/productFormOptions";
+import { createSearchKeywords } from "./hooks/useKeywordGenerator";
+import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { parseSearchKeywordsInput } from "./table/productTableUtils";
 import {
   MAX_PRODUCT_IMAGE_COUNT,
   buildProductEditInitialSnapshot,
@@ -43,20 +71,24 @@ import {
   removeImageByIndex,
   reorderMainImage,
   sanitizeUploadFileName,
-} from './utils/productEditTransforms';
+} from "./utils/productEditTransforms";
 
-export default function ProductEditClient({ productId }: { productId: string }) {
+export default function ProductEditClient({
+  productId,
+}: {
+  productId: string;
+}) {
   // 기본 정보
   const [basicInfo, setBasicInfo] = useState({
-    name: '',
-    sku: '',
-    shortDescription: '',
-    description: '',
-    brand: '',
-    material: '',
-    gauge: '',
-    color: '',
-    length: '',
+    name: "",
+    sku: "",
+    shortDescription: "",
+    description: "",
+    brand: "",
+    material: "",
+    gauge: "",
+    color: "",
+    length: "",
     price: 0,
     mountingFee: 0,
   });
@@ -85,7 +117,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   const [inventory, setInventory] = useState({
     stock: 0,
     lowStock: 5,
-    status: 'instock', // 'instock' | 'outofstock' | 'backorder'
+    status: "instock", // 'instock' | 'outofstock' | 'backorder'
     manageStock: false,
     allowBackorder: false,
     isFeatured: false,
@@ -95,29 +127,33 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   });
 
   // 검색 키워드(쉼표 구분) 입력 상태
-  const [searchKeywordsInput, setSearchKeywordsInput] = useState('');
+  const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
   const handleGenerateKeywords = () => {
     const keywords = createSearchKeywords(basicInfo.name, basicInfo.brand);
     if (!keywords) {
       showErrorToast(<>먼저 스트링명과 브랜드를 입력해 주세요.</>);
       return;
     }
-    setSearchKeywordsInput(keywords.join(', '));
+    setSearchKeywordsInput(keywords.join(", "));
   };
 
   // 재고 관리가 실제로 수정되었는지 추적할 플래그
   const [inventoryDirty, setInventoryDirty] = useState(false);
 
-  const { data, error, isLoading } = useSWR<ProductDetailResponse>(`/api/admin/products/${productId}`, authenticatedSWRFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const { data, error, isLoading } = useSWR<ProductDetailResponse>(
+    `/api/admin/products/${productId}`,
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   // 추가 특성 정보
-  const [additionalFeatures, setAdditionalFeatures] = useState('');
+  const [additionalFeatures, setAdditionalFeatures] = useState("");
 
   // 탭 상태관리
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
 
   const [images, setImages] = useState<string[]>([]);
 
@@ -149,7 +185,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     });
 
     // 검색 키워드 초기값
-    setSearchKeywordsInput(Array.isArray(p.searchKeywords) ? p.searchKeywords.join(', ') : '');
+    setSearchKeywordsInput(
+      Array.isArray(p.searchKeywords) ? p.searchKeywords.join(", ") : "",
+    );
 
     const hybridState = normalizeHybridState(p);
     setHybridMain(hybridState.hybridMain);
@@ -186,8 +224,10 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     const availableSlots = MAX_PRODUCT_IMAGE_COUNT - images.length;
 
     if (totalSelected > availableSlots) {
-      e.target.value = '';
-      showErrorToast(`최대 ${MAX_PRODUCT_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+      e.target.value = "";
+      showErrorToast(
+        `최대 ${MAX_PRODUCT_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`,
+      );
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
@@ -195,19 +235,25 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
     for (const file of filesToUpload) {
       const fileName = sanitizeUploadFileName(file.name);
-      const { error } = await supabase.storage.from('tennis-images').upload(fileName, file);
+      const { error } = await supabase.storage
+        .from("tennis-images")
+        .upload(fileName, file);
       if (error) {
         // 업로드 실패 시에도 다음 파일은 계속 시도(일괄 업로드 UX)
-        showErrorToast('이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        showErrorToast(
+          "이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        );
         continue;
       }
-      const { data: publicData } = supabase.storage.from('tennis-images').getPublicUrl(fileName);
+      const { data: publicData } = supabase.storage
+        .from("tennis-images")
+        .getPublicUrl(fileName);
       const imageUrl = publicData?.publicUrl;
       if (imageUrl) setImages((prev) => [...prev, imageUrl]);
     }
 
     setUploading(false);
-    e.target.value = ''; // <- 동일 파일 다시 선택 가능하도록
+    e.target.value = ""; // <- 동일 파일 다시 선택 가능하도록
   };
 
   // 대표 이미지 설정
@@ -215,31 +261,36 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
   // 하이브리드 구성(메인/크로스)
   const [hybridMain, setHybridMain] = useState({
-    brand: '',
-    name: '',
-    gauge: '',
-    color: '',
-    role: 'mains' as const,
+    brand: "",
+    name: "",
+    gauge: "",
+    color: "",
+    role: "mains" as const,
   });
   const [hybridCross, setHybridCross] = useState({
-    brand: '',
-    name: '',
-    gauge: '',
-    color: '',
-    role: 'cross' as const,
+    brand: "",
+    name: "",
+    gauge: "",
+    color: "",
+    role: "cross" as const,
   });
 
   // 하이브리드일 때만 동기화
   useEffect(() => {
-    if (basicInfo.material !== 'hybrid') return;
+    if (basicInfo.material !== "hybrid") return;
     setBasicInfo((prev) => ({
       ...prev,
       brand: prev.brand || hybridMain.brand || prev.brand,
       gauge: prev.gauge || hybridMain.gauge || prev.gauge,
       color: prev.color || hybridMain.color || prev.color,
-      length: prev.length || '12',
+      length: prev.length || "12",
     }));
-  }, [basicInfo.material, hybridMain.brand, hybridMain.gauge, hybridMain.color]);
+  }, [
+    basicInfo.material,
+    hybridMain.brand,
+    hybridMain.gauge,
+    hybridMain.color,
+  ]);
 
   // 대표이미지 설정 핸들러
   const handleSetMainImage = (index: number) => {
@@ -266,10 +317,21 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         hybridMain,
         hybridCross,
       }),
-    [basicInfo, features, tags, inventory, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross],
+    [
+      basicInfo,
+      features,
+      tags,
+      inventory,
+      searchKeywordsInput,
+      additionalFeatures,
+      images,
+      hybridMain,
+      hybridCross,
+    ],
   );
 
-  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
+  const isDirty =
+    baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !submitting && !uploading && !deleting);
 
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -287,23 +349,26 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     e.preventDefault();
 
     // 이미 제출/삭제가 진행 중이면 연타 방지
-    if (submitting || submitRef.current || deleting || deleteRef.current) return;
+    if (submitting || submitRef.current || deleting || deleteRef.current)
+      return;
 
     // 제출 중에는 ref로 즉시 잠금(동기)
     submitRef.current = true;
     try {
       // 이미지 업로드 중에는 제출 금지(업로드 끝나기 전에 저장하면 images 누락될 수 있음)
       if (uploading) {
-        showErrorToast('이미지 업로드 중입니다. 업로드 완료 후 다시 시도해 주세요.');
+        showErrorToast(
+          "이미지 업로드 중입니다. 업로드 완료 후 다시 시도해 주세요.",
+        );
         return;
       }
 
       // 색션명 상수
       const SECTIONS = {
-        BASIC: '기본정보',
-        PERFORMANCE: '성능 및 특성',
-        INVENTORY: '재고관리',
-        IMAGE: '이미지',
+        BASIC: "기본정보",
+        PERFORMANCE: "성능 및 특성",
+        INVENTORY: "재고관리",
+        IMAGE: "이미지",
       };
 
       // 기본 유효성 검사
@@ -392,7 +457,13 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         }
       }
       // specifications 영문 키로 미리 구성
-      const specifications: { material: string; gauge: string; color: string; length: string; hybrid?: { main: HybridSpecUnit; cross: HybridSpecUnit } } = {
+      const specifications: {
+        material: string;
+        gauge: string;
+        color: string;
+        length: string;
+        hybrid?: { main: HybridSpecUnit; cross: HybridSpecUnit };
+      } = {
         material: basicInfo.material,
         gauge: basicInfo.gauge,
         color: basicInfo.color,
@@ -400,9 +471,17 @@ export default function ProductEditClient({ productId }: { productId: string }) 
       };
 
       // 하이브리드면 조합 병합
-      if (basicInfo.material === 'hybrid') {
-        const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
-        const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
+      if (basicInfo.material === "hybrid") {
+        const hasMain =
+          hybridMain.brand ||
+          hybridMain.name ||
+          hybridMain.gauge ||
+          hybridMain.color;
+        const hasCross =
+          hybridCross.brand ||
+          hybridCross.name ||
+          hybridCross.gauge ||
+          hybridCross.color;
         if (hasMain || hasCross) {
           specifications.hybrid = {
             main: { ...hybridMain },
@@ -412,7 +491,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
       }
 
       const searchKeywords = searchKeywordsInput
-        .split(',')
+        .split(",")
         .map((k) => k.trim())
         .filter((k) => k.length > 0);
 
@@ -451,18 +530,19 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         const result = await runAdminActionWithToast({
           action: () =>
             adminMutator(`/api/admin/products/${productId}`, {
-              method: 'PUT',
+              method: "PUT",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify(product),
             }),
-          successMessage: '상품이 수정되었습니다.',
-          fallbackErrorMessage: '알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요',
+          successMessage: "상품이 수정되었습니다.",
+          fallbackErrorMessage:
+            "알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요",
         });
 
         if (!result) return;
-        router.push('/admin/products'); // 등록된 상품 상세 페이지로 즉시 이동
+        router.push("/admin/products"); // 등록된 상품 상세 페이지로 즉시 이동
       } finally {
         setSubmitting(false);
       }
@@ -475,7 +555,14 @@ export default function ProductEditClient({ productId }: { productId: string }) 
   // 삭제 핸들러
   const handleDelete = () => {
     // 제출/삭제/업로드 중이면 삭제 금지
-    if (uploading || submitting || submitRef.current || deleting || deleteRef.current) return;
+    if (
+      uploading ||
+      submitting ||
+      submitRef.current ||
+      deleting ||
+      deleteRef.current
+    )
+      return;
     setDeleteDialogOpen(true);
   };
 
@@ -484,11 +571,14 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     setDeleting(true);
     try {
       const result = await runAdminActionWithToast({
-        action: () => adminMutator(`/api/admin/products/${productId}`, { method: 'DELETE' }),
-        successMessage: '상품이 삭제되었습니다.',
-        fallbackErrorMessage: '삭제 중 오류가 발생했습니다.',
+        action: () =>
+          adminMutator(`/api/admin/products/${productId}`, {
+            method: "DELETE",
+          }),
+        successMessage: "상품이 삭제되었습니다.",
+        fallbackErrorMessage: "삭제 중 오류가 발생했습니다.",
       });
-      if (result) router.push('/admin/products');
+      if (result) router.push("/admin/products");
     } finally {
       setDeleting(false);
       deleteRef.current = false;
@@ -510,22 +600,39 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <Package className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold tracking-tight">스트링 수정</h2>
-                    <p className="text-muted-foreground">테니스 스트링 정보를 수정하고 등록하세요.</p>
+                    <h2 className="text-3xl font-bold tracking-tight">
+                      스트링 수정
+                    </h2>
+                    <p className="text-muted-foreground">
+                      테니스 스트링 정보를 수정하고 등록하세요.
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" type="button" asChild>
-                    <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
+                    <Link
+                      href="/admin/products"
+                      data-no-unsaved-guard
+                      onClick={confirmLeave}
+                    >
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
                     </Link>
                   </Button>
-                  <Button type="button" variant="destructive" onClick={handleDelete} disabled={uploading || submitting || deleting}>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={uploading || submitting || deleting}
+                  >
                     <Delete className="mr-2 h-4 w-4" />
                     삭제
                   </Button>
-                  <Button type="submit" disabled={uploading || submitting || deleting} variant="default">
+                  <Button
+                    type="submit"
+                    disabled={uploading || submitting || deleting}
+                    variant="default"
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     수정완료
                   </Button>
@@ -535,28 +642,49 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
             <Separator />
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-4"
+            >
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-muted border border-border">
-                <TabsTrigger value="basic" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="basic"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   기본 정보
                 </TabsTrigger>
-                <TabsTrigger value="features" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="features"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   성능 및 특성
                 </TabsTrigger>
-                <TabsTrigger value="inventory" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="inventory"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   재고 관리
                 </TabsTrigger>
-                <TabsTrigger value="images" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="images"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   이미지
                 </TabsTrigger>
               </TabsList>
 
               {/* 기본 정보 탭 */}
               <TabsContent value="basic" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">기본 정보</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 기본 정보를 입력하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 기본 정보를 입력하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -564,46 +692,100 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         <Label htmlFor="string-name">
                           스트링명 <span className="text-destructive">*</span>
                         </Label>
-                        <Input id="string-name" placeholder="스트링명을 입력하세요" value={basicInfo.name} onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })} />
+                        <Input
+                          id="string-name"
+                          placeholder="스트링명을 입력하세요"
+                          value={basicInfo.name}
+                          onChange={(e) =>
+                            setBasicInfo({ ...basicInfo, name: e.target.value })
+                          }
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-sku">SKU (재고 관리 코드)</Label>
-                        <Input id="string-sku" placeholder="예: STR-LUX-001" value={basicInfo.sku} onChange={(e) => setBasicInfo({ ...basicInfo, sku: e.target.value })} />
+                        <Input
+                          id="string-sku"
+                          placeholder="예: STR-LUX-001"
+                          value={basicInfo.sku}
+                          onChange={(e) =>
+                            setBasicInfo({ ...basicInfo, sku: e.target.value })
+                          }
+                        />
                       </div>
                     </div>
 
                     {/* 검색 키워드 입력 */}
                     <div className="space-y-2">
-                      <Label htmlFor="string-search-keywords">검색 키워드 (쉼표로 구분)</Label>
+                      <Label htmlFor="string-search-keywords">
+                        검색 키워드 (쉼표로 구분)
+                      </Label>
                       <div className="flex flex-col gap-2 md:flex-row md:items-center">
-                        <Input id="string-search-keywords" placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU, 내추럴 거트" value={searchKeywordsInput} onChange={(e) => setSearchKeywordsInput(e.target.value)} />
-                        <Button type="button" variant="outline" className="md:ml-2 shrink-0" onClick={handleGenerateKeywords}>
+                        <Input
+                          id="string-search-keywords"
+                          placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU, 내추럴 거트"
+                          value={searchKeywordsInput}
+                          onChange={(e) =>
+                            setSearchKeywordsInput(e.target.value)
+                          }
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="md:ml-2 shrink-0"
+                          onClick={handleGenerateKeywords}
+                        >
                           상품명 기준 자동 생성
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground">검색창에서 이 키워드들로도 상품을 찾을 수 있게 설정합니다.</p>
+                      <p className="text-xs text-muted-foreground">
+                        검색창에서 이 키워드들로도 상품을 찾을 수 있게
+                        설정합니다.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="string-short-description">짧은 설명</Label>
+                      <Label htmlFor="string-short-description">
+                        짧은 설명
+                      </Label>
                       <Textarea
                         id="string-short-description"
                         placeholder="스트링에 대한 짧은 설명을 입력하세요"
                         className="min-h-[80px]"
                         value={basicInfo.shortDescription}
-                        onChange={(e) => setBasicInfo({ ...basicInfo, shortDescription: e.target.value })}
+                        onChange={(e) =>
+                          setBasicInfo({
+                            ...basicInfo,
+                            shortDescription: e.target.value,
+                          })
+                        }
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="string-description">상세 설명</Label>
-                      <Textarea id="string-description" placeholder="스트링에 대한 상세 설명을 입력하세요" className="min-h-[200px]" value={basicInfo.description} onChange={(e) => setBasicInfo({ ...basicInfo, description: e.target.value })} />
+                      <Textarea
+                        id="string-description"
+                        placeholder="스트링에 대한 상세 설명을 입력하세요"
+                        className="min-h-[200px]"
+                        value={basicInfo.description}
+                        onChange={(e) =>
+                          setBasicInfo({
+                            ...basicInfo,
+                            description: e.target.value,
+                          })
+                        }
+                      />
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-brand">브랜드</Label>
-                        <Select value={basicInfo.brand} onValueChange={(value) => setBasicInfo({ ...basicInfo, brand: value })}>
+                        <Select
+                          value={basicInfo.brand}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, brand: value })
+                          }
+                        >
                           <SelectTrigger id="string-brand">
                             <SelectValue placeholder="브랜드 선택" />
                           </SelectTrigger>
@@ -618,7 +800,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-material">재질</Label>
-                        <Select value={basicInfo.material} onValueChange={(value) => setBasicInfo({ ...basicInfo, material: value })}>
+                        <Select
+                          value={basicInfo.material}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, material: value })
+                          }
+                        >
                           <SelectTrigger id="string-material">
                             <SelectValue placeholder="재질 선택" />
                           </SelectTrigger>
@@ -636,7 +823,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-gauge">게이지</Label>
-                        <Select value={basicInfo.gauge} onValueChange={(value) => setBasicInfo({ ...basicInfo, gauge: value })}>
+                        <Select
+                          value={basicInfo.gauge}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, gauge: value })
+                          }
+                        >
                           <SelectTrigger id="string-gauge">
                             <SelectValue placeholder="게이지 선택" />
                           </SelectTrigger>
@@ -651,7 +843,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-color">색상</Label>
-                        <Select value={basicInfo.color} onValueChange={(value) => setBasicInfo({ ...basicInfo, color: value })}>
+                        <Select
+                          value={basicInfo.color}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, color: value })
+                          }
+                        >
                           <SelectTrigger id="string-color">
                             <SelectValue placeholder="색상 선택" />
                           </SelectTrigger>
@@ -669,7 +866,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-length">길이 (m)</Label>
-                        <Select value={basicInfo.length} onValueChange={(value) => setBasicInfo({ ...basicInfo, length: value })}>
+                        <Select
+                          value={basicInfo.length}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, length: value })
+                          }
+                        >
                           <SelectTrigger id="string-length">
                             <SelectValue placeholder="길이 선택" />
                           </SelectTrigger>
@@ -684,26 +886,35 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     </div>
                   </CardContent>
                 </Card>
-                {basicInfo.material === 'hybrid' && (
+                {basicInfo.material === "hybrid" && (
                   <Card
                     variant="ghost"
                     className="mt-6 shadow-xl bg-muted/30 border border-border"
                   >
-                    <CardHeader
-                      className="bg-muted/30 border-b border-border"
-                    >
-                      <CardTitle className="text-primary">하이브리드 구성</CardTitle>
-                      <CardDescription className="text-muted-foreground">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
+                    <CardHeader className="bg-muted/30 border-b border-border">
+                      <CardTitle className="text-primary">
+                        하이브리드 구성
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        메인/크로스 스트링 정보를 입력하세요.
+                      </CardDescription>
                     </CardHeader>
 
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* MAIN */}
                       <div className="space-y-3">
-                        <div className="text-sm font-medium text-muted-foreground">메인 (Mains)</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          메인 (Mains)
+                        </div>
 
                         <div className="space-y-1.5">
                           <Label>브랜드</Label>
-                          <Select value={hybridMain.brand} onValueChange={(v) => setHybridMain((s) => ({ ...s, brand: v }))}>
+                          <Select
+                            value={hybridMain.brand}
+                            onValueChange={(v) =>
+                              setHybridMain((s) => ({ ...s, brand: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="브랜드 선택" />
                             </SelectTrigger>
@@ -719,12 +930,26 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                         <div className="space-y-1.5">
                           <Label>제품명</Label>
-                          <Input placeholder="예: RPM Blast" value={hybridMain.name} onChange={(e) => setHybridMain((s) => ({ ...s, name: e.target.value }))} />
+                          <Input
+                            placeholder="예: RPM Blast"
+                            value={hybridMain.name}
+                            onChange={(e) =>
+                              setHybridMain((s) => ({
+                                ...s,
+                                name: e.target.value,
+                              }))
+                            }
+                          />
                         </div>
 
                         <div className="space-y-1.5">
                           <Label>게이지</Label>
-                          <Select value={hybridMain.gauge} onValueChange={(v) => setHybridMain((s) => ({ ...s, gauge: v }))}>
+                          <Select
+                            value={hybridMain.gauge}
+                            onValueChange={(v) =>
+                              setHybridMain((s) => ({ ...s, gauge: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="게이지 선택" />
                             </SelectTrigger>
@@ -740,7 +965,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                         <div className="space-y-1.5">
                           <Label>색상</Label>
-                          <Select value={hybridMain.color} onValueChange={(v) => setHybridMain((s) => ({ ...s, color: v }))}>
+                          <Select
+                            value={hybridMain.color}
+                            onValueChange={(v) =>
+                              setHybridMain((s) => ({ ...s, color: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="색상 선택" />
                             </SelectTrigger>
@@ -757,11 +987,18 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                       {/* CROSS */}
                       <div className="space-y-3">
-                        <div className="text-sm font-medium text-muted-foreground">크로스 (Crosses)</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          크로스 (Crosses)
+                        </div>
 
                         <div className="space-y-1.5">
                           <Label>브랜드</Label>
-                          <Select value={hybridCross.brand} onValueChange={(v) => setHybridCross((s) => ({ ...s, brand: v }))}>
+                          <Select
+                            value={hybridCross.brand}
+                            onValueChange={(v) =>
+                              setHybridCross((s) => ({ ...s, brand: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="브랜드 선택" />
                             </SelectTrigger>
@@ -777,12 +1014,26 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                         <div className="space-y-1.5">
                           <Label>제품명</Label>
-                          <Input placeholder="예: Touch VS" value={hybridCross.name} onChange={(e) => setHybridCross((s) => ({ ...s, name: e.target.value }))} />
+                          <Input
+                            placeholder="예: Touch VS"
+                            value={hybridCross.name}
+                            onChange={(e) =>
+                              setHybridCross((s) => ({
+                                ...s,
+                                name: e.target.value,
+                              }))
+                            }
+                          />
                         </div>
 
                         <div className="space-y-1.5">
                           <Label>게이지</Label>
-                          <Select value={hybridCross.gauge} onValueChange={(v) => setHybridCross((s) => ({ ...s, gauge: v }))}>
+                          <Select
+                            value={hybridCross.gauge}
+                            onValueChange={(v) =>
+                              setHybridCross((s) => ({ ...s, gauge: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="게이지 선택" />
                             </SelectTrigger>
@@ -798,7 +1049,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                         <div className="space-y-1.5">
                           <Label>색상</Label>
-                          <Select value={hybridCross.color} onValueChange={(v) => setHybridCross((s) => ({ ...s, color: v }))}>
+                          <Select
+                            value={hybridCross.color}
+                            onValueChange={(v) =>
+                              setHybridCross((s) => ({ ...s, color: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="색상 선택" />
                             </SelectTrigger>
@@ -817,10 +1073,15 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 )}
 
                 {/* 가격 정보 카드 */}
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">가격 정보</CardTitle>
-                    <CardDescription className="text-muted-foreground">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      소비자 가격과 장착 서비스 비용을 함께 설정해주세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -839,7 +1100,10 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                 sideOffset={4}
                                 className={adminFormHintTooltipClass}
                               >
-                                <p>해당 스트링을 이용한 장착 서비스 비용을 입력하세요.</p>
+                                <p>
+                                  해당 스트링을 이용한 장착 서비스 비용을
+                                  입력하세요.
+                                </p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -849,16 +1113,25 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             id="string-stringing-fee"
                             type="text"
                             placeholder="0"
-                            value={basicInfo.mountingFee != null ? basicInfo.mountingFee.toLocaleString() : ''}
+                            value={
+                              basicInfo.mountingFee != null
+                                ? basicInfo.mountingFee.toLocaleString()
+                                : ""
+                            }
                             onChange={(e) => {
-                              const raw = e.target.value.replace(/,/g, '');
+                              const raw = e.target.value.replace(/,/g, "");
                               const numeric = Number(raw);
                               if (!isNaN(numeric)) {
-                                setBasicInfo({ ...basicInfo, mountingFee: numeric });
+                                setBasicInfo({
+                                  ...basicInfo,
+                                  mountingFee: numeric,
+                                });
                               }
                             }}
                           />
-                          <span className="ml-2 flex items-center text-sm">원</span>
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
                         </div>
                       </div>
 
@@ -874,14 +1147,16 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             placeholder="0"
                             value={basicInfo.price.toLocaleString()}
                             onChange={(e) => {
-                              const raw = e.target.value.replace(/,/g, '');
+                              const raw = e.target.value.replace(/,/g, "");
                               const numeric = Number(raw);
                               if (!isNaN(numeric)) {
                                 setBasicInfo({ ...basicInfo, price: numeric });
                               }
                             }}
                           />
-                          <span className="ml-2 flex items-center text-sm">원</span>
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -891,10 +1166,15 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 성능 및 특성 탭 */}
               <TabsContent value="features" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">성능 및 특성</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 성능과 특성을 설정하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 성능과 특성을 설정하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
@@ -902,7 +1182,17 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         <Label htmlFor="power-rating">반발력</Label>
                         <span className="font-medium">{features.power}/5</span>
                       </div>
-                      <Slider id="power-rating" min={1} max={5} step={1} value={[features.power]} onValueChange={(value) => setFeatures({ ...features, power: value[0] })} className="w-full h-4" />
+                      <Slider
+                        id="power-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.power]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, power: value[0] })
+                        }
+                        className="w-full h-4"
+                      />
 
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
@@ -913,9 +1203,20 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="control-rating">컨트롤</Label>
-                        <span className="font-medium">{features.control}/5</span>
+                        <span className="font-medium">
+                          {features.control}/5
+                        </span>
                       </div>
-                      <Slider id="control-rating" min={1} max={5} step={1} value={[features.control]} onValueChange={(value) => setFeatures({ ...features, control: value[0] })} />
+                      <Slider
+                        id="control-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.control]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, control: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -927,7 +1228,16 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         <Label htmlFor="spin-rating">스핀</Label>
                         <span className="font-medium">{features.spin}/5</span>
                       </div>
-                      <Slider id="spin-rating" min={1} max={5} step={1} value={[features.spin]} onValueChange={(value) => setFeatures({ ...features, spin: value[0] })} />
+                      <Slider
+                        id="spin-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.spin]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, spin: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -937,9 +1247,20 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="durability-rating">내구성</Label>
-                        <span className="font-medium">{features.durability}/5</span>
+                        <span className="font-medium">
+                          {features.durability}/5
+                        </span>
                       </div>
-                      <Slider id="durability-rating" min={1} max={5} step={1} value={[features.durability]} onValueChange={(value) => setFeatures({ ...features, durability: value[0] })} />
+                      <Slider
+                        id="durability-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.durability]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, durability: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -949,9 +1270,20 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="comfort-rating">편안함</Label>
-                        <span className="font-medium">{features.comfort}/5</span>
+                        <span className="font-medium">
+                          {features.comfort}/5
+                        </span>
                       </div>
-                      <Slider id="comfort-rating" min={1} max={5} step={1} value={[features.comfort]} onValueChange={(value) => setFeatures({ ...features, comfort: value[0] })} />
+                      <Slider
+                        id="comfort-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.comfort]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, comfort: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -961,40 +1293,92 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">추천 플레이어 타입</h3>
+                      <h3 className="text-lg font-medium text-primary">
+                        추천 플레이어 타입
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="player-beginner" checked={tags.beginner} onCheckedChange={(checked) => setTags({ ...tags, beginner: checked })} />
+                          <Switch
+                            id="player-beginner"
+                            checked={tags.beginner}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, beginner: checked })
+                            }
+                          />
                           <Label htmlFor="player-beginner">초보자</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="player-intermediate" checked={tags.intermediate} onCheckedChange={(checked) => setTags({ ...tags, intermediate: checked })} />
+                          <Switch
+                            id="player-intermediate"
+                            checked={tags.intermediate}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, intermediate: checked })
+                            }
+                          />
                           <Label htmlFor="player-intermediate">중급자</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="player-advanced" checked={tags.advanced} onCheckedChange={(checked) => setTags({ ...tags, advanced: checked })} />
+                          <Switch
+                            id="player-advanced"
+                            checked={tags.advanced}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, advanced: checked })
+                            }
+                          />
                           <Label htmlFor="player-advanced">상급자</Label>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">추천 플레이 스타일</h3>
+                      <h3 className="text-lg font-medium text-primary">
+                        추천 플레이 스타일
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-baseline" checked={tags.baseline} onCheckedChange={(checked) => setTags({ ...tags, baseline: checked })} />
-                          <Label htmlFor="style-baseline">베이스라인 플레이어</Label>
+                          <Switch
+                            id="style-baseline"
+                            checked={tags.baseline}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, baseline: checked })
+                            }
+                          />
+                          <Label htmlFor="style-baseline">
+                            베이스라인 플레이어
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-serve-volley" checked={tags.serveVolley} onCheckedChange={(checked) => setTags({ ...tags, serveVolley: checked })} />
-                          <Label htmlFor="style-serve-volley">서브 앤 발리 플레이어</Label>
+                          <Switch
+                            id="style-serve-volley"
+                            checked={tags.serveVolley}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, serveVolley: checked })
+                            }
+                          />
+                          <Label htmlFor="style-serve-volley">
+                            서브 앤 발리 플레이어
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-all-court" checked={tags.allCourt} onCheckedChange={(checked) => setTags({ ...tags, allCourt: checked })} />
-                          <Label htmlFor="style-all-court">올코트 플레이어</Label>
+                          <Switch
+                            id="style-all-court"
+                            checked={tags.allCourt}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, allCourt: checked })
+                            }
+                          />
+                          <Label htmlFor="style-all-court">
+                            올코트 플레이어
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-power" checked={tags.power} onCheckedChange={(checked) => setTags({ ...tags, power: checked })} />
+                          <Switch
+                            id="style-power"
+                            checked={tags.power}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, power: checked })
+                            }
+                          />
                           <Label htmlFor="style-power">파워 히터</Label>
                         </div>
                       </div>
@@ -1002,7 +1386,13 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                     <div className="space-y-2">
                       <Label htmlFor="string-features">추가 특성</Label>
-                      <Textarea id="string-features" placeholder="스트링의 추가 특성이나 장점을 입력하세요" className="min-h-[100px]" value={additionalFeatures} onChange={(e) => setAdditionalFeatures(e.target.value)} />
+                      <Textarea
+                        id="string-features"
+                        placeholder="스트링의 추가 특성이나 장점을 입력하세요"
+                        className="min-h-[100px]"
+                        value={additionalFeatures}
+                        onChange={(e) => setAdditionalFeatures(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -1010,10 +1400,15 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 재고 관리 탭 */}
               <TabsContent value="inventory" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">재고 관리</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 재고 관련 정보를 설정하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -1026,7 +1421,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           value={inventory.stock.toLocaleString()}
                           onChange={(e) => {
                             setInventoryDirty(true);
-                            const raw = e.target.value.replace(/,/g, '');
+                            const raw = e.target.value.replace(/,/g, "");
                             const numeric = Number(raw);
                             if (!isNaN(numeric)) {
                               setInventory({ ...inventory, stock: numeric });
@@ -1035,7 +1430,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="string-low-stock">재고 부족 알림 기준</Label>
+                        <Label htmlFor="string-low-stock">
+                          재고 부족 알림 기준
+                        </Label>
                         <Input
                           id="string-low-stock"
                           type="text"
@@ -1043,7 +1440,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           value={inventory.lowStock.toLocaleString()}
                           onChange={(e) => {
                             setInventoryDirty(true);
-                            const raw = e.target.value.replace(/,/g, '');
+                            const raw = e.target.value.replace(/,/g, "");
                             const numeric = Number(raw);
                             if (!isNaN(numeric)) {
                               setInventory({ ...inventory, lowStock: numeric });
@@ -1055,7 +1452,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                     <div className="space-y-2">
                       <Label>재고 상태</Label>
-                      <RadioGroup value={inventory.status} onValueChange={(value) => setInventory({ ...inventory, status: value })}>
+                      <RadioGroup
+                        value={inventory.status}
+                        onValueChange={(value) =>
+                          setInventory({ ...inventory, status: value })
+                        }
+                      >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="instock" id="instock" />
                           <Label htmlFor="instock">재고 있음</Label>
@@ -1073,43 +1475,94 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <Switch id="string-manage-stock" checked={inventory.manageStock} onCheckedChange={(checked) => setInventory({ ...inventory, manageStock: checked })} />
-                        <Label htmlFor="string-manage-stock">재고 관리 사용</Label>
+                        <Switch
+                          id="string-manage-stock"
+                          checked={inventory.manageStock}
+                          onCheckedChange={(checked) =>
+                            setInventory({ ...inventory, manageStock: checked })
+                          }
+                        />
+                        <Label htmlFor="string-manage-stock">
+                          재고 관리 사용
+                        </Label>
                       </div>
-                      <p className="text-sm text-muted-foreground">재고 관리를 사용하면 판매될 때마다 재고가 자동으로 감소합니다.</p>
+                      <p className="text-sm text-muted-foreground">
+                        재고 관리를 사용하면 판매될 때마다 재고가 자동으로
+                        감소합니다.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <Switch id="string-backorders" checked={inventory.allowBackorder} onCheckedChange={(checked) => setInventory({ ...inventory, allowBackorder: checked })} />
-                        <Label htmlFor="string-backorders">품절 시 주문 허용</Label>
+                        <Switch
+                          id="string-backorders"
+                          checked={inventory.allowBackorder}
+                          onCheckedChange={(checked) =>
+                            setInventory({
+                              ...inventory,
+                              allowBackorder: checked,
+                            })
+                          }
+                        />
+                        <Label htmlFor="string-backorders">
+                          품절 시 주문 허용
+                        </Label>
                       </div>
-                      <p className="text-sm text-muted-foreground">재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.</p>
+                      <p className="text-sm text-muted-foreground">
+                        재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.
+                      </p>
                     </div>
 
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">판매 옵션</h3>
+                      <h3 className="text-lg font-medium text-primary">
+                        판매 옵션
+                      </h3>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="string-featured" checked={inventory.isFeatured} onCheckedChange={(checked) => setInventory({ ...inventory, isFeatured: checked })} />
-                          <Label htmlFor="string-featured">추천 상품으로 표시</Label>
+                          <Switch
+                            id="string-featured"
+                            checked={inventory.isFeatured}
+                            onCheckedChange={(checked) =>
+                              setInventory({
+                                ...inventory,
+                                isFeatured: checked,
+                              })
+                            }
+                          />
+                          <Label htmlFor="string-featured">
+                            추천 상품으로 표시
+                          </Label>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="string-new" checked={inventory.isNew} onCheckedChange={(checked) => setInventory({ ...inventory, isNew: checked })} />
+                          <Switch
+                            id="string-new"
+                            checked={inventory.isNew}
+                            onCheckedChange={(checked) =>
+                              setInventory({ ...inventory, isNew: checked })
+                            }
+                          />
                           <Label htmlFor="string-new">신상품으로 표시</Label>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="string-sale" checked={inventory.isSale} onCheckedChange={(checked) => setInventory({ ...inventory, isSale: checked })} />
-                          <Label htmlFor="string-sale">할인 상품으로 표시</Label>
+                          <Switch
+                            id="string-sale"
+                            checked={inventory.isSale}
+                            onCheckedChange={(checked) =>
+                              setInventory({ ...inventory, isSale: checked })
+                            }
+                          />
+                          <Label htmlFor="string-sale">
+                            할인 상품으로 표시
+                          </Label>
                         </div>
                       </div>
 
@@ -1121,16 +1574,21 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             type="text"
                             value={inventory.salePrice.toLocaleString()} // 보기에는 콤마 포함
                             onChange={(e) => {
-                              const rawValue = e.target.value.replace(/,/g, ''); // 콤마 제거
+                              const rawValue = e.target.value.replace(/,/g, ""); // 콤마 제거
                               const numeric = Number(rawValue);
 
                               if (!isNaN(numeric)) {
-                                setInventory({ ...inventory, salePrice: numeric });
+                                setInventory({
+                                  ...inventory,
+                                  salePrice: numeric,
+                                });
                               }
                             }}
                             placeholder="0"
                           />
-                          <span className="ml-2 flex items-center text-sm">원</span>
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1140,41 +1598,98 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
               {/* 이미지 탭 */}
               <TabsContent value="images" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">스트링 이미지</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
+                    <CardTitle className="text-primary">
+                      스트링 이미지
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표
+                      이미지로 사용됩니다.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                       {images.map((image, index) => (
-                        <div key={index} className={`relative rounded-md border ${index === 0 ? 'ring-2 ring-primary' : 'bg-muted/40'}`}>
-                          <img src={image || '/placeholder.svg'} alt={`스트링 이미지 ${index + 1}`} className="aspect-square h-full w-full rounded-md object-cover" />
+                        <div
+                          key={index}
+                          className={`relative rounded-md border ${index === 0 ? "ring-2 ring-primary" : "bg-muted/40"}`}
+                        >
+                          <img
+                            src={image || "/placeholder.svg"}
+                            alt={`스트링 이미지 ${index + 1}`}
+                            className="aspect-square h-full w-full rounded-md object-cover"
+                          />
 
                           {/* 삭제 버튼 */}
-                          <Button type="button" variant="destructive" size="icon" className="absolute right-1 top-1 h-6 w-6" onClick={() => handleRemoveImage(index)}>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute right-1 top-1 h-6 w-6"
+                            onClick={() => handleRemoveImage(index)}
+                          >
                             <span className="sr-only">이미지 삭제</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4"
+                            >
                               <path d="M18 6 6 18" />
                               <path d="m6 6 12 12" />
                             </svg>
                           </Button>
 
                           {/* 대표 이미지 표시 */}
-                          {index === 0 && <span className="absolute left-1 top-1 rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">대표</span>}
+                          {index === 0 && (
+                            <span className="absolute left-1 top-1 rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
+                              대표
+                            </span>
+                          )}
 
                           {/* 대표로 지정 버튼 (대표 아닐 때만) */}
                           {index !== 0 && (
-                            <Button type="button" variant="outline" size="sm" className="absolute bottom-1 left-1 h-6 text-xs px-1.5 py-0.5" onClick={() => handleSetMainImage(index)}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="absolute bottom-1 left-1 h-6 text-xs px-1.5 py-0.5"
+                              onClick={() => handleSetMainImage(index)}
+                            >
                               대표로 지정
                             </Button>
                           )}
                         </div>
                       ))}
-                      <label className={`flex aspect-square h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed ${isMaxReached ? 'pointer-events-none opacity-50' : ''}`}>
-                        {uploading ? <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" /> : <Upload className="mb-2 h-6 w-6" />}
+                      <label
+                        className={`flex aspect-square h-full w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed ${isMaxReached ? "pointer-events-none opacity-50" : ""}`}
+                      >
+                        {uploading ? (
+                          <Loader2 className="mb-2 h-6 w-6 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Upload className="mb-2 h-6 w-6" />
+                        )}
                         <span className="text-sm">이미지 추가</span>
-                        <input type="file" accept="image/*" multiple onChange={handleAddImage} className="hidden" disabled={isMaxReached || uploading || submitting || deleting} />
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleAddImage}
+                          className="hidden"
+                          disabled={
+                            isMaxReached || uploading || submitting || deleting
+                          }
+                        />
                       </label>
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -1185,7 +1700,10 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             최대 4장까지 업로드 가능합니다.
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형 이미지를 사용하세요.</p>
+                            <p>
+                              최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형
+                              이미지를 사용하세요.
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1197,16 +1715,28 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
             <div className="flex items-center justify-end space-x-2">
               <Button variant="outline" type="button" asChild>
-                <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
+                <Link
+                  href="/admin/products"
+                  data-no-unsaved-guard
+                  onClick={confirmLeave}
+                >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   취소
                 </Link>
               </Button>
-              <Button variant="destructive" onClick={handleDelete} disabled={uploading || submitting || deleting}>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={uploading || submitting || deleting}
+              >
                 <Delete className="mr-2 h-4 w-4" />
                 삭제
               </Button>
-              <Button type="submit" disabled={uploading || submitting || deleting} variant="default">
+              <Button
+                type="submit"
+                disabled={uploading || submitting || deleting}
+                variant="default"
+              >
                 <Save className="mr-2 h-4 w-4" />
                 수정완료
               </Button>
@@ -1219,7 +1749,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         onOpenChange={setLeaveDialogOpen}
         onConfirm={() => {
           setLeaveDialogOpen(false);
-          router.push('/admin/products');
+          router.push("/admin/products");
         }}
         title="작성 중인 변경사항이 있습니다"
         description={UNSAVED_CHANGES_MESSAGE}

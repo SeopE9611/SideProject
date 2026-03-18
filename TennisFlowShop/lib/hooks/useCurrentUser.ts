@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useAuthStore } from '@/app/store/authStore';
-import { refreshOnce } from '@/lib/auth/refresh-mutex';
-import { useCallback, useRef, useState } from 'react';
+import { useAuthStore } from "@/app/store/authStore";
+import { refreshOnce } from "@/lib/auth/refresh-mutex";
+import { useCallback, useRef, useState } from "react";
 
 export function useCurrentUser(): {
-  user: ReturnType<typeof useAuthStore>['user'];
+  user: ReturnType<typeof useAuthStore>["user"];
   loading: boolean;
   refresh: () => Promise<void>;
 } {
@@ -21,7 +21,10 @@ export function useCurrentUser(): {
     inFlight.current = (async () => {
       try {
         // 1) /api/users/me
-        let res = await fetch('/api/users/me', { credentials: 'include', cache: 'no-store' });
+        let res = await fetch("/api/users/me", {
+          credentials: "include",
+          cache: "no-store",
+        });
         if (res.ok) {
           const me = await res.json().catch(() => null);
           setUser(me);
@@ -32,10 +35,10 @@ export function useCurrentUser(): {
         if (res.status === 401 || res.status === 403) {
           const rr = await refreshOnce();
           if (rr.ok) {
-            res = await fetch('/api/users/me', {
-              credentials: 'include',
-              cache: 'no-store',
-              headers: { 'x-suppress-auth-expired': '1' },
+            res = await fetch("/api/users/me", {
+              credentials: "include",
+              cache: "no-store",
+              headers: { "x-suppress-auth-expired": "1" },
             });
             if (res.ok) {
               const me2 = await res.json().catch(() => null);

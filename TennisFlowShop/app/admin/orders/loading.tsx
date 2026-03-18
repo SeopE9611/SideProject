@@ -1,6 +1,13 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function OrdersLoading() {
   return (
@@ -23,7 +30,10 @@ export default function OrdersLoading() {
               <Skeleton className="h-10 flex-1 rounded-md bg-muted dark:bg-card" />
               <div className="flex flex-wrap gap-2 md:flex-nowrap">
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-10 w-full md:w-[180px] rounded-md bg-muted dark:bg-card" />
+                  <Skeleton
+                    key={i}
+                    className="h-10 w-full md:w-[180px] rounded-md bg-muted dark:bg-card"
+                  />
                 ))}
                 <Skeleton className="h-10 w-32 ml-auto rounded-md bg-muted dark:bg-card" />
               </div>

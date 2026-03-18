@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,11 +10,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
-type ConfirmSeverity = 'default' | 'danger';
+type ConfirmSeverity = "default" | "danger";
 
-type ConfirmEventType = 'open' | 'cancel' | 'confirm';
+type ConfirmEventType = "open" | "cancel" | "confirm";
 
 interface AdminConfirmDialogProps {
   open: boolean;
@@ -30,8 +30,12 @@ interface AdminConfirmDialogProps {
   eventMeta?: Record<string, unknown>;
 }
 
-const logConfirmEvent = (event: ConfirmEventType, eventKey: string, eventMeta?: Record<string, unknown>) => {
-  console.info('[admin-confirm-dialog]', {
+const logConfirmEvent = (
+  event: ConfirmEventType,
+  eventKey: string,
+  eventMeta?: Record<string, unknown>,
+) => {
+  console.info("[admin-confirm-dialog]", {
     event,
     eventKey,
     eventMeta,
@@ -43,31 +47,31 @@ export default function AdminConfirmDialog({
   open,
   title,
   description,
-  severity = 'default',
-  confirmText = '확인',
-  cancelText = '취소',
+  severity = "default",
+  confirmText = "확인",
+  cancelText = "취소",
   onOpenChange,
   onConfirm,
   onCancel,
-  eventKey = 'admin-confirm',
+  eventKey = "admin-confirm",
   eventMeta,
 }: AdminConfirmDialogProps) {
   const handleOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
-      logConfirmEvent('open', eventKey, eventMeta);
+      logConfirmEvent("open", eventKey, eventMeta);
       onOpenChange(true);
       return;
     }
 
     if (open) {
-      logConfirmEvent('cancel', eventKey, eventMeta);
+      logConfirmEvent("cancel", eventKey, eventMeta);
       onCancel?.();
     }
     onOpenChange(false);
   };
 
   const handleConfirm = () => {
-    logConfirmEvent('confirm', eventKey, eventMeta);
+    logConfirmEvent("confirm", eventKey, eventMeta);
     onConfirm();
   };
 
@@ -76,14 +80,25 @@ export default function AdminConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            {severity === 'danger' && <AlertTriangle className="h-4 w-4 text-destructive" />}
+            {severity === "danger" && (
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+            )}
             {title}
           </AlertDialogTitle>
-          <AlertDialogDescription className="whitespace-pre-line">{description}</AlertDialogDescription>
+          <AlertDialogDescription className="whitespace-pre-line">
+            {description}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction className={severity === 'danger' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : undefined} onClick={handleConfirm}>
+          <AlertDialogAction
+            className={
+              severity === "danger"
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : undefined
+            }
+            onClick={handleConfirm}
+          >
             {confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>

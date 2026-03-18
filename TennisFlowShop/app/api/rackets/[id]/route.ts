@@ -1,8 +1,8 @@
-import { verifyAccessToken } from '@/lib/auth.utils';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { verifyAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 type UsedRacketDoc = { _id: ObjectId | string } & Record<string, any>;
 
@@ -16,23 +16,29 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const db = (await clientPromise).db();
-  const col = db.collection<UsedRacketDoc>('used_rackets');
+  const col = db.collection<UsedRacketDoc>("used_rackets");
   const { id } = await params;
 
   const filter = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
   const doc = await col.findOne(filter);
 
   if (!doc) {
-    return NextResponse.json({ message: 'Not Found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { message: "Not Found" },
+      { status: 404, headers: { "Cache-Control": "no-store" } },
+    );
   }
 
   // 라켓 상세에서도 리뷰 탭이 보이도록: 최신 리뷰 + 요약(평균/개수) 포함
   // - 리뷰 스키마는 productId로 통일되어 있으므로(라켓도 productId 사용), 그대로 reuse
   // - hidden 리뷰는 공개 화면에서 마스킹
   // - 로그인 유저면 ownedByMe 표시(클라에서 /api/reviews/self로 원문 병합 가능)
-  const token = (await cookies()).get('accessToken')?.value;
+  const token = (await cookies()).get("accessToken")?.value;
   let currentUserId: ObjectId | null = null;
   const payload = safeVerifyAccessToken(token);
   if (payload?.sub && ObjectId.isValid(String(payload.sub))) {
@@ -43,12 +49,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   const reviews = objId
     ? await db
-        .collection('reviews')
+        .collection("reviews")
         .aggregate([
           {
             $match: {
               productId: objId,
-              status: { $in: ['visible', 'hidden'] },
+              status: { $in: ["visible", "hidden"] },
               isDeleted: { $ne: true },
             },
           },
@@ -63,13 +69,31 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
               helpfulCount: 1,
               userId: 1, // ownedByMe 계산용 (다음 스테이지에서 제거)
               // 숨김이면 보안상 원본 차단(마스킹)
-              userName: { $cond: [{ $eq: ['$status', 'hidden'] }, null, '$userName'] },
-              content: { $cond: [{ $eq: ['$status', 'hidden'] }, null, '$content'] },
-              photos: { $cond: [{ $eq: ['$status', 'hidden'] }, [], { $ifNull: ['$photos', []] }] },
-              masked: { $eq: ['$status', 'hidden'] },
+              userName: {
+                $cond: [{ $eq: ["$status", "hidden"] }, null, "$userName"],
+              },
+              content: {
+                $cond: [{ $eq: ["$status", "hidden"] }, null, "$content"],
+              },
+              photos: {
+                $cond: [
+                  { $eq: ["$status", "hidden"] },
+                  [],
+                  { $ifNull: ["$photos", []] },
+                ],
+              },
+              masked: { $eq: ["$status", "hidden"] },
             },
           },
-          ...(currentUserId ? [{ $addFields: { ownedByMe: { $eq: ['$userId', currentUserId] } } }] : [{ $addFields: { ownedByMe: false } }]),
+          ...(currentUserId
+            ? [
+                {
+                  $addFields: {
+                    ownedByMe: { $eq: ["$userId", currentUserId] },
+                  },
+                },
+              ]
+            : [{ $addFields: { ownedByMe: false } }]),
           { $project: { userId: 0 } },
         ])
         .toArray()
@@ -77,8 +101,19 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   const agg = objId
     ? await db
-        .collection('reviews')
-        .aggregate([{ $match: { productId: objId, status: 'visible', isDeleted: { $ne: true } } }, { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } }])
+        .collection("reviews")
+        .aggregate([
+          {
+            $match: {
+              productId: objId,
+              status: "visible",
+              isDeleted: { $ne: true },
+            },
+          },
+          {
+            $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } },
+          },
+        ])
         .toArray()
     : [];
 
@@ -103,5 +138,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     },
   };
 
-  return NextResponse.json(payloadDoc, { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json(payloadDoc, {
+    headers: { "Cache-Control": "no-store" },
+  });
 }

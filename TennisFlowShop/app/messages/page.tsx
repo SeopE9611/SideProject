@@ -1,12 +1,12 @@
-import MessagesClient from '@/app/messages/MessagesClient';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import { redirect } from 'next/navigation';
+import MessagesClient from "@/app/messages/MessagesClient";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import { redirect } from "next/navigation";
 
 export default async function MessagesPage() {
   const user = await getCurrentUser();
 
   if (!user) {
-    const target = '/messages';
+    const target = "/messages";
     redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 

@@ -1,15 +1,18 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { getTokenFromHeader, verifyAccessToken } from '@/lib/auth.utils';
-import { cookies } from 'next/headers';
-import { ObjectId } from 'mongodb';
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { getTokenFromHeader, verifyAccessToken } from "@/lib/auth.utils";
+import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 /**
  * Query 숫자 파라미터 안전 파싱 (NaN/Infinity/음수 방지)
  * - 비정상 값이면 defaultValue 적용
  * - min/max 범위로 clamp
  */
-function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+function parseIntParam(
+  v: string | null,
+  opts: { defaultValue: number; min: number; max: number },
+) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -31,32 +34,42 @@ function toObjectIdMaybe(v: any): ObjectId | null {
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines))
+    return stringDetails.racketLines;
   return [];
 }
 
 export async function GET(req: Request) {
   // 인증
-  const token = (await cookies()).get('accessToken')?.value;
-  if (!token) return new NextResponse('Unauthorized', { status: 401 });
+  const token = (await cookies()).get("accessToken")?.value;
+  if (!token) return new NextResponse("Unauthorized", { status: 401 });
   // verifyAccessToken은 throw 가능 → 500 방지(401로 정리)
   let payload: any = null;
   try {
     payload = verifyAccessToken(token);
   } catch {
-    return new NextResponse('Unauthorized', { status: 401 });
+    return new NextResponse("Unauthorized", { status: 401 });
   }
-  if (!payload?.sub) return new NextResponse('Unauthorized', { status: 401 });
+  if (!payload?.sub) return new NextResponse("Unauthorized", { status: 401 });
   // payload.sub → ObjectId 변환은 throw 가능 → 선검증
   const subStr = String(payload.sub);
-  if (!ObjectId.isValid(subStr)) return new NextResponse('Unauthorized', { status: 401 });
+  if (!ObjectId.isValid(subStr))
+    return new NextResponse("Unauthorized", { status: 401 });
   const userId = new ObjectId(subStr);
 
   // 페이지 파라미터
   const url = new URL(req.url);
   // Query NaN/범위 방지
-  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
-  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
+  const page = parseIntParam(url.searchParams.get("page"), {
+    defaultValue: 1,
+    min: 1,
+    max: 10_000,
+  });
+  const limit = parseIntParam(url.searchParams.get("limit"), {
+    defaultValue: 10,
+    min: 1,
+    max: 50,
+  });
   const skip = (page - 1) * limit;
 
   // DB 조회: count + paged
@@ -64,10 +77,12 @@ export async function GET(req: Request) {
   const db = client.db();
 
   // draft는 마이페이지 목록/카운트에서 제외
-  const total = await db.collection('stringing_applications').countDocuments({ userId, status: { $ne: 'draft' } });
+  const total = await db
+    .collection("stringing_applications")
+    .countDocuments({ userId, status: { $ne: "draft" } });
   const rawList = await db
-    .collection('stringing_applications')
-    .find({ userId, status: { $ne: 'draft' } })
+    .collection("stringing_applications")
+    .find({ userId, status: { $ne: "draft" } })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
@@ -92,11 +107,13 @@ export async function GET(req: Request) {
   const orderHasRacketById = new Map<string, boolean>();
   if (orderObjectIds.length > 0) {
     const orders = await db
-      .collection('orders')
+      .collection("orders")
       .find({ _id: { $in: orderObjectIds } }, { projection: { items: 1 } })
       .toArray();
     for (const o of orders as any[]) {
-      const hasRacket = Array.isArray(o.items) && o.items.some((it: any) => it?.kind === 'racket');
+      const hasRacket =
+        Array.isArray(o.items) &&
+        o.items.some((it: any) => it?.kind === "racket");
       orderHasRacketById.set(String(o._id), hasRacket);
     }
   }
@@ -105,27 +122,49 @@ export async function GET(req: Request) {
   const items = await Promise.all(
     rawList.map(async (doc) => {
       const details: any = (doc as any).stringDetails ?? {};
-      const typeIds: string[] = Array.isArray(details.stringTypes) ? details.stringTypes : [];
+      const typeIds: string[] = Array.isArray(details.stringTypes)
+        ? details.stringTypes
+        : [];
 
       // 스트링 이름 목록 생성 (커스텀/상품명 혼합)
       const names = await Promise.all(
         typeIds.map(async (prodId: string) => {
-          if (prodId === 'custom') {
-            return details.customStringName || '커스텀 스트링';
+          if (prodId === "custom") {
+            return details.customStringName || "커스텀 스트링";
           }
-          const prod = await db.collection('products').findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
-          return prod?.name || '알 수 없는 상품';
+          const prod = await db
+            .collection("products")
+            .findOne(
+              { _id: new ObjectId(prodId) },
+              { projection: { name: 1 } },
+            );
+          return prod?.name || "알 수 없는 상품";
         }),
       );
       // createdAt 안전 보정
-      const appliedAtISO = doc.createdAt instanceof Date ? doc.createdAt.toISOString() : new Date(doc.createdAt).toISOString();
+      const appliedAtISO =
+        doc.createdAt instanceof Date
+          ? doc.createdAt.toISOString()
+          : new Date(doc.createdAt).toISOString();
 
       // 운송장/수거방식 정보(목록 라벨 전환 근거)
-      const trackingNo = (doc as any)?.shippingInfo?.selfShip?.trackingNo ?? (doc as any)?.shippingInfo?.invoice?.trackingNumber ?? (doc as any)?.shippingInfo?.trackingNumber ?? null;
-      const collectionMethod = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+      const trackingNo =
+        (doc as any)?.shippingInfo?.selfShip?.trackingNo ??
+        (doc as any)?.shippingInfo?.invoice?.trackingNumber ??
+        (doc as any)?.shippingInfo?.trackingNumber ??
+        null;
+      const collectionMethod = normalizeCollection(
+        (doc as any)?.shippingInfo?.collectionMethod ??
+          (doc as any)?.collectionMethod ??
+          "self_ship",
+      );
       const hasTracking = Boolean(trackingNo);
       // 비-방문이면 값 null로 내림
-      const cm = normalizeCollection((doc as any)?.shippingInfo?.collectionMethod ?? (doc as any)?.collectionMethod ?? 'self_ship');
+      const cm = normalizeCollection(
+        (doc as any)?.shippingInfo?.collectionMethod ??
+          (doc as any)?.collectionMethod ??
+          "self_ship",
+      );
 
       /**
        * 고증 보정 핵심: "고객이 매장으로 보내야 하는 신청인가?"
@@ -133,70 +172,89 @@ export async function GET(req: Request) {
        * - order 기반 + 주문에 racket 포함: 매장 라켓(구매/대여) 기반 → 고객 입고/운송장 불필요
        * - 그 외(단독 신청 / 스트링만 구매 + 서비스 등): 고객 라켓 기반 → 입고 필요
        */
-      const orderIdStr = (doc as any).orderId ? String((doc as any).orderId) : null;
-      const fromOrder = Boolean((doc as any).orderId || (doc as any)?.meta?.fromOrder);
-      const orderHasRacket = fromOrder && orderIdStr ? Boolean(orderHasRacketById.get(orderIdStr)) : false;
+      const orderIdStr = (doc as any).orderId
+        ? String((doc as any).orderId)
+        : null;
+      const fromOrder = Boolean(
+        (doc as any).orderId || (doc as any)?.meta?.fromOrder,
+      );
+      const orderHasRacket =
+        fromOrder && orderIdStr
+          ? Boolean(orderHasRacketById.get(orderIdStr))
+          : false;
       const inboundRequired = (() => {
         if ((doc as any).rentalId) return false;
         if (fromOrder && orderHasRacket) return false;
         return true;
       })();
-      const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+      const needsInboundTracking =
+        inboundRequired && collectionMethod === "self_ship";
 
       // 취소 요청 정보 정리
       const cancel: any = (doc as any).cancelRequest ?? {};
       // DB에는 '요청' | '승인' | '거절' | undefined 이런 값들이 들어감
-      const rawCancelStatus: string = cancel.status ?? 'none';
+      const rawCancelStatus: string = cancel.status ?? "none";
 
       let cancelReasonSummary: string | null = null;
-      if (rawCancelStatus && rawCancelStatus !== 'none') {
+      if (rawCancelStatus && rawCancelStatus !== "none") {
         if (cancel.reasonCode) {
           // 예: "CHANGE_MIND (다른 상품 구매)" 식으로 한 줄 요약
-          cancelReasonSummary = cancel.reasonCode + (cancel.reasonText ? ` (${cancel.reasonText})` : '');
+          cancelReasonSummary =
+            cancel.reasonCode +
+            (cancel.reasonText ? ` (${cancel.reasonText})` : "");
         } else if (cancel.reasonText) {
           cancelReasonSummary = cancel.reasonText;
         }
       }
       return {
         id: doc._id.toString(),
-        type: '스트링 장착 서비스',
+        type: "스트링 장착 서비스",
         applicantName: doc.name ?? null,
         phone: doc.phone ?? null,
         appliedAt: appliedAtISO,
-        status: doc.status ?? '접수',
+        status: doc.status ?? "접수",
         // 라켓 종류 요약 문자열
         // 1) stringDetails.racketType 문자열이 있으면 그 값을 우선 사용
         // 2) 없으면 stringDetails.racketLines 배열을 기준으로 라켓 이름들을 합쳐서 보여줌
         racketType: (() => {
           // 1단계: 단일 필드(racketType)에 값이 있으면 그걸 그대로 사용
-          if (details.racketType && typeof details.racketType === 'string' && details.racketType.trim().length > 0) {
+          if (
+            details.racketType &&
+            typeof details.racketType === "string" &&
+            details.racketType.trim().length > 0
+          ) {
             return details.racketType.trim();
           }
 
           // 2단계: lines 우선 + racketLines fallback으로 요약 생성
           const rawLines = getApplicationLines(details);
           if (rawLines.length === 0) {
-            return '-';
+            return "-";
           }
 
           const names = rawLines.map((line: any, index: number) => {
-            const rawName = (line.racketType && String(line.racketType).trim()) || (line.racketLabel && String(line.racketLabel).trim()) || '';
+            const rawName =
+              (line.racketType && String(line.racketType).trim()) ||
+              (line.racketLabel && String(line.racketLabel).trim()) ||
+              "";
 
             // 이름이 하나도 없으면 "라켓1", "라켓2" 형태로 대체
             return rawName || `라켓 ${index + 1}`;
           });
 
-          return names.join(', ');
+          return names.join(", ");
         })(),
 
-        stringType: names.join(', ') || '-',
+        stringType: names.join(", ") || "-",
         // 방문만 예약 표시, 그 외는 null로 정리
-        preferredDate: cm === 'visit' ? (details.preferredDate ?? null) : null,
-        preferredTime: cm === 'visit' ? (details.preferredTime ?? null) : null,
+        preferredDate: cm === "visit" ? (details.preferredDate ?? null) : null,
+        preferredTime: cm === "visit" ? (details.preferredTime ?? null) : null,
 
         // 방문 예약 슬롯 정보 (없으면 null)
-        visitSlotCount: cm === 'visit' ? ((doc as any).visitSlotCount ?? null) : null,
-        visitDurationMinutes: cm === 'visit' ? ((doc as any).visitDurationMinutes ?? null) : null,
+        visitSlotCount:
+          cm === "visit" ? ((doc as any).visitSlotCount ?? null) : null,
+        visitDurationMinutes:
+          cm === "visit" ? ((doc as any).visitDurationMinutes ?? null) : null,
 
         requests: details.requirements ?? null,
         shippingInfo: {
@@ -214,7 +272,12 @@ export async function GET(req: Request) {
         rentalId: (doc as any).rentalId ? String((doc as any).rentalId) : null,
 
         // 사용자 확정 시각 (없으면 null)
-        userConfirmedAt: (doc as any).userConfirmedAt instanceof Date ? (doc as any).userConfirmedAt.toISOString() : typeof (doc as any).userConfirmedAt === 'string' ? (doc as any).userConfirmedAt : null,
+        userConfirmedAt:
+          (doc as any).userConfirmedAt instanceof Date
+            ? (doc as any).userConfirmedAt.toISOString()
+            : typeof (doc as any).userConfirmedAt === "string"
+              ? (doc as any).userConfirmedAt
+              : null,
 
         // 마이페이지 목록 카드용 취소 요청 정보
         cancelStatus: rawCancelStatus, //'요청' | '승인' | '거절' | 'none'

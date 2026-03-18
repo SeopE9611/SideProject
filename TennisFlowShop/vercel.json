@@ -1,3 +1,5 @@
 {
-  "crons": [{ "path": "/api/settlements/cron-monthly", "schedule": "0 0 1 * *" }]
+  "crons": [
+    { "path": "/api/settlements/cron-monthly", "schedule": "0 0 1 * *" }
+  ]
 }

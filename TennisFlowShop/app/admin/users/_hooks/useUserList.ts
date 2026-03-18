@@ -1,17 +1,17 @@
-'use client';
-import useSWR from 'swr';
-import { buildQueryString } from '@/lib/admin/urlQuerySync';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+"use client";
+import useSWR from "swr";
+import { buildQueryString } from "@/lib/admin/urlQuerySync";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 export type UserListFilters = {
   page: number;
   limit: number;
   searchQuery: string;
-  roleFilter: 'all' | 'user' | 'admin';
-  statusFilter: 'all' | 'active' | 'deleted' | 'suspended';
-  loginFilter: 'all' | 'nologin' | 'recent30' | 'recent90';
-  signupFilter: 'all' | 'local' | 'kakao' | 'naver';
-  sort: 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc';
+  roleFilter: "all" | "user" | "admin";
+  statusFilter: "all" | "active" | "deleted" | "suspended";
+  loginFilter: "all" | "nologin" | "recent30" | "recent90";
+  signupFilter: "all" | "local" | "kakao" | "naver";
+  sort: "created_desc" | "created_asc" | "name_asc" | "name_desc";
 };
 
 export type UserListItem = {
@@ -22,12 +22,12 @@ export type UserListItem = {
   address?: string;
   addressDetail?: string;
   postalCode?: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   isDeleted: boolean;
   createdAt?: string;
   lastLoginAt?: string;
   isSuspended?: boolean;
-  socialProviders?: Array<'kakao' | 'naver'>;
+  socialProviders?: Array<"kakao" | "naver">;
 };
 
 type UserListResponse = {
@@ -59,9 +59,16 @@ export function useUserList(filters: UserListFilters) {
   const hasResolvedData = Boolean(swr.data) && !hasDataError;
 
   // 데이터가 확정된 경우에만 rows/total을 노출한다.
-  const rows = hasResolvedData ? ((Array.isArray(swr.data?.items) ? swr.data.items : []) as UserListItem[]) : null;
+  const rows = hasResolvedData
+    ? ((Array.isArray(swr.data?.items) ? swr.data.items : []) as UserListItem[])
+    : null;
   const totalValue = swr.data?.total;
-  const total = hasResolvedData && typeof totalValue === 'number' && Number.isFinite(totalValue) ? totalValue : null;
+  const total =
+    hasResolvedData &&
+    typeof totalValue === "number" &&
+    Number.isFinite(totalValue)
+      ? totalValue
+      : null;
 
   const errorMessage = swr.error instanceof Error ? swr.error.message : null;
 

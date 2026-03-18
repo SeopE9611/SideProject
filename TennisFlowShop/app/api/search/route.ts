@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { getHangulInitials } from '@/lib/hangul-utils';
+import { NextRequest, NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { getHangulInitials } from "@/lib/hangul-utils";
 
 type SearchResult = {
   _id: string; // 기존 SearchPreview가 쓰는 필드 유지
-  type: 'product' | 'racket';
+  type: "product" | "racket";
   name: string;
   brand?: string;
   price?: number;
@@ -14,7 +14,7 @@ type SearchResult = {
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const query = url.searchParams.get('query')?.trim() || '';
+    const query = url.searchParams.get("query")?.trim() || "";
 
     // 검색어가 없으면 바로 빈 배열 반환
     if (!query) {
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     // 간단한 매칭 함수: name / brand / searchKeywords 를 모두 대상으로
     const matchText = (targets: (string | undefined | null)[]) => {
-      const joined = targets.filter(Boolean).join(' ');
+      const joined = targets.filter(Boolean).join(" ");
 
       if (!joined) return false;
 
@@ -47,14 +47,17 @@ export async function GET(req: NextRequest) {
     // 스트링 상품 조회 (기존 preview 로직과 동일하게 isDeleted 제외)
     const [products, rackets] = await Promise.all([
       db
-        .collection('products')
+        .collection("products")
         .find({ isDeleted: { $ne: true } })
         .toArray(),
       db
-        .collection('used_rackets')
+        .collection("used_rackets")
         .find({
           // 비노출/비활성 제외 (기존 /api/rackets 기준과 맞춤)
-          $or: [{ status: { $exists: false } }, { status: { $nin: ['inactive', '비노출'] } }],
+          $or: [
+            { status: { $exists: false } },
+            { status: { $nin: ["inactive", "비노출"] } },
+          ],
         })
         .toArray(),
     ]);
@@ -63,35 +66,49 @@ export async function GET(req: NextRequest) {
 
     // 스트링 상품 매칭
     for (const p of products as any[]) {
-      const searchKeywords: string[] = Array.isArray(p.searchKeywords) ? p.searchKeywords : [];
+      const searchKeywords: string[] = Array.isArray(p.searchKeywords)
+        ? p.searchKeywords
+        : [];
 
       const ok = matchText([p.name, p.brand, ...searchKeywords]);
       if (!ok) continue;
 
       results.push({
         _id: String(p._id),
-        type: 'product',
-        name: p.name ?? '',
-        brand: p.brand ?? '',
-        price: typeof p.price === 'number' ? p.price : 0,
-        image: (Array.isArray(p.images) && p.images.length > 0 && typeof p.images[0] === 'string' ? p.images[0] : p.thumbnailUrl) ?? null,
+        type: "product",
+        name: p.name ?? "",
+        brand: p.brand ?? "",
+        price: typeof p.price === "number" ? p.price : 0,
+        image:
+          (Array.isArray(p.images) &&
+          p.images.length > 0 &&
+          typeof p.images[0] === "string"
+            ? p.images[0]
+            : p.thumbnailUrl) ?? null,
       });
     }
 
     // 중고 라켓 매칭 (brand + model 중심)
     for (const r of rackets as any[]) {
-      const searchKeywords: string[] = Array.isArray(r.searchKeywords) ? r.searchKeywords : [];
+      const searchKeywords: string[] = Array.isArray(r.searchKeywords)
+        ? r.searchKeywords
+        : [];
 
       const ok = matchText([r.model, r.brand, ...searchKeywords]);
       if (!ok) continue;
 
       results.push({
         _id: String(r._id),
-        type: 'racket',
-        name: r.model ?? '',
-        brand: r.brand ?? '',
-        price: typeof r.price === 'number' ? r.price : 0,
-        image: Array.isArray(r.images) && r.images.length > 0 && typeof r.images[0] === 'string' ? r.images[0] : null,
+        type: "racket",
+        name: r.model ?? "",
+        brand: r.brand ?? "",
+        price: typeof r.price === "number" ? r.price : 0,
+        image:
+          Array.isArray(r.images) &&
+          r.images.length > 0 &&
+          typeof r.images[0] === "string"
+            ? r.images[0]
+            : null,
       });
     }
 
@@ -100,7 +117,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(limited);
   } catch (err) {
-    console.error('[통합 검색 오류]', err);
-    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
+    console.error("[통합 검색 오류]", err);
+    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
   }
 }

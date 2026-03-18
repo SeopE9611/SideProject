@@ -1,12 +1,15 @@
-import SiteContainer from '@/components/layout/SiteContainer';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
     <div className="pb-8 bp-sm:pb-12">
       <div className="relative overflow-hidden bg-card border-b border-border">
-        <SiteContainer variant="wide" className="relative py-8 bp-sm:py-10 bp-lg:py-12">
+        <SiteContainer
+          variant="wide"
+          className="relative py-8 bp-sm:py-10 bp-lg:py-12"
+        >
           <div className="space-y-5 bp-sm:space-y-6 animate-pulse">
             <div className="space-y-3">
               <Skeleton className="h-8 w-44" />
@@ -15,7 +18,10 @@ export default function Loading() {
 
             <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 border border-border space-y-3">
+                <div
+                  key={i}
+                  className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 border border-border space-y-3"
+                >
                   <Skeleton className="h-6 w-6 rounded-lg" />
                   <Skeleton className="h-7 w-16" />
                   <Skeleton className="h-3 w-20" />
@@ -58,7 +64,10 @@ export default function Loading() {
               </CardHeader>
               <CardContent className="p-4 bp-sm:p-6 space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="rounded-xl border border-border p-4 space-y-2">
+                  <div
+                    key={i}
+                    className="rounded-xl border border-border p-4 space-y-2"
+                  >
                     <Skeleton className="h-4 w-28" />
                     <Skeleton className="h-5 w-2/3" />
                     <Skeleton className="h-4 w-1/2" />

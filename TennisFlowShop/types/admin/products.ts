@@ -1,7 +1,7 @@
 export type ProductInventory = {
   stock: number;
   lowStock: number;
-  status: 'instock' | 'outofstock' | 'backorder';
+  status: "instock" | "outofstock" | "backorder";
   manageStock: boolean;
   allowBackorder: boolean;
   isFeatured: boolean;
@@ -28,7 +28,13 @@ export type ProductTags = {
   power: boolean;
 };
 
-export type HybridSpecUnit = { brand: string; name: string; gauge: string; color: string; role?: 'mains' | 'cross' };
+export type HybridSpecUnit = {
+  brand: string;
+  name: string;
+  gauge: string;
+  color: string;
+  role?: "mains" | "cross";
+};
 
 export type ProductDetail = {
   name: string;
@@ -60,9 +66,16 @@ export type ProductDetailResponse = {
   product: ProductDetail;
 };
 
-export type ProductListStatus = 'all' | 'active' | 'low_stock' | 'out_of_stock';
+export type ProductListStatus = "all" | "active" | "low_stock" | "out_of_stock";
 
-export type ProductListSortKey = 'name' | 'brand' | 'gauge' | 'material' | 'price' | 'stock' | 'createdAt';
+export type ProductListSortKey =
+  | "name"
+  | "brand"
+  | "gauge"
+  | "material"
+  | "price"
+  | "stock"
+  | "createdAt";
 
 export interface AdminProductsListRequestDto {
   page: number;
@@ -72,7 +85,7 @@ export interface AdminProductsListRequestDto {
   material: string;
   status: ProductListStatus;
   sortField: ProductListSortKey | null;
-  sortDirection: 'asc' | 'desc';
+  sortDirection: "asc" | "desc";
 }
 
 export interface AdminProductCreateRequestDto {
@@ -82,7 +95,7 @@ export interface AdminProductCreateRequestDto {
 }
 
 export interface AdminProductListItemDto extends Record<string, unknown> {
-  computedStatus: Exclude<ProductListStatus, 'all'>;
+  computedStatus: Exclude<ProductListStatus, "all">;
 }
 
 export interface AdminProductsListResponseDto {
@@ -90,7 +103,7 @@ export interface AdminProductsListResponseDto {
   total: number;
   page: number;
   pageSize: number;
-  totalsByStatus: Record<Exclude<ProductListStatus, 'all'>, number>;
+  totalsByStatus: Record<Exclude<ProductListStatus, "all">, number>;
 }
 
 export interface AdminProductMutationResponseDto {

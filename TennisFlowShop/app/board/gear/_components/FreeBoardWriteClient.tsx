@@ -1,37 +1,47 @@
-'use client';
+"use client";
 
-import { FormEvent, useRef, useState, ChangeEvent, useMemo, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { MessageSquare, ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import {
+  FormEvent,
+  useRef,
+  useState,
+  ChangeEvent,
+  useMemo,
+  useEffect,
+} from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { MessageSquare, ArrowLeft, Loader2, Upload, X } from "lucide-react";
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
-import ImageUploader from '@/components/admin/ImageUploader';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { supabase } from '@/lib/supabase';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { communityFetch } from '@/lib/community/communityFetch.client';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import ImageUploader from "@/components/admin/ImageUploader";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import { communityFetch } from "@/lib/community/communityFetch.client";
 
 export const CATEGORY_OPTIONS = [
-  { value: 'racket', label: '라켓' },
-  { value: 'string', label: '스트링' },
-  { value: 'shoes', label: '테니스화' },
-  { value: 'bag', label: '가방' },
-  { value: 'apparel', label: '의류' },
-  { value: 'grip', label: '그립/오버그립' },
-  { value: 'accessory', label: '악세서리' },
-  { value: 'ball', label: '테니스볼' },
-  { value: 'other', label: '기타' },
+  { value: "racket", label: "라켓" },
+  { value: "string", label: "스트링" },
+  { value: "shoes", label: "테니스화" },
+  { value: "bag", label: "가방" },
+  { value: "apparel", label: "의류" },
+  { value: "grip", label: "그립/오버그립" },
+  { value: "accessory", label: "악세서리" },
+  { value: "ball", label: "테니스볼" },
+  { value: "other", label: "기타" },
 ] as const;
 
-type CategoryValue = (typeof CATEGORY_OPTIONS)[number]['value'];
+type CategoryValue = (typeof CATEGORY_OPTIONS)[number]["value"];
 
 // 게시글 작성 제출 직전 최종 유효성 가드(우회 방지)
 const TITLE_MIN = 4;
@@ -39,17 +49,18 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
-const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) =>
+  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 export default function FreeBoardWriteClient() {
   const router = useRouter();
 
   // 폼 상태
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
   // 카테고리 상태 (기본 'general')
-  const [category, setCategory] = useState<CategoryValue>('racket');
+  const [category, setCategory] = useState<CategoryValue>("racket");
 
   // 이미지 상태
   const [images, setImages] = useState<string[]>([]);
@@ -67,10 +78,10 @@ export default function FreeBoardWriteClient() {
   // 간단한 프론트 유효성 검증
   const validate = () => {
     if (!title.trim()) {
-      return '제목을 입력해 주세요.';
+      return "제목을 입력해 주세요.";
     }
     if (!content.trim()) {
-      return '내용을 입력해 주세요.';
+      return "내용을 입력해 주세요.";
     }
     return null;
   };
@@ -86,7 +97,7 @@ export default function FreeBoardWriteClient() {
     const t = title.trim();
     const c = content.trim();
     if (t || c) return true;
-    if (category !== 'racket') return true;
+    if (category !== "racket") return true;
     if (images.length > 0) return true;
     if (selectedFiles.length > 0) return true;
     return false;
@@ -126,22 +137,29 @@ export default function FreeBoardWriteClient() {
 
     // 카테고리 화이트리스트(타입이 있어도 devtools로 깨질 수 있어 방어)
     if (!CATEGORY_OPTIONS.some((o) => o.value === category)) {
-      return '분류를 선택해 주세요.';
+      return "분류를 선택해 주세요.";
     }
 
-    if (!t || !c) return '제목과 내용을 입력해 주세요.';
-    if (t.length < TITLE_MIN) return `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
-    if (t.length > TITLE_MAX) return `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
-    if (c.length < CONTENT_MIN) return `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
-    if (c.length > CONTENT_MAX) return `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
+    if (!t || !c) return "제목과 내용을 입력해 주세요.";
+    if (t.length < TITLE_MIN)
+      return `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+    if (t.length > TITLE_MAX)
+      return `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+    if (c.length < CONTENT_MIN)
+      return `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+    if (c.length > CONTENT_MAX)
+      return `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
 
     // 게시판은 HTML/스크립트 입력을 기본적으로 차단하는 편이 안전
-    if (hasScriptLike(t) || hasScriptLike(c)) return '스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.';
-    if (hasHtmlLike(t) || hasHtmlLike(c)) return 'HTML 태그는 사용할 수 없습니다.';
+    if (hasScriptLike(t) || hasScriptLike(c))
+      return "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
+    if (hasHtmlLike(t) || hasHtmlLike(c))
+      return "HTML 태그는 사용할 수 없습니다.";
 
     // 이미지 업로더 max=5이지만, 제출 직전 한 번 더 방어
-    if (images.length > 5) return '이미지는 최대 5장까지만 업로드할 수 있어요.';
-    if (selectedFiles.length > MAX_FILES) return `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
+    if (images.length > 5) return "이미지는 최대 5장까지만 업로드할 수 있어요.";
+    if (selectedFiles.length > MAX_FILES)
+      return `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
     return null;
   };
@@ -165,28 +183,35 @@ export default function FreeBoardWriteClient() {
 
     // 이미지 파일 방지 (이미지는 이미지 탭에서만)
     const isImageExt = (name: string) => /\.(jpe?g|png|gif|webp)$/i.test(name);
-    const hasImage = files.some((f) => f.type?.startsWith('image/') || isImageExt(f.name));
+    const hasImage = files.some(
+      (f) => f.type?.startsWith("image/") || isImageExt(f.name),
+    );
     if (hasImage) {
       emitError('이미지 파일은 "이미지 업로드" 탭에서 업로드해 주세요.');
       return;
     }
 
     // 드롭 업로드는 accept를 우회할 수 있으므로, 문서 allowlist를 추가로 방어
-    const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
+    const extOk = (name: string) =>
+      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
     const ALLOWED_MIME = new Set<string>([
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'text/plain',
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
       // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
     ]);
-    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
+    const invalid = files.find(
+      (f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)),
+    );
     if (invalid) {
-      emitError('문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.');
+      emitError(
+        "문서 파일(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.",
+      );
       return;
     }
 
@@ -197,7 +222,7 @@ export default function FreeBoardWriteClient() {
     const files = Array.from(e.target.files || []);
     addFiles(files);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -207,10 +232,10 @@ export default function FreeBoardWriteClient() {
 
   // Supabase에 한 개 파일 업로드
   const uploadOneFile = async (file: File) => {
-    const BUCKET = 'tennis-images';
-    const FOLDER = 'community/attachments';
+    const BUCKET = "tennis-images";
+    const FOLDER = "community/attachments";
 
-    const ext = file.name.split('.').pop() || 'bin';
+    const ext = file.name.split(".").pop() || "bin";
     const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
@@ -225,7 +250,7 @@ export default function FreeBoardWriteClient() {
 
     const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
     const url = data?.publicUrl;
-    if (!url) throw new Error('파일 URL 생성에 실패했습니다.');
+    if (!url) throw new Error("파일 URL 생성에 실패했습니다.");
 
     return {
       name: file.name,
@@ -249,7 +274,7 @@ export default function FreeBoardWriteClient() {
     }
 
     if (isUploadingImages || isUploadingFiles) {
-      emitError('첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.');
+      emitError("첨부 업로드가 끝날 때까지 잠시만 기다려 주세요.");
       return;
     }
 
@@ -257,7 +282,9 @@ export default function FreeBoardWriteClient() {
       submitRef.current = true;
       setIsSubmitting(true);
 
-      let attachments: { name: string; url: string; size?: number }[] | undefined;
+      let attachments:
+        | { name: string; url: string; size?: number }[]
+        | undefined;
 
       if (selectedFiles.length > 0) {
         setIsUploadingFiles(true);
@@ -270,7 +297,7 @@ export default function FreeBoardWriteClient() {
       }
 
       const payload: any = {
-        type: 'gear',
+        type: "gear",
         title: title.trim(),
         content: content.trim(),
         images,
@@ -280,26 +307,30 @@ export default function FreeBoardWriteClient() {
         payload.attachments = attachments;
       }
 
-const res = await communityFetch('/api/boards', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload),
-});
+      const res = await communityFetch("/api/boards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       const data = await res.json();
 
       if (!res.ok || !data?.ok) {
-        setErrorMsg(data?.error ?? '글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+        setErrorMsg(
+          data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        );
         return;
       }
 
       const goId = data.id ?? data.item?._id ?? data.item?.id;
-      showSuccessToast('게시글이 등록되었습니다.');
-      router.push(goId ? `/board/gear/${goId}` : '/board/gear');
+      showSuccessToast("게시글이 등록되었습니다.");
+      router.push(goId ? `/board/gear/${goId}` : "/board/gear");
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg('글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      setErrorMsg(
+        "글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+      );
     } finally {
       setIsSubmitting(false);
       submitRef.current = false;
@@ -316,14 +347,22 @@ const res = await communityFetch('/api/boards', {
             <div className="mb-1 text-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
-              <Link href="/board/gear" onClick={guardLeave} className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground">
+              <Link
+                href="/board/gear"
+                onClick={guardLeave}
+                className="text-muted-foreground underline-offset-2 hover:underline dark:text-muted-foreground"
+              >
                 장비 게시판
               </Link>
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">장비 사용기 글쓰기</h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">장비 사용기 글을 작성해보세요.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+              장비 사용기 글쓰기
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground md:text-base">
+              장비 사용기 글을 작성해보세요.
+            </p>
           </div>
 
           {/* 우측 버튼들: 목록으로 / 게시판 홈 */}
@@ -347,8 +386,13 @@ const res = await communityFetch('/api/boards', {
               <MessageSquare className="h-5 w-5" />
             </div>
             <div>
-              <CardTitle className="text-base md:text-lg">장비 사용기 글 작성</CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground md:text-sm">다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는 표현을 사용해 주세요.</p>
+              <CardTitle className="text-base md:text-lg">
+                장비 사용기 글 작성
+              </CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground md:text-sm">
+                다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는
+                표현을 사용해 주세요.
+              </p>
             </div>
           </CardHeader>
 
@@ -364,8 +408,10 @@ const res = await communityFetch('/api/boards', {
                       type="button"
                       onClick={() => setCategory(opt.value as CategoryValue)}
                       className={cn(
-                        'rounded-full border px-3 py-1',
-                        category === opt.value ? 'border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary' : 'border-border text-muted-foreground dark:border-border dark:text-muted-foreground',
+                        "rounded-full border px-3 py-1",
+                        category === opt.value
+                          ? "border-border bg-primary/10 text-primary dark:border-border dark:bg-primary/20 dark:text-primary"
+                          : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
                       )}
                     >
                       {opt.label}
@@ -376,7 +422,13 @@ const res = await communityFetch('/api/boards', {
               {/* 제목 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="title">제목</Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={isSubmitting} maxLength={TITLE_MAX} />
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  disabled={isSubmitting}
+                  maxLength={TITLE_MAX}
+                />
                 <p className="text-xs text-muted-foreground">
                   {title.trim().length}/{TITLE_MAX}
                 </p>
@@ -385,11 +437,21 @@ const res = await communityFetch('/api/boards', {
               {/* 내용 입력 */}
               <div className="space-y-2">
                 <Label htmlFor="content">내용</Label>
-                <Textarea id="content" className="min-h-[200px] resize-y" value={content} onChange={(e) => setContent(e.target.value)} disabled={isSubmitting} maxLength={CONTENT_MAX} />
+                <Textarea
+                  id="content"
+                  className="min-h-[200px] resize-y"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  disabled={isSubmitting}
+                  maxLength={CONTENT_MAX}
+                />
                 <p className="text-xs text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해 주세요.</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A
+                  게시판을 활용해 주세요.
+                </p>
               </div>
 
               {/* 첨부 영역: 이미지 / 파일 탭 */}
@@ -404,8 +466,17 @@ const res = await communityFetch('/api/boards', {
 
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.</p>
-                    <ImageUploader value={images} onChange={setImages} max={5} folder="community/posts" onUploadingChange={setIsUploadingImages} />
+                    <p className="text-xs text-muted-foreground">
+                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로
+                      사용됩니다.
+                    </p>
+                    <ImageUploader
+                      value={images}
+                      onChange={setImages}
+                      max={5}
+                      folder="community/posts"
+                      onUploadingChange={setIsUploadingImages}
+                    />
                   </TabsContent>
 
                   {/* 파일 업로드 탭 */}
@@ -420,7 +491,7 @@ const res = await communityFetch('/api/boards', {
                         fileInputRef.current?.click();
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           fileInputRef.current?.click();
                         }
                       }}
@@ -431,9 +502,13 @@ const res = await communityFetch('/api/boards', {
                       }}
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.</p>
+                      <p className="text-sm text-muted-foreground">
+                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
+                        업로드할 수 있어요.
+                      </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
+                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
+                        최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
                       </p>
                       <Button
                         type="button"
@@ -448,7 +523,14 @@ const res = await communityFetch('/api/boards', {
                         <Upload className="h-4 w-4 mr-2" />
                         파일 선택
                       </Button>
-                      <input ref={fileInputRef} type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" className="sr-only" onChange={handleFileInputChange} />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt"
+                        className="sr-only"
+                        onChange={handleFileInputChange}
+                      />
                     </div>
 
                     {/* 선택된 파일 카드 목록 */}
@@ -464,10 +546,15 @@ const res = await communityFetch('/api/boards', {
                               className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
-                                <span className="font-medium truncate" title={file.name}>
+                                <span
+                                  className="font-medium truncate"
+                                  title={file.name}
+                                >
                                   {file.name}
                                 </span>
-                                <span className="text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="text-muted-foreground">
+                                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                                </span>
                               </div>
 
                               <button
@@ -491,17 +578,32 @@ const res = await communityFetch('/api/boards', {
 
               {/* 버튼 영역 */}
               <div className="flex items-center justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" size="sm" disabled={isSubmitting || isUploadingImages || isUploadingFiles} onClick={handleCancel}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={
+                    isSubmitting || isUploadingImages || isUploadingFiles
+                  }
+                  onClick={handleCancel}
+                >
                   취소
                 </Button>
-                <Button type="submit" size="sm" className={cn('gap-2')} disabled={isSubmitting || isUploadingImages || isUploadingFiles}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className={cn("gap-2")}
+                  disabled={
+                    isSubmitting || isUploadingImages || isUploadingFiles
+                  }
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       등록 중…
                     </>
                   ) : (
-                    '작성하기'
+                    "작성하기"
                   )}
                 </Button>
               </div>

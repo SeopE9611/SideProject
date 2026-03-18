@@ -1,15 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth.utils";
 
 /**
  * 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity 방지)
  * - 비정상 값이면 defaultValue 적용
  * - min/max 범위로 clamp
  */
-function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+function parseIntParam(
+  v: string | null,
+  opts: { defaultValue: number; min: number; max: number },
+) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -23,7 +26,7 @@ type OrderDoc = {
   totalPrice?: number;
   items: Array<{
     productId?: ObjectId | string;
-    kind?: 'product' | 'racket' | string;
+    kind?: "product" | "racket" | string;
     name?: string;
     category?: string;
     type?: string;
@@ -62,7 +65,7 @@ type OrderListItem = {
     price: number;
     quantity: number;
     imageUrl?: string | null;
-    kind: 'racket' | 'string' | 'product';
+    kind: "racket" | "string" | "product";
   }>;
   shippingInfo: any;
   paymentStatus: string;
@@ -92,81 +95,102 @@ type OrderResponse = {
 
 /* 주문 총액 계산: 명시 총액이 있으면 그것, 없으면 아이템 합계 */
 function calcOrderTotal(o: any): number {
-  const explicit = o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
-  if (typeof explicit === 'number') return explicit;
+  const explicit =
+    o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
+  if (typeof explicit === "number") return explicit;
 
   const items: any[] = Array.isArray(o.items) ? o.items : [];
   return items.reduce((sum, it) => {
     const unit = it.price ?? it.unitPrice ?? 0;
     const qty = it.quantity ?? it.qty ?? it.count ?? 1;
     const line = it.total ?? unit * qty;
-    return sum + (typeof line === 'number' ? line : 0);
+    return sum + (typeof line === "number" ? line : 0);
   }, 0);
 }
 
-function resolveListItemKind(item: any): 'racket' | 'string' | 'product' {
-  const rawKind = typeof item?.kind === 'string' ? item.kind.toLowerCase() : '';
-  if (rawKind === 'racket' || rawKind === 'used_racket') return 'racket';
+function resolveListItemKind(item: any): "racket" | "string" | "product" {
+  const rawKind = typeof item?.kind === "string" ? item.kind.toLowerCase() : "";
+  if (rawKind === "racket" || rawKind === "used_racket") return "racket";
 
   const mountingFee = Number(item?.mountingFee ?? 0);
-  if (Number.isFinite(mountingFee) && mountingFee > 0) return 'string';
+  if (Number.isFinite(mountingFee) && mountingFee > 0) return "string";
 
   const categoryToken = [item?.category, item?.type]
-    .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
-    .join(' ')
+    .filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    .join(" ")
     .toLowerCase();
 
-  if (categoryToken.includes('string') || categoryToken.includes('스트링')) return 'string';
+  if (categoryToken.includes("string") || categoryToken.includes("스트링"))
+    return "string";
 
-  return 'product';
+  return "product";
 }
 
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines))
+    return stringDetails.racketLines;
   return [];
 }
 
 function resolveOrderPaymentStatus(order: OrderDoc): string {
-  const topLevel = String(order.paymentStatus ?? '').trim();
+  const topLevel = String(order.paymentStatus ?? "").trim();
   if (topLevel) return topLevel;
 
-  const paymentInfoStatus = String(order.paymentInfo?.status ?? '')
+  const paymentInfoStatus = String(order.paymentInfo?.status ?? "")
     .trim()
     .toLowerCase();
 
-  if (paymentInfoStatus === 'pending') return '결제대기';
-  if (paymentInfoStatus === 'paid') return '결제완료';
-  if (paymentInfoStatus === 'failed') return '결제실패';
-  if (paymentInfoStatus === 'canceled' || paymentInfoStatus === 'cancelled') return '결제취소';
-  if (paymentInfoStatus === 'refunded') return '환불완료';
+  if (paymentInfoStatus === "pending") return "결제대기";
+  if (paymentInfoStatus === "paid") return "결제완료";
+  if (paymentInfoStatus === "failed") return "결제실패";
+  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled")
+    return "결제취소";
+  if (paymentInfoStatus === "refunded") return "환불완료";
 
-  return '결제대기';
+  return "결제대기";
 }
 
 export async function GET(req: NextRequest) {
   try {
     // 인증
-    const token = (await cookies()).get('accessToken')?.value;
+    const token = (await cookies()).get("accessToken")?.value;
     if (!token) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json(
+        { error: "unauthorized" },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      );
     }
     // verifyAccessToken은 throw 가능 → Phase 0: 500 방지(401로 정리)
     let payload: any = null;
     try {
       payload = verifyAccessToken(token);
     } catch {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json(
+        { error: "unauthorized" },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      );
     }
     if (!payload?.sub) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json(
+        { error: "unauthorized" },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      );
     }
 
     const url = new URL(req.url);
     // Query NaN 방지
-    const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
-    const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 20 });
+    const page = parseIntParam(url.searchParams.get("page"), {
+      defaultValue: 1,
+      min: 1,
+      max: 10_000,
+    });
+    const limit = parseIntParam(url.searchParams.get("limit"), {
+      defaultValue: 10,
+      min: 1,
+      max: 20,
+    });
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;
@@ -174,18 +198,45 @@ export async function GET(req: NextRequest) {
     // payload.sub → ObjectId 변환 전 선검증 (throw → 500 방지)
     const subStr = String(payload.sub);
     if (!ObjectId.isValid(subStr)) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json(
+        { error: "unauthorized" },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      );
     }
     const userId = new ObjectId(subStr);
 
     // 내 주문 조회 (최신순)
-    const [orders, total] = await Promise.all([db.collection<OrderDoc>('orders').find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(), db.collection('orders').countDocuments({ userId })]);
+    const [orders, total] = await Promise.all([
+      db
+        .collection<OrderDoc>("orders")
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      db.collection("orders").countDocuments({ userId }),
+    ]);
 
     // 주문들에 연결된 '실제 제출 완료 신청서'를 한 번에 조회(draft/취소 제외)
     const orderIds = orders.map((o) => o._id);
     const apps = await db
-      .collection('stringing_applications')
-      .find({ userId, orderId: { $in: orderIds }, status: { $nin: ['draft', '취소'] } }, { projection: { _id: 1, orderId: 1, status: 1, 'stringDetails.lines': 1, 'stringDetails.racketLines': 1 } })
+      .collection("stringing_applications")
+      .find(
+        {
+          userId,
+          orderId: { $in: orderIds },
+          status: { $nin: ["draft", "취소"] },
+        },
+        {
+          projection: {
+            _id: 1,
+            orderId: 1,
+            status: 1,
+            "stringDetails.lines": 1,
+            "stringDetails.racketLines": 1,
+          },
+        },
+      )
       .sort({ updatedAt: -1, createdAt: -1 })
       .toArray();
     const stringServiceByOrderId = new Map<
@@ -197,10 +248,16 @@ export async function GET(req: NextRequest) {
     >();
     for (const app of apps as any[]) {
       const orderId = String(app.orderId);
-      const prev = stringServiceByOrderId.get(orderId) ?? { submittedApplicationId: null, usedSlots: 0 };
+      const prev = stringServiceByOrderId.get(orderId) ?? {
+        submittedApplicationId: null,
+        usedSlots: 0,
+      };
 
       const usedLineCount = getApplicationLines(app?.stringDetails).length;
-      const submittedApplicationId = prev.submittedApplicationId === null ? String(app._id) : prev.submittedApplicationId;
+      const submittedApplicationId =
+        prev.submittedApplicationId === null
+          ? String(app._id)
+          : prev.submittedApplicationId;
 
       stringServiceByOrderId.set(orderId, {
         submittedApplicationId,
@@ -222,7 +279,7 @@ export async function GET(req: NextRequest) {
     const reviewedByOrderId = new Map<string, Set<string>>();
     if (orderIds.length && allValidProductObjectIds.length) {
       const reviewedDocs = await db
-        .collection('reviews')
+        .collection("reviews")
         .find({
           userId,
           orderId: { $in: orderIds },
@@ -232,7 +289,10 @@ export async function GET(req: NextRequest) {
         .project({ orderId: 1, productId: 1 })
         .toArray();
 
-      for (const reviewedDoc of reviewedDocs as Array<{ orderId: ObjectId; productId: ObjectId }>) {
+      for (const reviewedDoc of reviewedDocs as Array<{
+        orderId: ObjectId;
+        productId: ObjectId;
+      }>) {
         const key = String(reviewedDoc.orderId);
         const existing = reviewedByOrderId.get(key) ?? new Set<string>();
         existing.add(String(reviewedDoc.productId));
@@ -246,36 +306,53 @@ export async function GET(req: NextRequest) {
       const items = Array.isArray(order.items) ? order.items : [];
 
       // 이 주문에서 리뷰 대상이 될 상품 ID 목록 (문자열로 정규화)
-      const productIds = items.map((it) => (it?.productId ? String(it.productId) : null)).filter((v): v is string => !!v);
+      const productIds = items
+        .map((it) => (it?.productId ? String(it.productId) : null))
+        .filter((v): v is string => !!v);
       // ObjectId 변환 throw 방지 (비정상 productId는 리뷰 대상에서 제외)
       const validProductIds = productIds.filter((pid) => ObjectId.isValid(pid));
 
       // 이미 작성한 리뷰 (배치 조회 결과 사용)
-      const reviewedSet = reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
+      const reviewedSet =
+        reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
 
-      const unreviewedIds = validProductIds.filter((pid) => !reviewedSet.has(pid));
+      const unreviewedIds = validProductIds.filter(
+        (pid) => !reviewedSet.has(pid),
+      );
       const unreviewedCount = unreviewedIds.length;
-      const reviewNextTargetProductId = unreviewedIds.length ? unreviewedIds[0] : null;
+      const reviewNextTargetProductId = unreviewedIds.length
+        ? unreviewedIds[0]
+        : null;
       const reviewAllDone = validProductIds.length > 0 && unreviewedCount === 0;
 
       // 총액 계산
       const totalPrice = calcOrderTotal(order);
       const totalSlots = items
-        .filter((it) => resolveListItemKind(it) === 'string')
-        .reduce((sum, it) => sum + (it?.quantity ?? it?.qty ?? it?.count ?? 1), 0);
-      const stringServiceSummary = stringServiceByOrderId.get(String(order._id));
+        .filter((it) => resolveListItemKind(it) === "string")
+        .reduce(
+          (sum, it) => sum + (it?.quantity ?? it?.qty ?? it?.count ?? 1),
+          0,
+        );
+      const stringServiceSummary = stringServiceByOrderId.get(
+        String(order._id),
+      );
       const usedSlots = stringServiceSummary?.usedSlots ?? 0;
       const remainingSlots = Math.max(totalSlots - usedSlots, 0);
-      const canApplyMoreStringService = Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0;
+      const canApplyMoreStringService =
+        Boolean(order.shippingInfo?.withStringService) &&
+        totalSlots > 0 &&
+        remainingSlots > 0;
 
       // 취소 요청 정보 정리
       const cancel: any = (order as any).cancelRequest ?? {};
-      const rawCancelStatus = cancel.status ?? 'none';
+      const rawCancelStatus = cancel.status ?? "none";
 
       let cancelReasonSummary: string | null = null;
-      if (rawCancelStatus && rawCancelStatus !== 'none') {
+      if (rawCancelStatus && rawCancelStatus !== "none") {
         if (cancel.reasonCode) {
-          cancelReasonSummary = cancel.reasonCode + (cancel.reasonText ? ` (${cancel.reasonText})` : '');
+          cancelReasonSummary =
+            cancel.reasonCode +
+            (cancel.reasonText ? ` (${cancel.reasonText})` : "");
         } else if (cancel.reasonText) {
           cancelReasonSummary = cancel.reasonText;
         }
@@ -283,17 +360,23 @@ export async function GET(req: NextRequest) {
 
       list.push({
         id: String(order._id),
-        date: order.createdAt ? new Date(order.createdAt).toISOString() : '',
-        status: order.status ?? '',
+        date: order.createdAt ? new Date(order.createdAt).toISOString() : "",
+        status: order.status ?? "",
         total: totalPrice,
         totalPrice,
 
         // 스냅샷 키 정규화
         items: items.map((it: any) => ({
-          name: it.name ?? it.productName ?? it.title ?? '상품',
+          name: it.name ?? it.productName ?? it.title ?? "상품",
           price: it.price ?? it.unitPrice ?? 0,
           quantity: it.quantity ?? it.qty ?? it.count ?? 1,
-          imageUrl: it.imageUrl ?? it.image ?? it.thumbnail ?? it.thumbnailUrl ?? (Array.isArray(it.images) && it.images[0]) ?? null,
+          imageUrl:
+            it.imageUrl ??
+            it.image ??
+            it.thumbnail ??
+            it.thumbnailUrl ??
+            (Array.isArray(it.images) && it.images[0]) ??
+            null,
           kind: resolveListItemKind(it),
         })),
 
@@ -308,8 +391,11 @@ export async function GET(req: NextRequest) {
         unreviewedCount,
         reviewNextTargetProductId,
         // 실제 신청 여부/ID
-        isStringServiceApplied: Boolean(stringServiceSummary?.submittedApplicationId),
-        stringingApplicationId: stringServiceSummary?.submittedApplicationId ?? null,
+        isStringServiceApplied: Boolean(
+          stringServiceSummary?.submittedApplicationId,
+        ),
+        stringingApplicationId:
+          stringServiceSummary?.submittedApplicationId ?? null,
         stringService: {
           totalSlots,
           usedSlots,
@@ -325,10 +411,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { items: list, total } satisfies OrderResponse,
-      { headers: { 'Cache-Control': 'no-store' } }, // 캐시 금지 (바로 갱신 반영)
+      { headers: { "Cache-Control": "no-store" } }, // 캐시 금지 (바로 갱신 반영)
     );
   } catch (err) {
-    console.error('ORDER_LIST_ERR', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
+    console.error("ORDER_LIST_ERR", err);
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
+    );
   }
 }

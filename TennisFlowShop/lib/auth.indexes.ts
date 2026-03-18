@@ -1,5 +1,5 @@
-import type { Db, IndexDirection } from 'mongodb';
-import { hasMatchingIndex } from '@/lib/indexes.utils';
+import type { Db, IndexDirection } from "mongodb";
+import { hasMatchingIndex } from "@/lib/indexes.utils";
 
 type Keys = Record<string, IndexDirection>;
 
@@ -12,22 +12,29 @@ type IndexSpec = {
 const AUTH_INDEX_SPECS: Readonly<Record<string, readonly IndexSpec[]>> = {
   oauth_pending_signups: [
     {
-      name: 'ttl_oauth_pending_expiresAt',
+      name: "ttl_oauth_pending_expiresAt",
       keys: { expiresAt: 1 },
       options: { expireAfterSeconds: 0 },
     },
   ],
   user_sessions: [
     {
-      name: 'user_sessions_user_at_desc',
+      name: "user_sessions_user_at_desc",
       keys: { userId: 1, at: -1 },
     },
   ],
 };
 
-async function ensureCollectionIndexes(db: Db, collectionName: string, specs: readonly IndexSpec[]) {
+async function ensureCollectionIndexes(
+  db: Db,
+  collectionName: string,
+  specs: readonly IndexSpec[],
+) {
   const col = db.collection(collectionName);
-  const existing = await col.listIndexes().toArray().catch(() => [] as any[]);
+  const existing = await col
+    .listIndexes()
+    .toArray()
+    .catch(() => [] as any[]);
 
   for (const spec of specs) {
     if (hasMatchingIndex(existing as any[], spec)) continue;

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 /*
  * Zustand 기반 전역 장바구니 상태관리 store
@@ -19,7 +19,7 @@ export type CartItem = {
   quantity: number;
   image?: string; // 이미지는 선택적 속성
   stock?: number; // 재고 정보
-  kind?: 'product' | 'racket'; // 아이템 종류 (기본: product)
+  kind?: "product" | "racket"; // 아이템 종류 (기본: product)
 };
 
 // 타입 정의
@@ -34,7 +34,10 @@ interface CartState {
 }
 
 // --- 재고(가용 수량) 해석/클램프 유틸 ---
-const getMaxStock = (stock?: number) => (typeof stock === 'number' && Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY);
+const getMaxStock = (stock?: number) =>
+  typeof stock === "number" && Number.isFinite(stock)
+    ? stock
+    : Number.POSITIVE_INFINITY;
 
 const clampQuantity = (qty: number, maxStock: number) => {
   const next = Math.max(0, qty);
@@ -55,7 +58,10 @@ export const useCartStore = create<CartState>()(
         const exists = get().items.find((i) => i.id === item.id);
         // 동일 상품을 중복으로 담는 건 현재 정책상 막고 있음
         if (exists) {
-          return { success: false, message: '이미 장바구니에 담긴 상품입니다.' };
+          return {
+            success: false,
+            message: "이미 장바구니에 담긴 상품입니다.",
+          };
         }
 
         // 재고(가용 수량) 상한 적용
@@ -63,7 +69,10 @@ export const useCartStore = create<CartState>()(
         const nextQty = clampQuantity(item.quantity, maxStock);
 
         if (nextQty === 0) {
-          return { success: false, message: '현재 재고가 없어 장바구니에 담을 수 없습니다.' };
+          return {
+            success: false,
+            message: "현재 재고가 없어 장바구니에 담을 수 없습니다.",
+          };
         }
 
         const safeItem = { ...item, quantity: nextQty };
@@ -77,7 +86,7 @@ export const useCartStore = create<CartState>()(
       // 특정 상품을 장바구니에서 제거
       // id가 일치하지 않는 상품만 남기고 나머지는 제거 (즉 해당 상품 삭제)
       removeItem: (
-        id: string // 장바구니 상품 제거 (id를 인자로 받음)
+        id: string, // 장바구니 상품 제거 (id를 인자로 받음)
       ) =>
         set((state) => ({
           // 상태를 업데이트
@@ -88,7 +97,7 @@ export const useCartStore = create<CartState>()(
       // 해당 상품의 수량을 새 값으로 바꿔줌
       updateQuantity: (
         id: string,
-        quantity: number // 장바구니 상품 수량 수정 (id와 수량을 인자로 받음)
+        quantity: number, // 장바구니 상품 수량 수정 (id와 수량을 인자로 받음)
       ) =>
         set((state) => ({
           // 상태를 업데이트
@@ -109,7 +118,7 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: [] }), // 장바구니 전체 삭제 (빈 배열로 초기화)
     }),
     {
-      name: 'cart-storage', // localStorage key 이름
-    }
-  )
+      name: "cart-storage", // localStorage key 이름
+    },
+  ),
 );

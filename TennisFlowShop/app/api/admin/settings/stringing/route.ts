@@ -11,12 +11,16 @@
  *
  */
 
-import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
-import { appendAdminAudit } from '@/lib/admin/appendAdminAudit';
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
-import { sanitizeExceptionInput, validateBaseSettings, validateExceptionItem } from '@/lib/stringingSettingsValidation';
+import { NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import {
+  sanitizeExceptionInput,
+  validateBaseSettings,
+  validateExceptionItem,
+} from "@/lib/stringingSettingsValidation";
 
 type ExceptionItem = {
   date: string; // 'YYYY-MM-DD'
@@ -28,7 +32,7 @@ type ExceptionItem = {
 };
 
 type StringingSettings = {
-  _id: 'stringingSlots';
+  _id: "stringingSlots";
   capacity?: number; // 1~10
   businessDays?: number[]; // 0(일)~6(토)
   start?: string; // 'HH:mm'
@@ -40,13 +44,14 @@ type StringingSettings = {
   updatedAt?: Date;
 };
 
-const COLLECTION = 'settings';
-const DOC_ID: StringingSettings['_id'] = 'stringingSlots';
+const COLLECTION = "settings";
+const DOC_ID: StringingSettings["_id"] = "stringingSlots";
 
 /** 관리자 인증/권한 확인 (기존 프로젝트 유틸 그대로 사용) */
 /** 유효성 도우미 */
-const isHHMM = (s: any) => typeof s === 'string' && /^\d{2}:\d{2}$/.test(s);
-const isDate = (s: any) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const isHHMM = (s: any) => typeof s === "string" && /^\d{2}:\d{2}$/.test(s);
+const isDate = (s: any) =>
+  typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 export async function GET(req: Request) {
   // 관리자 권한 체크
@@ -54,10 +59,15 @@ export async function GET(req: Request) {
   if (!guard.ok) return guard.res;
 
   const db = await getDb();
-  const doc = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID }, { projection: { updatedAt: 0 } }); // 필요 시 projection 조절
+  const doc = await db
+    .collection<StringingSettings>(COLLECTION)
+    .findOne({ _id: DOC_ID }, { projection: { updatedAt: 0 } }); // 필요 시 projection 조절
 
   // 캐시 금지
-  return NextResponse.json(doc ?? null, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json(doc ?? null, {
+    status: 200,
+    headers: { "Cache-Control": "no-store" },
+  });
 }
 
 export async function PATCH(req: Request) {
@@ -68,17 +78,24 @@ export async function PATCH(req: Request) {
   if (!csrf.ok) return csrf.res;
 
   // 본문 파싱
-  const body = (await req.json().catch(() => ({}))) as Partial<StringingSettings>;
+  const body = (await req
+    .json()
+    .catch(() => ({}))) as Partial<StringingSettings>;
   const db = await getDb();
-  const current = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID });
+  const current = await db
+    .collection<StringingSettings>(COLLECTION)
+    .findOne({ _id: DOC_ID });
 
   // --- 필드별 정규화/검증 ---
   const update: Partial<StringingSettings> = {};
 
   // 동시 수용량: 1~10
   if (body.capacity !== undefined) {
-    if (typeof body.capacity !== 'number' || !Number.isFinite(body.capacity)) {
-      return NextResponse.json({ message: '동시 수용량은 숫자여야 합니다.' }, { status: 400 });
+    if (typeof body.capacity !== "number" || !Number.isFinite(body.capacity)) {
+      return NextResponse.json(
+        { message: "동시 수용량은 숫자여야 합니다." },
+        { status: 400 },
+      );
     }
     update.capacity = Math.trunc(body.capacity);
   }
@@ -89,15 +106,24 @@ export async function PATCH(req: Request) {
 
   // 간격: 5~240 분
   if (body.interval !== undefined) {
-    if (typeof body.interval !== 'number' || !Number.isFinite(body.interval)) {
-      return NextResponse.json({ message: '간격은 숫자여야 합니다.' }, { status: 400 });
+    if (typeof body.interval !== "number" || !Number.isFinite(body.interval)) {
+      return NextResponse.json(
+        { message: "간격은 숫자여야 합니다." },
+        { status: 400 },
+      );
     }
     update.interval = Math.trunc(body.interval);
   }
 
   // 영업 요일: 0~6 정수 배열
   if (Array.isArray(body.businessDays)) {
-    update.businessDays = [...new Set(body.businessDays.map((n: any) => Number(n)).filter((n) => Number.isInteger(n) && n >= 0 && n <= 6))].sort();
+    update.businessDays = [
+      ...new Set(
+        body.businessDays
+          .map((n: any) => Number(n))
+          .filter((n) => Number.isInteger(n) && n >= 0 && n <= 6),
+      ),
+    ].sort();
   }
 
   // 휴무일: 'YYYY-MM-DD' 배열
@@ -113,31 +139,46 @@ export async function PATCH(req: Request) {
         closed: e?.closed === true, // true면 휴무일
         start: isHHMM(e?.start) ? e.start : undefined,
         end: isHHMM(e?.end) ? e.end : undefined,
-        interval: typeof e?.interval === 'number' && Number.isFinite(e.interval) ? Math.trunc(e.interval) : undefined,
-        capacity: typeof e?.capacity === 'number' && Number.isFinite(e.capacity) ? Math.trunc(e.capacity) : undefined,
+        interval:
+          typeof e?.interval === "number" && Number.isFinite(e.interval)
+            ? Math.trunc(e.interval)
+            : undefined,
+        capacity:
+          typeof e?.capacity === "number" && Number.isFinite(e.capacity)
+            ? Math.trunc(e.capacity)
+            : undefined,
       }))
       .filter((e) => !!e.date)
-      .map((e) => sanitizeExceptionInput(e as ExceptionItem)) as ExceptionItem[];
+      .map((e) =>
+        sanitizeExceptionInput(e as ExceptionItem),
+      ) as ExceptionItem[];
   }
 
   // 예약 가능 기간(일): 1~180 허용
   if (body.bookingWindowDays !== undefined) {
     const n = Number(body.bookingWindowDays);
     if (!Number.isFinite(n)) {
-      return NextResponse.json({ message: '예약 가능 기간은 숫자여야 합니다.' }, { status: 400 });
+      return NextResponse.json(
+        { message: "예약 가능 기간은 숫자여야 합니다." },
+        { status: 400 },
+      );
     }
     if (n < 1 || n > 180) {
-      return NextResponse.json({ message: '예약 가능 기간은 1~180일 범위로 설정해주세요.' }, { status: 400 });
+      return NextResponse.json(
+        { message: "예약 가능 기간은 1~180일 범위로 설정해주세요." },
+        { status: 400 },
+      );
     }
     update.bookingWindowDays = Math.trunc(n);
   }
 
   const mergedBase = {
     capacity: update.capacity ?? Number(current?.capacity ?? 1),
-    start: update.start ?? String(current?.start ?? '10:00'),
-    end: update.end ?? String(current?.end ?? '19:00'),
+    start: update.start ?? String(current?.start ?? "10:00"),
+    end: update.end ?? String(current?.end ?? "19:00"),
     interval: update.interval ?? Number(current?.interval ?? 30),
-    bookingWindowDays: update.bookingWindowDays ?? Number(current?.bookingWindowDays ?? 30),
+    bookingWindowDays:
+      update.bookingWindowDays ?? Number(current?.bookingWindowDays ?? 30),
   };
 
   const baseError = validateBaseSettings(mergedBase);
@@ -158,25 +199,36 @@ export async function PATCH(req: Request) {
   update.updatedAt = new Date();
 
   // upsert: 문서가 없으면 생성, 있으면 업데이트
-  await db.collection<StringingSettings>(COLLECTION).updateOne({ _id: DOC_ID }, { $setOnInsert: { _id: DOC_ID }, $set: update }, { upsert: true });
+  await db
+    .collection<StringingSettings>(COLLECTION)
+    .updateOne(
+      { _id: DOC_ID },
+      { $setOnInsert: { _id: DOC_ID }, $set: update },
+      { upsert: true },
+    );
 
   await appendAdminAudit(
     db,
     {
-      type: 'admin.settings.stringing.patch',
+      type: "admin.settings.stringing.patch",
       actorId: guard.admin._id,
       targetId: DOC_ID,
-      message: '스트링 슬롯 설정 수정',
+      message: "스트링 슬롯 설정 수정",
       diff: {
-        changedKeys: Object.keys(update).filter((key) => key !== 'updatedAt'),
+        changedKeys: Object.keys(update).filter((key) => key !== "updatedAt"),
       },
     },
     req,
   );
 
-  const doc = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID });
-  return NextResponse.json(doc, { status: 200, headers: { 'Cache-Control': 'no-store' } });
+  const doc = await db
+    .collection<StringingSettings>(COLLECTION)
+    .findOne({ _id: DOC_ID });
+  return NextResponse.json(doc, {
+    status: 200,
+    headers: { "Cache-Control": "no-store" },
+  });
 }
 
 /** 캐시 방지 (Next.js App Router) */
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

@@ -1,32 +1,42 @@
-import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { getDb } from "@/lib/mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
 
 // 토큰 검증은 throw 가능 → 안전하게 null 처리(500 방지)
 // 숫자 쿼리 파싱 NaN 방지 + 범위 보정
-function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+function parseIntParam(
+  v: string | null,
+  opts: { defaultValue: number; min: number; max: number },
+) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   try {
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
 
     const url = new URL(req.url);
-    const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 5, min: 1, max: 50 });
+    const limit = parseIntParam(url.searchParams.get("limit"), {
+      defaultValue: 5,
+      min: 1,
+      max: 50,
+    });
     const { id } = await ctx.params;
-    if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'invalid id' }, { status: 400 });
+    if (!ObjectId.isValid(id))
+      return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
     const db = await getDb();
     const userIdObj = new ObjectId(id);
     const filter = { $or: [{ userId: userIdObj }, { userId: id }] };
 
-
-    const col = db.collection('stringing_applications');
+    const col = db.collection("stringing_applications");
     const total = await col.countDocuments(filter);
     const raw = await col
       .find(filter, {
@@ -35,7 +45,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
           status: 1,
           createdAt: 1,
           totalPrice: 1,
-          'stringDetails.stringTypes': 1,
+          "stringDetails.stringTypes": 1,
           racketType: 1,
         },
       })
@@ -53,9 +63,12 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
       stringTypes: d?.stringDetails?.stringTypes ?? [],
     }));
 
-    return NextResponse.json({ items, total }, { headers: { 'Cache-Control': 'no-store' } });
+    return NextResponse.json(
+      { items, total },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (e) {
-    console.error('[admin/users/:id/applications/stringing] error', e);
-    return NextResponse.json({ message: 'internal error' }, { status: 500 });
+    console.error("[admin/users/:id/applications/stringing] error", e);
+    return NextResponse.json({ message: "internal error" }, { status: 500 });
   }
 }

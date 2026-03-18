@@ -1,18 +1,30 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import type React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface ShippingFormProps {
   initialShippingMethod?: string;
@@ -25,40 +37,62 @@ interface ShippingFormProps {
   isVisitPickupOrder?: boolean;
 }
 
-const isCourierShippingMethod = (method: string) => normalizeOrderShippingMethod(method) === 'courier';
+const isCourierShippingMethod = (method: string) =>
+  normalizeOrderShippingMethod(method) === "courier";
 
-export default function ShippingForm({ initialShippingMethod, initialRegisteredShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, orderId, onSuccess, isVisitPickupOrder = false }: ShippingFormProps) {
+export default function ShippingForm({
+  initialShippingMethod,
+  initialRegisteredShippingMethod,
+  initialEstimatedDelivery,
+  initialCourier,
+  initialTrackingNumber,
+  orderId,
+  onSuccess,
+  isVisitPickupOrder = false,
+}: ShippingFormProps) {
   // 빈 문자열로 초기화해서 Controlled 컴포넌트로 통일
-  const normalizedInitialShippingMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
-  const fixedVisitMethod = 'visit';
+  const normalizedInitialShippingMethod =
+    normalizeOrderShippingMethod(initialShippingMethod) ??
+    String(initialShippingMethod ?? "").trim();
+  const fixedVisitMethod = "visit";
 
-  const [shippingMethod, setShippingMethod] = useState<string>(isVisitPickupOrder ? fixedVisitMethod : normalizedInitialShippingMethod || '');
+  const [shippingMethod, setShippingMethod] = useState<string>(
+    isVisitPickupOrder
+      ? fixedVisitMethod
+      : normalizedInitialShippingMethod || "",
+  );
   // prop 변경에 반응하도록
   useEffect(() => {
-    const normalized = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
-    setShippingMethod(isVisitPickupOrder ? fixedVisitMethod : normalized || '');
+    const normalized =
+      normalizeOrderShippingMethod(initialShippingMethod) ??
+      String(initialShippingMethod ?? "").trim();
+    setShippingMethod(isVisitPickupOrder ? fixedVisitMethod : normalized || "");
   }, [initialShippingMethod, isVisitPickupOrder]);
 
-  const [estimatedDelivery, setEstimatedDelivery] = useState<string>(initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '');
-  const [courier, setCourier] = useState('');
-  const [trackingNumber, setTrackingNumber] = useState('');
+  const [estimatedDelivery, setEstimatedDelivery] = useState<string>(
+    initialEstimatedDelivery
+      ? new Date(initialEstimatedDelivery).toISOString().split("T")[0]
+      : "",
+  );
+  const [courier, setCourier] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   // courier / trackingNumber 초기값 세팅
   // prop 변경 시 동기화
   useEffect(() => {
-    setCourier(initialCourier || '');
+    setCourier(initialCourier || "");
   }, [initialCourier]);
   useEffect(() => {
-    setTrackingNumber(initialTrackingNumber || '');
+    setTrackingNumber(initialTrackingNumber || "");
   }, [initialTrackingNumber]);
 
   // 배송 수단이 바뀔 때, 택배 정보 초기화
   useEffect(() => {
     if (!isCourierShippingMethod(shippingMethod)) {
-      setCourier('');
-      setTrackingNumber('');
+      setCourier("");
+      setTrackingNumber("");
     }
   }, [shippingMethod]);
 
@@ -66,25 +100,41 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
 
   // 기존 값이 하나라도 있으면 "수정", 아무것도 없으면 "등록"
   const isRegistered = Boolean(
-    String(initialRegisteredShippingMethod ?? '').trim() ||
-      String(initialEstimatedDelivery ?? '').trim() ||
-      String(initialCourier ?? '').trim() ||
-      String(initialTrackingNumber ?? '').trim(),
+    String(initialRegisteredShippingMethod ?? "").trim() ||
+    String(initialEstimatedDelivery ?? "").trim() ||
+    String(initialCourier ?? "").trim() ||
+    String(initialTrackingNumber ?? "").trim(),
   );
-  const formTitle = isVisitPickupOrder ? (isRegistered ? '방문 수령 정보 수정' : '방문 수령 정보 등록') : isRegistered ? '배송 정보 수정' : '배송 정보 등록';
+  const formTitle = isVisitPickupOrder
+    ? isRegistered
+      ? "방문 수령 정보 수정"
+      : "방문 수령 정보 등록"
+    : isRegistered
+      ? "배송 정보 수정"
+      : "배송 정보 등록";
   /**
    * ---- 이탈(탭 닫기/새로고침/뒤로가기/링크이동) 보호 ----
    * - baseline은 "초기 props" 기준으로 잡는다.
    * - 택배배송이 아닌 경우(courier/tracking은 의미 없으므로) 비교 시 ''로 정규화한다.
    */
   const baseline = useMemo(() => {
-    const normalizedBaseMethod = normalizeOrderShippingMethod(initialShippingMethod) ?? String(initialShippingMethod ?? '').trim();
-    const baseMethod = isVisitPickupOrder ? fixedVisitMethod : normalizedBaseMethod;
-    const baseEstimated = initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split('T')[0] : '';
+    const normalizedBaseMethod =
+      normalizeOrderShippingMethod(initialShippingMethod) ??
+      String(initialShippingMethod ?? "").trim();
+    const baseMethod = isVisitPickupOrder
+      ? fixedVisitMethod
+      : normalizedBaseMethod;
+    const baseEstimated = initialEstimatedDelivery
+      ? new Date(initialEstimatedDelivery).toISOString().split("T")[0]
+      : "";
 
     // 택배배송이 아니면 택배정보는 의미 없으므로 baseline에서도 ''로 맞춘다
-    const baseCourier = isCourierShippingMethod(baseMethod) ? String(initialCourier ?? '') : '';
-    const baseTracking = isCourierShippingMethod(baseMethod) ? String(initialTrackingNumber ?? '') : '';
+    const baseCourier = isCourierShippingMethod(baseMethod)
+      ? String(initialCourier ?? "")
+      : "";
+    const baseTracking = isCourierShippingMethod(baseMethod)
+      ? String(initialTrackingNumber ?? "")
+      : "";
 
     return {
       shippingMethod: baseMethod,
@@ -92,15 +142,37 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
       courier: baseCourier,
       trackingNumber: baseTracking,
     };
-  }, [initialShippingMethod, initialEstimatedDelivery, initialCourier, initialTrackingNumber, isVisitPickupOrder]);
+  }, [
+    initialShippingMethod,
+    initialEstimatedDelivery,
+    initialCourier,
+    initialTrackingNumber,
+    isVisitPickupOrder,
+  ]);
 
   const isDirty = useMemo(() => {
-    const currentMethod = isVisitPickupOrder ? fixedVisitMethod : shippingMethod;
-    const curCourier = isCourierShippingMethod(currentMethod) ? courier : '';
-    const curTracking = isCourierShippingMethod(currentMethod) ? trackingNumber : '';
+    const currentMethod = isVisitPickupOrder
+      ? fixedVisitMethod
+      : shippingMethod;
+    const curCourier = isCourierShippingMethod(currentMethod) ? courier : "";
+    const curTracking = isCourierShippingMethod(currentMethod)
+      ? trackingNumber
+      : "";
 
-    return baseline.shippingMethod !== currentMethod || baseline.estimatedDelivery !== estimatedDelivery || baseline.courier !== curCourier || baseline.trackingNumber !== curTracking;
-  }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber, isVisitPickupOrder]);
+    return (
+      baseline.shippingMethod !== currentMethod ||
+      baseline.estimatedDelivery !== estimatedDelivery ||
+      baseline.courier !== curCourier ||
+      baseline.trackingNumber !== curTracking
+    );
+  }, [
+    baseline,
+    shippingMethod,
+    estimatedDelivery,
+    courier,
+    trackingNumber,
+    isVisitPickupOrder,
+  ]);
 
   // 저장 중에는 굳이 경고 띄우지 않도록(UX)
   useUnsavedChangesGuard(isDirty && !isSubmitting);
@@ -109,24 +181,26 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
     e.preventDefault();
 
     if (!shippingMethod && !isVisitPickupOrder) {
-      showErrorToast('배송 방법을 선택해주세요');
+      showErrorToast("배송 방법을 선택해주세요");
       return;
     }
 
     if (!estimatedDelivery) {
-      showErrorToast('예상 수령일을 입력해주세요');
+      showErrorToast("예상 수령일을 입력해주세요");
       return;
     }
 
-    const effectiveMethod = isVisitPickupOrder ? fixedVisitMethod : shippingMethod;
+    const effectiveMethod = isVisitPickupOrder
+      ? fixedVisitMethod
+      : shippingMethod;
 
     if (isCourierShippingMethod(effectiveMethod)) {
       if (!courier) {
-        showErrorToast('택배사를 선택해주세요');
+        showErrorToast("택배사를 선택해주세요");
         return;
       }
       if (!trackingNumber) {
-        showErrorToast('운송장 번호를 입력해주세요');
+        showErrorToast("운송장 번호를 입력해주세요");
         return;
       }
     }
@@ -135,23 +209,32 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
 
     try {
       await adminMutator(`/api/admin/orders/${orderId}/shipping`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           shippingMethod: effectiveMethod, // 공통 필드
           estimatedDate: estimatedDelivery, // 공통 필드
-          courier:
-            isCourierShippingMethod(effectiveMethod)
-              ? courier // 택배 선택 시 입력값
-              : '', // 그 외는 빈 문자열로 초기화
-          trackingNumber: isCourierShippingMethod(effectiveMethod) ? trackingNumber : '',
+          courier: isCourierShippingMethod(effectiveMethod)
+            ? courier // 택배 선택 시 입력값
+            : "", // 그 외는 빈 문자열로 초기화
+          trackingNumber: isCourierShippingMethod(effectiveMethod)
+            ? trackingNumber
+            : "",
         }),
       });
 
-      showSuccessToast(isVisitPickupOrder ? (isRegistered ? '방문 수령 정보가 수정되었습니다' : '방문 수령 정보가 등록되었습니다') : isRegistered ? '배송 정보가 수정되었습니다' : '배송 정보가 등록되었습니다');
+      showSuccessToast(
+        isVisitPickupOrder
+          ? isRegistered
+            ? "방문 수령 정보가 수정되었습니다"
+            : "방문 수령 정보가 등록되었습니다"
+          : isRegistered
+            ? "배송 정보가 수정되었습니다"
+            : "배송 정보가 등록되었습니다",
+      );
 
       router.refresh();
 
@@ -161,7 +244,7 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
       router.push(`/admin/orders/${orderId}`);
     } catch (error) {
       showErrorToast(getAdminErrorMessage(error));
-      console.error('배송 정보 업데이트 오류:', error);
+      console.error("배송 정보 업데이트 오류:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -175,7 +258,9 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="shipping-method">{isVisitPickupOrder ? '수령 방법' : '배송 방법'}</Label>
+            <Label htmlFor="shipping-method">
+              {isVisitPickupOrder ? "수령 방법" : "배송 방법"}
+            </Label>
             {isVisitPickupOrder ? (
               <Input id="shipping-method" value="방문 수령" readOnly disabled />
             ) : (
@@ -193,7 +278,13 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
 
           <div className="space-y-2">
             <Label htmlFor="estimated-delivery">예상 수령일</Label>
-            <Input id="estimated-delivery" type="date" value={estimatedDelivery} onChange={(e) => setEstimatedDelivery(e.target.value)} min={new Date().toISOString().split('T')[0]} />
+            <Input
+              id="estimated-delivery"
+              type="date"
+              value={estimatedDelivery}
+              onChange={(e) => setEstimatedDelivery(e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+            />
           </div>
 
           {!isVisitPickupOrder && isCourierShippingMethod(shippingMethod) && (
@@ -216,7 +307,12 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
 
               <div className="space-y-2">
                 <Label htmlFor="tracking-number">운송장 번호</Label>
-                <Input id="tracking-number" value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} placeholder="예: 1234567890" />
+                <Input
+                  id="tracking-number"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  placeholder="예: 1234567890"
+                />
               </div>
             </>
           )}
@@ -230,7 +326,7 @@ export default function ShippingForm({ initialShippingMethod, initialRegisteredS
                 저장 중...
               </>
             ) : (
-              '저장'
+              "저장"
             )}
           </Button>
         </CardFooter>

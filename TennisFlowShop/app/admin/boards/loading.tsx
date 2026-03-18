@@ -1,6 +1,13 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function BoardsLoading() {
   return (
@@ -9,7 +16,9 @@ export default function BoardsLoading() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">게시판 관리</h1>
-            <p className="text-muted-foreground">웹사이트의 모든 게시판과 게시물을 관리합니다.</p>
+            <p className="text-muted-foreground">
+              웹사이트의 모든 게시판과 게시물을 관리합니다.
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Skeleton className="h-10 w-[120px]" />

@@ -4,6 +4,7 @@
 범위: 교체 서비스 통합 이후 남은 레거시 경로/컴포넌트/분기/파라미터 처리 점검
 
 ## 1) 검토한 파일 목록
+
 - `app/checkout/success/page.tsx`
 - `app/checkout/success/_components/AutoRedirectToApply.tsx`
 - `app/checkout/CheckoutButton.tsx`
@@ -23,6 +24,7 @@
 ## 2) 유지 필요 항목 (A)
 
 ### A-1. `/services/apply` + `drafts` + `by-order` 연계 흐름
+
 - 파일/경로
   - `app/services/apply/page.tsx`
   - `app/api/applications/stringing/drafts/route.ts`
@@ -35,6 +37,7 @@
 - 결론: 현재 fallback 하드닝의 핵심 체인이라 **유지 필요**.
 
 ### A-2. 주문 생성 시 자동 연결 필드(`stringingApplicationId`, `isStringServiceApplied`) 갱신 경로
+
 - 파일/경로
   - `app/features/orders/api/handlers.ts`
   - `app/features/stringing-applications/api/submit-core.ts`
@@ -44,6 +47,7 @@
 - 결론: 고객 표면 CTA 분기(신청/신청서 보기/완료)의 데이터 소스로 **유지 필요**.
 
 ### A-3. 고객 표면 CTA(마이페이지/비회원 조회)
+
 - 파일/경로
   - `app/mypage/orders/_components/OrderDetailClient.tsx`
   - `app/mypage/tabs/OrderList.tsx`
@@ -55,6 +59,7 @@
 - 결론: 통합 이후 UX의 현재 표준 진입점이므로 **유지 필요**.
 
 ### A-4. success 페이지 주문완료 정보/CTA 경로
+
 - 파일/경로
   - `app/checkout/success/page.tsx`
 - 근거
@@ -67,6 +72,7 @@
 ## 3) 제거 후보 항목 (B)
 
 ### B-1. `CheckoutApplyHandoffClient.tsx` 정리 완료
+
 - 파일/경로
   - `app/checkout/success/_components/CheckoutApplyHandoffClient.tsx` (삭제 완료)
 - 근거
@@ -75,6 +81,7 @@
 - 결론: 제거 후보가 아니라 **정리 완료 항목**.
 
 ### B-2. `autoApply` 관련 분기 정리 완료
+
 - 파일/경로
   - `app/checkout/success/page.tsx`
   - `app/checkout/CheckoutButton.tsx`
@@ -84,6 +91,7 @@
 - 결론: `autoApply` 잔여 분기는 **정리 완료**.
 
 ### B-3. `AutoRedirectToApply.tsx` 파일 정리
+
 - 파일/경로
   - `app/checkout/success/_components/AutoRedirectToApply.tsx` (삭제 완료)
 - 근거
@@ -95,6 +103,7 @@
 ## 4) 보류 항목 (C)
 
 ### C-1. `by-order` 라우트 범위 축소 여부
+
 - 파일/경로
   - `app/api/applications/stringing/by-order/[orderId]/route.ts`
 - 보류 이유
@@ -102,6 +111,7 @@
   - drafts bootstrap 실패/지연 시에도 복구경로로 의미가 있어 즉시 축소는 위험.
 
 ### C-2. `/services/apply` 내부 문구/주석 중 “옵션 A/직접입력” 서술
+
 - 파일/경로
   - `app/services/apply/page.tsx`
 - 보류 이유
@@ -109,6 +119,7 @@
   - 기능과 맞지 않는 단정 문구(예: 주문 기반 only와 단독신청 CTA 병존)는 코드 정리 시점에 함께 정합성 검토 필요.
 
 ### C-3. success 화면 UX 리라이팅 여부
+
 - 파일/경로
   - `app/checkout/success/page.tsx`
 - 보류 이유
@@ -120,22 +131,27 @@
 ## 5) 핵심 포인트별 결론
 
 ### (1) `autoApply` 흔적
+
 - 읽기: 없음 (success 페이지 분기 제거)
 - 생성: 없음 (checkout 성공 이동은 `orderId`만 전달)
 - 판정: **정리 완료(B)**
 
 ### (2) `CheckoutApplyHandoffClient.tsx`
+
 - 판정: **삭제 완료(B)**
 
 ### (3) `by-order` / `drafts` route
+
 - 판정: **둘 다 현재 `/services/apply` fallback의 필수 축(A)**
 - 비고: `by-order`는 "draft lookup", `drafts`는 "멱등 생성/재사용"으로 역할이 분리되어 있어 당장 통합/삭제하기 어려움
 
 ### (4) `/services/apply` 내부 주석/문구/분기
+
 - 판정: **기능은 현재 fallback 역할과 대체로 부합(A/C 혼합)**
 - 보류성 흔적: 옵션 A 표현, 단독신청 CTA 병행 설명 등 문구 정합성 리라이팅 여지 존재(C)
 
 ### (5) 고객 표면 CTA
+
 - 판정: **대체로 정리 완료 + 유지 필요(A)**
 - 확인 결과: 주요 CTA는 `/services/apply?orderId=...` 또는 `신청서 보기`로 정렬되어 있고, 옛 성공페이지 유도 CTA는 확인되지 않음
 

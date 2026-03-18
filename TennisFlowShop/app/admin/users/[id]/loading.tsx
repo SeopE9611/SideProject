@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
@@ -33,7 +33,10 @@ export default function Loading() {
           </CardHeader>
           <CardContent className="space-y-3">
             {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="grid grid-cols-1 gap-2 rounded-lg border p-3 md:grid-cols-[140px_1fr]">
+              <div
+                key={index}
+                className="grid grid-cols-1 gap-2 rounded-lg border p-3 md:grid-cols-[140px_1fr]"
+              >
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-full" />
               </div>

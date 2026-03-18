@@ -1,9 +1,9 @@
 // components/system/AuthRescue.tsx
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuthStore } from '@/app/store/authStore';
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/app/store/authStore";
 
 export default function AuthRescue() {
   const { user } = useAuthStore();
@@ -21,7 +21,7 @@ export default function AuthRescue() {
     // 하드 리로드 백업
     const t = window.setTimeout(() => {
       if (cancelled) return;
-      const marker = document.getElementById('__access_denied_marker__');
+      const marker = document.getElementById("__access_denied_marker__");
       if (marker) {
         // 쿠키는 이미 갱신된 상태이므로 같은 경로로 하드 리로드
         window.location.replace(pathname);

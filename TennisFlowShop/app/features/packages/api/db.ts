@@ -1,5 +1,10 @@
-import clientPromise from '@/lib/mongodb';
-import { DEFAULT_GENERAL_SETTINGS, DEFAULT_PACKAGE_CONFIGS, type GeneralSettings, type PackageConfig } from '@/lib/package-settings';
+import clientPromise from "@/lib/mongodb";
+import {
+  DEFAULT_GENERAL_SETTINGS,
+  DEFAULT_PACKAGE_CONFIGS,
+  type GeneralSettings,
+  type PackageConfig,
+} from "@/lib/package-settings";
 
 interface PackageSettingsDoc {
   _id: string; // 항상 'settings' 같은 문자열 ID
@@ -9,8 +14,8 @@ interface PackageSettingsDoc {
   updatedAt?: Date;
 }
 
-const COLLECTION_NAME = 'package_settings';
-const DOCUMENT_ID = 'settings';
+const COLLECTION_NAME = "package_settings";
+const DOCUMENT_ID = "settings";
 
 // DB에서 패키지 설정 읽기
 export async function loadPackageSettings(): Promise<{
@@ -27,7 +32,10 @@ export async function loadPackageSettings(): Promise<{
   const doc = await col.findOne({ _id: DOCUMENT_ID });
 
   // 저장된 값이 없으면 기본값 사용 (현재 동작과 동일)
-  const rawConfigs = Array.isArray(doc?.packageConfigs) && doc?.packageConfigs.length ? doc.packageConfigs : DEFAULT_PACKAGE_CONFIGS;
+  const rawConfigs =
+    Array.isArray(doc?.packageConfigs) && doc?.packageConfigs.length
+      ? doc.packageConfigs
+      : DEFAULT_PACKAGE_CONFIGS;
 
   const packageConfigs = normalizePackageConfigs(rawConfigs);
 
@@ -44,16 +52,21 @@ function normalizePackageConfigs(configs: PackageConfig[]): PackageConfig[] {
   return configs
     .map((pkg, index) => ({
       ...pkg,
-      sortOrder: typeof pkg.sortOrder === 'number' ? pkg.sortOrder : index + 1,
+      sortOrder: typeof pkg.sortOrder === "number" ? pkg.sortOrder : index + 1,
       isActive: pkg.isActive ?? true,
       isPopular: pkg.isPopular ?? false,
-      features: Array.isArray(pkg.features) ? pkg.features.map((f) => String(f)) : [],
+      features: Array.isArray(pkg.features)
+        ? pkg.features.map((f) => String(f))
+        : [],
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 // 설정 저장 (관리자용)
-export async function savePackageSettings(input: { packageConfigs: PackageConfig[]; generalSettings: GeneralSettings }) {
+export async function savePackageSettings(input: {
+  packageConfigs: PackageConfig[];
+  generalSettings: GeneralSettings;
+}) {
   const client = await clientPromise;
   const db = client.db();
   const col = db.collection<PackageSettingsDoc>(COLLECTION_NAME);
@@ -69,7 +82,7 @@ export async function savePackageSettings(input: { packageConfigs: PackageConfig
       },
       $setOnInsert: { createdAt: now },
     },
-    { upsert: true }
+    { upsert: true },
   );
 }
 

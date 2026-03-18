@@ -1,10 +1,12 @@
 # 라이트/다크 의미 일관성 체크리스트
 
 ## 목적
+
 - 라이트/다크 모두에서 **동일 역할(본문/보조/상태/CTA)**의 의미가 유지되는지 페이지 단위로 확인한다.
 - 직접 `dark:*` 보정보다 `bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground` 같은 의미 토큰과 공통 UI variant를 우선 사용한다.
 
 ## 공통 점검 기준
+
 - 본문 텍스트: `text-foreground`
 - 보조 텍스트: `text-muted-foreground`
 - 기본 표면: `bg-background`
@@ -15,36 +17,41 @@
 ## 페이지별 체크리스트
 
 ### 1) Cart (`app/cart`)
+
 - [ ] 카드/패널 배경이 `Card` variant(`outline`/`muted`)로 통일되어 있는가?
 - [ ] 위시리스트 액션 버튼이 `Button` variant + 최소 className 확장으로 표현되는가?
 - [ ] 상태 메시지(보조 안내/에러 안내)가 `text-muted-foreground`/`text-destructive` 기반으로 통일되는가?
 
 ### 2) Board (`app/board`)
+
 - [ ] 게시글 본문/제목 대비가 라이트/다크에서 동일한 정보 계층을 보이는가?
 - [ ] 태그/상태 뱃지가 개별 `dark:*` 없이 `Badge` variant로 표현되는가?
 - [ ] 목록 hover/선택 배경이 의미 토큰(`bg-muted`, `bg-accent`) 중심인가?
 
 ### 3) Services (`app/services`)
+
 - [ ] 신청/결제 CTA가 페이지 전반에서 동일한 `Button` variant를 사용하는가?
 - [ ] 요약 카드/정보 카드가 `bg-card` 또는 `Card` variant로 일관적인가?
 - [ ] 경고/검증 문구의 색 의미(성공/경고/에러)가 라이트/다크에서 뒤바뀌지 않는가?
 
 ### 4) Mypage (`app/mypage`)
+
 - [ ] 탭/리스트의 본문·보조 텍스트가 각각 `text-foreground`/`text-muted-foreground`로 유지되는가?
 - [ ] 상태 뱃지와 액션 버튼이 컴포넌트 variant 우선으로 표현되는가?
 - [ ] skeleton/placeholder 배경이 모드별로 의미가 동일한가?
 
 ### 5) Admin (`app/admin`)
+
 - [ ] 데이터 테이블 헤더/본문/보조 텍스트 대비가 라이트/다크 모두 충분한가?
 - [ ] 위험 액션(삭제/차단)이 `destructive` 계열 variant로 일관적인가?
 - [ ] 필터/패널/모달 배경의 의미가 페이지 전체에서 일관적인가?
 
 ## 최종 재검토 규칙
+
 1. `dark:*`가 있어도 **동일 토큰의 중복 표기**(`bg-muted dark:bg-muted`)라면 제거한다.
 2. 동일한 보정이 2회 이상 반복되면 먼저 `Card`/`Button`/`Badge` variant로 승격한다.
 3. 승격 후에도 남는 `dark:*`는 아래에 이유를 기록한다.
 4. **의미 역전 금지**: 다크 모드에서 본문/핵심 라벨을 `text-muted-foreground`로 낮추거나, 보조 설명/메타를 `text-foreground`로 올리지 않는다.
-
 
 ## 정리 적용 체크 (동일 토큰 중복 제거)
 
@@ -54,16 +61,19 @@
 - [x] 적용 파일군: `components/ui/skeleton.tsx`, `components/ui/table.tsx`, `app/reviews/write/page.tsx`, `app/admin/products/loading.tsx`, `app/admin/rackets/_components/AdminRacketsClient.tsx`
 
 ## dark 전용 클래스 유지 사유 기록
+
 - `components/ui/card.tsx`의 `elevatedGradient` variant는 라이트(`from-white`)와 다크(`dark:from-background`) 시작색이 의도적으로 다르므로 유지.
 - 오버레이 계열(`bg-overlay/*`)은 다크 모드 대비 확보 목적이라 유지.
 
 ## 2026-02-22 중복 dark 클래스 정리 결과
 
 ### 전수 스캔
+
 - 명령: `rg -n --pcre2 "(text|bg|border|ring)-([a-z-]+)\\s+dark:\\1-\\2\\b" app components lib`
 - 결과: `0건`
 
 ### variant 승격 적용
+
 - `components/ui/card.tsx`
   - `Card` variant `elevatedGradient` 추가
   - `CardHeader` variant `sectionGradient` 추가
@@ -74,6 +84,7 @@
 ## 2026-02-22 다크 모드 시맨틱 치환 점검 (`dark:(bg|text|border|ring)-(white|black)`)
 
 ### 전수 수집 결과
+
 - 총 4건 (코드 기준, 문서 제외)
   - `app/products/page.tsx`: `dark:bg-black/30`
   - `app/rentals/[id]/checkout/loading.tsx`: `dark:bg-black/40`
@@ -81,12 +92,14 @@
   - `app/rentals/success/loading.tsx`: `dark:bg-black/40`
 
 ### 목적별 분류
+
 - 오버레이: 4건
 - 구분선/링: 0건
 - 텍스트: 0건
 - 카드 표면: 0건
 
 ### 분류별 공통 토큰 통합 결과
+
 - 오버레이: `bg-overlay/*`로 통합
   - `bg-black/10 dark:bg-black/30` → `bg-overlay/10 dark:bg-overlay/30`
   - `bg-black/20 dark:bg-black/40` → `bg-overlay/20 dark:bg-overlay/40`
@@ -94,6 +107,7 @@
 - 텍스트: 해당 없음 (`text-foreground`, `text-muted-foreground`, `text-primary-foreground` 미대상)
 
 ### 페이지 단위 재검증
+
 - [x] Products (`app/products/page.tsx`): 히어로 오버레이가 `bg-overlay/10 dark:bg-overlay/30`로 치환되어 역할(배경 대비 확보) 유지
 - [x] Rentals Checkout Loading (`app/rentals/[id]/checkout/loading.tsx`): 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 로딩 스켈레톤 대비 유지
 - [x] Rentals Success (`app/rentals/success/_components/RentalsSuccessClient.tsx`): 성공 히어로 오버레이가 `bg-overlay/20 dark:bg-overlay/40`로 치환되어 시각 계층 유지

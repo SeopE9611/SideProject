@@ -1,15 +1,26 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Copy, ExternalLink, Link2 } from 'lucide-react';
+import Link from "next/link";
+import { Copy, ExternalLink, Link2 } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { shortenId } from '@/lib/shorten';
-import { showSuccessToast } from '@/lib/toast';
-import { badgeBase, badgeSizeSm, badgeToneVariant } from '@/lib/badge-style';
-import { opsKindBadgeTone, opsKindLabel, type OpsBadgeTone, type OpsKind } from '@/lib/admin-ops-taxonomy';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { shortenId } from "@/lib/shorten";
+import { showSuccessToast } from "@/lib/toast";
+import { badgeBase, badgeSizeSm, badgeToneVariant } from "@/lib/badge-style";
+import {
+  opsKindBadgeTone,
+  opsKindLabel,
+  type OpsBadgeTone,
+  type OpsKind,
+} from "@/lib/admin-ops-taxonomy";
 
 function opsBadgeVariant(tone: OpsBadgeTone) {
   return badgeToneVariant(tone);
@@ -65,35 +76,41 @@ const KIND_PRIORITY: Record<LinkedDocKind, number> = {
   stringing_application: 2,
 };
 
-
 function getDocLabel(kind: LinkedDocKind) {
   switch (kind) {
-    case 'order':
-      return { idLabel: '주문번호', ctaLabel: '주문 상세 보기' };
-    case 'rental':
-      return { idLabel: '대여번호', ctaLabel: '대여 상세 보기' };
-    case 'stringing_application':
-      return { idLabel: '신청번호', ctaLabel: '신청 상세 보기' };
+    case "order":
+      return { idLabel: "주문번호", ctaLabel: "주문 상세 보기" };
+    case "rental":
+      return { idLabel: "대여번호", ctaLabel: "대여 상세 보기" };
+    case "stringing_application":
+      return { idLabel: "신청번호", ctaLabel: "신청 상세 보기" };
     default:
-      return { idLabel: '문서번호', ctaLabel: '상세 보기' };
+      return { idLabel: "문서번호", ctaLabel: "상세 보기" };
   }
 }
 
 function sortDocs(docs: LinkedDocItem[]) {
   // 운영 관점에서 “정산/기준 문서”를 먼저 보게: 주문 → 대여 → 신청서
-  return [...docs].sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
+  return [...docs].sort(
+    (a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind],
+  );
 }
 
 async function copyToClipboard(text: string) {
   try {
     await navigator.clipboard.writeText(text);
-    showSuccessToast('ID가 복사되었습니다.');
+    showSuccessToast("ID가 복사되었습니다.");
   } catch {
     // clipboard 권한/환경 이슈 방어: 조용히 실패(추가 토스트는 과도할 수 있음)
   }
 }
 
-export default function LinkedDocsCard({ title = '연결된 문서', docs, description, className }: Props) {
+export default function LinkedDocsCard({
+  title = "연결된 문서",
+  docs,
+  description,
+  className,
+}: Props) {
   const list = sortDocs((docs ?? []).filter((d) => d?.id && d?.href));
 
   return (
@@ -103,12 +120,19 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
           <Link2 className="h-4 w-4" />
           {title}
         </CardTitle>
-        <CardDescription>{description ?? (list.length > 0 ? `연결 문서 ${list.length}개` : '연결된 문서가 없습니다.')}</CardDescription>
+        <CardDescription>
+          {description ??
+            (list.length > 0
+              ? `연결 문서 ${list.length}개`
+              : "연결된 문서가 없습니다.")}
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="pt-4">
         {list.length === 0 ? (
-          <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">현재 문서는 단독 건으로 보입니다. (주문/대여/신청서 연결 없음)</div>
+          <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+            현재 문서는 단독 건으로 보입니다. (주문/대여/신청서 연결 없음)
+          </div>
         ) : (
           <div className="space-y-2">
             {list.map((d) => {
@@ -118,16 +142,33 @@ export default function LinkedDocsCard({ title = '연결된 문서', docs, descr
               const { idLabel, ctaLabel } = getDocLabel(d.kind);
 
               return (
-                <div key={`${d.kind}:${d.id}`} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div
+                  key={`${d.kind}:${d.id}`}
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge variant={badgeVariant} className={`${badgeBase} ${badgeSizeSm}`}>{kindLabel}</Badge>
-                      <p className="text-sm text-muted-foreground">{idLabel} : ({short})</p>
+                      <Badge
+                        variant={badgeVariant}
+                        className={`${badgeBase} ${badgeSizeSm}`}
+                      >
+                        {kindLabel}
+                      </Badge>
+                      <p className="text-sm text-muted-foreground">
+                        {idLabel} : ({short})
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => copyToClipboard(String(d.id))} className="gap-1" aria-label="ID 복사">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(String(d.id))}
+                      className="gap-1"
+                      aria-label="ID 복사"
+                    >
                       <Copy className="h-4 w-4" />
                       복사
                     </Button>

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OrderLookupResultsLoading() {
   return (
@@ -8,7 +8,9 @@ export default function OrderLookupResultsLoading() {
       <div className="max-w-3xl mx-auto">
         <Card className="shadow-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">주문 조회 결과</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              주문 조회 결과
+            </CardTitle>
             <div className="flex justify-center" aria-hidden>
               <Skeleton className="h-4 w-56" />
             </div>

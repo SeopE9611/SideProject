@@ -1,8 +1,14 @@
 // BrandFilter.tsx
-'use client';
+"use client";
 
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Filter } from 'lucide-react';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Filter } from "lucide-react";
 
 interface Props {
   value: string;
@@ -12,14 +18,14 @@ interface Props {
 
 // 간단 라벨 매핑 (ProductsClient.tsx의 BRAND_LABEL에서 복붙 or import)
 const BRAND_LABEL: Record<string, string> = {
-  babolat: '바볼랏',
-  wilson: '윌슨',
-  head: '헤드',
-  yonex: '요넥스',
-  luxilon: '럭실론',
-  tecnifibre: '테크니화이버',
-  solinco: '솔린코',
-  dunlop: '던롭',
+  babolat: "바볼랏",
+  wilson: "윌슨",
+  head: "헤드",
+  yonex: "요넥스",
+  luxilon: "럭실론",
+  tecnifibre: "테크니화이버",
+  solinco: "솔린코",
+  dunlop: "던롭",
 };
 
 export default function BrandFilter({ value, onChange, options }: Props) {

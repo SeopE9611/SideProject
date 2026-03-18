@@ -1,10 +1,15 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { CardFooter, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 
 interface Props {
   orderId: string;
@@ -13,7 +18,12 @@ interface Props {
   onCancel: () => void;
 }
 
-export default function PaymentEditForm({ orderId, initialData, onSuccess, onCancel }: Props) {
+export default function PaymentEditForm({
+  orderId,
+  initialData,
+  onSuccess,
+  onCancel,
+}: Props) {
   const [total, setTotal] = useState(initialData.total);
   const [baselineTotal] = useState(initialData.total);
 
@@ -27,16 +37,16 @@ export default function PaymentEditForm({ orderId, initialData, onSuccess, onCan
     setLoading(true);
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ payment: { total } }),
       });
       if (!res.ok) throw new Error(await res.text());
-      showSuccessToast('결제 금액이 수정되었습니다.');
+      showSuccessToast("결제 금액이 수정되었습니다.");
       onSuccess();
     } catch (err: any) {
       console.error(err);
-      showErrorToast('결제 금액 수정 중 오류가 발생했습니다.');
+      showErrorToast("결제 금액 수정 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -50,7 +60,12 @@ export default function PaymentEditForm({ orderId, initialData, onSuccess, onCan
       <CardContent>
         <div className="flex flex-col gap-2">
           <label className="font-medium">총 결제 금액 (원)</label>
-          <input type="number" value={total} onChange={(e) => setTotal(Number(e.target.value))} className="w-full rounded border px-2 py-1" />
+          <input
+            type="number"
+            value={total}
+            onChange={(e) => setTotal(Number(e.target.value))}
+            className="w-full rounded border px-2 py-1"
+          />
         </div>
       </CardContent>
       <CardFooter className="flex justify-end space-x-2">

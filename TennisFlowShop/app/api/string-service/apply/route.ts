@@ -44,7 +44,7 @@
 //   }
 // }
 
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 /**
  *  Deprecated: 이 엔드포인트는 더 이상 사용하지 않음
@@ -54,23 +54,24 @@ import { NextResponse } from 'next/server';
 function gone(body?: Record<string, any>) {
   return NextResponse.json(
     {
-      message: 'This endpoint has been deprecated. Use /api/applications/stringing/* instead.',
+      message:
+        "This endpoint has been deprecated. Use /api/applications/stringing/* instead.",
       ...(body ?? {}),
     },
     {
       status: 410, // 영구 폐기
-      headers: { 'Cache-Control': 'no-store' },
-    }
+      headers: { "Cache-Control": "no-store" },
+    },
   );
 }
 
 export async function GET() {
-  console.warn('[DEPRECATED] /api/string-service/apply GET called');
+  console.warn("[DEPRECATED] /api/string-service/apply GET called");
   return gone();
 }
 
 export async function POST() {
-  console.warn('[DEPRECATED] /api/string-service/apply POST called');
+  console.warn("[DEPRECATED] /api/string-service/apply POST called");
   return gone();
 }
 
@@ -85,4 +86,4 @@ export async function DELETE() {
 }
 
 // Next.js App Router 캐시 방지
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";

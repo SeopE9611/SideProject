@@ -1,21 +1,24 @@
-import { MARKET_BOARD_CONFIG } from '@/app/board/_components/board-config';
-import FreeBoardClient from '@/app/board/market/_components/FreeBoardClient';
-import type { Metadata } from 'next';
+import { MARKET_BOARD_CONFIG } from "@/app/board/_components/board-config";
+import FreeBoardClient from "@/app/board/market/_components/FreeBoardClient";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: '중고 거래 게시판 | 테니스 플로우',
-  description: '테니스 라켓·스트링·용품 중고 매물 등록과 직거래 정보를 공유하는 게시판입니다.',
-  alternates: { canonical: '/board/market' },
+  title: "중고 거래 게시판 | 테니스 플로우",
+  description:
+    "테니스 라켓·스트링·용품 중고 매물 등록과 직거래 정보를 공유하는 게시판입니다.",
+  alternates: { canonical: "/board/market" },
   openGraph: {
-    title: '중고 거래 게시판 | 테니스 플로우',
-    description: '테니스 라켓·스트링·용품 중고 매물 등록과 직거래 정보를 공유하는 게시판입니다.',
-    url: '/board/market',
-    type: 'website',
+    title: "중고 거래 게시판 | 테니스 플로우",
+    description:
+      "테니스 라켓·스트링·용품 중고 매물 등록과 직거래 정보를 공유하는 게시판입니다.",
+    url: "/board/market",
+    type: "website",
   },
   twitter: {
-    card: 'summary',
-    title: '중고 거래 게시판 | 테니스 플로우',
-    description: '테니스 라켓·스트링·용품 중고 매물 등록과 직거래 정보를 공유하는 게시판입니다.',
+    card: "summary",
+    title: "중고 거래 게시판 | 테니스 플로우",
+    description:
+      "테니스 라켓·스트링·용품 중고 매물 등록과 직거래 정보를 공유하는 게시판입니다.",
   },
 };
 

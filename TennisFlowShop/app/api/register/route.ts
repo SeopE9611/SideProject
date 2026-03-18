@@ -1,12 +1,16 @@
 // app/api/register/route.ts
-import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb'; // 단일 DB 유틸 사용
-import { hash } from 'bcryptjs';
-import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from '@/lib/points.policy';
-import { grantPoints } from '@/lib/points.service';
-import { z } from 'zod';
-import { getReservedDisplayNameErrorMessage } from '@/lib/reserved-display-name';
-import { getReservedEmailLocalPartErrorMessage } from '@/lib/reserved-email-localpart';
+import { NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb"; // 단일 DB 유틸 사용
+import { hash } from "bcryptjs";
+import {
+  isSignupBonusActive,
+  SIGNUP_BONUS_POINTS,
+  signupBonusRefKey,
+} from "@/lib/points.policy";
+import { grantPoints } from "@/lib/points.service";
+import { z } from "zod";
+import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
+import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
 
 /**
  * POST /api/register
@@ -27,13 +31,13 @@ const OptionalStringNullable = z.preprocess((v) => {
   if (v === undefined || v === null) return null;
 
   // 문자열은 trim 후 빈 문자열이면 null 처리
-  if (typeof v === 'string') {
+  if (typeof v === "string") {
     const s = v.trim();
     return s.length === 0 ? null : s;
   }
 
   // 숫자는 문자열로 변환(예: 우편번호를 숫자로 보내는 케이스 방어)
-  if (typeof v === 'number') return String(v);
+  if (typeof v === "number") return String(v);
 
   // 그 외(객체/배열 등)는 스키마에서 실패시키기 위해 그대로 반환
   return v;
@@ -62,13 +66,16 @@ export async function POST(req: Request) {
   try {
     rawBody = await req.json();
   } catch {
-    return NextResponse.json({ message: '요청 본문(JSON)이 올바르지 않습니다.' }, { status: 400 });
+    return NextResponse.json(
+      { message: "요청 본문(JSON)이 올바르지 않습니다." },
+      { status: 400 },
+    );
   }
 
   const parsed = RegisterBodySchema.safeParse(rawBody);
   if (!parsed.success) {
     // 기존 동작과 최대한 동일하게(400 + 같은 메시지) 유지
-    return NextResponse.json({ message: '필수 항목 누락' }, { status: 400 });
+    return NextResponse.json({ message: "필수 항목 누락" }, { status: 400 });
   }
 
   // 입력 정리(이메일 소문자/trim, name trim, 선택필드 빈값->null)은 스키마에서 처리됨
@@ -80,12 +87,18 @@ export async function POST(req: Request) {
 
   const reservedNameError = getReservedDisplayNameErrorMessage(name);
   if (reservedNameError) {
-    return NextResponse.json({ message: reservedNameError, error: 'RESERVED_DISPLAY_NAME' }, { status: 400 });
+    return NextResponse.json(
+      { message: reservedNameError, error: "RESERVED_DISPLAY_NAME" },
+      { status: 400 },
+    );
   }
 
   const reservedEmailError = getReservedEmailLocalPartErrorMessage(email);
   if (reservedEmailError) {
-    return NextResponse.json({ message: reservedEmailError, error: 'RESERVED_EMAIL_LOCALPART' }, { status: 400 });
+    return NextResponse.json(
+      { message: reservedEmailError, error: "RESERVED_EMAIL_LOCALPART" },
+      { status: 400 },
+    );
   }
 
   // 2) 비밀번호 정책
@@ -96,17 +109,25 @@ export async function POST(req: Request) {
     return lengthOk && hasLetter && hasNumber;
   };
   if (!isPasswordValid(password)) {
-    return NextResponse.json({ message: '비밀번호는 8자 이상이며, 영문과 숫자를 모두 포함해야 합니다.' }, { status: 400 });
+    return NextResponse.json(
+      {
+        message: "비밀번호는 8자 이상이며, 영문과 숫자를 모두 포함해야 합니다.",
+      },
+      { status: 400 },
+    );
   }
 
   try {
     const db = await getDb();
-    const users = db.collection('users');
+    const users = db.collection("users");
 
     // 3) 애플리케이션 레벨 중복 검사(낙관적)
     const existing = await users.findOne({ email });
     if (existing) {
-      return NextResponse.json({ message: '이미 존재하는 사용자입니다' }, { status: 409 });
+      return NextResponse.json(
+        { message: "이미 존재하는 사용자입니다" },
+        { status: 409 },
+      );
     }
 
     // 4) 비밀번호 해시
@@ -124,7 +145,7 @@ export async function POST(req: Request) {
       postalCode,
       pointsBalance: 0, // 포인트(적립금) 잔액 캐시(원장 기반으로 증감). 신규 회원은 0에서 시작.
       pointsDebt: 0, // 미정산 차감분(환불/회수로 잔액을 음수로 만들지 않기 위해 별도 누적)
-      role: 'user',
+      role: "user",
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -136,24 +157,27 @@ export async function POST(req: Request) {
         await grantPoints(db, {
           userId: insertRes.insertedId,
           amount: SIGNUP_BONUS_POINTS,
-          type: 'signup_bonus',
+          type: "signup_bonus",
           refKey: signupBonusRefKey(insertRes.insertedId),
           reason: `회원가입 보너스 ${SIGNUP_BONUS_POINTS}P`,
         });
       }
     } catch (e) {
-      console.warn('[register] signup bonus grant failed', e);
+      console.warn("[register] signup bonus grant failed", e);
     }
 
-    return NextResponse.json({ message: '회원가입 완료' }, { status: 201 });
+    return NextResponse.json({ message: "회원가입 완료" }, { status: 201 });
   } catch (err: any) {
     // 6) DB 레벨 unique 충돌 대응(인덱스가 있는 경우)
     //    E11000 duplicate key error collection: ... index: email_1 dup key: { email: "..." }
     if (err?.code === 11000) {
-      return NextResponse.json({ message: '이미 존재하는 사용자입니다' }, { status: 409 });
+      return NextResponse.json(
+        { message: "이미 존재하는 사용자입니다" },
+        { status: 409 },
+      );
     }
 
-    console.error('[API register] error:', err);
-    return NextResponse.json({ message: '서버 오류 발생' }, { status: 500 });
+    console.error("[API register] error:", err);
+    return NextResponse.json({ message: "서버 오류 발생" }, { status: 500 });
   }
 }

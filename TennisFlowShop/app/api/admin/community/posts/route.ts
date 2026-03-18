@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import type { Filter, SortDirection } from 'mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
+import { NextRequest, NextResponse } from "next/server";
+import type { Filter, SortDirection } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
 
 type PostDoc = {
   type: string;
@@ -17,7 +17,7 @@ type PostDoc = {
 };
 
 function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function toInt(v: string | null, fallback: number, min: number, max: number) {
@@ -34,23 +34,24 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
 
-  const page = toInt(searchParams.get('page'), 1, 1, 100000);
-  const limit = toInt(searchParams.get('limit'), 20, 1, 50);
+  const page = toInt(searchParams.get("page"), 1, 1, 100000);
+  const limit = toInt(searchParams.get("limit"), 20, 1, 50);
   const skip = (page - 1) * limit;
 
-  const type = (searchParams.get('type') ?? 'all').trim();
-  const status = (searchParams.get('status') ?? 'all').trim(); // all | public | hidden
-  const q = (searchParams.get('q') ?? '').trim();
+  const type = (searchParams.get("type") ?? "all").trim();
+  const status = (searchParams.get("status") ?? "all").trim(); // all | public | hidden
+  const q = (searchParams.get("q") ?? "").trim();
 
-  const sortKey = (searchParams.get('sort') ?? 'createdAt').trim(); // createdAt|views|likes|comments
-  const dir: SortDirection = searchParams.get('dir')?.toLowerCase() === 'asc' ? 1 : -1;
+  const sortKey = (searchParams.get("sort") ?? "createdAt").trim(); // createdAt|views|likes|comments
+  const dir: SortDirection =
+    searchParams.get("dir")?.toLowerCase() === "asc" ? 1 : -1;
 
   const filter: Filter<PostDoc> = {};
-  if (type !== 'all') filter.type = type;
-  if (status === 'public' || status === 'hidden') filter.status = status;
+  if (type !== "all") filter.type = type;
+  if (status === "public" || status === "hidden") filter.status = status;
 
   if (q) {
-    const r = new RegExp(escapeRegExp(q), 'i');
+    const r = new RegExp(escapeRegExp(q), "i");
     filter.$or = [{ title: r }, { nickname: r }, { content: r }];
   }
 
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
   };
   const sortSpec = sortMap[sortKey] ?? { createdAt: -1 };
 
-  const col = db.collection<PostDoc>('community_posts');
+  const col = db.collection<PostDoc>("community_posts");
 
   const [items, total] = await Promise.all([
     col
@@ -98,9 +99,12 @@ export async function GET(req: NextRequest) {
         type: d.type,
         postNo: d.postNo ?? null,
         title: d.title,
-        nickname: d.nickname ?? '',
-        status: d.status ?? 'public',
-        createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        nickname: d.nickname ?? "",
+        status: d.status ?? "public",
+        createdAt:
+          d.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : new Date().toISOString(),
         views,
         likes,
         commentsCount: d.commentsCount ?? 0,

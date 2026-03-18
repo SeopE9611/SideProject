@@ -1,7 +1,18 @@
-import type { ObjectId } from 'mongodb';
+import type { ObjectId } from "mongodb";
 
-export type PackageOrderPaymentStatus = '결제대기' | '결제완료' | '결제취소' | '환불' | string;
-export type PackageOrderStatus = '주문접수' | '결제대기' | '결제완료' | '취소' | '환불' | string;
+export type PackageOrderPaymentStatus =
+  | "결제대기"
+  | "결제완료"
+  | "결제취소"
+  | "환불"
+  | string;
+export type PackageOrderStatus =
+  | "주문접수"
+  | "결제대기"
+  | "결제완료"
+  | "취소"
+  | "환불"
+  | string;
 
 export interface PackageOrder {
   _id: ObjectId;

@@ -6,9 +6,12 @@
  * @param {{ hasClientSeenDate: boolean; postStillExists: boolean }} input
  * @returns {'conflict' | 'not_found'}
  */
-export function classifyBoardPatchFailure({ hasClientSeenDate, postStillExists }) {
+export function classifyBoardPatchFailure({
+  hasClientSeenDate,
+  postStillExists,
+}) {
   if (hasClientSeenDate && postStillExists) {
-    return 'conflict';
+    return "conflict";
   }
-  return 'not_found';
+  return "not_found";
 }

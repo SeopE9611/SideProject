@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle } from "lucide-react";
 
 type Props = {
   currentStep: number;
@@ -20,15 +20,35 @@ type Props = {
   handleSubmit: (e: React.FormEvent) => void;
 };
 
-export default function ApplyStepFooter({ currentStep, onPrev, onNext, isStepValid, isSubmitting, isOrderSlotBlocked, handleSubmit }: Props) {
+export default function ApplyStepFooter({
+  currentStep,
+  onPrev,
+  onNext,
+  isStepValid,
+  isSubmitting,
+  isOrderSlotBlocked,
+  handleSubmit,
+}: Props) {
   return (
     <div className="flex justify-between mt-12 pt-8 border-t dark:border-border">
-      <Button type="button" variant="outline" onClick={onPrev} disabled={currentStep === 1} className="px-8 py-3 transition-colors duration-200">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onPrev}
+        disabled={currentStep === 1}
+        className="px-8 py-3 transition-colors duration-200"
+      >
         이전
       </Button>
 
       {currentStep < 4 ? (
-        <Button type="button" onClick={onNext} disabled={!isStepValid(currentStep)} variant="default" className="px-8 py-3 transition-all duration-200 disabled:opacity-50">
+        <Button
+          type="button"
+          onClick={onNext}
+          disabled={!isStepValid(currentStep)}
+          variant="default"
+          className="px-8 py-3 transition-all duration-200 disabled:opacity-50"
+        >
           다음
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>

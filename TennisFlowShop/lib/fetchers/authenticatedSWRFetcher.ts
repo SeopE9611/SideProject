@@ -1,26 +1,33 @@
-import { refreshOnce } from '@/lib/auth/refresh-mutex';
-import { debugResumeFetch, getResumeDebugSnapshot, warnResumeFetchFailure } from '@/lib/debug/resume-debug';
+import { refreshOnce } from "@/lib/auth/refresh-mutex";
+import {
+  debugResumeFetch,
+  getResumeDebugSnapshot,
+  warnResumeFetchFailure,
+} from "@/lib/debug/resume-debug";
 
-const AUTH_RETRY_HEADER = { 'x-suppress-auth-expired': '1' } as const;
+const AUTH_RETRY_HEADER = { "x-suppress-auth-expired": "1" } as const;
 
 async function parseJsonResponse<T>(res: Response): Promise<T> {
   try {
     return (await res.json()) as T;
   } catch (error) {
-    throw error instanceof Error ? error : new Error('INVALID_JSON');
+    throw error instanceof Error ? error : new Error("INVALID_JSON");
   }
 }
 
-async function request(url: string, suppressAuthExpiredHeader: boolean): Promise<Response> {
+async function request(
+  url: string,
+  suppressAuthExpiredHeader: boolean,
+): Promise<Response> {
   return fetch(url, {
-    credentials: 'include',
-    cache: 'no-store',
+    credentials: "include",
+    cache: "no-store",
     headers: suppressAuthExpiredHeader ? AUTH_RETRY_HEADER : undefined,
   });
 }
 
 function getPath(url: string): string {
-  if (typeof window === 'undefined') return url;
+  if (typeof window === "undefined") return url;
   try {
     return new URL(url, window.location.origin).pathname;
   } catch {
@@ -29,10 +36,10 @@ function getPath(url: string): string {
 }
 
 function classifyHttpError(status: number): string {
-  if (status === 401) return 'http_401';
-  if (status === 403) return 'http_403';
-  if (status === 500) return 'http_500';
-  if (status === 503) return 'http_503';
+  if (status === 401) return "http_401";
+  if (status === 403) return "http_403";
+  if (status === 500) return "http_500";
+  if (status === 503) return "http_503";
   return `http_${status}`;
 }
 
@@ -77,7 +84,10 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
   try {
     response = await request(url, false);
   } catch (error) {
-    const errorType = error instanceof DOMException && error.name === 'AbortError' ? 'aborted_request' : 'network_error';
+    const errorType =
+      error instanceof DOMException && error.name === "AbortError"
+        ? "aborted_request"
+        : "network_error";
     warnResumeFetchFailure(
       toFailurePayload({
         url,
@@ -107,14 +117,15 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
         response = await request(url, true);
         retryStatus = response.status;
         if (response.ok) {
-          debugResumeFetch('retry_success_after_refresh',
+          debugResumeFetch(
+            "retry_success_after_refresh",
             toFailurePayload({
               url,
               firstStatus,
               retryStatus,
               refreshAttempted,
               refreshSucceeded,
-              errorType: 'retry_succeeded_after_refresh',
+              errorType: "retry_succeeded_after_refresh",
             }),
           );
           return parseJsonResponse<T>(response);
@@ -127,7 +138,7 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
             retryStatus,
             refreshAttempted,
             refreshSucceeded,
-            errorType: 'retry_failed_after_refresh',
+            errorType: "retry_failed_after_refresh",
           }),
         );
       } else {
@@ -138,12 +149,15 @@ export async function authenticatedSWRFetcher<T>(url: string): Promise<T> {
             retryStatus,
             refreshAttempted,
             refreshSucceeded,
-            errorType: 'refresh_failed',
+            errorType: "refresh_failed",
           }),
         );
       }
     } catch (error) {
-      const errorType = error instanceof DOMException && error.name === 'AbortError' ? 'aborted_request' : 'network_error';
+      const errorType =
+        error instanceof DOMException && error.name === "AbortError"
+          ? "aborted_request"
+          : "network_error";
       warnResumeFetchFailure(
         toFailurePayload({
           url,

@@ -1,20 +1,20 @@
-import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
-import { z } from 'zod';
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { z } from "zod";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // 서버 검증
-const ALLOWED_COURIERS = ['cj', 'post', 'logen', 'hanjin'] as const;
-const onlyDigits = (v: unknown) => String(v ?? '').replace(/\D/g, '');
+const ALLOWED_COURIERS = ["cj", "post", "logen", "hanjin"] as const;
+const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
 function badRequest(error: string, fieldErrors?: Record<string, string[]>) {
   return NextResponse.json(
     {
-      message: 'INVALID_FIELDS',
+      message: "INVALID_FIELDS",
       error,
       fieldErrors: fieldErrors ?? null,
     },
@@ -22,7 +22,9 @@ function badRequest(error: string, fieldErrors?: Record<string, string[]>) {
   );
 }
 
-function parseShippedAt(input?: unknown): { ok: true; value: Date } | { ok: false; error: string } {
+function parseShippedAt(
+  input?: unknown,
+): { ok: true; value: Date } | { ok: false; error: string } {
   if (!input) return { ok: true, value: new Date() };
 
   const s = String(input).trim();
@@ -30,19 +32,24 @@ function parseShippedAt(input?: unknown): { ok: true; value: Date } | { ok: fals
 
   // date input(YYYY-MM-DD) 우선 처리: timezone 흔들림을 줄이기 위해 UTC 정오로 고정
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-    const [yy, mm, dd] = s.split('-').map((n) => Number(n));
+    const [yy, mm, dd] = s.split("-").map((n) => Number(n));
     const d = new Date(Date.UTC(yy, mm - 1, dd, 12, 0, 0));
-    if (Number.isNaN(d.getTime())) return { ok: false, error: '발송일이 올바르지 않습니다.' };
+    if (Number.isNaN(d.getTime()))
+      return { ok: false, error: "발송일이 올바르지 않습니다." };
     return { ok: true, value: d };
   }
 
   // 그 외 ISO/date-time 문자열
   const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return { ok: false, error: '발송일이 올바르지 않습니다.' };
+  if (Number.isNaN(d.getTime()))
+    return { ok: false, error: "발송일이 올바르지 않습니다." };
   return { ok: true, value: d };
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -50,7 +57,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   // 파라미터/바디 검증
   const { id } = await params;
-  if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+  if (!ObjectId.isValid(id))
+    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const schema = z.object({
     courier: z.enum(ALLOWED_COURIERS),
@@ -61,45 +69,59 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return badRequest('요청 값이 올바르지 않습니다.', parsed.error.flatten().fieldErrors as any);
+    return badRequest(
+      "요청 값이 올바르지 않습니다.",
+      parsed.error.flatten().fieldErrors as any,
+    );
   }
 
   const courier = parsed.data.courier;
   const trackingDigits = onlyDigits(parsed.data.trackingNumber);
   if (!trackingDigits) {
-    return badRequest('운송장 번호를 입력하세요', { trackingNumber: ['운송장 번호를 입력하세요'] });
+    return badRequest("운송장 번호를 입력하세요", {
+      trackingNumber: ["운송장 번호를 입력하세요"],
+    });
   }
   if (trackingDigits.length < 9 || trackingDigits.length > 20) {
-    return badRequest('운송장 번호는 숫자 9~20자리만 입력해주세요', { trackingNumber: ['운송장 번호는 숫자 9~20자리만 입력해주세요'] });
+    return badRequest("운송장 번호는 숫자 9~20자리만 입력해주세요", {
+      trackingNumber: ["운송장 번호는 숫자 9~20자리만 입력해주세요"],
+    });
   }
 
   const shippedAtParsed = parseShippedAt(parsed.data.shippedAt);
   if (!shippedAtParsed.ok) {
-    return badRequest(shippedAtParsed.error, { shippedAt: [shippedAtParsed.error] });
+    return badRequest(shippedAtParsed.error, {
+      shippedAt: [shippedAtParsed.error],
+    });
   }
 
   // 미래 날짜 방지(타임존/입력 오차 고려 24시간 여유)
   const now = Date.now();
   if (shippedAtParsed.value.getTime() > now + 1000 * 60 * 60 * 24) {
-    return badRequest('발송일은 미래 날짜로 설정할 수 없습니다.', { shippedAt: ['발송일은 미래 날짜로 설정할 수 없습니다.'] });
+    return badRequest("발송일은 미래 날짜로 설정할 수 없습니다.", {
+      shippedAt: ["발송일은 미래 날짜로 설정할 수 없습니다."],
+    });
   }
 
-  const note = (parsed.data.note ?? '').trim();
+  const note = (parsed.data.note ?? "").trim();
   if (note.length > 200) {
-    return badRequest('메모는 200자 이내로 입력해주세요.', { note: ['메모는 200자 이내로 입력해주세요.'] });
+    return badRequest("메모는 200자 이내로 입력해주세요.", {
+      note: ["메모는 200자 이내로 입력해주세요."],
+    });
   }
   // 소유자 검증
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
-  const mine = await db.collection('rental_orders').findOne({ _id });
-  if (!mine) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+  const mine = await db.collection("rental_orders").findOne({ _id });
+  if (!mine)
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
   // 저장
-  await db.collection('rental_orders').updateOne(
+  await db.collection("rental_orders").updateOne(
     { _id },
     {
       $set: {
-        'shipping.return': {
+        "shipping.return": {
           courier,
           trackingNumber: trackingDigits,
           shippedAt: shippedAtParsed.value,

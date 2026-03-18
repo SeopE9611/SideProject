@@ -1,1 +1,1 @@
-export { POST } from '@/app/api/settlements/bulk-delete/route';
+export { POST } from "@/app/api/settlements/bulk-delete/route";

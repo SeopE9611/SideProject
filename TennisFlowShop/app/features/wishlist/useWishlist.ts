@@ -1,5 +1,5 @@
-'use client';
-import useSWR, { mutate as globalMutate } from 'swr';
+"use client";
+import useSWR, { mutate as globalMutate } from "swr";
 
 export type WishlistItem = {
   id: string;
@@ -10,17 +10,20 @@ export type WishlistItem = {
   createdAt: string;
 };
 
-const KEY = '/api/wishlist';
+const KEY = "/api/wishlist";
 
 export function useWishlist() {
-  const { data, isLoading, isValidating, mutate, error } = useSWR<{ items: WishlistItem[]; total: number }>(
+  const { data, isLoading, isValidating, mutate, error } = useSWR<{
+    items: WishlistItem[];
+    total: number;
+  }>(
     KEY,
     async (url) => {
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) throw new Error('failed');
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("failed");
       return res.json();
     },
-    { keepPreviousData: true, revalidateOnFocus: false }
+    { keepPreviousData: true, revalidateOnFocus: false },
   );
 
   // 조회 실패/미확정을 실제 빈 목록과 분리하기 위해 nullable로 보관한다.
@@ -34,21 +37,24 @@ export function useWishlist() {
   };
 
   async function add(productId: string) {
-    const res = await fetch('/api/wishlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+    const res = await fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ productId }),
     });
-    if (res.status === 401) throw new Error('unauthorized');
-    if (!res.ok && res.status !== 409) throw new Error('add failed');
+    if (res.status === 401) throw new Error("unauthorized");
+    if (!res.ok && res.status !== 409) throw new Error("add failed");
     await mutate();
   }
 
   async function remove(productId: string) {
-    const res = await fetch(`/api/wishlist/${productId}`, { method: 'DELETE', credentials: 'include' });
-    if (res.status === 401) throw new Error('unauthorized');
-    if (!res.ok) throw new Error('remove failed');
+    const res = await fetch(`/api/wishlist/${productId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.status === 401) throw new Error("unauthorized");
+    if (!res.ok) throw new Error("remove failed");
     await mutate();
   }
 
@@ -60,13 +66,16 @@ export function useWishlist() {
   }
 
   async function clear() {
-    const res = await fetch('/api/wishlist', { method: 'DELETE', credentials: 'include' });
-    if (res.status === 401) throw new Error('unauthorized');
-    if (!res.ok) throw new Error('clear failed');
+    const res = await fetch("/api/wishlist", {
+      method: "DELETE",
+      credentials: "include",
+    });
+    if (res.status === 401) throw new Error("unauthorized");
+    if (!res.ok) throw new Error("clear failed");
     await mutate();
   }
 
-  const hasResolvedData = Array.isArray(items) && typeof total === 'number';
+  const hasResolvedData = Array.isArray(items) && typeof total === "number";
   const hasDataError = Boolean(error);
 
   return {

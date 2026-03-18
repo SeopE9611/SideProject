@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import useSWR from 'swr';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, AlertTriangle, Store, Truck } from 'lucide-react';
-import ShippingForm from '@/app/admin/applications/stringing/[id]/shipping-update/shipping-form';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { isVisitPickupOrder } from '@/lib/order-shipping';
+import useSWR from "swr";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2, AlertTriangle, Store, Truck } from "lucide-react";
+import ShippingForm from "@/app/admin/applications/stringing/[id]/shipping-update/shipping-form";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { isVisitPickupOrder } from "@/lib/order-shipping";
 
 type Application = {
   _id: string;
@@ -29,33 +29,47 @@ export interface Props {
   onSuccess?: () => void;
 }
 
-
 const isVisitContext = (app?: Application): boolean => {
-  const collection = String(app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? '').trim().toLowerCase();
-  if (collection === 'visit') return true;
+  const collection = String(
+    app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "",
+  )
+    .trim()
+    .toLowerCase();
+  if (collection === "visit") return true;
 
-  const linkedPickup = String(app?.linkedOrderPickupMethod ?? '').trim().toLowerCase();
-  if (linkedPickup === 'visit') return true;
+  const linkedPickup = String(app?.linkedOrderPickupMethod ?? "")
+    .trim()
+    .toLowerCase();
+  if (linkedPickup === "visit") return true;
 
-  const shippingMethod = app?.shippingInfo?.shippingMethod ?? app?.shippingInfo?.deliveryMethod;
+  const shippingMethod =
+    app?.shippingInfo?.shippingMethod ?? app?.shippingInfo?.deliveryMethod;
   return isVisitPickupOrder({ shippingMethod });
 };
 
-export default function ShippingFormClient({ applicationId, onSuccess }: Props) {
-  const { data, error, isLoading } = useSWR<Application>(`/api/admin/applications/stringing/${applicationId}`, authenticatedSWRFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+export default function ShippingFormClient({
+  applicationId,
+  onSuccess,
+}: Props) {
+  const { data, error, isLoading } = useSWR<Application>(
+    `/api/admin/applications/stringing/${applicationId}`,
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   const shippingInfo = data?.shippingInfo ?? {};
   const invoice = shippingInfo.invoice ?? {};
 
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
-  const rawMethod = shippingInfo.shippingMethod ?? shippingInfo.deliveryMethod ?? '';
+  const rawMethod =
+    shippingInfo.shippingMethod ?? shippingInfo.deliveryMethod ?? "";
   const method = String(rawMethod).trim();
-  const date = String(shippingInfo.estimatedDate ?? '').trim();
-  const courier = String(invoice.courier ?? '').trim();
-  const tracking = String(invoice.trackingNumber ?? '').trim();
+  const date = String(shippingInfo.estimatedDate ?? "").trim();
+  const courier = String(invoice.courier ?? "").trim();
+  const tracking = String(invoice.trackingNumber ?? "").trim();
   const isRegistered = Boolean(method || date || courier || tracking);
 
   // stringing 배송 정보 화면도 주문과 동일한 공용 유틸로 방문 수령 여부를 판별한다.
@@ -63,23 +77,23 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
   const pageTitle = data
     ? isVisitPickup
       ? isRegistered
-        ? '방문 수령 정보 수정'
-        : '방문 수령 정보 등록'
+        ? "방문 수령 정보 수정"
+        : "방문 수령 정보 등록"
       : isRegistered
-        ? '배송 정보 수정'
-        : '배송 정보 등록'
-    : '배송 정보 관리';
+        ? "배송 정보 수정"
+        : "배송 정보 등록"
+    : "배송 정보 관리";
   const pageDesc = data
     ? isVisitPickup
       ? isRegistered
-        ? '방문 수령 준비를 위한 예상 수령일 정보를 수정할 수 있습니다.'
-        : '방문 수령 준비를 위한 예상 수령일 정보를 등록할 수 있습니다.'
+        ? "방문 수령 준비를 위한 예상 수령일 정보를 수정할 수 있습니다."
+        : "방문 수령 준비를 위한 예상 수령일 정보를 등록할 수 있습니다."
       : isRegistered
-        ? '배송 방법과 예상 수령일을 수정할 수 있습니다.'
-        : '배송 방법과 예상 수령일을 등록할 수 있습니다.'
+        ? "배송 방법과 예상 수령일을 수정할 수 있습니다."
+        : "배송 방법과 예상 수령일을 등록할 수 있습니다."
     : isLoading
-      ? '배송 정보를 준비하고 있습니다.'
-      : '신청 정보를 불러올 수 없습니다.';
+      ? "배송 정보를 준비하고 있습니다."
+      : "신청 정보를 불러올 수 없습니다.";
 
   let content = null;
   if (isLoading) {
@@ -113,9 +127,9 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
       <ShippingForm
         applicationId={applicationId}
         initialShippingMethod={rawMethod}
-        initialEstimatedDelivery={shippingInfo.estimatedDate || ''}
-        initialCourier={invoice.courier || ''}
-        initialTrackingNumber={invoice.trackingNumber || ''}
+        initialEstimatedDelivery={shippingInfo.estimatedDate || ""}
+        initialCourier={invoice.courier || ""}
+        initialTrackingNumber={invoice.trackingNumber || ""}
         onSuccess={onSuccess}
         isVisitPickup={isVisitPickup}
       />
@@ -127,9 +141,15 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
       <div className="container mx-auto max-w-2xl">
         <div className="text-center mb-8">
           <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
-            {isVisitPickup ? <Store className="h-8 w-8 text-primary mx-auto" /> : <Truck className="h-8 w-8 text-primary mx-auto" />}
+            {isVisitPickup ? (
+              <Store className="h-8 w-8 text-primary mx-auto" />
+            ) : (
+              <Truck className="h-8 w-8 text-primary mx-auto" />
+            )}
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {pageTitle}
+          </h1>
           <p className="text-muted-foreground">{pageDesc}</p>
         </div>
         {content}

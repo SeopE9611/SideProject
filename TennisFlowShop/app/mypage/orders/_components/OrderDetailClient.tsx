@@ -1,53 +1,87 @@
-'use client';
+"use client";
 
-import CustomerEditForm from '@/app/features/orders/components/CustomerEditForm';
-import OrderHistory from '@/app/features/orders/components/OrderHistory';
-import { OrderStatusBadge } from '@/app/features/orders/components/OrderStatusBadge';
-import PaymentMethodDetail from '@/app/mypage/orders/_components/PaymentMethodDetail';
-import RequestEditForm from '@/app/mypage/orders/_components/RequestEditForm';
-import SiteContainer from '@/components/layout/SiteContainer';
-import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
-import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { badgeBase, badgeSizeSm, badgeToneVariant, getApplicationStatusTone, getPaymentStatusBadgeSpec } from '@/lib/badge-style';
-import { refreshOnce } from '@/lib/auth/refresh-mutex';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { getOrderDeliveryInfoTitle, isVisitPickupOrder, orderShippingMethodLabel, shouldShowDeliveryOnlyFields } from '@/lib/order-shipping';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { cn } from '@/lib/utils';
-import { ArrowLeft, Calendar, CheckCircle, Clock, CreditCard, Mail, MapPin, Pencil, Phone, ShoppingCart, Truck, User } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import useSWR, { mutate } from 'swr';
-import useSWRInfinite from 'swr/infinite';
-import CancelOrderDialog from './CancelOrderDialog'; // 기존 다이얼로그 그대로 사용
+import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
+import OrderHistory from "@/app/features/orders/components/OrderHistory";
+import { OrderStatusBadge } from "@/app/features/orders/components/OrderStatusBadge";
+import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
+import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
+import SiteContainer from "@/components/layout/SiteContainer";
+import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
+import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  badgeBase,
+  badgeSizeSm,
+  badgeToneVariant,
+  getApplicationStatusTone,
+  getPaymentStatusBadgeSpec,
+} from "@/lib/badge-style";
+import { refreshOnce } from "@/lib/auth/refresh-mutex";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  getOrderDeliveryInfoTitle,
+  isVisitPickupOrder,
+  orderShippingMethodLabel,
+  shouldShowDeliveryOnlyFields,
+} from "@/lib/order-shipping";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import {
+  ArrowLeft,
+  Calendar,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  ShoppingCart,
+  Truck,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import useSWR, { mutate } from "swr";
+import useSWRInfinite from "swr/infinite";
+import CancelOrderDialog from "./CancelOrderDialog"; // 기존 다이얼로그 그대로 사용
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
 const WITHDRAW_TIMEOUT_MS = 12000;
 
 const parseApiMessage = async (res: Response, fallback: string) => {
-  const contentType = res.headers.get('content-type') ?? '';
+  const contentType = res.headers.get("content-type") ?? "";
 
-  if (contentType.includes('application/json')) {
+  if (contentType.includes("application/json")) {
     const data = await res.json().catch(() => null);
-    if (data && typeof data.message === 'string' && data.message.trim()) return data.message;
-    if (data && typeof data.error === 'string' && data.error.trim()) return data.error;
+    if (data && typeof data.message === "string" && data.message.trim())
+      return data.message;
+    if (data && typeof data.error === "string" && data.error.trim())
+      return data.error;
   }
 
-  const text = await res.text().catch(() => '');
+  const text = await res.text().catch(() => "");
   return text.trim() || fallback;
 };
 
-const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
-  // orderId가 없으면 요청 중단
-  if (!orderId) return null;
-  if (prev && prev.history.length === 0) return null;
-  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
-};
+const getOrderHistoryKey =
+  (orderId?: string) => (pageIndex: number, prev: any) => {
+    // orderId가 없으면 요청 중단
+    if (!orderId) return null;
+    if (prev && prev.history.length === 0) return null;
+    return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+  };
 
 interface OrderItem {
   id: string;
@@ -128,27 +162,35 @@ interface Props {
 // 주문 취소 요청 상태 텍스트를 계산하는 헬퍼
 function getCancelRequestLabel(order: any): string | null {
   const cancel = order?.cancelRequest;
-  if (!cancel || !cancel.status || cancel.status === 'none') return null;
+  if (!cancel || !cancel.status || cancel.status === "none") return null;
 
   switch (cancel.status) {
-    case 'requested':
-      return '취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.';
-    case 'approved':
+    case "requested":
+      return "취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.";
+    case "approved":
       // 보통 status === '취소'랑 함께 가겠지만, 혹시 모를 비동기 어긋남에 대비해서 안내
-      return '취소 요청이 승인되어 주문이 취소되었습니다.';
-    case 'rejected':
-      return '취소 요청이 거절되었습니다. 상세 사유는 관리자에게 문의해주세요.';
+      return "취소 요청이 승인되어 주문이 취소되었습니다.";
+    case "rejected":
+      return "취소 요청이 거절되었습니다. 상세 사유는 관리자에게 문의해주세요.";
     default:
       return null;
   }
 }
 
-export default function OrderDetailClient({ orderId, backUrl, linkedApplicationHrefBuilder }: Props) {
+export default function OrderDetailClient({
+  orderId,
+  backUrl,
+  linkedApplicationHrefBuilder,
+}: Props) {
   const router = useRouter();
-  const resolvedBackUrl = backUrl ?? '/mypage?tab=orders';
-  const resolvedBackQuery = new URLSearchParams(resolvedBackUrl.split('?')[1] ?? '');
-  const resolvedScope = resolvedBackQuery.get('scope');
-  const flowScopeQuery = resolvedScope ? `&scope=${encodeURIComponent(resolvedScope)}` : '';
+  const resolvedBackUrl = backUrl ?? "/mypage?tab=orders";
+  const resolvedBackQuery = new URLSearchParams(
+    resolvedBackUrl.split("?")[1] ?? "",
+  );
+  const resolvedScope = resolvedBackQuery.get("scope");
+  const flowScopeQuery = resolvedScope
+    ? `&scope=${encodeURIComponent(resolvedScope)}`
+    : "";
 
   // 편집 모드 전체 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -158,28 +200,51 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
   const [editingRequest, setEditingRequest] = useState(false);
 
   // 취소 철회 로딩
-  const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] = useState(false);
+  const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] =
+    useState(false);
 
   // 주문 상세를 SWR로 가져오기
-  const { data: orderDetail, error: orderError, isLoading: isOrderLoading, mutate: mutateOrderDetail } = useSWR<OrderDetail>(`/api/orders/${orderId}`, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
+  const {
+    data: orderDetail,
+    error: orderError,
+    isLoading: isOrderLoading,
+    mutate: mutateOrderDetail,
+  } = useSWR<OrderDetail>(`/api/orders/${orderId}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 처리 이력 데이터를 SWRInfinite로 가져오기
-  const { data: historyPages, error: historyError, mutate: mutateHistory } = useSWRInfinite(getOrderHistoryKey(orderId), authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
+  const {
+    data: historyPages,
+    error: historyError,
+    mutate: mutateHistory,
+  } = useSWRInfinite(getOrderHistoryKey(orderId), authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 상품 리뷰 작성 여부 맵: { [productId]: boolean }
   const [reviewedMap, setReviewedMap] = useState<Record<string, boolean>>({});
 
   // 완료 상태
   const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
-  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail?.shippingInfo);
+  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(
+    orderDetail?.shippingInfo,
+  );
 
   // 관리자 상세와 동일하게 shippingMethod -> deliveryMethod 순으로 읽고
   // 공용 정규화 유틸로 라벨을 만든다.
-  const shippingMethodValue = orderDetail?.shippingInfo?.shippingMethod ?? (orderDetail?.shippingInfo as any)?.deliveryMethod;
+  const shippingMethodValue =
+    orderDetail?.shippingInfo?.shippingMethod ??
+    (orderDetail?.shippingInfo as any)?.deliveryMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
 
-  const canShowReviewCTA = Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === '구매확정';
-  const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
+  const canShowReviewCTA =
+    Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === "구매확정";
+  const reviewsReady = (orderDetail?.items ?? []).every(
+    (it) => it.id in reviewedMap,
+  );
 
   useEffect(() => {
     const ids = (orderDetail?.items ?? []).map((it) => it.id).filter(Boolean);
@@ -187,11 +252,17 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
     let aborted = false;
     (async () => {
       const order = orderDetail?._id;
-      const results = await Promise.allSettled(ids.map((id) => fetch(`/api/reviews/self?productId=${id}&orderId=${order}`, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null))));
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          fetch(`/api/reviews/self?productId=${id}&orderId=${order}`, {
+            credentials: "include",
+          }).then((r) => (r.ok ? r.json() : null)),
+        ),
+      );
       if (aborted) return;
       const next: Record<string, boolean> = {};
       results.forEach((res, i) => {
-        next[ids[i]] = res.status === 'fulfilled' && !!res.value; // 존재하면 true
+        next[ids[i]] = res.status === "fulfilled" && !!res.value; // 존재하면 true
       });
       setReviewedMap(next);
     })();
@@ -201,28 +272,42 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
   }, [orderDetail?._id]);
 
   const items = orderDetail?.items ?? [];
-  const allReviewed = items.length > 0 && items.every((it) => reviewedMap[it.id]);
+  const allReviewed =
+    items.length > 0 && items.every((it) => reviewedMap[it.id]);
   const firstUnreviewed = items.find((it) => !reviewedMap[it.id]);
   // 편집 가능 상태: 배송 중/완료/환불/취소가 아니어야 함
-  const nonEditableStatuses = ['배송중', '배송완료', '환불', '취소'];
-  const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? '');
+  const nonEditableStatuses = ["배송중", "배송완료", "환불", "취소"];
+  const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? "");
   // 이력 페이지를 합쳐서 하나의 배열로
-  const allHistory: any[] = historyPages ? historyPages.flatMap((page: any) => page.history) : [];
+  const allHistory: any[] = historyPages
+    ? historyPages.flatMap((page: any) => page.history)
+    : [];
 
   // 날짜/금액 포맷 함수
   const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return '날짜 없음';
+    if (!dateString) return "날짜 없음";
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '유효하지 않은 날짜';
-    return new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+    if (isNaN(date.getTime())) return "유효하지 않은 날짜";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
   };
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
+    return new Intl.NumberFormat("ko-KR", {
+      style: "currency",
+      currency: "KRW",
+    }).format(amount);
   };
 
   // 에러/로딩 처리
   if (orderError) {
-    return <div className="text-center text-destructive">주문을 불러오는 중 오류가 발생했습니다.</div>;
+    return (
+      <div className="text-center text-destructive">
+        주문을 불러오는 중 오류가 발생했습니다.
+      </div>
+    );
   }
 
   const isInitialLoading = isOrderLoading && !orderDetail;
@@ -231,61 +316,85 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
     return (
       <main className="w-full">
         <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
-          <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">주문 상세 정보를 불러오는 중입니다...</div>
+          <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+            주문 상세 정보를 불러오는 중입니다...
+          </div>
         </SiteContainer>
       </main>
     );
   }
 
   if (!orderDetail) {
-    return <div className="text-center text-muted-foreground">주문 정보를 찾을 수 없습니다.</div>;
+    return (
+      <div className="text-center text-muted-foreground">
+        주문 정보를 찾을 수 없습니다.
+      </div>
+    );
   }
   // quantity 기반으로 총 '장착 서비스 대상 스트링 수량' 계산
-  const stringServiceItemCount = (orderDetail.items ?? []).filter((item) => item.mountingFee != null && item.mountingFee > 0).reduce((sum, item) => sum + (item.quantity ?? 1), 0);
+  const stringServiceItemCount = (orderDetail.items ?? [])
+    .filter((item) => item.mountingFee != null && item.mountingFee > 0)
+    .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
   // remainingSlots 파생값
-  const totalSlots = orderDetail.stringService?.totalSlots ?? stringServiceItemCount;
-  const usedSlots = orderDetail.stringService?.usedSlots ?? totalSlots - (orderDetail.stringService?.remainingSlots ?? 0);
-  const remainingSlots = orderDetail.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
+  const totalSlots =
+    orderDetail.stringService?.totalSlots ?? stringServiceItemCount;
+  const usedSlots =
+    orderDetail.stringService?.usedSlots ??
+    totalSlots - (orderDetail.stringService?.remainingSlots ?? 0);
+  const remainingSlots =
+    orderDetail.stringService?.remainingSlots ??
+    Math.max(totalSlots - usedSlots, 0);
 
   // 이 주문과 연결된 신청서 요약 리스트
   const linkedStringingApps = orderDetail?.stringingApplications ?? [];
   const hasLinkedStringingApps = linkedStringingApps.length > 0;
-  const hasSubmittedStringingApplication = hasLinkedStringingApps || Boolean(orderDetail?.stringingApplicationId) || orderDetail?.isStringServiceApplied === true;
+  const hasSubmittedStringingApplication =
+    hasLinkedStringingApps ||
+    Boolean(orderDetail?.stringingApplicationId) ||
+    orderDetail?.isStringServiceApplied === true;
 
   // 리뷰/링크에 사용할 대표 신청 ID
   // - API 계약: stringingApplicationId는 최신 신청서(updatedAt/createdAt desc)
   // - 하위 호환 fallback: 요약 리스트 첫 원소(동일 정렬 계약)
-  const primaryStringingAppId = orderDetail?.stringingApplicationId ?? (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
+  const primaryStringingAppId =
+    orderDetail?.stringingApplicationId ??
+    (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
-  const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
+  const primaryStringingApp = hasLinkedStringingApps
+    ? linkedStringingApps[0]
+    : undefined;
   const getApplicationHref = (applicationId: string) => {
-    if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
+    if (linkedApplicationHrefBuilder)
+      return linkedApplicationHrefBuilder(applicationId);
     return `/mypage?tab=orders&flowType=application&flowId=${applicationId}&from=orders${flowScopeQuery}`;
   };
-  const shouldShowInboundShippingBlock = Boolean(primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true);
+  const shouldShowInboundShippingBlock = Boolean(
+    primaryStringingAppId && primaryStringingApp?.needsInboundTracking === true,
+  );
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
-  const selfShipStatusLabel = hasSelfShipTracking ? '등록 완료' : '미등록';
-  const selfShipCourierLabel = selfShipInfo?.courier?.trim() || '미등록';
-  const selfShipTrackingNoLabel = selfShipInfo?.trackingNo?.trim() || '미등록';
-
+  const selfShipStatusLabel = hasSelfShipTracking ? "등록 완료" : "미등록";
+  const selfShipCourierLabel = selfShipInfo?.courier?.trim() || "미등록";
+  const selfShipTrackingNoLabel = selfShipInfo?.trackingNo?.trim() || "미등록";
 
   // 취소 요청 상태/라벨 계산
   const cancelLabel = getCancelRequestLabel(orderDetail);
   const cancelStatus = (orderDetail as any)?.cancelRequest?.status;
-  const canWithdrawCancelRequest = cancelStatus === 'requested';
+  const canWithdrawCancelRequest = cancelStatus === "requested";
 
   // 상세 헤더에서 "주문 취소 요청" 버튼을 보여줄 수 있는 상태인지 판단
   // - 대기중 / 결제완료 상태에서만 가능
   // - 이미 요청 중(requested)이면 새 요청 버튼 대신 "취소 철회" 배너를 보여주므로 숨김
   // - rejected 는 다시 요청 가능하게 유지
-  const canShowCancelButton = ['대기중', '결제완료'].includes(orderDetail.status) && (!cancelStatus || cancelStatus === 'none' || cancelStatus === 'rejected');
+  const canShowCancelButton =
+    ["대기중", "결제완료"].includes(orderDetail.status) &&
+    (!cancelStatus || cancelStatus === "none" || cancelStatus === "rejected");
 
   const handleWithdrawCancelRequest = async () => {
     if (!orderDetail?._id || isWithdrawingCancelRequest) return;
 
-    if (!window.confirm('이미 제출한 취소 요청을 취소하시겠습니까?')) {
+    if (!window.confirm("이미 제출한 취소 요청을 취소하시겠습니까?")) {
       return;
     }
 
@@ -293,15 +402,21 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
       setIsWithdrawingCancelRequest(true);
 
       const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), WITHDRAW_TIMEOUT_MS);
+      const timeout = window.setTimeout(
+        () => controller.abort(),
+        WITHDRAW_TIMEOUT_MS,
+      );
 
       let res: Response;
       try {
-        res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
-          method: 'POST',
-          credentials: 'include',
-          signal: controller.signal,
-        });
+        res = await fetch(
+          `/api/orders/${orderDetail._id}/cancel-request-withdraw`,
+          {
+            method: "POST",
+            credentials: "include",
+            signal: controller.signal,
+          },
+        );
       } finally {
         window.clearTimeout(timeout);
       }
@@ -310,14 +425,20 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
         const rr = await refreshOnce();
         if (rr.ok) {
           const retryController = new AbortController();
-          const retryTimeout = window.setTimeout(() => retryController.abort(), WITHDRAW_TIMEOUT_MS);
+          const retryTimeout = window.setTimeout(
+            () => retryController.abort(),
+            WITHDRAW_TIMEOUT_MS,
+          );
           try {
-            res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
-              method: 'POST',
-              credentials: 'include',
-              headers: { 'x-suppress-auth-expired': '1' },
-              signal: retryController.signal,
-            });
+            res = await fetch(
+              `/api/orders/${orderDetail._id}/cancel-request-withdraw`,
+              {
+                method: "POST",
+                credentials: "include",
+                headers: { "x-suppress-auth-expired": "1" },
+                signal: retryController.signal,
+              },
+            );
           } finally {
             window.clearTimeout(retryTimeout);
           }
@@ -325,24 +446,41 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
       }
 
       if (!res.ok) {
-        throw new Error(await parseApiMessage(res, '취소 요청 철회 중 오류가 발생했습니다.'));
+        throw new Error(
+          await parseApiMessage(res, "취소 요청 철회 중 오류가 발생했습니다."),
+        );
       }
 
       // SWR 캐시 갱신: 상태, 이력, 마이페이지 목록, 상세 모두 재검증
       await Promise.all([
         mutateOrderDetail(),
         mutateHistory(),
-        mutate((key) => typeof key === 'string' && key.startsWith(`/api/orders/${orderDetail._id}/history`), undefined, { revalidate: true }),
-        mutate((key) => typeof key === 'string' && key.startsWith('/api/users/me/orders'), undefined, { revalidate: true }),
+        mutate(
+          (key) =>
+            typeof key === "string" &&
+            key.startsWith(`/api/orders/${orderDetail._id}/history`),
+          undefined,
+          { revalidate: true },
+        ),
+        mutate(
+          (key) =>
+            typeof key === "string" && key.startsWith("/api/users/me/orders"),
+          undefined,
+          { revalidate: true },
+        ),
       ]);
 
-      showSuccessToast('취소 요청이 정상적으로 철회되었습니다.');
+      showSuccessToast("취소 요청이 정상적으로 철회되었습니다.");
     } catch (err) {
       console.error(err);
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        showErrorToast('요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.');
+      if (err instanceof DOMException && err.name === "AbortError") {
+        showErrorToast(
+          "요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.",
+        );
       } else {
-        showErrorToast((err as Error).message || '취소 요청 철회 중 오류가 발생했습니다.');
+        showErrorToast(
+          (err as Error).message || "취소 요청 철회 중 오류가 발생했습니다.",
+        );
       }
     } finally {
       setIsWithdrawingCancelRequest(false);
@@ -351,7 +489,10 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
 
   return (
     <main className="w-full">
-      <SiteContainer variant="wide" className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 space-y-5 bp-sm:space-y-8 bp-md:px-6">
+      <SiteContainer
+        variant="wide"
+        className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 space-y-5 bp-sm:space-y-8 bp-md:px-6"
+      >
         <div className="bg-muted/30 rounded-2xl border border-border p-4 shadow-lg bp-sm:p-6 bp-md:p-8">
           {/* 헤더: 제목과 액션 버튼 */}
           <div className="flex flex-col bp-md:flex-row bp-md:items-center bp-md:justify-between gap-4 bp-md:gap-6">
@@ -361,27 +502,40 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-2xl bp-sm:text-3xl font-bold text-foreground">주문 상세정보</h1>
-                <p className="text-muted-foreground mt-1 break-all text-sm">주문번호: {orderId}</p>
+                <h1 className="text-2xl bp-sm:text-3xl font-bold text-foreground">
+                  주문 상세정보
+                </h1>
+                <p className="text-muted-foreground mt-1 break-all text-sm">
+                  주문번호: {orderId}
+                </p>
               </div>
             </div>
 
             {/* 액션 버튼 섹션 */}
             <div className="flex flex-wrap gap-2 shrink-0 bp-md:justify-end">
-              <Button variant="outline" size="sm" onClick={() => router.push(backUrl ?? '/mypage?tab=orders')} className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
+                className="bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 주문 목록으로 돌아가기
               </Button>
 
               <Button
-                variant={isEditMode ? 'destructive' : 'outline'}
+                variant={isEditMode ? "destructive" : "outline"}
                 size="sm"
                 onClick={() => setIsEditMode((m) => !m)}
                 disabled={!canUserEdit}
-                className={cn(isEditMode ? '' : 'bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20')}
+                className={cn(
+                  isEditMode
+                    ? ""
+                    : "bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20",
+                )}
               >
                 <Pencil className="mr-1 h-4 w-4" />
-                {isEditMode ? '수정 종료' : '주문 정보 수정'}
+                {isEditMode ? "수정 종료" : "주문 정보 수정"}
               </Button>
 
               {canShowCancelButton && (
@@ -400,25 +554,39 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
               <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">주문일시</span>
+                  <span className="text-sm font-medium text-foreground">
+                    주문일시
+                  </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">{formatDate(orderDetail.date)}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {formatDate(orderDetail.date)}
+                </p>
               </div>
 
               <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">총 결제금액</span>
+                  <span className="text-sm font-medium text-foreground">
+                    총 결제금액
+                  </span>
                 </div>
-                <p className="text-lg font-semibold text-foreground">{formatCurrency(orderDetail.total)}</p>
+                <p className="text-lg font-semibold text-foreground">
+                  {formatCurrency(orderDetail.total)}
+                </p>
               </div>
 
               <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2 mb-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">주문 상태</span>
+                  <span className="text-sm font-medium text-foreground">
+                    주문 상태
+                  </span>
                 </div>
-                <OrderStatusBadge orderId={orderId} initialStatus={orderDetail.status} shippingMethod={orderDetail.shippingInfo} />
+                <OrderStatusBadge
+                  orderId={orderId}
+                  initialStatus={orderDetail.status}
+                  shippingMethod={orderDetail.shippingInfo}
+                />
               </div>
             </div>
           </div>
@@ -429,8 +597,16 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
             <span className="min-w-0 break-words">{cancelLabel}</span>
 
             {canWithdrawCancelRequest && (
-              <Button size="sm" variant="outline" onClick={handleWithdrawCancelRequest} disabled={isWithdrawingCancelRequest} className="w-full bp-sm:w-auto bp-sm:ml-4 border-border bg-card/70 text-primary hover:bg-muted hover:text-primary">
-                {isWithdrawingCancelRequest ? '취소 철회 중...' : '취소 철회하기'}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleWithdrawCancelRequest}
+                disabled={isWithdrawingCancelRequest}
+                className="w-full bp-sm:w-auto bp-sm:ml-4 border-border bg-card/70 text-primary hover:bg-muted hover:text-primary"
+              >
+                {isWithdrawingCancelRequest
+                  ? "취소 철회 중..."
+                  : "취소 철회하기"}
               </Button>
             )}
           </div>
@@ -438,8 +614,13 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
         {orderDetail.shippingInfo?.withStringService && (
           <>
             <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <p className="text-sm font-semibold text-foreground">연결된 교체서비스 요약</p>
-              <p className="text-xs text-muted-foreground mt-1">신청 가능 여부, 남은 신청 수량, 연결된 신청 상세를 한 곳에서 확인할 수 있어요.</p>
+              <p className="text-sm font-semibold text-foreground">
+                연결된 교체서비스 요약
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                신청 가능 여부, 남은 신청 수량, 연결된 신청 상세를 한 곳에서
+                확인할 수 있어요.
+              </p>
             </div>
             {totalSlots > 0 && remainingSlots > 0 ? (
               <div className="bg-muted/30 border border-border rounded-xl p-4 shadow-lg bp-sm:p-6">
@@ -449,18 +630,37 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                       <CheckCircle className="h-6 w-6 text-warning" />
                     </div>
                     <div>
-                      <p className="font-semibold text-warning">이 주문은 스트링 장착 서비스가 포함되어 있습니다.</p>
-                      <p className="text-sm text-warning">
-                        총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체 가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
+                      <p className="font-semibold text-warning">
+                        이 주문은 스트링 장착 서비스가 포함되어 있습니다.
                       </p>
-                      {stringServiceItemCount > 1 && <p className="mt-1 text-xs text-warning">(상품 기준으로는 교체 서비스 대상 스트링이 {stringServiceItemCount}개 포함되어 있습니다.)</p>}
-                      {hasSubmittedStringingApplication && <p className="mt-1 text-xs text-warning">이미 교체 서비스 접수가 완료된 주문이며, 남은 대상에 한해 추가 신청이 가능합니다.</p>}
+                      <p className="text-sm text-warning">
+                        총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를
+                        사용했으며, 남은 교체 가능 스트링은{" "}
+                        <strong>{remainingSlots}</strong>개입니다.
+                      </p>
+                      {stringServiceItemCount > 1 && (
+                        <p className="mt-1 text-xs text-warning">
+                          (상품 기준으로는 교체 서비스 대상 스트링이{" "}
+                          {stringServiceItemCount}개 포함되어 있습니다.)
+                        </p>
+                      )}
+                      {hasSubmittedStringingApplication && (
+                        <p className="mt-1 text-xs text-warning">
+                          이미 교체 서비스 접수가 완료된 주문이며, 남은 대상에
+                          한해 추가 신청이 가능합니다.
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex justify-center bp-md:justify-end">
-                    <Link className="w-full bp-sm:max-w-xs bp-md:w-auto" href={`/services/apply?orderId=${orderDetail._id}`}>
+                    <Link
+                      className="w-full bp-sm:max-w-xs bp-md:w-auto"
+                      href={`/services/apply?orderId=${orderDetail._id}`}
+                    >
                       <Button variant="default" className="w-full shadow-lg">
-                        {hasSubmittedStringingApplication ? '교체서비스 추가 신청하기' : '교체서비스 신청하기'}
+                        {hasSubmittedStringingApplication
+                          ? "교체서비스 추가 신청하기"
+                          : "교체서비스 신청하기"}
                       </Button>
                     </Link>
                   </div>
@@ -474,30 +674,68 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                       <CheckCircle className="h-6 w-6 text-success" />
                     </div>
                     <div>
-                      <p className="font-semibold text-success">이 주문으로 교체 서비스 신청이 완료되었습니다.</p>
-                      <p className="text-sm text-success">
-                        이 주문에는 교체 서비스 대상 스트링이 <span className="font-semibold">{stringServiceItemCount}개</span> 포함되어 있습니다.
+                      <p className="font-semibold text-success">
+                        이 주문으로 교체 서비스 신청이 완료되었습니다.
                       </p>
-                      <p className="text-sm text-success">실제 신청 접수 방식/텐션/예약 정보는 아래 요약 또는 신청 상세에서 확인하실 수 있습니다.</p>
+                      <p className="text-sm text-success">
+                        이 주문에는 교체 서비스 대상 스트링이{" "}
+                        <span className="font-semibold">
+                          {stringServiceItemCount}개
+                        </span>{" "}
+                        포함되어 있습니다.
+                      </p>
+                      <p className="text-sm text-success">
+                        실제 신청 접수 방식/텐션/예약 정보는 아래 요약 또는 신청
+                        상세에서 확인하실 수 있습니다.
+                      </p>
 
                       {/* 사용자 오해 방지를 위해 접수 핵심 정보만 노출 */}
                       {hasLinkedStringingApps && (
                         <div className="mt-3 space-y-1 text-xs text-success">
                           {linkedStringingApps.map((app) => (
-                            <div key={app.id} className="flex flex-wrap items-center justify-between gap-2">
+                            <div
+                              key={app.id}
+                              className="flex flex-wrap items-center justify-between gap-2"
+                            >
                               <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant={badgeToneVariant(getApplicationStatusTone(app.status))} className="px-1.5 py-0.5 text-[11px] font-medium">
-                                  {app.status ?? '상태 미정'}
+                                <Badge
+                                  variant={badgeToneVariant(
+                                    getApplicationStatusTone(app.status),
+                                  )}
+                                  className="px-1.5 py-0.5 text-[11px] font-medium"
+                                >
+                                  {app.status ?? "상태 미정"}
                                 </Badge>
-                                {app.createdAt && <span>{formatDate(app.createdAt)}</span>}
+                                {app.createdAt && (
+                                  <span>{formatDate(app.createdAt)}</span>
+                                )}
                                 <span>라인 {app.racketCount ?? 0}개</span>
-                                {app.receptionLabel && <span>· {app.receptionLabel}</span>}
-                                {app.reservationLabel && <span>· 예약 {app.reservationLabel}</span>}
+                                {app.receptionLabel && (
+                                  <span>· {app.receptionLabel}</span>
+                                )}
+                                {app.reservationLabel && (
+                                  <span>· 예약 {app.reservationLabel}</span>
+                                )}
                               </div>
-                              {app.stringNames && app.stringNames.length > 0 && <p className="text-[11px] text-success">스트링: {app.stringNames.join(', ')}</p>}
-                              {app.tensionSummary && <p className="text-[11px] text-success">텐션: {app.tensionSummary}</p>}
-                              <Link className="w-full bp-sm:w-auto" href={getApplicationHref(app.id)}>
-                                <Button variant="outline" className="h-7 px-2 text-xs">
+                              {app.stringNames &&
+                                app.stringNames.length > 0 && (
+                                  <p className="text-[11px] text-success">
+                                    스트링: {app.stringNames.join(", ")}
+                                  </p>
+                                )}
+                              {app.tensionSummary && (
+                                <p className="text-[11px] text-success">
+                                  텐션: {app.tensionSummary}
+                                </p>
+                              )}
+                              <Link
+                                className="w-full bp-sm:w-auto"
+                                href={getApplicationHref(app.id)}
+                              >
+                                <Button
+                                  variant="outline"
+                                  className="h-7 px-2 text-xs"
+                                >
                                   신청 상세
                                 </Button>
                               </Link>
@@ -511,14 +749,28 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                   <div className="flex items-center gap-2">
                     {/* [호환용] 리스트가 없고, 대표 신청 ID만 있는 경우 단일 버튼 유지 */}
                     {!hasLinkedStringingApps && primaryStringingAppId && (
-                      <Link className="w-full bp-sm:w-auto" href={getApplicationHref(primaryStringingAppId)}>
-                        <Button variant="outline" className="border-border text-success dark:border-border dark:text-success dark:hover:bg-success/15 bg-transparent">
+                      <Link
+                        className="w-full bp-sm:w-auto"
+                        href={getApplicationHref(primaryStringingAppId)}
+                      >
+                        <Button
+                          variant="outline"
+                          className="border-border text-success dark:border-border dark:text-success dark:hover:bg-success/15 bg-transparent"
+                        >
                           신청 상세 보기
                         </Button>
                       </Link>
                     )}
 
-                    {primaryStringingAppId && <ServiceReviewCTA applicationId={primaryStringingAppId} userConfirmedAt={primaryStringingApp?.userConfirmedAt ?? null} className="ml-2" />}
+                    {primaryStringingAppId && (
+                      <ServiceReviewCTA
+                        applicationId={primaryStringingAppId}
+                        userConfirmedAt={
+                          primaryStringingApp?.userConfirmedAt ?? null
+                        }
+                        className="ml-2"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -530,12 +782,22 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                   <div className="flex items-center gap-3 text-primary">
                     <CheckCircle className="h-6 w-6" />
                     <div>
-                      <p className="font-semibold text-foreground">이 주문은 리뷰를 작성하였습니다.</p>
-                      <p className="text-sm text-foreground">내가 작성한 리뷰를 확인할 수 있어요.</p>
+                      <p className="font-semibold text-foreground">
+                        이 주문은 리뷰를 작성하였습니다.
+                      </p>
+                      <p className="text-sm text-foreground">
+                        내가 작성한 리뷰를 확인할 수 있어요.
+                      </p>
                     </div>
                   </div>
-                  <Link className="w-full bp-sm:w-auto" href="/mypage?tab=reviews">
-                    <Button variant="outline" className="border-border hover:bg-primary/10 dark:hover:bg-primary/20">
+                  <Link
+                    className="w-full bp-sm:w-auto"
+                    href="/mypage?tab=reviews"
+                  >
+                    <Button
+                      variant="outline"
+                      className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+                    >
                       리뷰 관리로 이동
                     </Button>
                   </Link>
@@ -545,16 +807,27 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                   <div className="flex items-center gap-3">
                     <Clock className="h-6 w-6 text-warning" />
                     <div>
-                      <p className="font-semibold text-warning">이 주문은 리뷰를 작성하지 않았습니다.</p>
-                      <p className="text-sm text-warning">아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.</p>
+                      <p className="font-semibold text-warning">
+                        이 주문은 리뷰를 작성하지 않았습니다.
+                      </p>
+                      <p className="text-sm text-warning">
+                        아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.
+                      </p>
                       {/* 방문 수령 주문은 배송완료 대신 수령 완료 문구로 안내 */}
-                      <p className="text-sm text-destructive">※{isVisitPickup ? "상품을 구매확정하면 [리뷰 작성] 버튼이 나타납니다." : "구매확정 후 [리뷰 작성] 버튼이 나타납니다."}</p>
+                      <p className="text-sm text-destructive">
+                        ※
+                        {isVisitPickup
+                          ? "상품을 구매확정하면 [리뷰 작성] 버튼이 나타납니다."
+                          : "구매확정 후 [리뷰 작성] 버튼이 나타납니다."}
+                      </p>
                     </div>
                   </div>
                   <OrderReviewCTA
                     orderId={orderDetail._id as string}
                     reviewAllDone={allReviewed}
-                    unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
+                    unreviewedCount={
+                      items.filter((it) => !reviewedMap[it.id]).length
+                    }
                     reviewNextTargetProductId={firstUnreviewed?.id ?? null}
                     orderStatus={orderDetail.status}
                     userConfirmedAt={orderDetail.userConfirmedAt ?? null}
@@ -584,8 +857,8 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                     email: orderDetail.customer.email,
                     phone: orderDetail.customer.phone,
                     address: orderDetail.customer.address,
-                    postalCode: orderDetail.customer.postalCode || '',
-                    addressDetail: orderDetail.customer.addressDetail || '',
+                    postalCode: orderDetail.customer.postalCode || "",
+                    addressDetail: orderDetail.customer.addressDetail || "",
                   }}
                   orderId={orderId}
                   resourcePath="/api/orders"
@@ -604,7 +877,9 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">이름</p>
-                      <p className="font-semibold text-foreground">{orderDetail.customer.name ?? '이름 없음'}</p>
+                      <p className="font-semibold text-foreground">
+                        {orderDetail.customer.name ?? "이름 없음"}
+                      </p>
                     </div>
                   </div>
 
@@ -612,7 +887,9 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">이메일</p>
-                      <p className="font-semibold text-foreground">{orderDetail.customer.email ?? '이메일 없음'}</p>
+                      <p className="font-semibold text-foreground">
+                        {orderDetail.customer.email ?? "이메일 없음"}
+                      </p>
                     </div>
                   </div>
 
@@ -620,7 +897,9 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">전화번호</p>
-                      <p className="font-semibold text-foreground">{orderDetail.customer.phone ?? '전화번호 없음'}</p>
+                      <p className="font-semibold text-foreground">
+                        {orderDetail.customer.phone ?? "전화번호 없음"}
+                      </p>
                     </div>
                   </div>
 
@@ -628,9 +907,19 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                     <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                     <div>
                       <p className="text-sm text-muted-foreground">주소</p>
-                      <p className="font-semibold text-foreground">{orderDetail.customer.address ?? '주소 없음'}</p>
-                      {orderDetail.customer.addressDetail && <p className="text-sm text-muted-foreground mt-1">{orderDetail.customer.addressDetail}</p>}
-                      {orderDetail.customer.postalCode && <p className="text-sm text-muted-foreground">우편번호: {orderDetail.customer.postalCode}</p>}
+                      <p className="font-semibold text-foreground">
+                        {orderDetail.customer.address ?? "주소 없음"}
+                      </p>
+                      {orderDetail.customer.addressDetail && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {orderDetail.customer.addressDetail}
+                        </p>
+                      )}
+                      {orderDetail.customer.postalCode && (
+                        <p className="text-sm text-muted-foreground">
+                          우편번호: {orderDetail.customer.postalCode}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -638,7 +927,12 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
             )}
             {isEditMode && canUserEdit && !editingCustomer && (
               <CardFooter className="pt-3 flex justify-center bg-muted/50">
-                <Button size="sm" variant="outline" onClick={() => setEditingCustomer(true)} className="hover:bg-primary/10 dark:hover:bg-primary/20 border-border">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditingCustomer(true)}
+                  className="hover:bg-primary/10 dark:hover:bg-primary/20 border-border"
+                >
                   고객정보 수정
                 </Button>
               </CardFooter>
@@ -650,7 +944,9 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
             <CardHeader variant="sectionGradient">
               <CardTitle className="flex items-center space-x-2">
                 <Truck className="h-5 w-5 text-success" />
-                <span>{getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}</span>
+                <span>
+                  {getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 bp-sm:p-6">
@@ -658,8 +954,12 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                 <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">{isVisitPickup ? '수령 방법' : '배송 방법'}</p>
-                    <p className="font-semibold text-foreground">{shippingMethodLabel}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isVisitPickup ? "수령 방법" : "배송 방법"}
+                    </p>
+                    <p className="font-semibold text-foreground">
+                      {shippingMethodLabel}
+                    </p>
                   </div>
                 </div>
 
@@ -667,64 +967,100 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                   <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-muted-foreground">예상 수령일</p>
-                      <p className="font-semibold text-foreground">{orderDetail.shippingInfo?.estimatedDate ? formatDate(orderDetail.shippingInfo.estimatedDate) : '미등록'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        예상 수령일
+                      </p>
+                      <p className="font-semibold text-foreground">
+                        {orderDetail.shippingInfo?.estimatedDate
+                          ? formatDate(orderDetail.shippingInfo.estimatedDate)
+                          : "미등록"}
+                      </p>
                     </div>
                   </div>
                 )}
 
-                {!showDeliveryOnlyFields && <p className="text-sm text-muted-foreground">방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.</p>}
-
-                {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
-                  <>
-                    <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                      <div>
-                        <p className="text-sm text-muted-foreground">택배사</p>
-                        <p className="font-semibold text-foreground">
-                          {{
-                            cj: 'CJ 대한통운',
-                            hanjin: '한진택배',
-                            logen: '로젠택배',
-                            post: '우체국택배',
-                            etc: '기타',
-                          }[orderDetail.shippingInfo.invoice.courier] || '미지정'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                      <div>
-                        <p className="text-sm text-muted-foreground">운송장 번호</p>
-                        <p className="font-semibold text-foreground">{orderDetail.shippingInfo.invoice.trackingNumber}</p>
-                      </div>
-                    </div>
-                  </>
+                {!showDeliveryOnlyFields && (
+                  <p className="text-sm text-muted-foreground">
+                    방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.
+                  </p>
                 )}
 
+                {showDeliveryOnlyFields &&
+                  orderDetail.shippingInfo.invoice?.trackingNumber && (
+                    <>
+                      <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            택배사
+                          </p>
+                          <p className="font-semibold text-foreground">
+                            {{
+                              cj: "CJ 대한통운",
+                              hanjin: "한진택배",
+                              logen: "로젠택배",
+                              post: "우체국택배",
+                              etc: "기타",
+                            }[orderDetail.shippingInfo.invoice.courier] ||
+                              "미지정"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            운송장 번호
+                          </p>
+                          <p className="font-semibold text-foreground">
+                            {orderDetail.shippingInfo.invoice.trackingNumber}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                 {shouldShowInboundShippingBlock && (
                   <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
-                        <p className="text-xs text-muted-foreground">매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          라켓 발송 정보
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          매장으로 보내는 라켓의 택배 등록 상태를 확인할 수
+                          있어요.
+                        </p>
                       </div>
-                      <Link href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`}>
-                        <Button size="sm" variant="outline" className="h-8">{hasSelfShipTracking ? '라켓 발송 수정' : '라켓 발송 등록'}</Button>
+                      <Link
+                        href={`/services/applications/${primaryStringingAppId}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}` }).toString()}`}
+                      >
+                        <Button size="sm" variant="outline" className="h-8">
+                          {hasSelfShipTracking
+                            ? "라켓 발송 수정"
+                            : "라켓 발송 등록"}
+                        </Button>
                       </Link>
                     </div>
 
                     <div className="mt-3 grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
                       <p>
-                        <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
+                        <span className="text-muted-foreground">상태:</span>{" "}
+                        {selfShipStatusLabel}
                       </p>
                       <p>
-                        <span className="text-muted-foreground">택배사:</span> {selfShipCourierLabel}
+                        <span className="text-muted-foreground">택배사:</span>{" "}
+                        {selfShipCourierLabel}
                       </p>
                       <p>
-                        <span className="text-muted-foreground">운송장 번호:</span> {selfShipTrackingNoLabel}
+                        <span className="text-muted-foreground">
+                          운송장 번호:
+                        </span>{" "}
+                        {selfShipTrackingNoLabel}
                       </p>
                       <p>
-                        <span className="text-muted-foreground">발송일:</span> {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : '미등록'}
+                        <span className="text-muted-foreground">발송일:</span>{" "}
+                        {selfShipInfo?.shippedAt
+                          ? formatDate(selfShipInfo.shippedAt)
+                          : "미등록"}
                       </p>
                     </div>
                   </div>
@@ -747,9 +1083,14 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                   <div>
                     <p className="text-sm text-muted-foreground">결제 상태</p>
                     {(() => {
-                      const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                      const pay = getPaymentStatusBadgeSpec(
+                        orderDetail.paymentStatus,
+                      );
                       return (
-                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                        <Badge
+                          variant={pay.variant}
+                          className={cn(badgeBase, badgeSizeSm)}
+                        >
                           {orderDetail.paymentStatus}
                         </Badge>
                       );
@@ -758,13 +1099,19 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
                 </div>
 
                 <div className="p-3 bg-muted rounded-lg">
-                  <PaymentMethodDetail method={orderDetail.paymentMethod || '무통장입금'} bankKey={orderDetail.paymentBank} depositor={orderDetail.shippingInfo?.depositor} />
+                  <PaymentMethodDetail
+                    method={orderDetail.paymentMethod || "무통장입금"}
+                    bankKey={orderDetail.paymentBank}
+                    depositor={orderDetail.shippingInfo?.depositor}
+                  />
                 </div>
 
                 <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
                   <div>
                     <p className="text-sm text-muted-foreground">결제 금액</p>
-                    <p className="text-xl font-bold text-primary">{formatCurrency(orderDetail.total)}</p>
+                    <p className="text-xl font-bold text-primary">
+                      {formatCurrency(orderDetail.total)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -782,30 +1129,53 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
             <CardContent className="p-4 bp-sm:p-6">
               <div className="space-y-4">
                 {orderDetail.items.map((item, idx) => (
-                  <div key={idx} className="flex items-center p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-card transition-colors space-x-4">
+                  <div
+                    key={idx}
+                    className="flex items-center p-4 bg-muted rounded-xl hover:bg-muted dark:hover:bg-card transition-colors space-x-4"
+                  >
                     {/* 상품 썸네일 */}
-                    {item.imageUrl && <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-cover rounded" />}
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                    )}
 
                     {/* 상품명 + 수량 */}
                     <div className="flex-1">
-                      <h4 className="font-semibold text-foreground">{item.name}</h4>
-                      <p className="text-sm text-muted-foreground">수량: {item.quantity}개</p>
+                      <h4 className="font-semibold text-foreground">
+                        {item.name}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        수량: {item.quantity}개
+                      </p>
                     </div>
 
                     {/* 가격 및 소계 */}
                     <div className="text-right">
-                      <p className="font-semibold text-foreground">{formatCurrency(item.price)}</p>
-                      <p className="text-sm text-muted-foreground">소계: {formatCurrency(item.price * item.quantity)}</p>
+                      <p className="font-semibold text-foreground">
+                        {formatCurrency(item.price)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        소계: {formatCurrency(item.price * item.quantity)}
+                      </p>
                       <div className="mt-2">
                         {canShowReviewCTA &&
                           (reviewedMap[item.id] ? (
-                            <Link className="w-full bp-sm:w-auto" href={`/products/${item.id}?tab=reviews`}>
+                            <Link
+                              className="w-full bp-sm:w-auto"
+                              href={`/products/${item.id}?tab=reviews`}
+                            >
                               <Button size="sm" variant="secondary">
                                 리뷰 상세보기
                               </Button>
                             </Link>
                           ) : (
-                            <Link className="w-full bp-sm:w-auto" href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}>
+                            <Link
+                              className="w-full bp-sm:w-auto"
+                              href={`/reviews/write?productId=${item.id}&orderId=${orderDetail._id}`}
+                            >
                               <Button size="sm" variant="outline">
                                 리뷰 작성하기
                               </Button>
@@ -825,12 +1195,14 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
           <Card variant="elevatedGradient">
             <CardHeader variant="sectionGradient">
               <CardTitle>배송 요청사항</CardTitle>
-              <CardDescription>결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
+              <CardDescription>
+                결제 시 입력한 배송 관련 요청사항입니다.
+              </CardDescription>
             </CardHeader>
             {editingRequest ? (
               <CardContent className="p-4 bp-sm:p-6">
                 <RequestEditForm
-                  initialData={orderDetail.shippingInfo.deliveryRequest || ''}
+                  initialData={orderDetail.shippingInfo.deliveryRequest || ""}
                   orderId={orderId}
                   onSuccess={() => {
                     mutateOrderDetail();
@@ -844,16 +1216,25 @@ export default function OrderDetailClient({ orderId, backUrl, linkedApplicationH
               <CardContent className="p-4 bp-sm:p-6">
                 {orderDetail.shippingInfo.deliveryRequest ? (
                   <div className="bg-muted border border-border rounded-lg p-4">
-                    <p className="text-foreground whitespace-pre-line">{orderDetail.shippingInfo.deliveryRequest}</p>
+                    <p className="text-foreground whitespace-pre-line">
+                      {orderDetail.shippingInfo.deliveryRequest}
+                    </p>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
+                  <p className="text-muted-foreground italic">
+                    요청사항이 입력되지 않았습니다.
+                  </p>
                 )}
               </CardContent>
             )}
             {isEditMode && canUserEdit && !editingRequest && (
               <CardFooter className="flex justify-center bg-muted/50">
-                <Button size="sm" variant="outline" onClick={() => setEditingRequest(true)} className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditingRequest(true)}
+                  className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
+                >
                   요청사항 수정
                 </Button>
               </CardFooter>

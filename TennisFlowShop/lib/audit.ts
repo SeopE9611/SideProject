@@ -1,9 +1,9 @@
-import { Db, ObjectId } from 'mongodb';
+import { Db, ObjectId } from "mongodb";
 
 export function parseClientMeta(req?: Request) {
-  const xf = req?.headers.get('x-forwarded-for') ?? '';
-  const ip = xf.split(',')[0]?.trim() || req?.headers.get('x-real-ip') || null;
-  const ua = req?.headers.get('user-agent') ?? null;
+  const xf = req?.headers.get("x-forwarded-for") ?? "";
+  const ip = xf.split(",")[0]?.trim() || req?.headers.get("x-real-ip") || null;
+  const ua = req?.headers.get("user-agent") ?? null;
   return { ip, ua };
 }
 
@@ -18,8 +18,8 @@ type AuditBase = {
 
 export async function appendAudit(db: Db, entry: AuditBase, req?: Request) {
   const { ip, ua } = parseClientMeta(req);
-  const toId = (v: any) => (typeof v === 'string' ? new ObjectId(v) : v);
-  await db.collection('audits').insertOne({
+  const toId = (v: any) => (typeof v === "string" ? new ObjectId(v) : v);
+  await db.collection("audits").insertOne({
     type: entry.type,
     actorId: entry.actorId ? toId(entry.actorId) : null,
     targetId: entry.targetId ? toId(entry.targetId) : null,

@@ -1,15 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useEffect } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error;
+  reset: () => void;
+}) {
   useEffect(() => {
     // 여기서 원문 에러 확인 가능 (Vercel 함수 로그에도 남음)
-    console.error('Success page error:', error);
+    console.error("Success page error:", error);
   }, [error]);
 
   return (
@@ -19,8 +31,12 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
           <div className="mb-4 grid h-12 w-12 place-content-center rounded-xl bg-destructive text-destructive-foreground">
             <AlertTriangle className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">처리 중 오류가 발생했어요</CardTitle>
-          <p className="text-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
+          <CardTitle className="text-2xl font-bold tracking-tight">
+            처리 중 오류가 발생했어요
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            잠시 후 다시 시도해 주세요.
+          </p>
         </CardHeader>
 
         <CardContent className="pt-0">
@@ -30,7 +46,11 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
         </CardContent>
 
         <CardFooter>
-          <Button type="button" onClick={reset} className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Button
+            type="button"
+            onClick={reset}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
             <RefreshCw className="h-4 w-4" />
             다시 시도
           </Button>

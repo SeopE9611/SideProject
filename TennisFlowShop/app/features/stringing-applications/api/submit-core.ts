@@ -1,12 +1,22 @@
-import type { ClientSession, Db, ObjectId } from 'mongodb';
-import { ObjectId as MongoObjectId } from 'mongodb';
+import type { ClientSession, Db, ObjectId } from "mongodb";
+import { ObjectId as MongoObjectId } from "mongodb";
 
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import { applyPackageToServiceFee, resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
-import { loadStringingSettings, resolveDaySchedule } from '@/app/features/stringing-applications/lib/slotEngine';
-import { normalizeEmail } from '@/lib/claims';
-import { calcStringingMountingFeeByProductId, calcStringingTotal } from '@/lib/pricing';
-import { consumePass, findOneActivePassForUser } from '@/lib/passes.service';
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import {
+  applyPackageToServiceFee,
+  resolvePackageUsage,
+  resolveRequiredPassCountFromInput,
+} from "@/app/features/stringing-applications/lib/package-pricing";
+import {
+  loadStringingSettings,
+  resolveDaySchedule,
+} from "@/app/features/stringing-applications/lib/slotEngine";
+import { normalizeEmail } from "@/lib/claims";
+import {
+  calcStringingMountingFeeByProductId,
+  calcStringingTotal,
+} from "@/lib/pricing";
+import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
 
 export type StringingApplicationInput = {
   applicationId?: string;
@@ -62,9 +72,11 @@ export type SubmitCoreResult = {
 };
 
 function toObjectIdOrThrow(id: unknown, fieldName: string): ObjectId | null {
-  if (typeof id !== 'string' || !id.trim()) return null;
+  if (typeof id !== "string" || !id.trim()) return null;
   if (!MongoObjectId.isValid(id)) {
-    throw Object.assign(new Error(`유효하지 않은 ${fieldName}입니다.`), { status: 400 });
+    throw Object.assign(new Error(`유효하지 않은 ${fieldName}입니다.`), {
+      status: 400,
+    });
   }
   return new MongoObjectId(id);
 }
@@ -73,7 +85,14 @@ function isSameObjectId(a: unknown, b: ObjectId): boolean {
   return !!a && MongoObjectId.isValid(String(a)) && String(a) === String(b);
 }
 
-export async function submitStringingApplicationCore({ db, input, userId, guestOrderId, guestRentalId, session }: SubmitCoreParams): Promise<SubmitCoreResult> {
+export async function submitStringingApplicationCore({
+  db,
+  input,
+  userId,
+  guestOrderId,
+  guestRentalId,
+  session,
+}: SubmitCoreParams): Promise<SubmitCoreResult> {
   const {
     applicationId: bodyAppId,
     orderId,
@@ -92,65 +111,115 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
     lines,
   } = input;
 
-  if (!name || !phone || !Array.isArray(stringTypes) || stringTypes.length === 0) {
-    throw Object.assign(new Error('필수 항목 누락'), { status: 400 });
+  if (
+    !name ||
+    !phone ||
+    !Array.isArray(stringTypes) ||
+    stringTypes.length === 0
+  ) {
+    throw Object.assign(new Error("필수 항목 누락"), { status: 400 });
   }
 
-  const cm = normalizeCollection(shippingInfo?.collectionMethod ?? 'self_ship');
-  const orderObjectId = toObjectIdOrThrow(orderId, 'orderId');
-  const rentalObjectId = toObjectIdOrThrow(rentalId, 'rentalId');
+  const cm = normalizeCollection(shippingInfo?.collectionMethod ?? "self_ship");
+  const orderObjectId = toObjectIdOrThrow(orderId, "orderId");
+  const rentalObjectId = toObjectIdOrThrow(rentalId, "rentalId");
 
   if (orderObjectId && rentalObjectId) {
-    throw Object.assign(new Error('orderId와 rentalId는 동시에 제출할 수 없습니다.'), { status: 400 });
+    throw Object.assign(
+      new Error("orderId와 rentalId는 동시에 제출할 수 없습니다."),
+      { status: 400 },
+    );
   }
 
-  const bodyApplicationObjectId = toObjectIdOrThrow(bodyAppId, 'applicationId');
+  const bodyApplicationObjectId = toObjectIdOrThrow(bodyAppId, "applicationId");
 
   if (bodyApplicationObjectId) {
-    const existingApp = await db.collection('stringing_applications').findOne(
-      { _id: bodyApplicationObjectId },
-      { projection: { _id: 1, userId: 1, orderId: 1, rentalId: 1 }, session },
-    );
+    const existingApp = await db
+      .collection("stringing_applications")
+      .findOne(
+        { _id: bodyApplicationObjectId },
+        { projection: { _id: 1, userId: 1, orderId: 1, rentalId: 1 }, session },
+      );
 
     if (!existingApp) {
-      throw Object.assign(new Error('수정 권한이 없는 신청서입니다.'), { status: 403 });
+      throw Object.assign(new Error("수정 권한이 없는 신청서입니다."), {
+        status: 403,
+      });
     }
 
-    const isMemberOwner = !!userId && isSameObjectId((existingApp as any).userId, userId);
-    const isGuestOrderOwner = !userId && !!guestOrderId && !!(existingApp as any).orderId && String((existingApp as any).orderId) === String(guestOrderId);
-    const isGuestRentalOwner = !userId && !!guestRentalId && !!(existingApp as any).rentalId && String((existingApp as any).rentalId) === String(guestRentalId);
+    const isMemberOwner =
+      !!userId && isSameObjectId((existingApp as any).userId, userId);
+    const isGuestOrderOwner =
+      !userId &&
+      !!guestOrderId &&
+      !!(existingApp as any).orderId &&
+      String((existingApp as any).orderId) === String(guestOrderId);
+    const isGuestRentalOwner =
+      !userId &&
+      !!guestRentalId &&
+      !!(existingApp as any).rentalId &&
+      String((existingApp as any).rentalId) === String(guestRentalId);
 
     if (!isMemberOwner && !isGuestOrderOwner && !isGuestRentalOwner) {
-      throw Object.assign(new Error('수정 권한이 없는 신청서입니다.'), { status: 403 });
+      throw Object.assign(new Error("수정 권한이 없는 신청서입니다."), {
+        status: 403,
+      });
     }
   }
 
-  const applicationId: ObjectId = bodyApplicationObjectId ?? new MongoObjectId();
+  const applicationId: ObjectId =
+    bodyApplicationObjectId ?? new MongoObjectId();
 
   if (orderObjectId) {
-    const order = await db.collection('orders').findOne({ _id: orderObjectId }, { projection: { _id: 1, userId: 1, guest: 1 }, session });
+    const order = await db
+      .collection("orders")
+      .findOne(
+        { _id: orderObjectId },
+        { projection: { _id: 1, userId: 1, guest: 1 }, session },
+      );
     if (!order) {
-      throw Object.assign(new Error('접근할 수 없는 주문입니다.'), { status: 403 });
+      throw Object.assign(new Error("접근할 수 없는 주문입니다."), {
+        status: 403,
+      });
     }
 
     const isOwner = !!userId && isSameObjectId((order as any).userId, userId);
-    const isGuestOrder = !userId && (!((order as any).userId) || (order as any).guest === true);
-    const guestOwns = !!isGuestOrder && !!guestOrderId && String(guestOrderId) === String((order as any)._id);
+    const isGuestOrder =
+      !userId && (!(order as any).userId || (order as any).guest === true);
+    const guestOwns =
+      !!isGuestOrder &&
+      !!guestOrderId &&
+      String(guestOrderId) === String((order as any)._id);
     if (!isOwner && !guestOwns) {
-      throw Object.assign(new Error('접근할 수 없는 주문입니다.'), { status: 403 });
+      throw Object.assign(new Error("접근할 수 없는 주문입니다."), {
+        status: 403,
+      });
     }
   }
 
   if (rentalObjectId) {
-    const rental = await db.collection('rental_orders').findOne({ _id: rentalObjectId }, { projection: { _id: 1, userId: 1 }, session });
+    const rental = await db
+      .collection("rental_orders")
+      .findOne(
+        { _id: rentalObjectId },
+        { projection: { _id: 1, userId: 1 }, session },
+      );
     if (!rental) {
-      throw Object.assign(new Error('접근할 수 없는 대여입니다.'), { status: 403 });
+      throw Object.assign(new Error("접근할 수 없는 대여입니다."), {
+        status: 403,
+      });
     }
 
     const isOwner = !!userId && isSameObjectId((rental as any).userId, userId);
-    const guestOwns = !userId && !((rental as any).userId) && !!guestRentalId && String(guestRentalId) === String((rental as any)._id);
+    const guestOwns =
+      !userId &&
+      !(rental as any).userId &&
+      !!guestRentalId &&
+      String(guestRentalId) === String((rental as any)._id);
     if (!isOwner && !guestOwns) {
-      throw Object.assign(new Error('접근할 수 없는 대여입니다.'), { status: 403 });
+      throw Object.assign(new Error("접근할 수 없는 대여입니다."), {
+        status: 403,
+      });
     }
   }
 
@@ -158,15 +227,22 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
   const normalizedLines = usingLines
     ? await Promise.all(
         lines.map(async (line) => {
-          const stringProductId = line.stringProductId ?? 'custom';
-          const serverMountingFee = await calcStringingMountingFeeByProductId(db, stringProductId);
-          return {
-            racketType: line.racketType ?? '',
+          const stringProductId = line.stringProductId ?? "custom";
+          const serverMountingFee = await calcStringingMountingFeeByProductId(
+            db,
             stringProductId,
-            stringName: line.stringName ?? (stringProductId === 'custom' ? customStringName ?? '커스텀 스트링' : '선택한 스트링'),
-            tensionMain: line.tensionMain ?? '',
-            tensionCross: line.tensionCross ?? '',
-            note: line.note ?? '',
+          );
+          return {
+            racketType: line.racketType ?? "",
+            stringProductId,
+            stringName:
+              line.stringName ??
+              (stringProductId === "custom"
+                ? (customStringName ?? "커스텀 스트링")
+                : "선택한 스트링"),
+            tensionMain: line.tensionMain ?? "",
+            tensionCross: line.tensionCross ?? "",
+            note: line.note ?? "",
             mountingFee: serverMountingFee,
           };
         }),
@@ -182,31 +258,41 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
       }))
     : stringTypes.map((id) => ({
         productId: id,
-        name: id === 'custom' ? customStringName?.trim() || '커스텀 스트링' : '선택한 스트링',
+        name:
+          id === "custom"
+            ? customStringName?.trim() || "커스텀 스트링"
+            : "선택한 스트링",
         quantity: 1,
       }));
 
   const stringDetails = {
-    racketType: racketType ?? '',
+    racketType: racketType ?? "",
     stringTypes,
-    customStringName: customStringName ?? '',
-    preferredDate: preferredDate ?? '',
-    preferredTime: preferredTime ?? '',
-    requirements: requirements ?? '',
+    customStringName: customStringName ?? "",
+    preferredDate: preferredDate ?? "",
+    preferredTime: preferredTime ?? "",
+    requirements: requirements ?? "",
     lines: normalizedLines,
   };
-
 
   const normalizedShippingInfo = {
     ...(shippingInfo ?? {}),
     collectionMethod: cm,
-    address: cm === 'visit' ? '' : shippingInfo?.address ?? '',
-    addressDetail: cm === 'visit' ? '' : shippingInfo?.addressDetail ?? '',
-    postalCode: cm === 'visit' ? '' : shippingInfo?.postalCode ?? '',
+    address: cm === "visit" ? "" : (shippingInfo?.address ?? ""),
+    addressDetail: cm === "visit" ? "" : (shippingInfo?.addressDetail ?? ""),
+    postalCode: cm === "visit" ? "" : (shippingInfo?.postalCode ?? ""),
   };
 
-  const serviceFeeBeforeRaw = usingLines ? normalizedLines.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0) : await calcStringingTotal(db, stringTypes);
-  const serviceFeeBefore = Math.max(0, Math.round(Number.isFinite(serviceFeeBeforeRaw) ? serviceFeeBeforeRaw : 0));
+  const serviceFeeBeforeRaw = usingLines
+    ? normalizedLines.reduce(
+        (sum, line) => sum + Number(line.mountingFee ?? 0),
+        0,
+      )
+    : await calcStringingTotal(db, stringTypes);
+  const serviceFeeBefore = Math.max(
+    0,
+    Math.round(Number.isFinite(serviceFeeBeforeRaw) ? serviceFeeBeforeRaw : 0),
+  );
 
   const packageUseCount = resolveRequiredPassCountFromInput({
     lines: normalizedLines,
@@ -217,7 +303,7 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
   // 신청서 저장 시 슬롯 수/총 소요시간을 함께 기록해 예약 엔진의 점유 계산과 일치시킨다.
   let visitSlotCount: number | null = null;
   let visitDurationMinutes: number | null = null;
-  if (cm === 'visit') {
+  if (cm === "visit") {
     const slotCount = Math.max(1, Math.floor(packageUseCount || 1));
     let intervalMinutes = 30;
 
@@ -255,17 +341,22 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
     }
   }
 
-  const totalPriceRaw = applyPackageToServiceFee(serviceFeeBefore, { usingPackage: packageApplied });
-  const totalPrice = Math.max(0, Math.round(Number.isFinite(totalPriceRaw) ? totalPriceRaw : 0));
+  const totalPriceRaw = applyPackageToServiceFee(serviceFeeBefore, {
+    usingPackage: packageApplied,
+  });
+  const totalPrice = Math.max(
+    0,
+    Math.round(Number.isFinite(totalPriceRaw) ? totalPriceRaw : 0),
+  );
 
   const updateDoc = {
     orderId: orderObjectId,
     rentalId: rentalObjectId,
     name,
     phone,
-    email: email ?? '',
+    email: email ?? "",
     contactEmail: normalizeEmail(email),
-    contactPhone: phone.replace(/\D/g, '') || null,
+    contactPhone: phone.replace(/\D/g, "") || null,
     shippingInfo: normalizedShippingInfo,
     collectionMethod: cm,
     stringDetails,
@@ -277,27 +368,32 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
     packageApplied,
     packagePassId,
     packageRedeemedAt,
-    status: '검토 중',
+    status: "검토 중",
     submittedAt: new Date(),
     userId,
     guestName: userId ? null : name,
-    guestEmail: userId ? null : email ?? '',
+    guestEmail: userId ? null : (email ?? ""),
     guestPhone: userId ? null : phone,
-    userSnapshot: userId ? { name, email: email ?? '' } : null,
+    userSnapshot: userId ? { name, email: email ?? "" } : null,
     updatedAt: new Date(),
-    ...(cm === 'visit' ? { visitSlotCount, visitDurationMinutes } : {}),
+    ...(cm === "visit" ? { visitSlotCount, visitDurationMinutes } : {}),
   };
 
   const existingDraft = orderObjectId
-    ? await db.collection('stringing_applications').findOne({ orderId: orderObjectId, status: 'draft' }, { projection: { _id: 1 }, session })
+    ? await db
+        .collection("stringing_applications")
+        .findOne(
+          { orderId: orderObjectId, status: "draft" },
+          { projection: { _id: 1 }, session },
+        )
     : null;
 
   const targetId = existingDraft?._id ?? applicationId;
 
-  const updateResult = await db.collection('stringing_applications').updateOne(
+  const updateResult = await db.collection("stringing_applications").updateOne(
     { _id: targetId },
     {
-      $unset: { expireAt: '' },
+      $unset: { expireAt: "" },
       $set: updateDoc,
       $setOnInsert: { createdAt: new Date(), servicePaid: false },
     },
@@ -305,20 +401,44 @@ export async function submitStringingApplicationCore({ db, input, userId, guestO
   );
 
   if (!updateResult.acknowledged) {
-    throw Object.assign(new Error('신청서 저장 실패'), { status: 500 });
+    throw Object.assign(new Error("신청서 저장 실패"), { status: 500 });
   }
 
   if (orderObjectId) {
-    await db.collection('orders').updateOne({ _id: orderObjectId }, { $set: { isStringServiceApplied: true, stringingApplicationId: String(targetId) } }, { session });
+    await db
+      .collection("orders")
+      .updateOne(
+        { _id: orderObjectId },
+        {
+          $set: {
+            isStringServiceApplied: true,
+            stringingApplicationId: String(targetId),
+          },
+        },
+        { session },
+      );
   }
 
   if (rentalObjectId) {
-    await db.collection('rental_orders').updateOne(
-      { _id: rentalObjectId },
-      { $set: { isStringServiceApplied: true, stringingApplicationId: String(targetId), updatedAt: new Date() } },
-      { session },
-    );
+    await db
+      .collection("rental_orders")
+      .updateOne(
+        { _id: rentalObjectId },
+        {
+          $set: {
+            isStringServiceApplied: true,
+            stringingApplicationId: String(targetId),
+            updatedAt: new Date(),
+          },
+        },
+        { session },
+      );
   }
 
-  return { applicationId: targetId, orderObjectId, rentalObjectId, stringingSubmitted: true };
+  return {
+    applicationId: targetId,
+    orderObjectId,
+    rentalObjectId,
+    stringingSubmitted: true,
+  };
 }

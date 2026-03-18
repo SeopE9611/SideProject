@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import useSWR from 'swr';
-import { Button } from '@/components/ui/button';
-import OrderReviewCTA from '@/components/reviews/OrderReviewCTA';
+import useSWR from "swr";
+import { Button } from "@/components/ui/button";
+import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url, { credentials: "include" }).then((r) => r.json());
 
 type Props = {
   orderId: string;
@@ -17,9 +18,18 @@ type Props = {
  * Activity(전체내역)에서도 "리뷰 작성하기" CTA를 보여주기 위한 래퍼
  * - review-items API에서 remaining/nextProductId를 가져와 OrderReviewCTA에 그대로 주입
  */
-export default function ActivityOrderReviewCTA({ orderId, orderStatus, userConfirmedAt, className }: Props) {
-  const completed = Boolean(userConfirmedAt) || orderStatus === '구매확정';
-  const { data, isLoading } = useSWR(completed ? `/api/orders/${orderId}/review-items` : null, fetcher, { revalidateOnFocus: false });
+export default function ActivityOrderReviewCTA({
+  orderId,
+  orderStatus,
+  userConfirmedAt,
+  className,
+}: Props) {
+  const completed = Boolean(userConfirmedAt) || orderStatus === "구매확정";
+  const { data, isLoading } = useSWR(
+    completed ? `/api/orders/${orderId}/review-items` : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
 
   if (!completed) return null;
 
@@ -34,7 +44,18 @@ export default function ActivityOrderReviewCTA({ orderId, orderStatus, userConfi
 
   const remaining = data?.counts?.remaining;
   const nextProductId = data?.nextProductId;
-  if (typeof remaining !== 'number') return null;
+  if (typeof remaining !== "number") return null;
 
-  return <OrderReviewCTA orderId={orderId} orderStatus={orderStatus} userConfirmedAt={userConfirmedAt} showOnlyWhenCompleted reviewAllDone={remaining === 0} unreviewedCount={remaining} reviewNextTargetProductId={nextProductId} className={className} />;
+  return (
+    <OrderReviewCTA
+      orderId={orderId}
+      orderStatus={orderStatus}
+      userConfirmedAt={userConfirmedAt}
+      showOnlyWhenCompleted
+      reviewAllDone={remaining === 0}
+      unreviewedCount={remaining}
+      reviewNextTargetProductId={nextProductId}
+      className={className}
+    />
+  );
 }

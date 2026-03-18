@@ -1,8 +1,8 @@
-import { notFound } from 'next/navigation';
-import AdminBoardEditClient from './AdminBoardEditClient';
+import { notFound } from "next/navigation";
+import AdminBoardEditClient from "./AdminBoardEditClient";
 
 function normalizeBoardIdentifier(id: string) {
-  const raw = String(id ?? '').trim();
+  const raw = String(id ?? "").trim();
   if (!raw) return null;
 
   try {
@@ -13,7 +13,11 @@ function normalizeBoardIdentifier(id: string) {
   }
 }
 
-export default async function AdminBoardEditPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminBoardEditPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const boardId = normalizeBoardIdentifier(id);
 

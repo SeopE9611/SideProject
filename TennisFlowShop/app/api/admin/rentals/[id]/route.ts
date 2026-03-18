@@ -1,24 +1,25 @@
-import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
-import { normalizeRentalPaymentMeta } from '@/lib/admin-ops-normalize';
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
+import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
 
 function maskAccount(acct?: string) {
-  if (!acct) return '';
+  if (!acct) return "";
   const last4 = String(acct).slice(-4);
   return `••••${last4}`;
 }
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines))
+    return stringDetails.racketLines;
   return [];
 }
 
 function getReceptionLabel(collectionMethod?: string | null): string {
-  if (collectionMethod === 'visit') return '방문 접수';
-  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
-  return '발송 접수';
+  if (collectionMethod === "visit") return "방문 접수";
+  if (collectionMethod === "courier_pickup") return "기사 방문 수거";
+  return "발송 접수";
 }
 
 function getTensionSummary(lines: any[]): string | null {
@@ -26,70 +27,84 @@ function getTensionSummary(lines: any[]): string | null {
     new Set(
       lines
         .map((line: any) => {
-          const main = String(line?.tensionMain ?? '').trim();
-          const cross = String(line?.tensionCross ?? '').trim();
-          if (!main && !cross) return '';
+          const main = String(line?.tensionMain ?? "").trim();
+          const cross = String(line?.tensionCross ?? "").trim();
+          if (!main && !cross) return "";
           return cross && cross !== main ? `${main}/${cross}` : main || cross;
         })
         .filter(Boolean),
     ),
   );
-  return set.length ? set.join(', ') : null;
+  return set.length ? set.join(", ") : null;
 }
 
-
-function normalizeServicePickupMethod(v: any): 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null {
-  const raw = String(v ?? '').trim().toUpperCase();
-  if (raw === 'SELF_SEND' || raw === 'COURIER_VISIT' || raw === 'SHOP_VISIT') return raw;
-  if (raw === 'DELIVERY') return 'SELF_SEND';
-  if (raw === 'PICKUP') return 'SHOP_VISIT';
+function normalizeServicePickupMethod(
+  v: any,
+): "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null {
+  const raw = String(v ?? "")
+    .trim()
+    .toUpperCase();
+  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT")
+    return raw;
+  if (raw === "DELIVERY") return "SELF_SEND";
+  if (raw === "PICKUP") return "SHOP_VISIT";
   return null;
 }
 
-function getPickupMethodLabel(method: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT' | null): string {
-  if (method === 'SHOP_VISIT') return '방문 수령';
-  if (method === 'COURIER_VISIT') return '기사 방문 수거';
-  return '택배 발송';
+function getPickupMethodLabel(
+  method: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null,
+): string {
+  if (method === "SHOP_VISIT") return "방문 수령";
+  if (method === "COURIER_VISIT") return "기사 방문 수거";
+  return "택배 발송";
 }
 
 function maskName(name?: string) {
-  if (!name) return '';
+  if (!name) return "";
   // 한 글자 이름: 그대로, 두 글자 이상: 마지막 글자만 노출
   if (name.length <= 1) return name;
-  return name.slice(0, -1).replace(/./g, '•') + name.slice(-1);
+  return name.slice(0, -1).replace(/./g, "•") + name.slice(-1);
 }
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
-  if (!('ok' in guard) || !guard.ok) return guard.res;
+  if (!("ok" in guard) || !guard.ok) return guard.res;
   const db = guard.db;
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   }
 
-  const doc = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
-  if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  const doc = await db
+    .collection("rental_orders")
+    .findOne({ _id: new ObjectId(id) });
+  if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
   // 고객 정보 조인
   let user: { name?: string; email?: string; phone?: string } | null = null;
   if (doc.userId) {
-    const u = await db.collection('users').findOne({ _id: doc.userId });
-    if (u) user = { name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '' };
+    const u = await db.collection("users").findOne({ _id: doc.userId });
+    if (u)
+      user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
   }
 
   // 환불계좌(관리자 전용, 마스킹)
   const refundAccount = doc.refundAccount
     ? {
-        bank: doc.refundAccount.bank ?? '',
-        holderMasked: maskName(doc.refundAccount.holder ?? ''),
-        accountMasked: maskAccount(doc.refundAccount.account ?? ''),
+        bank: doc.refundAccount.bank ?? "",
+        holderMasked: maskName(doc.refundAccount.holder ?? ""),
+        accountMasked: maskAccount(doc.refundAccount.account ?? ""),
       }
     : null;
 
   const paymentMeta = normalizeRentalPaymentMeta(doc);
-  const servicePickupMethod = normalizeServicePickupMethod((doc as any).servicePickupMethod);
+  const servicePickupMethod = normalizeServicePickupMethod(
+    (doc as any).servicePickupMethod,
+  );
 
   let linkedApplicationStatus: string | null = null;
   let linkedApplicationReceptionLabel: string | null = null;
@@ -100,20 +115,38 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const rawStringingApplicationId = (doc as any).stringingApplicationId;
   if (rawStringingApplicationId) {
-    const linkedApp = await db.collection('stringing_applications').findOne(
-      { _id: rawStringingApplicationId },
-      { projection: { status: 1, collectionMethod: 1, stringDetails: 1 } },
-    );
-    linkedApplicationStatus = typeof linkedApp?.status === 'string' ? linkedApp.status : null;
+    const linkedApp = await db
+      .collection("stringing_applications")
+      .findOne(
+        { _id: rawStringingApplicationId },
+        { projection: { status: 1, collectionMethod: 1, stringDetails: 1 } },
+      );
+    linkedApplicationStatus =
+      typeof linkedApp?.status === "string" ? linkedApp.status : null;
     if (linkedApp) {
       const lines = getApplicationLines((linkedApp as any).stringDetails);
-      linkedApplicationReceptionLabel = getReceptionLabel((linkedApp as any).collectionMethod);
+      linkedApplicationReceptionLabel = getReceptionLabel(
+        (linkedApp as any).collectionMethod,
+      );
       linkedApplicationRacketCount = lines.length;
       linkedApplicationTensionSummary = getTensionSummary(lines);
-      linkedApplicationStringNames = Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean)));
-      const preferredDate = String((linkedApp as any)?.stringDetails?.preferredDate ?? '').trim();
-      const preferredTime = String((linkedApp as any)?.stringDetails?.preferredTime ?? '').trim();
-      linkedApplicationReservationLabel = preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null;
+      linkedApplicationStringNames = Array.from(
+        new Set(
+          lines
+            .map((line: any) => String(line?.stringName ?? "").trim())
+            .filter(Boolean),
+        ),
+      );
+      const preferredDate = String(
+        (linkedApp as any)?.stringDetails?.preferredDate ?? "",
+      ).trim();
+      const preferredTime = String(
+        (linkedApp as any)?.stringDetails?.preferredTime ?? "",
+      ).trim();
+      linkedApplicationReservationLabel =
+        preferredDate && preferredTime
+          ? `${preferredDate} ${preferredTime}`
+          : null;
     }
   }
 
@@ -123,7 +156,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status,
+    status:
+      typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
     amount: doc.amount, // { deposit, fee, stringPrice?, stringingFee?, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null,

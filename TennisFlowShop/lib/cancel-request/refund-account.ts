@@ -1,5 +1,8 @@
-import { getRefundBankCatalogLabel, isRefundBankCode } from '@/lib/refund-bank-catalog';
-import { z } from 'zod';
+import {
+  getRefundBankCatalogLabel,
+  isRefundBankCode,
+} from "@/lib/refund-bank-catalog";
+import { z } from "zod";
 
 export type RefundAccountInfo = {
   bank: string;
@@ -8,11 +11,11 @@ export type RefundAccountInfo = {
 };
 
 const toTrimmedString = (value: unknown) => {
-  if (value === null || value === undefined) return '';
+  if (value === null || value === undefined) return "";
   return String(value).trim();
 };
 
-const toDigits = (value: unknown) => toTrimmedString(value).replace(/\D/g, '');
+const toDigits = (value: unknown) => toTrimmedString(value).replace(/\D/g, "");
 
 /**
  * 환불 계좌 서버 최종 방어 스키마
@@ -25,27 +28,29 @@ export const RefundAccountSchema = z.object({
     toTrimmedString,
     z
       .string()
-      .min(1, { message: '환불 은행을 선택해주세요.' })
-      .refine((value) => isRefundBankCode(value), { message: '지원하지 않는 환불 은행입니다.' }),
+      .min(1, { message: "환불 은행을 선택해주세요." })
+      .refine((value) => isRefundBankCode(value), {
+        message: "지원하지 않는 환불 은행입니다.",
+      }),
   ),
   account: z.preprocess(
     toDigits,
     z
       .string()
-      .min(8, { message: '계좌번호는 숫자 8자 이상으로 입력해주세요.' })
-      .max(20, { message: '계좌번호는 숫자 20자 이하로 입력해주세요.' }),
+      .min(8, { message: "계좌번호는 숫자 8자 이상으로 입력해주세요." })
+      .max(20, { message: "계좌번호는 숫자 20자 이하로 입력해주세요." }),
   ),
   holder: z.preprocess(
     toTrimmedString,
     z
       .string()
-      .min(2, { message: '예금주명은 2자 이상 입력해주세요.' })
-      .max(30, { message: '예금주명은 30자 이하로 입력해주세요.' }),
+      .min(2, { message: "예금주명은 2자 이상 입력해주세요." })
+      .max(30, { message: "예금주명은 30자 이하로 입력해주세요." }),
   ),
 });
 
 export function getRefundBankLabel(bank?: string | null) {
-  if (!bank) return '은행 미입력';
+  if (!bank) return "은행 미입력";
   return getRefundBankCatalogLabel(String(bank)) ?? String(bank);
 }
 
@@ -53,7 +58,10 @@ export function getRefundBankLabel(bank?: string | null) {
  * 관리자/사용자 화면 공통 표시용
  * - masked=true 를 주면 계좌번호/예금주를 마스킹해서 보여줄 수 있음
  */
-export function formatRefundAccountSummary(refundAccount?: Partial<RefundAccountInfo> | null, options?: { masked?: boolean }) {
+export function formatRefundAccountSummary(
+  refundAccount?: Partial<RefundAccountInfo> | null,
+  options?: { masked?: boolean },
+) {
   if (!refundAccount) return null;
 
   const bank = getRefundBankLabel(refundAccount.bank);
@@ -63,12 +71,18 @@ export function formatRefundAccountSummary(refundAccount?: Partial<RefundAccount
   if (!bank && !account && !holder) return null;
 
   if (!options?.masked) {
-    return [bank, holder, account].filter(Boolean).join(' / ');
+    return [bank, holder, account].filter(Boolean).join(" / ");
   }
 
-  const maskedAccount = account.length <= 4 ? account : `${account.slice(0, 3)}${'*'.repeat(Math.max(account.length - 7, 2))}${account.slice(-4)}`;
+  const maskedAccount =
+    account.length <= 4
+      ? account
+      : `${account.slice(0, 3)}${"*".repeat(Math.max(account.length - 7, 2))}${account.slice(-4)}`;
 
-  const maskedHolder = holder.length <= 2 ? `${holder.slice(0, 1)}*` : `${holder.slice(0, 1)}${'*'.repeat(Math.max(holder.length - 2, 1))}${holder.slice(-1)}`;
+  const maskedHolder =
+    holder.length <= 2
+      ? `${holder.slice(0, 1)}*`
+      : `${holder.slice(0, 1)}${"*".repeat(Math.max(holder.length - 2, 1))}${holder.slice(-1)}`;
 
-  return [bank, maskedHolder, maskedAccount].filter(Boolean).join(' / ');
+  return [bank, maskedHolder, maskedAccount].filter(Boolean).join(" / ");
 }

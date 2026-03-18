@@ -1,27 +1,38 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import useSWR from 'swr';
-import Link from 'next/link';
+import { useMemo, useState } from "react";
+import useSWR from "swr";
+import Link from "next/link";
 
-import { ArrowLeft, Copy, Loader2, RefreshCcw, Send, ChevronRight } from 'lucide-react';
+import {
+  ArrowLeft,
+  Copy,
+  Loader2,
+  RefreshCcw,
+  Send,
+  ChevronRight,
+} from "lucide-react";
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { badgeToneVariant } from '@/lib/badge-style';
-import type { AdminOutboxDetailResponseDto } from '@/types/admin/notifications';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { badgeToneVariant } from "@/lib/badge-style";
+import type { AdminOutboxDetailResponseDto } from "@/types/admin/notifications";
 
 type OutboxDetailViewModel = {
   id: string;
   status?: string;
   eventType?: string;
-  channels: Array<{ channel?: string; to?: string; rendered?: { subject?: string; text?: string; html?: string } }>;
+  channels: Array<{
+    channel?: string;
+    to?: string;
+    rendered?: { subject?: string; text?: string; html?: string };
+  }>;
   payload: Record<string, unknown>;
   meta: Record<string, unknown>;
   error: string | null;
@@ -34,21 +45,28 @@ type OutboxDetailViewModel = {
   relatedApplicationId: string | null;
 };
 
-
 function asRecord(v: unknown): Record<string, unknown> {
-  return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
+  return typeof v === "object" && v !== null
+    ? (v as Record<string, unknown>)
+    : {};
 }
 
-function getNestedString(root: Record<string, unknown>, path: string[]): string | null {
+function getNestedString(
+  root: Record<string, unknown>,
+  path: string[],
+): string | null {
   let current: unknown = root;
   for (const key of path) {
     const rec = asRecord(current);
     current = rec[key];
   }
-  return typeof current === 'string' && current ? current : null;
+  return typeof current === "string" && current ? current : null;
 }
 
-function mapApiToViewModel(data: AdminOutboxDetailResponseDto | undefined, id: string): OutboxDetailViewModel | null {
+function mapApiToViewModel(
+  data: AdminOutboxDetailResponseDto | undefined,
+  id: string,
+): OutboxDetailViewModel | null {
   if (!data) return null;
 
   const payload = asRecord(data.payload);
@@ -56,19 +74,29 @@ function mapApiToViewModel(data: AdminOutboxDetailResponseDto | undefined, id: s
   const renderedRecord = asRecord(data.rendered);
   const emailRendered = asRecord(renderedRecord.email);
 
-  const channels = Array.isArray(data.channels) && data.channels.length > 0
-    ? data.channels
-    : [
-        {
-          channel: data.channel ?? 'email',
-          to: data.to,
-          rendered: {
-            subject: typeof emailRendered.subject === 'string' ? emailRendered.subject : data.subject,
-            text: typeof emailRendered.text === 'string' ? emailRendered.text : undefined,
-            html: typeof emailRendered.html === 'string' ? emailRendered.html : undefined,
+  const channels =
+    Array.isArray(data.channels) && data.channels.length > 0
+      ? data.channels
+      : [
+          {
+            channel: data.channel ?? "email",
+            to: data.to,
+            rendered: {
+              subject:
+                typeof emailRendered.subject === "string"
+                  ? emailRendered.subject
+                  : data.subject,
+              text:
+                typeof emailRendered.text === "string"
+                  ? emailRendered.text
+                  : undefined,
+              html:
+                typeof emailRendered.html === "string"
+                  ? emailRendered.html
+                  : undefined,
+            },
           },
-        },
-      ];
+        ];
 
   return {
     id: data.id ?? id,
@@ -77,34 +105,54 @@ function mapApiToViewModel(data: AdminOutboxDetailResponseDto | undefined, id: s
     channels,
     payload,
     meta,
-    error: typeof data.error === 'string' ? data.error : null,
+    error: typeof data.error === "string" ? data.error : null,
     retries: Number(data.retries ?? 0),
     createdAt: data.createdAt ?? null,
     updatedAt: data.updatedAt ?? null,
     sentAt: data.sentAt ?? null,
     lastTriedAt: data.lastTriedAt ?? null,
-    relatedOrderId: getNestedString(meta, ['orderId']) ?? getNestedString(payload, ['orderId']) ?? getNestedString(payload, ['data', 'orderId']),
-    relatedApplicationId: getNestedString(meta, ['applicationId']) ?? getNestedString(payload, ['applicationId']) ?? getNestedString(payload, ['data', 'applicationId']),
+    relatedOrderId:
+      getNestedString(meta, ["orderId"]) ??
+      getNestedString(payload, ["orderId"]) ??
+      getNestedString(payload, ["data", "orderId"]),
+    relatedApplicationId:
+      getNestedString(meta, ["applicationId"]) ??
+      getNestedString(payload, ["applicationId"]) ??
+      getNestedString(payload, ["data", "applicationId"]),
   };
 }
 
 function safeFmt(iso?: string | null) {
-  if (!iso) return '-';
+  if (!iso) return "-";
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleString('ko-KR');
+  if (Number.isNaN(d.getTime())) return "-";
+  return d.toLocaleString("ko-KR");
 }
 
 function StatusBadge({ status }: { status?: string }) {
-  const s = status ?? 'unknown';
-  const tone = s === 'failed' ? 'danger' : s === 'sent' ? 'success' : s === 'queued' ? 'warning' : s === 'processing' ? 'info' : 'neutral';
+  const s = status ?? "unknown";
+  const tone =
+    s === "failed"
+      ? "danger"
+      : s === "sent"
+        ? "success"
+        : s === "queued"
+          ? "warning"
+          : s === "processing"
+            ? "info"
+            : "neutral";
   return <Badge variant={badgeToneVariant(tone)}>{s}</Badge>;
 }
 
 export default function OutboxDetailClient({ id }: { id: string }) {
-  const { data, error, isLoading, mutate } = useSWR<AdminOutboxDetailResponseDto>(id ? `/api/admin/notifications/outbox/${id}` : null, authenticatedSWRFetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
+  const { data, error, isLoading, mutate } =
+    useSWR<AdminOutboxDetailResponseDto>(
+      id ? `/api/admin/notifications/outbox/${id}` : null,
+      authenticatedSWRFetcher,
+      { revalidateOnFocus: false, revalidateOnReconnect: false },
+    );
 
-  const [busy, setBusy] = useState<'retry' | 'force' | null>(null);
+  const [busy, setBusy] = useState<"retry" | "force" | null>(null);
 
   const vm = useMemo(() => mapApiToViewModel(data, id), [data, id]);
   const channels = vm?.channels ?? [];
@@ -119,15 +167,15 @@ export default function OutboxDetailClient({ id }: { id: string }) {
   async function copy(text: string) {
     try {
       await navigator.clipboard.writeText(text);
-      showSuccessToast('복사 완료');
+      showSuccessToast("복사 완료");
     } catch {
-      showErrorToast('복사 실패 (브라우저 권한을 확인하세요)');
+      showErrorToast("복사 실패 (브라우저 권한을 확인하세요)");
     }
   }
 
   async function post(url: string, label: string) {
     try {
-      const res = await fetch(url, { method: 'POST' });
+      const res = await fetch(url, { method: "POST" });
       const json = await res.json().catch(() => null);
       if (!res.ok || json?.ok === false) {
         showErrorToast(json?.error || `${label} 실패`);
@@ -141,22 +189,30 @@ export default function OutboxDetailClient({ id }: { id: string }) {
   }
 
   async function doRetry() {
-    setBusy('retry');
-    await post(`/api/admin/notifications/outbox/${id}/retry`, '재시도 큐로 이동');
+    setBusy("retry");
+    await post(
+      `/api/admin/notifications/outbox/${id}/retry`,
+      "재시도 큐로 이동",
+    );
     setBusy(null);
   }
 
   async function doForce() {
-    setBusy('force');
-    await post(`/api/admin/notifications/outbox/${id}/force`, '강제 발송 실행');
+    setBusy("force");
+    await post(`/api/admin/notifications/outbox/${id}/force`, "강제 발송 실행");
     setBusy(null);
   }
 
   return (
     <div className="mx-auto w-full max-w-5xl p-4 md:p-6 space-y-4">
       <div className="space-y-2">
-        <nav className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground" aria-label="알림 상세 breadcrumb">
-          <Link href="/admin/notifications/outbox" className="font-medium">알림 발송함</Link>
+        <nav
+          className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground"
+          aria-label="알림 상세 breadcrumb"
+        >
+          <Link href="/admin/notifications/outbox" className="font-medium">
+            알림 발송함
+          </Link>
           <ChevronRight className="h-3.5 w-3.5" />
           <span>상세</span>
           <ChevronRight className="h-3.5 w-3.5" />
@@ -166,7 +222,12 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           <Button asChild variant="secondary" size="sm">
             <Link href="/admin/notifications/outbox">목록</Link>
           </Button>
-          <Button variant="outline" size="sm" className="border-border/40" disabled>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-border/40"
+            disabled
+          >
             상세
           </Button>
         </div>
@@ -176,7 +237,10 @@ export default function OutboxDetailClient({ id }: { id: string }) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" className="border-border/40">
-            <Link href="/admin/notifications/outbox" className="inline-flex items-center gap-2">
+            <Link
+              href="/admin/notifications/outbox"
+              className="inline-flex items-center gap-2"
+            >
               <ArrowLeft className="h-4 w-4" />
               목록으로
             </Link>
@@ -189,18 +253,39 @@ export default function OutboxDetailClient({ id }: { id: string }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="border-border/40 gap-2" disabled={!id} onClick={() => copy(id)}>
+          <Button
+            variant="outline"
+            className="border-border/40 gap-2"
+            disabled={!id}
+            onClick={() => copy(id)}
+          >
             <Copy className="h-4 w-4" />
             ID 복사
           </Button>
 
-          <Button className="gap-2" disabled={busy !== null || !vm || vm.status !== 'failed'} onClick={doRetry}>
-            {busy === 'retry' ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
+          <Button
+            className="gap-2"
+            disabled={busy !== null || !vm || vm.status !== "failed"}
+            onClick={doRetry}
+          >
+            {busy === "retry" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCcw className="h-4 w-4" />
+            )}
             재시도
           </Button>
 
-          <Button className="gap-2" disabled={busy !== null || !vm || vm.status !== 'queued'} onClick={doForce}>
-            {busy === 'force' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          <Button
+            className="gap-2"
+            disabled={busy !== null || !vm || vm.status !== "queued"}
+            onClick={doForce}
+          >
+            {busy === "force" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
             강제 발송
           </Button>
         </div>
@@ -220,7 +305,12 @@ export default function OutboxDetailClient({ id }: { id: string }) {
             </div>
           )}
 
-          {error && <div className="text-sm text-destructive">상세 로드 실패: {error instanceof Error ? error.message : String(error)}</div>}
+          {error && (
+            <div className="text-sm text-destructive">
+              상세 로드 실패:{" "}
+              {error instanceof Error ? error.message : String(error)}
+            </div>
+          )}
 
           {vm && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -231,7 +321,7 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">이벤트</span>
-                <span className="font-medium">{vm.eventType ?? '-'}</span>
+                <span className="font-medium">{vm.eventType ?? "-"}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
@@ -261,12 +351,14 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">수신자(첫 채널)</span>
-                <span className="font-medium">{first?.to ?? '-'}</span>
+                <span className="font-medium">{first?.to ?? "-"}</span>
               </div>
 
               <div className="flex items-center justify-between gap-3 md:col-span-2">
                 <span className="text-muted-foreground">제목(첫 채널)</span>
-                <span className="font-medium truncate">{firstSubject ?? '-'}</span>
+                <span className="font-medium truncate">
+                  {firstSubject ?? "-"}
+                </span>
               </div>
             </div>
           )}
@@ -282,12 +374,18 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           <CardContent className="flex flex-wrap items-center gap-2">
             {relatedOrderId && (
               <Button asChild variant="outline" className="border-border/40">
-                <Link href={`/admin/orders/${String(relatedOrderId)}`}>주문 상세로 이동 (#{String(relatedOrderId).slice(-6)})</Link>
+                <Link href={`/admin/orders/${String(relatedOrderId)}`}>
+                  주문 상세로 이동 (#{String(relatedOrderId).slice(-6)})
+                </Link>
               </Button>
             )}
             {relatedApplicationId && (
               <Button asChild variant="outline" className="border-border/40">
-                <Link href={`/admin/applications/stringing/${String(relatedApplicationId)}`}>신청서 상세로 이동 (#{String(relatedApplicationId).slice(-6)})</Link>
+                <Link
+                  href={`/admin/applications/stringing/${String(relatedApplicationId)}`}
+                >
+                  신청서 상세로 이동 (#{String(relatedApplicationId).slice(-6)})
+                </Link>
               </Button>
             )}
           </CardContent>
@@ -298,10 +396,14 @@ export default function OutboxDetailClient({ id }: { id: string }) {
       {vm?.error && (
         <Card className="border-destructive/30">
           <CardHeader>
-            <CardTitle className="text-base text-destructive">실패 원인</CardTitle>
+            <CardTitle className="text-base text-destructive">
+              실패 원인
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <pre className="whitespace-pre-wrap break-words rounded-md border border-destructive/30 bg-destructive/10 p-3 text-foreground dark:bg-destructive/15">{vm.error}</pre>
+            <pre className="whitespace-pre-wrap break-words rounded-md border border-destructive/30 bg-destructive/10 p-3 text-foreground dark:bg-destructive/15">
+              {vm.error}
+            </pre>
           </CardContent>
         </Card>
       )}
@@ -321,7 +423,9 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
             <TabsContent value="rendered" className="space-y-4">
               {channels.length === 0 ? (
-                <div className="text-sm text-muted-foreground">렌더링 데이터가 없습니다.</div>
+                <div className="text-sm text-muted-foreground">
+                  렌더링 데이터가 없습니다.
+                </div>
               ) : (
                 channels.map((ch, idx) => {
                   const html = ch?.rendered?.html;
@@ -329,14 +433,28 @@ export default function OutboxDetailClient({ id }: { id: string }) {
                   const subject = ch?.rendered?.subject;
 
                   return (
-                    <div key={`${idx}-${ch?.channel}-${ch?.to}`} className="space-y-3">
+                    <div
+                      key={`${idx}-${ch?.channel}-${ch?.to}`}
+                      className="space-y-3"
+                    >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">{ch?.channel ?? 'channel'}</Badge>
-                          <span className="text-sm font-medium">{ch?.to ?? '-'}</span>
+                          <Badge variant="outline">
+                            {ch?.channel ?? "channel"}
+                          </Badge>
+                          <span className="text-sm font-medium">
+                            {ch?.to ?? "-"}
+                          </span>
                         </div>
 
-                        <Button size="sm" variant="outline" className="border-border/40 gap-2" onClick={() => copy(JSON.stringify(ch?.rendered ?? {}, null, 2))}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-border/40 gap-2"
+                          onClick={() =>
+                            copy(JSON.stringify(ch?.rendered ?? {}, null, 2))
+                          }
+                        >
                           <Copy className="h-4 w-4" />
                           렌더링 복사
                         </Button>
@@ -344,7 +462,8 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
                       {subject && (
                         <div className="text-sm">
-                          <span className="text-muted-foreground">제목:</span> <span className="font-medium">{subject}</span>
+                          <span className="text-muted-foreground">제목:</span>{" "}
+                          <span className="font-medium">{subject}</span>
                         </div>
                       )}
 
@@ -352,15 +471,36 @@ export default function OutboxDetailClient({ id }: { id: string }) {
 
                       <div className="space-y-2">
                         <div className="text-sm font-medium">HTML</div>
-                        {html ? <iframe title={`html-preview-${idx}`} srcDoc={html} sandbox="" className="h-[520px] w-full rounded-md border border-border/40 bg-card" /> : <div className="text-sm text-muted-foreground">HTML 없음</div>}
+                        {html ? (
+                          <iframe
+                            title={`html-preview-${idx}`}
+                            srcDoc={html}
+                            sandbox=""
+                            className="h-[520px] w-full rounded-md border border-border/40 bg-card"
+                          />
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            HTML 없음
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <div className="text-sm font-medium">TEXT</div>
-                        {text ? <pre className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 border border-border/40 text-sm">{text}</pre> : <div className="text-sm text-muted-foreground">TEXT 없음</div>}
+                        {text ? (
+                          <pre className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 border border-border/40 text-sm">
+                            {text}
+                          </pre>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            TEXT 없음
+                          </div>
+                        )}
                       </div>
 
-                      {idx < channels.length - 1 && <Separator className="my-4" />}
+                      {idx < channels.length - 1 && (
+                        <Separator className="my-4" />
+                      )}
                     </div>
                   );
                 })
@@ -370,25 +510,43 @@ export default function OutboxDetailClient({ id }: { id: string }) {
             <TabsContent value="payload" className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm font-medium">payload</div>
-                <Button size="sm" variant="outline" className="border-border/40 gap-2" disabled={!data?.payload} onClick={() => copy(JSON.stringify(data?.payload ?? {}, null, 2))}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border/40 gap-2"
+                  disabled={!data?.payload}
+                  onClick={() =>
+                    copy(JSON.stringify(data?.payload ?? {}, null, 2))
+                  }
+                >
                   <Copy className="h-4 w-4" />
                   payload 복사
                 </Button>
               </div>
 
-              <pre className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 border border-border/40 text-sm">{JSON.stringify(data?.payload ?? {}, null, 2)}</pre>
+              <pre className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 border border-border/40 text-sm">
+                {JSON.stringify(data?.payload ?? {}, null, 2)}
+              </pre>
             </TabsContent>
 
             <TabsContent value="raw" className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm font-medium">raw</div>
-                <Button size="sm" variant="outline" className="border-border/40 gap-2" disabled={!data} onClick={() => copy(JSON.stringify(data ?? {}, null, 2))}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-border/40 gap-2"
+                  disabled={!data}
+                  onClick={() => copy(JSON.stringify(data ?? {}, null, 2))}
+                >
                   <Copy className="h-4 w-4" />
                   raw 복사
                 </Button>
               </div>
 
-              <pre className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 border border-border/40 text-sm">{JSON.stringify(data ?? {}, null, 2)}</pre>
+              <pre className="whitespace-pre-wrap break-words rounded-md bg-muted p-3 border border-border/40 text-sm">
+                {JSON.stringify(data ?? {}, null, 2)}
+              </pre>
             </TabsContent>
           </Tabs>
         </CardContent>

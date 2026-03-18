@@ -1,30 +1,60 @@
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { maskSecretTitle, resolveBoardViewerContext } from '@/lib/board-secret-policy';
-import { API_VERSION } from '@/lib/board.repository';
-import { validateBoardAssetUrl } from '@/lib/boards-community-url-policy';
-import { getBoardList } from '@/lib/boards.queries';
-import { MAX_COMMUNITY_SEARCH_QUERY_LENGTH, buildCommunityListMongoFilter, getCommunitySortOption, parseCommunityListQuery } from '@/lib/community-list-query';
-import { getValidCommunityUserObjectIds, resolveCommunityDisplayName } from '@/lib/community-display-name';
-import { getMarketBrandOptions, isBrandRequiredCategory, normalizeMarketMeta } from '@/lib/market';
-import { verifyCommunityCsrf } from '@/lib/community/security';
-import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { getDb } from '@/lib/mongodb';
-import { sanitizeHtml } from '@/lib/sanitize';
-import type { AccessTokenPayload, BoardCreateMongoDoc, BoardCreateResponseDto, BoardListResponseDto, CommunityListResponseDto, CommunityPostListItemDto, CommunityPostMongoDoc } from '@/lib/types/api/board-community';
-import type { BoardType, QnaCategory } from '@/lib/types/board';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { verifyAccessToken } from "@/lib/auth.utils";
+import {
+  maskSecretTitle,
+  resolveBoardViewerContext,
+} from "@/lib/board-secret-policy";
+import { API_VERSION } from "@/lib/board.repository";
+import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
+import { getBoardList } from "@/lib/boards.queries";
+import {
+  MAX_COMMUNITY_SEARCH_QUERY_LENGTH,
+  buildCommunityListMongoFilter,
+  getCommunitySortOption,
+  parseCommunityListQuery,
+} from "@/lib/community-list-query";
+import {
+  getValidCommunityUserObjectIds,
+  resolveCommunityDisplayName,
+} from "@/lib/community-display-name";
+import {
+  getMarketBrandOptions,
+  isBrandRequiredCategory,
+  normalizeMarketMeta,
+} from "@/lib/market";
+import { verifyCommunityCsrf } from "@/lib/community/security";
+import { logInfo, reqMeta, startTimer } from "@/lib/logger";
+import { getDb } from "@/lib/mongodb";
+import { sanitizeHtml } from "@/lib/sanitize";
+import type {
+  AccessTokenPayload,
+  BoardCreateMongoDoc,
+  BoardCreateResponseDto,
+  BoardListResponseDto,
+  CommunityListResponseDto,
+  CommunityPostListItemDto,
+  CommunityPostMongoDoc,
+} from "@/lib/types/api/board-community";
+import type { BoardType, QnaCategory } from "@/lib/types/board";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
-const COMMUNITY_KIND_VALUES = ['free', 'market', 'gear', 'brand'] as const;
+const COMMUNITY_KIND_VALUES = ["free", "market", "gear", "brand"] as const;
 type CommunityKindParam = (typeof COMMUNITY_KIND_VALUES)[number];
 
-function isCommunityKindParam(value: string | null): value is CommunityKindParam {
-  return typeof value === 'string' && (COMMUNITY_KIND_VALUES as readonly string[]).includes(value);
+function isCommunityKindParam(
+  value: string | null,
+): value is CommunityKindParam {
+  return (
+    typeof value === "string" &&
+    (COMMUNITY_KIND_VALUES as readonly string[]).includes(value)
+  );
 }
 
-function parseCommunityKindParam(value: string | null): CommunityKindParam | null {
+function parseCommunityKindParam(
+  value: string | null,
+): CommunityKindParam | null {
   return isCommunityKindParam(value) ? value : null;
 }
 
@@ -33,7 +63,10 @@ function parseCommunityKindParam(value: string | null): CommunityKindParam | nul
  * - NaN이면 defaultValue 적용
  * - min/max 범위로 clamp
  */
-function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+function parseIntParam(
+  v: string | null,
+  opts: { defaultValue: number; min: number; max: number },
+) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -42,7 +75,7 @@ function parseIntParam(v: string | null, opts: { defaultValue: number; min: numb
 // 관리자 확인 헬퍼
 async function mustAdmin() {
   const jar = await cookies();
-  const at = jar.get('accessToken')?.value;
+  const at = jar.get("accessToken")?.value;
   if (!at) return null;
 
   let payload: AccessTokenPayload | null = null;
@@ -52,13 +85,18 @@ async function mustAdmin() {
     payload = null;
   }
 
-  const subStr = payload?.sub ? String(payload.sub) : '';
+  const subStr = payload?.sub ? String(payload.sub) : "";
   if (!subStr || !ObjectId.isValid(subStr)) return null;
 
   const db = await getDb();
-  const u = await db.collection('users').findOne({ _id: new ObjectId(subStr) }, { projection: { _id: 1, role: 1 } });
+  const u = await db
+    .collection("users")
+    .findOne(
+      { _id: new ObjectId(subStr) },
+      { projection: { _id: 1, role: 1 } },
+    );
 
-  if (!u || u.role !== 'admin') return null;
+  if (!u || u.role !== "admin") return null;
   return payload;
 }
 
@@ -67,31 +105,55 @@ async function mustAdmin() {
  * lib/types/board.ts 의 QnaCategory 유니온과 1:1 이어야 합니다.
  * (예: '상품문의' | '주문/결제' | '배송' | '환불/교환' | '서비스' | '아카데미' | '회원' | '일반문의')
  */
-const QNA_CATEGORY_LABELS = ['상품문의', '주문/결제', '배송', '환불/교환', '서비스', '아카데미', '회원', '일반문의'] as const satisfies readonly QnaCategory[];
+const QNA_CATEGORY_LABELS = [
+  "상품문의",
+  "주문/결제",
+  "배송",
+  "환불/교환",
+  "서비스",
+  "아카데미",
+  "회원",
+  "일반문의",
+] as const satisfies readonly QnaCategory[];
 
 /** UI/쿼리에서 사용하는 코드 값 */
 const QNA_CATEGORY_CODES = [
   // 아래 코드는 UI의 SelectItem value 값과 일치시켜 주세요.
-  'product',
-  'order',
-  'delivery',
-  'refund',
-  'service',
-  'academy',
-  'member',
+  "product",
+  "order",
+  "delivery",
+  "refund",
+  "service",
+  "academy",
+  "member",
   // 필요시 확장용
-  'general', // '일반문의' 용 코드 (선택사항)
+  "general", // '일반문의' 용 코드 (선택사항)
 ] as const;
 
 /** ---- Notice 카테고리(라벨) ---- */
-const NOTICE_CATEGORY_LABELS = ['일반', '이벤트', '아카데미', '점검', '긴급'] as const;
-const NOTICE_CATEGORY_CODES = ['general', 'event', 'academy', 'maintenance', 'urgent'] as const;
-const NOTICE_CODE_TO_LABEL: Record<(typeof NOTICE_CATEGORY_CODES)[number], (typeof NOTICE_CATEGORY_LABELS)[number]> = {
-  general: '일반',
-  event: '이벤트',
-  academy: '아카데미',
-  maintenance: '점검',
-  urgent: '긴급',
+const NOTICE_CATEGORY_LABELS = [
+  "일반",
+  "이벤트",
+  "아카데미",
+  "점검",
+  "긴급",
+] as const;
+const NOTICE_CATEGORY_CODES = [
+  "general",
+  "event",
+  "academy",
+  "maintenance",
+  "urgent",
+] as const;
+const NOTICE_CODE_TO_LABEL: Record<
+  (typeof NOTICE_CATEGORY_CODES)[number],
+  (typeof NOTICE_CATEGORY_LABELS)[number]
+> = {
+  general: "일반",
+  event: "이벤트",
+  academy: "아카데미",
+  maintenance: "점검",
+  urgent: "긴급",
 };
 
 function normalizeNoticeCategory(input: string | null | undefined) {
@@ -100,27 +162,31 @@ function normalizeNoticeCategory(input: string | null | undefined) {
     // @ts-expect-error - 위 includes로 보장
     return NOTICE_CODE_TO_LABEL[input];
   }
-  if ((NOTICE_CATEGORY_LABELS as readonly string[]).includes(input)) return input as (typeof NOTICE_CATEGORY_LABELS)[number];
+  if ((NOTICE_CATEGORY_LABELS as readonly string[]).includes(input))
+    return input as (typeof NOTICE_CATEGORY_LABELS)[number];
   return null;
 }
 
 /** 코드 -> 라벨 매핑 (모든 코드는 반드시 라벨 중 하나로 매핑) */
-const CODE_TO_LABEL: Record<(typeof QNA_CATEGORY_CODES)[number], QnaCategory> = {
-  product: '상품문의',
-  order: '주문/결제',
-  delivery: '배송',
-  refund: '환불/교환',
-  service: '서비스',
-  academy: '아카데미',
-  member: '회원',
-  general: '일반문의',
-} as const;
+const CODE_TO_LABEL: Record<(typeof QNA_CATEGORY_CODES)[number], QnaCategory> =
+  {
+    product: "상품문의",
+    order: "주문/결제",
+    delivery: "배송",
+    refund: "환불/교환",
+    service: "서비스",
+    academy: "아카데미",
+    member: "회원",
+    general: "일반문의",
+  } as const;
 
 /** 라벨 배열(런타임 비교용) */
-const QNA_LABEL_SET: readonly string[] = QNA_CATEGORY_LABELS as readonly string[];
+const QNA_LABEL_SET: readonly string[] =
+  QNA_CATEGORY_LABELS as readonly string[];
 
 /** 런타임 타입가드: 값이 실제 QnaCategory 라벨인지 검사 */
-const isQnaCategory = (v: unknown): v is QnaCategory => typeof v === 'string' && QNA_LABEL_SET.includes(v);
+const isQnaCategory = (v: unknown): v is QnaCategory =>
+  typeof v === "string" && QNA_LABEL_SET.includes(v);
 
 /**
  * 카테고리 정규화:
@@ -128,7 +194,9 @@ const isQnaCategory = (v: unknown): v is QnaCategory => typeof v === 'string' &&
  * - 라벨이 이미 들어왔다면 유효성 검사 후 그대로 사용
  * - 그 외 문자열/오타는 null 반환(필터 미적용)
  */
-function normalizeCategory(input: string | null | undefined): QnaCategory | null {
+function normalizeCategory(
+  input: string | null | undefined,
+): QnaCategory | null {
   if (!input) return null;
   // 코드로 들어온 경우
   if ((QNA_CATEGORY_CODES as readonly string[]).includes(input)) {
@@ -144,13 +212,13 @@ function normalizeCategory(input: string | null | undefined): QnaCategory | null
 /* ----------------------------- 입력 검증 스키마 ----------------------------- */
 const productRefSchema = z
   .object({
-    productId: z.string().transform((s) => s.trim().replace(/^<|>$/g, '')),
+    productId: z.string().transform((s) => s.trim().replace(/^<|>$/g, "")),
     name: z.string().optional(),
     image: z.string().url().nullable().optional(),
   })
   .optional();
 
-const typeSchema = z.enum(['notice', 'qna', 'free', 'market', 'gear'] as const);
+const typeSchema = z.enum(["notice", "qna", "free", "market", "gear"] as const);
 
 // category는 "코드 or 라벨" QnA + Notice 모두 허용
 const categorySchema = z
@@ -159,7 +227,23 @@ const categorySchema = z
     z.enum(QNA_CATEGORY_LABELS as unknown as [string, ...string[]]),
     z.enum(NOTICE_CATEGORY_CODES as unknown as [string, ...string[]]),
     z.enum(NOTICE_CATEGORY_LABELS as unknown as [string, ...string[]]),
-    z.enum(['general', 'info', 'qna', 'tip', 'etc', 'racket', 'string', 'equipment', 'shoes', 'bag', 'apparel', 'grip', 'accessory', 'ball', 'other'] as [string, ...string[]]),
+    z.enum([
+      "general",
+      "info",
+      "qna",
+      "tip",
+      "etc",
+      "racket",
+      "string",
+      "equipment",
+      "shoes",
+      "bag",
+      "apparel",
+      "grip",
+      "accessory",
+      "ball",
+      "other",
+    ] as [string, ...string[]]),
   ])
   .optional();
 
@@ -171,7 +255,11 @@ const createSchema = z.object({
   productRef: productRefSchema,
   isSecret: z.boolean().optional(),
   isPinned: z.boolean().optional(), // notice에서만 사용
-  brand: z.string().max(100, '브랜드명은 100자 이내로 입력해 주세요.').optional().nullable(),
+  brand: z
+    .string()
+    .max(100, "브랜드명은 100자 이내로 입력해 주세요.")
+    .optional()
+    .nullable(),
   // marketMeta의 세부 검증은 normalizeMarketMeta + type별 후속 검증에서 수행
   marketMeta: z.any().optional(),
   images: z.array(z.string().url()).max(10).optional(),
@@ -200,41 +288,69 @@ export async function GET(req: NextRequest) {
   const meta = reqMeta(req);
   const url = new URL(req.url);
 
-  const typeParam = url.searchParams.get('type');
-  const kindParam = url.searchParams.get('kind');
-  const rawCategory = url.searchParams.get('category'); // string | null
-  const productId = url.searchParams.get('productId');
-  const answerRaw = url.searchParams.get('answer') || '';
+  const typeParam = url.searchParams.get("type");
+  const kindParam = url.searchParams.get("kind");
+  const rawCategory = url.searchParams.get("category"); // string | null
+  const productId = url.searchParams.get("productId");
+  const answerRaw = url.searchParams.get("answer") || "";
 
   // NaN 방지: page/limit가 비정상 값이면 기본값으로 안전하게 보정
-  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
-  const limit = parseIntParam(url.searchParams.get('limit'), { defaultValue: 10, min: 1, max: 50 });
+  const page = parseIntParam(url.searchParams.get("page"), {
+    defaultValue: 1,
+    min: 1,
+    max: 10_000,
+  });
+  const limit = parseIntParam(url.searchParams.get("limit"), {
+    defaultValue: 10,
+    min: 1,
+    max: 50,
+  });
 
-  const q = url.searchParams.get('q') || url.searchParams.get('keyword') || url.searchParams.get('query') || '';
+  const q =
+    url.searchParams.get("q") ||
+    url.searchParams.get("keyword") ||
+    url.searchParams.get("query") ||
+    "";
 
-  const fieldRaw = url.searchParams.get('field') || 'all';
+  const fieldRaw = url.searchParams.get("field") || "all";
 
   // 허용된 field 값만 사용, 그 외는 all 처리
-  const allowedFields = new Set(['all', 'title', 'content', 'title_content']);
-  const field = (allowedFields.has(fieldRaw) ? fieldRaw : 'all') as 'all' | 'title' | 'content' | 'title_content';
+  const allowedFields = new Set(["all", "title", "content", "title_content"]);
+  const field = (allowedFields.has(fieldRaw) ? fieldRaw : "all") as
+    | "all"
+    | "title"
+    | "content"
+    | "title_content";
 
   // type 유효성 가드: 기본은 notice, 'qna'면 qna로
-  const type: BoardType = typeParam === 'qna' ? 'qna' : 'notice';
+  const type: BoardType = typeParam === "qna" ? "qna" : "notice";
 
   const communityKind = parseCommunityKindParam(kindParam);
 
   if (communityKind) {
     const db = await getDb();
-    const col = db.collection('community_posts');
-    const { brand, sort, page, limit, q, escapedQ, isQueryTooLong, authorObjectId, searchType, category, marketFilters } = parseCommunityListQuery(req, {
-      queryKeys: ['q', 'keyword', 'query'],
+    const col = db.collection("community_posts");
+    const {
+      brand,
+      sort,
+      page,
+      limit,
+      q,
+      escapedQ,
+      isQueryTooLong,
+      authorObjectId,
+      searchType,
+      category,
+      marketFilters,
+    } = parseCommunityListQuery(req, {
+      queryKeys: ["q", "keyword", "query"],
     });
 
     if (isQueryTooLong) {
       return NextResponse.json(
         {
           ok: false,
-          error: 'query_too_long',
+          error: "query_too_long",
           message: `검색어는 최대 ${MAX_COMMUNITY_SEARCH_QUERY_LENGTH}자까지 입력할 수 있습니다.`,
         },
         { status: 400 },
@@ -272,14 +388,24 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .toArray();
     const communityDocs = docs as CommunityPostMongoDoc[];
-    const userObjectIds = getValidCommunityUserObjectIds(communityDocs.map((doc) => doc.userId ?? null));
+    const userObjectIds = getValidCommunityUserObjectIds(
+      communityDocs.map((doc) => doc.userId ?? null),
+    );
     const users = userObjectIds.length
       ? await db
-          .collection('users')
-          .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
+          .collection("users")
+          .find(
+            { _id: { $in: userObjectIds } },
+            { projection: { name: 1, nickname: 1 } },
+          )
           .toArray()
       : [];
-    const userMap = new Map(users.map((user) => [String(user._id), user as { _id: ObjectId; name?: string; nickname?: string }]));
+    const userMap = new Map(
+      users.map((user) => [
+        String(user._id),
+        user as { _id: ObjectId; name?: string; nickname?: string },
+      ]),
+    );
 
     const items: CommunityPostListItemDto[] = communityDocs.map((d) => {
       const userId = d.userId ? String(d.userId) : null;
@@ -293,49 +419,72 @@ export async function GET(req: NextRequest) {
       });
 
       return {
-      id: String(d._id),
-      type: d.type,
-      title: d.title,
-      content: d.content,
-      category: d.category ?? 'general',
-      userId,
-      nickname: displayName,
-      status: d.status ?? 'public',
-      views: d.views ?? 0,
-      likes: d.likes ?? 0,
-      commentsCount: d.commentsCount ?? 0,
-      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
-      updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : undefined,
-      attachments: d.attachments ?? [],
-      images: d.images ?? [],
-      brand: d.brand ?? null,
-      marketMeta: d.marketMeta ?? null,
-      postNo: d.postNo,
+        id: String(d._id),
+        type: d.type,
+        title: d.title,
+        content: d.content,
+        category: d.category ?? "general",
+        userId,
+        nickname: displayName,
+        status: d.status ?? "public",
+        views: d.views ?? 0,
+        likes: d.likes ?? 0,
+        commentsCount: d.commentsCount ?? 0,
+        createdAt:
+          d.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : String(d.createdAt),
+        updatedAt:
+          d.updatedAt instanceof Date ? d.updatedAt.toISOString() : undefined,
+        attachments: d.attachments ?? [],
+        images: d.images ?? [],
+        brand: d.brand ?? null,
+        marketMeta: d.marketMeta ?? null,
+        postNo: d.postNo,
       };
     });
-    const response: CommunityListResponseDto = { ok: true, version: API_VERSION, items, total, page, limit };
+    const response: CommunityListResponseDto = {
+      ok: true,
+      version: API_VERSION,
+      items,
+      total,
+      page,
+      limit,
+    };
     return NextResponse.json(response);
   }
 
   // 타입별 카테고리 정규화
   let category: string | null = null;
-  if (type === 'notice') {
+  if (type === "notice") {
     const n = normalizeNoticeCategory(rawCategory);
     if (n) category = n; // 공지는 라벨('일반','이벤트' 등)로 저장됨
-  } else if (type === 'qna') {
+  } else if (type === "qna") {
     const n = normalizeCategory(rawCategory); // 코드/라벨 → QnA 라벨로
     if (n) category = n as QnaCategory;
   }
 
   logInfo({
-    msg: 'boards:list:query',
+    msg: "boards:list:query",
     status: 200,
     durationMs: 0,
-    extra: { type: typeParam, category: rawCategory, productId, answer: answerRaw, page, limit, q, field: fieldRaw },
+    extra: {
+      type: typeParam,
+      category: rawCategory,
+      productId,
+      answer: answerRaw,
+      page,
+      limit,
+      q,
+      field: fieldRaw,
+    },
     ...meta,
   });
 
-  const answer = answerRaw === 'waiting' || answerRaw === 'completed' ? (answerRaw as 'waiting' | 'completed') : null;
+  const answer =
+    answerRaw === "waiting" || answerRaw === "completed"
+      ? (answerRaw as "waiting" | "completed")
+      : null;
 
   // 공용 MongoDB 쿼리 함수 사용
   const { items, total } = await getBoardList({
@@ -349,20 +498,22 @@ export async function GET(req: NextRequest) {
     answer,
   });
 
-  const accessToken = (await cookies()).get('accessToken')?.value;
+  const accessToken = (await cookies()).get("accessToken")?.value;
   const viewer = await resolveBoardViewerContext({
     accessToken,
     verifyToken: verifyAccessToken,
     fetchUserRoleById: async (userId: string) => {
       if (!ObjectId.isValid(userId)) return null;
       const db = await getDb();
-      const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
-      return typeof user?.role === 'string' ? user.role : null;
+      const user = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(userId) }, { projection: { role: 1 } });
+      return typeof user?.role === "string" ? user.role : null;
     },
   });
 
   const maskedItems =
-    type === 'qna'
+    type === "qna"
       ? items.map((item) =>
           maskSecretTitle(item, {
             viewerId: viewer.viewerId,
@@ -372,21 +523,31 @@ export async function GET(req: NextRequest) {
       : items;
 
   logInfo({
-    msg: 'boards:list:ok',
+    msg: "boards:list:ok",
     status: 200,
     durationMs: stop(),
     extra: { count: items.length, total },
     ...meta,
   });
 
-  const response: BoardListResponseDto = { ok: true, version: API_VERSION, items: maskedItems, total, page, limit };
+  const response: BoardListResponseDto = {
+    ok: true,
+    version: API_VERSION,
+    items: maskedItems,
+    total,
+    page,
+    limit,
+  };
 
   return NextResponse.json(response, {
     headers: {
       // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
-      'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
-      'CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
-      'Vercel-CDN-Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
+      "Cache-Control":
+        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "CDN-Cache-Control":
+        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "Vercel-CDN-Cache-Control":
+        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
     },
   });
 }
@@ -400,7 +561,7 @@ export async function POST(req: NextRequest) {
   const stop = startTimer();
   const meta = reqMeta(req);
   // 인증
-  const token = (await cookies()).get('accessToken')?.value;
+  const token = (await cookies()).get("accessToken")?.value;
 
   // verifyAccessToken은 throw 가능 → 500 방지를 위해 try/catch로 401 처리
   let payload: AccessTokenPayload | null = null;
@@ -412,8 +573,16 @@ export async function POST(req: NextRequest) {
     }
   }
   if (!payload || !payload?.sub) {
-    logInfo({ msg: 'boards:post:unauthorized', status: 401, durationMs: stop(), ...meta });
-    return NextResponse.json({ ok: false, version: API_VERSION, error: 'unauthorized' }, { status: 401 });
+    logInfo({
+      msg: "boards:post:unauthorized",
+      status: 401,
+      durationMs: stop(),
+      ...meta,
+    });
+    return NextResponse.json(
+      { ok: false, version: API_VERSION, error: "unauthorized" },
+      { status: 401 },
+    );
   }
   // 입력 검증
   let bodyRaw: unknown;
@@ -421,31 +590,58 @@ export async function POST(req: NextRequest) {
     bodyRaw = await req.json();
   } catch {
     // 잘못된 JSON/빈 body 등에서 req.json()이 throw → 400으로 정리
-    return NextResponse.json({ ok: false, version: API_VERSION, error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, version: API_VERSION, error: "invalid_json" },
+      { status: 400 },
+    );
   }
   const parsed = createSchema.safeParse(bodyRaw);
   if (!parsed.success) {
-    logInfo({ msg: 'boards:post:validation_failed', status: 400, durationMs: stop(), extra: { issues: parsed.error.issues }, ...meta });
-    return NextResponse.json({ ok: false, version: API_VERSION, error: parsed.error.flatten() }, { status: 400 });
+    logInfo({
+      msg: "boards:post:validation_failed",
+      status: 400,
+      durationMs: stop(),
+      extra: { issues: parsed.error.issues },
+      ...meta,
+    });
+    return NextResponse.json(
+      { ok: false, version: API_VERSION, error: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
   const body = parsed.data;
 
-  if (body.type === 'free' || body.type === 'market' || body.type === 'gear') {
+  if (body.type === "free" || body.type === "market" || body.type === "gear") {
     const db = await getDb();
     const now = new Date();
 
     // postNo 생성
     type CounterDoc = { _id: string; seq: number };
-    const countersCol = db.collection<CounterDoc>('counters');
+    const countersCol = db.collection<CounterDoc>("counters");
 
     // 게시판 종류별로 카운터를 분리해서 연번 유지
-    const counterId = body.type === 'free' ? 'community_free' : body.type === 'market' ? 'community_market' : body.type === 'gear' ? 'community_gear' : 'community_other';
+    const counterId =
+      body.type === "free"
+        ? "community_free"
+        : body.type === "market"
+          ? "community_market"
+          : body.type === "gear"
+            ? "community_gear"
+            : "community_other";
 
-    const counterDoc = await countersCol.findOneAndUpdate({ _id: counterId }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: 'after' });
+    const counterDoc = await countersCol.findOneAndUpdate(
+      { _id: counterId },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: "after" },
+    );
 
-    const postNo = typeof counterDoc?.seq === 'number' ? counterDoc.seq : 1;
-    const safeImages = Array.isArray(body.images) ? body.images.filter((u) => isAllowedHttpUrl(u)) : [];
-    const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
+    const postNo = typeof counterDoc?.seq === "number" ? counterDoc.seq : 1;
+    const safeImages = Array.isArray(body.images)
+      ? body.images.filter((u) => isAllowedHttpUrl(u))
+      : [];
+    const safeAttachments = Array.isArray(body.attachments)
+      ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url))
+      : [];
 
     // market 생성 계약 보정:
     // - createSchema에서 brand/marketMeta를 실제로 받되,
@@ -453,31 +649,108 @@ export async function POST(req: NextRequest) {
     let normalizedBrand: string | null = null;
     let normalizedMarketMeta = null;
 
-    if (body.type === 'market') {
+    if (body.type === "market") {
       const marketCategory = (body as any).category ?? null;
-      const rawBrand = typeof (body as any).brand === 'string' ? (body as any).brand.trim() : '';
+      const rawBrand =
+        typeof (body as any).brand === "string"
+          ? (body as any).brand.trim()
+          : "";
       const brandOptions = getMarketBrandOptions(marketCategory);
-      const isValidBrand = brandOptions.some((option) => option.value === rawBrand);
+      const isValidBrand = brandOptions.some(
+        (option) => option.value === rawBrand,
+      );
 
       if (isBrandRequiredCategory(marketCategory) && !isValidBrand) {
-        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['brand'], message: '라켓/스트링 글은 브랜드를 필수로 선택해 주세요.' }] }, { status: 400 });
+        return NextResponse.json(
+          {
+            ok: false,
+            version: API_VERSION,
+            error: "validation_error",
+            details: [
+              {
+                path: ["brand"],
+                message: "라켓/스트링 글은 브랜드를 필수로 선택해 주세요.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
       }
 
-      normalizedBrand = isBrandRequiredCategory(marketCategory) ? rawBrand : null;
-      normalizedMarketMeta = normalizeMarketMeta(marketCategory, (body as any).marketMeta);
+      normalizedBrand = isBrandRequiredCategory(marketCategory)
+        ? rawBrand
+        : null;
+      normalizedMarketMeta = normalizeMarketMeta(
+        marketCategory,
+        (body as any).marketMeta,
+      );
 
-      if (!normalizedMarketMeta || !normalizedMarketMeta.price || normalizedMarketMeta.price <= 0) {
-        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['marketMeta', 'price'], message: '판매가는 1원 이상이어야 합니다.' }] }, { status: 400 });
+      if (
+        !normalizedMarketMeta ||
+        !normalizedMarketMeta.price ||
+        normalizedMarketMeta.price <= 0
+      ) {
+        return NextResponse.json(
+          {
+            ok: false,
+            version: API_VERSION,
+            error: "validation_error",
+            details: [
+              {
+                path: ["marketMeta", "price"],
+                message: "판매가는 1원 이상이어야 합니다.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
       }
-      if (marketCategory === 'racket' && !(normalizedMarketMeta.racketSpec?.modelName ?? '').trim()) {
-        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['marketMeta', 'racketSpec', 'modelName'], message: '라켓 모델명을 입력해 주세요.' }] }, { status: 400 });
+      if (
+        marketCategory === "racket" &&
+        !(normalizedMarketMeta.racketSpec?.modelName ?? "").trim()
+      ) {
+        return NextResponse.json(
+          {
+            ok: false,
+            version: API_VERSION,
+            error: "validation_error",
+            details: [
+              {
+                path: ["marketMeta", "racketSpec", "modelName"],
+                message: "라켓 모델명을 입력해 주세요.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
       }
-      if (marketCategory === 'string' && !(normalizedMarketMeta.stringSpec?.modelName ?? '').trim()) {
-        return NextResponse.json({ ok: false, version: API_VERSION, error: 'validation_error', details: [{ path: ['marketMeta', 'stringSpec', 'modelName'], message: '스트링 모델명을 입력해 주세요.' }] }, { status: 400 });
+      if (
+        marketCategory === "string" &&
+        !(normalizedMarketMeta.stringSpec?.modelName ?? "").trim()
+      ) {
+        return NextResponse.json(
+          {
+            ok: false,
+            version: API_VERSION,
+            error: "validation_error",
+            details: [
+              {
+                path: ["marketMeta", "stringSpec", "modelName"],
+                message: "스트링 모델명을 입력해 주세요.",
+              },
+            ],
+          },
+          { status: 400 },
+        );
       }
     }
 
-    const userDoc = await db.collection('users').findOne({ _id: new ObjectId(String(payload.sub)) }, { projection: { name: 1, nickname: 1 } });
+    const userDoc = await db
+      .collection("users")
+      .findOne(
+        { _id: new ObjectId(String(payload.sub)) },
+        { projection: { name: 1, nickname: 1 } },
+      );
     const displayName = resolveCommunityDisplayName({
       userName: userDoc?.name,
       userNickname: userDoc?.nickname,
@@ -486,13 +759,13 @@ export async function POST(req: NextRequest) {
       authorEmail: payload?.email,
     });
 
-    const doc: Omit<CommunityPostMongoDoc, '_id'> = {
+    const doc: Omit<CommunityPostMongoDoc, "_id"> = {
       type: body.type,
       title: body.title,
       content: body.content,
-      category: body.category ?? 'general',
-      brand: body.type === 'market' ? normalizedBrand : null,
-      marketMeta: body.type === 'market' ? normalizedMarketMeta : null,
+      category: body.category ?? "general",
+      brand: body.type === "market" ? normalizedBrand : null,
+      marketMeta: body.type === "market" ? normalizedMarketMeta : null,
       images: safeImages,
       attachments: safeAttachments,
       postNo,
@@ -500,15 +773,21 @@ export async function POST(req: NextRequest) {
       authorName: displayName,
       authorEmail: payload?.email,
       nickname: displayName,
-      status: 'public',
+      status: "public",
       views: 0,
       likes: 0,
       commentsCount: 0,
       createdAt: now,
       updatedAt: now,
     };
-    const r = await db.collection<Omit<CommunityPostMongoDoc, '_id'>>('community_posts').insertOne(doc);
-    const response: BoardCreateResponseDto = { ok: true, version: API_VERSION, id: r.insertedId.toString() };
+    const r = await db
+      .collection<Omit<CommunityPostMongoDoc, "_id">>("community_posts")
+      .insertOne(doc);
+    const response: BoardCreateResponseDto = {
+      ok: true,
+      version: API_VERSION,
+      id: r.insertedId.toString(),
+    };
     return NextResponse.json(response, { status: 201 });
   }
 
@@ -519,37 +798,50 @@ export async function POST(req: NextRequest) {
     // payload.sub → ObjectId 변환 전 선검증(Phase 0 - 500 방지)
     const subStr = String(payload.sub);
     if (ObjectId.isValid(subStr)) {
-      const u = await db.collection('users').findOne({ _id: new ObjectId(subStr) });
+      const u = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(subStr) });
       displayName = u?.name ?? u?.nickname ?? undefined;
     }
   } catch (_) {}
-  const payloadName = payload as { name?: string; nickname?: string; email?: string } | undefined;
-  if (!displayName) displayName = payloadName?.name ?? payloadName?.nickname ?? payloadName?.email?.split('@')?.[0];
+  const payloadName = payload as
+    | { name?: string; nickname?: string; email?: string }
+    | undefined;
+  if (!displayName)
+    displayName =
+      payloadName?.name ??
+      payloadName?.nickname ??
+      payloadName?.email?.split("@")?.[0];
 
   // 카테고리 정규화 (qna에서만 사용)
   let normalizedCategory: QnaCategory | undefined = undefined;
-  if (body.type === 'qna') {
+  if (body.type === "qna") {
     const norm = normalizeCategory(body.category);
-    normalizedCategory = norm ?? '일반문의';
-  } else if (body.type === 'notice') {
+    normalizedCategory = norm ?? "일반문의";
+  } else if (body.type === "notice") {
     const norm = normalizeNoticeCategory(body.category);
-    normalizedCategory = norm ?? '일반'; // 기본값
+    normalizedCategory = norm ?? "일반"; // 기본값
   }
 
-  if (body?.type === 'notice') {
+  if (body?.type === "notice") {
     const admin = await mustAdmin();
     if (!admin) {
-      return NextResponse.json({ ok: false, version: API_VERSION, message: 'forbidden' }, { status: 403 });
+      return NextResponse.json(
+        { ok: false, version: API_VERSION, message: "forbidden" },
+        { status: 403 },
+      );
     }
   }
 
   const now = new Date();
 
   // 첨부 URL 화이트리스트 필터링
-  const safeAttachments = Array.isArray(body.attachments) ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url)) : [];
+  const safeAttachments = Array.isArray(body.attachments)
+    ? body.attachments.filter((a) => a?.url && isAllowedHttpUrl(a.url))
+    : [];
 
   // 본문 content 서버에서 정제
-  const safeContent = await sanitizeHtml(String(body.content ?? ''));
+  const safeContent = await sanitizeHtml(String(body.content ?? ""));
 
   const doc: BoardCreateMongoDoc = {
     type: body.type as BoardType,
@@ -557,19 +849,31 @@ export async function POST(req: NextRequest) {
     // content: body.content,
     content: safeContent,
     category: normalizedCategory, // BoardPost['category']는 QnaCategory | undefined
-    productRef: body.type === 'qna' ? body.productRef : undefined,
-    isSecret: body.type === 'qna' ? !!body.isSecret : false,
-    isPinned: body.type === 'notice' ? !!body.isPinned : false,
+    productRef: body.type === "qna" ? body.productRef : undefined,
+    isSecret: body.type === "qna" ? !!body.isSecret : false,
+    isPinned: body.type === "notice" ? !!body.isPinned : false,
     attachments: safeAttachments,
     authorId: String(payload.sub),
     authorName: displayName,
-    status: 'published',
+    status: "published",
     viewCount: 0,
     createdAt: now,
   };
 
-  const r = await db.collection<BoardCreateMongoDoc>('board_posts').insertOne(doc);
-  logInfo({ msg: 'boards:post:created', status: 200, durationMs: stop(), extra: { id: r.insertedId.toString() }, ...meta });
-  const response: BoardCreateResponseDto = { ok: true, version: API_VERSION, id: r.insertedId.toString() };
+  const r = await db
+    .collection<BoardCreateMongoDoc>("board_posts")
+    .insertOne(doc);
+  logInfo({
+    msg: "boards:post:created",
+    status: 200,
+    durationMs: stop(),
+    extra: { id: r.insertedId.toString() },
+    ...meta,
+  });
+  const response: BoardCreateResponseDto = {
+    ok: true,
+    version: API_VERSION,
+    id: r.insertedId.toString(),
+  };
   return NextResponse.json(response);
 }

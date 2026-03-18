@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-import { adminTypography } from '@/components/admin/admin-typography';
-import { Badge, BadgeProps } from '@/components/ui/badge';
-import { badgeBase, badgeSizeSm } from '@/lib/badge-style';
-import { cn } from '@/lib/utils';
+import { adminTypography } from "@/components/admin/admin-typography";
+import { Badge, BadgeProps } from "@/components/ui/badge";
+import { badgeBase, badgeSizeSm } from "@/lib/badge-style";
+import { cn } from "@/lib/utils";
 
 /**
  * 테이블에서 “뱃지 과다 노출”로 난잡해지는 문제를 막기 위한 공용 렌더러.
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
  */
 export type BadgeItem = {
   label: string; // 뱃지에 표시할 텍스트
-  variant?: BadgeProps['variant']; // shadcn Badge variant 기반 톤
+  variant?: BadgeProps["variant"]; // shadcn Badge variant 기반 톤
   className?: string; // 색상/톤 클래스
   title?: string; // hover 시 의미를 보충(접힌 뱃지 목록에도 같이 사용)
   icon?: ReactNode; // 접근성 보강: 색상 외 아이콘으로 의미 전달
@@ -34,16 +34,24 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
   const hidden = items.slice(maxVisible);
 
   // 접힌 뱃지들을 title에 요약해두면, Tooltip 없이도 hover로 의미 확인 가능(구조 단순/안정)
-  const hiddenTitle = hidden.map((b) => (b.title ? `${b.label} — ${b.title}` : b.label)).join('\n');
+  const hiddenTitle = hidden
+    .map((b) => (b.title ? `${b.label} — ${b.title}` : b.label))
+    .join("\n");
 
   return (
-    <div className={cn('flex flex-wrap gap-1', className)}>
+    <div className={cn("flex flex-wrap gap-1", className)}>
       {visible.map((b, idx) => (
         <Badge
           key={`${b.label}-${idx}`}
           variant={b.variant}
           title={b.title} // 각 뱃지의 의미를 hover로 보충
-          className={cn(badgeBase, badgeSizeSm, adminTypography.badgeLabel, 'whitespace-nowrap', b.className)}
+          className={cn(
+            badgeBase,
+            badgeSizeSm,
+            adminTypography.badgeLabel,
+            "whitespace-nowrap",
+            b.className,
+          )}
         >
           {b.icon}
           <span>{b.label}</span>
@@ -58,9 +66,9 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
             badgeBase,
             badgeSizeSm,
             adminTypography.badgeLabel,
-            'whitespace-nowrap',
+            "whitespace-nowrap",
             // overflow 표시는 중립 톤(너무 튀지 않게)
-            'bg-muted text-foreground dark:bg-card',
+            "bg-muted text-foreground dark:bg-card",
           )}
         >
           외 {hidden.length}

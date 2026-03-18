@@ -1,12 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import useSWR from 'swr';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, CheckCircle, XCircle, Search, ClipboardCheck, Edit2, MessageSquare, DollarSign, User, Truck, Package, Calendar } from 'lucide-react';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import React, { useState, useEffect } from "react";
+import useSWR from "swr";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  Search,
+  ClipboardCheck,
+  Edit2,
+  MessageSquare,
+  DollarSign,
+  User,
+  Truck,
+  Package,
+  Calendar,
+} from "lucide-react";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 const LIMIT = 5;
 const fetcher = (url: string) => authenticatedSWRFetcher<HistoryResponse>(url);
@@ -14,99 +27,103 @@ const fetcher = (url: string) => authenticatedSWRFetcher<HistoryResponse>(url);
 function getIconProps(status: string) {
   switch (status.trim()) {
     // 기본 신청 상태
-    case '접수완료':
-    case '접수 완료':
+    case "접수완료":
+    case "접수 완료":
       return {
         Icon: ClipboardCheck,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-warning',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-warning",
       };
 
-    case '검토 중':
+    case "검토 중":
       return {
         Icon: Search,
-        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
-        iconClasses: 'text-primary',
+        wrapperClasses:
+          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        iconClasses: "text-primary",
       };
-    case '작업 중':
+    case "작업 중":
       return {
         Icon: Edit2,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
-    case '교체완료':
-    case '교체 완료':
+    case "교체완료":
+    case "교체 완료":
       return {
         Icon: CheckCircle,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-success',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-success",
       };
-    case '취소':
+    case "취소":
       return {
         Icon: XCircle,
-        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
-        iconClasses: 'text-destructive',
+        wrapperClasses:
+          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        iconClasses: "text-destructive",
       };
 
     // 커스텀 이력 항목
     // 커스텀 이력 항목
-    case '고객정보수정':
+    case "고객정보수정":
       return {
         Icon: User,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
-    case '요청사항 수정':
+    case "요청사항 수정":
       return {
         Icon: MessageSquare,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
-    case '스트링 정보 수정':
+    case "스트링 정보 수정":
       return {
         Icon: Edit2,
-        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
-        iconClasses: 'text-primary',
+        wrapperClasses:
+          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        iconClasses: "text-primary",
       };
-    case '결제 금액 자동 업데이트':
+    case "결제 금액 자동 업데이트":
       return {
         Icon: DollarSign,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-success',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-success",
       };
 
     // 자가 발송(사용자 → 매장) 운송장 관련
-    case '자가발송 운송장 등록':
-    case '자가발송 운송장 수정':
+    case "자가발송 운송장 등록":
+    case "자가발송 운송장 수정":
       return {
         Icon: Truck,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-success',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-success",
       };
 
     // 매장 발송(매장 → 사용자) 운송장 관련
-    case '매장 발송 운송장 등록':
-    case '매장 발송 운송장 수정':
+    case "매장 발송 운송장 등록":
+    case "매장 발송 운송장 수정":
       return {
         Icon: Package,
-        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
-        iconClasses: 'text-primary',
+        wrapperClasses:
+          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        iconClasses: "text-primary",
       };
     // 매장 발송 정보(방식/예정일/운송장 통합 로그)
-    case '매장 발송 정보 등록':
-    case '매장 발송 정보 수정':
+    case "매장 발송 정보 등록":
+    case "매장 발송 정보 수정":
       return {
         Icon: Clock,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
 
     // default
     default:
       return {
         Icon: Clock,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
   }
 }
@@ -122,7 +139,13 @@ interface HistoryResponse {
   total: number;
 }
 
-export default function StringingApplicationHistory({ applicationId, onHistoryMutate }: { applicationId: string; onHistoryMutate?: (mutateFn: () => Promise<any>) => void }) {
+export default function StringingApplicationHistory({
+  applicationId,
+  onHistoryMutate,
+}: {
+  applicationId: string;
+  onHistoryMutate?: (mutateFn: () => Promise<any>) => void;
+}) {
   const [page, setPage] = useState(1);
   const url = `/api/applications/stringing/${applicationId}/history?page=${page}&limit=${LIMIT}`;
 
@@ -145,11 +168,21 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
   const hasDataError = !!error;
   const isLoading = !res && isValidating && !hasDataError;
   const isPageTransitionLoading = !isLoading && isValidating && !hasDataError;
-  const history = hasResolvedData && !hasDataError && Array.isArray(res.history) ? res.history : null;
-  const total = hasResolvedData && !hasDataError && typeof res.total === 'number' ? res.total : null;
+  const history =
+    hasResolvedData && !hasDataError && Array.isArray(res.history)
+      ? res.history
+      : null;
+  const total =
+    hasResolvedData && !hasDataError && typeof res.total === "number"
+      ? res.total
+      : null;
   const totalPages = total === null ? 1 : Math.max(1, Math.ceil(total / LIMIT));
 
-  const historyItems = history ? [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [];
+  const historyItems = history
+    ? [...history].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      )
+    : [];
   const shouldShowRows = !!history && historyItems.length > 0;
   const shouldShowEmptyState = !!history && historyItems.length === 0;
 
@@ -161,7 +194,9 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
           <CardTitle className="text-2xl font-semibold">처리 이력</CardTitle>
         </div>
 
-        <p className="mt-1 text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          최신 변경이 맨 위에 표시됩니다.
+        </p>
       </CardHeader>
 
       <CardContent>
@@ -176,39 +211,59 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
             </div>
           ))
         ) : hasDataError ? (
-          <div className="py-10 text-center text-destructive">처리 이력을 불러올 수 없습니다.</div>
+          <div className="py-10 text-center text-destructive">
+            처리 이력을 불러올 수 없습니다.
+          </div>
         ) : shouldShowEmptyState ? (
-          <div className="py-10 text-center text-muted-foreground">아직 처리 이력이 없습니다.</div>
+          <div className="py-10 text-center text-muted-foreground">
+            아직 처리 이력이 없습니다.
+          </div>
         ) : shouldShowRows ? (
           historyItems.map((log, idx) => {
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(
+              log.status,
+            );
             return (
-              <div key={idx} className={`flex space-x-4 py-3 ${idx === 0 ? 'rounded-lg bg-muted dark:bg-card px-3 -mx-3' : ''}`}>
-                <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
+              <div
+                key={idx}
+                className={`flex space-x-4 py-3 ${idx === 0 ? "rounded-lg bg-muted dark:bg-card px-3 -mx-3" : ""}`}
+              >
+                <div
+                  className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}
+                >
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between">
                     <span className="font-semibold">{log.status}</span>
                     <span className="text-sm text-muted-foreground">
-                      {new Intl.DateTimeFormat('ko-KR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
+                      {new Intl.DateTimeFormat("ko-KR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
                       }).format(new Date(log.date))}
                     </span>
                   </div>
                   {(() => {
                     // "문장 (추가정보...)" 형태를 앞/뒤로 나누기
-                    const [main, detailWithParen] = log.description.split('(', 2);
-                    const detail = detailWithParen ? detailWithParen.replace(/\)$/, '') : '';
+                    const [main, detailWithParen] = log.description.split(
+                      "(",
+                      2,
+                    );
+                    const detail = detailWithParen
+                      ? detailWithParen.replace(/\)$/, "")
+                      : "";
 
                     return (
                       <p className="mt-1 text-sm text-foreground">
                         {main?.trim()}
-                        {detail && <span className="ml-1 font-medium text-primary">({detail})</span>}
+                        {detail && (
+                          <span className="ml-1 font-medium text-primary">
+                            ({detail})
+                          </span>
+                        )}
                       </p>
                     );
                   })()}
@@ -220,13 +275,23 @@ export default function StringingApplicationHistory({ applicationId, onHistoryMu
 
         {totalPages > 1 && (
           <div className="mt-6 flex justify-center gap-3">
-            <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
               이전
             </Button>
             <span className="text-sm text-muted-foreground">
               {page} / {totalPages}
             </span>
-            <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(page + 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
               다음
             </Button>
           </div>

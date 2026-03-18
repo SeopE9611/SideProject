@@ -1,57 +1,76 @@
-'use client';
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { adminFetcher, adminMutator } from '@/lib/admin/adminFetcher';
-import { runAdminActionWithToast } from '@/lib/admin/adminActionHelpers';
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { adminFetcher, adminMutator } from "@/lib/admin/adminFetcher";
+import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 
 // dirty 비교용 시그니처(운송장 번호는 공백/하이픈 제거한 값 기준으로 비교)
 const shippingSig = (v: { courier: string; tracking: string; date: string }) =>
   JSON.stringify({
-    courier: String(v.courier ?? ''),
-    tracking: String(v.tracking ?? '')
-      .replaceAll('-', '')
-      .replaceAll(' ', ''),
-    date: String(v.date ?? ''),
+    courier: String(v.courier ?? ""),
+    tracking: String(v.tracking ?? "")
+      .replaceAll("-", "")
+      .replaceAll(" ", ""),
+    date: String(v.date ?? ""),
   });
 
 export default function ShippingForm({ rentalId }: { rentalId: string }) {
   const router = useRouter();
-  const [courier, setCourier] = useState('');
-  const [tracking, setTracking] = useState('');
-  const [date, setDate] = useState('');
+  const [courier, setCourier] = useState("");
+  const [tracking, setTracking] = useState("");
+  const [date, setDate] = useState("");
   const [busy, setBusy] = useState(false);
   const [hasExisting, setHasExisting] = useState(false);
   const [isVisitPickup, setIsVisitPickup] = useState(false);
 
   // 프리필(초기 로드) 기준선(baseline)
-  const [initialSig, setInitialSig] = useState('');
+  const [initialSig, setInitialSig] = useState("");
   // 저장 성공 후 뒤로가기 시 confirm 뜨지 않게 가드 제어
   const [guardOn, setGuardOn] = useState(true);
 
-  const currentSig = useMemo(() => shippingSig({ courier, tracking, date }), [courier, tracking, date]);
+  const currentSig = useMemo(
+    () => shippingSig({ courier, tracking, date }),
+    [courier, tracking, date],
+  );
   const isDirty = Boolean(initialSig) && currentSig !== initialSig;
   useUnsavedChangesGuard(guardOn && isDirty);
 
   // 프리필(수정용): GET /api/admin/rentals/[id] 읽어서 shipping.outbound 있으면 기본값 세팅
   useEffect(() => {
     (async () => {
-      const json = await adminFetcher<any>(`/api/admin/rentals/${rentalId}`, { cache: 'no-store' });
-      const pickupMethod = String(json?.servicePickupMethod ?? '').toUpperCase();
-      const isVisit = pickupMethod === 'SHOP_VISIT';
+      const json = await adminFetcher<any>(`/api/admin/rentals/${rentalId}`, {
+        cache: "no-store",
+      });
+      const pickupMethod = String(
+        json?.servicePickupMethod ?? "",
+      ).toUpperCase();
+      const isVisit = pickupMethod === "SHOP_VISIT";
       setIsVisitPickup(isVisit);
       const out = json?.shipping?.outbound;
       const next = {
-        courier: out?.courier || '',
-        tracking: out?.trackingNumber || '',
-        date: out?.shippedAt ? String(out.shippedAt).slice(0, 10) : '',
+        courier: out?.courier || "",
+        tracking: out?.trackingNumber || "",
+        date: out?.shippedAt ? String(out.shippedAt).slice(0, 10) : "",
       };
       setCourier(next.courier);
       setTracking(next.tracking);
@@ -63,19 +82,26 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   }, [rentalId]);
 
   const onSave = async () => {
-    if (isVisitPickup) return showErrorToast('방문 수령 대여는 출고 운송장을 등록할 수 없습니다.');
-    if (!courier) return showErrorToast('택배사를 선택해주세요');
-    if (!tracking) return showErrorToast('운송장 번호를 입력해주세요');
+    if (isVisitPickup)
+      return showErrorToast(
+        "방문 수령 대여는 출고 운송장을 등록할 수 없습니다.",
+      );
+    if (!courier) return showErrorToast("택배사를 선택해주세요");
+    if (!tracking) return showErrorToast("운송장 번호를 입력해주세요");
     setBusy(true);
     const result = await runAdminActionWithToast({
       action: () =>
         adminMutator(`/api/admin/rentals/${rentalId}/shipping/outbound`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ courier, trackingNumber: tracking.replaceAll('-', '').replaceAll(' ', ''), shippedAt: date }),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courier,
+            trackingNumber: tracking.replaceAll("-", "").replaceAll(" ", ""),
+            shippedAt: date,
+          }),
         }),
-      successMessage: '출고 운송장을 저장했습니다',
-      fallbackErrorMessage: '등록 실패',
+      successMessage: "출고 운송장을 저장했습니다",
+      fallbackErrorMessage: "등록 실패",
     });
     setBusy(false);
     if (!result) return;
@@ -90,7 +116,6 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     setTimeout(() => history.back(), 0);
   };
 
-
   if (isVisitPickup) {
     return (
       <div className="max-w-xl mx-auto p-6">
@@ -98,9 +123,14 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
           <CardHeader>
             <CardTitle>방문 수령 대여 안내</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">이 대여는 방문 수령 건이라 출고 운송장 등록이 필요하지 않습니다.</CardContent>
+          <CardContent className="text-sm text-muted-foreground">
+            이 대여는 방문 수령 건이라 출고 운송장 등록이 필요하지 않습니다.
+          </CardContent>
           <CardFooter>
-            <Button variant="outline" onClick={() => router.push(`/admin/rentals/${rentalId}`)}>
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/admin/rentals/${rentalId}`)}
+            >
               상세로 돌아가기
             </Button>
           </CardFooter>
@@ -113,7 +143,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     <div className="max-w-xl mx-auto p-6">
       <Card>
         <CardHeader>
-          <CardTitle>출고 운송장 {hasExisting ? '수정' : '등록'}</CardTitle>
+          <CardTitle>출고 운송장 {hasExisting ? "수정" : "등록"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -132,11 +162,18 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
           </div>
           <div className="space-y-2">
             <Label>운송장 번호</Label>
-            <Input value={tracking} onChange={(e) => setTracking(e.target.value)} />
+            <Input
+              value={tracking}
+              onChange={(e) => setTracking(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label>출고일(선택)</Label>
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
           </div>
         </CardContent>
         <CardFooter>

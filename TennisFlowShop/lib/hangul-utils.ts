@@ -1,6 +1,26 @@
 // 초성 추출 유틸리티 함수
 export function getHangulInitials(str: string): string {
-  const INITIALS = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+  const INITIALS = [
+    "ㄱ",
+    "ㄲ",
+    "ㄴ",
+    "ㄷ",
+    "ㄸ",
+    "ㄹ",
+    "ㅁ",
+    "ㅂ",
+    "ㅃ",
+    "ㅅ",
+    "ㅆ",
+    "ㅇ",
+    "ㅈ",
+    "ㅉ",
+    "ㅊ",
+    "ㅋ",
+    "ㅌ",
+    "ㅍ",
+    "ㅎ",
+  ];
 
   return Array.from(str)
     .map((char) => {
@@ -9,5 +29,5 @@ export function getHangulInitials(str: string): string {
       const initialIndex = Math.floor(code / 588);
       return INITIALS[initialIndex];
     })
-    .join('');
+    .join("");
 }

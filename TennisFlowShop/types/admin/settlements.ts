@@ -26,7 +26,14 @@ export type SettlementLiveResponse = {
   breakdown: Required<SettlementBreakdown>;
 };
 
-export type SettlementDiffMetrics = { paid: number; refund: number; net: number; orders: number; applications: number; packages: number };
+export type SettlementDiffMetrics = {
+  paid: number;
+  refund: number;
+  net: number;
+  orders: number;
+  applications: number;
+  packages: number;
+};
 
 export type SettlementDiff = {
   live: SettlementDiffMetrics;

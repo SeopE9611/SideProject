@@ -1,25 +1,25 @@
-import type React from 'react';
-import type { Metadata } from 'next';
-import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import Header from '@/components/header';
-import Footer from '@/components/footer';
-import { Toaster } from '@/components/ui/sonner';
-import Script from 'next/script';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { getDb } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { AuthHydrator } from '@/app/providers/AuthHydrator';
-import GlobalTokenGuard from '@/components/system/GlobalTokenGuard';
-import TokenRefresher from '@/components/system/TokenRefresher';
-import SessionWatcher from '@/components/system/SessionWatcher';
-import ClaimsAutoLinker from '@/components/system/ClaimsAutoLinker';
-import AppShell from '@/components/layout/AppShell';
-import KakaoInquiryWidget from '@/components/system/KakaoInquiryWidget';
-import 'spoqa-han-sans/css/SpoqaHanSansNeo.css';
-import RootScrollLockBridge from '@/components/system/RootScrollLockBridge';
-import ScrollToTopOnPathChange from '@/components/system/ScrollToTopOnPathChange';
+import type React from "react";
+import type { Metadata } from "next";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
+import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { getDb } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { AuthHydrator } from "@/app/providers/AuthHydrator";
+import GlobalTokenGuard from "@/components/system/GlobalTokenGuard";
+import TokenRefresher from "@/components/system/TokenRefresher";
+import SessionWatcher from "@/components/system/SessionWatcher";
+import ClaimsAutoLinker from "@/components/system/ClaimsAutoLinker";
+import AppShell from "@/components/layout/AppShell";
+import KakaoInquiryWidget from "@/components/system/KakaoInquiryWidget";
+import "spoqa-han-sans/css/SpoqaHanSansNeo.css";
+import RootScrollLockBridge from "@/components/system/RootScrollLockBridge";
+import ScrollToTopOnPathChange from "@/components/system/ScrollToTopOnPathChange";
 
 declare global {
   interface Window {
@@ -36,12 +36,14 @@ declare global {
 }
 
 export const metadata: Metadata = {
-  title: '테니스 플로우',
-  description: '테니스 스트링 및 장비 전문 쇼핑몰',
+  title: "테니스 플로우",
+  description: "테니스 스트링 및 장비 전문 쇼핑몰",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const token = (await cookies()).get('accessToken')?.value;
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const token = (await cookies()).get("accessToken")?.value;
 
   let initialUser: any = null;
   if (token) {
@@ -49,13 +51,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       const payload = verifyAccessToken(token);
       if (payload?.sub) {
         const db = await getDb();
-        const doc = await db.collection('users').findOne({ _id: new ObjectId(payload.sub) });
+        const doc = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(payload.sub) });
         if (doc) {
           initialUser = {
             id: doc._id.toString(),
             name: doc.name ?? null,
             email: doc.email,
-            role: doc.role ?? 'user',
+            role: doc.role ?? "user",
             image: doc.image ?? null,
           };
         }
@@ -66,11 +70,23 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   }
   // throw new Error('[TEST] app/global error.tsx 동작 확인용');
   return (
-    <html lang="ko" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
+    <html
+      lang="ko"
+      suppressHydrationWarning
+      className="scroll-smooth overflow-x-hidden"
+    >
       <body className="bg-background text-foreground">
-        <Script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="beforeInteractive" />
+        <Script
+          src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+          strategy="beforeInteractive"
+        />
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
-        <Script id="kakao-jssdk" src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js" strategy="afterInteractive" crossOrigin="anonymous" />
+        <Script
+          id="kakao-jssdk"
+          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
         <Script
           id="resume-debug-listeners"
           strategy="afterInteractive"
@@ -136,7 +152,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <ClaimsAutoLinker />
         <RootScrollLockBridge />
         <ScrollToTopOnPathChange />
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
           <div className="flex min-h-screen flex-col">
             <Header />
 

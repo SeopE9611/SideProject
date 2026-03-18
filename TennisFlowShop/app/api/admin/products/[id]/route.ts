@@ -1,27 +1,31 @@
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
-import { getHangulInitials } from '@/lib/hangul-utils';
-import { getDb } from '@/lib/mongodb';
-import type { AdminProductMutationResponseDto, AdminProductUpdateRequestDto } from '@/types/admin/products';
-import { ObjectId } from 'mongodb';
-import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { getHangulInitials } from "@/lib/hangul-utils";
+import { getDb } from "@/lib/mongodb";
+import type {
+  AdminProductMutationResponseDto,
+  AdminProductUpdateRequestDto,
+} from "@/types/admin/products";
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
+  if (typeof value !== "object" || value === null || Array.isArray(value))
+    return null;
   return value as Record<string, unknown>;
 }
 
 function asString(value: unknown): string {
-  return typeof value === 'string' ? value : '';
+  return typeof value === "string" ? value : "";
 }
 
 function asNumber(value: unknown): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
 function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === 'string');
+  return value.filter((item): item is string => typeof item === "string");
 }
 
 function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
@@ -51,14 +55,20 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
 }
 
 function invalidIdResponse() {
-  return NextResponse.json({ message: '유효하지 않은 상품 ID입니다.' }, { status: 400 });
+  return NextResponse.json(
+    { message: "유효하지 않은 상품 ID입니다." },
+    { status: 400 },
+  );
 }
 
 /**
  * 단일 상품 조회 (관리자)
  * - 스트링 수정 페이지(/admin/products/[id]/edit)에서 GET /api/admin/products/:id 로 호출.
  */
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -67,10 +77,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const db = await getDb();
-    const prod = await db.collection('products').findOne({ _id: new ObjectId(id), isDeleted: { $ne: true } }, { projection: { isDeleted: 0 } });
+    const prod = await db
+      .collection("products")
+      .findOne(
+        { _id: new ObjectId(id), isDeleted: { $ne: true } },
+        { projection: { isDeleted: 0 } },
+      );
 
     if (!prod) {
-      return NextResponse.json({ message: '상품을 찾을 수 없습니다.' }, { status: 404 });
+      return NextResponse.json(
+        { message: "상품을 찾을 수 없습니다." },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({
@@ -80,12 +98,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       },
     });
   } catch (err) {
-    console.error('[admin/products/[id]] get error', err);
-    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
+    console.error("[admin/products/[id]] get error", err);
+    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -95,7 +116,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const rawBody: unknown = await req.json();
     const requestDto = parseUpdateRequest(rawBody);
     if (!requestDto) {
-      return NextResponse.json({ message: '요청 바디 형식이 잘못되었습니다.' }, { status: 400 });
+      return NextResponse.json(
+        { message: "요청 바디 형식이 잘못되었습니다." },
+        { status: 400 },
+      );
     }
 
     const { id } = await params;
@@ -108,20 +132,30 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     };
 
     const db = await getDb();
-    const result = await db.collection('products').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const result = await db
+      .collection("products")
+      .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     if (result.matchedCount === 0) {
-      return NextResponse.json({ message: '상품 업데이트 실패' }, { status: 500 });
+      return NextResponse.json(
+        { message: "상품 업데이트 실패" },
+        { status: 500 },
+      );
     }
 
-    const responseDto: AdminProductMutationResponseDto = { message: '상품이 성공적으로 업데이트되었습니다.' };
+    const responseDto: AdminProductMutationResponseDto = {
+      message: "상품이 성공적으로 업데이트되었습니다.",
+    };
     return NextResponse.json(responseDto);
   } catch (err) {
-    console.error('[admin/products/[id]] update error', err);
-    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
+    console.error("[admin/products/[id]] update error", err);
+    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -132,14 +166,25 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   try {
     const db = await getDb();
-    const result = await db.collection('products').updateOne({ _id: new ObjectId(id) }, { $set: { isDeleted: true, deletedAt: new Date() } });
+    const result = await db
+      .collection("products")
+      .updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { isDeleted: true, deletedAt: new Date() } },
+      );
 
     if (result.matchedCount === 0) {
-      return NextResponse.json({ message: '상품을 찾을 수 없습니다.' }, { status: 404 });
+      return NextResponse.json(
+        { message: "상품을 찾을 수 없습니다." },
+        { status: 404 },
+      );
     }
-    return NextResponse.json({ message: '상품이 삭제되었습니다.' }, { status: 200 });
+    return NextResponse.json(
+      { message: "상품이 삭제되었습니다." },
+      { status: 200 },
+    );
   } catch (err) {
-    console.error('[admin/products/[id]] delete error', err);
-    return NextResponse.json({ message: '서버 오류' }, { status: 500 });
+    console.error("[admin/products/[id]] delete error", err);
+    return NextResponse.json({ message: "서버 오류" }, { status: 500 });
   }
 }

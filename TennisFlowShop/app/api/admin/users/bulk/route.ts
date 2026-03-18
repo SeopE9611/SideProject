@@ -1,25 +1,33 @@
-import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { z } from 'zod';
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
-import { adminValidationError, zodIssuesToDetails } from '@/lib/admin/adminApiError';
-
+import { NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { z } from "zod";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import {
+  adminValidationError,
+  zodIssuesToDetails,
+} from "@/lib/admin/adminApiError";
 
 const MAX_BULK_IDS = 200;
 
 const bulkBodySchema = z
   .object({
-    op: z.enum(['suspend', 'unsuspend', 'softDelete', 'restore']),
-    ids: z.array(z.string()).max(MAX_BULK_IDS, `ids는 최대 ${MAX_BULK_IDS}개까지 요청할 수 있습니다.`),
+    op: z.enum(["suspend", "unsuspend", "softDelete", "restore"]),
+    ids: z
+      .array(z.string())
+      .max(
+        MAX_BULK_IDS,
+        `ids는 최대 ${MAX_BULK_IDS}개까지 요청할 수 있습니다.`,
+      ),
   })
   .strict();
 
 function normalizeIds(rawIds: string[]) {
   const deduped: string[] = [];
   const seen = new Set<string>();
-  const invalidObjectIds: { index: number; value: string; reason: string }[] = [];
+  const invalidObjectIds: { index: number; value: string; reason: string }[] =
+    [];
 
   for (let index = 0; index < rawIds.length; index += 1) {
     const normalized = rawIds[index].trim();
@@ -31,7 +39,7 @@ function normalizeIds(rawIds: string[]) {
       invalidObjectIds.push({
         index,
         value: normalized,
-        reason: 'ObjectId 형식이 아닙니다.',
+        reason: "ObjectId 형식이 아닙니다.",
       });
       continue;
     }
@@ -52,7 +60,11 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsedBody = bulkBodySchema.safeParse(body);
   if (!parsedBody.success) {
-    return adminValidationError('요청 본문이 올바르지 않습니다.', parsedBody.error.flatten().fieldErrors, zodIssuesToDetails(parsedBody.error.issues));
+    return adminValidationError(
+      "요청 본문이 올바르지 않습니다.",
+      parsedBody.error.flatten().fieldErrors,
+      zodIssuesToDetails(parsedBody.error.issues),
+    );
   }
 
   const { op, ids } = parsedBody.data;
@@ -62,12 +74,14 @@ export async function POST(req: Request) {
 
   if (invalidObjectIds.length > 0) {
     return adminValidationError(
-      'ids에 유효하지 않은 ObjectId가 포함되어 있습니다.',
+      "ids에 유효하지 않은 ObjectId가 포함되어 있습니다.",
       {
-        ids: invalidObjectIds.map((item) => `index ${item.index}: ${item.value} (${item.reason})`),
+        ids: invalidObjectIds.map(
+          (item) => `index ${item.index}: ${item.value} (${item.reason})`,
+        ),
       },
       invalidObjectIds.map((item) => ({
-        code: 'INVALID_OBJECT_ID',
+        code: "INVALID_OBJECT_ID",
         message: item.reason,
         path: `ids.${item.index}`,
       })),
@@ -75,16 +89,23 @@ export async function POST(req: Request) {
   }
 
   if (deduped.length === 0) {
-    return adminValidationError('ids에 처리 가능한 값이 없습니다.', { ids: ['빈 문자열을 제외한 유효한 ID를 1개 이상 전달해주세요.'] });
+    return adminValidationError("ids에 처리 가능한 값이 없습니다.", {
+      ids: ["빈 문자열을 제외한 유효한 ID를 1개 이상 전달해주세요."],
+    });
   }
 
   const _ids = deduped.map((id) => new ObjectId(id));
 
   const db = await getDb();
-  const col = db.collection('users');
+  const col = db.collection("users");
 
   // 4) 현재 상태 미리 조회하여 분류(eligible / already / incompatible)
-  const docs = await col.find({ _id: { $in: _ids } }, { projection: { _id: 1, isSuspended: 1, isDeleted: 1 } }).toArray();
+  const docs = await col
+    .find(
+      { _id: { $in: _ids } },
+      { projection: { _id: 1, isSuspended: 1, isDeleted: 1 } },
+    )
+    .toArray();
 
   const eligible: ObjectId[] = []; // 실제 업데이트할 대상
   const already: ObjectId[] = []; // 이미 그 상태인 대상
@@ -96,7 +117,7 @@ export async function POST(req: Request) {
     const deleted = !!(d as any).isDeleted;
 
     switch (op) {
-      case 'suspend': {
+      case "suspend": {
         // 삭제된 계정은 비활성화 대상 아님 → incompatible
         if (deleted) incompatible.push(d._id);
         // 이미 비활성 → already
@@ -105,7 +126,7 @@ export async function POST(req: Request) {
         else eligible.push(d._id);
         break;
       }
-      case 'unsuspend': {
+      case "unsuspend": {
         // 삭제된 계정의 비활성 해제는 정책상 불가로 간주 → incompatible
         if (deleted) incompatible.push(d._id);
         // 이미 활성(비활성 아님) → already
@@ -114,35 +135,37 @@ export async function POST(req: Request) {
         else eligible.push(d._id);
         break;
       }
-      case 'softDelete': {
+      case "softDelete": {
         // 이미 삭제 → already
         if (deleted) already.push(d._id);
         else eligible.push(d._id);
         break;
       }
-      case 'restore': {
+      case "restore": {
         // 정책: 복구 금지
         incompatible.push(d._id);
         break;
       }
       default:
-        return adminValidationError('지원하지 않는 작업입니다.', { op: ['허용된 op 값이 아닙니다.'] });
+        return adminValidationError("지원하지 않는 작업입니다.", {
+          op: ["허용된 op 값이 아닙니다."],
+        });
     }
   }
 
   // 5) 실제 업데이트 연산 정의
   let $set: Record<string, any> = {};
   switch (op) {
-    case 'suspend':
+    case "suspend":
       $set = { isSuspended: true, suspendedAt: new Date() };
       break;
-    case 'unsuspend':
+    case "unsuspend":
       $set = { isSuspended: false, suspendedAt: null };
       break;
-    case 'softDelete':
+    case "softDelete":
       $set = { isDeleted: true, deletedAt: new Date() };
       break;
-    case 'restore':
+    case "restore":
       $set = { isDeleted: false, deletedAt: null };
       break;
   }

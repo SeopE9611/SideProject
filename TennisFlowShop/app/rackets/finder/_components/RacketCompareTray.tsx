@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { racketBrandLabel } from '@/lib/constants';
-import { Plus, X, Scale, Trash2, ArrowRight } from 'lucide-react';
-import { showErrorToast } from '@/lib/toast';
-import { useRacketCompareStore } from '@/app/store/racketCompareStore';
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { racketBrandLabel } from "@/lib/constants";
+import { Plus, X, Scale, Trash2, ArrowRight } from "lucide-react";
+import { showErrorToast } from "@/lib/toast";
+import { useRacketCompareStore } from "@/app/store/racketCompareStore";
 
 export default function RacketCompareTray() {
   const router = useRouter();
@@ -22,10 +22,10 @@ export default function RacketCompareTray() {
 
   const goCompare = () => {
     if (!canCompare) {
-      showErrorToast('라켓 비교는 최소 2개 이상 선택해야 합니다.');
+      showErrorToast("라켓 비교는 최소 2개 이상 선택해야 합니다.");
       return;
     }
-    router.push('/rackets/compare');
+    router.push("/rackets/compare");
   };
 
   return (
@@ -44,18 +44,32 @@ export default function RacketCompareTray() {
                   <div>
                     <div className="text-sm font-semibold">
                       라켓 비교
-                      <span className="ml-1.5 text-primary">({items.length}/4)</span>
+                      <span className="ml-1.5 text-primary">
+                        ({items.length}/4)
+                      </span>
                     </div>
-                    <div className="text-xs text-muted-foreground hidden bp-sm:block">최소 2개부터 비교 가능</div>
+                    <div className="text-xs text-muted-foreground hidden bp-sm:block">
+                      최소 2개부터 비교 가능
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={clear} className="h-8 px-2 text-muted-foreground hover:text-destructive">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clear}
+                    className="h-8 px-2 text-muted-foreground hover:text-destructive"
+                  >
                     <Trash2 className="h-3.5 w-3.5 mr-1" />
                     <span className="hidden bp-sm:inline">모두 삭제</span>
                   </Button>
-                  <Button size="sm" onClick={goCompare} disabled={!canCompare} className="h-8 gap-1.5 rounded-lg">
+                  <Button
+                    size="sm"
+                    onClick={goCompare}
+                    disabled={!canCompare}
+                    className="h-8 gap-1.5 rounded-lg"
+                  >
                     비교하기
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
@@ -68,49 +82,69 @@ export default function RacketCompareTray() {
 
                   if (!it) {
                     return (
-                      <div key={idx} className={cn('flex h-16 bp-sm:h-18 items-center justify-center rounded-lg', 'bg-muted/30', 'ring-1 ring-dashed ring-muted-foreground/20', 'text-xs text-muted-foreground/60')}>
+                      <div
+                        key={idx}
+                        className={cn(
+                          "flex h-16 bp-sm:h-18 items-center justify-center rounded-lg",
+                          "bg-muted/30",
+                          "ring-1 ring-dashed ring-muted-foreground/20",
+                          "text-xs text-muted-foreground/60",
+                        )}
+                      >
                         <Plus className="mr-1 h-3 w-3" />
                         비어 있음
                       </div>
                     );
                   }
 
-                  const title = `${it.model}${it.year ? ` (${it.year})` : ''}`;
+                  const title = `${it.model}${it.year ? ` (${it.year})` : ""}`;
                   const brandText = racketBrandLabel(it.brand);
 
                   return (
                     <div
                       key={it.id}
                       className={cn(
-                        'group relative flex h-16 bp-sm:h-18 items-center gap-2 rounded-lg px-2',
-                        'bg-card/80',
-                        'ring-1 ring-primary/20 dark:ring-primary/30',
-                        'transition-all duration-200',
-                        'hover:ring-primary/40 hover:shadow-sm',
+                        "group relative flex h-16 bp-sm:h-18 items-center gap-2 rounded-lg px-2",
+                        "bg-card/80",
+                        "ring-1 ring-primary/20 dark:ring-primary/30",
+                        "transition-all duration-200",
+                        "hover:ring-primary/40 hover:shadow-sm",
                       )}
                     >
                       <div className="relative h-11 w-11 bp-sm:h-12 bp-sm:w-12 shrink-0 overflow-hidden rounded-md bg-muted/50 ring-1 ring-border/10">
                         {it.image ? (
-                          <Image src={it.image || '/placeholder.svg'} alt={title} fill className="object-cover" unoptimized />
+                          <Image
+                            src={it.image || "/placeholder.svg"}
+                            alt={title}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">No Image</div>
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                            No Image
+                          </div>
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-medium">{title}</div>
-                        <div className="truncate text-[11px] text-muted-foreground">{brandText}</div>
+                        <div className="truncate text-xs font-medium">
+                          {title}
+                        </div>
+                        <div className="truncate text-[11px] text-muted-foreground">
+                          {brandText}
+                        </div>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => remove(it.id)}
                         className={cn(
-                          'absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full',
-                          'bg-destructive/90 text-destructive-foreground',
-                          'shadow-sm transition-all duration-200',
-                          'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100',
-                          'hover:bg-destructive/90',
+                          "absolute -right-1 -top-1 inline-flex h-5 w-5 items-center justify-center rounded-full",
+                          "bg-destructive/90 text-destructive-foreground",
+                          "shadow-sm transition-all duration-200",
+                          "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100",
+                          "hover:bg-destructive/90",
                         )}
                         aria-label={`${title} 제거`}
                       >

@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
-import { sendEmail } from '@/app/features/notifications/channels/email';
-import { getDb } from '@/lib/mongodb';
-import { createPasswordResetToken, hashPasswordResetToken } from '@/lib/password-reset';
+import { sendEmail } from "@/app/features/notifications/channels/email";
+import { getDb } from "@/lib/mongodb";
+import {
+  createPasswordResetToken,
+  hashPasswordResetToken,
+} from "@/lib/password-reset";
 
 function isValidEmail(email: string) {
   // 너무 빡센 정규식은 오히려 유지보수성이 떨어질 수 있어
@@ -16,23 +19,34 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json({ message: '요청 형식이 올바르지 않습니다.' }, { status: 400 });
+      return NextResponse.json(
+        { message: "요청 형식이 올바르지 않습니다." },
+        { status: 400 },
+      );
     }
 
-    const email = String(body?.email ?? '').trim().toLowerCase();
+    const email = String(body?.email ?? "")
+      .trim()
+      .toLowerCase();
 
     if (!email) {
-      return NextResponse.json({ message: '이메일을 입력해주세요.' }, { status: 400 });
+      return NextResponse.json(
+        { message: "이메일을 입력해주세요." },
+        { status: 400 },
+      );
     }
 
     if (!isValidEmail(email)) {
-      return NextResponse.json({ message: '올바른 이메일 형식을 입력해주세요.' }, { status: 400 });
+      return NextResponse.json(
+        { message: "올바른 이메일 형식을 입력해주세요." },
+        { status: 400 },
+      );
     }
 
     const db = await getDb();
 
     // soft delete 계정은 제외하는 편이 안전합니다.
-    const user = await db.collection('users').findOne({
+    const user = await db.collection("users").findOne({
       email,
       isDeleted: { $ne: true },
     });
@@ -40,7 +54,7 @@ export async function POST(req: Request) {
     // 이메일 존재 여부를 외부에 노출하지 않기 위한 공통 응답
     const safeResponse = {
       ok: true,
-      message: '가입된 계정이라면 비밀번호 재설정 링크를 발송했습니다.',
+      message: "가입된 계정이라면 비밀번호 재설정 링크를 발송했습니다.",
     };
 
     // 사용자가 없어도 외부에는 성공처럼 보이게 처리
@@ -55,13 +69,13 @@ export async function POST(req: Request) {
     const baseUrl =
       process.env.NEXT_PUBLIC_SITE_URL ||
       process.env.NEXT_PUBLIC_BASE_URL ||
-      'http://localhost:3000';
+      "http://localhost:3000";
 
     const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
 
     // DB에는 토큰 원문이 아니라 해시만 저장
     // 이렇게 하면 "가장 마지막에 보낸 링크만 유효"하게 만들기 좋습니다.
-    await db.collection('users').updateOne(
+    await db.collection("users").updateOne(
       { _id: user._id },
       {
         $set: {
@@ -70,12 +84,12 @@ export async function POST(req: Request) {
           passwordResetRequestedAt: new Date(),
           updatedAt: new Date(),
         },
-      }
+      },
     );
 
     await sendEmail({
       to: email,
-      subject: '[테니스 플로우] 비밀번호 재설정 안내',
+      subject: "[테니스 플로우] 비밀번호 재설정 안내",
       html: `
         <div style="max-width:560px;margin:0 auto;padding:24px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.6;color:black;">
           <h2 style="margin:0 0 16px;">비밀번호 재설정</h2>
@@ -109,10 +123,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json(safeResponse, { status: 200 });
   } catch (error) {
-    console.error('[forgot-password/request] error', error);
+    console.error("[forgot-password/request] error", error);
     return NextResponse.json(
-      { message: '비밀번호 재설정 메일 전송 중 오류가 발생했습니다.' },
-      { status: 500 }
+      { message: "비밀번호 재설정 메일 전송 중 오류가 발생했습니다." },
+      { status: 500 },
     );
   }
 }

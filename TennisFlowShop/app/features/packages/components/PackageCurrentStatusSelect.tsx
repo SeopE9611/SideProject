@@ -1,12 +1,24 @@
-'use client';
+"use client";
 
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { useMemo, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useMemo, useState } from "react";
 
 /**
  * 패키지 "현재 상태" 직접 변경 셀렉트
@@ -14,9 +26,9 @@ import { useMemo, useState } from 'react';
  * - '취소'로 변경 시: "취소 사유 입력" 모달
  * - '취소'에서 복구 시: "상태 복구 사유(선택)" 모달  ← 요청사항 반영
  */
-type CurrentStatusUI = '활성' | '비활성' | '취소';
-type PassStatus = '활성' | '대기' | '일시정지' | '만료' | '취소';
-type PaymentStatus = '결제대기' | '결제완료' | '결제취소';
+type CurrentStatusUI = "활성" | "비활성" | "취소";
+type PassStatus = "활성" | "대기" | "일시정지" | "만료" | "취소";
+type PaymentStatus = "결제대기" | "결제완료" | "결제취소";
 
 type Props = {
   orderId: string;
@@ -27,38 +39,47 @@ type Props = {
 };
 
 const uiToPayment: Record<CurrentStatusUI, PaymentStatus> = {
-  활성: '결제완료',
-  비활성: '결제대기',
-  취소: '결제취소',
+  활성: "결제완료",
+  비활성: "결제대기",
+  취소: "결제취소",
 };
 
 const BADGE_CLASS: Record<CurrentStatusUI, string> = {
-  활성: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary rounded px-2 py-0.5 text-xs',
-  비활성: 'bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground rounded px-2 py-0.5 text-xs',
-  취소: 'bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive rounded px-2 py-0.5 text-xs',
+  활성: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary rounded px-2 py-0.5 text-xs",
+  비활성:
+    "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground rounded px-2 py-0.5 text-xs",
+  취소: "bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive rounded px-2 py-0.5 text-xs",
 };
 
-export default function PackageCurrentStatusSelect({ orderId, passStatus, paymentStatus, onUpdated, disabled }: Props) {
+export default function PackageCurrentStatusSelect({
+  orderId,
+  passStatus,
+  paymentStatus,
+  onUpdated,
+  disabled,
+}: Props) {
   // passStatus(활성/대기/만료/취소) → UI선택값(활성/비활성/취소)
   const initialUI: CurrentStatusUI | null = useMemo(() => {
-    if (passStatus === '만료') return null; // 만료는 변경 불가
-    if (passStatus === '대기' || passStatus === '일시정지') return '비활성';
-    if (passStatus === '활성') return '활성';
-    if (passStatus === '취소') return '취소';
-    return '비활성';
+    if (passStatus === "만료") return null; // 만료는 변경 불가
+    if (passStatus === "대기" || passStatus === "일시정지") return "비활성";
+    if (passStatus === "활성") return "활성";
+    if (passStatus === "취소") return "취소";
+    return "비활성";
   }, [passStatus]);
 
-  const [selected, setSelected] = useState<CurrentStatusUI | ''>(initialUI ?? '');
+  const [selected, setSelected] = useState<CurrentStatusUI | "">(
+    initialUI ?? "",
+  );
   const [saving, setSaving] = useState(false);
 
   // 모달 상태
   const [showDialog, setShowDialog] = useState(false);
   const [isRestoreDialog, setIsRestoreDialog] = useState(false);
   const [pendingNext, setPendingNext] = useState<CurrentStatusUI | null>(null);
-  const [reasonType, setReasonType] = useState('');
-  const [reasonText, setReasonText] = useState('');
+  const [reasonType, setReasonType] = useState("");
+  const [reasonText, setReasonText] = useState("");
 
-  const isExpired = passStatus === '만료';
+  const isExpired = passStatus === "만료";
 
   function openCancelDialog(next: CurrentStatusUI) {
     setIsRestoreDialog(false);
@@ -76,21 +97,21 @@ export default function PackageCurrentStatusSelect({ orderId, passStatus, paymen
     try {
       setSaving(true);
       await adminMutator(`/api/admin/package-orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: uiToPayment[next], reason }),
       });
-      showSuccessToast('상태가 변경되었습니다.');
+      showSuccessToast("상태가 변경되었습니다.");
       onUpdated?.();
     } catch (e: any) {
       showErrorToast(getAdminErrorMessage(e));
-      setSelected(initialUI ?? '');
+      setSelected(initialUI ?? "");
     } finally {
       setSaving(false);
       setShowDialog(false);
       setPendingNext(null);
-      setReasonType('');
-      setReasonText('');
+      setReasonType("");
+      setReasonText("");
     }
   }
 
@@ -98,33 +119,39 @@ export default function PackageCurrentStatusSelect({ orderId, passStatus, paymen
     if (next === selected) return;
 
     // '취소'에서 복구 → 복구 사유 모달
-    const wasCancelled = passStatus === '취소' || paymentStatus === '결제취소';
-    if (wasCancelled && next !== '취소') {
+    const wasCancelled = passStatus === "취소" || paymentStatus === "결제취소";
+    if (wasCancelled && next !== "취소") {
       openRestoreDialog(next);
       return;
     }
 
     // '취소'로 변경 → 취소 사유 모달
-    if (next === '취소') {
+    if (next === "취소") {
       openCancelDialog(next);
       return;
     }
 
     // 활성/비활성 전환은 즉시
     setSelected(next);
-    submit(next, '');
+    submit(next, "");
   }
 
-  const disabledMessage = isExpired ? '만료된 패키지는 상태를 바꿀 수 없습니다.' : undefined;
+  const disabledMessage = isExpired
+    ? "만료된 패키지는 상태를 바꿀 수 없습니다."
+    : undefined;
 
   return (
     <>
-      <Select value={selected || undefined} onValueChange={(v) => onValueChange(v as CurrentStatusUI)} disabled={disabled || saving || isExpired}>
+      <Select
+        value={selected || undefined}
+        onValueChange={(v) => onValueChange(v as CurrentStatusUI)}
+        disabled={disabled || saving || isExpired}
+      >
         <SelectTrigger className="w-[140px]" title={disabledMessage}>
-          <SelectValue placeholder={isExpired ? '만료됨' : '상태 선택'} />
+          <SelectValue placeholder={isExpired ? "만료됨" : "상태 선택"} />
         </SelectTrigger>
         <SelectContent>
-          {(['활성', '비활성', '취소'] as CurrentStatusUI[]).map((s) => (
+          {(["활성", "비활성", "취소"] as CurrentStatusUI[]).map((s) => (
             <SelectItem key={s} value={s}>
               <div className={BADGE_CLASS[s]}>{s}</div>
             </SelectItem>
@@ -136,13 +163,20 @@ export default function PackageCurrentStatusSelect({ orderId, passStatus, paymen
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{isRestoreDialog ? '상태 복구 사유(선택)' : '취소 사유 입력'}</DialogTitle>
+            <DialogTitle>
+              {isRestoreDialog ? "상태 복구 사유(선택)" : "취소 사유 입력"}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label>사유 선택</Label>
-              <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={reasonType} onChange={(e) => setReasonType(e.target.value)} disabled={saving}>
+              <select
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={reasonType}
+                onChange={(e) => setReasonType(e.target.value)}
+                disabled={saving}
+              >
                 <option value="">사유를 선택하세요</option>
                 {isRestoreDialog ? (
                   <>
@@ -165,24 +199,35 @@ export default function PackageCurrentStatusSelect({ orderId, passStatus, paymen
 
             <div className="space-y-1.5">
               <Label>추가 메모 (선택)</Label>
-              <Textarea placeholder="세부 사유를 메모하세요" value={reasonText} onChange={(e) => setReasonText(e.target.value)} disabled={saving} />
+              <Textarea
+                placeholder="세부 사유를 메모하세요"
+                value={reasonText}
+                onChange={(e) => setReasonText(e.target.value)}
+                disabled={saving}
+              />
             </div>
           </div>
 
           <DialogFooter>
-            <button className="inline-flex items-center rounded-md border px-3 py-2 text-sm" onClick={() => setShowDialog(false)} disabled={saving}>
+            <button
+              className="inline-flex items-center rounded-md border px-3 py-2 text-sm"
+              onClick={() => setShowDialog(false)}
+              disabled={saving}
+            >
               취소
             </button>
             <button
               className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm"
               onClick={() => {
-                const reason = [reasonType, reasonText].filter(Boolean).join(' / ');
-                if (!isRestoreDialog) setSelected('취소');
-                submit(pendingNext || '비활성', reason);
+                const reason = [reasonType, reasonText]
+                  .filter(Boolean)
+                  .join(" / ");
+                if (!isRestoreDialog) setSelected("취소");
+                submit(pendingNext || "비활성", reason);
               }}
               disabled={saving}
             >
-              {saving ? '저장 중…' : '저장'}
+              {saving ? "저장 중…" : "저장"}
             </button>
           </DialogFooter>
         </DialogContent>

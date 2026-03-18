@@ -1,17 +1,22 @@
-'use client';
+"use client";
 
-import { FormEvent, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, Save } from 'lucide-react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Skeleton } from '@/components/ui/skeleton';
-import { adminFetcher, adminMutator, ensureAdminMutationSucceeded, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  adminFetcher,
+  adminMutator,
+  ensureAdminMutationSucceeded,
+  getAdminErrorMessage,
+} from "@/lib/admin/adminFetcher";
 
 type AdminEditItem = {
   id: string;
@@ -34,10 +39,10 @@ type AdminEditResponse = {
  */
 export default function AdminBoardEditClient({ postId }: { postId: string }) {
   const router = useRouter();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState('');
-  const [statusText, setStatusText] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState("");
+  const [statusText, setStatusText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,13 +52,15 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
     const load = async () => {
       setIsLoading(true);
       try {
-        const payload = await adminFetcher<AdminEditResponse>(`/api/admin/community/posts/${encodeURIComponent(postId)}`);
+        const payload = await adminFetcher<AdminEditResponse>(
+          `/api/admin/community/posts/${encodeURIComponent(postId)}`,
+        );
         if (!alive) return;
 
-        ensureAdminMutationSucceeded(payload, '게시물을 불러오지 못했습니다.');
-        setTitle(payload.item.title ?? '');
-        setContent(payload.item.content ?? '');
-        setCategory(payload.item.category ?? '');
+        ensureAdminMutationSucceeded(payload, "게시물을 불러오지 못했습니다.");
+        setTitle(payload.item.title ?? "");
+        setContent(payload.item.content ?? "");
+        setCategory(payload.item.category ?? "");
         setStatusText(`${payload.item.type} / ${payload.item.status}`);
       } catch (error) {
         if (!alive) return;
@@ -75,16 +82,19 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
 
     setIsSubmitting(true);
     try {
-      const payload = await adminMutator<{ ok?: boolean }>(`/api/admin/community/posts/${encodeURIComponent(postId)}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
+      const payload = await adminMutator<{ ok?: boolean }>(
+        `/api/admin/community/posts/${encodeURIComponent(postId)}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title, content, category }),
         },
-        body: JSON.stringify({ title, content, category }),
-      });
-      ensureAdminMutationSucceeded(payload, '게시물 수정에 실패했습니다.');
+      );
+      ensureAdminMutationSucceeded(payload, "게시물 수정에 실패했습니다.");
 
-      toast.success('게시물을 수정했습니다.');
+      toast.success("게시물을 수정했습니다.");
       router.push(`/admin/boards/${postId}`);
       router.refresh();
     } catch (error) {
@@ -100,7 +110,9 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-2xl">관리자 게시글 수정</CardTitle>
-            <p className="text-sm text-muted-foreground">상태: {statusText || '-'}</p>
+            <p className="text-sm text-muted-foreground">
+              상태: {statusText || "-"}
+            </p>
           </div>
           <Button variant="outline" asChild>
             <Link href={`/admin/boards/${postId}`}>
@@ -133,23 +145,45 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="title">제목</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} required />
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={120}
+                required
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="category">카테고리</Label>
-              <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="예: general" maxLength={40} />
+              <Input
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="예: general"
+                maxLength={40}
+              />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="content">내용</Label>
-              <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} className="min-h-[320px]" required />
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="min-h-[320px]"
+                required
+              />
             </div>
 
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                {isSubmitting ? '저장 중...' : '저장하기'}
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                {isSubmitting ? "저장 중..." : "저장하기"}
               </Button>
             </div>
           </form>

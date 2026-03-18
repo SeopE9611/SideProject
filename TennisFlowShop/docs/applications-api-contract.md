@@ -8,6 +8,7 @@
 - 레거시 명칭인 `applications` 컬렉션은 운영 API의 기준 소스로 사용하지 않습니다.
 
 근거:
+
 - 사용자 목록 API(`/api/applications/me`)는 `stringing_applications`를 조회합니다.
 - 상세/상태/취소/확정 및 주문/대여 연계 로직이 모두 `stringing_applications`를 기준으로 동작합니다.
 - `/api/applications` 레거시 목록 경로는 410 Gone으로 종료(sunset)했습니다.

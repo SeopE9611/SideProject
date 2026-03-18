@@ -1,6 +1,6 @@
-import type { Db } from 'mongodb';
-import type { AdminDashboardMetricsResponseDto } from '@/types/admin/dashboard';
-import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+import type { Db } from "mongodb";
+import type { AdminDashboardMetricsResponseDto } from "@/types/admin/dashboard";
+import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import {
   CANCEL_REQUESTED_VALUES,
   PAYMENT_PAID_VALUES,
@@ -19,8 +19,8 @@ import {
   toIsoSafe,
   toTimeMs,
   toYmd,
-} from './metrics-pure-utils';
-import type { UnknownDoc } from './metrics-pure-utils';
+} from "./metrics-pure-utils";
+import type { UnknownDoc } from "./metrics-pure-utils";
 /** Responsibility: query collection + aggregation transform + DTO mapping (legacy core). */
 
 /**
@@ -55,7 +55,13 @@ type DashboardMetrics = {
     // 매출(결제완료 기준) - orders + applications + packageOrders 합산
     dailyRevenue: Array<{ date: string; value: number }>;
     // 매출 분해(결제완료 기준) - 주문/신청/패키지 별로 보기
-    dailyRevenueBySource: Array<{ date: string; orders: number; applications: number; packages: number; total: number }>;
+    dailyRevenueBySource: Array<{
+      date: string;
+      orders: number;
+      applications: number;
+      packages: number;
+      total: number;
+    }>;
 
     // 생성량(결제와 무관) - 운영 트래픽 확인용
     dailyOrders: Array<{ date: string; value: number }>;
@@ -65,7 +71,10 @@ type DashboardMetrics = {
   };
 
   kpi: {
-    users: KpiBlock & { active7d: number; byProvider: { local: number; kakao: number; naver: number } };
+    users: KpiBlock & {
+      active7d: number;
+      byProvider: { local: number; kakao: number; naver: number };
+    };
     orders: KpiBlock & { paid7d: number; revenue7d: number; aov7d: number };
     applications: KpiBlock & { paid7d: number; revenue7d: number };
     rentals: KpiBlock & { paid7d: number; revenue7d: number };
@@ -76,12 +85,22 @@ type DashboardMetrics = {
       avg: number;
       five: number;
       byType: { product: number; service: number };
-      byRating: { one: number; two: number; three: number; four: number; five: number };
+      byRating: {
+        one: number;
+        two: number;
+        three: number;
+        four: number;
+        five: number;
+      };
     };
 
     points: { issued7d: number; spent7d: number };
     community: { posts7d: number; comments7d: number; pendingReports: number };
-    inventory: { lowStockProducts: number; outOfStockProducts: number; inactiveRackets: number };
+    inventory: {
+      lowStockProducts: number;
+      outOfStockProducts: number;
+      inactiveRackets: number;
+    };
     queue: {
       cancelRequests: number;
       cancelRequestsNeedingRefundAccount: number;
@@ -104,19 +123,36 @@ type DashboardMetrics = {
   };
 
   inventoryList: {
-    lowStock: Array<{ id: string; name: string; brand: string; stock: number; lowStock: number | null }>;
-    outOfStock: Array<{ id: string; name: string; brand: string; stock: number }>;
+    lowStock: Array<{
+      id: string;
+      name: string;
+      brand: string;
+      stock: number;
+      lowStock: number | null;
+    }>;
+    outOfStock: Array<{
+      id: string;
+      name: string;
+      brand: string;
+      stock: number;
+    }>;
   };
 
   // 판매 상위(최근 7일, 결제완료 기준)
   top: {
-    products7d: Array<{ productId: string; name: string; brand: string; qty: number; revenue: number }>;
+    products7d: Array<{
+      productId: string;
+      name: string;
+      brand: string;
+      qty: number;
+      revenue: number;
+    }>;
     brands7d: Array<{ brand: string; qty: number; revenue: number }>;
   };
 
   queueDetails: {
     cancelRequests: Array<{
-      kind: 'order' | 'application' | 'rental';
+      kind: "order" | "application" | "rental";
       id: string;
       createdAt: string;
       name: string;
@@ -129,7 +165,7 @@ type DashboardMetrics = {
     }>;
 
     shippingPending: Array<{
-      kind: 'order' | 'application';
+      kind: "order" | "application";
       id: string;
       createdAt: string;
       name: string;
@@ -141,7 +177,7 @@ type DashboardMetrics = {
 
     // 결제 대기(24h) "리스트" (Top 카드 상세 목록용)
     paymentPending24h: Array<{
-      kind: 'order' | 'application' | 'rental' | 'package';
+      kind: "order" | "application" | "rental" | "package";
       id: string;
       createdAt: string;
       name: string;
@@ -193,7 +229,7 @@ type DashboardMetrics = {
       id: string;
       href: string;
       createdAt: string;
-      status: 'queued' | 'failed' | 'sent';
+      status: "queued" | "failed" | "sent";
       eventType: string;
       to: string | null;
       retries: number;
@@ -202,10 +238,35 @@ type DashboardMetrics = {
   };
 
   recent: {
-    orders: Array<{ id: string; createdAt: string; name: string; totalPrice: number; status: string; paymentStatus: string }>;
-    applications: Array<{ id: string; createdAt: string; name: string; totalPrice: number; status: string; paymentStatus: string }>;
-    rentals: Array<{ id: string; createdAt: string; name: string; total: number; status: string }>;
-    reports: Array<{ id: string; createdAt: string; kind: 'post' | 'comment'; reason: string }>;
+    orders: Array<{
+      id: string;
+      createdAt: string;
+      name: string;
+      totalPrice: number;
+      status: string;
+      paymentStatus: string;
+    }>;
+    applications: Array<{
+      id: string;
+      createdAt: string;
+      name: string;
+      totalPrice: number;
+      status: string;
+      paymentStatus: string;
+    }>;
+    rentals: Array<{
+      id: string;
+      createdAt: string;
+      name: string;
+      total: number;
+      status: string;
+    }>;
+    reports: Array<{
+      id: string;
+      createdAt: string;
+      kind: "post" | "comment";
+      reason: string;
+    }>;
   };
   settlements: {
     currentYyyymm: string;
@@ -220,29 +281,27 @@ type DashboardMetrics = {
   };
 };
 
-
 const REFUND_ACCOUNT_READY_QUERY = {
-  'cancelRequest.refundAccount.bank': { $nin: [null, ''] },
-  'cancelRequest.refundAccount.account': { $nin: [null, ''] },
-  'cancelRequest.refundAccount.holder': { $nin: [null, ''] },
+  "cancelRequest.refundAccount.bank": { $nin: [null, ""] },
+  "cancelRequest.refundAccount.account": { $nin: [null, ""] },
+  "cancelRequest.refundAccount.holder": { $nin: [null, ""] },
 };
 
 const REFUND_ACCOUNT_NOT_READY_QUERY = {
   $or: [
-    { 'cancelRequest.refundAccount.bank': { $exists: false } },
-    { 'cancelRequest.refundAccount.bank': null },
-    { 'cancelRequest.refundAccount.bank': '' },
-    { 'cancelRequest.refundAccount.account': { $exists: false } },
-    { 'cancelRequest.refundAccount.account': null },
-    { 'cancelRequest.refundAccount.account': '' },
-    { 'cancelRequest.refundAccount.holder': { $exists: false } },
-    { 'cancelRequest.refundAccount.holder': null },
-    { 'cancelRequest.refundAccount.holder': '' },
+    { "cancelRequest.refundAccount.bank": { $exists: false } },
+    { "cancelRequest.refundAccount.bank": null },
+    { "cancelRequest.refundAccount.bank": "" },
+    { "cancelRequest.refundAccount.account": { $exists: false } },
+    { "cancelRequest.refundAccount.account": null },
+    { "cancelRequest.refundAccount.account": "" },
+    { "cancelRequest.refundAccount.holder": { $exists: false } },
+    { "cancelRequest.refundAccount.holder": null },
+    { "cancelRequest.refundAccount.holder": "" },
   ],
 };
 
 export async function getDashboardMetrics(db: Db) {
-
   const now = new Date();
   // 3일(72h) 기준: 운영 큐에서 '장기 미처리' 판단에 사용
   const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
@@ -253,8 +312,16 @@ export async function getDashboardMetrics(db: Db) {
 
   // 그래프(최근 30일)
   const CHART_DAYS = 30;
-  const { startKst: chartStartKst, endKst: chartEndKst, ymds } = buildYmdRange(now, CHART_DAYS);
-  const chartStartUtc = kstDayStartUtc(chartStartKst.y, chartStartKst.m, chartStartKst.d);
+  const {
+    startKst: chartStartKst,
+    endKst: chartEndKst,
+    ymds,
+  } = buildYmdRange(now, CHART_DAYS);
+  const chartStartUtc = kstDayStartUtc(
+    chartStartKst.y,
+    chartStartKst.m,
+    chartStartKst.d,
+  );
 
   // 7일 KPI
   const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -265,14 +332,23 @@ export async function getDashboardMetrics(db: Db) {
 
   // ----------------------------- Users -----------------------------
 
-  const usersCol = db.collection('users');
+  const usersCol = db.collection("users");
 
   const totalUsersP = usersCol.countDocuments({});
   const newUsers7dP = usersCol.countDocuments({ createdAt: { $gte: since7d } });
-  const activeUsers7dP = usersCol.countDocuments({ lastLoginAt: { $gte: since7d } });
+  const activeUsers7dP = usersCol.countDocuments({
+    lastLoginAt: { $gte: since7d },
+  });
 
   const usersByProviderP = (async () => {
-    const [kakao, naver] = await Promise.all([usersCol.countDocuments({ 'oauth.kakao.id': { $exists: true, $ne: null } }), usersCol.countDocuments({ 'oauth.naver.id': { $exists: true, $ne: null } })]);
+    const [kakao, naver] = await Promise.all([
+      usersCol.countDocuments({
+        "oauth.kakao.id": { $exists: true, $ne: null },
+      }),
+      usersCol.countDocuments({
+        "oauth.naver.id": { $exists: true, $ne: null },
+      }),
+    ]);
     const total = await usersCol.countDocuments({});
     const local = Math.max(0, total - kakao - naver);
     return { local, kakao, naver };
@@ -283,7 +359,13 @@ export async function getDashboardMetrics(db: Db) {
       { $match: { createdAt: { $gte: chartStartUtc, $lte: now } } },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
           v: { $sum: 1 },
         },
       },
@@ -292,17 +374,30 @@ export async function getDashboardMetrics(db: Db) {
 
   // ----------------------------- Orders -----------------------------
 
-  const ordersCol = db.collection('orders');
+  const ordersCol = db.collection("orders");
 
   const totalOrdersP = ordersCol.countDocuments({});
-  const newOrders7dP = ordersCol.countDocuments({ createdAt: { $gte: since7d } });
+  const newOrders7dP = ordersCol.countDocuments({
+    createdAt: { $gte: since7d },
+  });
 
   // 결제완료(=매출 인정) 기준
-  const paidOrders7dP = ordersCol.countDocuments({ paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } });
-  const revenueOrders7dP = ordersCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+  const paidOrders7dP = ordersCol.countDocuments({
+    paymentStatus: { $in: PAYMENT_PAID_VALUES },
+    createdAt: { $gte: since7d },
+  });
+  const revenueOrders7dP = ordersCol
+    .aggregate<{
+      _id: null;
+      v: number;
+    }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ["$totalPrice", 0] } } } }])
+    .toArray();
 
   const revenueOrdersMonthP = ordersCol
-    .aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }])
+    .aggregate<{
+      _id: null;
+      v: number;
+    }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: null, v: { $sum: { $ifNull: ["$totalPrice", 0] } } } }])
     .toArray();
 
   // 판매 상위(최근 7일, 결제완료 주문 기준)
@@ -314,18 +409,26 @@ export async function getDashboardMetrics(db: Db) {
       qty: number;
       revenue: number;
     }>([
-      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } },
-      { $unwind: '$items' },
-      { $match: { 'items.kind': 'product' } },
+      {
+        $match: {
+          paymentStatus: { $in: PAYMENT_PAID_VALUES },
+          createdAt: { $gte: since7d },
+        },
+      },
+      { $unwind: "$items" },
+      { $match: { "items.kind": "product" } },
       {
         $group: {
-          _id: '$items.productId',
-          name: { $first: { $ifNull: ['$items.name', ''] } },
-          brand: { $first: { $ifNull: ['$items.brand', ''] } },
-          qty: { $sum: { $ifNull: ['$items.quantity', 0] } },
+          _id: "$items.productId",
+          name: { $first: { $ifNull: ["$items.name", ""] } },
+          brand: { $first: { $ifNull: ["$items.brand", ""] } },
+          qty: { $sum: { $ifNull: ["$items.quantity", 0] } },
           revenue: {
             $sum: {
-              $multiply: [{ $ifNull: ['$items.price', 0] }, { $ifNull: ['$items.quantity', 0] }],
+              $multiply: [
+                { $ifNull: ["$items.price", 0] },
+                { $ifNull: ["$items.quantity", 0] },
+              ],
             },
           },
         },
@@ -341,16 +444,24 @@ export async function getDashboardMetrics(db: Db) {
       qty: number;
       revenue: number;
     }>([
-      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } },
-      { $unwind: '$items' },
-      { $match: { 'items.kind': 'product' } },
+      {
+        $match: {
+          paymentStatus: { $in: PAYMENT_PAID_VALUES },
+          createdAt: { $gte: since7d },
+        },
+      },
+      { $unwind: "$items" },
+      { $match: { "items.kind": "product" } },
       {
         $group: {
-          _id: { $ifNull: ['$items.brand', ''] },
-          qty: { $sum: { $ifNull: ['$items.quantity', 0] } },
+          _id: { $ifNull: ["$items.brand", ""] },
+          qty: { $sum: { $ifNull: ["$items.quantity", 0] } },
           revenue: {
             $sum: {
-              $multiply: [{ $ifNull: ['$items.price', 0] }, { $ifNull: ['$items.quantity', 0] }],
+              $multiply: [
+                { $ifNull: ["$items.price", 0] },
+                { $ifNull: ["$items.quantity", 0] },
+              ],
             },
           },
         },
@@ -365,7 +476,13 @@ export async function getDashboardMetrics(db: Db) {
       { $match: { createdAt: { $gte: chartStartUtc, $lte: now } } },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
           v: { $sum: 1 },
         },
       },
@@ -374,11 +491,22 @@ export async function getDashboardMetrics(db: Db) {
 
   const dailyOrderRevenueP = ordersCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $match: {
+          paymentStatus: { $in: PAYMENT_PAID_VALUES },
+          createdAt: { $gte: chartStartUtc, $lte: now },
+        },
+      },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
-          v: { $sum: { $ifNull: ['$totalPrice', 0] } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
+          v: { $sum: { $ifNull: ["$totalPrice", 0] } },
         },
       },
     ])
@@ -387,15 +515,25 @@ export async function getDashboardMetrics(db: Db) {
   // [P0] 패스 만료 임박(30일) 모니터링
   // - status='active' 이면서 expiresAt이 "지금~30일" 구간이면 운영 선제 대응 대상
   // - expiresAt이 Date/string 혼재 가능성에 대비해 타입 방어
-  const passesCol = db.collection('service_passes');
+  const passesCol = db.collection("service_passes");
   const soon30d = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const nowIsoPass = now.toISOString();
   const soon30Iso = soon30d.toISOString();
 
   const passExpiringSoonP = passesCol.countDocuments({
-    status: 'active',
+    status: "active",
     expiresAt: { $exists: true },
-    $or: [{ expiresAt: { $type: 'date', $gte: now, $lte: soon30d } }, { expiresAt: { $type: 'string', $ne: '', $gte: nowIsoPass, $lte: soon30Iso } }],
+    $or: [
+      { expiresAt: { $type: "date", $gte: now, $lte: soon30d } },
+      {
+        expiresAt: {
+          $type: "string",
+          $ne: "",
+          $gte: nowIsoPass,
+          $lte: soon30Iso,
+        },
+      },
+    ],
   });
 
   // Top 리스트는 user.name 까지 같이 보여주면 나나 재민이가 바로 알아볼 수 있어서 P0에서도 lookup 포함
@@ -403,15 +541,32 @@ export async function getDashboardMetrics(db: Db) {
     .aggregate<UnknownDoc>([
       {
         $match: {
-          status: 'active',
+          status: "active",
           expiresAt: { $exists: true },
-          $or: [{ expiresAt: { $type: 'date', $gte: now, $lte: soon30d } }, { expiresAt: { $type: 'string', $ne: '', $gte: nowIsoPass, $lte: soon30Iso } }],
+          $or: [
+            { expiresAt: { $type: "date", $gte: now, $lte: soon30d } },
+            {
+              expiresAt: {
+                $type: "string",
+                $ne: "",
+                $gte: nowIsoPass,
+                $lte: soon30Iso,
+              },
+            },
+          ],
         },
       },
       { $sort: { expiresAt: 1 } },
       { $limit: 10 },
-      { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
-      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
       {
         $project: {
           _id: 1,
@@ -420,32 +575,47 @@ export async function getDashboardMetrics(db: Db) {
           packageSize: 1,
           remainingCount: 1,
           expiresAt: 1,
-          userName: '$user.name',
-          userEmail: '$user.email',
+          userName: "$user.name",
+          userEmail: "$user.email",
         },
       },
     ])
     .toArray();
 
   const orderStatusDistP = ordersCol
-    .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$status', '미지정'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    .aggregate<{
+      _id: string;
+      count: number;
+    }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ["$status", "미지정"] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
     .toArray();
 
   const orderPayStatusDistP = ordersCol
-    .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$paymentStatus', '결제대기'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    .aggregate<{
+      _id: string;
+      count: number;
+    }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ["$paymentStatus", "결제대기"] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
     .toArray();
 
   const shippingPendingP = ordersCol.countDocuments({
     paymentStatus: { $in: PAYMENT_PAID_VALUES },
     // 방문 수령은 송장/운송장 개념이 없으므로 제외
     $and: [
-      { $or: [{ 'shippingInfo.shippingMethod': { $ne: 'visit' } }, { 'shippingInfo.shippingMethod': { $exists: false } }] },
       {
-        $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+        $or: [
+          { "shippingInfo.shippingMethod": { $ne: "visit" } },
+          { "shippingInfo.shippingMethod": { $exists: false } },
+        ],
+      },
+      {
+        $or: [
+          { "shippingInfo.invoice.trackingNumber": { $exists: false } },
+          { "shippingInfo.invoice.trackingNumber": null },
+          { "shippingInfo.invoice.trackingNumber": "" },
+        ],
       },
     ],
     // 완료/취소 계열은 제외
-    status: { $nin: ['배송완료', '취소', '환불'] },
+    status: { $nin: ["배송완료", "취소", "환불"] },
   });
 
   const shippingPendingOrdersListP = ordersCol
@@ -453,17 +623,33 @@ export async function getDashboardMetrics(db: Db) {
       {
         paymentStatus: { $in: PAYMENT_PAID_VALUES },
         $and: [
-          { $or: [{ 'shippingInfo.shippingMethod': { $ne: 'visit' } }, { 'shippingInfo.shippingMethod': { $exists: false } }] },
           {
-            $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+            $or: [
+              { "shippingInfo.shippingMethod": { $ne: "visit" } },
+              { "shippingInfo.shippingMethod": { $exists: false } },
+            ],
+          },
+          {
+            $or: [
+              { "shippingInfo.invoice.trackingNumber": { $exists: false } },
+              { "shippingInfo.invoice.trackingNumber": null },
+              { "shippingInfo.invoice.trackingNumber": "" },
+            ],
           },
         ],
-        status: { $nin: ['배송완료', '취소', '환불'] },
+        status: { $nin: ["배송완료", "취소", "환불"] },
       },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
       },
     )
     .toArray();
@@ -474,7 +660,7 @@ export async function getDashboardMetrics(db: Db) {
     createdAt: { $lte: oneDayAgo },
 
     // 취소 요청으로 넘어간 건은 "취소 요청" 카드에서 관리하므로 여기서는 제외
-    'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
+    "cancelRequest.status": { $nin: CANCEL_REQUESTED_VALUES },
   });
 
   const paymentPending24hOrdersListP = ordersCol
@@ -482,7 +668,7 @@ export async function getDashboardMetrics(db: Db) {
       {
         paymentStatus: { $in: PAYMENT_PENDING_VALUES },
         createdAt: { $lte: oneDayAgo },
-        'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
+        "cancelRequest.status": { $nin: CANCEL_REQUESTED_VALUES },
       },
       {
         sort: { createdAt: 1 }, // 오래된 순(운영 우선순위)
@@ -503,18 +689,34 @@ export async function getDashboardMetrics(db: Db) {
 
   const orderCancelRequestsListP = ordersCol
     .find(
-      { 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } },
+      { "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES } },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1, cancelRequest: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+          cancelRequest: 1,
+        },
       },
     )
     .toArray();
 
-  const orderCancelRequestsP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
-  const orderCancelRequestsNeedingRefundAccountP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_NOT_READY_QUERY });
-  const orderCancelRequestsReadyForReviewP = ordersCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_READY_QUERY });
+  const orderCancelRequestsP = ordersCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+  });
+  const orderCancelRequestsNeedingRefundAccountP = ordersCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+    ...REFUND_ACCOUNT_NOT_READY_QUERY,
+  });
+  const orderCancelRequestsReadyForReviewP = ordersCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+    ...REFUND_ACCOUNT_READY_QUERY,
+  });
 
   const recentOrdersP = ordersCol
     .find(
@@ -522,27 +724,48 @@ export async function getDashboardMetrics(db: Db) {
       {
         sort: { createdAt: -1 },
         limit: 5,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
       },
     )
     .toArray();
 
   // ----------------------------- Stringing Applications -----------------------------
 
-  const appsCol = db.collection('stringing_applications');
+  const appsCol = db.collection("stringing_applications");
 
   const totalAppsP = appsCol.countDocuments({});
   const newApps7dP = appsCol.countDocuments({ createdAt: { $gte: since7d } });
 
-  const paidApps7dP = appsCol.countDocuments({ paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } });
-  const revenueApps7dP = appsCol.aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }]).toArray();
+  const paidApps7dP = appsCol.countDocuments({
+    paymentStatus: { $in: PAYMENT_PAID_VALUES },
+    createdAt: { $gte: since7d },
+  });
+  const revenueApps7dP = appsCol
+    .aggregate<{
+      _id: null;
+      v: number;
+    }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ["$totalPrice", 0] } } } }])
+    .toArray();
 
   const dailyAppsP = appsCol
     .aggregate<{ _id: string; v: number }>([
       { $match: { createdAt: { $gte: chartStartUtc, $lte: now } } },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
           v: { $sum: 1 },
         },
       },
@@ -551,39 +774,65 @@ export async function getDashboardMetrics(db: Db) {
 
   const dailyAppRevenueP = appsCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $match: {
+          paymentStatus: { $in: PAYMENT_PAID_VALUES },
+          createdAt: { $gte: chartStartUtc, $lte: now },
+        },
+      },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
-          v: { $sum: { $ifNull: ['$totalPrice', 0] } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
+          v: { $sum: { $ifNull: ["$totalPrice", 0] } },
         },
       },
     ])
     .toArray();
 
   const appStatusDistP = appsCol
-    .aggregate<{ _id: string; count: number }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ['$status', '미지정'] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    .aggregate<{
+      _id: string;
+      count: number;
+    }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ["$status", "미지정"] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
     .toArray();
 
-  const appCancelRequestsP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
-  const appCancelRequestsNeedingRefundAccountP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_NOT_READY_QUERY });
-  const appCancelRequestsReadyForReviewP = appsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_READY_QUERY });
+  const appCancelRequestsP = appsCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+  });
+  const appCancelRequestsNeedingRefundAccountP = appsCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+    ...REFUND_ACCOUNT_NOT_READY_QUERY,
+  });
+  const appCancelRequestsReadyForReviewP = appsCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+    ...REFUND_ACCOUNT_READY_QUERY,
+  });
 
   const shippingPendingAppsP = appsCol.countDocuments({
     paymentStatus: { $in: PAYMENT_PAID_VALUES },
     $and: [
       {
-        $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+        $or: [
+          { "shippingInfo.invoice.trackingNumber": { $exists: false } },
+          { "shippingInfo.invoice.trackingNumber": null },
+          { "shippingInfo.invoice.trackingNumber": "" },
+        ],
       },
     ],
-    status: { $nin: ['교체완료', '취소'] },
+    status: { $nin: ["교체완료", "취소"] },
   });
 
   // 결제 대기(24h+) - 교체 서비스 신청(StringingApplication)
   const paymentPending24hAppsP = appsCol.countDocuments({
     paymentStatus: { $in: PAYMENT_PENDING_VALUES },
     createdAt: { $lte: oneDayAgo },
-    'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
+    "cancelRequest.status": { $nin: CANCEL_REQUESTED_VALUES },
   });
 
   const paymentPending24hAppsListP = appsCol
@@ -591,7 +840,7 @@ export async function getDashboardMetrics(db: Db) {
       {
         paymentStatus: { $in: PAYMENT_PENDING_VALUES },
         createdAt: { $lte: oneDayAgo },
-        'cancelRequest.status': { $nin: CANCEL_REQUESTED_VALUES },
+        "cancelRequest.status": { $nin: CANCEL_REQUESTED_VALUES },
       },
       {
         sort: { createdAt: 1 },
@@ -616,26 +865,45 @@ export async function getDashboardMetrics(db: Db) {
         paymentStatus: { $in: PAYMENT_PAID_VALUES },
         $and: [
           {
-            $or: [{ 'shippingInfo.invoice.trackingNumber': { $exists: false } }, { 'shippingInfo.invoice.trackingNumber': null }, { 'shippingInfo.invoice.trackingNumber': '' }],
+            $or: [
+              { "shippingInfo.invoice.trackingNumber": { $exists: false } },
+              { "shippingInfo.invoice.trackingNumber": null },
+              { "shippingInfo.invoice.trackingNumber": "" },
+            ],
           },
         ],
-        status: { $nin: ['교체완료', '취소'] },
+        status: { $nin: ["교체완료", "취소"] },
       },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
       },
     )
     .toArray();
 
   const appCancelRequestsListP = appsCol
     .find(
-      { 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } },
+      { "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES } },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1, cancelRequest: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+          cancelRequest: 1,
+        },
       },
     )
     .toArray();
@@ -643,20 +911,27 @@ export async function getDashboardMetrics(db: Db) {
   const stringingAgingListP = appsCol
     .find(
       {
-        status: { $in: ['검토 중', '접수완료', '작업 중'] },
+        status: { $in: ["검토 중", "접수완료", "작업 중"] },
         createdAt: { $lte: threeDaysAgo },
       },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
       },
     )
     .toArray();
 
   // 3일 이상 장기 미처리 “건수” (Top 리스트와 동일 조건)
   const stringingAging3dP = appsCol.countDocuments({
-    status: { $in: ['검토 중', '접수완료', '작업 중'] },
+    status: { $in: ["검토 중", "접수완료", "작업 중"] },
     createdAt: { $lte: threeDaysAgo },
   });
 
@@ -666,28 +941,40 @@ export async function getDashboardMetrics(db: Db) {
       {
         sort: { createdAt: -1 },
         limit: 5,
-        projection: { _id: 1, createdAt: 1, totalPrice: 1, status: 1, paymentStatus: 1, shippingInfo: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          totalPrice: 1,
+          status: 1,
+          paymentStatus: 1,
+          shippingInfo: 1,
+        },
       },
     )
     .toArray();
 
   // ----------------------------- Rentals -----------------------------
 
-  const rentalsCol = db.collection('rental_orders');
+  const rentalsCol = db.collection("rental_orders");
 
   const totalRentalsP = rentalsCol.countDocuments({});
-  const newRentals7dP = rentalsCol.countDocuments({ createdAt: { $gte: since7d } });
+  const newRentals7dP = rentalsCol.countDocuments({
+    createdAt: { $gte: since7d },
+  });
 
   // rental_orders.amount.total에는 '보증금(deposit)'이 포함,
   // 매출(정산) 관점에서는 보증금을 제외하고,
   // 실질 매출 구성(대여료 + 스트링 + 장착/교체 공임)만 집계.
 
-  const paidRentals7dP = rentalsCol.countDocuments({ status: { $in: ['paid', 'out', 'returned'] }, createdAt: { $gte: since7d } });
+  const paidRentals7dP = rentalsCol.countDocuments({
+    status: { $in: ["paid", "out", "returned"] },
+    createdAt: { $gte: since7d },
+  });
   const revenueRentals7dP = rentalsCol
     .aggregate<{ _id: null; v: number }>([
       {
         $match: {
-          status: { $in: ['paid', 'out', 'returned'] },
+          status: { $in: ["paid", "out", "returned"] },
           createdAt: { $gte: since7d },
         },
       },
@@ -697,9 +984,30 @@ export async function getDashboardMetrics(db: Db) {
           v: {
             $sum: {
               $add: [
-                { $convert: { input: '$amount.fee', to: 'double', onError: 0, onNull: 0 } },
-                { $convert: { input: '$amount.stringPrice', to: 'double', onError: 0, onNull: 0 } },
-                { $convert: { input: '$amount.stringingFee', to: 'double', onError: 0, onNull: 0 } },
+                {
+                  $convert: {
+                    input: "$amount.fee",
+                    to: "double",
+                    onError: 0,
+                    onNull: 0,
+                  },
+                },
+                {
+                  $convert: {
+                    input: "$amount.stringPrice",
+                    to: "double",
+                    onError: 0,
+                    onNull: 0,
+                  },
+                },
+                {
+                  $convert: {
+                    input: "$amount.stringingFee",
+                    to: "double",
+                    onError: 0,
+                    onNull: 0,
+                  },
+                },
               ],
             },
           },
@@ -708,17 +1016,34 @@ export async function getDashboardMetrics(db: Db) {
     ])
     .toArray();
 
-  const rentalCancelRequestsP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } });
-  const rentalCancelRequestsNeedingRefundAccountP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_NOT_READY_QUERY });
-  const rentalCancelRequestsReadyForReviewP = rentalsCol.countDocuments({ 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES }, ...REFUND_ACCOUNT_READY_QUERY });
+  const rentalCancelRequestsP = rentalsCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+  });
+  const rentalCancelRequestsNeedingRefundAccountP = rentalsCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+    ...REFUND_ACCOUNT_NOT_READY_QUERY,
+  });
+  const rentalCancelRequestsReadyForReviewP = rentalsCol.countDocuments({
+    "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES },
+    ...REFUND_ACCOUNT_READY_QUERY,
+  });
 
   const rentalCancelRequestsListP = rentalsCol
     .find(
-      { 'cancelRequest.status': { $in: CANCEL_REQUESTED_VALUES } },
+      { "cancelRequest.status": { $in: CANCEL_REQUESTED_VALUES } },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, status: 1, amount: 1, fee: 1, deposit: 1, guest: 1, cancelRequest: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          status: 1,
+          amount: 1,
+          fee: 1,
+          deposit: 1,
+          guest: 1,
+          cancelRequest: 1,
+        },
       },
     )
     .toArray();
@@ -727,22 +1052,41 @@ export async function getDashboardMetrics(db: Db) {
   // - status='out' 인데 dueAt이 현재보다 과거라면 "연체"로 봅니다.
   // - dueAt이 Date가 아니라 string(ISO)로 저장된 케이스도 방어합니다(기존 데이터 혼재 대비).
   const overdueRentalsP = rentalsCol.countDocuments({
-    status: 'out',
+    status: "out",
     dueAt: { $exists: true },
-    $or: [{ dueAt: { $type: 'date', $lte: now } }, { dueAt: { $type: 'string', $ne: '', $lte: now.toISOString() } }],
+    $or: [
+      { dueAt: { $type: "date", $lte: now } },
+      { dueAt: { $type: "string", $ne: "", $lte: now.toISOString() } },
+    ],
   });
 
   const overdueRentalsListP = rentalsCol
     .find(
       {
-        status: 'out',
+        status: "out",
         dueAt: { $exists: true },
-        $or: [{ dueAt: { $type: 'date', $lte: now } }, { dueAt: { $type: 'string', $ne: '', $lte: now.toISOString() } }],
+        $or: [
+          { dueAt: { $type: "date", $lte: now } },
+          { dueAt: { $type: "string", $ne: "", $lte: now.toISOString() } },
+        ],
       },
       {
         sort: { dueAt: 1 },
         limit: 10,
-        projection: { _id: 1, dueAt: 1, amount: 1, fee: 1, deposit: 1, brand: 1, model: 1, guest: 1, userEmail: 1, userId: 1, shipping: 1, status: 1 },
+        projection: {
+          _id: 1,
+          dueAt: 1,
+          amount: 1,
+          fee: 1,
+          deposit: 1,
+          brand: 1,
+          model: 1,
+          guest: 1,
+          userEmail: 1,
+          userId: 1,
+          shipping: 1,
+          status: 1,
+        },
       },
     )
     .toArray();
@@ -754,21 +1098,24 @@ export async function getDashboardMetrics(db: Db) {
   const soonIso = soon48h.toISOString();
 
   const dueSoonRentalsP = rentalsCol.countDocuments({
-    status: 'out',
+    status: "out",
     dueAt: { $exists: true },
-    $or: [{ dueAt: { $type: 'date', $gte: now, $lte: soon48h } }, { dueAt: { $type: 'string', $ne: '', $gte: nowIso, $lte: soonIso } }],
+    $or: [
+      { dueAt: { $type: "date", $gte: now, $lte: soon48h } },
+      { dueAt: { $type: "string", $ne: "", $gte: nowIso, $lte: soonIso } },
+    ],
   });
 
   // 결제 대기(24h+) - 대여 주문(Rental) (status=pending + 24h+)
   const paymentPending24hRentalsP = rentalsCol.countDocuments({
-    status: 'pending',
+    status: "pending",
     createdAt: { $lte: oneDayAgo },
   });
 
   const paymentPending24hRentalsListP = rentalsCol
     .find(
       {
-        status: 'pending',
+        status: "pending",
         createdAt: { $lte: oneDayAgo },
       },
       {
@@ -791,40 +1138,90 @@ export async function getDashboardMetrics(db: Db) {
   const dueSoonRentalsListP = rentalsCol
     .find(
       {
-        status: 'out',
+        status: "out",
         dueAt: { $exists: true },
-        $or: [{ dueAt: { $type: 'date', $gte: now, $lte: soon48h } }, { dueAt: { $type: 'string', $ne: '', $gte: nowIso, $lte: soonIso } }],
+        $or: [
+          { dueAt: { $type: "date", $gte: now, $lte: soon48h } },
+          { dueAt: { $type: "string", $ne: "", $gte: nowIso, $lte: soonIso } },
+        ],
       },
       {
         sort: { dueAt: 1 },
         limit: 10,
         // 기존 연체 리스트와 동일한 투영 필드를 유지
-        projection: { _id: 1, dueAt: 1, amount: 1, fee: 1, deposit: 1, brand: 1, model: 1, guest: 1, userEmail: 1, userId: 1, shipping: 1, status: 1 },
+        projection: {
+          _id: 1,
+          dueAt: 1,
+          amount: 1,
+          fee: 1,
+          deposit: 1,
+          brand: 1,
+          model: 1,
+          guest: 1,
+          userEmail: 1,
+          userId: 1,
+          shipping: 1,
+          status: 1,
+        },
       },
     )
     .toArray();
 
-  const recentRentalsP = rentalsCol.find({}, { sort: { createdAt: -1 }, limit: 5, projection: { _id: 1, createdAt: 1, status: 1, amount: 1, userEmail: 1 } }).toArray();
+  const recentRentalsP = rentalsCol
+    .find(
+      {},
+      {
+        sort: { createdAt: -1 },
+        limit: 5,
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          status: 1,
+          amount: 1,
+          userEmail: 1,
+        },
+      },
+    )
+    .toArray();
 
   // ----------------------------- Packages -----------------------------
 
-  const packageOrdersCol = db.collection('packageOrders');
+  const packageOrdersCol = db.collection("packageOrders");
 
   const totalPackageOrdersP = packageOrdersCol.countDocuments({});
-  const newPackageOrders7dP = packageOrdersCol.countDocuments({ createdAt: { $gte: since7d } });
+  const newPackageOrders7dP = packageOrdersCol.countDocuments({
+    createdAt: { $gte: since7d },
+  });
 
-  const paidPackageOrders7dP = packageOrdersCol.countDocuments({ paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } });
+  const paidPackageOrders7dP = packageOrdersCol.countDocuments({
+    paymentStatus: { $in: PAYMENT_PAID_VALUES },
+    createdAt: { $gte: since7d },
+  });
   const revenuePackageOrders7dP = packageOrdersCol
-    .aggregate<{ _id: null; v: number }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$totalPrice', 0] } } } }])
+    .aggregate<{
+      _id: null;
+      v: number;
+    }>([{ $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: since7d } } }, { $group: { _id: null, v: { $sum: { $ifNull: ["$totalPrice", 0] } } } }])
     .toArray();
 
   const dailyPackageRevenueP = packageOrdersCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { paymentStatus: { $in: PAYMENT_PAID_VALUES }, createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $match: {
+          paymentStatus: { $in: PAYMENT_PAID_VALUES },
+          createdAt: { $gte: chartStartUtc, $lte: now },
+        },
+      },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
-          v: { $sum: { $ifNull: ['$totalPrice', 0] } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
+          v: { $sum: { $ifNull: ["$totalPrice", 0] } },
         },
       },
     ])
@@ -860,10 +1257,13 @@ export async function getDashboardMetrics(db: Db) {
 
   // ----------------------------- Reviews -----------------------------
 
-  const reviewsCol = db.collection('reviews');
+  const reviewsCol = db.collection("reviews");
 
   // 7일 신규 리뷰
-  const newReviews7dP = reviewsCol.countDocuments({ isDeleted: { $ne: true }, createdAt: { $gte: since7d } });
+  const newReviews7dP = reviewsCol.countDocuments({
+    isDeleted: { $ne: true },
+    createdAt: { $gte: since7d },
+  });
 
   // 전체 리뷰 지표 (※ /api/admin/reviews/metrics 와 동일한 판별 로직을 최대한 유지)
   const reviewsAggP = reviewsCol
@@ -883,33 +1283,43 @@ export async function getDashboardMetrics(db: Db) {
       {
         $addFields: {
           // 문자열/객체형/레거시 키까지 폭넓게 인식
-          _pidStr: { $toString: { $ifNull: ['$productId', '$product_id'] } },
+          _pidStr: { $toString: { $ifNull: ["$productId", "$product_id"] } },
           hasProductId: {
             $or: [
-              { $ne: [{ $ifNull: ['$productId', null] }, null] },
-              { $ne: [{ $ifNull: ['$product_id', null] }, null] },
+              { $ne: [{ $ifNull: ["$productId", null] }, null] },
+              { $ne: [{ $ifNull: ["$product_id", null] }, null] },
               // 24자 헥사 문자열도 유효한 productId로 간주
-              { $regexMatch: { input: { $toString: { $ifNull: ['$productId', '$product_id'] } }, regex: /^[a-fA-F0-9]{24}$/ } },
+              {
+                $regexMatch: {
+                  input: {
+                    $toString: { $ifNull: ["$productId", "$product_id"] },
+                  },
+                  regex: /^[a-fA-F0-9]{24}$/,
+                },
+              },
             ],
           },
           hasServiceMarker: {
-            $or: [{ $ne: [{ $ifNull: ['$serviceApplicationId', null] }, null] }, { $in: ['$service', ['stringing']] }],
+            $or: [
+              { $ne: [{ $ifNull: ["$serviceApplicationId", null] }, null] },
+              { $in: ["$service", ["stringing"]] },
+            ],
           },
           // type이 명시되고 값이 정상일 때만 우선
-          typeValid: { $in: ['$type', ['product', 'service']] },
+          typeValid: { $in: ["$type", ["product", "service"]] },
         },
       },
       {
         $addFields: {
           resolvedType: {
             $cond: [
-              '$typeValid',
-              '$type',
+              "$typeValid",
+              "$type",
               {
                 $cond: [
-                  '$hasProductId',
-                  'product',
-                  { $cond: ['$hasServiceMarker', 'service', 'service'] }, // 기본값은 service
+                  "$hasProductId",
+                  "product",
+                  { $cond: ["$hasServiceMarker", "service", "service"] }, // 기본값은 service
                 ],
               },
             ],
@@ -920,14 +1330,18 @@ export async function getDashboardMetrics(db: Db) {
         $group: {
           _id: null,
           total: { $sum: 1 },
-          avg: { $avg: '$rating' },
-          five: { $sum: { $cond: [{ $eq: ['$rating', 5] }, 1, 0] } },
-          four: { $sum: { $cond: [{ $eq: ['$rating', 4] }, 1, 0] } },
-          three: { $sum: { $cond: [{ $eq: ['$rating', 3] }, 1, 0] } },
-          two: { $sum: { $cond: [{ $eq: ['$rating', 2] }, 1, 0] } },
-          one: { $sum: { $cond: [{ $eq: ['$rating', 1] }, 1, 0] } },
-          product: { $sum: { $cond: [{ $eq: ['$resolvedType', 'product'] }, 1, 0] } },
-          service: { $sum: { $cond: [{ $eq: ['$resolvedType', 'service'] }, 1, 0] } },
+          avg: { $avg: "$rating" },
+          five: { $sum: { $cond: [{ $eq: ["$rating", 5] }, 1, 0] } },
+          four: { $sum: { $cond: [{ $eq: ["$rating", 4] }, 1, 0] } },
+          three: { $sum: { $cond: [{ $eq: ["$rating", 3] }, 1, 0] } },
+          two: { $sum: { $cond: [{ $eq: ["$rating", 2] }, 1, 0] } },
+          one: { $sum: { $cond: [{ $eq: ["$rating", 1] }, 1, 0] } },
+          product: {
+            $sum: { $cond: [{ $eq: ["$resolvedType", "product"] }, 1, 0] },
+          },
+          service: {
+            $sum: { $cond: [{ $eq: ["$resolvedType", "service"] }, 1, 0] },
+          },
         },
       },
     ])
@@ -936,10 +1350,21 @@ export async function getDashboardMetrics(db: Db) {
   // 일별 리뷰 작성 수(그래프용)
   const dailyReviewsP = reviewsCol
     .aggregate<{ _id: string; v: number }>([
-      { $match: { isDeleted: { $ne: true }, createdAt: { $gte: chartStartUtc, $lte: now } } },
+      {
+        $match: {
+          isDeleted: { $ne: true },
+          createdAt: { $gte: chartStartUtc, $lte: now },
+        },
+      },
       {
         $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: '+09:00' } },
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+              timezone: "+09:00",
+            },
+          },
           v: { $sum: 1 },
         },
       },
@@ -948,71 +1373,131 @@ export async function getDashboardMetrics(db: Db) {
 
   // ----------------------------- Points -----------------------------
 
-  const pointsCol = db.collection('point_transactions');
+  const pointsCol = db.collection("point_transactions");
 
-  const pointsIssued7dP = pointsCol.aggregate<{ _id: null; v: number }>([{ $match: { createdAt: { $gte: since7d }, amount: { $gt: 0 } } }, { $group: { _id: null, v: { $sum: { $ifNull: ['$amount', 0] } } } }]).toArray();
+  const pointsIssued7dP = pointsCol
+    .aggregate<{
+      _id: null;
+      v: number;
+    }>([{ $match: { createdAt: { $gte: since7d }, amount: { $gt: 0 } } }, { $group: { _id: null, v: { $sum: { $ifNull: ["$amount", 0] } } } }])
+    .toArray();
 
-  const pointsSpent7dP = pointsCol.aggregate<{ _id: null; v: number }>([{ $match: { createdAt: { $gte: since7d }, amount: { $lt: 0 } } }, { $group: { _id: null, v: { $sum: { $multiply: [{ $ifNull: ['$amount', 0] }, -1] } } } }]).toArray();
+  const pointsSpent7dP = pointsCol
+    .aggregate<{
+      _id: null;
+      v: number;
+    }>([{ $match: { createdAt: { $gte: since7d }, amount: { $lt: 0 } } }, { $group: { _id: null, v: { $sum: { $multiply: [{ $ifNull: ["$amount", 0] }, -1] } } } }])
+    .toArray();
 
   // ----------------------------- Community -----------------------------
 
-  const postsCol = db.collection('community_posts');
-  const commentsCol = db.collection('community_comments');
-  const reportsCol = db.collection('community_reports');
+  const postsCol = db.collection("community_posts");
+  const commentsCol = db.collection("community_comments");
+  const reportsCol = db.collection("community_reports");
 
   const posts7dP = postsCol.countDocuments({ createdAt: { $gte: since7d } });
-  const comments7dP = commentsCol.countDocuments({ createdAt: { $gte: since7d } });
-  const pendingReportsP = reportsCol.countDocuments({ status: 'pending' });
+  const comments7dP = commentsCol.countDocuments({
+    createdAt: { $gte: since7d },
+  });
+  const pendingReportsP = reportsCol.countDocuments({ status: "pending" });
 
-  const recentReportsP = reportsCol.find({}, { sort: { createdAt: -1 }, limit: 5, projection: { _id: 1, createdAt: 1, reason: 1, postId: 1, commentId: 1 } }).toArray();
+  const recentReportsP = reportsCol
+    .find(
+      {},
+      {
+        sort: { createdAt: -1 },
+        limit: 5,
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          reason: 1,
+          postId: 1,
+          commentId: 1,
+        },
+      },
+    )
+    .toArray();
 
   // ----------------------------- Inventory -----------------------------
 
-  const productsCol = db.collection('products');
-  const racketsCol = db.collection('used_rackets');
+  const productsCol = db.collection("products");
+  const racketsCol = db.collection("used_rackets");
 
   const lowStockProductsP = productsCol.countDocuments({
-    'inventory.stock': { $gt: 0 },
-    $expr: { $lte: ['$inventory.stock', '$inventory.lowStock'] },
+    "inventory.stock": { $gt: 0 },
+    $expr: { $lte: ["$inventory.stock", "$inventory.lowStock"] },
   });
-  const outOfStockProductsP = productsCol.countDocuments({ 'inventory.stock': { $lte: 0 } });
-  const inactiveRacketsP = racketsCol.countDocuments({ status: { $in: ['inactive'] } });
+  const outOfStockProductsP = productsCol.countDocuments({
+    "inventory.stock": { $lte: 0 },
+  });
+  const inactiveRacketsP = racketsCol.countDocuments({
+    status: { $in: ["inactive"] },
+  });
 
   const lowStockListP = productsCol
     .find(
       {
         isDeleted: { $ne: true },
-        'inventory.stock': { $gt: 0 },
-        'inventory.lowStock': { $ne: null },
-        $expr: { $lte: ['$inventory.stock', '$inventory.lowStock'] },
+        "inventory.stock": { $gt: 0 },
+        "inventory.lowStock": { $ne: null },
+        $expr: { $lte: ["$inventory.stock", "$inventory.lowStock"] },
       },
-      { projection: { _id: 1, name: 1, brand: 1, inventory: 1, updatedAt: 1, createdAt: 1 } },
+      {
+        projection: {
+          _id: 1,
+          name: 1,
+          brand: 1,
+          inventory: 1,
+          updatedAt: 1,
+          createdAt: 1,
+        },
+      },
     )
-    .sort({ 'inventory.stock': 1, updatedAt: -1, createdAt: -1, _id: -1 })
+    .sort({ "inventory.stock": 1, updatedAt: -1, createdAt: -1, _id: -1 })
     .limit(8)
     .toArray();
 
   const outOfStockListP = productsCol
-    .find({ isDeleted: { $ne: true }, 'inventory.stock': { $lte: 0 } }, { projection: { _id: 1, name: 1, brand: 1, inventory: 1, updatedAt: 1, createdAt: 1 } })
+    .find(
+      { isDeleted: { $ne: true }, "inventory.stock": { $lte: 0 } },
+      {
+        projection: {
+          _id: 1,
+          name: 1,
+          brand: 1,
+          inventory: 1,
+          updatedAt: 1,
+          createdAt: 1,
+        },
+      },
+    )
     .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
     .limit(8)
     .toArray();
 
   // ----------------------------- Notifications Outbox -----------------------------
 
-  const outboxCol = db.collection('notifications_outbox');
-  const outboxQueuedP = outboxCol.countDocuments({ status: 'queued' });
+  const outboxCol = db.collection("notifications_outbox");
+  const outboxQueuedP = outboxCol.countDocuments({ status: "queued" });
 
   // 실패 건은 “즉시 조치 필요”라 queued와 분리해서 카운트
-  const outboxFailedP = outboxCol.countDocuments({ status: 'failed' });
+  const outboxFailedP = outboxCol.countDocuments({ status: "failed" });
 
   const outboxBacklogListP = outboxCol
     .find(
-      { status: { $in: ['queued', 'failed'] } },
+      { status: { $in: ["queued", "failed"] } },
       {
         sort: { createdAt: 1 },
         limit: 10,
-        projection: { _id: 1, createdAt: 1, status: 1, eventType: 1, retries: 1, error: 1, rendered: 1 },
+        projection: {
+          _id: 1,
+          createdAt: 1,
+          status: 1,
+          eventType: 1,
+          retries: 1,
+          error: 1,
+          rendered: 1,
+        },
       },
     )
     .toArray();
@@ -1222,7 +1707,9 @@ export async function getDashboardMetrics(db: Db) {
 
   const revenueApps7d = Number(revenueApps7dRows?.[0]?.v || 0);
   const revenueRentals7d = Number(revenueRentals7dRows?.[0]?.v || 0);
-  const revenuePackageOrders7d = Number(revenuePackageOrders7dRows?.[0]?.v || 0);
+  const revenuePackageOrders7d = Number(
+    revenuePackageOrders7dRows?.[0]?.v || 0,
+  );
 
   const pointsIssued7d = Number(pointsIssued7dRows?.[0]?.v || 0);
   const pointsSpent7d = Number(pointsSpent7dRows?.[0]?.v || 0);
@@ -1255,17 +1742,29 @@ export async function getDashboardMetrics(db: Db) {
     return { date, orders, applications, packages, total };
   });
 
-  const dailyRevenue = dailyRevenueBySource.map((d) => ({ date: d.date, value: d.total }));
+  const dailyRevenue = dailyRevenueBySource.map((d) => ({
+    date: d.date,
+    value: d.total,
+  }));
 
   const toIso = (v: unknown) => toIsoSafe(v);
 
-  const pickName = (doc: UnknownDoc) => String((doc.shippingInfo as UnknownDoc | undefined)?.name || (doc.shippingInfo as UnknownDoc | undefined)?.receiverName || (doc.guest as UnknownDoc | undefined)?.name || '고객');
+  const pickName = (doc: UnknownDoc) =>
+    String(
+      (doc.shippingInfo as UnknownDoc | undefined)?.name ||
+        (doc.shippingInfo as UnknownDoc | undefined)?.receiverName ||
+        (doc.guest as UnknownDoc | undefined)?.name ||
+        "고객",
+    );
 
   const pickOutboxTo = (doc: UnknownDoc) => {
     const rendered = asDoc(doc.rendered);
     const email = asDoc(rendered?.email);
     const sms = asDoc(rendered?.sms);
-    return (typeof email?.to === 'string' ? email.to : null) || (typeof sms?.to === 'string' ? sms.to : null);
+    return (
+      (typeof email?.to === "string" ? email.to : null) ||
+      (typeof sms?.to === "string" ? sms.to : null)
+    );
   };
 
   const calcAgeDays = (createdAt: unknown) => {
@@ -1278,34 +1777,38 @@ export async function getDashboardMetrics(db: Db) {
     const guest = asDoc(doc.guest);
     const shipping = asDoc(doc.shipping);
     // 대여는 shippingInfo가 없을 수 있으므로, 라켓(브랜드/모델) + 고객 식별자를 함께 보여줍니다.
-    const racket = [doc?.brand, doc?.model].filter(Boolean).join(' ');
+    const racket = [doc?.brand, doc?.model].filter(Boolean).join(" ");
     const who = String(
       guest?.name || // 비회원/게스트 이름(있으면)
         shipping?.name || //  대여 문서에 있는 수령인/신청자 이름
         doc?.userEmail || // 저장돼 있으면 이메일
-        (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') ||
-        '고객',
+        (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : "") ||
+        "고객",
     );
     return racket ? `${racket} · ${who}` : who;
   };
   const calcOverdueDays = (dueAt: unknown) => {
     const t = toTimeMs(dueAt);
-    return Number.isFinite(t) ? Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000))) : 0;
+    return Number.isFinite(t)
+      ? Math.max(0, Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000)))
+      : 0;
   };
 
   const calcDueInHours = (dueAt: unknown) => {
     const t = toTimeMs(dueAt);
     // ceil: 1분 남아도 "1시간"처럼 보이게(운영자가 놓치지 않도록)
-    return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000))) : 0;
+    return Number.isFinite(t)
+      ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000)))
+      : 0;
   };
 
   const mapCancelRefundSignal = (doc: UnknownDoc) => {
     const cancelRequest = asDoc(doc.cancelRequest);
     const refundAccount = asDoc(cancelRequest?.refundAccount);
 
-    const bank = (getString(refundAccount?.bank) ?? '').trim();
-    const account = (getString(refundAccount?.account) ?? '').trim();
-    const holder = (getString(refundAccount?.holder) ?? '').trim();
+    const bank = (getString(refundAccount?.bank) ?? "").trim();
+    const account = (getString(refundAccount?.account) ?? "").trim();
+    const holder = (getString(refundAccount?.holder) ?? "").trim();
 
     const refundAccountReady = Boolean(bank && account && holder);
 
@@ -1318,34 +1821,37 @@ export async function getDashboardMetrics(db: Db) {
   // 목록 변환/통합
   const cancelRequests = [
     ...asDocArray(orderCancelRequestsList).map((d) => ({
-      kind: 'order' as const,
+      kind: "order" as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
-      status: String(d?.status || ''),
+      status: String(d?.status || ""),
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       ...mapCancelRefundSignal(d),
       href: `/admin/orders/${String(d?._id)}`,
     })),
     ...asDocArray(appCancelRequestsList).map((d) => ({
-      kind: 'application' as const,
+      kind: "application" as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
-      status: String(d?.status || ''),
+      status: String(d?.status || ""),
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       ...mapCancelRefundSignal(d),
       href: `/admin/applications/stringing/${String(d?._id)}`,
     })),
     ...asDocArray(rentalCancelRequestsList).map((d) => ({
-      kind: 'rental' as const,
+      kind: "rental" as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
-      name: String(asDoc(d.guest)?.name || '고객'),
-      amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
-      status: String(d?.status || ''),
+      name: String(asDoc(d.guest)?.name || "고객"),
+      amount: getNumber(
+        asDoc(d.amount)?.total,
+        getNumber(d.fee) + getNumber(d.deposit),
+      ),
+      status: String(d?.status || ""),
       ...mapCancelRefundSignal(d),
       href: `/admin/rentals/${String(d?._id)}`,
     })),
@@ -1355,22 +1861,22 @@ export async function getDashboardMetrics(db: Db) {
 
   const shippingPendingList = [
     ...asDocArray(shippingPendingOrdersList).map((d) => ({
-      kind: 'order' as const,
+      kind: "order" as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
-      status: String(d?.status || ''),
+      status: String(d?.status || ""),
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/orders/${String(d?._id)}/shipping-update`,
     })),
     ...asDocArray(shippingPendingAppsList).map((d) => ({
-      kind: 'application' as const,
+      kind: "application" as const,
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
       name: pickName(d),
       amount: Number(d?.totalPrice || 0),
-      status: String(d?.status || ''),
+      status: String(d?.status || ""),
       paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
       href: `/admin/applications/stringing/${String(d?._id)}/shipping-update`,
     })),
@@ -1379,7 +1885,11 @@ export async function getDashboardMetrics(db: Db) {
     .slice(0, 10);
 
   // 결제 대기(24h+) 총합 (주문 + 신청 + 대여 + 패키지)
-  const paymentPending24h = paymentPending24hOrders + paymentPending24hApps + paymentPending24hRentals + paymentPending24hPackages;
+  const paymentPending24h =
+    paymentPending24hOrders +
+    paymentPending24hApps +
+    paymentPending24hRentals +
+    paymentPending24hPackages;
 
   // createdAt → "몇 시간 지났는지" 계산 (대시보드 뱃지용)
   const hoursAgo = (createdAtIso: string) => {
@@ -1391,42 +1901,42 @@ export async function getDashboardMetrics(db: Db) {
   // 결제 대기(24h+) Top 리스트 (오래된 순)
   const paymentPending24hList = [
     ...asDocArray(paymentPending24hOrdersList).map((d) => ({
-      kind: 'order' as const,
+      kind: "order" as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
       name: pickName(d),
       amount: Number(d.totalPrice ?? 0),
-      status: String(d.status ?? ''),
+      status: String(d.status ?? ""),
       href: `/admin/orders/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
     ...asDocArray(paymentPending24hAppsList).map((d) => ({
-      kind: 'application' as const,
+      kind: "application" as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
       name: pickName(d),
       amount: Number(d.totalPrice ?? 0),
-      status: String(d.status ?? ''),
+      status: String(d.status ?? ""),
       href: `/admin/applications/stringing/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
     ...asDocArray(paymentPending24hPackagesList).map((d) => ({
-      kind: 'package' as const,
+      kind: "package" as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
-      name: String(asDoc(d.userSnapshot)?.name ?? ''),
+      name: String(asDoc(d.userSnapshot)?.name ?? ""),
       amount: Number(d.totalPrice ?? 0),
-      status: String(d.status ?? ''),
+      status: String(d.status ?? ""),
       href: `/admin/packages/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
     ...asDocArray(paymentPending24hRentalsList).map((d) => ({
-      kind: 'rental' as const,
+      kind: "rental" as const,
       id: String(d._id),
       createdAt: toIsoAny(d.createdAt),
       name: pickRentalName(d),
       amount: getNumber(asDoc(d.amount)?.total),
-      status: String(d.status ?? ''),
+      status: String(d.status ?? ""),
       href: `/admin/rentals/${String(d._id)}`,
       hoursAgo: hoursAgo(toIsoAny(d.createdAt)),
     })),
@@ -1438,7 +1948,10 @@ export async function getDashboardMetrics(db: Db) {
     id: String(d?._id),
     dueAt: toIsoAny(d?.dueAt),
     name: pickRentalName(d),
-    amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
+    amount: getNumber(
+      asDoc(d.amount)?.total,
+      getNumber(d.fee) + getNumber(d.deposit),
+    ),
     overdueDays: calcOverdueDays(d?.dueAt),
     href: `/admin/rentals/${String(d?._id)}`,
   }));
@@ -1447,7 +1960,10 @@ export async function getDashboardMetrics(db: Db) {
     id: String(d?._id),
     dueAt: toIsoAny(d?.dueAt),
     name: pickRentalName(d),
-    amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
+    amount: getNumber(
+      asDoc(d.amount)?.total,
+      getNumber(d.fee) + getNumber(d.deposit),
+    ),
     dueInHours: calcDueInHours(d?.dueAt),
     href: `/admin/rentals/${String(d?._id)}`,
   }));
@@ -1455,12 +1971,19 @@ export async function getDashboardMetrics(db: Db) {
   // expiresAt → daysLeft 계산 (운영 시 “n일 남음”이 가장 직관적)
   const calcDaysLeft = (expiresAt: unknown) => {
     const t = toTimeMs(expiresAt);
-    return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (24 * 60 * 60 * 1000))) : 0;
+    return Number.isFinite(t)
+      ? Math.max(0, Math.ceil((t - now.getTime()) / (24 * 60 * 60 * 1000)))
+      : 0;
   };
   const pickPassName = (doc: UnknownDoc) => {
-    const who = String(doc?.userName || doc?.userEmail || (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : '') || '고객');
+    const who = String(
+      doc?.userName ||
+        doc?.userEmail ||
+        (doc?.userId ? `회원#${String(doc.userId).slice(-6)}` : "") ||
+        "고객",
+    );
     const size = Number(doc?.packageSize || 0);
-    const label = size > 0 ? `${size}회권` : '패스';
+    const label = size > 0 ? `${size}회권` : "패스";
     return `${who} · ${label}`;
   };
   const passExpiringSoonList = asDocArray(passExpiringSoonListRaw).map((d) => ({
@@ -1469,14 +1992,16 @@ export async function getDashboardMetrics(db: Db) {
     name: pickPassName(d),
     remainingCount: Number(d?.remainingCount || 0),
     daysLeft: calcDaysLeft(d?.expiresAt),
-    href: d?.orderId ? `/admin/packages/${String(d.orderId)}` : '/admin/packages',
+    href: d?.orderId
+      ? `/admin/packages/${String(d.orderId)}`
+      : "/admin/packages",
   }));
 
   const stringingAging = asDocArray(stringingAgingList).map((d) => ({
     id: String(d?._id),
     createdAt: toIso(d?.createdAt),
     name: pickName(d),
-    status: String(d?.status || ''),
+    status: String(d?.status || ""),
     paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus),
     totalPrice: Number(d?.totalPrice || 0),
     ageDays: calcAgeDays(d?.createdAt),
@@ -1486,8 +2011,8 @@ export async function getDashboardMetrics(db: Db) {
   const outboxBacklog = asDocArray(outboxBacklogList).map((d) => ({
     id: String(d?._id),
     createdAt: toIso(d?.createdAt),
-    status: (d?.status || 'queued') as 'queued' | 'failed' | 'sent',
-    eventType: String(d?.eventType || ''),
+    status: (d?.status || "queued") as "queued" | "failed" | "sent",
+    eventType: String(d?.eventType || ""),
     to: pickOutboxTo(d),
     retries: Number(d?.retries || 0),
     error: d?.error ? String(d.error).slice(0, 140) : null,
@@ -1497,17 +2022,22 @@ export async function getDashboardMetrics(db: Db) {
   // - DB에 결제상태가 'paid'/'pending' 또는 '결제완료'/'결제대기'처럼 섞여 있어도
   //   대시보드 분포에서는 한 라벨로 합쳐 보이게 합니다.
   function normalizePaymentStatusLabel(v: unknown) {
-    const raw = String(v ?? '').trim();
+    const raw = String(v ?? "").trim();
     const lower = raw.toLowerCase();
 
     // NOTE: PAYMENT_*_VALUES는 이미 'paid/pending' + '결제완료/결제대기'를 포함하도록 구성되어 있음
-    if (PAYMENT_PAID_VALUES.some((x) => String(x).toLowerCase() === lower)) return '결제완료';
-    if (PAYMENT_PENDING_VALUES.some((x) => String(x).toLowerCase() === lower)) return '결제대기';
+    if (PAYMENT_PAID_VALUES.some((x) => String(x).toLowerCase() === lower))
+      return "결제완료";
+    if (PAYMENT_PENDING_VALUES.some((x) => String(x).toLowerCase() === lower))
+      return "결제대기";
 
-    return raw || '기타';
+    return raw || "기타";
   }
 
-  const mergeDistByLabel = (rows: UnknownDoc[], normalize: (v: unknown) => string) => {
+  const mergeDistByLabel = (
+    rows: UnknownDoc[],
+    normalize: (v: unknown) => string,
+  ) => {
     const acc = new Map<string, number>();
     for (const r of rows ?? []) {
       const label = normalize(r?._id);
@@ -1519,7 +2049,10 @@ export async function getDashboardMetrics(db: Db) {
       .sort((a, b) => b.count - a.count);
   };
 
-  const orderPaymentStatusDist = mergeDistByLabel(asDocArray(orderPayStatusDistRows), normalizePaymentStatusLabel);
+  const orderPaymentStatusDist = mergeDistByLabel(
+    asDocArray(orderPayStatusDistRows),
+    normalizePaymentStatusLabel,
+  );
 
   // 정산 스냅샷 누락 방지:
   // - 운영자가 월말/월초에 정산 페이지를 놓치면 "스냅샷이 없는 달"이 생기기 쉬움
@@ -1528,9 +2061,21 @@ export async function getDashboardMetrics(db: Db) {
   const prevYyyymm = shiftYyyymm(currentYyyymm, -1);
 
   const [currSnap, prevSnap, latestSnap] = await Promise.all([
-    db.collection('settlements').findOne({ yyyymm: currentYyyymm }, { projection: { _id: 1 } }),
-    db.collection('settlements').findOne({ yyyymm: prevYyyymm }, { projection: { _id: 1 } }),
-    db.collection('settlements').findOne({}, { sort: { yyyymm: -1 }, projection: { yyyymm: 1, lastGeneratedAt: 1, lastGeneratedBy: 1 } }),
+    db
+      .collection("settlements")
+      .findOne({ yyyymm: currentYyyymm }, { projection: { _id: 1 } }),
+    db
+      .collection("settlements")
+      .findOne({ yyyymm: prevYyyymm }, { projection: { _id: 1 } }),
+    db
+      .collection("settlements")
+      .findOne(
+        {},
+        {
+          sort: { yyyymm: -1 },
+          projection: { yyyymm: 1, lastGeneratedAt: 1, lastGeneratedBy: 1 },
+        },
+      ),
   ]);
 
   const resp: AdminDashboardMetricsResponseDto = {
@@ -1562,7 +2107,8 @@ export async function getDashboardMetrics(db: Db) {
         delta7d: newOrders7d,
         paid7d: paidOrders7d,
         revenue7d: revenueOrders7d,
-        aov7d: paidOrders7d > 0 ? Math.round(revenueOrders7d / paidOrders7d) : 0,
+        aov7d:
+          paidOrders7d > 0 ? Math.round(revenueOrders7d / paidOrders7d) : 0,
       },
 
       applications: {
@@ -1613,12 +2159,20 @@ export async function getDashboardMetrics(db: Db) {
       },
 
       queue: {
-        cancelRequests: Number(orderCancelRequests || 0) + Number(rentalCancelRequests || 0) + Number(appCancelRequests || 0),
+        cancelRequests:
+          Number(orderCancelRequests || 0) +
+          Number(rentalCancelRequests || 0) +
+          Number(appCancelRequests || 0),
         cancelRequestsNeedingRefundAccount:
-          Number(orderCancelRequestsNeedingRefundAccount || 0) + Number(rentalCancelRequestsNeedingRefundAccount || 0) + Number(appCancelRequestsNeedingRefundAccount || 0),
+          Number(orderCancelRequestsNeedingRefundAccount || 0) +
+          Number(rentalCancelRequestsNeedingRefundAccount || 0) +
+          Number(appCancelRequestsNeedingRefundAccount || 0),
         cancelRequestsReadyForReview:
-          Number(orderCancelRequestsReadyForReview || 0) + Number(rentalCancelRequestsReadyForReview || 0) + Number(appCancelRequestsReadyForReview || 0),
-        shippingPending: Number(shippingPending || 0) + Number(shippingPendingApps || 0),
+          Number(orderCancelRequestsReadyForReview || 0) +
+          Number(rentalCancelRequestsReadyForReview || 0) +
+          Number(appCancelRequestsReadyForReview || 0),
+        shippingPending:
+          Number(shippingPending || 0) + Number(shippingPendingApps || 0),
         paymentPending24h,
         rentalOverdue: Number(overdueRentals || 0),
         rentalDueSoon: Number(dueSoonRentals || 0),
@@ -1630,23 +2184,34 @@ export async function getDashboardMetrics(db: Db) {
     },
 
     dist: {
-      orderStatus: asDocArray(orderStatusDistRows).map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      orderStatus: asDocArray(orderStatusDistRows).map((r) => ({
+        label: String(r._id),
+        count: Number(r.count || 0),
+      })),
       orderPaymentStatus: orderPaymentStatusDist,
-      applicationStatus: asDocArray(appStatusDistRows).map((r) => ({ label: String(r._id), count: Number(r.count || 0) })),
+      applicationStatus: asDocArray(appStatusDistRows).map((r) => ({
+        label: String(r._id),
+        count: Number(r.count || 0),
+      })),
     },
 
     inventoryList: {
       lowStock: asDocArray(lowStockListDocs).map((d) => ({
         id: String(d?._id),
-        name: String(d?.name || ''),
-        brand: String(d?.brand || ''),
+        name: String(d?.name || ""),
+        brand: String(d?.brand || ""),
         stock: getNumber(asDoc(d.inventory)?.stock),
-        lowStock: (() => { const lowStock = asDoc(d.inventory)?.lowStock; return lowStock === null || lowStock === undefined ? null : getNumber(lowStock); })(),
+        lowStock: (() => {
+          const lowStock = asDoc(d.inventory)?.lowStock;
+          return lowStock === null || lowStock === undefined
+            ? null
+            : getNumber(lowStock);
+        })(),
       })),
       outOfStock: asDocArray(outOfStockListDocs).map((d) => ({
         id: String(d?._id),
-        name: String(d?.name || ''),
-        brand: String(d?.brand || ''),
+        name: String(d?.name || ""),
+        brand: String(d?.brand || ""),
         stock: getNumber(asDoc(d.inventory)?.stock),
       })),
     },
@@ -1654,13 +2219,13 @@ export async function getDashboardMetrics(db: Db) {
     top: {
       products7d: asDocArray(topProducts7dRows).map((r) => ({
         productId: String(r?._id),
-        name: String(r?.name || ''),
-        brand: String(r?.brand || ''),
+        name: String(r?.name || ""),
+        brand: String(r?.brand || ""),
         qty: Number(r?.qty || 0),
         revenue: Number(r?.revenue || 0),
       })),
       brands7d: asDocArray(topBrands7dRows).map((r) => ({
-        brand: String(r?._id || ''),
+        brand: String(r?._id || ""),
         qty: Number(r?.qty || 0),
         revenue: Number(r?.revenue || 0),
       })),
@@ -1679,12 +2244,24 @@ export async function getDashboardMetrics(db: Db) {
       outboxBacklog: asDocArray(outboxBacklogList).map((d) => ({
         id: String(d._id),
         href: `/admin/notifications/outbox/${String(d._id)}`,
-        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : typeof d?.createdAt === 'string' ? d.createdAt : new Date().toISOString(),
-        status: (getString(d?.status) ?? 'queued') as 'queued' | 'failed' | 'sent',
-        eventType: String(d?.eventType || ''),
+        createdAt:
+          d?.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : typeof d?.createdAt === "string"
+              ? d.createdAt
+              : new Date().toISOString(),
+        status: (getString(d?.status) ?? "queued") as
+          | "queued"
+          | "failed"
+          | "sent",
+        eventType: String(d?.eventType || ""),
         to: pickOutboxTo(d),
         retries: Number(d?.retries || 0),
-        error: d?.error ? String(d.error) : d?.lastError ? String(d.lastError) : null,
+        error: d?.error
+          ? String(d.error)
+          : d?.lastError
+            ? String(d.lastError)
+            : null,
       })),
       paymentPending24h: paymentPending24hList,
     },
@@ -1697,8 +2274,12 @@ export async function getDashboardMetrics(db: Db) {
       latest: latestSnap
         ? {
             yyyymm: String(latestSnap.yyyymm),
-            lastGeneratedAt: latestSnap.lastGeneratedAt ? new Date(latestSnap.lastGeneratedAt).toISOString() : null,
-            lastGeneratedBy: latestSnap.lastGeneratedBy ? String(latestSnap.lastGeneratedBy) : null,
+            lastGeneratedAt: latestSnap.lastGeneratedAt
+              ? new Date(latestSnap.lastGeneratedAt).toISOString()
+              : null,
+            lastGeneratedBy: latestSnap.lastGeneratedBy
+              ? String(latestSnap.lastGeneratedBy)
+              : null,
           }
         : null,
     },
@@ -1706,36 +2287,63 @@ export async function getDashboardMetrics(db: Db) {
     recent: {
       orders: asDocArray(recentOrders).map((d) => ({
         id: String(d?._id),
-        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        name: String(asDoc(d.shippingInfo)?.name || asDoc(d.shippingInfo)?.receiverName || '고객'),
+        createdAt:
+          d?.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : new Date().toISOString(),
+        name: String(
+          asDoc(d.shippingInfo)?.name ||
+            asDoc(d.shippingInfo)?.receiverName ||
+            "고객",
+        ),
         totalPrice: Number(d?.totalPrice || 0),
-        status: String(d?.status || '대기중'),
-        paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || '결제대기'),
+        status: String(d?.status || "대기중"),
+        paymentStatus: normalizePaymentStatusLabel(
+          d?.paymentStatus || "결제대기",
+        ),
       })),
       applications: asDocArray(recentApps).map((d) => ({
         id: String(d?._id),
-        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        name: String(asDoc(d.shippingInfo)?.name || asDoc(d.shippingInfo)?.receiverName || '고객'),
+        createdAt:
+          d?.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : new Date().toISOString(),
+        name: String(
+          asDoc(d.shippingInfo)?.name ||
+            asDoc(d.shippingInfo)?.receiverName ||
+            "고객",
+        ),
         totalPrice: Number(d?.totalPrice || 0),
-        status: String(d?.status || '접수완료'),
-        paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || '결제대기'),
+        status: String(d?.status || "접수완료"),
+        paymentStatus: normalizePaymentStatusLabel(
+          d?.paymentStatus || "결제대기",
+        ),
       })),
       rentals: asDocArray(recentRentals).map((d) => ({
         id: String(d?._id),
-        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        name: String(d?.userEmail || '고객'),
+        createdAt:
+          d?.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : new Date().toISOString(),
+        name: String(d?.userEmail || "고객"),
         total: getNumber(asDoc(d.amount)?.total),
-        status: String(d?.status || 'pending'),
+        status: String(d?.status || "pending"),
       })),
       reports: asDocArray(recentReports).map((d) => ({
         id: String(d?._id),
-        createdAt: d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        kind: d?.commentId ? 'comment' : 'post',
-        reason: String(d?.reason || '').slice(0, 120),
+        createdAt:
+          d?.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : new Date().toISOString(),
+        kind: d?.commentId ? "comment" : "post",
+        reason: String(d?.reason || "").slice(0, 120),
       })),
     },
   };
 
   // 캐시: 대시보드는 "실시간"에 가깝게 보고 싶지만, 초당 단위는 필요 없어서 10초만 캐싱합니다.
-  return { payload: resp, headers: { 'Cache-Control': 'private, max-age=0, s-maxage=10' } };
+  return {
+    payload: resp,
+    headers: { "Cache-Control": "private, max-age=0, s-maxage=10" },
+  };
 }

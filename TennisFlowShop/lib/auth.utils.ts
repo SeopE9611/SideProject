@@ -1,4 +1,4 @@
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 
 // .env.local에 정의된 Access Token 서명용 시크릿 키를 불러온다.
 // 이 키는 서버만 알고 있어야 하며, Access Token의 위조 여부를 검증하는 데 사용된다.
@@ -10,9 +10,9 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
  * @returns Bearer <token> 형식에서 <token> 부분 반환
  */
 export function getTokenFromHeader(headers: Headers): string | null {
-  const authorization = headers.get('Authorization');
-  if (!authorization || !authorization.startsWith('Bearer ')) return null;
-  return authorization.split(' ')[1]; // "Bearer abcd.efgh.ijkl" → "abcd.efgh.ijkl"
+  const authorization = headers.get("Authorization");
+  if (!authorization || !authorization.startsWith("Bearer ")) return null;
+  return authorization.split(" ")[1]; // "Bearer abcd.efgh.ijkl" → "abcd.efgh.ijkl"
 }
 
 /**
@@ -37,9 +37,10 @@ export function verifyAccessToken(token: string) {
 export function signOrderAccessToken(
   payload: { orderId: string; emailHash?: string },
   // 7일(초)로 기본값 설정
-  expiresIn: SignOptions['expiresIn'] = 60 * 60 * 24 * 7
+  expiresIn: SignOptions["expiresIn"] = 60 * 60 * 24 * 7,
 ) {
-  const secret: Secret = process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+  const secret: Secret =
+    process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
   const options: SignOptions = { expiresIn };
   return jwt.sign(payload, secret, options);
 }
@@ -47,7 +48,9 @@ export function signOrderAccessToken(
 // 주문 접근 전용 토큰 검증 (게스트용)
 export function verifyOrderAccessToken(token: string) {
   try {
-    const secret: Secret = process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+    const secret: Secret =
+      process.env.ORDER_ACCESS_TOKEN_SECRET ||
+      process.env.REFRESH_TOKEN_SECRET!;
     return jwt.verify(token, secret) as {
       orderId: string;
       emailHash?: string;

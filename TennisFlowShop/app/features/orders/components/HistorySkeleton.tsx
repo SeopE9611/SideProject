@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 5;
 

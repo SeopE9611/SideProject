@@ -2,8 +2,8 @@
 // - 스키마 대수술 없이 최소 필드만 복제/연결
 // - 결제는 "자재"에 한정되어 있을 수 있으므로 servicePaid=false로 시작(후속단계에서 금액 확정 로직 보강 예정)
 
-import { ClientSession, Db, ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
+import { ClientSession, Db, ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 
 // 주문 DB 타입의 최소 참조용(있는 필드만 사용)
 type DBOrderLite = {
@@ -22,7 +22,7 @@ type DBOrderLite = {
     withStringService?: boolean;
   };
   createdAt?: Date;
-  servicePickupMethod?: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
+  servicePickupMethod?: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT";
 };
 
 // 신청서에 저장할 최소 스냅샷 타입(필요 필드만)
@@ -50,30 +50,38 @@ type CreateAppDoc = {
   // 신청서 프리필/추적용 메타
   meta?: {
     fromOrder?: boolean;
-    servicePickupMethod?: 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
+    servicePickupMethod?: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT";
   };
 };
 
-export async function createStringingApplicationFromOrder(order: DBOrderLite, opts?: { db?: Db; session?: ClientSession }): Promise<{ _id: ObjectId }> {
+export async function createStringingApplicationFromOrder(
+  order: DBOrderLite,
+  opts?: { db?: Db; session?: ClientSession },
+): Promise<{ _id: ObjectId }> {
   const db = opts?.db ?? (await clientPromise).db();
   const session = opts?.session;
 
   type StringingAppDoc = CreateAppDoc;
-  const col = db.collection<StringingAppDoc>('stringing_applications');
+  const col = db.collection<StringingAppDoc>("stringing_applications");
 
   // 1) 방어로직(멱등): 이 주문(orderId)에 연결된 신청서가 이미 있으면 그걸 재사용
   //    - draft/제출완료/완료 등 상태와 무관하게 '중복 생성'을 막는 게 목적
   const existing = await col.findOne({ orderId: order._id }, { session });
   if (existing) return { _id: existing._id };
   // 픽업 방식 정규화(기본 SELF_SEND)
-  const pickup = order.servicePickupMethod === 'SHOP_VISIT' ? 'SHOP_VISIT' : order.servicePickupMethod === 'COURIER_VISIT' ? 'COURIER_VISIT' : 'SELF_SEND';
+  const pickup =
+    order.servicePickupMethod === "SHOP_VISIT"
+      ? "SHOP_VISIT"
+      : order.servicePickupMethod === "COURIER_VISIT"
+        ? "COURIER_VISIT"
+        : "SELF_SEND";
 
   // 2) 신청서 문서 구성(최소 필드만)
   const doc: CreateAppDoc = {
     orderId: order._id,
     userId: order.userId ?? null,
     createdAt: new Date(),
-    status: 'draft', // 주문 직후에는 '초안' 상태로만 생성
+    status: "draft", // 주문 직후에는 '초안' 상태로만 생성
     servicePaid: false, // 1단계: 공임은 아직 미결로 시작(후속 단계에서 확정)
     serviceAmount: (order as any).serviceFee ?? 0,
     paymentSource: `order:${order._id.toString()}`,
@@ -90,7 +98,13 @@ export async function createStringingApplicationFromOrder(order: DBOrderLite, op
           estimatedDate: order.shippingInfo.estimatedDate,
         }
       : undefined,
-    history: [{ status: 'draft', date: new Date(), description: '주문 기반 자동 초안 생성' }],
+    history: [
+      {
+        status: "draft",
+        date: new Date(),
+        description: "주문 기반 자동 초안 생성",
+      },
+    ],
     meta: { fromOrder: true, servicePickupMethod: pickup },
   };
 

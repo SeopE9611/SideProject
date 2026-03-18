@@ -1,3 +1,4 @@
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
-export const fetchWithCredentials = <T,>(url: string) => authenticatedSWRFetcher<T>(url);
+export const fetchWithCredentials = <T>(url: string) =>
+  authenticatedSWRFetcher<T>(url);

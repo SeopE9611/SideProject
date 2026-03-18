@@ -1,5 +1,5 @@
-import type { Db } from 'mongodb';
-import { ObjectId } from 'mongodb';
+import type { Db } from "mongodb";
+import { ObjectId } from "mongodb";
 
 type ReporterPayload = {
   sub?: string;
@@ -9,13 +9,17 @@ type ReporterPayload = {
 };
 
 function toEmailLocalPart(email?: string | null) {
-  if (!email) return '';
-  const [local] = String(email).split('@');
-  return local?.trim() ? local.trim() : '';
+  if (!email) return "";
+  const [local] = String(email).split("@");
+  return local?.trim() ? local.trim() : "";
 }
 
 function pickFirstLabel(...candidates: Array<string | null | undefined>) {
-  return candidates.map((value) => String(value ?? '').trim()).find((value) => value.length > 0) ?? '';
+  return (
+    candidates
+      .map((value) => String(value ?? "").trim())
+      .find((value) => value.length > 0) ?? ""
+  );
 }
 
 /**
@@ -29,26 +33,38 @@ function pickFirstLabel(...candidates: Array<string | null | undefined>) {
  *
  * 위 정책을 게시글/댓글 신고 라우트에서 공통으로 사용해 저장 기준을 통일한다.
  */
-export async function resolveReporterSnapshot(db: Db, payload: ReporterPayload) {
-  const reporterUserId = String(payload?.sub ?? '');
+export async function resolveReporterSnapshot(
+  db: Db,
+  payload: ReporterPayload,
+) {
+  const reporterUserId = String(payload?.sub ?? "");
 
-  let dbNickname = '';
-  let dbName = '';
-  let dbEmail = '';
+  let dbNickname = "";
+  let dbName = "";
+  let dbEmail = "";
 
   if (ObjectId.isValid(reporterUserId)) {
-    const user = (await db.collection('users').findOne(
-      { _id: new ObjectId(reporterUserId) },
-      { projection: { nickname: 1, name: 1, email: 1 } },
-    )) as { nickname?: string; name?: string; email?: string } | null;
+    const user = (await db
+      .collection("users")
+      .findOne(
+        { _id: new ObjectId(reporterUserId) },
+        { projection: { nickname: 1, name: 1, email: 1 } },
+      )) as { nickname?: string; name?: string; email?: string } | null;
 
-    dbNickname = String(user?.nickname ?? '').trim();
-    dbName = String(user?.name ?? '').trim();
-    dbEmail = String(user?.email ?? '').trim();
+    dbNickname = String(user?.nickname ?? "").trim();
+    dbName = String(user?.name ?? "").trim();
+    dbEmail = String(user?.email ?? "").trim();
   }
 
   const reporterNickname =
-    pickFirstLabel(dbNickname, dbName, payload?.nickname, payload?.name, toEmailLocalPart(payload?.email), toEmailLocalPart(dbEmail)) || '회원';
+    pickFirstLabel(
+      dbNickname,
+      dbName,
+      payload?.nickname,
+      payload?.name,
+      toEmailLocalPart(payload?.email),
+      toEmailLocalPart(dbEmail),
+    ) || "회원";
 
   return {
     reporterUserId,
@@ -56,4 +72,3 @@ export async function resolveReporterSnapshot(db: Db, payload: ReporterPayload) 
     reporterNickname,
   };
 }
-

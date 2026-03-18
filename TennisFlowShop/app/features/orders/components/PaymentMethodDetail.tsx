@@ -1,4 +1,4 @@
-import { bankLabelMap } from '@/lib/constants';
+import { bankLabelMap } from "@/lib/constants";
 
 interface PaymentMethodDetailProps {
   method: string;
@@ -6,7 +6,11 @@ interface PaymentMethodDetailProps {
   depositor?: string;
 }
 
-export default function PaymentMethodDetail({ method, bankKey, depositor }: PaymentMethodDetailProps) {
+export default function PaymentMethodDetail({
+  method,
+  bankKey,
+  depositor,
+}: PaymentMethodDetailProps) {
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
 
   return (
@@ -17,8 +21,12 @@ export default function PaymentMethodDetail({ method, bankKey, depositor }: Paym
           <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{method}</div>
             <div className="font-medium text-foreground">{bankInfo.label}</div>
-            <div className="font-mono tracking-wide text-foreground">{bankInfo.account}</div>
-            <div className="text-sm text-muted-foreground">예금주: {bankInfo.holder}</div>
+            <div className="font-mono tracking-wide text-foreground">
+              {bankInfo.account}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              예금주: {bankInfo.holder}
+            </div>
           </div>
         )}
         {!bankInfo && bankKey && <div className="text-sm">{bankKey}</div>}

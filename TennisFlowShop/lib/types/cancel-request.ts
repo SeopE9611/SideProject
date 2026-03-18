@@ -1,7 +1,11 @@
 import { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 
 // 취소 요청 상태 타입
-export type CancelRequestStatus = 'none' | 'requested' | 'approved' | 'rejected';
+export type CancelRequestStatus =
+  | "none"
+  | "requested"
+  | "approved"
+  | "rejected";
 
 // 공통 취소 요청 정보 타입
 // - 프론트/백엔드 모두에서 재사용 가능한 최소 필드만 정의

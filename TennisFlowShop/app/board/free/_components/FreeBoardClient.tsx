@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import BoardListClient from '@/app/board/_components/BoardListClient';
-import type { BoardTypeConfig } from '@/app/board/_components/board-config';
+import BoardListClient from "@/app/board/_components/BoardListClient";
+import type { BoardTypeConfig } from "@/app/board/_components/board-config";
 
-export default function FreeBoardClient({ config }: { config: BoardTypeConfig }) {
+export default function FreeBoardClient({
+  config,
+}: {
+  config: BoardTypeConfig;
+}) {
   return <BoardListClient config={config} />;
 }

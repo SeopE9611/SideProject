@@ -1,19 +1,29 @@
-import Link from 'next/link';
-import { ArrowLeft, FileText, UserCheck, Shield, Building2, MessageSquare, Ban, Scale, RefreshCw } from 'lucide-react';
+import Link from "next/link";
+import {
+  ArrowLeft,
+  FileText,
+  UserCheck,
+  Shield,
+  Building2,
+  MessageSquare,
+  Ban,
+  Scale,
+  RefreshCw,
+} from "lucide-react";
 
 export default function TermsPage() {
   const termsSections = [
     {
-      id: 'service-target',
-      title: '제1조 (서비스 이용 대상)',
+      id: "service-target",
+      title: "제1조 (서비스 이용 대상)",
       icon: UserCheck,
       content: `1. 본 서비스는 만 14세 이상의 모든 사용자가 이용할 수 있습니다.
 2. 만 14세 미만의 아동이 서비스를 이용하기 위해서는 법정대리인(부모 등)의 동의가 필요합니다.
 3. 회사는 서비스별로 이용 가능한 연령 및 조건을 별도로 정할 수 있으며, 이 경우 해당 서비스 초기 화면이나 별도 공지사항을 통해 안내합니다.`,
     },
     {
-      id: 'membership',
-      title: '제2조 (회원 가입 및 탈퇴)',
+      id: "membership",
+      title: "제2조 (회원 가입 및 탈퇴)",
       icon: FileText,
       content: `1. 이용자는 회사가 정한 가입 양식에 따라 회원정보를 기입한 후 이 약관에 동의한다는 의사표시를 함으로써 회원가입을 신청합니다.
 2. 회사는 제1항과 같이 회원으로 가입할 것을 신청한 이용자 중 다음 각 호에 해당하지 않는 한 회원으로 등록합니다.
@@ -24,8 +34,8 @@ export default function TermsPage() {
 4. 회원은 언제든지 회사에 탈퇴를 요청할 수 있으며, 회사는 즉시 회원탈퇴를 처리합니다.`,
     },
     {
-      id: 'user-obligations',
-      title: '제3조 (이용자의 의무)',
+      id: "user-obligations",
+      title: "제3조 (이용자의 의무)",
       icon: Shield,
       content: `1. 회원은 다음 행위를 하여서는 안 됩니다.
    - 회원가입 신청 또는 변경 시 허위내용을 등록하는 행위
@@ -39,16 +49,16 @@ export default function TermsPage() {
 3. 회원은 회사의 사전 승낙 없이 서비스를 이용하여 영업활동을 할 수 없으며, 그 영업활동의 결과에 대해 회사는 책임을 지지 않습니다.`,
     },
     {
-      id: 'company-obligations',
-      title: '제4조 (회사의 의무)',
+      id: "company-obligations",
+      title: "제4조 (회사의 의무)",
       icon: Building2,
       content: `1. 회사는 법령과 이 약관이 금지하거나 공서양속에 반하는 행위를 하지 않으며 이 약관이 정하는 바에 따라 지속적이고, 안정적으로 서비스를 제공하는 데 최선을 다합니다.
 2. 회사는 회원이 안전하게 서비스를 이용할 수 있도록 회원의 개인정보(신용정보 포함)보호를 위한 보안 시스템을 갖추어야 합니다.
 3. 회사는 서비스 이용과 관련하여 회원으로부터 제기된 의견이나 불만이 정당하다고 인정할 경우에는 이를 처리하여야 합니다. 회원이 제기한 의견이나 불만사항에 대해서는 게시판을 활용하거나 전자우편 등을 통하여 회원에게 처리과정 및 결과를 전달합니다.`,
     },
     {
-      id: 'post-management',
-      title: '제5조 (게시물 관리)',
+      id: "post-management",
+      title: "제5조 (게시물 관리)",
       icon: MessageSquare,
       content: `1. 회원이 서비스에 등록한 게시물의 저작권은 해당 게시물의 저작자에게 귀속됩니다.
 2. 회원이 서비스에 등록한 게시물은 검색결과 내지 서비스 및 관련 프로모션, 광고 등에 노출될 수 있으며, 해당 노출을 위해 필요한 범위 내에서는 일부 수정, 복제, 편집되어 게시될 수 있습니다.
@@ -62,8 +72,8 @@ export default function TermsPage() {
    - 기타 관계법령에 위배된다고 판단되는 경우`,
     },
     {
-      id: 'service-restriction',
-      title: '제6조 (서비스 이용 제한)',
+      id: "service-restriction",
+      title: "제6조 (서비스 이용 제한)",
       icon: Ban,
       content: `1. 회사는 회원이 이 약관의 의무를 위반하거나 서비스의 정상적인 운영을 방해한 경우, 서비스 이용을 경고, 일시정지, 계약해지 등으로 단계적으로 제한할 수 있습니다.
 2. 회사는 전항에도 불구하고, 결제도용, 불법프로그램의 제공 및 운영방해, 허위사실의 유포, 타인의 명예훼손, 저작권 침해 등과 같이 관련법을 위반한 경우에는 즉시 영구이용정지를 할 수 있습니다.
@@ -72,8 +82,8 @@ export default function TermsPage() {
 5. 본 조에 따라 서비스 이용을 제한하거나 계약을 해지하는 경우에는 회사는 제한의 종류 및 사유를 회원에게 통지합니다.`,
     },
     {
-      id: 'liability',
-      title: '제7조 (책임의 한계)',
+      id: "liability",
+      title: "제7조 (책임의 한계)",
       icon: Scale,
       content: `1. 회사는 천재지변 또는 이에 준하는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.
 2. 회사는 회원의 귀책사유로 인한 서비스 이용의 장애에 대하여 책임을 지지 않습니다.
@@ -82,8 +92,8 @@ export default function TermsPage() {
 5. 회사는 회원 간 또는 회원과 제3자 상호간에 서비스를 매개로 하여 거래 등을 한 경우에는 책임이 면제됩니다.`,
     },
     {
-      id: 'terms-change',
-      title: '제8조 (약관의 변경)',
+      id: "terms-change",
+      title: "제8조 (약관의 변경)",
       icon: RefreshCw,
       content: `1. 회사는 필요한 경우 약관을 변경할 수 있으며, 변경된 약관은 서비스 내 공지사항을 통해 공지하거나 전자메일 등의 방법으로 회원에게 통지함으로써 효력이 발생합니다.
 2. 회원은 변경된 약관에 동의하지 않을 경우 회원 탈퇴를 요청할 수 있으며, 변경된 약관의 효력 발생일로부터 7일 이후에도 거부의사를 표시하지 않고 서비스를 계속 이용할 경우 약관의 변경 사항에 동의한 것으로 간주됩니다.`,
@@ -94,14 +104,20 @@ export default function TermsPage() {
     <div className="min-h-screen bg-background">
       <div className="border-b">
         <div className="container py-8 max-w-5xl">
-          <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             홈으로 돌아가기
           </Link>
 
           <div className="space-y-4">
             <h1 className="text-4xl font-bold tracking-tight">이용약관</h1>
-            <p className="text-muted-foreground max-w-3xl leading-relaxed">테니스 플로우 웹사이트 이용에 관한 약관입니다. 서비스 이용 전 반드시 읽어주시기 바랍니다.</p>
+            <p className="text-muted-foreground max-w-3xl leading-relaxed">
+              테니스 플로우 웹사이트 이용에 관한 약관입니다. 서비스 이용 전
+              반드시 읽어주시기 바랍니다.
+            </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
               <span>최종 업데이트: 2025년 10월 14일</span>
@@ -114,20 +130,30 @@ export default function TermsPage() {
         <div className="space-y-12">
           {/* Introduction */}
           <div className="space-y-4">
-            <p className="text-foreground/80 leading-relaxed">테니스 플로우(이하 '회사')는 이용자의 권리를 보호하고 안전하고 편리한 서비스를 제공하기 위해 본 약관을 마련하였습니다. 본 약관은 회사가 제공하는 모든 서비스에 적용됩니다.</p>
+            <p className="text-foreground/80 leading-relaxed">
+              테니스 플로우(이하 '회사')는 이용자의 권리를 보호하고 안전하고
+              편리한 서비스를 제공하기 위해 본 약관을 마련하였습니다. 본 약관은
+              회사가 제공하는 모든 서비스에 적용됩니다.
+            </p>
           </div>
 
           {/* Terms Sections */}
           {termsSections.map((section) => {
             const Icon = section.icon;
             return (
-              <div key={section.id} id={section.id} className="scroll-mt-20 space-y-4">
+              <div
+                key={section.id}
+                id={section.id}
+                className="scroll-mt-20 space-y-4"
+              >
                 <div className="flex items-center gap-3">
                   <Icon className="h-5 w-5 text-primary flex-shrink-0" />
                   <h2 className="text-2xl font-semibold">{section.title}</h2>
                 </div>
                 <div className="pl-8">
-                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">{section.content}</div>
+                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">
+                    {section.content}
+                  </div>
                 </div>
               </div>
             );
@@ -140,10 +166,17 @@ export default function TermsPage() {
               <h2 className="text-2xl font-semibold">약관 동의 안내</h2>
             </div>
             <div className="pl-8 space-y-3">
-              <p className="text-foreground/80 leading-relaxed">본 약관에 동의하시면 테니스 플로우의 서비스를 이용하실 수 있습니다. 약관에 동의하지 않으실 경우 서비스 이용이 제한될 수 있습니다.</p>
+              <p className="text-foreground/80 leading-relaxed">
+                본 약관에 동의하시면 테니스 플로우의 서비스를 이용하실 수
+                있습니다. 약관에 동의하지 않으실 경우 서비스 이용이 제한될 수
+                있습니다.
+              </p>
               <p className="text-foreground/80">
-                문의사항이 있으시면{' '}
-                <Link href="/board/qna/write" className="text-primary hover:underline">
+                문의사항이 있으시면{" "}
+                <Link
+                  href="/board/qna/write"
+                  className="text-primary hover:underline"
+                >
                   고객센터
                 </Link>
                 로 연락해 주시기 바랍니다.
@@ -156,13 +189,19 @@ export default function TermsPage() {
       <div className="border-t mt-16">
         <div className="container py-8 max-w-5xl">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} 테니스 플로우. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} 테니스 플로우. All rights
+              reserved.
+            </p>
             <div className="flex items-center gap-4">
               <Link href="/terms" className="text-foreground">
                 이용약관
               </Link>
               <span>·</span>
-              <Link href="/privacy" className="hover:text-foreground transition-colors">
+              <Link
+                href="/privacy"
+                className="hover:text-foreground transition-colors"
+              >
                 개인정보처리방침
               </Link>
             </div>

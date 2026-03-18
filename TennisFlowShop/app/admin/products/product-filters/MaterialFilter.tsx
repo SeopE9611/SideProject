@@ -1,8 +1,14 @@
 // MaterialFilter.tsx
-'use client';
+"use client";
 
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Filter } from 'lucide-react';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Filter } from "lucide-react";
 
 interface Props {
   value: string;
@@ -11,11 +17,11 @@ interface Props {
 }
 
 const MATERIAL_LABEL: Record<string, string> = {
-  polyester: '폴리에스터',
-  multifilament: '멀티필라멘트',
-  natural_gut: '천연 거트',
-  synthetic_gut: '합성 거트',
-  hybrid: '하이브리드',
+  polyester: "폴리에스터",
+  multifilament: "멀티필라멘트",
+  natural_gut: "천연 거트",
+  synthetic_gut: "합성 거트",
+  hybrid: "하이브리드",
 };
 
 export default function MaterialFilter({ value, onChange, options }: Props) {

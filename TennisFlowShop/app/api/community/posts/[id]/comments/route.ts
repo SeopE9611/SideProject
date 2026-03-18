@@ -1,21 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { ObjectId } from 'mongodb';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
+import { z } from "zod";
 
-import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { verifyCommunityCsrf } from '@/lib/community/security';
-import { getValidCommunityUserObjectIds, resolveCommunityDisplayName } from '@/lib/community-display-name';
-import type { CommunityComment } from '@/lib/types/community';
-import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from '@/lib/sanitize';
+import { getDb } from "@/lib/mongodb";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { logInfo, reqMeta, startTimer } from "@/lib/logger";
+import { verifyCommunityCsrf } from "@/lib/community/security";
+import {
+  getValidCommunityUserObjectIds,
+  resolveCommunityDisplayName,
+} from "@/lib/community-display-name";
+import type { CommunityComment } from "@/lib/types/community";
+import {
+  normalizeSanitizedContent,
+  sanitizeHtml,
+  validateSanitizedLength,
+} from "@/lib/sanitize";
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
 async function getAuthPayload() {
   const jar = await cookies();
-  const token = jar.get('accessToken')?.value;
+  const token = jar.get("accessToken")?.value;
   if (!token) return null;
   // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
   let payload: any = null;
@@ -25,7 +32,7 @@ async function getAuthPayload() {
     payload = null;
   }
   // sub는 ObjectId 문자열이어야 함 (new ObjectId(payload.sub) 500 방지)
-  const subStr = payload?.sub ? String(payload.sub) : '';
+  const subStr = payload?.sub ? String(payload.sub) : "";
   if (!subStr || !ObjectId.isValid(subStr)) return null;
   return payload ?? null;
 }
@@ -34,7 +41,7 @@ async function getAuthPayload() {
 
 // 댓글 작성 요청 바디 스키마
 const createCommentSchema = z.object({
-  content: z.string().max(1000, '댓글은 1000자 이내로 입력해 주세요.'),
+  content: z.string().max(1000, "댓글은 1000자 이내로 입력해 주세요."),
   // 대댓글용 부모 댓글 ID (루트 댓글이면 생략/undefined)
   parentId: z.string().optional(),
 });
@@ -43,11 +50,13 @@ const createCommentSchema = z.object({
 function parseListQuery(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
-  const pageRaw = Number(searchParams.get('page') ?? '1');
-  const limitRaw = Number(searchParams.get('limit') ?? '20');
+  const pageRaw = Number(searchParams.get("page") ?? "1");
+  const limitRaw = Number(searchParams.get("limit") ?? "20");
   // Mongo skip/limit는 정수여야 안전. (소수/NaN 방지)
-  const pageInt = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
-  const limitInt = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
+  const pageInt =
+    Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
+  const limitInt =
+    Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
 
   return {
     page: Math.min(10_000, Math.max(1, pageInt)),
@@ -57,31 +66,37 @@ function parseListQuery(req: NextRequest) {
 
 // ----------------------------- GET: 댓글 목록 -------------------------------
 
-export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const stop = startTimer();
   const meta = reqMeta(req);
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_id" },
+      { status: 400 },
+    );
   }
 
   const { page, limit } = parseListQuery(req);
   const db = await getDb();
-  const commentsCol = db.collection('community_comments');
+  const commentsCol = db.collection("community_comments");
 
   const postObjectId = new ObjectId(id);
 
   // 기본 필터: 이 글의 'public' 댓글 전체
   const baseFilter = {
     postId: postObjectId,
-    status: 'public' as const,
+    status: "public" as const,
   };
 
   // 0) 화면에 실제로 보여줄 댓글 전체(루트 + 대댓글, public + deleted)
   const visibleFilter = {
     postId: postObjectId,
-    status: { $in: ['public', 'deleted'] as const },
+    status: { $in: ["public", "deleted"] as const },
   };
 
   // 전체 댓글 수(루트 + 대댓글)를 total로 내려줌 → 상단 "댓글 N" 표시용
@@ -99,7 +114,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
   const skip = (page - 1) * limit;
 
-  const rootDocs = await commentsCol.find(rootFilter).sort({ createdAt: 1 }).skip(skip).limit(limit).toArray();
+  const rootDocs = await commentsCol
+    .find(rootFilter)
+    .sort({ createdAt: 1 })
+    .skip(skip)
+    .limit(limit)
+    .toArray();
 
   const rootIds = rootDocs.map((d: any) => d._id);
 
@@ -110,21 +130,31 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
           .find({
             postId: postObjectId,
             parentId: { $in: rootIds },
-            status: { $in: ['public', 'deleted'] as const },
+            status: { $in: ["public", "deleted"] as const },
           })
           .sort({ createdAt: 1 })
           .toArray()
       : [];
 
   const docs = [...rootDocs, ...replyDocs];
-  const userObjectIds = getValidCommunityUserObjectIds(docs.map((doc: any) => doc.userId ?? null));
+  const userObjectIds = getValidCommunityUserObjectIds(
+    docs.map((doc: any) => doc.userId ?? null),
+  );
   const users = userObjectIds.length
     ? await db
-        .collection('users')
-        .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
+        .collection("users")
+        .find(
+          { _id: { $in: userObjectIds } },
+          { projection: { name: 1, nickname: 1 } },
+        )
         .toArray()
     : [];
-  const userMap = new Map(users.map((user) => [String(user._id), user as { _id: ObjectId; name?: string; nickname?: string }]));
+  const userMap = new Map(
+    users.map((user) => [
+      String(user._id),
+      user as { _id: ObjectId; name?: string; nickname?: string },
+    ]),
+  );
 
   const items: CommunityComment[] = docs.map((d: any) => {
     const userId = d.userId ? String(d.userId) : null;
@@ -139,16 +169,30 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
     return {
       id: String(d._id),
-      postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
-      parentId: d.parentId instanceof ObjectId ? d.parentId.toString() : d.parentId ? String(d.parentId) : null,
+      postId:
+        d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
+      parentId:
+        d.parentId instanceof ObjectId
+          ? d.parentId.toString()
+          : d.parentId
+            ? String(d.parentId)
+            : null,
       userId,
       nickname: displayName,
       authorName: d.authorName,
       authorEmail: d.authorEmail,
-      content: d.content ?? '',
-      status: d.status ?? 'public',
-      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
-      updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : d.updatedAt ? String(d.updatedAt) : undefined,
+      content: d.content ?? "",
+      status: d.status ?? "public",
+      createdAt:
+        d.createdAt instanceof Date
+          ? d.createdAt.toISOString()
+          : String(d.createdAt),
+      updatedAt:
+        d.updatedAt instanceof Date
+          ? d.updatedAt.toISOString()
+          : d.updatedAt
+            ? String(d.updatedAt)
+            : undefined,
     };
   });
 
@@ -163,7 +207,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
     },
     {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     },
   );
@@ -171,8 +215,10 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 
 // ----------------------------- POST: 댓글 작성 ------------------------------
 
-export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
-
+export async function POST(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -182,7 +228,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_id" },
+      { status: 400 },
+    );
   }
 
   const payload = await getAuthPayload();
@@ -193,13 +242,19 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     //   durationMs: stop(),
     //   ...meta,
     // });
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "unauthorized" },
+      { status: 401 },
+    );
   }
 
   // 작성자 ObjectId 변환은 throw 가능하므로, 방어적으로 한 번 더 체크 후 재사용
-  const subStr = payload?.sub ? String(payload.sub) : '';
+  const subStr = payload?.sub ? String(payload.sub) : "";
   if (!subStr || !ObjectId.isValid(subStr)) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "unauthorized" },
+      { status: 401 },
+    );
   }
   const userId = new ObjectId(subStr);
 
@@ -208,7 +263,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   try {
     bodyRaw = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_json" },
+      { status: 400 },
+    );
   }
   const parsed = createCommentSchema.safeParse(bodyRaw);
   if (!parsed.success) {
@@ -219,44 +277,71 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     //   extra: { issues: parsed.error.issues },
     //   ...meta,
     // });
-    return NextResponse.json({ ok: false, error: 'validation_error', details: parsed.error.issues }, { status: 400 });
-  }
-
-  const body = parsed.data;
-  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
-  const contentLengthValidation = validateSanitizedLength(sanitizedContent, { min: 1, max: 1000 });
-
-  if (contentLengthValidation === 'too_short') {
     return NextResponse.json(
-      { ok: false, error: 'validation_error', details: [{ path: ['content'], message: '댓글 내용을 입력해 주세요.' }] },
+      { ok: false, error: "validation_error", details: parsed.error.issues },
       { status: 400 },
     );
   }
 
-  if (contentLengthValidation === 'too_long') {
+  const body = parsed.data;
+  const sanitizedContent = normalizeSanitizedContent(
+    await sanitizeHtml(body.content),
+  );
+  const contentLengthValidation = validateSanitizedLength(sanitizedContent, {
+    min: 1,
+    max: 1000,
+  });
+
+  if (contentLengthValidation === "too_short") {
     return NextResponse.json(
-      { ok: false, error: 'validation_error', details: [{ path: ['content'], message: '댓글은 1000자 이내로 입력해 주세요.' }] },
+      {
+        ok: false,
+        error: "validation_error",
+        details: [{ path: ["content"], message: "댓글 내용을 입력해 주세요." }],
+      },
+      { status: 400 },
+    );
+  }
+
+  if (contentLengthValidation === "too_long") {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "validation_error",
+        details: [
+          { path: ["content"], message: "댓글은 1000자 이내로 입력해 주세요." },
+        ],
+      },
       { status: 400 },
     );
   }
 
   const db = await getDb();
-  const commentsCol = db.collection('community_comments');
-  const postsCol = db.collection('community_posts');
+  const commentsCol = db.collection("community_comments");
+  const postsCol = db.collection("community_posts");
 
   const postObjectId = new ObjectId(id);
 
   // 실제로 해당 게시글이 존재하는지 체크
-  const post = await postsCol.findOne({ _id: postObjectId, status: { $ne: 'deleted' } });
+  const post = await postsCol.findOne({
+    _id: postObjectId,
+    status: { $ne: "deleted" },
+  });
   if (!post) {
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json(
+      { ok: false, error: "not_found" },
+      { status: 404 },
+    );
   }
 
   // parentId가 넘어온 경우: 같은 글에 속한 유효한 댓글인지 검증
   let parentObjectId: ObjectId | null = null;
   if (body.parentId) {
     if (!ObjectId.isValid(body.parentId)) {
-      return NextResponse.json({ ok: false, error: 'invalid_parent_id' }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "invalid_parent_id" },
+        { status: 400 },
+      );
     }
 
     parentObjectId = new ObjectId(body.parentId);
@@ -264,15 +349,20 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     const parentComment = await commentsCol.findOne({
       _id: parentObjectId,
       postId: postObjectId,
-      status: { $ne: 'deleted' },
+      status: { $ne: "deleted" },
     });
 
     if (!parentComment) {
-      return NextResponse.json({ ok: false, error: 'parent_not_found' }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "parent_not_found" },
+        { status: 400 },
+      );
     }
   }
 
-  const userDoc = await db.collection('users').findOne({ _id: userId }, { projection: { name: 1, nickname: 1 } });
+  const userDoc = await db
+    .collection("users")
+    .findOne({ _id: userId }, { projection: { name: 1, nickname: 1 } });
   const displayName = resolveCommunityDisplayName({
     userName: userDoc?.name,
     userNickname: userDoc?.nickname,
@@ -290,7 +380,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     authorName: displayName,
     authorEmail: payload?.email,
     content: sanitizedContent,
-    status: 'public' as const,
+    status: "public" as const,
     createdAt: now,
     updatedAt: now,
   };
@@ -319,7 +409,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     {
       status: 201,
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     },
   );

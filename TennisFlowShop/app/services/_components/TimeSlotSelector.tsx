@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { parse, isToday, isAfter } from 'date-fns';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useMemo } from "react";
+import { parse, isToday, isAfter } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TimeSlotSelectorProps {
   selected: string;
@@ -18,13 +18,23 @@ interface TimeSlotSelectorProps {
 
 // 1) 상단 import/props는 그대로 두되, 렌더 조건을 바꾼다.
 
-export default function TimeSlotSelector({ selected, selectedDate, onSelect, times, disabledTimes = [], isLoading = false, errorMessage = null }: TimeSlotSelectorProps) {
+export default function TimeSlotSelector({
+  selected,
+  selectedDate,
+  onSelect,
+  times,
+  disabledTimes = [],
+  isLoading = false,
+  errorMessage = null,
+}: TimeSlotSelectorProps) {
   const items = useMemo(() => (Array.isArray(times) ? times : []), [times]);
 
   if (!selectedDate) {
     return (
       <div className="space-y-2">
-        <p className="text-muted-foreground text-sm">※ 먼저 장착 희망일을 선택해주세요.</p>
+        <p className="text-muted-foreground text-sm">
+          ※ 먼저 장착 희망일을 선택해주세요.
+        </p>
       </div>
     );
   }
@@ -34,9 +44,13 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
   if (errorMessage) {
     return (
       <div className="space-y-2">
-        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">{errorMessage}</div>
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
+          {errorMessage}
+        </div>
         {/* 필요하면 이 날짜에서는 선택 불가임을 한번 더 안내 */}
-        <p className="text-xs text-muted-foreground">다른 날짜를 선택해주세요.</p>
+        <p className="text-xs text-muted-foreground">
+          다른 날짜를 선택해주세요.
+        </p>
       </div>
     );
   }
@@ -45,7 +59,10 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
     return (
       <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
         {/* 빈 그리드를 노출하지 않아 휴무/비영업일을 버그로 오해하지 않게 한다. */}
-        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">해당 날짜는 예약 가능한 시간이 없습니다(휴무/영업시간 없음). 다른 날짜를 선택해주세요.</div>
+        <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
+          해당 날짜는 예약 가능한 시간이 없습니다(휴무/영업시간 없음). 다른
+          날짜를 선택해주세요.
+        </div>
       </div>
     );
   }
@@ -54,15 +71,26 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
   return (
     <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
       <div className="relative">
-        <div className={['grid grid-cols-3 gap-2 transition', isLoading ? 'pointer-events-none blur-[2px] opacity-60' : ''].join(' ')}>
+        <div
+          className={[
+            "grid grid-cols-3 gap-2 transition",
+            isLoading ? "pointer-events-none blur-[2px] opacity-60" : "",
+          ].join(" ")}
+        >
           {items.map((time) => {
-            const selectedDateTime = parse(`${selectedDate} ${time}`, 'yyyy-MM-dd HH:mm', new Date());
+            const selectedDateTime = parse(
+              `${selectedDate} ${time}`,
+              "yyyy-MM-dd HH:mm",
+              new Date(),
+            );
             const now = new Date();
-            const isPast = isToday(selectedDateTime) && isAfter(now, selectedDateTime);
+            const isPast =
+              isToday(selectedDateTime) && isAfter(now, selectedDateTime);
             const isReserved = disabledTimes.includes(time);
             const disabled = isPast || isReserved;
 
-            const baseBtn = 'w-full rounded-lg px-3 py-2 text-sm transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40';
+            const baseBtn =
+              "w-full rounded-lg px-3 py-2 text-sm transition-colors border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40";
 
             if (disabled) {
               return (
@@ -70,8 +98,15 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
                   key={time}
                   type="button"
                   disabled
-                  title={isReserved ? '이미 예약되었거나 연속 예약이 불가능한 시간대입니다' : '지난 시간대입니다'}
-                  className={baseBtn + ' cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border'}
+                  title={
+                    isReserved
+                      ? "이미 예약되었거나 연속 예약이 불가능한 시간대입니다"
+                      : "지난 시간대입니다"
+                  }
+                  className={
+                    baseBtn +
+                    " cursor-not-allowed bg-muted dark:bg-card text-muted-foreground border-border"
+                  }
                   aria-disabled
                 >
                   {time}
@@ -81,11 +116,17 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
 
             const selectedStyles =
               selected === time
-                ? ' bg-primary text-primary-foreground border-primary/70 shadow-sm'
-                : ' bg-card text-foreground border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border';
+                ? " bg-primary text-primary-foreground border-primary/70 shadow-sm"
+                : " bg-card text-foreground border-border hover:bg-background dark:hover:bg-card hover:border-border dark:hover:border-border";
 
             return (
-              <button key={time} type="button" className={baseBtn + selectedStyles} onClick={() => onSelect(time)} aria-pressed={selected === time}>
+              <button
+                key={time}
+                type="button"
+                className={baseBtn + selectedStyles}
+                onClick={() => onSelect(time)}
+                aria-pressed={selected === time}
+              >
                 {time}
               </button>
             );
@@ -96,13 +137,18 @@ export default function TimeSlotSelector({ selected, selectedDate, onSelect, tim
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="rounded-2xl bg-card/60 dark:bg-card backdrop-blur-sm px-4 py-3 shadow-sm">
               <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-border border-t-transparent" />
-              <div className="mt-2 flex justify-center"><Skeleton className="h-3 w-24" /></div>
+              <div className="mt-2 flex justify-center">
+                <Skeleton className="h-3 w-24" />
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      <p className="text-xs text-muted-foreground mt-2">🔒 회색으로 표시된 시간은 이미 예약되었거나 연속 예약이 불가능해 선택할 수 없습니다.</p>
+      <p className="text-xs text-muted-foreground mt-2">
+        🔒 회색으로 표시된 시간은 이미 예약되었거나 연속 예약이 불가능해 선택할
+        수 없습니다.
+      </p>
     </div>
   );
 }

@@ -1,8 +1,11 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoginPageSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-10" data-cy="login-loading-skeleton">
+    <div
+      className="mx-auto w-full max-w-md px-4 py-10"
+      data-cy="login-loading-skeleton"
+    >
       <div className="rounded-2xl border bg-card p-6 shadow-sm">
         <div className="space-y-3">
           <Skeleton className="h-8 w-40" />

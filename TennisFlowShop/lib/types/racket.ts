@@ -1,7 +1,7 @@
 // 중고 라켓 도메인 타입 (판매 + 대여 겸용)
 // - 판매가(price): 중고 판매용 표시가격
 // - rental: 대여 가능 여부와 요금표(7/15/30일), 보증금
-export type RacketCondition = 'A' | 'B' | 'C';
+export type RacketCondition = "A" | "B" | "C";
 
 export type UsedRacket = {
   id: string; // 문자열 ID (ObjectId toString())
@@ -21,7 +21,7 @@ export type UsedRacket = {
   condition: RacketCondition; // 상태등급
   price: number; // 중고 판매가
   images: string[]; // Supabase 등 업로드 URL
-  status: 'available' | 'sold' | 'rented' | 'inactive';
+  status: "available" | "sold" | "rented" | "inactive";
   quantity?: number;
   searchKeywords?: string[];
 

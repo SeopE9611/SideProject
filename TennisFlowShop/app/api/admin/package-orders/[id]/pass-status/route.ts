@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId, ObjectId as OID, UpdateFilter } from 'mongodb';
-import type { PackageOrder } from '@/lib/types/package-order';
-import type { ServicePass } from '@/lib/types/pass';
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId, ObjectId as OID, UpdateFilter } from "mongodb";
+import type { PackageOrder } from "@/lib/types/package-order";
+import type { ServicePass } from "@/lib/types/pass";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 
-
-function normalizePassStatus(status: ServicePass['status']): 'active' | 'paused' | 'cancelled' | 'expired' {
-  if (status === 'suspended') return 'paused';
+function normalizePassStatus(
+  status: ServicePass["status"],
+): "active" | "paused" | "cancelled" | "expired" {
+  if (status === "suspended") return "paused";
   return status;
 }
 
@@ -16,23 +17,29 @@ function toRemainingValidityMs(pass: ServicePass, now: Date): number {
   const status = normalizePassStatus(pass.status);
 
   // active 상태는 expiresAt - now 기준만 사용(stale remainingValidityMs 무시)
-  if (status === 'active') {
-    if (pass.expiresAt instanceof Date) return Math.max(0, pass.expiresAt.getTime() - now.getTime());
+  if (status === "active") {
+    if (pass.expiresAt instanceof Date)
+      return Math.max(0, pass.expiresAt.getTime() - now.getTime());
     return 0;
   }
 
   // 비활성 계열은 저장된 remainingValidityMs를 우선 사용
-  if (typeof pass.remainingValidityMs === 'number' && pass.remainingValidityMs >= 0) return pass.remainingValidityMs;
-  if (pass.expiresAt instanceof Date) return Math.max(0, pass.expiresAt.getTime() - now.getTime());
+  if (
+    typeof pass.remainingValidityMs === "number" &&
+    pass.remainingValidityMs >= 0
+  )
+    return pass.remainingValidityMs;
+  if (pass.expiresAt instanceof Date)
+    return Math.max(0, pass.expiresAt.getTime() - now.getTime());
   return 0;
 }
 
 type PassHistoryItem = {
   _id: OID;
-  type: 'status_change';
+  type: "status_change";
   at: Date;
-  from?: 'active' | 'paused' | 'cancelled' | null;
-  to: 'active' | 'paused' | 'cancelled';
+  from?: "active" | "paused" | "cancelled" | null;
+  to: "active" | "paused" | "cancelled";
   reason?: string;
   adminId?: string | OID | null;
   adminName?: string | null;
@@ -41,7 +48,10 @@ type PassHistoryItem = {
 
 // POST /api/admin/package-orders/:id/pass-status
 // body: { status: 'active' | 'paused' | 'cancelled', reason?: string }
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   // 관리자 인증/인가 표준 가드
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -51,45 +61,60 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!csrf.ok) return csrf.res;
 
   try {
-  const { id } = await params;
-    if (!ObjectId.isValid(id)) return NextResponse.json({ error: 'invalid id' }, { status: 400 });
+    const { id } = await params;
+    if (!ObjectId.isValid(id))
+      return NextResponse.json({ error: "invalid id" }, { status: 400 });
 
     // 입력
     const body = await req.json().catch(() => ({}));
-    const next: 'active' | 'paused' | 'cancelled' = body?.status;
-    const reason: string = String(body?.reason ?? '');
-    if (!['active', 'paused', 'cancelled'].includes(next)) {
-      return NextResponse.json({ error: 'status must be active|paused|cancelled' }, { status: 400 });
+    const next: "active" | "paused" | "cancelled" = body?.status;
+    const reason: string = String(body?.reason ?? "");
+    if (!["active", "paused", "cancelled"].includes(next)) {
+      return NextResponse.json(
+        { error: "status must be active|paused|cancelled" },
+        { status: 400 },
+      );
     }
 
     const db = (await clientPromise).db();
-    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>('service_passes');
-    const orders = db.collection<PackageOrder>('packageOrders');
+    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>(
+      "service_passes",
+    );
+    const orders = db.collection<PackageOrder>("packageOrders");
 
     // 이 주문에 연결된 패스 찾기
     const orderId = new ObjectId(id);
     const pass = await passes.findOne({ orderId });
-    if (!pass) return NextResponse.json({ error: 'service pass not found for this order' }, { status: 404 });
+    if (!pass)
+      return NextResponse.json(
+        { error: "service pass not found for this order" },
+        { status: 404 },
+      );
 
     const now = new Date();
-    const prev = ((pass.status === 'suspended' ? 'paused' : pass.status) ?? 'active') as 'active' | 'paused' | 'cancelled';
+    const prev = ((pass.status === "suspended" ? "paused" : pass.status) ??
+      "active") as "active" | "paused" | "cancelled";
     const currentRemainingMs = toRemainingValidityMs(pass, now);
 
-    const setPatch: Partial<ServicePass> & { status: 'active' | 'paused' | 'cancelled'; updatedAt: Date } = {
+    const setPatch: Partial<ServicePass> & {
+      status: "active" | "paused" | "cancelled";
+      updatedAt: Date;
+    } = {
       status: next,
       updatedAt: now,
     } as any;
 
-    if (next === 'paused') {
+    if (next === "paused") {
       setPatch.remainingValidityMs = currentRemainingMs;
       setPatch.expiresAt = null;
-    } else if (next === 'active') {
+    } else if (next === "active") {
       const resumeMs = currentRemainingMs > 0 ? currentRemainingMs : 0;
       setPatch.activatedAt = pass.activatedAt ?? now;
-      setPatch.expiresAt = resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null;
+      setPatch.expiresAt =
+        resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null;
       // active 복귀 직후 stale remainingValidityMs 정리
       setPatch.remainingValidityMs = null;
-    } else if (next === 'cancelled') {
+    } else if (next === "cancelled") {
       setPatch.remainingValidityMs = currentRemainingMs;
       setPatch.expiresAt = null;
     }
@@ -102,11 +127,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           $each: [
             {
               _id: new OID(),
-              type: 'status_change',
+              type: "status_change",
               at: now,
               from: prev,
               to: next,
-              reason: reason || '',
+              reason: reason || "",
               adminId: guard.admin._id,
               adminName: guard.admin.email ?? null,
               adminEmail: guard.admin.email ?? null,
@@ -124,21 +149,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           history: {
             $each: [
               {
-                status: '패스상태변경',
+                status: "패스상태변경",
                 date: now,
-                description: `패스 상태 ${prev} → ${next}${reason ? ` (${reason})` : ''}`,
-              } satisfies PackageOrder['history'][number],
+                description: `패스 상태 ${prev} → ${next}${reason ? ` (${reason})` : ""}`,
+              } satisfies PackageOrder["history"][number],
             ],
           },
         },
         $set: { updatedAt: now },
-      }
+      },
     );
 
     const fresh = await passes.findOne({ _id: pass._id });
     return NextResponse.json({ ok: true, pass: fresh });
   } catch (e) {
-    console.error('[POST /api/admin/package-orders/:id/pass-status] error', e);
-    return NextResponse.json({ error: 'internal error' }, { status: 500 });
+    console.error("[POST /api/admin/package-orders/:id/pass-status] error", e);
+    return NextResponse.json({ error: "internal error" }, { status: 500 });
   }
 }

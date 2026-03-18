@@ -1,13 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
-import useStringingApplySharedState from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
-import { resolvePackageUsage, resolveRequiredPassCountFromInput } from '@/app/features/stringing-applications/lib/package-pricing';
-import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
-import type { CartItem } from '@/app/store/cartStore';
+import useStringingApplySharedState from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
+import {
+  resolvePackageUsage,
+  resolveRequiredPassCountFromInput,
+} from "@/app/features/stringing-applications/lib/package-pricing";
+import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
+import type { CartItem } from "@/app/store/cartStore";
 
-type ServicePickup = 'SELF_SEND' | 'COURIER_VISIT' | 'SHOP_VISIT';
+type ServicePickup = "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT";
 
 type Params = {
   withStringService: boolean;
@@ -27,12 +30,12 @@ type Params = {
   isMember: boolean;
 };
 
-const PREVIEW_ORDER_ID = '__checkout_preview_order__';
+const PREVIEW_ORDER_ID = "__checkout_preview_order__";
 
 const mapPickupToCollectionMethod = (pickup: ServicePickup) => {
-  if (pickup === 'SHOP_VISIT') return 'visit' as const;
-  if (pickup === 'COURIER_VISIT') return 'courier_pickup' as const;
-  return 'self_ship' as const;
+  if (pickup === "SHOP_VISIT") return "visit" as const;
+  if (pickup === "COURIER_VISIT") return "courier_pickup" as const;
+  return "self_ship" as const;
 };
 
 const sameStringArray = (a: string[] | undefined, b: string[] | undefined) => {
@@ -47,7 +50,10 @@ const sameStringArray = (a: string[] | undefined, b: string[] | undefined) => {
   return true;
 };
 
-const sameCountMap = (a: Record<string, number> | undefined, b: Record<string, number> | undefined) => {
+const sameCountMap = (
+  a: Record<string, number> | undefined,
+  b: Record<string, number> | undefined,
+) => {
   if (a === b) return true;
   if (!a || !b) return !a && !b;
 
@@ -65,8 +71,8 @@ const sameCountMap = (a: Record<string, number> | undefined, b: Record<string, n
 // 시간 문자열("10:30")을 분 단위로 바꿔서
 // 슬롯 간격(예: 30분) 계산에 사용
 const parseTimeToMinutes = (time: string | null | undefined) => {
-  if (!time || typeof time !== 'string') return null;
-  const [h, m] = time.split(':').map((v) => Number(v));
+  if (!time || typeof time !== "string") return null;
+  const [h, m] = time.split(":").map((v) => Number(v));
   if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
   return h * 60 + m;
 };
@@ -99,7 +105,7 @@ export default function useCheckoutStringingServiceAdapter({
     const items = orderItems.map((item) => ({
       id: String(item.id),
       name: item.name,
-      kind: item.kind ?? 'product',
+      kind: item.kind ?? "product",
       quantity: Number(item.quantity ?? 1),
       price: Number(item.price ?? 0),
       mountingFee: mountingFeeByProductId[String(item.id)] ?? 0,
@@ -139,15 +145,23 @@ export default function useCheckoutStringingServiceAdapter({
 
     (async () => {
       try {
-        const res = await fetch('/api/passes/me', { credentials: 'include' });
+        const res = await fetch("/api/passes/me", { credentials: "include" });
         if (!res.ok) {
           setPackagePreview({ has: false });
           return;
         }
 
         const data = await res.json();
-        const items = (data?.items ?? []).filter((p: any) => p.status === 'active' && p.remainingCount > 0 && new Date(p.expiresAt).getTime() >= Date.now());
-        items.sort((a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
+        const items = (data?.items ?? []).filter(
+          (p: any) =>
+            p.status === "active" &&
+            p.remainingCount > 0 &&
+            new Date(p.expiresAt).getTime() >= Date.now(),
+        );
+        items.sort(
+          (a: any, b: any) =>
+            new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
+        );
 
         if (items.length === 0) {
           setPackagePreview({ has: false });
@@ -172,7 +186,7 @@ export default function useCheckoutStringingServiceAdapter({
     if (!withStringService) return;
 
     const collectionMethod = mapPickupToCollectionMethod(servicePickupMethod);
-    const isVisit = collectionMethod === 'visit';
+    const isVisit = collectionMethod === "visit";
 
     setFormData((prev) => {
       if (
@@ -182,9 +196,9 @@ export default function useCheckoutStringingServiceAdapter({
         prev.shippingName === name &&
         prev.shippingEmail === email &&
         prev.shippingPhone === phone &&
-        prev.shippingPostcode === (isVisit ? '' : postalCode) &&
-        prev.shippingAddress === (isVisit ? '' : address) &&
-        prev.shippingAddressDetail === (isVisit ? '' : addressDetail) &&
+        prev.shippingPostcode === (isVisit ? "" : postalCode) &&
+        prev.shippingAddress === (isVisit ? "" : address) &&
+        prev.shippingAddressDetail === (isVisit ? "" : addressDetail) &&
         prev.shippingDepositor === depositor &&
         prev.shippingBank === selectedBank &&
         prev.collectionMethod === collectionMethod
@@ -200,15 +214,27 @@ export default function useCheckoutStringingServiceAdapter({
         shippingName: name,
         shippingEmail: email,
         shippingPhone: phone,
-        shippingPostcode: isVisit ? '' : postalCode,
-        shippingAddress: isVisit ? '' : address,
-        shippingAddressDetail: isVisit ? '' : addressDetail,
+        shippingPostcode: isVisit ? "" : postalCode,
+        shippingAddress: isVisit ? "" : address,
+        shippingAddressDetail: isVisit ? "" : addressDetail,
         shippingDepositor: depositor,
         shippingBank: selectedBank,
         collectionMethod,
       };
     });
-  }, [withStringService, servicePickupMethod, name, email, phone, postalCode, address, addressDetail, depositor, selectedBank, setFormData]);
+  }, [
+    withStringService,
+    servicePickupMethod,
+    name,
+    email,
+    phone,
+    postalCode,
+    address,
+    addressDetail,
+    depositor,
+    selectedBank,
+    setFormData,
+  ]);
 
   useEffect(() => {
     if (!withStringService) return;
@@ -223,7 +249,10 @@ export default function useCheckoutStringingServiceAdapter({
     });
 
     setFormData((prev) => {
-      if (sameStringArray(prev.stringTypes, selectedIds) && sameCountMap(prev.stringUseCounts, nextCounts)) {
+      if (
+        sameStringArray(prev.stringTypes, selectedIds) &&
+        sameCountMap(prev.stringUseCounts, nextCounts)
+      ) {
         return prev;
       }
 
@@ -235,7 +264,9 @@ export default function useCheckoutStringingServiceAdapter({
     });
   }, [withStringService, serviceTargetIds, previewOrder.items, setFormData]);
 
-  const orderRemainingSlots = (previewOrder.stringService.totalSlots ?? 0) - (previewOrder.stringService.usedSlots ?? 0);
+  const orderRemainingSlots =
+    (previewOrder.stringService.totalSlots ?? 0) -
+    (previewOrder.stringService.usedSlots ?? 0);
   const requiredPassCount = useMemo(
     () =>
       resolveRequiredPassCountFromInput({
@@ -246,7 +277,13 @@ export default function useCheckoutStringingServiceAdapter({
   );
 
   // 예약 가능한 시간 목록을 실제로 조회
-  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate } = useReservedSlots({
+  const {
+    disabledTimes,
+    timeSlots,
+    slotsLoading,
+    slotsError,
+    hasCacheForDate,
+  } = useReservedSlots({
     preferredDate: shared.formData.preferredDate,
     preferredTime: shared.formData.preferredTime,
     requiredPassCount,
@@ -292,9 +329,15 @@ export default function useCheckoutStringingServiceAdapter({
     }
   }, [packageInsufficient, shared.formData.packageOptOut, shared.setFormData]);
 
-  const base = shared.linesForSubmit.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0);
+  const base = shared.linesForSubmit.reduce(
+    (sum, line) => sum + Number(line.mountingFee ?? 0),
+    0,
+  );
   const price = usingPackage ? 0 : base;
-  const selectedOrderItem = previewOrder.items.find((it) => it.id === shared.formData.stringTypes?.[0]) ?? null;
+  const selectedOrderItem =
+    previewOrder.items.find(
+      (it) => it.id === shared.formData.stringTypes?.[0],
+    ) ?? null;
 
   return {
     previewOrder,

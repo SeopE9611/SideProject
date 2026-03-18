@@ -1,11 +1,18 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { sanitizeHtml } from '@/lib/sanitize';
-import { AdminFetchError, adminFetcher } from '@/lib/admin/adminFetcher';
-import BoardDetailActions from './BoardDetailActions';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  ArrowLeft,
+  Calendar,
+  Eye,
+  MessageSquare,
+  Settings,
+  User,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { AdminFetchError, adminFetcher } from "@/lib/admin/adminFetcher";
+import BoardDetailActions from "./BoardDetailActions";
 
 type BoardPostDetail = {
   id: string;
@@ -13,7 +20,7 @@ type BoardPostDetail = {
   content: string;
   type: string;
   category: string;
-  status: 'public' | 'hidden';
+  status: "public" | "hidden";
   isPinned?: boolean;
   views: number;
   commentsCount: number;
@@ -30,7 +37,7 @@ type BoardPostDetail = {
  * - URL 인코딩된 ID를 허용하기 위해 decodeURIComponent를 적용한다.
  */
 function normalizeBoardIdentifier(id: string) {
-  const raw = String(id ?? '').trim();
+  const raw = String(id ?? "").trim();
   if (!raw) return null;
 
   try {
@@ -41,73 +48,79 @@ function normalizeBoardIdentifier(id: string) {
   }
 }
 
-function getStatusVariant(status: string): 'success' | 'warning' | 'destructive' {
+function getStatusVariant(
+  status: string,
+): "success" | "warning" | "destructive" {
   switch (status) {
-    case 'public':
-      return 'success';
-    case 'hidden':
-      return 'warning';
+    case "public":
+      return "success";
+    case "hidden":
+      return "warning";
     default:
-      return 'destructive';
+      return "destructive";
   }
 }
 
 function getStatusName(status: string) {
   switch (status) {
-    case 'public':
-      return '게시중';
-    case 'hidden':
-      return '숨김';
+    case "public":
+      return "게시중";
+    case "hidden":
+      return "숨김";
     default:
-      return status || '미정';
+      return status || "미정";
   }
 }
 
 function getBoardTypeColor(type: string) {
   switch (type) {
-    case 'notice':
-      return 'bg-primary/20 text-primary hover:bg-primary/30 dark:bg-primary/30';
-    case 'qna':
-      return 'bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20';
-    case 'community':
-      return 'bg-success/10 text-success hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15';
-    case 'faq':
-      return 'bg-muted text-foreground hover:bg-muted';
+    case "notice":
+      return "bg-primary/20 text-primary hover:bg-primary/30 dark:bg-primary/30";
+    case "qna":
+      return "bg-primary/10 text-primary hover:bg-primary/15 dark:hover:bg-primary/25 dark:bg-primary/20";
+    case "community":
+      return "bg-success/10 text-success hover:bg-success/10 dark:bg-success/15 dark:hover:bg-success/15";
+    case "faq":
+      return "bg-muted text-foreground hover:bg-muted";
     default:
-      return 'bg-card text-muted-foreground hover:bg-card';
+      return "bg-card text-muted-foreground hover:bg-card";
   }
 }
 
 function getBoardTypeName(type: string) {
   switch (type) {
-    case 'notice':
-      return '공지사항';
-    case 'qna':
-      return 'Q&A';
-    case 'community':
-      return '커뮤니티';
-    case 'faq':
-      return 'FAQ';
+    case "notice":
+      return "공지사항";
+    case "qna":
+      return "Q&A";
+    case "community":
+      return "커뮤니티";
+    case "faq":
+      return "FAQ";
     default:
-      return type || '기타';
+      return type || "기타";
   }
 }
 
 function formatDate(dateValue?: string | Date) {
-  if (!dateValue) return '-';
+  if (!dateValue) return "-";
   const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return '-';
+  if (Number.isNaN(date.getTime())) return "-";
 
-  return new Intl.DateTimeFormat('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
-export default async function BoardPostDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BoardPostDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const boardId = normalizeBoardIdentifier(id);
 
@@ -117,9 +130,12 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
 
   let data: { item?: BoardPostDetail } | null = null;
   try {
-    data = await adminFetcher<{ item?: BoardPostDetail }>(`/api/admin/community/posts/${encodeURIComponent(boardId)}`, {
-      cache: 'no-store',
-    });
+    data = await adminFetcher<{ item?: BoardPostDetail }>(
+      `/api/admin/community/posts/${encodeURIComponent(boardId)}`,
+      {
+        cache: "no-store",
+      },
+    );
   } catch (error) {
     if (error instanceof AdminFetchError && error.status === 404) {
       notFound();
@@ -127,7 +143,9 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
     return (
       <div className="min-h-screen bg-muted/30">
         <div className="container py-8 px-6">
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>
+          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+            게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+          </p>
         </div>
       </div>
     );
@@ -140,20 +158,23 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
   }
 
   const postId = String(post.id ?? boardId);
-  const postStatus = String(post.status ?? 'hidden');
+  const postStatus = String(post.status ?? "hidden");
 
   /**
    * 본문 렌더링 보안 정책
    * - API 저장 시 sanitize 처리되어도 화면 단에서 한 번 더 정제한다.
    * - 렌더링은 정제된 문자열만 dangerouslySetInnerHTML에 전달한다.
    */
-  const safeContent = await sanitizeHtml(String(post.content ?? ''));
+  const safeContent = await sanitizeHtml(String(post.content ?? ""));
 
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="container py-8 px-6">
         <div className="mb-6">
-          <Link href="/admin/boards" className="inline-flex items-center text-primary hover:text-primary dark:hover:text-primary hover:underline">
+          <Link
+            href="/admin/boards"
+            className="inline-flex items-center text-primary hover:text-primary dark:hover:text-primary hover:underline"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             게시판 목록으로 돌아가기
           </Link>
@@ -167,8 +188,12 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-foreground">게시물 상세 보기</h1>
-                  <p className="mt-1 text-muted-foreground">게시물의 상세 정보를 확인하고 관리할 수 있습니다.</p>
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                    게시물 상세 보기
+                  </h1>
+                  <p className="mt-1 text-muted-foreground">
+                    게시물의 상세 정보를 확인하고 관리할 수 있습니다.
+                  </p>
                 </div>
               </div>
               <BoardDetailActions postId={postId} currentStatus={postStatus} />
@@ -179,15 +204,28 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
             <Card className="md:col-span-2 shadow-xl bg-muted/30 border border-border">
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className={getBoardTypeColor(String(post.type ?? ''))}>{getBoardTypeName(String(post.type ?? ''))}</Badge>
-                  <Badge variant={getStatusVariant(postStatus)}>{getStatusName(postStatus)}</Badge>
-                  {!!post.category && <Badge variant="outline">{post.category}</Badge>}
-                  {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
+                  <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
+                    {getBoardTypeName(String(post.type ?? ""))}
+                  </Badge>
+                  <Badge variant={getStatusVariant(postStatus)}>
+                    {getStatusName(postStatus)}
+                  </Badge>
+                  {!!post.category && (
+                    <Badge variant="outline">{post.category}</Badge>
+                  )}
+                  {post.isPinned && (
+                    <Badge variant="secondary">상단 고정</Badge>
+                  )}
                 </div>
-                <CardTitle className="text-2xl font-bold text-foreground">{post.title || '(제목 없음)'}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-foreground">
+                  {post.title || "(제목 없음)"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-blue dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: safeContent }} />
+                <div
+                  className="prose prose-blue dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: safeContent }}
+                />
               </CardContent>
             </Card>
 
@@ -199,29 +237,47 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <User className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">{post.authorDisplayName || post.authorNickname || '작성자 미상'}</p>
-                    <p className="text-sm text-muted-foreground">{post.authorNickname || post.authorId || '-'}</p>
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      {post.authorDisplayName ||
+                        post.authorNickname ||
+                        "작성자 미상"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {post.authorNickname || post.authorId || "-"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <Calendar className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">작성일</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      작성일
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatDate(post.createdAt)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <Eye className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">조회수</p>
-                    <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      조회수
+                    </p>
+                    <p className="text-sm text-primary font-semibold">
+                      {Number(post.views ?? 0)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <MessageSquare className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">댓글</p>
-                    <p className="text-sm text-primary font-semibold">{Number(post.commentsCount ?? 0)}개</p>
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      댓글
+                    </p>
+                    <p className="text-sm text-primary font-semibold">
+                      {Number(post.commentsCount ?? 0)}개
+                    </p>
                   </div>
                 </div>
               </CardContent>

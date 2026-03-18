@@ -1,13 +1,16 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { z } from 'zod';
-import { hasCompletedStringingApplication, normalizeStringingApplicationId } from '@/app/order-lookup/_lib/stringing-status';
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { z } from "zod";
+import {
+  hasCompletedStringingApplication,
+  normalizeStringingApplicationId,
+} from "@/app/order-lookup/_lib/stringing-status";
 
-type GuestOrderMode = 'off' | 'legacy' | 'on';
+type GuestOrderMode = "off" | "legacy" | "on";
 
 function getGuestOrderMode(): GuestOrderMode {
-  const raw = (process.env.GUEST_ORDER_MODE ?? 'on').trim();
-  return raw === 'off' || raw === 'legacy' || raw === 'on' ? raw : 'on';
+  const raw = (process.env.GUEST_ORDER_MODE ?? "on").trim();
+  return raw === "off" || raw === "legacy" || raw === "on" ? raw : "on";
 }
 
 // 비회원 주문 조회는 "클라 입력"을 절대 신뢰하면 안 됨.
@@ -15,26 +18,31 @@ function getGuestOrderMode(): GuestOrderMode {
 //       그래서 서버에서 최종 정규화 + 유효성 검증을 강제.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const onlyDigits = (v: unknown) => String(v ?? '').replace(/\D/g, '');
-const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
+const isValidKoreanPhoneDigits = (digits: string) =>
+  digits.length === 10 || digits.length === 11;
 
 // RegExp injection 방지용(이메일을 case-insensitive exact match로 조회할 때 사용)
 function escapeRegex(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 const requestSchema = z.object({
   name: z
     .string()
     .transform((s) => s.trim())
-    .refine((s) => s.length > 0, { message: '이름은 필수입니다.' })
-    .refine((s) => s.length <= 50, { message: '이름은 50자 이내로 입력해주세요.' }),
+    .refine((s) => s.length > 0, { message: "이름은 필수입니다." })
+    .refine((s) => s.length <= 50, {
+      message: "이름은 50자 이내로 입력해주세요.",
+    }),
   email: z
     .string()
     .transform((s) => s.trim())
-    .refine((s) => s.length > 0, { message: '이메일은 필수입니다.' })
-    .refine((s) => EMAIL_RE.test(s), { message: '유효한 이메일 주소를 입력해주세요.' })
-    .refine((s) => s.length <= 254, { message: '이메일이 너무 깁니다.' }),
+    .refine((s) => s.length > 0, { message: "이메일은 필수입니다." })
+    .refine((s) => EMAIL_RE.test(s), {
+      message: "유효한 이메일 주소를 입력해주세요.",
+    })
+    .refine((s) => s.length <= 254, { message: "이메일이 너무 깁니다." }),
   phone: z
     .string()
     .optional()
@@ -43,15 +51,20 @@ const requestSchema = z.object({
       const d = onlyDigits(v);
       return d ? d : undefined;
     })
-    .refine((v) => !v || isValidKoreanPhoneDigits(v), { message: '전화번호는 숫자 10~11자리만 입력해주세요.' }),
+    .refine((v) => !v || isValidKoreanPhoneDigits(v), {
+      message: "전화번호는 숫자 10~11자리만 입력해주세요.",
+    }),
 });
 
 export async function POST(req: Request) {
   try {
     // 운영 정책: off이면 비회원 주문 "조회"도 중단.
     // 주문 존재 여부/검색 결과 노출을 막기 위해 404로 통일.
-    if (getGuestOrderMode() === 'off') {
-      return NextResponse.json({ success: false, error: '비회원 주문 조회가 현재 중단되었습니다.' }, { status: 404 });
+    if (getGuestOrderMode() === "off") {
+      return NextResponse.json(
+        { success: false, error: "비회원 주문 조회가 현재 중단되었습니다." },
+        { status: 404 },
+      );
     }
     const body = await req.json().catch(() => null);
     const parsed = requestSchema.safeParse(body);
@@ -62,7 +75,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: flat.formErrors?.[0] ?? '요청 값이 올바르지 않습니다.',
+          error: flat.formErrors?.[0] ?? "요청 값이 올바르지 않습니다.",
           fieldErrors: flat.fieldErrors,
         },
         { status: 400 },
@@ -83,22 +96,32 @@ export async function POST(req: Request) {
         $exists: true,
         $ne: null,
       },
-      'guestInfo.name': name,
+      "guestInfo.name": name,
       createdAt: { $gte: since },
       // 전화번호는 선택 조건 (있으면 추가로 일치시킴)
-      ...(phone ? { 'guestInfo.phone': phone } : {}),
+      ...(phone ? { "guestInfo.phone": phone } : {}),
     };
 
     // 1) 기본: 이메일 exact match (가장 빠르고 인덱스 친화적)
-    const exactQuery = { ...baseQuery, 'guestInfo.email': email };
-    let orders = await db.collection('orders').find(exactQuery).sort({ createdAt: -1 }).limit(50).toArray();
+    const exactQuery = { ...baseQuery, "guestInfo.email": email };
+    let orders = await db
+      .collection("orders")
+      .find(exactQuery)
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
 
     // 2) 보정: 대소문자 차이로 exact가 0건이면, case-insensitive exact fallback
     //    (주문 생성 시 이메일을 lowercase로 강제하지 않았을 가능성이 있어 UX 보정용)
     if (orders.length === 0) {
-      const emailRe = new RegExp(`^${escapeRegex(email)}$`, 'i');
-      const ciQuery = { ...baseQuery, 'guestInfo.email': emailRe };
-      orders = await db.collection('orders').find(ciQuery).sort({ createdAt: -1 }).limit(50).toArray();
+      const emailRe = new RegExp(`^${escapeRegex(email)}$`, "i");
+      const ciQuery = { ...baseQuery, "guestInfo.email": emailRe };
+      orders = await db
+        .collection("orders")
+        .find(ciQuery)
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
     }
 
     // 상세 API와 동일 정책으로 주문에 연결된 신청서 우선 판단
@@ -106,11 +129,11 @@ export async function POST(req: Request) {
     const orderIds = orders.map((order: any) => order?._id).filter(Boolean);
     const submittedApps = orderIds.length
       ? await db
-          .collection('stringing_applications')
+          .collection("stringing_applications")
           .find(
             {
               orderId: { $in: orderIds },
-              status: { $nin: ['draft', '취소'] },
+              status: { $nin: ["draft", "취소"] },
             },
             {
               projection: { _id: 1, orderId: 1, updatedAt: 1, createdAt: 1 },
@@ -122,22 +145,29 @@ export async function POST(req: Request) {
 
     const latestApplicationIdByOrderId = new Map<string, string>();
     for (const app of submittedApps as any[]) {
-      const orderIdKey = String(app?.orderId ?? '');
+      const orderIdKey = String(app?.orderId ?? "");
       if (!orderIdKey || latestApplicationIdByOrderId.has(orderIdKey)) continue;
 
-      const appId = String(app?._id ?? '').trim();
+      const appId = String(app?._id ?? "").trim();
       if (!appId) continue;
       latestApplicationIdByOrderId.set(orderIdKey, appId);
     }
 
     const normalizedOrders = orders.map((order: any) => {
-      const orderIdKey = String(order?._id ?? '');
-      const latestApplicationId = orderIdKey ? latestApplicationIdByOrderId.get(orderIdKey) ?? null : null;
-      const fallbackApplicationId = normalizeStringingApplicationId(order?.stringingApplicationId);
-      const stringingApplicationId = latestApplicationId ?? fallbackApplicationId;
+      const orderIdKey = String(order?._id ?? "");
+      const latestApplicationId = orderIdKey
+        ? (latestApplicationIdByOrderId.get(orderIdKey) ?? null)
+        : null;
+      const fallbackApplicationId = normalizeStringingApplicationId(
+        order?.stringingApplicationId,
+      );
+      const stringingApplicationId =
+        latestApplicationId ?? fallbackApplicationId;
 
       const isStringServiceApplied = hasCompletedStringingApplication({
-        isStringServiceApplied: latestApplicationId ? true : order?.isStringServiceApplied,
+        isStringServiceApplied: latestApplicationId
+          ? true
+          : order?.isStringServiceApplied,
         stringingApplicationId: stringingApplicationId ?? fallbackApplicationId,
       });
 
@@ -150,7 +180,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, orders: normalizedOrders });
   } catch (error) {
-    console.error('[GUEST_ORDER_LOOKUP_ERROR]', error);
-    return NextResponse.json({ success: false, error: '주문 조회 중 오류가 발생했습니다.' }, { status: 500 });
+    console.error("[GUEST_ORDER_LOOKUP_ERROR]", error);
+    return NextResponse.json(
+      { success: false, error: "주문 조회 중 오류가 발생했습니다." },
+      { status: 500 },
+    );
   }
 }

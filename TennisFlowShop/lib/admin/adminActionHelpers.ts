@@ -1,5 +1,5 @@
-import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 interface AdminActionOptions<T> {
   action: () => Promise<T>;

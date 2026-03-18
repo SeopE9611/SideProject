@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import type { z } from 'zod';
+import { NextResponse } from "next/server";
+import type { z } from "zod";
 
 export type AdminApiFieldErrors = Record<string, string[]>;
 
@@ -9,10 +9,14 @@ export type AdminApiValidationDetail = {
   path: string;
 };
 
-export function adminValidationError(error: string, fieldErrors?: AdminApiFieldErrors, details?: AdminApiValidationDetail[]) {
+export function adminValidationError(
+  error: string,
+  fieldErrors?: AdminApiFieldErrors,
+  details?: AdminApiValidationDetail[],
+) {
   return NextResponse.json(
     {
-      message: 'INVALID_FIELDS',
+      message: "INVALID_FIELDS",
       error,
       fieldErrors: fieldErrors ?? null,
       details: details ?? null,
@@ -21,10 +25,12 @@ export function adminValidationError(error: string, fieldErrors?: AdminApiFieldE
   );
 }
 
-export function zodIssuesToDetails(issues: z.ZodIssue[]): AdminApiValidationDetail[] {
+export function zodIssuesToDetails(
+  issues: z.ZodIssue[],
+): AdminApiValidationDetail[] {
   return issues.map((issue) => ({
     code: issue.code,
     message: issue.message,
-    path: issue.path.map(String).join('.') || '(root)',
+    path: issue.path.map(String).join(".") || "(root)",
   }));
 }

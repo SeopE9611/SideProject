@@ -1,34 +1,82 @@
-'use client';
+"use client";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { racketBrandLabel } from '@/lib/constants';
-import { AlertTriangle, CheckCircle, Edit, Eye, MoreVertical, Package, Plus, Search, XCircle } from 'lucide-react';
-import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { MdSportsTennis } from 'react-icons/md';
-import useSWR from 'swr';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { racketBrandLabel } from "@/lib/constants";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Edit,
+  Eye,
+  MoreVertical,
+  Package,
+  Plus,
+  Search,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { MdSportsTennis } from "react-icons/md";
+import useSWR from "swr";
 
 function StockChip({ id, total }: { id: string; total: number }) {
-  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, authenticatedSWRFetcher, {
-    dedupingInterval: 5000,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const { data } = useSWR<{ ok: boolean; available: number }>(
+    `/api/admin/rentals/active-count/${id}`,
+    authenticatedSWRFetcher,
+    {
+      dedupingInterval: 5000,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
   const qty = Math.max(1, total ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
   return (
-    <Badge variant={soldOut ? 'destructive' : 'default'} className="font-normal">
-      {qty > 1 ? (soldOut ? `0/${qty}` : `${avail}/${qty}`) : soldOut ? '대여 중' : '대여 가능'}
+    <Badge
+      variant={soldOut ? "destructive" : "default"}
+      className="font-normal"
+    >
+      {qty > 1
+        ? soldOut
+          ? `0/${qty}`
+          : `${avail}/${qty}`
+        : soldOut
+          ? "대여 중"
+          : "대여 가능"}
     </Badge>
   );
 }
@@ -38,56 +86,75 @@ type Item = {
   brand: string;
   model: string;
   price: number;
-  condition: 'A' | 'B' | 'C';
-  status: 'available' | 'rented' | 'sold' | 'inactive';
-  rental?: { enabled: boolean; deposit: number; fee: { d7: number; d15: number; d30: number } };
+  condition: "A" | "B" | "C";
+  status: "available" | "rented" | "sold" | "inactive";
+  rental?: {
+    enabled: boolean;
+    deposit: number;
+    fee: { d7: number; d15: number; d30: number };
+  };
   images?: string[];
   quantity?: number;
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const variants: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-    available: { label: '판매가능', variant: 'default' },
-    rented: { label: '대여중', variant: 'secondary' },
-    sold: { label: '판매완료', variant: 'destructive' },
-    inactive: { label: '비노출', variant: 'outline' },
+  const variants: Record<
+    string,
+    {
+      label: string;
+      variant: "default" | "secondary" | "destructive" | "outline";
+    }
+  > = {
+    available: { label: "판매가능", variant: "default" },
+    rented: { label: "대여중", variant: "secondary" },
+    sold: { label: "판매완료", variant: "destructive" },
+    inactive: { label: "비노출", variant: "outline" },
   };
-  const config = variants[status] || { label: status, variant: 'outline' };
+  const config = variants[status] || { label: status, variant: "outline" };
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
 function ConditionBadge({ condition }: { condition: string }) {
   const labels: Record<string, string> = {
-    A: 'A급 (최상)',
-    B: 'B급 (양호)',
-    C: 'C급 (보통)',
+    A: "A급 (최상)",
+    B: "B급 (양호)",
+    C: "C급 (보통)",
   };
   return <Badge variant="outline">{labels[condition] || condition}</Badge>;
 }
 
 export default function AdminRacketsClient() {
-  const { data, isLoading, error } = useSWR<{ items: Item[]; total: number; page: number; pageSize: number }>('/api/admin/rackets?page=1&pageSize=50', authenticatedSWRFetcher, {
+  const { data, isLoading, error } = useSWR<{
+    items: Item[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }>("/api/admin/rackets?page=1&pageSize=50", authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [conditionFilter, setConditionFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [conditionFilter, setConditionFilter] = useState<string>("all");
 
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   // 로딩/에러/실데이터를 분리해서 상단 설명과 본문 상태가 충돌하지 않도록 관리한다.
   const hasDataError = !!commonErrorMessage;
   const hasResolvedData = !isLoading && !hasDataError && !!data;
-  const items = hasResolvedData ? data?.items ?? [] : [];
+  const items = hasResolvedData ? (data?.items ?? []) : [];
   const filteredItems = useMemo(() => {
     if (!items.length) return [];
 
     return items.filter((item) => {
-      const matchesSearch = item.brand.toLowerCase().includes(searchQuery.toLowerCase()) || item.model.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.model.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-      const matchesCondition = conditionFilter === 'all' || item.condition === conditionFilter;
+      const matchesStatus =
+        statusFilter === "all" || item.status === statusFilter;
+      const matchesCondition =
+        conditionFilter === "all" || item.condition === conditionFilter;
 
       return matchesSearch && matchesStatus && matchesCondition;
     });
@@ -95,30 +162,43 @@ export default function AdminRacketsClient() {
 
   const stats = useMemo(() => {
     const total = filteredItems.length;
-    const available = filteredItems.filter((item) => item.status === 'available').length;
-    const rented = filteredItems.filter((item) => item.status === 'rented').length;
-    const sold = filteredItems.filter((item) => item.status === 'sold').length;
+    const available = filteredItems.filter(
+      (item) => item.status === "available",
+    ).length;
+    const rented = filteredItems.filter(
+      (item) => item.status === "rented",
+    ).length;
+    const sold = filteredItems.filter((item) => item.status === "sold").length;
     return { total, available, rented, sold };
   }, [filteredItems]);
 
-  const kpiStatus = hasDataError ? 'error' : isLoading && !data ? 'loading' : hasResolvedData ? 'ready' : 'pending';
+  const kpiStatus = hasDataError
+    ? "error"
+    : isLoading && !data
+      ? "loading"
+      : hasResolvedData
+        ? "ready"
+        : "pending";
 
   const renderKpiValue = (value: number) => {
-    if (kpiStatus === 'loading') return <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" />;
-    if (kpiStatus !== 'ready') return '-';
+    if (kpiStatus === "loading")
+      return (
+        <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" />
+      );
+    if (kpiStatus !== "ready") return "-";
     return value;
   };
 
   const listDescription = useMemo(() => {
     if (isLoading && !data) return <Skeleton className="h-4 w-56" />;
-    if (hasDataError) return '라켓 목록을 불러오는 중 문제가 발생했습니다.';
-    if (!hasResolvedData) return '라켓 목록을 준비 중입니다.';
-    if (filteredItems.length === 0) return '조건에 맞는 라켓이 없습니다.';
+    if (hasDataError) return "라켓 목록을 불러오는 중 문제가 발생했습니다.";
+    if (!hasResolvedData) return "라켓 목록을 준비 중입니다.";
+    if (filteredItems.length === 0) return "조건에 맞는 라켓이 없습니다.";
     return `총 ${filteredItems.length}개의 라켓이 검색되었습니다.`;
   }, [isLoading, data, hasDataError, hasResolvedData, filteredItems.length]);
 
   return (
-    <div className={['min-h-screen', 'bg-background'].join(' ')}>
+    <div className={["min-h-screen", "bg-background"].join(" ")}>
       <div className="container py-8 px-6">
         <div className="mb-6">
           <div className="flex items-center space-x-3 mb-4">
@@ -126,8 +206,12 @@ export default function AdminRacketsClient() {
               <MdSportsTennis className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">중고 라켓 관리</h1>
-              <p className="mt-2 text-base text-muted-foreground">중고 라켓 재고를 효율적으로 관리하세요</p>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                중고 라켓 관리
+              </h1>
+              <p className="mt-2 text-base text-muted-foreground">
+                중고 라켓 재고를 효율적으로 관리하세요
+              </p>
             </div>
           </div>
         </div>
@@ -135,38 +219,49 @@ export default function AdminRacketsClient() {
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8 shrink-0">
           {[
             {
-              label: '전체 라켓',
+              label: "전체 라켓",
               icon: <Package className="h-6 w-6 text-primary" />,
               value: stats.total,
-              bgColor: 'bg-primary',
+              bgColor: "bg-primary",
             },
             {
-              label: '판매 가능',
+              label: "판매 가능",
               icon: <CheckCircle className="h-6 w-6 text-success" />,
               value: stats.available,
-              bgColor: 'bg-success/10 dark:bg-success/15',
+              bgColor: "bg-success/10 dark:bg-success/15",
             },
             {
-              label: '대여 중',
+              label: "대여 중",
               icon: <AlertTriangle className="h-6 w-6 text-warning" />,
               value: stats.rented,
-              bgColor: 'bg-warning/10 dark:bg-warning/15',
+              bgColor: "bg-warning/10 dark:bg-warning/15",
             },
             {
-              label: '판매 완료',
+              label: "판매 완료",
               icon: <XCircle className="h-6 w-6 text-destructive" />,
               value: stats.sold,
-              bgColor: 'bg-destructive/10 dark:bg-destructive/15',
+              bgColor: "bg-destructive/10 dark:bg-destructive/15",
             },
           ].map((c, i) => (
-            <Card key={i} className="shadow-xl bg-muted/30 border border-border">
+            <Card
+              key={i}
+              className="shadow-xl bg-muted/30 border border-border"
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{renderKpiValue(c.value)}</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {c.label}
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {renderKpiValue(c.value)}
+                    </p>
                   </div>
-                  <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
+                  <div
+                    className={`${c.bgColor} rounded-xl p-3 border border-border`}
+                  >
+                    {c.icon}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -177,19 +272,23 @@ export default function AdminRacketsClient() {
           <CardHeader className="bg-muted/30 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
-                <CardTitle className="text-xl font-semibold text-primary">라켓 목록</CardTitle>
-                <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
+                <CardTitle className="text-xl font-semibold text-primary">
+                  라켓 목록
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {listDescription}
+                </CardDescription>
               </div>
               <Button
                 asChild
                 className={[
-                  'h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2',
-                  'bg-primary hover:bg-primary/90 text-primary-foreground',
-                  'border border-border/10 shadow-sm hover:shadow',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  'ring-offset-2 ring-offset-background dark:ring-offset-background',
-                  'transition-colors',
-                ].join(' ')}
+                  "h-9 px-4 rounded-lg font-medium inline-flex items-center gap-2",
+                  "bg-primary hover:bg-primary/90 text-primary-foreground",
+                  "border border-border/10 shadow-sm hover:shadow",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "ring-offset-2 ring-offset-background dark:ring-offset-background",
+                  "transition-colors",
+                ].join(" ")}
               >
                 <Link href="/admin/rackets/new">
                   <Plus className="mr-2 h-4 w-4" />
@@ -205,7 +304,13 @@ export default function AdminRacketsClient() {
                 <div className="w-full max-w-md">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input type="search" placeholder="브랜드, 모델 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card" />
+                    <Input
+                      type="search"
+                      placeholder="브랜드, 모델 검색..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card"
+                    />
                   </div>
                 </div>
 
@@ -223,7 +328,10 @@ export default function AdminRacketsClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                  <Select
+                    value={conditionFilter}
+                    onValueChange={setConditionFilter}
+                  >
                     <SelectTrigger className="border-border">
                       <SelectValue placeholder="등급 필터" />
                     </SelectTrigger>
@@ -239,9 +347,9 @@ export default function AdminRacketsClient() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setSearchQuery('');
-                      setStatusFilter('all');
-                      setConditionFilter('all');
+                      setSearchQuery("");
+                      setStatusFilter("all");
+                      setConditionFilter("all");
                     }}
                     className="w-full border-border hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
                   >
@@ -256,7 +364,10 @@ export default function AdminRacketsClient() {
                 <div className="overflow-auto rounded-lg border border-border">
                   <div className="space-y-4 p-8">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="h-16 rounded bg-muted animate-pulse" />
+                      <div
+                        key={i}
+                        className="h-16 rounded bg-muted animate-pulse"
+                      />
                     ))}
                   </div>
                 </div>
@@ -269,36 +380,67 @@ export default function AdminRacketsClient() {
               ) : !filteredItems.length ? (
                 <div className="flex flex-col items-center gap-2">
                   <Search className="h-8 w-8 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">불러올 라켓이 없습니다.</p>
+                  <p className="text-sm text-muted-foreground">
+                    불러올 라켓이 없습니다.
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">
                   <Table>
                     <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted/50 supports-[backdrop-filter]:bg-muted/50 dark:bg-muted/50 dark:supports-[backdrop-filter]:bg-muted/50 border-b border-border">
                       <TableRow className="border-b border-border">
-                        <TableHead className="text-left text-primary">라켓 정보</TableHead>
-                        <TableHead className="text-right text-primary">가격</TableHead>
-                        <TableHead className="text-center text-primary">등급</TableHead>
-                        <TableHead className="text-center text-primary">상태</TableHead>
-                        <TableHead className="text-center text-primary">대여</TableHead>
-                        <TableHead className="text-center text-primary">재고</TableHead>
-                        <TableHead className="text-right text-primary">관리</TableHead>
+                        <TableHead className="text-left text-primary">
+                          라켓 정보
+                        </TableHead>
+                        <TableHead className="text-right text-primary">
+                          가격
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          등급
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          상태
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          대여
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          재고
+                        </TableHead>
+                        <TableHead className="text-right text-primary">
+                          관리
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredItems.map((item) => (
-                        <TableRow key={item.id} className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors">
+                        <TableRow
+                          key={item.id}
+                          className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
+                        >
                           <TableCell className="py-4">
                             <div className="flex items-center gap-3">
-                              {item.images?.[0] && <img src={item.images[0] || '/placeholder.svg'} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
+                              {item.images?.[0] && (
+                                <img
+                                  src={item.images[0] || "/placeholder.svg"}
+                                  alt={item.model}
+                                  className="h-12 w-12 rounded-lg object-cover"
+                                />
+                              )}
                               <div>
-                                <div className="font-semibold text-foreground">{racketBrandLabel(item.brand)}</div>
-                                <div className="text-sm text-muted-foreground">{item.model}</div>
+                                <div className="font-semibold text-foreground">
+                                  {racketBrandLabel(item.brand)}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {item.model}
+                                </div>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <span className="font-semibold text-foreground">{item.price?.toLocaleString()}원</span>
+                            <span className="font-semibold text-foreground">
+                              {item.price?.toLocaleString()}원
+                            </span>
                           </TableCell>
                           <TableCell className="text-center">
                             <ConditionBadge condition={item.condition} />
@@ -307,28 +449,50 @@ export default function AdminRacketsClient() {
                             <StatusBadge status={item.status} />
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge variant={item.rental?.enabled ? 'default' : 'outline'}>{item.rental?.enabled ? '가능' : '불가'}</Badge>
+                            <Badge
+                              variant={
+                                item.rental?.enabled ? "default" : "outline"
+                              }
+                            >
+                              {item.rental?.enabled ? "가능" : "불가"}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            <StockChip id={item.id} total={item.quantity ?? 1} />
+                            <StockChip
+                              id={item.id}
+                              total={item.quantity ?? 1}
+                            />
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0 hover:bg-primary/10 dark:hover:bg-primary/20">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
+                                >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="border-border">
+                              <DropdownMenuContent
+                                align="end"
+                                className="border-border"
+                              >
                                 <DropdownMenuLabel>작업</DropdownMenuLabel>
                                 <DropdownMenuItem asChild>
-                                  <Link href={`/rackets/${item.id}`} className="flex items-center">
+                                  <Link
+                                    href={`/rackets/${item.id}`}
+                                    className="flex items-center"
+                                  >
                                     <Eye className="h-4 w-4 mr-2" />
                                     상세 보기
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                  <Link href={`/admin/rackets/${item.id}/edit`} className="flex items-center">
+                                  <Link
+                                    href={`/admin/rackets/${item.id}/edit`}
+                                    className="flex items-center"
+                                  >
                                     <Edit className="h-4 w-4 mr-2" />
                                     수정
                                   </Link>

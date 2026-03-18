@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import type { PackageVariant } from '@/app/services/packages/_lib/packageVariant';
-import type { User } from '@/app/store/authStore';
-import { Button } from '@/components/ui/button';
-import { getMyInfo } from '@/lib/auth.client';
-import { showErrorToast } from '@/lib/toast';
-import { CreditCard, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import type { PackageVariant } from "@/app/services/packages/_lib/packageVariant";
+import type { User } from "@/app/store/authStore";
+import { Button } from "@/components/ui/button";
+import { getMyInfo } from "@/lib/auth.client";
+import { showErrorToast } from "@/lib/toast";
+import { CreditCard, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 // 제출 직전 최종 가드(우회 방지)용 유효성
 // - PackageCheckoutClient에서 disabled로 1차 차단을 하지만,
 //   devtools로 disabled를 무시하거나 handleSubmit을 직접 호출할 수 있으니
 //   버튼 컴포넌트에서도 최종 검증실시.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const onlyDigits = (v: string) => String(v ?? '').replace(/\D/g, '');
+const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 const isValidKoreanPhone = (v: string) => {
   const d = onlyDigits(v);
   return d.length === 10 || d.length === 11;
 };
 
 // idemKey 재시도 안전장치
-const IDEM_STORE_KEY = 'package-checkout.idem.v1';
+const IDEM_STORE_KEY = "package-checkout.idem.v1";
 const IDEM_TTL_MS = 15 * 60 * 1000;
 const fnv1a32 = (str: string) => {
   let h = 0x811c9dc5;
@@ -35,12 +35,20 @@ const getOrCreateIdemKey = (sig: string) => {
   try {
     const raw = window.sessionStorage.getItem(IDEM_STORE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as { key?: string; sig?: string; ts?: number };
-      const fresh = typeof parsed.ts === 'number' && Date.now() - parsed.ts < IDEM_TTL_MS;
+      const parsed = JSON.parse(raw) as {
+        key?: string;
+        sig?: string;
+        ts?: number;
+      };
+      const fresh =
+        typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
       if (fresh && parsed.sig === sig && parsed.key) return parsed.key;
     }
     const key = crypto.randomUUID();
-    window.sessionStorage.setItem(IDEM_STORE_KEY, JSON.stringify({ key, sig, ts: Date.now() }));
+    window.sessionStorage.setItem(
+      IDEM_STORE_KEY,
+      JSON.stringify({ key, sig, ts: Date.now() }),
+    );
     return key;
   } catch {
     return crypto.randomUUID();
@@ -110,14 +118,16 @@ export default function PackageCheckoutButton({
     // 1) 사용자 정보 확인 중에는 클릭 차단
     //    (loading 중 클릭되면, 로그인 유저인데도 guestInfo로 처리될 수 있음)
     if (loading) {
-      showErrorToast('사용자 정보를 확인 중입니다. 잠시만 기다려주세요.');
+      showErrorToast("사용자 정보를 확인 중입니다. 잠시만 기다려주세요.");
       return;
     }
 
     // 2) disabled 우회 방지: devtools로 버튼 활성화/직접 호출해도 여기서 막힘
     //    - disabled에는 약관 동의 + 필수값 검증(canSubmit)이 들어가 있음
     if (disabled) {
-      showErrorToast(ownershipBlockedMessage ?? '필수 입력값/약관 동의를 확인해주세요.');
+      showErrorToast(
+        ownershipBlockedMessage ?? "필수 입력값/약관 동의를 확인해주세요.",
+      );
       return;
     }
 
@@ -125,30 +135,30 @@ export default function PackageCheckoutButton({
     //    - Client에서 이미 막고 있지만, 최종 안전장치
     const nameTrim = name.trim();
     if (!nameTrim || nameTrim.length < 2) {
-      showErrorToast('신청자 이름을 확인해주세요. (2자 이상)');
+      showErrorToast("신청자 이름을 확인해주세요. (2자 이상)");
       return;
     }
 
     const emailTrim = email.trim();
     if (!emailTrim || !EMAIL_RE.test(emailTrim)) {
-      showErrorToast('이메일 형식을 확인해주세요.');
+      showErrorToast("이메일 형식을 확인해주세요.");
       return;
     }
 
     const phoneDigits = onlyDigits(phone);
     if (!phoneDigits || !isValidKoreanPhone(phoneDigits)) {
-      showErrorToast('연락처는 숫자 10~11자리로 입력해주세요.');
+      showErrorToast("연락처는 숫자 10~11자리로 입력해주세요.");
       return;
     }
 
     const depositorTrim = depositor.trim();
     if (!depositorTrim || depositorTrim.length < 2) {
-      showErrorToast('입금자명을 확인해주세요. (2자 이상)');
+      showErrorToast("입금자명을 확인해주세요. (2자 이상)");
       return;
     }
 
     if (!selectedBank) {
-      showErrorToast('입금 은행을 선택해주세요.');
+      showErrorToast("입금 은행을 선택해주세요.");
       return;
     }
     // 성공 시에는 페이지 이동이 끝날 때까지 로딩을 유지하기 위한 플래그
@@ -177,21 +187,26 @@ export default function PackageCheckoutButton({
         },
         serviceInfo,
         paymentInfo: {
-          method: '무통장입금',
+          method: "무통장입금",
           bank: selectedBank,
         },
         totalPrice: packageInfo.price,
-        guestInfo: !user ? { name: nameTrim, phone: phoneDigits, email: emailTrim } : undefined,
+        guestInfo: !user
+          ? { name: nameTrim, phone: phoneDigits, email: emailTrim }
+          : undefined,
       };
 
       const sig = `v1:${fnv1a32(JSON.stringify(packageOrderData))}`;
       const idemKey = getOrCreateIdemKey(sig);
 
-      const res = await fetch('/api/packages/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idemKey },
+      const res = await fetch("/api/packages/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idemKey,
+        },
         body: JSON.stringify(packageOrderData),
-        credentials: 'include',
+        credentials: "include",
       });
 
       // 응답 파싱 (서버 에러에서도 json이 올 수 있어 안전하게 처리)
@@ -204,11 +219,14 @@ export default function PackageCheckoutButton({
 
       // 서버가 실패를 반환했으면 즉시 종료
       if (!res.ok) {
-        if (res.status === 409 && data?.code === 'PACKAGE_ALREADY_OWNED') {
-          showErrorToast(data?.error ?? '이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.');
+        if (res.status === 409 && data?.code === "PACKAGE_ALREADY_OWNED") {
+          showErrorToast(
+            data?.error ??
+              "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.",
+          );
           return;
         }
-        showErrorToast(data?.error ?? '패키지 주문 실패: 서버 오류');
+        showErrorToast(data?.error ?? "패키지 주문 실패: 서버 오류");
         return;
       }
 
@@ -219,10 +237,10 @@ export default function PackageCheckoutButton({
         // 주문 성공 후에만 (선택적으로) 회원 정보 저장
         if (user && saveInfo) {
           try {
-            await fetch('/api/users/me', {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
+            await fetch("/api/users/me", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
               body: JSON.stringify({
                 name: nameTrim,
                 phone: phoneDigits,
@@ -235,14 +253,16 @@ export default function PackageCheckoutButton({
         }
 
         success = true; // 성공했으므로 현재 페이지에서 로딩을 풀지 않음
-        router.push(`/services/packages/success?packageOrderId=${data.packageOrderId}`);
+        router.push(
+          `/services/packages/success?packageOrderId=${data.packageOrderId}`,
+        );
         router.refresh();
         return;
       }
 
-      showErrorToast(data?.error ?? '패키지 주문 실패: 서버 오류');
+      showErrorToast(data?.error ?? "패키지 주문 실패: 서버 오류");
     } catch (e) {
-      showErrorToast('패키지 주문 처리 중 오류가 발생했습니다.');
+      showErrorToast("패키지 주문 처리 중 오류가 발생했습니다.");
     } finally {
       // 실패한 경우에만 잠금 해제
       // 성공한 경우는 success 페이지로 이동하는 동안 로딩 유지

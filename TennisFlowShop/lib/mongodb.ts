@@ -1,20 +1,20 @@
-import { ensureAdminLocksIndexes } from '@/lib/adminLocks.indexes';
-import { ensureAuthIndexes } from '@/lib/auth.indexes';
-import { ensureBoardIndexes } from '@/lib/boards.indexes';
-import { ensureMessageIndexes } from '@/lib/messages.indexes';
-import { ensurePassIndexes } from '@/lib/passes.indexes';
-import { ensurePointsIndexes } from '@/lib/points.indexes';
-import { ensureRentalIndexes } from '@/lib/rentals.indexes';
-import { ensureReviewIndexes } from '@/lib/reviews.maintenance';
-import { ensureUsedRacketsIndexes } from '@/lib/usedRackets.indexes';
-import { ensureUserIndexes } from '@/lib/users.indexes';
-import { ensureWishlistIndexes } from '@/lib/wishlist.indexes';
-import { MongoClient } from 'mongodb';
+import { ensureAdminLocksIndexes } from "@/lib/adminLocks.indexes";
+import { ensureAuthIndexes } from "@/lib/auth.indexes";
+import { ensureBoardIndexes } from "@/lib/boards.indexes";
+import { ensureMessageIndexes } from "@/lib/messages.indexes";
+import { ensurePassIndexes } from "@/lib/passes.indexes";
+import { ensurePointsIndexes } from "@/lib/points.indexes";
+import { ensureRentalIndexes } from "@/lib/rentals.indexes";
+import { ensureReviewIndexes } from "@/lib/reviews.maintenance";
+import { ensureUsedRacketsIndexes } from "@/lib/usedRackets.indexes";
+import { ensureUserIndexes } from "@/lib/users.indexes";
+import { ensureWishlistIndexes } from "@/lib/wishlist.indexes";
+import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
-const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
-const dbName = process.env.MONGODB_DB || 'tennis_academy';
+const dbName = process.env.MONGODB_DB || "tennis_academy";
 
 // ---- 전역 캐시(개발 핫리로드 & 서버리스 콜드스타트 대비) ----
 declare global {
@@ -74,7 +74,11 @@ if (!uri) {
       aggregate: () => createMockCursor(),
       findOne: async () => null,
       findOneAndUpdate: async () => ({ value: null }),
-      updateOne: async () => ({ matchedCount: 0, modifiedCount: 0, upsertedId: null }),
+      updateOne: async () => ({
+        matchedCount: 0,
+        modifiedCount: 0,
+        upsertedId: null,
+      }),
       updateMany: async () => ({ matchedCount: 0, modifiedCount: 0 }),
       insertOne: async () => ({ insertedId: null }),
       insertMany: async () => ({ insertedIds: [] }),
@@ -96,9 +100,11 @@ if (!uri) {
 
     clientPromise = Promise.resolve(mockClient);
   } else {
-    clientPromise = Promise.reject(new Error('MONGODB_URI 환경변수가 설정되지 않았습니다.'));
+    clientPromise = Promise.reject(
+      new Error("MONGODB_URI 환경변수가 설정되지 않았습니다."),
+    );
   }
-} else if (process.env.NODE_ENV === 'development') {
+} else if (process.env.NODE_ENV === "development") {
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri);
     global._mongoClientPromise = client.connect();
@@ -123,7 +129,7 @@ export async function getDb() {
 
   if (!global._passesIndexesReady) {
     global._passesIndexesReady = ensurePassIndexes(db).catch((e) => {
-      console.error('[passes] ensurePassIndexes failed', e);
+      console.error("[passes] ensurePassIndexes failed", e);
       // 실패 시 다음 요청에서 재시도되도록 null 처리
       global._passesIndexesReady = null;
     });
@@ -133,7 +139,7 @@ export async function getDb() {
   // auth(oauth_pending_signups, user_sessions) 인덱스 보장(1회)
   if (!global._authIndexesReady) {
     global._authIndexesReady = ensureAuthIndexes(db).catch((e) => {
-      console.error('[auth] ensureAuthIndexes failed', e);
+      console.error("[auth] ensureAuthIndexes failed", e);
       global._authIndexesReady = null;
     });
   }
@@ -142,7 +148,7 @@ export async function getDb() {
   // boards 인덱스 보장(1회)
   if (!global._boardsIndexesReady) {
     global._boardsIndexesReady = ensureBoardIndexes(db).catch((e) => {
-      console.error('[boards] ensureBoardIndexes failed', e);
+      console.error("[boards] ensureBoardIndexes failed", e);
       global._boardsIndexesReady = null;
     });
   }
@@ -151,7 +157,7 @@ export async function getDb() {
   // rentals 인덱스 보장(1회)
   if (!global._rentalsIndexesReady) {
     global._rentalsIndexesReady = ensureRentalIndexes(db).catch((e) => {
-      console.error('[rentals] ensureRentalIndexes failed', e);
+      console.error("[rentals] ensureRentalIndexes failed", e);
       global._rentalsIndexesReady = null;
     });
   }
@@ -160,7 +166,7 @@ export async function getDb() {
   // messages 인덱스 보장(1회)
   if (!global._messagesIndexesReady) {
     global._messagesIndexesReady = ensureMessageIndexes(db).catch((e) => {
-      console.error('[messages] ensureMessageIndexes failed', e);
+      console.error("[messages] ensureMessageIndexes failed", e);
       global._messagesIndexesReady = null;
     });
   }
@@ -169,7 +175,7 @@ export async function getDb() {
   // points 인덱스 보장(1회)
   if (!global._pointsIndexesReady) {
     global._pointsIndexesReady = ensurePointsIndexes(db).catch((e) => {
-      console.error('[points] ensurePointsIndexes failed', e);
+      console.error("[points] ensurePointsIndexes failed", e);
       global._pointsIndexesReady = null;
     });
   }
@@ -177,17 +183,19 @@ export async function getDb() {
 
   // used_rackets (Finder 범위검색 성능)
   if (!global._usedRacketsIndexesReady) {
-    global._usedRacketsIndexesReady = ensureUsedRacketsIndexes(db).catch((e) => {
-      console.error('[used_rackets] ensureUsedRacketsIndexes failed', e);
-      global._usedRacketsIndexesReady = null;
-    });
+    global._usedRacketsIndexesReady = ensureUsedRacketsIndexes(db).catch(
+      (e) => {
+        console.error("[used_rackets] ensureUsedRacketsIndexes failed", e);
+        global._usedRacketsIndexesReady = null;
+      },
+    );
   }
   await global._usedRacketsIndexesReady;
 
   // wishlists 인덱스 보장(1회)
   if (!global._wishlistIndexesReady) {
     global._wishlistIndexesReady = ensureWishlistIndexes(db).catch((e) => {
-      console.error('[wishlists] ensureWishlistIndexes failed', e);
+      console.error("[wishlists] ensureWishlistIndexes failed", e);
       global._wishlistIndexesReady = null;
     });
   }
@@ -196,7 +204,7 @@ export async function getDb() {
   // admin_locks 인덱스 보장(1회)
   if (!global._adminLocksIndexesReady) {
     global._adminLocksIndexesReady = ensureAdminLocksIndexes(db).catch((e) => {
-      console.error('[admin_locks] ensureAdminLocksIndexes failed', e);
+      console.error("[admin_locks] ensureAdminLocksIndexes failed", e);
       global._adminLocksIndexesReady = null;
     });
   }
@@ -205,7 +213,7 @@ export async function getDb() {
   // users 인덱스 보장(1회)
   if (!global._usersIndexesReady) {
     global._usersIndexesReady = ensureUserIndexes(db).catch((e) => {
-      console.error('[users] ensureUserIndexes failed', e);
+      console.error("[users] ensureUserIndexes failed", e);
       global._usersIndexesReady = null; // 실패 시 다음 요청에서 재시도
     });
   }
@@ -213,7 +221,7 @@ export async function getDb() {
 
   if (!global._reviewsIndexesReady) {
     global._reviewsIndexesReady = ensureReviewIndexes(db).catch((e) => {
-      console.error('[reviews] ensureReviewIndexes failed', e);
+      console.error("[reviews] ensureReviewIndexes failed", e);
       global._reviewsIndexesReady = null;
     });
   }

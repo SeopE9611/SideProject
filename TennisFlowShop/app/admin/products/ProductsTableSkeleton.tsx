@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import { TableRow, TableCell } from '@/components/ui/table';
+import { TableRow, TableCell } from "@/components/ui/table";
 
-export default function ProductsTableSkeleton({ rows = 10 }: { rows?: number }) {
+export default function ProductsTableSkeleton({
+  rows = 10,
+}: {
+  rows?: number;
+}) {
   // 셀 8개(스트링명, 브랜드, 게이지, 재질, 가격, 재고, 상태, 관리)
   const COLS = 8;
   return (

@@ -1,7 +1,12 @@
-import { Suspense } from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import ShippingForm from './shipping-form';
+import { Suspense } from "react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import ShippingForm from "./shipping-form";
 
 type RentalShippingUpdatePageProps = {
   params: Promise<{ id: string }>;

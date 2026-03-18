@@ -1,4 +1,4 @@
-export type Channel = 'email' | 'slack' | 'sms';
+export type Channel = "email" | "slack" | "sms";
 
 export type UserCtx = { name?: string; email: string };
 export type ShippingInfo = {
@@ -14,7 +14,7 @@ export type ShippingInfo = {
 export type ApplicationCtx = {
   applicationId: string;
   orderId?: string | null;
-  status: 'draft' | '검토 중' | '접수완료' | '작업 중' | '교체완료' | '취소';
+  status: "draft" | "검토 중" | "접수완료" | "작업 중" | "교체완료" | "취소";
   stringDetails?: {
     preferredDate?: string; // '2025-10-05'
     preferredTime?: string; // '14:30'
@@ -26,14 +26,14 @@ export type ApplicationCtx = {
 };
 
 export type EventType =
-  | 'stringing.application_submitted'
-  | 'stringing.status_updated'
-  | 'stringing.schedule_confirmed'
-  | 'stringing.schedule_canceled'
-  | 'stringing.schedule_updated'
-  | 'stringing.application_canceled'
-  | 'stringing.service_completed'
-  | 'stringing.service_in_progress';
+  | "stringing.application_submitted"
+  | "stringing.status_updated"
+  | "stringing.schedule_confirmed"
+  | "stringing.schedule_canceled"
+  | "stringing.schedule_updated"
+  | "stringing.application_canceled"
+  | "stringing.service_completed"
+  | "stringing.service_in_progress";
 
 export type OutboxDoc = {
   _id?: any;
@@ -41,11 +41,17 @@ export type OutboxDoc = {
   channels: Channel[];
   payload: any; // 위 컨텍스트(유저/신청/링크 등)
   rendered?: {
-    email?: { to: string; subject: string; html: string; ics?: string; bcc?: string }; // [추가]
+    email?: {
+      to: string;
+      subject: string;
+      html: string;
+      ics?: string;
+      bcc?: string;
+    }; // [추가]
     slack?: { text: string };
     sms?: { to: string; text: string };
   };
-  status: 'queued' | 'sent' | 'failed';
+  status: "queued" | "sent" | "failed";
   retries: number;
   dedupeKey?: string;
   createdAt: Date;

@@ -1,9 +1,21 @@
-import type { ProductDetail } from '@/types/admin/products';
+import type { ProductDetail } from "@/types/admin/products";
 
 export const MAX_PRODUCT_IMAGE_COUNT = 4;
 
-export type HybridMainSpec = { brand: string; name: string; gauge: string; color: string; role: 'mains' };
-export type HybridCrossSpec = { brand: string; name: string; gauge: string; color: string; role: 'cross' };
+export type HybridMainSpec = {
+  brand: string;
+  name: string;
+  gauge: string;
+  color: string;
+  role: "mains";
+};
+export type HybridCrossSpec = {
+  brand: string;
+  name: string;
+  gauge: string;
+  color: string;
+  role: "cross";
+};
 
 export type ProductBasicInfoForm = {
   name: string;
@@ -21,9 +33,19 @@ export type ProductBasicInfoForm = {
 
 export type ProductEditSnapshotInput = {
   basicInfo: ProductBasicInfoForm;
-  features: ProductDetail['features'];
-  tags: ProductDetail['tags'];
-  inventory: { stock: number; lowStock: number; status: string; manageStock: boolean; allowBackorder: boolean; isFeatured: boolean; isNew: boolean; isSale: boolean; salePrice: number };
+  features: ProductDetail["features"];
+  tags: ProductDetail["tags"];
+  inventory: {
+    stock: number;
+    lowStock: number;
+    status: string;
+    manageStock: boolean;
+    allowBackorder: boolean;
+    isFeatured: boolean;
+    isNew: boolean;
+    isSale: boolean;
+    salePrice: number;
+  };
   searchKeywordsInput: string;
   additionalFeatures: string;
   images: string[];
@@ -36,30 +58,34 @@ export type ProductEditHydbridState = {
   hybridCross: HybridCrossSpec;
 };
 
-export function normalizeHybridState(product: ProductDetail): ProductEditHydbridState {
+export function normalizeHybridState(
+  product: ProductDetail,
+): ProductEditHydbridState {
   return {
     hybridMain: product?.specifications?.hybrid
       ? {
-          brand: product.specifications.hybrid.main?.brand ?? '',
-          name: product.specifications.hybrid.main?.name ?? '',
-          gauge: product.specifications.hybrid.main?.gauge ?? '',
-          color: product.specifications.hybrid.main?.color ?? '',
-          role: 'mains',
+          brand: product.specifications.hybrid.main?.brand ?? "",
+          name: product.specifications.hybrid.main?.name ?? "",
+          gauge: product.specifications.hybrid.main?.gauge ?? "",
+          color: product.specifications.hybrid.main?.color ?? "",
+          role: "mains",
         }
-      : { brand: '', name: '', gauge: '', color: '', role: 'mains' },
+      : { brand: "", name: "", gauge: "", color: "", role: "mains" },
     hybridCross: product?.specifications?.hybrid
       ? {
-          brand: product.specifications.hybrid.cross?.brand ?? '',
-          name: product.specifications.hybrid.cross?.name ?? '',
-          gauge: product.specifications.hybrid.cross?.gauge ?? '',
-          color: product.specifications.hybrid.cross?.color ?? '',
-          role: 'cross',
+          brand: product.specifications.hybrid.cross?.brand ?? "",
+          name: product.specifications.hybrid.cross?.name ?? "",
+          gauge: product.specifications.hybrid.cross?.gauge ?? "",
+          color: product.specifications.hybrid.cross?.color ?? "",
+          role: "cross",
         }
-      : { brand: '', name: '', gauge: '', color: '', role: 'cross' },
+      : { brand: "", name: "", gauge: "", color: "", role: "cross" },
   };
 }
 
-export function buildProductEditInitialSnapshot(product: ProductDetail): string {
+export function buildProductEditInitialSnapshot(
+  product: ProductDetail,
+): string {
   const hybridState = normalizeHybridState(product);
   return buildProductEditSnapshot({
     basicInfo: {
@@ -88,7 +114,9 @@ export function buildProductEditInitialSnapshot(product: ProductDetail): string 
       isSale: product.inventory.isSale,
       salePrice: product.inventory.salePrice,
     },
-    searchKeywordsInput: Array.isArray(product.searchKeywords) ? product.searchKeywords.join(', ') : '',
+    searchKeywordsInput: Array.isArray(product.searchKeywords)
+      ? product.searchKeywords.join(", ")
+      : "",
     additionalFeatures: product.additionalFeatures,
     images: product.images,
     hybridMain: hybridState.hybridMain,
@@ -96,15 +124,18 @@ export function buildProductEditInitialSnapshot(product: ProductDetail): string 
   });
 }
 
-export function buildProductEditSnapshot(input: ProductEditSnapshotInput): string {
+export function buildProductEditSnapshot(
+  input: ProductEditSnapshotInput,
+): string {
   return JSON.stringify(input);
 }
 
-export function sanitizeUploadFileName(fileName: string, timestamp = Date.now()): string {
-  const extension = fileName.split('.').pop();
-  const base = fileName
-    .replace(/\.[^/.]+$/, '')
-    .replace(/[^a-zA-Z0-9_-]/g, '');
+export function sanitizeUploadFileName(
+  fileName: string,
+  timestamp = Date.now(),
+): string {
+  const extension = fileName.split(".").pop();
+  const base = fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "");
 
   return `${timestamp}-${base}.${extension}`;
 }

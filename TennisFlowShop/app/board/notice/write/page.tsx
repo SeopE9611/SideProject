@@ -1,36 +1,66 @@
-'use client';
+"use client";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { communityFetch } from '@/lib/community/communityFetch.client';
-import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { supabase } from '@/lib/supabase';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Pin, Upload, X } from 'lucide-react';
-import NextImage from 'next/image';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import useSWR, { mutate } from 'swr';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { communityFetch } from "@/lib/community/communityFetch.client";
+import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import { supabase } from "@/lib/supabase";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import {
+  ArrowLeft,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Pin,
+  Upload,
+  X,
+} from "lucide-react";
+import NextImage from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import useSWR, { mutate } from "swr";
 
 const NOTICE_LABEL_BY_CODE: Record<string, string> = {
-  general: '일반',
-  event: '이벤트',
-  academy: '아카데미',
-  maintenance: '점검',
-  urgent: '긴급',
+  general: "일반",
+  event: "이벤트",
+  academy: "아카데미",
+  maintenance: "점검",
+  urgent: "긴급",
 };
 
 // 라벨 -> 코드 (상세에서 받아온 라벨을 셀렉트의 값(코드)로 되돌리기)
-const NOTICE_CODE_BY_LABEL: Record<string, string> = Object.fromEntries(Object.entries(NOTICE_LABEL_BY_CODE).map(([code, label]) => [label, code]));
+const NOTICE_CODE_BY_LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(NOTICE_LABEL_BY_CODE).map(([code, label]) => [label, code]),
+);
 
 // 공지 작성/수정 제출 직전 최종 유효성 가드(우회 방지)
 const TITLE_MIN = 4;
@@ -38,12 +68,13 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 8000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
-const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) =>
+  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 export default function NoticeWritePage() {
   const sp = useSearchParams();
   const router = useRouter();
-  const editId = sp.get('id'); // 있으면 수정 모드
+  const editId = sp.get("id"); // 있으면 수정 모드
 
   // 프리필은 한번만 실행
   const prefilledRef = useRef(false);
@@ -66,7 +97,9 @@ export default function NoticeWritePage() {
   // 미리보기 URL 배열 (이미지에만 생성)
   const [previews, setPreviews] = useState<(string | null)[]>([]);
   useEffect(() => {
-    const urls = selectedFiles.map((f) => (f.type?.startsWith('image/') ? URL.createObjectURL(f) : null));
+    const urls = selectedFiles.map((f) =>
+      f.type?.startsWith("image/") ? URL.createObjectURL(f) : null,
+    );
     setPreviews(urls);
     return () => {
       urls.forEach((u) => u && URL.revokeObjectURL(u));
@@ -88,7 +121,9 @@ export default function NoticeWritePage() {
 
   // 프리뷰 index에서 모달 열기 (이미지들만 모아서)
   const openViewerFromIndex = (uiIndex: number) => {
-    const only = previews.map((url, i) => ({ url, i })).filter((v) => !!v.url) as { url: string; i: number }[];
+    const only = previews
+      .map((url, i) => ({ url, i }))
+      .filter((v) => !!v.url) as { url: string; i: number }[];
     if (only.length === 0) return;
 
     const start = only.findIndex((v) => v.i === uiIndex);
@@ -99,20 +134,30 @@ export default function NoticeWritePage() {
 
   const closeViewer = () => setViewerOpen(false);
   const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
-  const prevViewer = () => setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
+  const prevViewer = () =>
+    setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const [isPinned, setIsPinned] = useState(false);
-  const [category, setCategory] = useState<string>('general');
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [category, setCategory] = useState<string>("general");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [clientSeenDate, setClientSeenDate] = useState<string | null>(null);
-  const [existingAttachments, setExistingAttachments] = useState<Array<{ url: string; name?: string; size?: number }>>([]);
+  const [existingAttachments, setExistingAttachments] = useState<
+    Array<{ url: string; name?: string; size?: number }>
+  >([]);
 
   // (작성 모드) 최초 기본값 스냅샷 세팅
   useEffect(() => {
-    if (!editId && !initialRef.current) initialRef.current = { title: '', content: '', category: 'general', isPinned: false, existingUrls: [] };
+    if (!editId && !initialRef.current)
+      initialRef.current = {
+        title: "",
+        content: "",
+        category: "general",
+        isPinned: false,
+        existingUrls: [],
+      };
   }, [editId]);
 
   // 실제 PATCH 시 제외할 기존 첨부 제거
@@ -127,7 +172,7 @@ export default function NoticeWritePage() {
   const toStoragePathFromPublicUrl = (url: string) => {
     // https://.../storage/v1/object/public/<bucket>/<path>
     const m = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
-    return m ? m[1] : '';
+    return m ? m[1] : "";
   };
 
   // dirty(편집 중) 판단: “초기 스냅샷”과 현재 상태 비교
@@ -136,10 +181,28 @@ export default function NoticeWritePage() {
     if (!base) return false;
 
     const curExisting = existingAttachments.map((a) => a.url);
-    const sameExisting = curExisting.length === base.existingUrls.length && curExisting.every((u, i) => u === base.existingUrls[i]);
+    const sameExisting =
+      curExisting.length === base.existingUrls.length &&
+      curExisting.every((u, i) => u === base.existingUrls[i]);
 
-    return title !== base.title || content !== base.content || category !== base.category || isPinned !== base.isPinned || !sameExisting || selectedFiles.length > 0 || removedPaths.length > 0;
-  }, [title, content, category, isPinned, existingAttachments, selectedFiles.length, removedPaths.length]);
+    return (
+      title !== base.title ||
+      content !== base.content ||
+      category !== base.category ||
+      isPinned !== base.isPinned ||
+      !sameExisting ||
+      selectedFiles.length > 0 ||
+      removedPaths.length > 0
+    );
+  }, [
+    title,
+    content,
+    category,
+    isPinned,
+    existingAttachments,
+    selectedFiles.length,
+    removedPaths.length,
+  ]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
   useUnsavedChangesGuard(isDirty && !submitting);
@@ -179,46 +242,64 @@ export default function NoticeWritePage() {
   type NoticeDetailRes = { item: NoticeDetail };
 
   async function fetcher(url: string): Promise<NoticeDetailRes> {
-    const res = await fetch(url, { credentials: 'include' });
+    const res = await fetch(url, { credentials: "include" });
     const data = (await res.json().catch(() => null)) as any;
 
     if (!res.ok) {
-      const message = typeof data === 'object' && data !== null && 'error' in data && typeof (data as { error?: unknown }).error === 'string' ? (data as { error: string }).error : `${res.status} ${res.statusText}`;
+      const message =
+        typeof data === "object" &&
+        data !== null &&
+        "error" in data &&
+        typeof (data as { error?: unknown }).error === "string"
+          ? (data as { error: string }).error
+          : `${res.status} ${res.statusText}`;
       throw new Error(message);
     }
 
     return data as NoticeDetailRes;
   }
 
-  const { data: detail, error: detailError } = useSWR<NoticeDetailRes>(editId ? `/api/boards/${editId}` : null, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 60_000,
-  });
+  const { data: detail, error: detailError } = useSWR<NoticeDetailRes>(
+    editId ? `/api/boards/${editId}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60_000,
+    },
+  );
 
   // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
   useEffect(() => {
     if (!editId || !detail?.item || prefilledRef.current) return;
     const p = detail.item;
-    const code = NOTICE_CODE_BY_LABEL[p.category as string] ?? 'general';
+    const code = NOTICE_CODE_BY_LABEL[p.category as string] ?? "general";
 
-    setTitle(p.title ?? '');
-    setContent(p.content ?? '');
+    setTitle(p.title ?? "");
+    setContent(p.content ?? "");
     setIsPinned(!!p.isPinned);
-    setCategory(NOTICE_CODE_BY_LABEL[p.category as string] ?? 'general');
+    setCategory(NOTICE_CODE_BY_LABEL[p.category as string] ?? "general");
     setCategory(code);
     setClientSeenDate(p.updatedAt ? new Date(p.updatedAt).toISOString() : null);
 
     if (Array.isArray(p.attachments)) {
-      setExistingAttachments(p.attachments.map((a: any) => ({ url: String(a.url), name: a.name, size: a.size })));
+      setExistingAttachments(
+        p.attachments.map((a: any) => ({
+          url: String(a.url),
+          name: a.name,
+          size: a.size,
+        })),
+      );
     }
 
     // 수정 모드 “초기 스냅샷”은 프리필 데이터 기준으로 1회만 세팅
     if (!initialRef.current) {
-      const baseExistingUrls = Array.isArray(p.attachments) ? p.attachments.map((a: any) => String(a.url)) : [];
+      const baseExistingUrls = Array.isArray(p.attachments)
+        ? p.attachments.map((a: any) => String(a.url))
+        : [];
       initialRef.current = {
-        title: p.title ?? '',
-        content: p.content ?? '',
+        title: p.title ?? "",
+        content: p.content ?? "",
         category: code,
         isPinned: !!p.isPinned,
         existingUrls: baseExistingUrls,
@@ -228,7 +309,7 @@ export default function NoticeWritePage() {
     // 프리필 직후에 편집 중 임시 상태 초기화
     setSelectedFiles([]);
     setRemovedPaths([]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
     prefilledRef.current = true; // 두 번 다시 프리필하지 않음
   }, [editId, detail]);
 
@@ -238,22 +319,22 @@ export default function NoticeWritePage() {
   // 허용 MIME/확장자 (확장)
   const ALLOWED = new Set([
     // 이미지
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
     // 문서/오피스/한글
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'application/x-hwp',
-    'application/haansoft-hwp',
-    'application/x-hwpml',
-    'text/plain',
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/x-hwp",
+    "application/haansoft-hwp",
+    "application/x-hwpml",
+    "text/plain",
   ]);
 
   function addFiles(files: File[]) {
@@ -262,7 +343,9 @@ export default function NoticeWritePage() {
     // "기존 첨부 + 새 첨부" 합산 기준으로 MAX 강제 (수정 모드에서 초과 업로드 방지)
     const totalNow = (existingAttachments?.length ?? 0) + selectedFiles.length;
     if (totalNow + files.length > MAX) {
-      showErrorToast(`첨부는 최대 ${MAX}개까지만 업로드할 수 있어요. (현재 ${totalNow}개)`);
+      showErrorToast(
+        `첨부는 최대 ${MAX}개까지만 업로드할 수 있어요. (현재 ${totalNow}개)`,
+      );
       return;
     }
     if (files.some((f) => f.size > MAX_MB * 1024 * 1024)) {
@@ -270,16 +353,21 @@ export default function NoticeWritePage() {
       return;
     }
     // 일부 브라우저에서 MIME이 비어있을 수 있어 확장자로 한 번 더 체크
-    const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt|jpe?g|png|gif|webp)$/i.test(name);
+    const extOk = (name: string) =>
+      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt|jpe?g|png|gif|webp)$/i.test(
+        name,
+      );
     if (files.some((f) => !(ALLOWED.has(f.type) || extOk(f.name)))) {
-      showErrorToast('이미지(JPG/PNG/GIF/WEBP) 또는 문서(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.');
+      showErrorToast(
+        "이미지(JPG/PNG/GIF/WEBP) 또는 문서(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.",
+      );
       return;
     }
 
     setSelectedFiles((prev) => [...prev, ...files]);
 
     // (input change일 때만) 다음 선택을 위해 초기화
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function onInputChange(e: ChangeEvent<HTMLInputElement>) {
@@ -301,12 +389,12 @@ export default function NoticeWritePage() {
 
       // 카테고리 화이트리스트(코드값 기준)
       if (!category || !NOTICE_LABEL_BY_CODE[category]) {
-        showErrorToast('카테고리를 선택해주세요.');
+        showErrorToast("카테고리를 선택해주세요.");
         return;
       }
 
       if (!t || !c) {
-        showErrorToast('제목과 내용을 입력해주세요.');
+        showErrorToast("제목과 내용을 입력해주세요.");
         return;
       }
       if (t.length < TITLE_MIN) {
@@ -327,11 +415,13 @@ export default function NoticeWritePage() {
       }
       // 공지 입력은 기본적으로 HTML/스크립트 입력을 허용하지 않는 편이 안전
       if (hasScriptLike(t) || hasScriptLike(c)) {
-        showErrorToast('스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.');
+        showErrorToast(
+          "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.",
+        );
         return;
       }
       if (hasHtmlLike(t) || hasHtmlLike(c)) {
-        showErrorToast('HTML 태그는 사용할 수 없습니다.');
+        showErrorToast("HTML 태그는 사용할 수 없습니다.");
         return;
       }
       setSubmitting(true);
@@ -341,12 +431,12 @@ export default function NoticeWritePage() {
       setSubmitting(true);
 
       // Supabase 업로드는 기존 코드 재사용
-      const BUCKET = 'tennis-images';
-      const FOLDER = 'boards/notice';
+      const BUCKET = "tennis-images";
+      const FOLDER = "boards/notice";
 
       const getImageSize = (file: File) =>
         new Promise<{ width?: number; height?: number }>((resolve) => {
-          if (!file.type?.startsWith('image/')) return resolve({});
+          if (!file.type?.startsWith("image/")) return resolve({});
           const url = URL.createObjectURL(file);
           const img = new window.Image();
           img.onload = () => {
@@ -361,16 +451,18 @@ export default function NoticeWritePage() {
         });
 
       const uploadOne = async (file: File) => {
-        const ext = file.name.split('.').pop() || 'bin';
+        const ext = file.name.split(".").pop() || "bin";
         const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-          upsert: false,
-          contentType: file.type || undefined,
-        });
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, file, {
+            upsert: false,
+            contentType: file.type || undefined,
+          });
         if (error) throw error;
         const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
         const meta = await getImageSize(file);
-        const downloadUrl = `${data.publicUrl}${data.publicUrl.includes('?') ? '&' : '?'}download=${encodeURIComponent(file.name)}`;
+        const downloadUrl = `${data.publicUrl}${data.publicUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(file.name)}`;
         return {
           url: data.publicUrl,
           storagePath: path, // 나중 삭제를 위해 경로 보관
@@ -384,31 +476,41 @@ export default function NoticeWritePage() {
       };
 
       // 새로 추가한 파일 업로드
-      const uploaded = selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
-      const cleanNew = uploaded.map((a) => ({ url: a.url, name: a.name, size: a.size, storagePath: a.storagePath }));
+      const uploaded =
+        selectedFiles.length > 0
+          ? await Promise.all(selectedFiles.map(uploadOne))
+          : [];
+      const cleanNew = uploaded.map((a) => ({
+        url: a.url,
+        name: a.name,
+        size: a.size,
+        storagePath: a.storagePath,
+      }));
 
       // 첨부 + 새 첨부 병합
       const attachments = [...existingAttachments, ...cleanNew];
 
       const payload: any = {
-        type: 'notice',
+        type: "notice",
         title: t,
         content: c,
         isPinned,
-        category: NOTICE_LABEL_BY_CODE[category] ?? '일반', // 코드 -> 라벨 변환
+        category: NOTICE_LABEL_BY_CODE[category] ?? "일반", // 코드 -> 라벨 변환
         attachments,
         ...(removedPaths.length > 0 ? { removedPaths } : {}), // 새 업로드 파일을 올리고 -> 응답을 attachments로 병합해서 서버로 보냄
         ...(editId && clientSeenDate ? { clientSeenDate } : {}),
       };
 
-      const url = editId ? `/api/boards/${editId}` : '/api/boards';
-      const method = editId ? 'PATCH' : 'POST';
+      const url = editId ? `/api/boards/${editId}` : "/api/boards";
+      const method = editId ? "PATCH" : "POST";
 
       const res = await communityFetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          ...(editId && clientSeenDate ? { 'If-Unmodified-Since': clientSeenDate } : {}),
+          "Content-Type": "application/json",
+          ...(editId && clientSeenDate
+            ? { "If-Unmodified-Since": clientSeenDate }
+            : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -422,48 +524,74 @@ export default function NoticeWritePage() {
       }
       // 응답 파싱 후 성공 검사 통과
       if (!res.ok || !json?.ok) {
-        if (res.status === 409 && json?.error === 'conflict') {
-          const conflictMsg = '다른 사용자 수정 발생: 최신 글을 다시 불러온 뒤 변경 내용을 반영해 주세요.';
+        if (res.status === 409 && json?.error === "conflict") {
+          const conflictMsg =
+            "다른 사용자 수정 발생: 최신 글을 다시 불러온 뒤 변경 내용을 반영해 주세요.";
           setConflictError(conflictMsg);
           showErrorToast(conflictMsg);
           return;
         }
 
-        const msg = typeof json.error === 'string' ? json.error : JSON.stringify(json.error);
-        throw new Error(msg || (editId ? '수정 실패(권한 확인 필요)' : '저장 실패(권한 확인 필요)'));
+        const msg =
+          typeof json.error === "string"
+            ? json.error
+            : JSON.stringify(json.error);
+        throw new Error(
+          msg ||
+            (editId
+              ? "수정 실패(권한 확인 필요)"
+              : "저장 실패(권한 확인 필요)"),
+        );
       }
-      const latestUpdatedAt = res.headers.get('x-updated-at') || json?.item?.updatedAt || null;
-      if (latestUpdatedAt) setClientSeenDate(new Date(latestUpdatedAt).toISOString());
+      const latestUpdatedAt =
+        res.headers.get("x-updated-at") || json?.item?.updatedAt || null;
+      if (latestUpdatedAt)
+        setClientSeenDate(new Date(latestUpdatedAt).toISOString());
 
       // 편집 상태 리셋
       setSelectedFiles([]);
       setRemovedPaths([]);
       setExistingAttachments([]);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
 
       // 이동 전 캐시 최신화: 상세 캐시를 먼저 맞춘 뒤 목록 캐시를 재검증
       const goId = editId || json.item?._id;
       if (goId) {
         if (json.item) {
-          await mutate(`/api/boards/${goId}`, { ok: true, item: json.item }, false);
+          await mutate(
+            `/api/boards/${goId}`,
+            { ok: true, item: json.item },
+            false,
+          );
         } else {
           await mutate(`/api/boards/${goId}`);
         }
 
-        await mutate((key) => typeof key === 'string' && key.startsWith('/api/boards?type=notice'));
-        showSuccessToast(editId ? '공지사항이 수정되었습니다.' : '공지사항이 등록되었습니다.');
+        await mutate(
+          (key) =>
+            typeof key === "string" &&
+            key.startsWith("/api/boards?type=notice"),
+        );
+        showSuccessToast(
+          editId ? "공지사항이 수정되었습니다." : "공지사항이 등록되었습니다.",
+        );
 
         router.replace(`/board/notice/${goId}`);
         router.refresh();
         return;
       }
 
-      await mutate((key) => typeof key === 'string' && key.startsWith('/api/boards?type=notice'));
-      showSuccessToast(editId ? '공지사항이 수정되었습니다.' : '공지사항이 등록되었습니다.');
-      router.push('/board/notice');
+      await mutate(
+        (key) =>
+          typeof key === "string" && key.startsWith("/api/boards?type=notice"),
+      );
+      showSuccessToast(
+        editId ? "공지사항이 수정되었습니다." : "공지사항이 등록되었습니다.",
+      );
+      router.push("/board/notice");
       router.refresh();
     } catch (e: any) {
-      showErrorToast(e?.message || '저장 중 오류가 발생했습니다.');
+      showErrorToast(e?.message || "저장 중 오류가 발생했습니다.");
     } finally {
       setSubmitting(false);
       submitRef.current = false;
@@ -485,13 +613,19 @@ export default function NoticeWritePage() {
                 <Bell className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">{editId ? '공지사항 수정' : '공지사항 작성'}</h1>
-                <p className="text-lg text-muted-foreground">중요한 소식을 회원들에게 전달하세요</p>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                  {editId ? "공지사항 수정" : "공지사항 작성"}
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  중요한 소식을 회원들에게 전달하세요
+                </p>
               </div>
             </div>
           </div>
           {editId && detailError && (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)</div>
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+              공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)
+            </div>
           )}
           {editId && conflictError && (
             <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
@@ -505,7 +639,7 @@ export default function NoticeWritePage() {
                     if (!editId) return;
                     await mutate(`/api/boards/${editId}`);
                     router.refresh();
-                    showSuccessToast('최신 공지 내용을 다시 불러왔습니다.');
+                    showSuccessToast("최신 공지 내용을 다시 불러왔습니다.");
                     setConflictError(null);
                   }}
                 >
@@ -518,7 +652,7 @@ export default function NoticeWritePage() {
             <CardHeader className="bg-muted/30 border-b">
               <CardTitle className="flex items-center space-x-2">
                 <Bell className="h-5 w-5 text-primary" />
-                <span>{editId ? '공지사항 수정' : '새 공지사항 작성'}</span>
+                <span>{editId ? "공지사항 수정" : "새 공지사항 작성"}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-4 md:space-y-8 md:p-8">
@@ -533,41 +667,31 @@ export default function NoticeWritePage() {
                   <SelectContent>
                     <SelectItem value="general">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="info">
-                          일반
-                        </Badge>
+                        <Badge variant="info">일반</Badge>
                         <span>일반적인 공지사항</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="event">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="success">
-                          이벤트
-                        </Badge>
+                        <Badge variant="success">이벤트</Badge>
                         <span>할인, 프로모션 등 이벤트</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="academy">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="neutral">
-                          아카데미
-                        </Badge>
+                        <Badge variant="neutral">아카데미</Badge>
                         <span>레슨, 프로그램 관련</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="maintenance">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="warning">
-                          점검
-                        </Badge>
+                        <Badge variant="warning">점검</Badge>
                         <span>시스템 점검, 휴무 안내</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="urgent">
                       <div className="flex items-center space-x-2">
-                        <Badge variant="danger">
-                          긴급
-                        </Badge>
+                        <Badge variant="danger">긴급</Badge>
                         <span>긴급 공지사항</span>
                       </div>
                     </SelectItem>
@@ -579,14 +703,26 @@ export default function NoticeWritePage() {
                 <Label htmlFor="title" className="text-base font-semibold">
                   제목 <span className="text-destructive">*</span>
                 </Label>
-                <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="공지사항 제목을 입력해주세요" className="h-12 bg-card text-base" />
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="공지사항 제목을 입력해주세요"
+                  className="h-12 bg-card text-base"
+                />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="content" className="text-base font-semibold">
                   내용 <span className="text-destructive">*</span>
                 </Label>
-                <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="공지사항 내용을 작성해주세요" className="min-h-[300px] bg-card text-base resize-none" />
+                <Textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="공지사항 내용을 작성해주세요"
+                  className="min-h-[300px] bg-card text-base resize-none"
+                />
               </div>
               {/* 기존 첨부 (수정 모드에서만 표시) */}
               {editId && existingAttachments.length > 0 && (
@@ -594,28 +730,55 @@ export default function NoticeWritePage() {
                   <Label className="text-base font-semibold">기존 첨부</Label>
                   <ul className="divide-y rounded-lg border bg-card">
                     {existingAttachments.map((att, idx) => {
-                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(att.url);
+                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(
+                        att.url,
+                      );
                       return (
-                        <li key={att.url + idx} className="flex items-center justify-between gap-3 p-3">
+                        <li
+                          key={att.url + idx}
+                          className="flex items-center justify-between gap-3 p-3"
+                        >
                           <div className="flex items-center gap-3 min-w-0">
                             {isImage ? (
-                              <img src={att.url || '/placeholder.svg'} alt={att.name ?? 'image'} className="h-10 w-10 rounded object-cover border" />
+                              <img
+                                src={att.url || "/placeholder.svg"}
+                                alt={att.name ?? "image"}
+                                className="h-10 w-10 rounded object-cover border"
+                              />
                             ) : (
-                              <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-muted-foreground">FILE</div>
+                              <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-muted-foreground">
+                                FILE
+                              </div>
                             )}
                             <div className="min-w-0">
-                              <div className="truncate text-sm font-medium">{att.name ?? att.url}</div>
-                              <div className="text-xs text-muted-foreground">{att.size ? `${(att.size / 1024).toFixed(0)} KB` : ''}</div>
+                              <div className="truncate text-sm font-medium">
+                                {att.name ?? att.url}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {att.size
+                                  ? `${(att.size / 1024).toFixed(0)} KB`
+                                  : ""}
+                              </div>
                             </div>
                           </div>
                           <div className="shrink-0 flex items-center gap-2">
-                            <a href={att.url} target="_blank" rel="noreferrer" className="text-xs underline text-primary">
+                            <a
+                              href={att.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs underline text-primary"
+                            >
                               열기
                             </a>
                             {/* 스토리지까지 지우지 않을 때 ↓ */}
                             {/* <Button type="button" variant="outline" size="sm" onClick={() => removeExisting(idx)}>제거</Button> */}
                             {/* 스토리지까지 지울 예정이면 ↓ */}
-                            <Button type="button" variant="outline" size="sm" onClick={() => removeExistingAndMark(idx)}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeExistingAndMark(idx)}
+                            >
                               제거
                             </Button>
                           </div>
@@ -645,7 +808,11 @@ export default function NoticeWritePage() {
                       if (e.target !== e.currentTarget) return;
                       fileInputRef.current?.click();
                     }}
-                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ' ? fileInputRef.current?.click() : null)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" || e.key === " "
+                        ? fileInputRef.current?.click()
+                        : null
+                    }
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => {
                       e.preventDefault();
@@ -653,8 +820,18 @@ export default function NoticeWritePage() {
                     }}
                   >
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요</p>
-                    <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt" onChange={onInputChange} className="sr-only" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      클릭하여 이미지 또는 파일을 선택하거나 드래그하여
+                      업로드하세요
+                    </p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.hwp,.hwpx,.txt"
+                      onChange={onInputChange}
+                      className="sr-only"
+                    />
 
                     <Button
                       type="button"
@@ -673,38 +850,63 @@ export default function NoticeWritePage() {
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">첨부된 파일 ({selectedFiles.length}/5)</p>
+                      <p className="text-sm font-medium text-foreground">
+                        첨부된 파일 ({selectedFiles.length}/5)
+                      </p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {selectedFiles.map((file, index) => {
-                          const isImage = file.type?.startsWith('image/');
+                          const isImage = file.type?.startsWith("image/");
                           const url = blobUrls[index]; // 이미지 썸네일/문서 다운로드에 사용
 
                           return (
-                            <div key={index} className="group relative rounded-lg overflow-hidden bg-card shadow-sm ring-1 ring-ring hover:ring-2 hover:ring-ring transition">
+                            <div
+                              key={index}
+                              className="group relative rounded-lg overflow-hidden bg-card shadow-sm ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
+                            >
                               {/* 콘텐츠 */}
                               {isImage ? (
                                 url ? (
                                   <div className="relative w-full h-28">
-                                    <NextImage src={url} alt={file.name} fill className="object-cover transition-transform duration-150 group-hover:scale-[1.02]" onClick={() => openViewerFromIndex(index)} priority={false} />
+                                    <NextImage
+                                      src={url}
+                                      alt={file.name}
+                                      fill
+                                      className="object-cover transition-transform duration-150 group-hover:scale-[1.02]"
+                                      onClick={() => openViewerFromIndex(index)}
+                                      priority={false}
+                                    />
                                   </div>
                                 ) : (
                                   <div className="h-28 rounded bg-card animate-pulse" />
                                 )
                               ) : (
                                 <div className="h-28 flex flex-col items-center justify-center gap-1 px-2 text-center">
-                                  <div className="text-[11px] font-medium truncate max-w-[90%]">{file.name}</div>
-                                  <a href={url ?? '#'} download={file.name} className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-muted text-foreground hover:bg-muted/80 transition">
+                                  <div className="text-[11px] font-medium truncate max-w-[90%]">
+                                    {file.name}
+                                  </div>
+                                  <a
+                                    href={url ?? "#"}
+                                    download={file.name}
+                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-muted text-foreground hover:bg-muted/80 transition"
+                                  >
                                     다운로드
                                   </a>
                                 </div>
                               )}
 
                               {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card">
+                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                              </div>
 
                               {/* 삭제 버튼 */}
-                              <button type="button" className="absolute top-1.5 right-1.5 rounded-full bg-card shadow p-1 opacity-90 hover:opacity-100" onClick={() => removeFile(index)} aria-label="첨부 제거">
+                              <button
+                                type="button"
+                                className="absolute top-1.5 right-1.5 rounded-full bg-card shadow p-1 opacity-90 hover:opacity-100"
+                                onClick={() => removeFile(index)}
+                                aria-label="첨부 제거"
+                              >
                                 <X className="h-4 w-4" />
                               </button>
 
@@ -712,7 +914,13 @@ export default function NoticeWritePage() {
                               {isImage && url && (
                                 <div className="pointer-events-none absolute bottom-1.5 right-1.5">
                                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-full bg-overlay/50 p-1.5 backdrop-blur-[1px]">
-                                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-foreground" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <svg
+                                      viewBox="0 0 24 24"
+                                      className="h-3.5 w-3.5 text-foreground"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                    >
                                       <path d="M21 21l-4.35-4.35" />
                                       <circle cx="11" cy="11" r="8" />
                                     </svg>
@@ -728,60 +936,117 @@ export default function NoticeWritePage() {
                   {/* 제한 안내 뱃지 */}
                   <div className="text-xs text-muted-foreground">
                     • 최대 5개 / 파일당 최대 10MB
-                    <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP), 문서(PDF/DOC/DOCX)
+                    <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP),
+                    문서(PDF/DOC/DOCX)
                   </div>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3 p-4 rounded-lg border border-primary/20 bg-primary/10 dark:bg-primary/20">
-                <Checkbox id="pinned" checked={isPinned} onCheckedChange={(checked) => setIsPinned(checked as boolean)} className="mt-1" />
+                <Checkbox
+                  id="pinned"
+                  checked={isPinned}
+                  onCheckedChange={(checked) => setIsPinned(checked as boolean)}
+                  className="mt-1"
+                />
                 <div className="space-y-1">
-                  <label htmlFor="pinned" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center">
+                  <label
+                    htmlFor="pinned"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center"
+                  >
                     <Pin className="h-4 w-4 mr-1 text-primary" />
                     상단 고정
                   </label>
-                  <p className="text-xs text-muted-foreground">중요한 공지사항을 게시판 상단에 고정하여 표시합니다.</p>
+                  <p className="text-xs text-muted-foreground">
+                    중요한 공지사항을 게시판 상단에 고정하여 표시합니다.
+                  </p>
                 </div>
               </div>
             </CardContent>
 
             <CardFooter className="flex justify-between border-t bg-card p-4 md:p-8">
-              <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
+              <Button
+                variant="outline"
+                asChild
+                size="lg"
+                className="px-8 bg-transparent"
+              >
                 <Link href="/board/notice" onClick={guardLeave}>
                   취소
                 </Link>
               </Button>
               <div className="flex space-x-3">
-                <Button variant="outline" size="lg" className="px-6 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="px-6 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
+                >
                   임시저장
                 </Button>
-                <Button size="lg" onClick={handleSubmit} disabled={submitting} className="px-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60">
-                  {submitting ? (editId ? '수정 중…' : '등록 중…') : editId ? '공지사항 수정' : '공지사항 등록'}
+                <Button
+                  size="lg"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="px-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {submitting
+                    ? editId
+                      ? "수정 중…"
+                      : "등록 중…"
+                    : editId
+                      ? "공지사항 수정"
+                      : "공지사항 등록"}
                 </Button>
               </div>
             </CardFooter>
 
-            <Dialog open={viewerOpen} onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}>
+            <Dialog
+              open={viewerOpen}
+              onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}
+            >
               <DialogContent className="sm:max-w-4xl p-0 bg-background/90 text-foreground border border-border">
                 <DialogHeader className="sr-only">
                   <DialogTitle>이미지 확대 보기</DialogTitle>
                 </DialogHeader>
 
                 <div className="relative w-full aspect-video">
-                  {viewerImages[viewerIndex] && <NextImage src={viewerImages[viewerIndex]} alt={`이미지 ${viewerIndex + 1}`} fill className="object-contain" priority />}
+                  {viewerImages[viewerIndex] && (
+                    <NextImage
+                      src={viewerImages[viewerIndex]}
+                      alt={`이미지 ${viewerIndex + 1}`}
+                      fill
+                      className="object-contain"
+                      priority
+                    />
+                  )}
 
                   {viewerImages.length > 1 && (
                     <>
-                      <button type="button" onClick={prevViewer} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card" aria-label="이전">
+                      <button
+                        type="button"
+                        onClick={prevViewer}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card"
+                        aria-label="이전"
+                      >
                         <ChevronLeft className="h-5 w-5" />
                       </button>
-                      <button type="button" onClick={nextViewer} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card" aria-label="다음">
+                      <button
+                        type="button"
+                        onClick={nextViewer}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card"
+                        aria-label="다음"
+                      >
                         <ChevronRight className="h-5 w-5" />
                       </button>
                     </>
                   )}
 
-                  <button type="button" onClick={closeViewer} className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card" aria-label="닫기">
+                  <button
+                    type="button"
+                    onClick={closeViewer}
+                    className="absolute top-2 right-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-card hover:bg-card dark:hover:bg-card"
+                    aria-label="닫기"
+                  >
                     <X className="h-5 w-5" />
                   </button>
                 </div>
@@ -789,8 +1054,19 @@ export default function NoticeWritePage() {
                 {viewerImages.length > 1 && (
                   <div className="p-3 flex flex-wrap gap-2 justify-center bg-overlay/70">
                     {viewerImages.map((thumb, i) => (
-                      <button key={i} type="button" onClick={() => setViewerIndex(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
-                        <NextImage src={thumb} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setViewerIndex(i)}
+                        className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? "ring-2 ring-ring" : ""}`}
+                        aria-label={`썸네일 ${i + 1}`}
+                      >
+                        <NextImage
+                          src={thumb}
+                          alt={`썸네일 ${i + 1}`}
+                          fill
+                          className="object-cover"
+                        />
                       </button>
                     ))}
                   </div>

@@ -17,12 +17,21 @@ const toSafeInt = (value: unknown) => {
   return Math.max(0, Math.floor(n));
 };
 
-export function resolvePackageUsage({ hasPackage, packageRemaining, requiredPassCount, packageOptOut }: PackageUsageInput): PackageUsageResult {
+export function resolvePackageUsage({
+  hasPackage,
+  packageRemaining,
+  requiredPassCount,
+  packageOptOut,
+}: PackageUsageInput): PackageUsageResult {
   const required = toSafeInt(requiredPassCount);
   const remaining = toSafeInt(packageRemaining);
 
-  const canApplyPackage = Boolean(hasPackage && required > 0 && remaining >= required);
-  const packageInsufficient = Boolean(hasPackage && required > 0 && remaining < required);
+  const canApplyPackage = Boolean(
+    hasPackage && required > 0 && remaining >= required,
+  );
+  const packageInsufficient = Boolean(
+    hasPackage && required > 0 && remaining < required,
+  );
   const usingPackage = Boolean(canApplyPackage && !packageOptOut);
 
   return {
@@ -32,7 +41,10 @@ export function resolvePackageUsage({ hasPackage, packageRemaining, requiredPass
   };
 }
 
-export function applyPackageToServiceFee(baseServiceFee: number, packageUsage: Pick<PackageUsageResult, 'usingPackage'>): number {
+export function applyPackageToServiceFee(
+  baseServiceFee: number,
+  packageUsage: Pick<PackageUsageResult, "usingPackage">,
+): number {
   const base = toSafeInt(baseServiceFee);
   return packageUsage.usingPackage ? 0 : base;
 }
@@ -43,9 +55,14 @@ export function resolveRequiredPassCountFromInput(input: {
 }): number {
   const lines = Array.isArray(input.lines) ? input.lines : [];
   if (lines.length > 0) {
-    return lines.reduce((sum, line) => (line?.stringProductId ? sum + 1 : sum), 0);
+    return lines.reduce(
+      (sum, line) => (line?.stringProductId ? sum + 1 : sum),
+      0,
+    );
   }
 
-  const types = Array.isArray(input.stringTypes) ? input.stringTypes.filter(Boolean) : [];
+  const types = Array.isArray(input.stringTypes)
+    ? input.stringTypes.filter(Boolean)
+    : [];
   return Math.max(0, types.length);
 }

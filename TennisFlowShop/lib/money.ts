@@ -15,7 +15,7 @@ export function formatKRWCard(n: number, maxChars = 6) {
   if (abs >= 100_000_000) {
     const v = n / 100_000_000;
     const str = Math.abs(v) < 10 ? v.toFixed(1) : Math.round(v).toString();
-    return `₩${str.replace(/\.0$/, '')}억`;
+    return `₩${str.replace(/\.0$/, "")}억`;
   }
 
   if (abs >= 10_000) {
@@ -23,7 +23,9 @@ export function formatKRWCard(n: number, maxChars = 6) {
     let core = Math.round(v).toString();
     let out = `₩${core}만`;
     if (out.length > maxChars) {
-      core = (Math.abs(v) < 10 ? v.toFixed(1) : Math.round(v).toString()).replace(/\.0$/, '');
+      core = (
+        Math.abs(v) < 10 ? v.toFixed(1) : Math.round(v).toString()
+      ).replace(/\.0$/, "");
       out = `₩${core}만`;
     }
     return out;
@@ -33,4 +35,5 @@ export function formatKRWCard(n: number, maxChars = 6) {
 }
 
 /** compact=true면 축약, false면 원단위 */
-export const formatKRW = (n: number, compact = true) => (compact ? formatKRWCard(n) : formatKRWFull(n));
+export const formatKRW = (n: number, compact = true) =>
+  compact ? formatKRWCard(n) : formatKRWFull(n);

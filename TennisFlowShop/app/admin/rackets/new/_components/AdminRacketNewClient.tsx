@@ -1,19 +1,22 @@
-'use client';
-import AdminRacketForm, { type RacketForm } from '@/app/admin/rackets/_components/AdminRacketForm';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Package } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
-import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { showErrorToast } from '@/lib/toast';
+"use client";
+import AdminRacketForm, {
+  type RacketForm,
+} from "@/app/admin/rackets/_components/AdminRacketForm";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Package } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { showErrorToast } from "@/lib/toast";
 
 export default function AdminRacketNewClient() {
   const r = useRouter();
 
   const confirmLeave = (e: React.MouseEvent) => {
-    const hasUnsaved = typeof window !== 'undefined' && window.history.state?.__unsaved === true;
+    const hasUnsaved =
+      typeof window !== "undefined" && window.history.state?.__unsaved === true;
     if (!hasUnsaved) return;
     if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
       e.preventDefault();
@@ -23,14 +26,14 @@ export default function AdminRacketNewClient() {
 
   const onSubmit = async (data: RacketForm) => {
     try {
-      await adminMutator('/api/admin/rackets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      await adminMutator("/api/admin/rackets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      r.push('/admin/rackets');
+      r.push("/admin/rackets");
     } catch (error) {
-      showErrorToast(getAdminErrorMessage(error) || '등록 실패');
+      showErrorToast(getAdminErrorMessage(error) || "등록 실패");
     }
   };
 
@@ -50,13 +53,26 @@ export default function AdminRacketNewClient() {
                   <Package className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold tracking-tight">라켓 등록</h2>
-                  <p className="text-muted-foreground">새로운 중고 라켓 정보를 입력하고 등록하세요.</p>
+                  <h2 className="text-3xl font-bold tracking-tight">
+                    라켓 등록
+                  </h2>
+                  <p className="text-muted-foreground">
+                    새로운 중고 라켓 정보를 입력하고 등록하세요.
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                  <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
+                <Button
+                  variant="outline"
+                  type="button"
+                  asChild
+                  className="bg-muted/40 hover:bg-muted border-border"
+                >
+                  <Link
+                    href="/admin/rackets"
+                    data-no-unsaved-guard
+                    onClick={confirmLeave}
+                  >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     취소
                   </Link>

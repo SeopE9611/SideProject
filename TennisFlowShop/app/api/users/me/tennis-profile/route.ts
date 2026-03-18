@@ -1,8 +1,8 @@
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { getDb } from "@/lib/mongodb";
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
 
@@ -12,7 +12,7 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET!;
  */
 async function getAuthenticatedUserId(): Promise<string | null> {
   const jar = await cookies();
-  const accessToken = jar.get('accessToken')?.value;
+  const accessToken = jar.get("accessToken")?.value;
 
   if (!accessToken) return null;
 
@@ -23,7 +23,7 @@ async function getAuthenticatedUserId(): Promise<string | null> {
     return String(sub);
   } catch (err) {
     // 토큰 오류일 경우 null
-    console.error('[API users/me/tennis-profile] token error:', err);
+    console.error("[API users/me/tennis-profile] token error:", err);
     return null;
   }
 }
@@ -37,12 +37,12 @@ export async function GET() {
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   try {
     const db = await getDb();
-    const profilesCol = db.collection('player_profiles');
+    const profilesCol = db.collection("player_profiles");
 
     const doc = await profilesCol.findOne({ userId: new ObjectId(userId) });
 
@@ -61,32 +61,32 @@ export async function GET() {
       ok: true,
       profile: {
         id: String(p._id),
-        level: p.level ?? '',
-        hand: p.hand ?? '',
-        playStyle: p.playStyle ?? '',
+        level: p.level ?? "",
+        hand: p.hand ?? "",
+        playStyle: p.playStyle ?? "",
         mainRacket: {
-          brand: p.mainRacket?.brand ?? '',
-          model: p.mainRacket?.model ?? '',
-          weight: p.mainRacket?.weight ?? '',
-          balance: p.mainRacket?.balance ?? '',
+          brand: p.mainRacket?.brand ?? "",
+          model: p.mainRacket?.model ?? "",
+          weight: p.mainRacket?.weight ?? "",
+          balance: p.mainRacket?.balance ?? "",
         },
         mainString: {
-          brand: p.mainString?.brand ?? '',
-          model: p.mainString?.model ?? '',
-          gauge: p.mainString?.gauge ?? '',
-          material: p.mainString?.material ?? '',
-          tensionMain: p.mainString?.tensionMain ?? '',
-          tensionCross: p.mainString?.tensionCross ?? '',
+          brand: p.mainString?.brand ?? "",
+          model: p.mainString?.model ?? "",
+          gauge: p.mainString?.gauge ?? "",
+          material: p.mainString?.material ?? "",
+          tensionMain: p.mainString?.tensionMain ?? "",
+          tensionCross: p.mainString?.tensionCross ?? "",
         },
-        note: p.note ?? '',
+        note: p.note ?? "",
         isPublic: Boolean(p.isPublic),
         createdAt: p.createdAt ?? null,
         updatedAt: p.updatedAt ?? null,
       },
     });
   } catch (err) {
-    console.error('[API users/me/tennis-profile] DB error:', err);
-    return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
+    console.error("[API users/me/tennis-profile] DB error:", err);
+    return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
   }
 }
 
@@ -99,38 +99,46 @@ export async function PUT(req: NextRequest) {
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   let body: any;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
   // 유효성 검사
-  const { level = '', hand = '', playStyle = '', mainRacket = {}, mainString = {}, note = '', isPublic = false } = body ?? {};
+  const {
+    level = "",
+    hand = "",
+    playStyle = "",
+    mainRacket = {},
+    mainString = {},
+    note = "",
+    isPublic = false,
+  } = body ?? {};
 
   const safeProfile = {
-    level: String(level ?? ''),
-    hand: String(hand ?? ''),
-    playStyle: String(playStyle ?? ''),
+    level: String(level ?? ""),
+    hand: String(hand ?? ""),
+    playStyle: String(playStyle ?? ""),
     mainRacket: {
-      brand: String(mainRacket?.brand ?? ''),
-      model: String(mainRacket?.model ?? ''),
-      weight: String(mainRacket?.weight ?? ''),
-      balance: String(mainRacket?.balance ?? ''),
+      brand: String(mainRacket?.brand ?? ""),
+      model: String(mainRacket?.model ?? ""),
+      weight: String(mainRacket?.weight ?? ""),
+      balance: String(mainRacket?.balance ?? ""),
     },
     mainString: {
-      brand: String(mainString?.brand ?? ''),
-      model: String(mainString?.model ?? ''),
-      gauge: String(mainString?.gauge ?? ''),
-      material: String(mainString?.material ?? ''),
-      tensionMain: String(mainString?.tensionMain ?? ''),
-      tensionCross: String(mainString?.tensionCross ?? ''),
+      brand: String(mainString?.brand ?? ""),
+      model: String(mainString?.model ?? ""),
+      gauge: String(mainString?.gauge ?? ""),
+      material: String(mainString?.material ?? ""),
+      tensionMain: String(mainString?.tensionMain ?? ""),
+      tensionCross: String(mainString?.tensionCross ?? ""),
     },
-    note: String(note ?? ''),
+    note: String(note ?? ""),
     isPublic: Boolean(isPublic),
   };
 
@@ -156,7 +164,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const db = await getDb();
-    const profilesCol = db.collection('player_profiles');
+    const profilesCol = db.collection("player_profiles");
 
     const now = new Date();
     const userObjectId = new ObjectId(userId);
@@ -172,12 +180,12 @@ export async function PUT(req: NextRequest) {
         },
         $setOnInsert: { createdAt: now },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[API users/me/tennis-profile] DB error:', err);
-    return NextResponse.json({ error: 'DB unavailable' }, { status: 503 });
+    console.error("[API users/me/tennis-profile] DB error:", err);
+    return NextResponse.json({ error: "DB unavailable" }, { status: 503 });
   }
 }

@@ -1,26 +1,58 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import useSWR from 'swr';
-import useSWRInfinite from 'swr/infinite';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
-import { Switch } from '@/components/ui/switch';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from '@/types/admin/reviews';
-import { Award, Calendar, Eye, EyeOff, Loader2, MessageSquare, MoreHorizontal, Search, Star, ThumbsUp, Trash2, TrendingUp } from 'lucide-react';
-import Image from 'next/image';
+import ReviewPhotoDialog from "@/app/reviews/_components/ReviewPhotoDialog";
+import { Switch } from "@/components/ui/switch";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import type {
+  AdminReviewListItemDto,
+  AdminReviewsListResponseDto,
+} from "@/types/admin/reviews";
+import {
+  Award,
+  Calendar,
+  Eye,
+  EyeOff,
+  Loader2,
+  MessageSquare,
+  MoreHorizontal,
+  Search,
+  Star,
+  ThumbsUp,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
+import Image from "next/image";
 
 type Row = AdminReviewListItemDto;
 type Page = AdminReviewsListResponseDto;
@@ -52,10 +84,10 @@ function useDebounced<T>(value: T, delay = 350) {
 
 export default function AdminReviewListClient() {
   // ---- 검색/필터 ----
-  const [qRaw, setQRaw] = useState('');
+  const [qRaw, setQRaw] = useState("");
   const qDebounced = useDebounced(qRaw, 350);
-  const [status, setStatus] = useState<'all' | 'visible' | 'hidden'>('all');
-  const [type, setType] = useState<'all' | 'product' | 'service'>('all');
+  const [status, setStatus] = useState<"all" | "visible" | "hidden">("all");
+  const [type, setType] = useState<"all" | "product" | "service">("all");
   const [showDeleted, setShowDeleted] = useState(false);
 
   useEffect(() => {
@@ -63,7 +95,12 @@ export default function AdminReviewListClient() {
   }, [qDebounced, status, type]);
 
   // ---- KPI ----
-  const { data: metrics } = useSWR<{ total: number; avg: number; five: number; byType: { product: number; service: number } }>('/api/admin/reviews/metrics', authenticatedSWRFetcher, {
+  const { data: metrics } = useSWR<{
+    total: number;
+    avg: number;
+    five: number;
+    byType: { product: number; service: number };
+  }>("/api/admin/reviews/metrics", authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -73,20 +110,46 @@ export default function AdminReviewListClient() {
     (idx: number, prev: Page | null) => {
       if (prev && prev.items.length < LIMIT) return null;
       const page = idx + 1;
-      const p = new URLSearchParams({ page: String(page), limit: String(LIMIT) });
-      if (qDebounced.trim()) p.set('q', qDebounced.trim());
-      if (status !== 'all') p.set('status', status);
-      if (type !== 'all') p.set('type', type);
-      if (showDeleted) p.set('withDeleted', '1');
+      const p = new URLSearchParams({
+        page: String(page),
+        limit: String(LIMIT),
+      });
+      if (qDebounced.trim()) p.set("q", qDebounced.trim());
+      if (status !== "all") p.set("status", status);
+      if (type !== "all") p.set("type", type);
+      if (showDeleted) p.set("withDeleted", "1");
       return `/api/admin/reviews?${p.toString()}`;
     },
     [qDebounced, status, type, showDeleted],
   );
 
-  const { data: rawData, error, isValidating, size, setSize, mutate } = useSWRInfinite<Page>(getKey, authenticatedSWRFetcher, { revalidateFirstPage: true, revalidateOnFocus: false, revalidateOnReconnect: false });
-  const data = useMemo(() => (rawData ? rawData.map((page) => mapApiToViewModel(page) as Page) : undefined), [rawData]);
-  const rows = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
-  const hasMore = useMemo(() => (data?.length ? data[data.length - 1].items.length === LIMIT : false), [data]);
+  const {
+    data: rawData,
+    error,
+    isValidating,
+    size,
+    setSize,
+    mutate,
+  } = useSWRInfinite<Page>(getKey, authenticatedSWRFetcher, {
+    revalidateFirstPage: true,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
+  const data = useMemo(
+    () =>
+      rawData
+        ? rawData.map((page) => mapApiToViewModel(page) as Page)
+        : undefined,
+    [rawData],
+  );
+  const rows = useMemo(
+    () => (data ? data.flatMap((d) => d.items) : []),
+    [data],
+  );
+  const hasMore = useMemo(
+    () => (data?.length ? data[data.length - 1].items.length === LIMIT : false),
+    [data],
+  );
 
   // ---- 상세 모달 ----
   const [detail, setDetail] = useState<Row | null>(null);
@@ -98,7 +161,10 @@ export default function AdminReviewListClient() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   // fullDetail가 오기 전에도 detail.photos가 있으면 그걸 먼저 사용
-  const photos: string[] = useMemo(() => fullDetail?.photos ?? detail?.photos ?? [], [fullDetail, detail]);
+  const photos: string[] = useMemo(
+    () => fullDetail?.photos ?? detail?.photos ?? [],
+    [fullDetail, detail],
+  );
   // "보여줄 사진이 전혀 없을 때"만 스켈레톤 표시
   const loadingPhotos = !!detail && !fullDetail && photos.length === 0;
 
@@ -112,7 +178,9 @@ export default function AdminReviewListClient() {
     (async () => {
       try {
         setDetailLoading(true);
-        const res = await fetch(`/api/admin/reviews/${detail._id}`, { credentials: 'include' });
+        const res = await fetch(`/api/admin/reviews/${detail._id}`, {
+          credentials: "include",
+        });
         if (!res.ok) return;
         const j = await res.json();
         if (!aborted) setFullDetail(j as Row);
@@ -126,17 +194,19 @@ export default function AdminReviewListClient() {
   }, [detail]);
 
   // ---- 정렬 ----
-  const [sortBy, setSortBy] = useState<'latest' | 'oldest' | 'rating' | 'helpful'>('latest');
+  const [sortBy, setSortBy] = useState<
+    "latest" | "oldest" | "rating" | "helpful"
+  >("latest");
   const sortedRows = useMemo(() => {
     const arr = rows.slice();
     switch (sortBy) {
-      case 'rating':
+      case "rating":
         arr.sort((a, b) => b.rating - a.rating);
         break;
-      case 'helpful':
+      case "helpful":
         arr.sort((a, b) => (b.helpfulCount ?? 0) - (a.helpfulCount ?? 0));
         break;
-      case 'oldest':
+      case "oldest":
         arr.sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt));
         break;
       default:
@@ -147,8 +217,12 @@ export default function AdminReviewListClient() {
 
   // ---- 선택/삭제 ----
   const [selected, setSelected] = useState<string[]>([]);
-  const toggleSelectAll = (checked: boolean) => setSelected(checked ? rows.map((r) => r._id) : []);
-  const toggleSelectOne = (id: string, checked: boolean) => setSelected((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
+  const toggleSelectAll = (checked: boolean) =>
+    setSelected(checked ? rows.map((r) => r._id) : []);
+  const toggleSelectOne = (id: string, checked: boolean) =>
+    setSelected((prev) =>
+      checked ? [...prev, id] : prev.filter((x) => x !== id),
+    );
 
   // rows 변경 시 화면에 없는 선택 해제
   useEffect(() => {
@@ -157,33 +231,61 @@ export default function AdminReviewListClient() {
 
   const doDelete = async (id: string) => {
     const snapshot = data;
-    await mutate((pages?: Page[]) => (pages ? pages.map((p) => ({ ...p, items: p.items.filter((r) => r._id !== id) })) : pages), false);
+    await mutate(
+      (pages?: Page[]) =>
+        pages
+          ? pages.map((p) => ({
+              ...p,
+              items: p.items.filter((r) => r._id !== id),
+            }))
+          : pages,
+      false,
+    );
     try {
-      const res = await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', credentials: 'include' });
-      if (!res.ok) throw new Error('삭제 실패');
-      showSuccessToast('삭제되었습니다.');
+      const res = await fetch(`/api/admin/reviews/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("삭제 실패");
+      showSuccessToast("삭제되었습니다.");
     } catch (error: unknown) {
       await mutate(() => snapshot, false);
-      showErrorToast(error instanceof Error ? error.message : '삭제 중 오류');
+      showErrorToast(error instanceof Error ? error.message : "삭제 중 오류");
     }
   };
 
   const doBulkDelete = async () => {
     if (!selected.length) return;
     const snapshot = data;
-    await mutate((pages?: Page[]) => (pages ? pages.map((p) => ({ ...p, items: p.items.filter((r) => !selected.includes(r._id)) })) : pages), false);
+    await mutate(
+      (pages?: Page[]) =>
+        pages
+          ? pages.map((p) => ({
+              ...p,
+              items: p.items.filter((r) => !selected.includes(r._id)),
+            }))
+          : pages,
+      false,
+    );
     try {
-      await Promise.allSettled(selected.map((id) => fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', credentials: 'include' })));
+      await Promise.allSettled(
+        selected.map((id) =>
+          fetch(`/api/admin/reviews/${id}`, {
+            method: "DELETE",
+            credentials: "include",
+          }),
+        ),
+      );
       setSelected([]);
-      showSuccessToast('선택 항목을 삭제했습니다.');
+      showSuccessToast("선택 항목을 삭제했습니다.");
     } catch {
       await mutate(() => snapshot, false);
-      showErrorToast('일부 항목 삭제에 실패했습니다.');
+      showErrorToast("일부 항목 삭제에 실패했습니다.");
     }
   };
 
   // 선택 공개/비공개 (일괄) — 낙관적 업데이트 + 실패 시 롤백
-  const doBulkUpdateStatus = async (next: 'visible' | 'hidden') => {
+  const doBulkUpdateStatus = async (next: "visible" | "hidden") => {
     if (!selected.length) return;
 
     // 낙관적 업데이트: 현재 페이지들에서 선택된 항목들의 status만 먼저 바꿔 그림
@@ -193,7 +295,9 @@ export default function AdminReviewListClient() {
         pages
           ? pages.map((p) => ({
               ...p,
-              items: p.items.map((r) => (selected.includes(r._id) ? { ...r, status: next } : r)),
+              items: p.items.map((r) =>
+                selected.includes(r._id) ? { ...r, status: next } : r,
+              ),
             }))
           : pages,
       false,
@@ -207,9 +311,9 @@ export default function AdminReviewListClient() {
         await Promise.all(
           part.map(async (id) => {
             const res = await fetch(`/api/admin/reviews/${id}`, {
-              method: 'PATCH',
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
+              method: "PATCH",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: next }),
             });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -217,31 +321,50 @@ export default function AdminReviewListClient() {
         );
       }
       setSelected([]);
-      showSuccessToast(next === 'hidden' ? '선택 항목을 비공개로 변경했습니다.' : '선택 항목을 공개로 변경했습니다.');
+      showSuccessToast(
+        next === "hidden"
+          ? "선택 항목을 비공개로 변경했습니다."
+          : "선택 항목을 공개로 변경했습니다.",
+      );
     } catch (e) {
       // 3) 실패 시 롤백
       await mutate(() => snapshot, false);
-      showErrorToast('일부 항목 상태 변경에 실패했습니다.');
+      showErrorToast("일부 항목 상태 변경에 실패했습니다.");
     }
   };
 
   // ---- 공개/비공개 토글(낙관적) ----
   const toggleVisible = async (it: Row) => {
-    const next = it.status === 'visible' ? 'hidden' : 'visible';
+    const next = it.status === "visible" ? "hidden" : "visible";
     const snapshot = data;
-    await mutate((pages?: Page[]) => (pages ? pages.map((p) => ({ ...p, items: p.items.map((r) => (r._id === it._id ? { ...r, status: next } : r)) })) : pages), false);
+    await mutate(
+      (pages?: Page[]) =>
+        pages
+          ? pages.map((p) => ({
+              ...p,
+              items: p.items.map((r) =>
+                r._id === it._id ? { ...r, status: next } : r,
+              ),
+            }))
+          : pages,
+      false,
+    );
     try {
       const res = await fetch(`/api/admin/reviews/${it._id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: next }),
       });
       if (!res.ok) throw new Error();
-      showSuccessToast(next === 'hidden' ? '리뷰를 비공개로 변경했습니다.' : '리뷰를 공개로 변경했습니다.');
+      showSuccessToast(
+        next === "hidden"
+          ? "리뷰를 비공개로 변경했습니다."
+          : "리뷰를 공개로 변경했습니다.",
+      );
     } catch {
       await mutate(() => snapshot, false);
-      showErrorToast('상태 변경 실패');
+      showErrorToast("상태 변경 실패");
     }
   };
 
@@ -255,29 +378,37 @@ export default function AdminReviewListClient() {
   const renderStars = (n: number) => (
     <div className="flex items-center">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < n ? 'text-warning fill-current' : 'text-muted-foreground'}`} />
+        <Star
+          key={i}
+          className={`h-4 w-4 ${i < n ? "text-warning fill-current" : "text-muted-foreground"}`}
+        />
       ))}
     </div>
   );
   function safeSplitDate(input?: string | number | Date) {
     try {
-      if (input == null) return { date: '-', time: '-' };
+      if (input == null) return { date: "-", time: "-" };
       const d = new Date(input);
-      if (Number.isNaN(d.getTime())) return { date: '-', time: '-' };
+      if (Number.isNaN(d.getTime())) return { date: "-", time: "-" };
       const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mi = String(d.getMinutes()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mi = String(d.getMinutes()).padStart(2, "0");
       return { date: `${yyyy}-${mm}-${dd}`, time: `${hh}:${mi}` };
     } catch {
-      return { date: '-', time: '-' };
+      return { date: "-", time: "-" };
     }
   }
-  const typeBadgeClass = (t: Row['type']) => (t === 'product' ? 'bg-muted text-foreground hover:bg-muted' : 'bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20');
-  const typeLabel = (t: Row['type']) => (t === 'product' ? '상품 리뷰' : '서비스 리뷰');
+  const typeBadgeClass = (t: Row["type"]) =>
+    t === "product"
+      ? "bg-muted text-foreground hover:bg-muted"
+      : "bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20";
+  const typeLabel = (t: Row["type"]) =>
+    t === "product" ? "상품 리뷰" : "서비스 리뷰";
 
-  const GRID = 'lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]';
+  const GRID =
+    "lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
 
   return (
     <div className="space-y-6">
@@ -288,8 +419,12 @@ export default function AdminReviewListClient() {
             <Star className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">리뷰 관리</h1>
-            <p className="mt-2 text-base text-muted-foreground">고객 리뷰를 관리하고 서비스 품질을 향상시키세요</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+              리뷰 관리
+            </h1>
+            <p className="mt-2 text-base text-muted-foreground">
+              고객 리뷰를 관리하고 서비스 품질을 향상시키세요
+            </p>
           </div>
         </div>
       </div>
@@ -314,7 +449,9 @@ export default function AdminReviewListClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">평균 평점</p>
-                <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
+                <p className="text-2xl font-bold">
+                  {(metrics?.avg ?? 0).toFixed(1)}
+                </p>
               </div>
               <div className="rounded-md p-2 bg-warning/10 dark:bg-warning/15">
                 <Star className="h-5 w-5 text-warning" />
@@ -340,7 +477,9 @@ export default function AdminReviewListClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">서비스 리뷰</p>
-                <p className="text-2xl font-bold">{metrics?.byType?.service ?? 0}</p>
+                <p className="text-2xl font-bold">
+                  {metrics?.byType?.service ?? 0}
+                </p>
               </div>
               <div className="rounded-md p-2 bg-muted">
                 <TrendingUp className="h-5 w-5 text-foreground" />
@@ -353,7 +492,9 @@ export default function AdminReviewListClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">상품 리뷰</p>
-                <p className="text-2xl font-bold">{metrics?.byType?.product ?? 0}</p>
+                <p className="text-2xl font-bold">
+                  {metrics?.byType?.product ?? 0}
+                </p>
               </div>
               <div className="rounded-md p-2 bg-muted">
                 <TrendingUp className="h-5 w-5 text-foreground" />
@@ -367,22 +508,46 @@ export default function AdminReviewListClient() {
       <div className="sticky top-0 z-10 -mt-2 mb-2 bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card border border-border rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input type="search" placeholder="리뷰 검색…" className="pl-10 h-9 text-sm border-border focus:border-border focus:ring-ring" value={qRaw} onChange={(e) => setQRaw(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && setSize(1)} />
+          <Input
+            type="search"
+            placeholder="리뷰 검색…"
+            className="pl-10 h-9 text-sm border-border focus:border-border focus:ring-ring"
+            value={qRaw}
+            onChange={(e) => setQRaw(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && setSize(1)}
+          />
         </div>
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5">
-            <Checkbox checked={rows.length > 0 && selected.length === rows.length} onCheckedChange={(val) => toggleSelectAll(!!val)} aria-label="전체 선택" className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
+            <Checkbox
+              checked={rows.length > 0 && selected.length === rows.length}
+              onCheckedChange={(val) => toggleSelectAll(!!val)}
+              aria-label="전체 선택"
+              className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
             <span className="text-xs text-muted-foreground">전체 선택</span>
           </div>
           <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5">
-            <Checkbox id="show-deleted" checked={showDeleted} onCheckedChange={(v) => setShowDeleted(!!v)} className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0" />
-            <label htmlFor="show-deleted" className="text-xs text-muted-foreground">
+            <Checkbox
+              id="show-deleted"
+              checked={showDeleted}
+              onCheckedChange={(v) => setShowDeleted(!!v)}
+              className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+            <label
+              htmlFor="show-deleted"
+              className="text-xs text-muted-foreground"
+            >
               삭제 포함 보기
             </label>
           </div>
-          <Button size="sm" variant="outline" onClick={() => setCompact((v) => !v)}>
-            {compact ? '코지' : '컴팩트'}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setCompact((v) => !v)}
+          >
+            {compact ? "코지" : "컴팩트"}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -390,11 +555,24 @@ export default function AdminReviewListClient() {
                 정렬
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={() => setSortBy('latest')}>최신순</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('rating')}>평점 높은순</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('helpful')}>도움돼요 많은순</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('oldest')}>오래된순</DropdownMenuItem>
+            <DropdownMenuContent
+              align="end"
+              className="w-44"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DropdownMenuItem onClick={() => setSortBy("latest")}>
+                최신순
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy("rating")}>
+                평점 높은순
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy("helpful")}>
+                도움돼요 많은순
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy("oldest")}>
+                오래된순
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -404,7 +582,9 @@ export default function AdminReviewListClient() {
       <div className="bg-card shadow-sm">
         <div className="max-h-[70vh] overflow-y-auto overflow-x-hidden">
           {/* 헤더 라벨 */}
-          <div className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}>
+          <div
+            className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}
+          >
             <div className="opacity-70">선택</div>
             <div>작성자</div>
             <div className="whitespace-nowrap">리뷰 내용</div>
@@ -416,11 +596,16 @@ export default function AdminReviewListClient() {
           </div>
 
           {error ? (
-            <div className="p-8 text-center text-destructive">목록을 불러오지 못했습니다.</div>
+            <div className="p-8 text-center text-destructive">
+              목록을 불러오지 못했습니다.
+            </div>
           ) : !data && isValidating ? (
             <div className="space-y-3 p-4">
               {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className={`grid grid-cols-1 lg:grid ${GRID} items-center gap-x-3 gap-y-2 rounded-md border border-border/40 px-3 py-3`}>
+                <div
+                  key={index}
+                  className={`grid grid-cols-1 lg:grid ${GRID} items-center gap-x-3 gap-y-2 rounded-md border border-border/40 px-3 py-3`}
+                >
                   <Skeleton className="h-4 w-4" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-24" />
@@ -436,11 +621,13 @@ export default function AdminReviewListClient() {
               ))}
             </div>
           ) : rows.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">불러올 리뷰가 없습니다.</div>
+            <div className="p-8 text-center text-muted-foreground">
+              불러올 리뷰가 없습니다.
+            </div>
           ) : (
             sortedRows.map((r) => {
               const isSel = selected.includes(r._id);
-              const dim = r.status === 'hidden' ? 'opacity-60' : '';
+              const dim = r.status === "hidden" ? "opacity-60" : "";
               const { date, time } = safeSplitDate(r.createdAt);
 
               return (
@@ -448,15 +635,17 @@ export default function AdminReviewListClient() {
                   key={r._id}
                   onClick={() => setDetail(r)}
                   className={[
-                    'grid grid-cols-1 lg:grid',
+                    "grid grid-cols-1 lg:grid",
                     GRID,
-                    'items-center gap-y-2 gap-x-3 px-3',
-                    compact ? 'py-2' : 'py-3',
-                    'transition-colors cursor-pointer',
-                    'even:bg-background hover:bg-primary/10',
-                    'dark:even:bg-card dark:hover:bg-primary/20',
-                    isSel ? 'border-l-4 border-primary bg-primary/10 dark:bg-primary/20' : '',
-                  ].join(' ')}
+                    "items-center gap-y-2 gap-x-3 px-3",
+                    compact ? "py-2" : "py-3",
+                    "transition-colors cursor-pointer",
+                    "even:bg-background hover:bg-primary/10",
+                    "dark:even:bg-card dark:hover:bg-primary/20",
+                    isSel
+                      ? "border-l-4 border-primary bg-primary/10 dark:bg-primary/20"
+                      : "",
+                  ].join(" ")}
                 >
                   {/* 체크박스 */}
                   <div className={`self-start md:self-center ${dim}`}>
@@ -465,15 +654,21 @@ export default function AdminReviewListClient() {
                       checked={isSel}
                       onClick={(e) => e.stopPropagation()}
                       onCheckedChange={(v) => toggleSelectOne(r._id, !!v)}
-                      aria-label={`${r.userEmail || '-'} 리뷰 선택`}
+                      aria-label={`${r.userEmail || "-"} 리뷰 선택`}
                       className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     />
                   </div>
 
                   {/* 작성자 */}
                   <div className={`min-w-0 ${dim}`}>
-                    <div className="text-foreground font-medium truncate">{r.userName || r.userEmail || '-'}</div>
-                    {r.userEmail && r.userName && <div className="text-[12px] text-muted-foreground break-all">{r.userEmail}</div>}
+                    <div className="text-foreground font-medium truncate">
+                      {r.userName || r.userEmail || "-"}
+                    </div>
+                    {r.userEmail && r.userName && (
+                      <div className="text-[12px] text-muted-foreground break-all">
+                        {r.userEmail}
+                      </div>
+                    )}
                     {r.isDeleted && (
                       <div className="mt-0.5">
                         <Badge variant="secondary" className="h-5">
@@ -488,10 +683,23 @@ export default function AdminReviewListClient() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className={['text-sm leading-5', expanded[r._id] ? 'whitespace-pre-wrap' : 'line-clamp-2', 'break-words', '[overflow-wrap:anywhere]'].join(' ')}>{r.content}</p>
+                          <p
+                            className={[
+                              "text-sm leading-5",
+                              expanded[r._id]
+                                ? "whitespace-pre-wrap"
+                                : "line-clamp-2",
+                              "break-words",
+                              "[overflow-wrap:anywhere]",
+                            ].join(" ")}
+                          >
+                            {r.content}
+                          </p>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-md bg-card text-foreground border dark:border-border shadow-md rounded-md p-3">
-                          <p className="whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]">{r.content}</p>
+                          <p className="whitespace-pre-wrap leading-relaxed [overflow-wrap:anywhere]">
+                            {r.content}
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -506,7 +714,7 @@ export default function AdminReviewListClient() {
                         }}
                         aria-expanded={!!expanded[r._id]}
                       >
-                        {expanded[r._id] ? '접기' : '더보기'}
+                        {expanded[r._id] ? "접기" : "더보기"}
                       </button>
                     )}
                   </div>
@@ -515,7 +723,9 @@ export default function AdminReviewListClient() {
                   <div className={`min-w-0 ${dim}`}>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
-                      <span className="text-[13px] text-foreground">{r.rating}/5</span>
+                      <span className="text-[13px] text-foreground">
+                        {r.rating}/5
+                      </span>
                       <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border">
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
@@ -526,40 +736,78 @@ export default function AdminReviewListClient() {
                   {/* 작성일 */}
                   <div className={`min-w-0 ${dim}`}>
                     <div className="text-foreground text-[13px]">{date}</div>
-                    <div className="text-[12px] text-muted-foreground">{time}</div>
+                    <div className="text-[12px] text-muted-foreground">
+                      {time}
+                    </div>
                   </div>
 
                   {/* 타입 */}
-                  <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
-                    <Badge variant="outline" className={typeBadgeClass(r.type) + ' ring-1 ring-inset ring-ring shrink-0'}>
+                  <div
+                    className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}
+                  >
+                    <Badge
+                      variant="outline"
+                      className={
+                        typeBadgeClass(r.type) +
+                        " ring-1 ring-inset ring-ring shrink-0"
+                      }
+                    >
                       {typeLabel(r.type)}
                     </Badge>
                   </div>
 
                   {/* 공개 / 비공개*/}
-                  <div className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`} onClick={(e) => e.stopPropagation()}>
-                    <span className="hidden xl:inline text-[12px] text-muted-foreground">{r.status === 'visible' ? '공개' : '비공개'}</span>
+                  <div
+                    className={`min-w-0 ${dim} flex items-center justify-center gap-2 whitespace-nowrap`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="hidden xl:inline text-[12px] text-muted-foreground">
+                      {r.status === "visible" ? "공개" : "비공개"}
+                    </span>
                     {r.isDeleted && <Badge variant="secondary">삭제됨</Badge>}
                     <div className="h-6 flex items-center">
-                      <Switch checked={r.status === 'visible'} onCheckedChange={() => toggleVisible(r)} />
+                      <Switch
+                        checked={r.status === "visible"}
+                        onCheckedChange={() => toggleVisible(r)}
+                      />
                     </div>
                   </div>
 
                   {/* 액션 */}
                   <div className="justify-self-end pl-1">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background dark:hover:bg-card">
+                      <DropdownMenuTrigger
+                        asChild
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-background dark:hover:bg-card"
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} onSelect={() => setDetail(r)} className="cursor-pointer">
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-44"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenuItem
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onSelect={() => setDetail(r)}
+                          className="cursor-pointer"
+                        >
                           <Eye className="mr-2 h-4 w-4" />
                           <span>상세 보기</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} onSelect={() => toggleVisible(r)} className="cursor-pointer">
-                          {r.status === 'visible' ? (
+                        <DropdownMenuItem
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onSelect={() => toggleVisible(r)}
+                          className="cursor-pointer"
+                        >
+                          {r.status === "visible" ? (
                             <>
                               <EyeOff className="mr-2 h-4 w-4" />
                               <span>비공개</span>
@@ -571,7 +819,11 @@ export default function AdminReviewListClient() {
                             </>
                           )}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onPointerDown={(e) => e.stopPropagation()} className="text-destructive focus:text-destructive cursor-pointer" onSelect={() => doDelete(r._id)}>
+                        <DropdownMenuItem
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                          onSelect={() => doDelete(r._id)}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           <span>삭제</span>
                         </DropdownMenuItem>
@@ -585,32 +837,77 @@ export default function AdminReviewListClient() {
         </div>
 
         {/* 선택 액션 바 */}
-        <div className={`transition-all duration-200 ${selected.length ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1 pointer-events-none'}`}>
+        <div
+          className={`transition-all duration-200 ${selected.length ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1 pointer-events-none"}`}
+        >
           <div className="w-full border-t border-border bg-primary/10 dark:bg-primary/20 px-4 py-2 flex items-center justify-between rounded-b-lg text-foreground">
             <span className="inline-flex items-center gap-2">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden
+              >
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
-              <span className="inline-flex items-center rounded-full bg-card ring-1 ring-ring text-primary font-semibold text-xs px-2 py-0.5">{selected.length}개 선택됨</span>
+              <span className="inline-flex items-center rounded-full bg-card ring-1 ring-ring text-primary font-semibold text-xs px-2 py-0.5">
+                {selected.length}개 선택됨
+              </span>
             </span>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setSelected([])} className="h-8 px-3 border-border text-primary hover:bg-primary/10 dark:border-border dark:text-primary dark:hover:bg-primary/20">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelected([])}
+                className="h-8 px-3 border-border text-primary hover:bg-primary/10 dark:border-border dark:text-primary dark:hover:bg-primary/20"
+              >
                 해제
               </Button>
 
-              <Button data-cy="bulk-visible" variant="secondary" size="sm" onClick={() => doBulkUpdateStatus('visible')} className="h-8 px-3" aria-label="선택 공개로 변경" title="선택한 리뷰를 공개로 변경">
-                <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <Button
+                data-cy="bulk-visible"
+                variant="secondary"
+                size="sm"
+                onClick={() => doBulkUpdateStatus("visible")}
+                className="h-8 px-3"
+                aria-label="선택 공개로 변경"
+                title="선택한 리뷰를 공개로 변경"
+              >
+                <svg
+                  className="h-4 w-4 mr-1"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden
+                >
                   <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z" />
                 </svg>
                 선택 공개
               </Button>
-              <Button data-cy="bulk-hidden" variant="outline" size="sm" onClick={() => doBulkUpdateStatus('hidden')} className="h-8 px-3" aria-label="선택 비공개로 변경" title="선택한 리뷰를 비공개로 변경">
-                <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <Button
+                data-cy="bulk-hidden"
+                variant="outline"
+                size="sm"
+                onClick={() => doBulkUpdateStatus("hidden")}
+                className="h-8 px-3"
+                aria-label="선택 비공개로 변경"
+                title="선택한 리뷰를 비공개로 변경"
+              >
+                <svg
+                  className="h-4 w-4 mr-1"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden
+                >
                   <path d="M2 12s3-7 10-7a9.9 9.9 0 018.06 4.09l1.41-1.41 1.41 1.41-19 19-1.41-1.41L4.1 19.94A12.14 12.14 0 012 12zm10 5a5 5 0 005-5 4.93 4.93 0 00-.79-2.69l-6.9 6.9A4.93 4.93 0 0012 17z" />
                 </svg>
                 선택 비공개
               </Button>
-              <Button variant="destructive" size="sm" onClick={doBulkDelete} className="h-8 px-3">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={doBulkDelete}
+                className="h-8 px-3"
+              >
                 선택 삭제
               </Button>
             </div>
@@ -627,10 +924,21 @@ export default function AdminReviewListClient() {
           {detail && (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className={typeBadgeClass(detail.type) + ' ring-1 ring-inset ring-ring'}>
+                <Badge
+                  variant="outline"
+                  className={
+                    typeBadgeClass(detail.type) + " ring-1 ring-inset ring-ring"
+                  }
+                >
                   {typeLabel(detail.type)}
                 </Badge>
-                <Badge variant={detail.status === 'visible' ? 'default' : 'secondary'}>{detail.status === 'visible' ? '공개' : '비공개'}</Badge>
+                <Badge
+                  variant={
+                    detail.status === "visible" ? "default" : "secondary"
+                  }
+                >
+                  {detail.status === "visible" ? "공개" : "비공개"}
+                </Badge>
                 {(() => {
                   const dt = safeSplitDate(detail.createdAt);
                   return (
@@ -650,9 +958,15 @@ export default function AdminReviewListClient() {
               <div className="mt-2">
                 {/* 로딩 스켈레톤: 상세를 불러오는 동안 자리 고정 */}
                 {loadingPhotos && (
-                  <div aria-hidden className="flex flex-wrap gap-2 min-h-[72px]">
+                  <div
+                    aria-hidden
+                    className="flex flex-wrap gap-2 min-h-[72px]"
+                  >
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="w-16 h-16 rounded-md bg-muted dark:bg-card animate-pulse" />
+                      <div
+                        key={i}
+                        className="w-16 h-16 rounded-md bg-muted dark:bg-card animate-pulse"
+                      />
                     ))}
                   </div>
                 )}
@@ -672,7 +986,13 @@ export default function AdminReviewListClient() {
                           className="relative w-16 h-16 rounded-md overflow-hidden border dark:border-border focus:outline-none focus:ring-2 focus:ring-ring"
                           aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                         >
-                          <Image src={src} alt={`review-photo-${i}`} fill className="object-cover" loading="lazy" />
+                          <Image
+                            src={src}
+                            alt={`review-photo-${i}`}
+                            fill
+                            className="object-cover"
+                            loading="lazy"
+                          />
                         </button>
                       ))}
                     </div>
@@ -682,24 +1002,38 @@ export default function AdminReviewListClient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">작성자</div>
-                  <div className="font-medium">{detail.userName || detail.userEmail || '-'}</div>
-                  {detail.userName && <div className="text-xs text-muted-foreground break-all">{detail.userEmail}</div>}
+                  <div className="text-sm text-muted-foreground mb-1">
+                    작성자
+                  </div>
+                  <div className="font-medium">
+                    {detail.userName || detail.userEmail || "-"}
+                  </div>
+                  {detail.userName && (
+                    <div className="text-xs text-muted-foreground break-all">
+                      {detail.userEmail}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">리뷰 대상</div>
-                  <div className="font-medium">{detail.subject || '-'}</div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    리뷰 대상
+                  </div>
+                  <div className="font-medium">{detail.subject || "-"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">평점</div>
                   <div className="flex items-center gap-2">
                     {renderStars(detail.rating)}
-                    <span className="text-sm text-foreground">{detail.rating}/5</span>
+                    <span className="text-sm text-foreground">
+                      {detail.rating}/5
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-md dark:bg-card p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-foreground">{detail.content || ''}</div>
+              <div className="rounded-md dark:bg-card p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-foreground">
+                {detail.content || ""}
+              </div>
             </div>
           )}
           <DialogFooter className="justify-between">
@@ -709,10 +1043,17 @@ export default function AdminReviewListClient() {
                 onClick={async () => {
                   if (!detail) return;
                   await toggleVisible(detail);
-                  setDetail((d) => (d ? { ...d, status: d.status === 'visible' ? 'hidden' : 'visible' } : d));
+                  setDetail((d) =>
+                    d
+                      ? {
+                          ...d,
+                          status: d.status === "visible" ? "hidden" : "visible",
+                        }
+                      : d,
+                  );
                 }}
               >
-                {detail?.status === 'visible' ? (
+                {detail?.status === "visible" ? (
                   <>
                     <EyeOff className="h-4 w-4 mr-1" /> 비공개
                   </>
@@ -737,29 +1078,43 @@ export default function AdminReviewListClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <ReviewPhotoDialog open={viewerOpen} onOpenChange={setViewerOpen} photos={fullDetail?.photos ?? detail?.photos ?? []} initialIndex={viewerIndex} />
+      <ReviewPhotoDialog
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        photos={fullDetail?.photos ?? detail?.photos ?? []}
+        initialIndex={viewerIndex}
+      />
       {/* 더 보기 */}
       <div className="flex justify-center">
         {rows.length > 0 &&
           (hasMore ? (
-            <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
+            <Button
+              variant="outline"
+              onClick={() => setSize(size + 1)}
+              disabled={isValidating}
+            >
               {isValidating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="sr-only">불러오는 중</span>
                 </>
               ) : (
-                '더 보기'
+                "더 보기"
               )}
             </Button>
           ) : (
-            <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
+            <span className="text-sm text-muted-foreground">
+              마지막 페이지입니다
+            </span>
           ))}
       </div>
       {rows.length > 0 && isValidating && (
         <div className="space-y-2">
           {Array.from({ length: 2 }).map((_, index) => (
-            <div key={index} className="grid grid-cols-1 gap-2 rounded-md border border-border/40 p-3 lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px] lg:items-center lg:gap-x-3">
+            <div
+              key={index}
+              className="grid grid-cols-1 gap-2 rounded-md border border-border/40 p-3 lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px] lg:items-center lg:gap-x-3"
+            >
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-full" />

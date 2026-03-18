@@ -1,5 +1,5 @@
 // 파일: app/products/SkeletonProductCard.tsx
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export function SkeletonProductCard() {
   return (
@@ -25,11 +25,29 @@ export function SkeletonProductCard() {
   );
 }
 
-function SkeletonLine({ width = '100%', height = '1rem', className = '' }: { width?: string; height?: string; className?: string }) {
-  return <div className={cn('bg-muted rounded animate-pulse', className)} style={{ width, height }} aria-hidden="true" />;
+function SkeletonLine({
+  width = "100%",
+  height = "1rem",
+  className = "",
+}: {
+  width?: string;
+  height?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("bg-muted rounded animate-pulse", className)}
+      style={{ width, height }}
+      aria-hidden="true"
+    />
+  );
 }
 
-export function SkeletonFilterDetailed({ performanceCount = 5 }: { performanceCount?: number }) {
+export function SkeletonFilterDetailed({
+  performanceCount = 5,
+}: {
+  performanceCount?: number;
+}) {
   return (
     <div className="space-y-6" aria-hidden="true">
       {/* 헤더: 타이틀 + 초기화 버튼 */}

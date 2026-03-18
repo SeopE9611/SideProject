@@ -1,6 +1,6 @@
 export function parseSearchKeywordsInput(input: string) {
   return input
-    .split(',')
+    .split(",")
     .map((k) => k.trim())
     .filter(Boolean);
 }

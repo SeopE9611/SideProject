@@ -1,5 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function OrderDetailLoading() {
   return (
@@ -105,7 +105,9 @@ export default function OrderDetailLoading() {
                 <div key={i} className="flex">
                   <div className="mr-4 flex flex-col items-center">
                     <Skeleton className="h-10 w-10 rounded-full bg-muted dark:bg-card animate-pulse" />
-                    {i < 2 && <div className="h-full w-px bg-muted dark:bg-card" />}
+                    {i < 2 && (
+                      <div className="h-full w-px bg-muted dark:bg-card" />
+                    )}
                   </div>
                   <div className="flex-1 pb-8">
                     <div className="flex items-center justify-between">

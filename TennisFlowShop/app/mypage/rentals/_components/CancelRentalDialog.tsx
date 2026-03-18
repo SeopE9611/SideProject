@@ -1,17 +1,36 @@
-'use client';
+"use client";
 
-import RefundAccountFields from '@/components/refund/RefundAccountFields';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { readCancelRequestError, validateRefundAccountInput } from '@/lib/cancel-request/refund-account-client';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { XCircle } from 'lucide-react';
-import { useState } from 'react';
-import { mutate } from 'swr';
+import RefundAccountFields from "@/components/refund/RefundAccountFields";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  readCancelRequestError,
+  validateRefundAccountInput,
+} from "@/lib/cancel-request/refund-account-client";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { XCircle } from "lucide-react";
+import { useState } from "react";
+import { mutate } from "swr";
 
 interface CancelRentalDialogProps {
   rentalId: string;
@@ -20,20 +39,24 @@ interface CancelRentalDialogProps {
   disabled?: boolean;
 }
 
-const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRentalDialogProps) => {
+const CancelRentalDialog = ({
+  rentalId,
+  onSuccess,
+  disabled = false,
+}: CancelRentalDialogProps) => {
   // 모달 열림/닫힘 상태
   const [open, setOpen] = useState(false);
   // 선택된 기본 사유
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
   // "기타" 선택 시 추가 입력 사유
-  const [otherReason, setOtherReason] = useState('');
+  const [otherReason, setOtherReason] = useState("");
   // API 호출 중 여부
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 환불 계좌
-  const [refundBank, setRefundBank] = useState<string>('');
-  const [refundAccount, setRefundAccount] = useState('');
-  const [refundHolder, setRefundHolder] = useState('');
+  const [refundBank, setRefundBank] = useState<string>("");
+  const [refundAccount, setRefundAccount] = useState("");
+  const [refundHolder, setRefundHolder] = useState("");
 
   /**
    * 다이얼로그 내부 입력값 초기화
@@ -43,14 +66,20 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
    */
   const resetForm = () => {
     setSelectedReason(undefined);
-    setOtherReason('');
-    setRefundBank('');
-    setRefundAccount('');
-    setRefundHolder('');
+    setOtherReason("");
+    setRefundBank("");
+    setRefundAccount("");
+    setRefundHolder("");
   };
 
   // 입력/선택이 있는 상태에서 페이지 이탈(뒤로가기/링크/탭닫기) 방지
-  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0 || refundBank !== '' || refundAccount.trim().length > 0 || refundHolder.trim().length > 0);
+  const isDirty =
+    open &&
+    (selectedReason !== undefined ||
+      otherReason.trim().length > 0 ||
+      refundBank !== "" ||
+      refundAccount.trim().length > 0 ||
+      refundHolder.trim().length > 0);
   useUnsavedChangesGuard(isDirty);
 
   // “닫기” 시 입력 유실 방지 (ESC/오버레이/닫기 버튼 모두 여기로 들어옴)
@@ -79,11 +108,11 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
     if (isSubmitting) return;
 
     if (!selectedReason) {
-      showErrorToast('취소 사유를 선택해주세요.');
+      showErrorToast("취소 사유를 선택해주세요.");
       return;
     }
-    if (selectedReason === '기타' && !otherReason.trim()) {
-      showErrorToast('기타 사유를 입력해주세요.');
+    if (selectedReason === "기타" && !otherReason.trim()) {
+      showErrorToast("기타 사유를 입력해주세요.");
       return;
     }
 
@@ -104,7 +133,7 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
         // DB에는 사용자가 선택한 옵션 그대로 저장 (단순 변심 / 배송 지연 / 기타 …)
         reasonCode: selectedReason,
         // "기타"일 때만 입력한 텍스트 저장, 나머지는 공란
-        reasonText: selectedReason === '기타' ? otherReason.trim() : '',
+        reasonText: selectedReason === "기타" ? otherReason.trim() : "",
         refundAccount: {
           bank: refundValidation.value.bank,
           account: refundValidation.value.account,
@@ -113,26 +142,39 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       };
 
       const res = await fetch(`/api/rentals/${rentalId}/cancel-request`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        const parsed = await readCancelRequestError(res, '대여 취소 요청 처리 중 오류가 발생했습니다.');
-        throw new Error(parsed.message || '대여 취소 요청 처리 중 오류가 발생했습니다.');
+        const parsed = await readCancelRequestError(
+          res,
+          "대여 취소 요청 처리 중 오류가 발생했습니다.",
+        );
+        throw new Error(
+          parsed.message || "대여 취소 요청 처리 중 오류가 발생했습니다.",
+        );
       }
 
-      showSuccessToast('대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.');
+      showSuccessToast(
+        "대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.",
+      );
 
       // 상세 데이터 갱신 (혹시 다른 곳에서 SWR로 쓰고 있을 수도 있으니 유지)
       await mutate(`/api/rentals/${rentalId}`, undefined, { revalidate: true });
       // 마이페이지 상세에 맞춰주려면 이 줄도 추가해 두면 좋음
-      await mutate(`/api/me/rentals/${rentalId}`, undefined, { revalidate: true });
+      await mutate(`/api/me/rentals/${rentalId}`, undefined, {
+        revalidate: true,
+      });
 
       // 마이페이지 목록 갱신
-      await mutate((key: string) => key?.startsWith('/api/me/rentals'), undefined, { revalidate: true });
+      await mutate(
+        (key: string) => key?.startsWith("/api/me/rentals"),
+        undefined,
+        { revalidate: true },
+      );
 
       // 성공 종료 시에도 입력값은 초기화(다음 오픈 시 이전 선택값 잔존 방지)
       resetForm();
@@ -143,7 +185,11 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
       }
     } catch (e) {
       console.error(e);
-      showErrorToast(e instanceof Error ? e.message : '대여 취소 요청 중 오류가 발생했습니다.');
+      showErrorToast(
+        e instanceof Error
+          ? e.message
+          : "대여 취소 요청 중 오류가 발생했습니다.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +198,12 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm" disabled={isSubmitting || disabled} className={`gap-2 ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}>
+        <Button
+          variant="destructive"
+          size="sm"
+          disabled={isSubmitting || disabled}
+          className={`gap-2 ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+        >
           <XCircle className="mr-2 h-4 w-4" />
           대여 취소 요청
         </Button>
@@ -179,10 +230,15 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
             </Select>
           </div>
 
-          {selectedReason === '기타' && (
+          {selectedReason === "기타" && (
             <div className="space-y-2">
               <Label>기타 사유</Label>
-              <Textarea rows={3} value={otherReason} onChange={(e) => setOtherReason(e.target.value)} placeholder="취소 요청 사유를 입력해주세요." />
+              <Textarea
+                rows={3}
+                value={otherReason}
+                onChange={(e) => setOtherReason(e.target.value)}
+                placeholder="취소 요청 사유를 입력해주세요."
+              />
             </div>
           )}
           <RefundAccountFields
@@ -198,11 +254,21 @@ const CancelRentalDialog = ({ rentalId, onSuccess, disabled = false }: CancelRen
         </div>
 
         <DialogFooter>
-          <Button variant="outline" type="button" disabled={isSubmitting} onClick={() => handleOpenChange(false)}>
+          <Button
+            variant="outline"
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => handleOpenChange(false)}
+          >
             닫기
           </Button>
-          <Button variant="destructive" type="button" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? '처리 중...' : '취소 요청하기'}
+          <Button
+            variant="destructive"
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "처리 중..." : "취소 요청하기"}
           </Button>
         </DialogFooter>
       </DialogContent>

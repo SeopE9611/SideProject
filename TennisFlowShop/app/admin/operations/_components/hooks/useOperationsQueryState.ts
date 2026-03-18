@@ -1,27 +1,41 @@
-import { buildQueryString, replaceQueryUrl } from '@/lib/admin/urlQuerySync';
-import type { ReadonlyURLSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
-import type { Kind } from '../filters/operationsFilters';
+import { buildQueryString, replaceQueryUrl } from "@/lib/admin/urlQuerySync";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import type { Kind } from "../filters/operationsFilters";
 
-type FlowValue = 'all' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
-type IntegratedValue = 'all' | '1' | '0';
+type FlowValue = "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+type IntegratedValue = "all" | "1" | "0";
 
 type Params = {
   q: string;
-  kind: 'all' | Kind;
+  kind: "all" | Kind;
   flow: FlowValue;
   integrated: IntegratedValue;
   onlyWarn: boolean;
-  warnFilter: 'all' | 'warn' | 'review' | 'clean';
-  warnSort: 'default' | 'warn_first' | 'safe_first';
+  warnFilter: "all" | "warn" | "review" | "clean";
+  warnSort: "default" | "warn_first" | "safe_first";
   page: number;
 };
 
-const VALID_KINDS: Array<'all' | Kind> = ['all', 'order', 'stringing_application', 'rental'];
-const VALID_FLOWS: FlowValue[] = ['all', '1', '2', '3', '4', '5', '6', '7'];
-const VALID_INTEGRATED: IntegratedValue[] = ['all', '1', '0'];
-const VALID_WARN_FILTERS: Params['warnFilter'][] = ['all', 'warn', 'review', 'clean'];
-const VALID_WARN_SORTS: Params['warnSort'][] = ['default', 'warn_first', 'safe_first'];
+const VALID_KINDS: Array<"all" | Kind> = [
+  "all",
+  "order",
+  "stringing_application",
+  "rental",
+];
+const VALID_FLOWS: FlowValue[] = ["all", "1", "2", "3", "4", "5", "6", "7"];
+const VALID_INTEGRATED: IntegratedValue[] = ["all", "1", "0"];
+const VALID_WARN_FILTERS: Params["warnFilter"][] = [
+  "all",
+  "warn",
+  "review",
+  "clean",
+];
+const VALID_WARN_SORTS: Params["warnSort"][] = [
+  "default",
+  "warn_first",
+  "safe_first",
+];
 
 function parsePage(value: string | null) {
   if (!value) return 1;
@@ -38,7 +52,7 @@ export function buildOperationsViewQueryString(params: Params) {
     warnFilter: params.warnFilter,
     warnSort: params.warnSort,
     page: params.page === 1 ? undefined : params.page,
-    warn: params.onlyWarn ? '1' : undefined,
+    warn: params.onlyWarn ? "1" : undefined,
   });
 }
 
@@ -46,31 +60,42 @@ export function initOperationsStateFromQuery(
   sp: ReadonlyURLSearchParams,
   setters: {
     setQ: (v: string) => void;
-    setKind: (v: 'all' | Kind) => void;
+    setKind: (v: "all" | Kind) => void;
     setFlow: (v: FlowValue) => void;
     setIntegrated: (v: IntegratedValue) => void;
     setOnlyWarn: (v: boolean) => void;
-    setWarnFilter: (v: 'all' | 'warn' | 'review' | 'clean') => void;
-    setWarnSort: (v: 'default' | 'warn_first' | 'safe_first') => void;
+    setWarnFilter: (v: "all" | "warn" | "review" | "clean") => void;
+    setWarnSort: (v: "default" | "warn_first" | "safe_first") => void;
     setPage: (v: number) => void;
   },
 ) {
-  const k = (sp.get('kind') as 'all' | Kind) ?? 'all';
-  const f = (sp.get('flow') as FlowValue) ?? 'all';
-  const i = (sp.get('integrated') as IntegratedValue) ?? 'all';
-  const query = sp.get('q') ?? '';
-  const warn = sp.get('warn');
-  const warnFilter = (sp.get('warnFilter') as Params['warnFilter']) ?? 'all';
-  const warnSort = (sp.get('warnSort') as Params['warnSort']) ?? 'default';
-  const p = parsePage(sp.get('page'));
+  const k = (sp.get("kind") as "all" | Kind) ?? "all";
+  const f = (sp.get("flow") as FlowValue) ?? "all";
+  const i = (sp.get("integrated") as IntegratedValue) ?? "all";
+  const query = sp.get("q") ?? "";
+  const warn = sp.get("warn");
+  const warnFilter = (sp.get("warnFilter") as Params["warnFilter"]) ?? "all";
+  const warnSort = (sp.get("warnSort") as Params["warnSort"]) ?? "default";
+  const p = parsePage(sp.get("page"));
 
-  const nextKind: 'all' | Kind = VALID_KINDS.includes(k) ? k : 'all';
-  const nextFlow: FlowValue = VALID_FLOWS.includes(f) ? f : 'all';
-  const nextIntegrated: IntegratedValue = VALID_INTEGRATED.includes(i) ? i : 'all';
-  const nextOnlyWarn = warn === '1';
-  const nextWarnFilter: Params['warnFilter'] = VALID_WARN_FILTERS.includes(warnFilter) ? warnFilter : 'all';
-  const normalizedWarnFilter: Params['warnFilter'] = nextOnlyWarn && (nextWarnFilter === 'review' || nextWarnFilter === 'clean') ? 'warn' : nextWarnFilter;
-  const nextWarnSort: Params['warnSort'] = VALID_WARN_SORTS.includes(warnSort) ? warnSort : 'default';
+  const nextKind: "all" | Kind = VALID_KINDS.includes(k) ? k : "all";
+  const nextFlow: FlowValue = VALID_FLOWS.includes(f) ? f : "all";
+  const nextIntegrated: IntegratedValue = VALID_INTEGRATED.includes(i)
+    ? i
+    : "all";
+  const nextOnlyWarn = warn === "1";
+  const nextWarnFilter: Params["warnFilter"] = VALID_WARN_FILTERS.includes(
+    warnFilter,
+  )
+    ? warnFilter
+    : "all";
+  const normalizedWarnFilter: Params["warnFilter"] =
+    nextOnlyWarn && (nextWarnFilter === "review" || nextWarnFilter === "clean")
+      ? "warn"
+      : nextWarnFilter;
+  const nextWarnSort: Params["warnSort"] = VALID_WARN_SORTS.includes(warnSort)
+    ? warnSort
+    : "default";
 
   setters.setKind(nextKind);
   setters.setFlow(nextFlow);
@@ -82,7 +107,11 @@ export function initOperationsStateFromQuery(
   setters.setPage(p);
 }
 
-export function useSyncOperationsQuery(params: Params, pathname: string, replace: (url: string) => void) {
+export function useSyncOperationsQuery(
+  params: Params,
+  pathname: string,
+  replace: (url: string) => void,
+) {
   /**
    * TODO: Issue 무한 리렌더(혹은 "무한 URL replace") 방지 포인트
    *
@@ -96,13 +125,34 @@ export function useSyncOperationsQuery(params: Params, pathname: string, replace
    * - dependency를 "객체"가 아니라 "원시 값"(string/number/boolean)으로 분해해서 걸어둠.
    *   그러면 실제 값이 바뀔 때만 effect가 다시 실행됨.
    */
-  const { q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page } = params;
+  const { q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page } =
+    params;
 
   useEffect(() => {
     const t = setTimeout(() => {
-      const queryString = buildOperationsViewQueryString({ q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page });
+      const queryString = buildOperationsViewQueryString({
+        q,
+        kind,
+        flow,
+        integrated,
+        onlyWarn,
+        warnFilter,
+        warnSort,
+        page,
+      });
       replaceQueryUrl(pathname, queryString, replace);
     }, 200);
     return () => clearTimeout(t);
-  }, [q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page, pathname, replace]);
+  }, [
+    q,
+    kind,
+    flow,
+    integrated,
+    onlyWarn,
+    warnFilter,
+    warnSort,
+    page,
+    pathname,
+    replace,
+  ]);
 }

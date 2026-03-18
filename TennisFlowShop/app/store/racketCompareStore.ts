@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 /**
  * 라켓 비교(최대 4개) 전역 스토어
@@ -35,8 +35,8 @@ export type CompareRacketItem = {
 };
 
 type ToggleResult =
-  | { ok: true; action: 'added' | 'removed' }
-  | { ok: false; action: 'rejected'; message: string };
+  | { ok: true; action: "added" | "removed" }
+  | { ok: false; action: "rejected"; message: string };
 
 interface RacketCompareState {
   items: CompareRacketItem[];
@@ -70,7 +70,10 @@ export const useRacketCompareStore = create<RacketCompareState>()(
 
         // 최대 4개 제한
         if (items.length >= MAX_COMPARE) {
-          return { ok: false, message: `라켓 비교는 최대 ${MAX_COMPARE}개까지 담을 수 있습니다.` };
+          return {
+            ok: false,
+            message: `라켓 비교는 최대 ${MAX_COMPARE}개까지 담을 수 있습니다.`,
+          };
         }
 
         set({ items: [...items, item] });
@@ -90,22 +93,26 @@ export const useRacketCompareStore = create<RacketCompareState>()(
         // 이미 담겨있으면 제거
         if (items.some((i) => i.id === item.id)) {
           set({ items: items.filter((i) => i.id !== item.id) });
-          return { ok: true, action: 'removed' };
+          return { ok: true, action: "removed" };
         }
 
         // 없으면 추가 시도(최대 4개 제한)
         if (items.length >= MAX_COMPARE) {
-          return { ok: false, action: 'rejected', message: `라켓 비교는 최대 ${MAX_COMPARE}개까지 담을 수 있습니다.` };
+          return {
+            ok: false,
+            action: "rejected",
+            message: `라켓 비교는 최대 ${MAX_COMPARE}개까지 담을 수 있습니다.`,
+          };
         }
 
         set({ items: [...items, item] });
-        return { ok: true, action: 'added' };
+        return { ok: true, action: "added" };
       },
     }),
     {
-      name: 'racket-compare-storage', // localStorage key
-       // 비교 목록은 탭 세션 단위로 유지(탭/브라우저 닫으면 자동 초기화)
+      name: "racket-compare-storage", // localStorage key
+      // 비교 목록은 탭 세션 단위로 유지(탭/브라우저 닫으면 자동 초기화)
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );

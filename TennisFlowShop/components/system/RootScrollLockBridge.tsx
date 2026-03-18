@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 /**
  * 목적
@@ -13,14 +13,17 @@ export default function RootScrollLockBridge() {
     const body = document.body;
 
     const sync = () => {
-      const locked = body.hasAttribute('data-scroll-locked');
-      html.toggleAttribute('data-scroll-locked', locked);
+      const locked = body.hasAttribute("data-scroll-locked");
+      html.toggleAttribute("data-scroll-locked", locked);
     };
 
     // 최초 1회 + 이후 body attribute 변화를 감시
     sync();
     const mo = new MutationObserver(sync);
-    mo.observe(body, { attributes: true, attributeFilter: ['data-scroll-locked'] });
+    mo.observe(body, {
+      attributes: true,
+      attributeFilter: ["data-scroll-locked"],
+    });
 
     return () => mo.disconnect();
   }, []);

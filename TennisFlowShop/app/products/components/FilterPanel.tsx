@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
-import { Search, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type PerformanceFilterConfig = {
   label: string;
@@ -79,34 +85,89 @@ export const FilterPanel = React.memo(function FilterPanel({
 }: Props) {
   const performanceFiltersConfig: PerformanceFilterConfig[] = React.useMemo(
     () => [
-      { label: '반발력', state: selectedBounce, setter: setSelectedBounce, featureKey: 'power' },
-      { label: '컨트롤', state: selectedControl, setter: setSelectedControl, featureKey: 'control' },
-      { label: '스핀', state: selectedSpin, setter: setSelectedSpin, featureKey: 'spin' },
-      { label: '내구성', state: selectedDurability, setter: setSelectedDurability, featureKey: 'durability' },
-      { label: '편안함', state: selectedComfort, setter: setSelectedComfort, featureKey: 'comfort' },
+      {
+        label: "반발력",
+        state: selectedBounce,
+        setter: setSelectedBounce,
+        featureKey: "power",
+      },
+      {
+        label: "컨트롤",
+        state: selectedControl,
+        setter: setSelectedControl,
+        featureKey: "control",
+      },
+      {
+        label: "스핀",
+        state: selectedSpin,
+        setter: setSelectedSpin,
+        featureKey: "spin",
+      },
+      {
+        label: "내구성",
+        state: selectedDurability,
+        setter: setSelectedDurability,
+        featureKey: "durability",
+      },
+      {
+        label: "편안함",
+        state: selectedComfort,
+        setter: setSelectedComfort,
+        featureKey: "comfort",
+      },
     ],
-    [selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort]
+    [
+      selectedBounce,
+      selectedControl,
+      selectedSpin,
+      selectedDurability,
+      selectedComfort,
+    ],
   );
 
   return (
-    <div className={cn('rounded-lg bp-sm:rounded-xl border border-border bg-card/80 dark:bg-card backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl')}>
+    <div
+      className={cn(
+        "rounded-lg bp-sm:rounded-xl border border-border bg-card/80 dark:bg-card backdrop-blur-sm p-4 bp-sm:p-6 shadow-xl",
+      )}
+    >
       {isLoadingInitial && (
-        <div className="mb-4 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">필터 정보를 준비하고 있습니다.</div>
+        <div className="mb-4 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          필터 정보를 준비하고 있습니다.
+        </div>
       )}
       <AnimatePresence mode="wait">
-        <motion.div key={resetKey} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.15 }}>
+        <motion.div
+          key={resetKey}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.15 }}
+        >
           <div className="flex items-center justify-between mb-4 bp-sm:mb-6">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-lg bp-sm:text-xl text-foreground">필터</h2>
+              <h2 className="font-bold text-lg bp-sm:text-xl text-foreground">
+                필터
+              </h2>
               {onClose && (
-                <Button variant="outline" size="sm" onClick={onClose} className="bp-sm:hidden h-7 px-2 text-xs bg-transparent">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  className="bp-sm:hidden h-7 px-2 text-xs bg-transparent"
+                >
                   닫기
                 </Button>
               )}
             </div>
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={onReset} className="text-xs h-7 bp-sm:h-8 px-2 bp-sm:px-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onReset}
+                  className="text-xs h-7 bp-sm:h-8 px-2 bp-sm:px-3"
+                >
                   초기화 ({activeFiltersCount})
                 </Button>
               )}
@@ -134,9 +195,11 @@ export const FilterPanel = React.memo(function FilterPanel({
                   type="button"
                   aria-label="검색어 지우기"
                   onClick={() => {
-                    setSearchQuery('');
+                    setSearchQuery("");
                     onClearInput?.();
-                    const el = document.getElementById('search') as HTMLInputElement | null;
+                    const el = document.getElementById(
+                      "search",
+                    ) as HTMLInputElement | null;
                     el?.focus();
                   }}
                   className="absolute right-2.5 bp-sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
@@ -145,16 +208,29 @@ export const FilterPanel = React.memo(function FilterPanel({
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" variant="default" className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm shrink-0">
+            <Button
+              type="submit"
+              size="sm"
+              variant="default"
+              className="h-9 bp-sm:h-10 px-3 bp-sm:px-4 text-xs bp-sm:text-sm shrink-0"
+            >
               검색
             </Button>
           </form>
 
           <div className="mb-4 bp-sm:mb-6">
-            <Label htmlFor="brand" className="mb-2 bp-sm:mb-3 block font-medium text-sm">
+            <Label
+              htmlFor="brand"
+              className="mb-2 bp-sm:mb-3 block font-medium text-sm"
+            >
               브랜드
             </Label>
-            <Select onValueChange={(value) => setSelectedBrand(value === 'all' ? null : value)} value={selectedBrand ?? 'all'}>
+            <Select
+              onValueChange={(value) =>
+                setSelectedBrand(value === "all" ? null : value)
+              }
+              value={selectedBrand ?? "all"}
+            >
               <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
                 <SelectValue placeholder="브랜드 선택" />
               </SelectTrigger>
@@ -171,7 +247,10 @@ export const FilterPanel = React.memo(function FilterPanel({
 
           <div className="space-y-1.5 mb-4 bp-sm:mb-6">
             <Label className="text-sm">재질</Label>
-            <Select value={selectedMaterial ?? 'all'} onValueChange={(v) => setSelectedMaterial(v === 'all' ? null : v)}>
+            <Select
+              value={selectedMaterial ?? "all"}
+              onValueChange={(v) => setSelectedMaterial(v === "all" ? null : v)}
+            >
               <SelectTrigger className="h-9 bp-sm:h-10 text-sm">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
@@ -188,22 +267,31 @@ export const FilterPanel = React.memo(function FilterPanel({
 
           <div className="space-y-3 bp-sm:space-y-4">
             <h3 className="font-medium text-base bp-sm:text-lg">성능</h3>
-            {performanceFiltersConfig.map(({ label, state, setter, featureKey }) => (
-              <div key={featureKey}>
-                <Label className="mb-1.5 bp-sm:mb-2 block text-xs bp-sm:text-sm font-medium">{label}</Label>
-                <Select onValueChange={(val) => setter(val === 'all' ? null : Number(val))} value={state !== null ? String(state) : 'all'}>
-                  <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
-                    <SelectValue placeholder="선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체</SelectItem>
-                    <SelectItem value="5">★★★★★</SelectItem>
-                    <SelectItem value="4">★★★★☆ 이상</SelectItem>
-                    <SelectItem value="3">★★★☆☆ 이상</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
+            {performanceFiltersConfig.map(
+              ({ label, state, setter, featureKey }) => (
+                <div key={featureKey}>
+                  <Label className="mb-1.5 bp-sm:mb-2 block text-xs bp-sm:text-sm font-medium">
+                    {label}
+                  </Label>
+                  <Select
+                    onValueChange={(val) =>
+                      setter(val === "all" ? null : Number(val))
+                    }
+                    value={state !== null ? String(state) : "all"}
+                  >
+                    <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-lg border-2 border-border focus:border-border dark:focus:border-border">
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      <SelectItem value="5">★★★★★</SelectItem>
+                      <SelectItem value="4">★★★★☆ 이상</SelectItem>
+                      <SelectItem value="3">★★★☆☆ 이상</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ),
+            )}
           </div>
         </motion.div>
       </AnimatePresence>

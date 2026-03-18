@@ -2,11 +2,15 @@
  * Responsibility: mapping only (admin operations 도메인 타입 정의).
  * - API route 로직은 이 파일을 import 해서 도메인 타입을 공유합니다.
  */
-export type AdminOperationKind = 'order' | 'stringing_application' | 'rental';
+export type AdminOperationKind = "order" | "stringing_application" | "rental";
 export type AdminOperationFlow = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-export type SettlementAnchor = 'order' | 'rental' | 'application';
-export type AdminOperationReviewLevel = 'none' | 'info' | 'action';
-export type AdminOperationCancelStatus = 'none' | 'requested' | 'approved' | 'rejected';
+export type SettlementAnchor = "order" | "rental" | "application";
+export type AdminOperationReviewLevel = "none" | "info" | "action";
+export type AdminOperationCancelStatus =
+  | "none"
+  | "requested"
+  | "approved"
+  | "rejected";
 
 export type AdminOperationItem = {
   id: string;
@@ -58,8 +62,7 @@ export type AdminOperationItem = {
   };
 };
 
-
-export type AdminOperationsKindFilter = AdminOperationKind | 'all';
+export type AdminOperationsKindFilter = AdminOperationKind | "all";
 
 export interface AdminOperationsListRequestDto {
   page: number;

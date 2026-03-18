@@ -8,11 +8,16 @@
  * - 브로드캐스트 자동 삭제(TTL)는 expiresAt 기반으로 처리.
  */
 
-import type { CreateIndexesOptions, Db, IndexDirection } from 'mongodb';
+import type { CreateIndexesOptions, Db, IndexDirection } from "mongodb";
 
 type Keys = Record<string, IndexDirection>;
 
-async function ensureIndex(db: Db, collectionName: string, keys: Keys, options: CreateIndexesOptions = {}) {
+async function ensureIndex(
+  db: Db,
+  collectionName: string,
+  keys: Keys,
+  options: CreateIndexesOptions = {},
+) {
   const col = db.collection(collectionName);
 
   // 컬렉션이 없으면 만들어 둠(서버리스/로컬 모두 안전)
@@ -39,28 +44,48 @@ async function ensureIndex(db: Db, collectionName: string, keys: Keys, options: 
 
 export async function ensureMessageIndexes(db: Db) {
   // 받은쪽지함: toUserId 기준 최신
-  await ensureIndex(db, 'messages', { toUserId: 1, createdAt: -1 }, { name: 'idx_messages_to_created' });
+  await ensureIndex(
+    db,
+    "messages",
+    { toUserId: 1, createdAt: -1 },
+    { name: "idx_messages_to_created" },
+  );
 
   // 보낸쪽지함: fromUserId 기준 최신
-  await ensureIndex(db, 'messages', { fromUserId: 1, createdAt: -1 }, { name: 'idx_messages_from_created' });
+  await ensureIndex(
+    db,
+    "messages",
+    { fromUserId: 1, createdAt: -1 },
+    { name: "idx_messages_from_created" },
+  );
 
   // 미열람 카운트: toUserId + readAt(null)
-  await ensureIndex(db, 'messages', { toUserId: 1, readAt: 1 }, { name: 'idx_messages_to_readAt' });
+  await ensureIndex(
+    db,
+    "messages",
+    { toUserId: 1, readAt: 1 },
+    { name: "idx_messages_to_readAt" },
+  );
 
   // 브로드캐스트 묶음 일괄 삭제/조회: broadcastId
-  await ensureIndex(db, 'messages', { broadcastId: 1 }, { name: 'idx_messages_broadcastId' });
+  await ensureIndex(
+    db,
+    "messages",
+    { broadcastId: 1 },
+    { name: "idx_messages_broadcastId" },
+  );
 
   // TTL: expiresAt이 지난 문서는 자동 삭제 (broadcast에서만 expiresAt을 넣는 것을 권장)
   await ensureIndex(
     db,
-    'messages',
+    "messages",
     {
       expiresAt: 1,
     },
     {
-      name: 'ttl_messages_expiresAt',
+      name: "ttl_messages_expiresAt",
       expireAfterSeconds: 0,
-      partialFilterExpression: { expiresAt: { $type: 'date' } },
-    }
+      partialFilterExpression: { expiresAt: { $type: "date" } },
+    },
   );
 }

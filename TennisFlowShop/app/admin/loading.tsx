@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminLoading() {
   return (
@@ -41,7 +41,10 @@ export default function AdminLoading() {
           {Array.from({ length: 6 }).map((_, rowIndex) => (
             <div key={`row-${rowIndex}`} className="grid grid-cols-5 gap-2">
               {Array.from({ length: 5 }).map((_, colIndex) => (
-                <Skeleton key={`cell-${rowIndex}-${colIndex}`} className="h-9 w-full" />
+                <Skeleton
+                  key={`cell-${rowIndex}-${colIndex}`}
+                  className="h-9 w-full"
+                />
               ))}
             </div>
           ))}

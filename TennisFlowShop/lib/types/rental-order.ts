@@ -1,17 +1,17 @@
 // 대여 도메인 상태
 
-import { RefundAccountInfo } from '@/lib/cancel-request/refund-account';
+import { RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 
 // pending → paid → out → returned (종결) / canceled(종결)
 export type RentalStatus =
-  | 'pending' // 대기중(신청 완료, 결제 전)
-  | 'paid' // 결제완료(출고 전)
-  | 'out' // 출고/대여중
-  | 'returned' // 반납 완료
-  | 'canceled'; // 취소(종결)
+  | "pending" // 대기중(신청 완료, 결제 전)
+  | "paid" // 결제완료(출고 전)
+  | "out" // 출고/대여중
+  | "returned" // 반납 완료
+  | "canceled"; // 취소(종결)
 
 // 대여 취소 요청 상태 타입
-export type RentalCancelRequestStatus = 'requested' | 'approved' | 'rejected';
+export type RentalCancelRequestStatus = "requested" | "approved" | "rejected";
 
 // 대여 취소 요청 객체 타입
 export type RentalCancelRequest = {

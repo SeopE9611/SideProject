@@ -1,1 +1,1 @@
-export { GET } from '@/app/api/admin/system/purge/preview/route';
+export { GET } from "@/app/api/admin/system/purge/preview/route";

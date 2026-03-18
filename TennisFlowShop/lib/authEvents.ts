@@ -1,11 +1,11 @@
 export const AUTH_EVENTS = {
-  expired: 'auth:expired',
-  forbidden: 'auth:forbidden',
+  expired: "auth:expired",
+  forbidden: "auth:forbidden",
 } as const;
 
 // 401 만료(갱신 실패) 알림
 export function emitAuthExpired() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(AUTH_EVENTS.expired));
   }
 }
@@ -17,7 +17,7 @@ export function onAuthExpired(handler: () => void) {
 
 // 403 권한 없음 알림
 export function emitAuthForbidden() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(AUTH_EVENTS.forbidden));
   }
 }

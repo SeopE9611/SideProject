@@ -1,12 +1,12 @@
-'use client';
-import axios from 'axios';
-import { emitAuthExpired, emitAuthForbidden } from '@/lib/authEvents';
+"use client";
+import axios from "axios";
+import { emitAuthExpired, emitAuthForbidden } from "@/lib/authEvents";
 
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || '',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "",
   timeout: 15000,
   withCredentials: true,
-  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+  headers: { "Content-Type": "application/json", Accept: "application/json" },
 });
 
 let refreshPromise: Promise<void> | null = null;
@@ -18,7 +18,9 @@ axiosInstance.interceptors.response.use(
     const cfg = error?.config || {};
 
     // 401이어도 전역 만료 이벤트를 쏘지 않게 설정
-    const suppressed = cfg?.headers?.['x-suppress-auth-expired'] === '1' || (cfg as any)?.__suppressAuthExpired === true;
+    const suppressed =
+      cfg?.headers?.["x-suppress-auth-expired"] === "1" ||
+      (cfg as any)?.__suppressAuthExpired === true;
 
     if (status === 401 && suppressed) {
       // quiet 요청: 전역 만료 이벤트/토큰 재발급 로직 진입 금지
@@ -37,7 +39,10 @@ axiosInstance.interceptors.response.use(
     // 401: 만료 흐름
     if (response.status === 401) {
       // (quiet) 억제 플래그: 전역 만료 로직에 진입하지 않음
-      const suppressed = (config?.headers && config.headers['x-suppress-auth-expired'] === '1') || (config as any)?.__suppressAuthExpired === true;
+      const suppressed =
+        (config?.headers &&
+          config.headers["x-suppress-auth-expired"] === "1") ||
+        (config as any)?.__suppressAuthExpired === true;
       if (suppressed) {
         return Promise.reject(error);
       }
@@ -51,9 +56,12 @@ axiosInstance.interceptors.response.use(
 
       // 중복 refresh 방지
       if (!refreshPromise) {
-        refreshPromise = fetch('/api/refresh', { method: 'POST', credentials: 'include' })
+        refreshPromise = fetch("/api/refresh", {
+          method: "POST",
+          credentials: "include",
+        })
           .then((r) => {
-            if (!r.ok) throw new Error('refresh failed');
+            if (!r.ok) throw new Error("refresh failed");
           })
           .finally(() => {
             refreshPromise = null;
@@ -71,7 +79,7 @@ axiosInstance.interceptors.response.use(
 
     // 그 외
     return Promise.reject(error);
-  }
+  },
 );
 
 export default function useAxiosInstance() {

@@ -1,33 +1,46 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
 
-import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
-import useStringingApplySharedState, { type ApplicationLine, type ApplyFormData, type CollectionMethod } from '@/app/features/stringing-applications/hooks/useStringingApplySharedState';
-import ApplyHero from '@/app/services/apply/_components/ApplyHero';
-import { ApplyPriceSummaryDesktop, ApplyPriceSummaryMobile } from '@/app/services/apply/_components/ApplyPriceSummary';
-import { APPLY_STEPS } from '@/app/services/apply/_components/applySteps';
-import OrderPrefillBadge from '@/app/services/apply/_components/OrderPrefillBadge';
-import ProgressSteps from '@/app/services/apply/_components/ProgressSteps';
-import ApplyStepFooter from '@/app/services/apply/_components/steps/ApplyStepFooter';
-import Step1ApplicantInfo from '@/app/services/apply/_components/steps/Step1ApplicantInfo';
-import Step2MountingInfo from '@/app/services/apply/_components/steps/Step2MountingInfo';
-import Step3PaymentInfo from '@/app/services/apply/_components/steps/Step3PaymentInfo';
-import Step3PaymentInfoRentalReadonly from '@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly';
-import Step4FinalRequest from '@/app/services/apply/_components/steps/Step4FinalRequest';
-import { useReservedSlots } from '@/app/services/apply/_hooks/useReservedSlots';
-import LoginGate from '@/components/system/LoginGate';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { COURIER_PICKUP_FEE, CUSTOM_STRING_MOUNTING_FEE } from '@/lib/stringing-pricing-policy';
-import type { Order } from '@/lib/types/order';
-import { File, Grid2X2 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { MdSportsTennis } from 'react-icons/md';
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import useStringingApplySharedState, {
+  type ApplicationLine,
+  type ApplyFormData,
+  type CollectionMethod,
+} from "@/app/features/stringing-applications/hooks/useStringingApplySharedState";
+import ApplyHero from "@/app/services/apply/_components/ApplyHero";
+import {
+  ApplyPriceSummaryDesktop,
+  ApplyPriceSummaryMobile,
+} from "@/app/services/apply/_components/ApplyPriceSummary";
+import { APPLY_STEPS } from "@/app/services/apply/_components/applySteps";
+import OrderPrefillBadge from "@/app/services/apply/_components/OrderPrefillBadge";
+import ProgressSteps from "@/app/services/apply/_components/ProgressSteps";
+import ApplyStepFooter from "@/app/services/apply/_components/steps/ApplyStepFooter";
+import Step1ApplicantInfo from "@/app/services/apply/_components/steps/Step1ApplicantInfo";
+import Step2MountingInfo from "@/app/services/apply/_components/steps/Step2MountingInfo";
+import Step3PaymentInfo from "@/app/services/apply/_components/steps/Step3PaymentInfo";
+import Step3PaymentInfoRentalReadonly from "@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly";
+import Step4FinalRequest from "@/app/services/apply/_components/steps/Step4FinalRequest";
+import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
+import LoginGate from "@/components/system/LoginGate";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import {
+  COURIER_PICKUP_FEE,
+  CUSTOM_STRING_MOUNTING_FEE,
+} from "@/lib/stringing-pricing-policy";
+import type { Order } from "@/lib/types/order";
+import { File, Grid2X2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MdSportsTennis } from "react-icons/md";
 
 interface PdpMiniProduct {
   name: string;
@@ -44,11 +57,12 @@ declare global {
 export default function StringServiceApplyPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rawOrderId = searchParams.get('orderId');
-  const rawRentalId = searchParams.get('rentalId');
+  const rawOrderId = searchParams.get("orderId");
+  const rawRentalId = searchParams.get("rentalId");
   const orderId = rawOrderId && rawOrderId.trim() ? rawOrderId.trim() : null;
-  const rentalId = rawRentalId && rawRentalId.trim() ? rawRentalId.trim() : null;
-  const mode = searchParams.get('mode');
+  const rentalId =
+    rawRentalId && rawRentalId.trim() ? rawRentalId.trim() : null;
+  const mode = searchParams.get("mode");
   const [loading, setLoading] = useState(true);
 
   // PDP에서 넘어온 상품의 미니 정보(이름, 이미지)
@@ -58,8 +72,12 @@ export default function StringServiceApplyPage() {
   // (비-주문 기반: PDP/대여) 수량 상한 계산에 필요한 실제 데이터
   // - lockedStringStock: 상품(스트링) 재고
   // - lockedRacketQuantity: 라켓 보유 수량(대여 기반에서 의미)
-  const [lockedStringStock, setLockedStringStock] = useState<number | null>(null);
-  const [lockedRacketQuantity, setLockedRacketQuantity] = useState<number | null>(null);
+  const [lockedStringStock, setLockedStringStock] = useState<number | null>(
+    null,
+  );
+  const [lockedRacketQuantity, setLockedRacketQuantity] = useState<
+    number | null
+  >(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
@@ -82,9 +100,14 @@ export default function StringServiceApplyPage() {
   // 비회원 주문/신청 차단 정책(클라)
   // - NEXT_PUBLIC_GUEST_ORDER_MODE: 'off' | 'legacy' | 'on'
   // - 'on' 일 때만 비회원 허용
-  const rawGuestMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
-  const guestOrderMode = rawGuestMode === 'off' || rawGuestMode === 'legacy' || rawGuestMode === 'on' ? rawGuestMode : 'legacy';
-  const allowGuestCheckout = guestOrderMode === 'on';
+  const rawGuestMode = (
+    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy"
+  ).trim();
+  const guestOrderMode =
+    rawGuestMode === "off" || rawGuestMode === "legacy" || rawGuestMode === "on"
+      ? rawGuestMode
+      : "legacy";
+  const allowGuestCheckout = guestOrderMode === "on";
 
   // 로그인 여부(비회원 차단 모드에서만 의미 있음)
   const [authChecked, setAuthChecked] = useState(false);
@@ -93,10 +116,11 @@ export default function StringServiceApplyPage() {
 
   const nextUrl = useMemo(() => {
     const qs = searchParams.toString();
-    return qs ? `/services/apply?${qs}` : '/services/apply';
+    return qs ? `/services/apply?${qs}` : "/services/apply";
   }, [searchParams]);
 
-  const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
+  const blockedByLoginGate =
+    !allowGuestCheckout && authChecked && !isAuthenticated;
   useEffect(() => {
     setEntryGuardReady(true);
   }, []);
@@ -113,7 +137,7 @@ export default function StringServiceApplyPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/users/me', { credentials: 'include' });
+        const res = await fetch("/api/users/me", { credentials: "include" });
         const user = await res.json().catch(() => ({}));
         if (cancelled) return;
         setIsAuthenticated(Boolean(user?.email));
@@ -143,13 +167,25 @@ export default function StringServiceApplyPage() {
     | undefined;
 
   // 남은 슬롯 (주문 기준) – 숫자가 아닐 경우 undefined 처리
-  const orderRemainingSlots = typeof orderStringService?.remainingSlots === 'number' ? orderStringService.remainingSlots : undefined;
-  const orderUsedSlots = typeof orderStringService?.usedSlots === 'number' ? orderStringService.usedSlots : 0;
+  const orderRemainingSlots =
+    typeof orderStringService?.remainingSlots === "number"
+      ? orderStringService.remainingSlots
+      : undefined;
+  const orderUsedSlots =
+    typeof orderStringService?.usedSlots === "number"
+      ? orderStringService.usedSlots
+      : 0;
   const hasOrderApplicationHistory = orderUsedSlots > 0;
-  const isOrderSlotBlocked = !!(orderId && typeof orderRemainingSlots === 'number' && orderRemainingSlots <= 0);
+  const isOrderSlotBlocked = !!(
+    orderId &&
+    typeof orderRemainingSlots === "number" &&
+    orderRemainingSlots <= 0
+  );
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
-  const pdpProductId = isOrderBased ? null : (searchParams.get('productId') ?? searchParams.get('stringId'));
+  const pdpProductId = isOrderBased
+    ? null
+    : (searchParams.get("productId") ?? searchParams.get("stringId"));
 
   /**
    * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
@@ -166,26 +202,46 @@ export default function StringServiceApplyPage() {
     if (isOrderBased || isRentalBased) return;
     if (!pdpProductId) return;
 
-    console.warn('[apply] blocked direct PDP entry', {
+    console.warn("[apply] blocked direct PDP entry", {
       orderId,
       rentalId,
       pdpProductId,
-      pathname: typeof window !== 'undefined' ? window.location.pathname : null,
-      search: typeof window !== 'undefined' ? window.location.search : null,
+      pathname: typeof window !== "undefined" ? window.location.pathname : null,
+      search: typeof window !== "undefined" ? window.location.search : null,
     });
 
-    showErrorToast('교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.');
+    showErrorToast(
+      "교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.",
+    );
     router.replace(`/products/${encodeURIComponent(String(pdpProductId))}`);
-  }, [entryGuardReady, allowGuestCheckout, authChecked, blockedByLoginGate, isOrderBased, isRentalBased, pdpProductId, orderId, rentalId, router]);
+  }, [
+    entryGuardReady,
+    allowGuestCheckout,
+    authChecked,
+    blockedByLoginGate,
+    isOrderBased,
+    isRentalBased,
+    pdpProductId,
+    orderId,
+    rentalId,
+    router,
+  ]);
 
   // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
-  const mountingFeeParam = isOrderBased ? null : searchParams.get('mountingFee');
-  const pdpMountingFee = mountingFeeParam === null || mountingFeeParam.trim() === '' ? Number.NaN : Number(mountingFeeParam);
+  const mountingFeeParam = isOrderBased
+    ? null
+    : searchParams.get("mountingFee");
+  const pdpMountingFee =
+    mountingFeeParam === null || mountingFeeParam.trim() === ""
+      ? Number.NaN
+      : Number(mountingFeeParam);
 
-  const [fromPDP, setFromPDP] = useState<boolean>(() => Boolean(!isOrderBased && !isRentalBased && pdpProductId));
+  const [fromPDP, setFromPDP] = useState<boolean>(() =>
+    Boolean(!isOrderBased && !isRentalBased && pdpProductId),
+  );
 
   // ===== 유틸 =====
-  const normalizePhone = (s: string) => (s || '').replace(/[^0-9]/g, '');
+  const normalizePhone = (s: string) => (s || "").replace(/[^0-9]/g, "");
   const isValidPhone = (s: string) => /^010\d{8}$/.test(normalizePhone(s));
 
   /**
@@ -211,8 +267,8 @@ export default function StringServiceApplyPage() {
       setStickyTop(h + 24);
     };
     calc();
-    window.addEventListener('resize', calc);
-    return () => window.removeEventListener('resize', calc);
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
   }, []);
 
   // 1) 신청서 id 상태
@@ -229,10 +285,13 @@ export default function StringServiceApplyPage() {
 
     (async () => {
       try {
-        const res = await fetch(`/api/applications/stringing/by-order/${orderId}`, {
-          cache: 'no-store',
-          credentials: 'include',
-        });
+        const res = await fetch(
+          `/api/applications/stringing/by-order/${orderId}`,
+          {
+            cache: "no-store",
+            credentials: "include",
+          },
+        );
         if (!res.ok) return; // 404면 초안 생성 루트로 진행
         const data = await res.json();
         if (data?.found) {
@@ -240,7 +299,7 @@ export default function StringServiceApplyPage() {
           setApplicationId(data.applicationId);
         }
       } catch (e) {
-        console.error('[apply] fetch by-order id failed:', e);
+        console.error("[apply] fetch by-order id failed:", e);
       }
     })();
   }, [loading, orderId, isOrderSlotBlocked]);
@@ -259,8 +318,8 @@ export default function StringServiceApplyPage() {
     (async () => {
       try {
         const res = await fetch(`/api/orders/${orderId}`, {
-          cache: 'no-store',
-          credentials: 'include',
+          cache: "no-store",
+          credentials: "include",
         });
 
         if (!res.ok) {
@@ -273,7 +332,7 @@ export default function StringServiceApplyPage() {
           setOrder(data);
         }
       } catch (e) {
-        console.error('[apply] fetch order failed:', e);
+        console.error("[apply] fetch order failed:", e);
         if (!cancelled) setOrder(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -294,17 +353,20 @@ export default function StringServiceApplyPage() {
     if (!rentalId) return;
     (async () => {
       try {
-        const res = await fetch(`/api/applications/stringing/by-rental/${rentalId}`, {
-          cache: 'no-store',
-          credentials: 'include',
-        });
+        const res = await fetch(
+          `/api/applications/stringing/by-rental/${rentalId}`,
+          {
+            cache: "no-store",
+            credentials: "include",
+          },
+        );
         if (!res.ok) return; // 404면(초안 없음) → 대여 생성 단계(2단계) 점검 필요
         const data = await res.json();
         if (data?.found) {
           setApplicationId(data.applicationId);
         }
       } catch (e) {
-        console.error('[apply] fetch by-rental id failed:', e);
+        console.error("[apply] fetch by-rental id failed:", e);
       }
     })();
   }, [rentalId]);
@@ -332,15 +394,17 @@ export default function StringServiceApplyPage() {
           setPdpProduct({
             name: data.name,
             image: data.image ?? null,
-            price: typeof data.price === 'number' ? data.price : undefined,
+            price: typeof data.price === "number" ? data.price : undefined,
           });
 
           // 현재 가용 재고(관리자 설정 stock) 기억
           // - manageStock=false면 서버에서 null로 내려주도록(아래 mini API diff 참고)
-          setLockedStringStock(typeof data.stock === 'number' ? data.stock : null);
+          setLockedStringStock(
+            typeof data.stock === "number" ? data.stock : null,
+          );
 
           // mountingFee를 formData에 저장
-          if (typeof data.mountingFee === 'number') {
+          if (typeof data.mountingFee === "number") {
             setFormData((prev) => ({
               ...prev,
               pdpMountingFee: data.mountingFee,
@@ -379,8 +443,13 @@ export default function StringServiceApplyPage() {
       return {
         ...prev,
         stringTypes: [pdpProductId], // 무조건 선택
-        stringUseCounts: { ...(prev.stringUseCounts ?? {}), [pdpProductId]: prev.stringUseCounts?.[pdpProductId] ?? 1 },
-        pdpMountingFee: Number.isFinite(pdpMountingFee) ? pdpMountingFee : undefined,
+        stringUseCounts: {
+          ...(prev.stringUseCounts ?? {}),
+          [pdpProductId]: prev.stringUseCounts?.[pdpProductId] ?? 1,
+        },
+        pdpMountingFee: Number.isFinite(pdpMountingFee)
+          ? pdpMountingFee
+          : undefined,
       };
     });
     setFromPDP(true);
@@ -400,30 +469,41 @@ export default function StringServiceApplyPage() {
 
     (async () => {
       try {
-        const draftUrl = orderId && orderId.trim() ? `/api/applications/stringing/drafts?orderId=${encodeURIComponent(orderId)}` : `/api/applications/stringing/drafts`;
+        const draftUrl =
+          orderId && orderId.trim()
+            ? `/api/applications/stringing/drafts?orderId=${encodeURIComponent(orderId)}`
+            : `/api/applications/stringing/drafts`;
 
         const resp = await fetch(draftUrl, {
-          method: 'POST',
-          credentials: 'include', // ← 쿠키 기반 인증 필수
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          credentials: "include", // ← 쿠키 기반 인증 필수
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderId: orderId || undefined }), // 서버 멱등성 유지
-          cache: 'no-store',
+          cache: "no-store",
         });
-        console.debug('[draft bootstrap] POST', draftUrl, 'status=', resp.status);
+        console.debug(
+          "[draft bootstrap] POST",
+          draftUrl,
+          "status=",
+          resp.status,
+        );
         // 응답 데이터(applicationId, reused 등)는 현재 화면 흐름에 직접 필요 없으므로
         // 별도 상태 저장 없이 "초안 존재"만 보장. (멱등: 여러 번 호출돼도 중복 생성 없음)
       } catch (err) {
         // 초안 생성 실패가 화면 진행을 막지는 않도록 '조용히' 로깅만
-        console.error('[draft bootstrap] failed:', err);
+        console.error("[draft bootstrap] failed:", err);
       }
 
       // 초안 생성이 끝난 뒤 applicationId가 없다면 by-order 재조회
       if (!applicationId && orderId) {
         try {
-          const r = await fetch(`/api/applications/stringing/by-order/${orderId}`, {
-            cache: 'no-store',
-            credentials: 'include',
-          });
+          const r = await fetch(
+            `/api/applications/stringing/by-order/${orderId}`,
+            {
+              cache: "no-store",
+              credentials: "include",
+            },
+          );
           if (r.ok) {
             const j = await r.json();
             if (j?.found) setApplicationId(j.applicationId);
@@ -440,21 +520,35 @@ export default function StringServiceApplyPage() {
     };
 
     if (step === 1) {
-      if (!formData.name.trim()) return (toast('신청인 이름을 입력해주세요.'), false);
-      if (!formData.email.trim()) return (toast('이메일을 입력해주세요.'), false);
-      if (!formData.phone.trim()) return (toast('연락처를 입력해주세요.'), false);
-      if (!isValidPhone(formData.phone)) return (toast('올바른 연락처 형식(01012345678)으로 입력해주세요.'), false);
+      if (!formData.name.trim())
+        return (toast("신청인 이름을 입력해주세요."), false);
+      if (!formData.email.trim())
+        return (toast("이메일을 입력해주세요."), false);
+      if (!formData.phone.trim())
+        return (toast("연락처를 입력해주세요."), false);
+      if (!isValidPhone(formData.phone))
+        return (
+          toast("올바른 연락처 형식(01012345678)으로 입력해주세요."),
+          false
+        );
 
-      if (!formData.collectionMethod) return (toast('수거 방식을 선택해주세요.'), false);
+      if (!formData.collectionMethod)
+        return (toast("수거 방식을 선택해주세요."), false);
 
-      const normalizedCollection = normalizeCollection(formData.collectionMethod);
-      if (normalizedCollection !== 'visit') {
-        if (!formData.shippingPostcode.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
-        if (!formData.shippingAddress.trim()) return (toast('우편번호 찾기를 통해 주소를 등록해주세요.'), false);
+      const normalizedCollection = normalizeCollection(
+        formData.collectionMethod,
+      );
+      if (normalizedCollection !== "visit") {
+        if (!formData.shippingPostcode.trim())
+          return (toast("우편번호 찾기를 통해 주소를 등록해주세요."), false);
+        if (!formData.shippingAddress.trim())
+          return (toast("우편번호 찾기를 통해 주소를 등록해주세요."), false);
       }
-      if (formData.collectionMethod === 'courier_pickup') {
-        if (!formData.pickupDate) return (toast('수거 희망일을 입력해주세요.'), false);
-        if (!formData.pickupTime) return (toast('수거 시간대를 입력해주세요.'), false);
+      if (formData.collectionMethod === "courier_pickup") {
+        if (!formData.pickupDate)
+          return (toast("수거 희망일을 입력해주세요."), false);
+        if (!formData.pickupTime)
+          return (toast("수거 시간대를 입력해주세요."), false);
       }
       return true;
     }
@@ -462,27 +556,36 @@ export default function StringServiceApplyPage() {
     if (step === 2) {
       // if (!formData.racketType.trim()) return toast('라켓 종류를 입력해주세요.'), false;
       if (formData.stringTypes.length === 0) {
-        return (toast('스트링 종류를 한 개 이상 선택해주세요.'), false);
+        return (toast("스트링 종류를 한 개 이상 선택해주세요."), false);
       }
-      if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
-        return (toast('직접 입력한 스트링명을 적어주세요.'), false);
+      if (
+        formData.stringTypes.includes("custom") &&
+        !formData.customStringType.trim()
+      ) {
+        return (toast("직접 입력한 스트링명을 적어주세요."), false);
       }
 
-      const isVisit = normalizeCollection(formData.collectionMethod) === 'visit';
+      const isVisit =
+        normalizeCollection(formData.collectionMethod) === "visit";
       if (isVisit) {
         if (!formData.preferredDate) {
-          return (toast('장착 희망일을 선택해주세요.'), false);
+          return (toast("장착 희망일을 선택해주세요."), false);
         }
         if (!formData.preferredTime) {
-          return (toast('희망 시간대를 선택해주세요.'), false);
+          return (toast("희망 시간대를 선택해주세요."), false);
         }
       }
 
       // 주문 기반(orderId) 진입이면, 이 주문에서 허용된 남은 교체 횟수(remainingSlots)를 초과 신청할 수 없음
-      if (orderId && typeof orderRemainingSlots === 'number') {
+      if (orderId && typeof orderRemainingSlots === "number") {
         // requiredPassCount = 이번 신청에서 실제로 장착하려는 라켓 수
         if (requiredPassCount > orderRemainingSlots) {
-          return (toast(`이 주문에서 남은 교체 가능 횟수는 ${orderRemainingSlots}회입니다. 장착할 라켓 수를 줄여주세요.`), false);
+          return (
+            toast(
+              `이 주문에서 남은 교체 가능 횟수는 ${orderRemainingSlots}회입니다. 장착할 라켓 수를 줄여주세요.`,
+            ),
+            false
+          );
         }
       }
 
@@ -490,12 +593,17 @@ export default function StringServiceApplyPage() {
       if (linesForSubmit.length > 0) {
         for (let i = 0; i < linesForSubmit.length; i++) {
           const line = linesForSubmit[i];
-          const racketName = (line.racketType ?? '').trim();
-          const tensionMain = (line.tensionMain ?? '').trim();
-          const tensionCross = (line.tensionCross ?? '').trim();
+          const racketName = (line.racketType ?? "").trim();
+          const tensionMain = (line.tensionMain ?? "").trim();
+          const tensionCross = (line.tensionCross ?? "").trim();
 
           if (!racketName || !tensionMain || !tensionCross) {
-            return (toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false);
+            return (
+              toast(
+                `라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`,
+              ),
+              false
+            );
           }
         }
       }
@@ -508,8 +616,10 @@ export default function StringServiceApplyPage() {
       // → 구매 UX처럼 결제 스텝은 유지하되, 입력 검증은 생략
       if (isRentalBased) return true;
       if (!usingPackage) {
-        if (!formData.shippingBank) return (toast('은행을 선택해주세요.'), false);
-        if (!formData.shippingDepositor.trim()) return (toast('입금자명을 입력해주세요.'), false);
+        if (!formData.shippingBank)
+          return (toast("은행을 선택해주세요."), false);
+        if (!formData.shippingDepositor.trim())
+          return (toast("입금자명을 입력해주세요."), false);
       }
       return true;
     }
@@ -519,7 +629,7 @@ export default function StringServiceApplyPage() {
   };
   // ===== UX 보강: 첫 오류 필드로 focus 이동 =====
   const focusFirstInvalidField = (stepId: number) => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === "undefined") return;
 
     const focusEl = (el: HTMLElement) => {
       try {
@@ -529,7 +639,7 @@ export default function StringServiceApplyPage() {
         // ignore
       }
       try {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
       } catch {
         // ignore
       }
@@ -540,7 +650,8 @@ export default function StringServiceApplyPage() {
       if (!el) return false;
       // 숨김/비활성 요소는 스킵
       const rects = (el as any).getClientRects?.() as DOMRectList | undefined;
-      const isHidden = (el as any).offsetParent === null && (!rects || rects.length === 0);
+      const isHidden =
+        (el as any).offsetParent === null && (!rects || rects.length === 0);
       if (isHidden) return false;
       focusEl(el);
       return true;
@@ -556,22 +667,27 @@ export default function StringServiceApplyPage() {
     // 스텝별 "첫 오류" 위치를 validateStep과 동일한 우선순위로 판정
     const getTarget = (): { id?: string; selector?: string } | null => {
       if (stepId === 1) {
-        if (!formData.name.trim()) return { id: 'name' };
-        if (!formData.email.trim()) return { id: 'email' };
-        if (!formData.phone.trim()) return { id: 'phone' };
-        if (!isValidPhone(formData.phone)) return { id: 'phone' };
+        if (!formData.name.trim()) return { id: "name" };
+        if (!formData.email.trim()) return { id: "email" };
+        if (!formData.phone.trim()) return { id: "phone" };
+        if (!isValidPhone(formData.phone)) return { id: "phone" };
 
-        if (!formData.collectionMethod) return { selector: 'input[name="collectionMethod"]' };
+        if (!formData.collectionMethod)
+          return { selector: 'input[name="collectionMethod"]' };
 
-        const normalizedCollection = normalizeCollection(formData.collectionMethod);
-        if (normalizedCollection !== 'visit') {
-          if (!formData.shippingPostcode.trim()) return { id: 'shippingPostcode' };
-          if (!formData.shippingAddress.trim()) return { id: 'shippingPostcode' };
+        const normalizedCollection = normalizeCollection(
+          formData.collectionMethod,
+        );
+        if (normalizedCollection !== "visit") {
+          if (!formData.shippingPostcode.trim())
+            return { id: "shippingPostcode" };
+          if (!formData.shippingAddress.trim())
+            return { id: "shippingPostcode" };
         }
 
-        if (formData.collectionMethod === 'courier_pickup') {
-          if (!formData.pickupDate) return { id: 'pickupDate' };
-          if (!formData.pickupTime) return { id: 'pickupTime' };
+        if (formData.collectionMethod === "courier_pickup") {
+          if (!formData.pickupDate) return { id: "pickupDate" };
+          if (!formData.pickupTime) return { id: "pickupTime" };
         }
         return null;
       }
@@ -580,20 +696,24 @@ export default function StringServiceApplyPage() {
         if (formData.stringTypes.length === 0) {
           return { selector: 'input[type="checkbox"]' };
         }
-        if (formData.stringTypes.includes('custom') && !formData.customStringType.trim()) {
+        if (
+          formData.stringTypes.includes("custom") &&
+          !formData.customStringType.trim()
+        ) {
           return { selector: 'input[placeholder="직접 입력한 스트링 이름"]' };
         }
 
-        const isVisit = normalizeCollection(formData.collectionMethod) === 'visit';
+        const isVisit =
+          normalizeCollection(formData.collectionMethod) === "visit";
         if (isVisit) {
-          if (!formData.preferredDate) return { id: 'preferredDate' };
+          if (!formData.preferredDate) return { id: "preferredDate" };
           if (!formData.preferredTime) {
             // TimeSlotSelector는 input이 아닌 버튼 리스트이므로, 첫 유효 버튼으로 focus
-            return { selector: 'button[aria-pressed]:not([disabled])' };
+            return { selector: "button[aria-pressed]:not([disabled])" };
           }
         }
 
-        if (orderId && typeof orderRemainingSlots === 'number') {
+        if (orderId && typeof orderRemainingSlots === "number") {
           if (requiredPassCount > orderRemainingSlots) {
             // 수량 조절 입력(숫자)로 유도
             return { selector: 'input[type="number"]' };
@@ -603,9 +723,9 @@ export default function StringServiceApplyPage() {
         if (linesForSubmit.length > 0) {
           for (let i = 0; i < linesForSubmit.length; i++) {
             const line = linesForSubmit[i];
-            const racketName = (line.racketType ?? '').trim();
-            const tensionMain = (line.tensionMain ?? '').trim();
-            const tensionCross = (line.tensionCross ?? '').trim();
+            const racketName = (line.racketType ?? "").trim();
+            const tensionMain = (line.tensionMain ?? "").trim();
+            const tensionCross = (line.tensionCross ?? "").trim();
 
             if (!racketName || !tensionMain || !tensionCross) {
               return { selector: 'input[placeholder="예: 라켓1"]' };
@@ -618,8 +738,9 @@ export default function StringServiceApplyPage() {
       if (stepId === 3) {
         if (isRentalBased) return null;
         if (!usingPackage) {
-          if (!formData.shippingBank) return { id: 'shippingBank' };
-          if (!formData.shippingDepositor.trim()) return { id: 'shippingDepositor' };
+          if (!formData.shippingBank) return { id: "shippingBank" };
+          if (!formData.shippingDepositor.trim())
+            return { id: "shippingDepositor" };
         }
         return null;
       }
@@ -679,11 +800,24 @@ export default function StringServiceApplyPage() {
     if (!allowGuestCheckout && !authChecked) return false;
     if (isUserLoading) return false;
     if (isLoadingPdpProduct) return false;
-    if (fromPDP && pdpProductId) return formData.stringTypes.includes(pdpProductId);
+    if (fromPDP && pdpProductId)
+      return formData.stringTypes.includes(pdpProductId);
     return true;
-  }, [blockedByLoginGate, allowGuestCheckout, authChecked, isUserLoading, isLoadingPdpProduct, fromPDP, pdpProductId, formData.stringTypes]);
+  }, [
+    blockedByLoginGate,
+    allowGuestCheckout,
+    authChecked,
+    isUserLoading,
+    isLoadingPdpProduct,
+    fromPDP,
+    pdpProductId,
+    formData.stringTypes,
+  ]);
 
-  const isDirty = useMemo(() => baselineRef.current !== null && baselineRef.current !== fingerprint, [fingerprint]);
+  const isDirty = useMemo(
+    () => baselineRef.current !== null && baselineRef.current !== fingerprint,
+    [fingerprint],
+  );
 
   useEffect(() => {
     if (!prefillReady) return;
@@ -711,11 +845,19 @@ export default function StringServiceApplyPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/passes/me', { credentials: 'include' });
+        const res = await fetch("/api/passes/me", { credentials: "include" });
         if (!res.ok) return; // 비로그인 등
         const data = await res.json();
-        const items = (data?.items ?? []).filter((p: any) => p.status === 'active' && p.remainingCount > 0 && new Date(p.expiresAt).getTime() >= Date.now());
-        items.sort((a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime());
+        const items = (data?.items ?? []).filter(
+          (p: any) =>
+            p.status === "active" &&
+            p.remainingCount > 0 &&
+            new Date(p.expiresAt).getTime() >= Date.now(),
+        );
+        items.sort(
+          (a: any, b: any) =>
+            new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
+        );
         if (items.length > 0) {
           const p = items[0];
           setPackagePreview({
@@ -750,9 +892,9 @@ export default function StringServiceApplyPage() {
     let total = 0;
 
     ids.forEach((id) => {
-      if (id === 'custom') {
+      if (id === "custom") {
         // 직접 입력 스트링은 개수 설정이 없으면 1회
-        const useQty = formData.stringUseCounts['custom'] ?? 1;
+        const useQty = formData.stringUseCounts["custom"] ?? 1;
         total += useQty;
         return;
       }
@@ -772,7 +914,14 @@ export default function StringServiceApplyPage() {
   })();
 
   // 예약 슬롯(마감 시간) 조회/캐시 로직 분리
-  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate, refetchDisabledTimesFor } = useReservedSlots<ApplyFormData>({
+  const {
+    disabledTimes,
+    timeSlots,
+    slotsLoading,
+    slotsError,
+    hasCacheForDate,
+    refetchDisabledTimesFor,
+  } = useReservedSlots<ApplyFormData>({
     preferredDate: formData.preferredDate,
     preferredTime: formData.preferredTime,
     requiredPassCount,
@@ -784,23 +933,31 @@ export default function StringServiceApplyPage() {
 
   // 패키지 자체는 있지만, "이번 신청에 필요한 횟수"만큼 남아 있는지 여부
   // ※ 대여 기반 신청서는 '대여 결제'에서 이미 결제가 완료되므로 패키지(교체권) 적용을 허용하지 않음
-  const canApplyPackage = !!(!isRentalBased && packagePreview?.has && requiredPassCount > 0 && packageRemaining >= requiredPassCount);
+  const canApplyPackage = !!(
+    !isRentalBased &&
+    packagePreview?.has &&
+    requiredPassCount > 0 &&
+    packageRemaining >= requiredPassCount
+  );
 
   // 실제로 이번 신청에서 패키지를 사용하는지 여부(옵트아웃까지 반영)
-  const usingPackage = !!(!isRentalBased && canApplyPackage && !formData.packageOptOut);
-
+  const usingPackage = !!(
+    !isRentalBased &&
+    canApplyPackage &&
+    !formData.packageOptOut
+  );
 
   // 재고/수량 정보가 로딩된 뒤, 현재 입력값이 상한을 넘으면 강제로 보정(clamp)
   useEffect(() => {
     if (orderId && order) return;
-    if (typeof maxNonOrderQty !== 'number') return;
+    if (typeof maxNonOrderQty !== "number") return;
 
     setFormData((prev) => {
       if (!prev.stringTypes?.length) return prev;
 
       const next = { ...(prev.stringUseCounts ?? {}) };
       prev.stringTypes.forEach((id) => {
-        const cur = typeof next[id] === 'number' ? next[id] : 1;
+        const cur = typeof next[id] === "number" ? next[id] : 1;
         next[id] = Math.min(Math.max(cur, 1), maxNonOrderQty);
       });
 
@@ -809,7 +966,12 @@ export default function StringServiceApplyPage() {
   }, [maxNonOrderQty, orderId, order]);
 
   // 패키지가 있지만, 이번 신청에 필요한 횟수보다 적게 남은 경우
-  const packageInsufficient = !!(!isRentalBased && packagePreview?.has && requiredPassCount > 0 && packageRemaining < requiredPassCount);
+  const packageInsufficient = !!(
+    !isRentalBased &&
+    packagePreview?.has &&
+    requiredPassCount > 0 &&
+    packageRemaining < requiredPassCount
+  );
 
   // 이런 경우에는 강제적으로 "사용 안 함"으로 고정
   useEffect(() => {
@@ -828,7 +990,7 @@ export default function StringServiceApplyPage() {
     let base = 0;
 
     // 1) 커스텀/보유 스트링 선택 시: 항상 15,000
-    if (formData.stringTypes.includes('custom')) {
+    if (formData.stringTypes.includes("custom")) {
       base = CUSTOM_STRING_MOUNTING_FEE;
     }
     // 2) 그 외 스트링 상품이 선택된 경우
@@ -854,7 +1016,10 @@ export default function StringServiceApplyPage() {
     }
 
     // 수거비(표시용)
-    const pickupFee = normalizeCollection(formData.collectionMethod) === 'courier_pickup' ? PICKUP_FEE : 0;
+    const pickupFee =
+      normalizeCollection(formData.collectionMethod) === "courier_pickup"
+        ? PICKUP_FEE
+        : 0;
 
     // 총액(표시용): 패키지 적용 시 교체비 0 (수거비는 후정산 안내로 표시만)
     const total = usingPackage ? 0 : base + pickupFee;
@@ -869,28 +1034,39 @@ export default function StringServiceApplyPage() {
     if (!formData.stringTypes.length) return null;
 
     const firstId = formData.stringTypes[0];
-    if (!firstId || firstId === 'custom') return null;
+    if (!firstId || firstId === "custom") return null;
 
     // 주문 항목에서 현재 선택된 스트링 찾기
     const found = order.items.find((it) => it.id === firstId);
     return found ?? null;
   }, [orderId, order, formData.stringTypes]);
 
-
   // 4. 디버깅 콘솔 로그 (개발 환경에서만)
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'development') return;
-    console.log('Debug Info:', {
+    if (process.env.NODE_ENV !== "development") return;
+    console.log("Debug Info:", {
       pdpProductId,
       pdpMountingFee,
       orderId,
       hasOrder: !!order,
-      orderItems: order?.items?.map((i) => ({ id: i.id, name: i.name, mountingFee: i.mountingFee })),
+      orderItems: order?.items?.map((i) => ({
+        id: i.id,
+        name: i.name,
+        mountingFee: i.mountingFee,
+      })),
       stringTypes: formData.stringTypes,
       linesCount: linesForSubmit.length,
       fromPDP,
     });
-  }, [pdpProductId, pdpMountingFee, orderId, order, formData.stringTypes, linesForSubmit, fromPDP]);
+  }, [
+    pdpProductId,
+    pdpMountingFee,
+    orderId,
+    order,
+    formData.stringTypes,
+    linesForSubmit,
+    fromPDP,
+  ]);
 
   // 라켓 금액: orderId 기반 주문에서 가져오기
   const racketPrice = useMemo(() => {
@@ -900,7 +1076,9 @@ export default function StringServiceApplyPage() {
     const items = (order as any)?.items;
     if (Array.isArray(items)) {
       return items
-        .filter((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket')
+        .filter(
+          (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+        )
         .reduce((sum: number, it: any) => {
           const unit = Number(it?.price ?? 0);
           const qty = Number(it?.quantity ?? 1);
@@ -918,7 +1096,9 @@ export default function StringServiceApplyPage() {
     if (!Array.isArray(items)) return 0;
 
     return items
-      .filter((it: any) => typeof it?.mountingFee === 'number' && it.mountingFee > 0)
+      .filter(
+        (it: any) => typeof it?.mountingFee === "number" && it.mountingFee > 0,
+      )
       .reduce((sum: number, it: any) => {
         const unit = Number(it?.price ?? 0);
         const qty = Number(it?.quantity ?? 1);
@@ -943,8 +1123,12 @@ export default function StringServiceApplyPage() {
     if (!orderId || !order) return false;
     const items = (order as any)?.items;
     if (!Array.isArray(items)) return false;
-    const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
-    const hasMountableString = items.some((it: any) => it?.kind === 'product' && Number(it?.mountingFee ?? 0) > 0);
+    const hasRacket = items.some(
+      (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
+    );
+    const hasMountableString = items.some(
+      (it: any) => it?.kind === "product" && Number(it?.mountingFee ?? 0) > 0,
+    );
     return hasRacket && hasMountableString;
   }, [orderId, order]);
 
@@ -962,7 +1146,7 @@ export default function StringServiceApplyPage() {
     const a = Number(rentalAmount?.stringPrice ?? 0);
     if (a > 0) return a;
     // amount에 없으면 mini price로 fallback
-    const p = typeof pdpProduct?.price === 'number' ? pdpProduct.price : 0;
+    const p = typeof pdpProduct?.price === "number" ? pdpProduct.price : 0;
     return Number(p ?? 0);
   }, [isRentalBased, rentalAmount, pdpProduct]);
 
@@ -985,15 +1169,32 @@ export default function StringServiceApplyPage() {
   }, [isRentalBased, rentalRacketPrice, rentalStringPrice, rentalStringingFee]);
 
   // racketPrice: 주문 기반일 때만 의미가 있으니 그대로 사용(이미 0/양수로 잘 계산됨)
-  const summaryRacketPrice = isOrderBased ? racketPrice : isRentalBased ? rentalRacketPrice : 0;
+  const summaryRacketPrice = isOrderBased
+    ? racketPrice
+    : isRentalBased
+      ? rentalRacketPrice
+      : 0;
 
   // 라벨도 케이스별로
-  const totalLabel = isOrderBased ? '이번 주문 총 결제 금액' : isRentalBased ? '대여 결제 완료 금액' : fromPDP ? '이번 신청 예상 결제 금액' : '이번 교체 서비스 예상 비용';
+  const totalLabel = isOrderBased
+    ? "이번 주문 총 결제 금액"
+    : isRentalBased
+      ? "대여 결제 완료 금액"
+      : fromPDP
+        ? "이번 신청 예상 결제 금액"
+        : "이번 교체 서비스 예상 비용";
 
   /** PDP에서 넘어온 스트링 상품 금액 (없으면 0원) */
-  const pdpStringPrice = isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === 'number' ? pdpProduct.price : 0;
+  const pdpStringPrice =
+    isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === "number"
+      ? pdpProduct.price
+      : 0;
   // stringPrice: 주문 기반이면 주문에서, 아니면 PDP에서(기존 유지)
-  const summaryStringPrice = isOrderBased ? orderStringPrice : isRentalBased ? rentalStringPrice : pdpStringPrice;
+  const summaryStringPrice = isOrderBased
+    ? orderStringPrice
+    : isRentalBased
+      ? rentalStringPrice
+      : pdpStringPrice;
 
   // 요금요약 카드에 보여줄 base/total은 케이스별로 분리
   const summaryBaseForCard = isRentalBased ? rentalStringingFee : summaryBase;
@@ -1013,16 +1214,20 @@ export default function StringServiceApplyPage() {
   // 스트링 포함 여부(라벨/설명용)
   const stringIncludedForCard = isOrderBased || isRentalBased;
   // 헤더 안내문(혼선 방지)
-  const headerHintForCard = isRentalBased ? '대여 결제 기준으로 표시됩니다' : isOrderBased ? '주문 결제 금액 기준으로 표시됩니다' : undefined;
+  const headerHintForCard = isRentalBased
+    ? "대여 결제 기준으로 표시됩니다"
+    : isOrderBased
+      ? "주문 결제 금액 기준으로 표시됩니다"
+      : undefined;
 
   const summaryTotal = serviceCost;
 
-  const won = (n: number) => n.toLocaleString('ko-KR') + '원';
+  const won = (n: number) => n.toLocaleString("ko-KR") + "원";
 
   // 'HH:MM' ↔ 분 단위 변환 헬퍼 (UI 표시용)
   const parseTimeToMinutes = (time: string | null | undefined) => {
-    if (!time || typeof time !== 'string') return null;
-    const [h, m] = time.split(':').map((v) => Number(v));
+    if (!time || typeof time !== "string") return null;
+    const [h, m] = time.split(":").map((v) => Number(v));
     if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
     return h * 60 + m;
   };
@@ -1051,61 +1256,70 @@ export default function StringServiceApplyPage() {
     setVisitDurationMinutesUi(visitDurationMinutesUi);
   }, [visitDurationMinutesUi, setVisitDurationMinutesUi]);
 
-
-  const isSingleApplyMode = mode === 'single' && !isOrderBased && !isRentalBased;
+  const isSingleApplyMode =
+    mode === "single" && !isOrderBased && !isRentalBased;
 
   const entryBanner = useMemo(() => {
     if (isRentalBased) {
       return {
-        title: '대여 주문에 연결된 교체 서비스 신청입니다.',
-        body: '대여 결제 기준으로 신청 내용을 확인하고 접수해주세요.',
+        title: "대여 주문에 연결된 교체 서비스 신청입니다.",
+        body: "대여 결제 기준으로 신청 내용을 확인하고 접수해주세요.",
       };
     }
 
     if (isSingleApplyMode) {
       return {
-        title: '단독 교체 서비스 신청입니다.',
-        body: '주문 연결 없이 직접 신청서를 작성하는 경로입니다.',
+        title: "단독 교체 서비스 신청입니다.",
+        body: "주문 연결 없이 직접 신청서를 작성하는 경로입니다.",
       };
     }
 
     if (!orderId) {
       return {
-        title: '추가/단독 교체 서비스 신청 페이지입니다.',
-        body: '일반적인 서비스 포함 주문은 체크아웃에서 함께 접수되며, 이 페이지는 기존 주문 연결·추가 신청·단독 신청에 사용됩니다.',
+        title: "추가/단독 교체 서비스 신청 페이지입니다.",
+        body: "일반적인 서비스 포함 주문은 체크아웃에서 함께 접수되며, 이 페이지는 기존 주문 연결·추가 신청·단독 신청에 사용됩니다.",
       };
     }
 
     if (loading) {
       return {
-        title: '주문 신청 가능 상태를 확인하고 있습니다.',
-        body: '남은 신청 가능 대상을 확인한 뒤 이어서 진행해주세요.',
+        title: "주문 신청 가능 상태를 확인하고 있습니다.",
+        body: "남은 신청 가능 대상을 확인한 뒤 이어서 진행해주세요.",
       };
     }
 
     if (hasOrderApplicationHistory && isOrderSlotBlocked) {
       return {
-        title: '이 주문의 교체 서비스 신청 가능 대상은 모두 사용되었습니다.',
-        body: '추가 신청은 필요하지 않습니다. 주문 상세 또는 기존 신청 내역에서 접수 상태를 확인해주세요.',
+        title: "이 주문의 교체 서비스 신청 가능 대상은 모두 사용되었습니다.",
+        body: "추가 신청은 필요하지 않습니다. 주문 상세 또는 기존 신청 내역에서 접수 상태를 확인해주세요.",
       };
     }
 
     if (hasOrderApplicationHistory) {
       return {
-        title: '이미 일부 접수가 완료된 주문입니다.',
-        body: '남은 대상에 한해 교체 서비스 추가 신청을 진행할 수 있습니다.',
+        title: "이미 일부 접수가 완료된 주문입니다.",
+        body: "남은 대상에 한해 교체 서비스 추가 신청을 진행할 수 있습니다.",
       };
     }
 
     return {
-      title: '이 주문에 연결된 교체 서비스 신청을 진행할 수 있습니다.',
-      body: '주문과 연결된 대상 기준으로 신청 내용을 확인해주세요.',
+      title: "이 주문에 연결된 교체 서비스 신청을 진행할 수 있습니다.",
+      body: "주문과 연결된 대상 기준으로 신청 내용을 확인해주세요.",
     };
-  }, [isRentalBased, isSingleApplyMode, orderId, loading, hasOrderApplicationHistory, isOrderSlotBlocked]);
+  }, [
+    isRentalBased,
+    isSingleApplyMode,
+    orderId,
+    loading,
+    hasOrderApplicationHistory,
+    isOrderSlotBlocked,
+  ]);
 
   const handleOpenPostcode = () => {
     if (!window?.daum?.Postcode) {
-      showErrorToast('주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      showErrorToast(
+        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
       return;
     }
     new window.daum.Postcode({
@@ -1123,7 +1337,9 @@ export default function StringServiceApplyPage() {
   // 단, 대여 기반은 결제 입력이 아니라 '결제 완료/확인' 단계.
   const steps = useMemo(() => {
     if (!isRentalBased) return APPLY_STEPS;
-    return APPLY_STEPS.map((s) => (s.id === 3 ? { ...s, description: '결제 내역을 확인해주세요' } : s));
+    return APPLY_STEPS.map((s) =>
+      s.id === 3 ? { ...s, description: "결제 내역을 확인해주세요" } : s,
+    );
   }, [isRentalBased]);
   const totalSteps = steps.length;
   const currentStepId = steps[currentStep - 1]?.id ?? steps[0]?.id ?? 1;
@@ -1146,7 +1362,9 @@ export default function StringServiceApplyPage() {
     if (currentStep !== steps.length) return;
 
     if (isOrderSlotBlocked) {
-      showErrorToast('이 주문은 추가 신청 가능한 대상이 없습니다. 주문 상세에서 현재 접수 상태를 확인해주세요.');
+      showErrorToast(
+        "이 주문은 추가 신청 가능한 대상이 없습니다. 주문 상세에서 현재 접수 상태를 확인해주세요.",
+      );
       return;
     }
 
@@ -1164,15 +1382,23 @@ export default function StringServiceApplyPage() {
     const cleanedApplicantPhone = normalizePhone(formData.phone);
 
     // shippingInfo 정합성 보장: 비어 있으면 신청자 정보로 fallback
-    const shippingName = (formData.shippingName || formData.name || '').trim();
-    const shippingEmail = (formData.shippingEmail || formData.email || '').trim();
-    const shippingPhone = normalizePhone(formData.shippingPhone || formData.phone);
+    const shippingName = (formData.shippingName || formData.name || "").trim();
+    const shippingEmail = (
+      formData.shippingEmail ||
+      formData.email ||
+      ""
+    ).trim();
+    const shippingPhone = normalizePhone(
+      formData.shippingPhone || formData.phone,
+    );
 
     setIsSubmitting(true);
     // 이하 payload 생성/POST 로직은 그대로 유지
 
-    const normalizedCollectionMethod = normalizeCollection(formData.collectionMethod);
-    const isVisitCollection = normalizedCollectionMethod === 'visit';
+    const normalizedCollectionMethod = normalizeCollection(
+      formData.collectionMethod,
+    );
+    const isVisitCollection = normalizedCollectionMethod === "visit";
 
     const payload = {
       /**
@@ -1187,7 +1413,9 @@ export default function StringServiceApplyPage() {
       phone: cleanedApplicantPhone,
       racketType: formData.racketType,
       stringTypes: formData.stringTypes,
-      customStringName: formData.stringTypes.includes('custom') ? formData.customStringType : null,
+      customStringName: formData.stringTypes.includes("custom")
+        ? formData.customStringType
+        : null,
       preferredDate: formData.preferredDate,
       preferredTime: formData.preferredTime,
       requirements: formData.requirements,
@@ -1199,15 +1427,15 @@ export default function StringServiceApplyPage() {
         name: shippingName,
         phone: shippingPhone,
         email: shippingEmail,
-        address: isVisitCollection ? '' : formData.shippingAddress,
-        addressDetail: isVisitCollection ? '' : formData.shippingAddressDetail,
-        postalCode: isVisitCollection ? '' : formData.shippingPostcode,
+        address: isVisitCollection ? "" : formData.shippingAddress,
+        addressDetail: isVisitCollection ? "" : formData.shippingAddressDetail,
+        postalCode: isVisitCollection ? "" : formData.shippingPostcode,
         depositor: usingPackage ? undefined : formData.shippingDepositor,
         bank: usingPackage ? undefined : formData.shippingBank,
         deliveryRequest: formData.shippingRequest,
         collectionMethod: normalizedCollectionMethod, // 'self_ship' | 'courier_pickup' | 'visit'
         pickup:
-          formData.collectionMethod === 'courier_pickup'
+          formData.collectionMethod === "courier_pickup"
             ? {
                 date: formData.pickupDate,
                 time: formData.pickupTime,
@@ -1219,11 +1447,11 @@ export default function StringServiceApplyPage() {
     };
 
     try {
-      const res = await fetch('/api/applications/stringing/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/applications/stringing/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -1231,33 +1459,37 @@ export default function StringServiceApplyPage() {
           const data = await res.json().catch(() => ({}) as any);
 
           // 시간대 마감
-          const message = data?.message ?? '해당 시간대가 마감되었습니다.';
+          const message = data?.message ?? "해당 시간대가 마감되었습니다.";
           showErrorToast(message);
-          setFormData((prev) => ({ ...prev, preferredTime: '' })); // 선택 시간 해제
+          setFormData((prev) => ({ ...prev, preferredTime: "" })); // 선택 시간 해제
           await refetchDisabledTimesFor(formData.preferredDate); // 비활성화 시간 재조회
           setIsSubmitting(false);
           return;
         }
         // 그 외 일반 오류
-        const { message } = await res.json().catch(() => ({ message: '신청 실패' }));
-        throw new Error(message || '신청 실패');
+        const { message } = await res
+          .json()
+          .catch(() => ({ message: "신청 실패" }));
+        throw new Error(message || "신청 실패");
       }
       const result = await res.json();
 
-      if (!result?.applicationId || typeof result.applicationId !== 'string') {
-        console.error('[apply submit] invalid success payload', result);
-        throw new Error('applicationId missing');
+      if (!result?.applicationId || typeof result.applicationId !== "string") {
+        console.error("[apply submit] invalid success payload", result);
+        throw new Error("applicationId missing");
       }
-      console.debug('[apply submit] success', {
+      console.debug("[apply submit] success", {
         applicationId: result.applicationId,
         orderId,
         rentalId,
       });
 
-      showSuccessToast('신청이 완료되었습니다!');
-      router.push(`/services/success?applicationId=${encodeURIComponent(result.applicationId)}`);
+      showSuccessToast("신청이 완료되었습니다!");
+      router.push(
+        `/services/success?applicationId=${encodeURIComponent(result.applicationId)}`,
+      );
     } catch (error) {
-      showErrorToast('신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.');
+      showErrorToast("신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -1278,7 +1510,9 @@ export default function StringServiceApplyPage() {
   };
 
   // 방문 수령 여부(한글/영문 데이터 모두 허용)
-  const isVisitDelivery = (order?.shippingInfo as any)?.deliveryMethod === '방문수령' || order?.shippingInfo?.shippingMethod === 'visit'; // 방문이면 매장만 선택 가능
+  const isVisitDelivery =
+    (order?.shippingInfo as any)?.deliveryMethod === "방문수령" ||
+    order?.shippingInfo?.shippingMethod === "visit"; // 방문이면 매장만 선택 가능
   // 주문 기반 진입 시(= orderId 존재)에는 수거 방식 전체 잠금
   const lockCollection = Boolean(orderId || rentalId);
 
@@ -1374,7 +1608,17 @@ export default function StringServiceApplyPage() {
         );
 
       case 4:
-        return <Step4FinalRequest formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} orderId={orderId} isMember={isMember} usingPackage={usingPackage} packageInsufficient={packageInsufficient} />;
+        return (
+          <Step4FinalRequest
+            formData={formData}
+            setFormData={setFormData}
+            handleInputChange={handleInputChange}
+            orderId={orderId}
+            isMember={isMember}
+            usingPackage={usingPackage}
+            packageInsufficient={packageInsufficient}
+          />
+        );
 
       default:
         return null;
@@ -1390,8 +1634,13 @@ export default function StringServiceApplyPage() {
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
           <div className="rounded-2xl border border-border bg-card p-6 bp-sm:p-8">
             <div className="max-w-xl space-y-2">
-              <p className="text-base font-semibold text-foreground">로그인 상태를 확인하고 있습니다.</p>
-              <p className="text-sm text-muted-foreground">잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로 자동 이동합니다.</p>
+              <p className="text-base font-semibold text-foreground">
+                로그인 상태를 확인하고 있습니다.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로
+                자동 이동합니다.
+              </p>
             </div>
           </div>
         </div>
@@ -1401,7 +1650,8 @@ export default function StringServiceApplyPage() {
 
   if (blockedByLoginGate) return <LoginGate next={nextUrl} variant="default" />;
 
-  const shouldShowEntryChooser = !isOrderBased && !isRentalBased && !pdpProductId && mode !== 'single';
+  const shouldShowEntryChooser =
+    !isOrderBased && !isRentalBased && !pdpProductId && mode !== "single";
 
   if (shouldShowEntryChooser)
     return (
@@ -1413,8 +1663,12 @@ export default function StringServiceApplyPage() {
         <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] py-8 bp-sm:py-12 bp-lg:py-16">
           {/* Section Header */}
           <div className="text-center mb-8 bp-sm:mb-10">
-            <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">어떤 방식으로 진행할까요?</h2>
-            <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">원하는 방식을 선택해주세요</p>
+            <h2 className="text-xl bp-sm:text-2xl font-semibold text-foreground">
+              어떤 방식으로 진행할까요?
+            </h2>
+            <p className="mt-2 text-muted-foreground text-sm bp-sm:text-base">
+              원하는 방식을 선택해주세요
+            </p>
           </div>
 
           {/* Option Cards */}
@@ -1422,7 +1676,7 @@ export default function StringServiceApplyPage() {
             {/* Option 1: 스트링 구매하고 신청 */}
             <button
               type="button"
-              onClick={() => safePush('/products?from=apply')}
+              onClick={() => safePush("/products?from=apply")}
               className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {/* Recommended Badge */}
@@ -1436,14 +1690,29 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">스트링 구매하고 신청</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">체크아웃에서 서비스 포함 주문을 완료한 뒤, 연결된 주문으로 신청을 이어갈 수 있어요</p>
+              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                스트링 구매하고 신청
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                체크아웃에서 서비스 포함 주문을 완료한 뒤, 연결된 주문으로
+                신청을 이어갈 수 있어요
+              </p>
 
               {/* Arrow indicator */}
               <div className="mt-5 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 <span>스트링 보러가기</span>
-                <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                <svg
+                  className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                  />
                 </svg>
               </div>
             </button>
@@ -1461,21 +1730,25 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">라켓 고르고 신청</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-5">구매·대여 후 스트링까지 함께 신청해요</p>
+              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                라켓 고르고 신청
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                구매·대여 후 스트링까지 함께 신청해요
+              </p>
 
               {/* Action Buttons */}
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => safePush('/rackets?from=apply')}
+                  onClick={() => safePush("/rackets?from=apply")}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   라켓 구매
                 </button>
                 <button
                   type="button"
-                  onClick={() => safePush('/rackets?from=apply&rentOnly=1')}
+                  onClick={() => safePush("/rackets?from=apply&rentOnly=1")}
                   className="flex-1 px-3 py-2 bp-sm:py-2.5 text-sm font-medium rounded-lg bg-background text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   라켓 대여
@@ -1486,7 +1759,7 @@ export default function StringServiceApplyPage() {
             {/* Option 3: 신청서만 작성 */}
             <button
               type="button"
-              onClick={() => safePush('/services/apply?mode=single')}
+              onClick={() => safePush("/services/apply?mode=single")}
               className="group relative bg-card rounded-2xl p-5 bp-sm:p-6 text-left border border-border hover:border-border transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               {/* Badge */}
@@ -1500,15 +1773,31 @@ export default function StringServiceApplyPage() {
               </div>
 
               {/* Content */}
-              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">신청서만 작성</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">이미 라켓·스트링이 있다면 바로 작성해요</p>
-              <p className="mt-1 text-xs text-primary">금액·결제정보 자동 반영 없음</p>
+              <h3 className="text-base bp-sm:text-lg font-semibold text-foreground mb-1.5">
+                신청서만 작성
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                이미 라켓·스트링이 있다면 바로 작성해요
+              </p>
+              <p className="mt-1 text-xs text-primary">
+                금액·결제정보 자동 반영 없음
+              </p>
 
               {/* Arrow indicator */}
               <div className="mt-4 flex items-center text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 <span>단독 신청하기</span>
-                <svg className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                <svg
+                  className="ml-1.5 w-4 h-4 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                  />
                 </svg>
               </div>
             </button>
@@ -1517,10 +1806,24 @@ export default function StringServiceApplyPage() {
           {/* Info Banner */}
           <div className="mt-6 bp-sm:mt-8 max-w-5xl mx-auto">
             <div className="flex items-start gap-3 p-4 rounded-xl bg-background border border-border">
-              <svg className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+              <svg
+                className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                />
               </svg>
-              <p className="text-sm text-muted-foreground leading-relaxed">일반적인 서비스 포함 주문은 체크아웃에서 함께 접수됩니다. 이 페이지는 기존 주문 연결, 남은 대상 추가 신청, 단독 신청에 사용됩니다.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                일반적인 서비스 포함 주문은 체크아웃에서 함께 접수됩니다. 이
+                페이지는 기존 주문 연결, 남은 대상 추가 신청, 단독 신청에
+                사용됩니다.
+              </p>
             </div>
           </div>
 
@@ -1531,7 +1834,9 @@ export default function StringServiceApplyPage() {
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background px-4 text-sm text-muted-foreground">또는</span>
+                <span className="bg-background px-4 text-sm text-muted-foreground">
+                  또는
+                </span>
               </div>
             </div>
           </div>
@@ -1542,28 +1847,38 @@ export default function StringServiceApplyPage() {
               <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <svg
+                      className="w-5 h-5 text-muted-foreground"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
                       />
                     </svg>
-                    <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">내 주문/대여 내역에서 이어서</h3>
+                    <h3 className="text-base bp-sm:text-lg font-semibold text-foreground">
+                      내 주문/대여 내역에서 이어서
+                    </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">마이페이지에서 주문/대여를 선택하면 신청서로 자동 연결돼요</p>
+                  <p className="text-sm text-muted-foreground">
+                    마이페이지에서 주문/대여를 선택하면 신청서로 자동 연결돼요
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => safePush('/mypage?tab=orders')}
+                    onClick={() => safePush("/mypage?tab=orders")}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     주문 내역
                   </button>
                   <button
                     type="button"
-                    onClick={() => safePush('/mypage?tab=orders')}
+                    onClick={() => safePush("/mypage?tab=orders")}
                     className="flex-1 bp-sm:flex-none px-4 py-2.5 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     대여 내역
@@ -1595,20 +1910,28 @@ export default function StringServiceApplyPage() {
             <div className="mx-auto w-full md:w-[800px]">
               <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-2xl">
                 <CardContent className="p-4 bp-sm:p-6 bp-lg:p-8">
-                  <div className={`mb-5 rounded-xl border p-4 ${isOrderSlotBlocked ? 'border-border bg-muted/40' : 'border-border bg-background/60'}`}>
-                    <p className="text-sm font-semibold text-foreground">{entryBanner.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{entryBanner.body}</p>
+                  <div
+                    className={`mb-5 rounded-xl border p-4 ${isOrderSlotBlocked ? "border-border bg-muted/40" : "border-border bg-background/60"}`}
+                  >
+                    <p className="text-sm font-semibold text-foreground">
+                      {entryBanner.title}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {entryBanner.body}
+                    </p>
 
                     {isOrderSlotBlocked ? (
                       <div className="mt-3 flex flex-wrap gap-2">
                         <button
                           type="button"
-                          onClick={() => safePush('/mypage?tab=orders')}
+                          onClick={() => safePush("/mypage?tab=orders")}
                           className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors"
                         >
                           주문 상세에서 확인
                         </button>
-                        <span className="px-3 py-2 text-xs text-muted-foreground">신청 내역은 주문 상세에서 확인할 수 있습니다.</span>
+                        <span className="px-3 py-2 text-xs text-muted-foreground">
+                          신청 내역은 주문 상세에서 확인할 수 있습니다.
+                        </span>
                       </div>
                     ) : null}
                   </div>
@@ -1623,17 +1946,29 @@ export default function StringServiceApplyPage() {
                     <ApplyPriceSummaryMobile
                       preferredDate={formData.preferredDate ?? undefined}
                       preferredTime={formData.preferredTime ?? undefined}
-                      collectionMethod={formData.collectionMethod as CollectionMethod}
+                      collectionMethod={
+                        formData.collectionMethod as CollectionMethod
+                      }
                       stringTypes={formData.stringTypes}
                       stringIncluded={stringIncludedForCard}
                       headerHint={headerHintForCard}
-                      usingPackage={isRentalBased ? false : priceView.usingPackage}
+                      usingPackage={
+                        isRentalBased ? false : priceView.usingPackage
+                      }
                       base={summaryBaseForCard}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
                       racketPrice={isRentalBased ? 0 : summaryRacketPrice}
-                      rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
-                      rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
+                      rentalDeposit={
+                        isRentalBased
+                          ? Number(rentalAmount?.deposit ?? 0)
+                          : undefined
+                      }
+                      rentalFee={
+                        isRentalBased
+                          ? Number(rentalAmount?.fee ?? 0)
+                          : undefined
+                      }
                       stringPrice={summaryStringPrice}
                       totalLabel={totalLabel}
                     />
@@ -1642,7 +1977,9 @@ export default function StringServiceApplyPage() {
                     <ApplyStepFooter
                       currentStep={currentStep}
                       totalSteps={totalSteps}
-                      onPrev={() => setCurrentStep(Math.max(1, currentStep - 1))}
+                      onPrev={() =>
+                        setCurrentStep(Math.max(1, currentStep - 1))
+                      }
                       onNext={handleNext}
                       isStepValid={isStepValid}
                       isSubmitting={isSubmitting}
@@ -1667,8 +2004,12 @@ export default function StringServiceApplyPage() {
               pickupFee={priceView.pickupFee}
               total={checkoutTotal}
               racketPrice={isRentalBased ? 0 : summaryRacketPrice}
-              rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
-              rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
+              rentalDeposit={
+                isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined
+              }
+              rentalFee={
+                isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined
+              }
               stringPrice={summaryStringPrice}
               totalLabel={totalLabel}
             />

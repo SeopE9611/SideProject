@@ -1,23 +1,27 @@
-import { sendSMS } from '@/app/features/notifications/channels/sms';
-import { sendEmail } from '../channels/email';
-import { sendSlack } from '../channels/slack';
-import { markFailed, markSent } from './outbox.repo';
+import { sendSMS } from "@/app/features/notifications/channels/sms";
+import { sendEmail } from "../channels/email";
+import { sendSlack } from "../channels/slack";
+import { markFailed, markSent } from "./outbox.repo";
 
-export async function dispatchOutbox(_id: any, rendered: any, channels: ('email' | 'slack' | 'sms')[]) {
+export async function dispatchOutbox(
+  _id: any,
+  rendered: any,
+  channels: ("email" | "slack" | "sms")[],
+) {
   let hadError = false;
 
   for (const ch of channels) {
     try {
-      if (ch === 'email' && rendered.email) {
+      if (ch === "email" && rendered.email) {
         await sendEmail(rendered.email);
-      } else if (ch === 'slack' && rendered.slack) {
+      } else if (ch === "slack" && rendered.slack) {
         await sendSlack(rendered.slack.text);
-      } else if (ch === 'sms' && rendered.sms) {
+      } else if (ch === "sms" && rendered.sms) {
         await sendSMS(rendered.sms.to, rendered.sms.text);
       }
     } catch (err: any) {
       hadError = true;
-      console.error('[notify] channel failed:', ch, err?.message || err);
+      console.error("[notify] channel failed:", ch, err?.message || err);
       // 계속 진행해서 다음 채널은 보내도록 한다
     }
   }

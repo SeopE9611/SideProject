@@ -1,11 +1,34 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Package, CheckCircle, AlertTriangle, XCircle, PlusCircle, Search, XIcon } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Package,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  PlusCircle,
+  Search,
+  XIcon,
+} from "lucide-react";
 
 function NumberSkeleton() {
-  return <span className="inline-block h-7 w-12 rounded bg-muted dark:bg-card animate-pulse align-middle" />;
+  return (
+    <span className="inline-block h-7 w-12 rounded bg-muted dark:bg-card animate-pulse align-middle" />
+  );
 }
 
 export default function ProductsLoading() {
@@ -20,8 +43,12 @@ export default function ProductsLoading() {
             <Package className="h-8 w-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">상품 관리</h1>
-            <p className="mt-2 text-base text-muted-foreground">테니스 스트링 상품을 효율적으로 관리하세요</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+              상품 관리
+            </h1>
+            <p className="mt-2 text-base text-muted-foreground">
+              테니스 스트링 상품을 효율적으로 관리하세요
+            </p>
           </div>
         </div>
       </div>
@@ -32,7 +59,9 @@ export default function ProductsLoading() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">전체 상품</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  전체 상품
+                </p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
@@ -47,7 +76,9 @@ export default function ProductsLoading() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">판매 중</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  판매 중
+                </p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
@@ -62,7 +93,9 @@ export default function ProductsLoading() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">재고 부족</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  재고 부족
+                </p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
@@ -77,7 +110,9 @@ export default function ProductsLoading() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">품절</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  품절
+                </p>
                 <p className="text-3xl font-bold text-foreground">
                   <NumberSkeleton />
                 </p>
@@ -95,8 +130,12 @@ export default function ProductsLoading() {
         <CardHeader className="pb-4 shrink-0">
           <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <div>
-              <CardTitle className="text-xl font-semibold text-foreground">스트링 목록</CardTitle>
-              <CardDescription className="text-muted-foreground"><Skeleton className="h-4 w-56" /></CardDescription>
+              <CardTitle className="text-xl font-semibold text-foreground">
+                스트링 목록
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                <Skeleton className="h-4 w-56" />
+              </CardDescription>
             </div>
             <Button disabled className="opacity-70">
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -122,7 +161,16 @@ export default function ProductsLoading() {
             <Table className="table-fixed">
               <TableHeader className="bg-card sticky top-0 z-10">
                 <TableRow>
-                  {['스트링명', '브랜드', '게이지', '재질', '가격', '재고', '상태', '관리'].map((h) => (
+                  {[
+                    "스트링명",
+                    "브랜드",
+                    "게이지",
+                    "재질",
+                    "가격",
+                    "재고",
+                    "상태",
+                    "관리",
+                  ].map((h) => (
                     <TableHead key={h}>{h}</TableHead>
                   ))}
                 </TableRow>

@@ -1,7 +1,12 @@
-'use client';
+"use client";
 
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 export default function StringingApplicationDetailSkeleton() {
   return (
@@ -26,14 +31,16 @@ export default function StringingApplicationDetailSkeleton() {
             <Skeleton className="h-4 w-1/6 rounded-md" /> {/* 날짜 */}
           </CardHeader>
           <CardContent className="pt-4">
-            <Skeleton className="h-8 w-full rounded-md" /> {/* Select + cancel */}
+            <Skeleton className="h-8 w-full rounded-md" />{" "}
+            {/* Select + cancel */}
           </CardContent>
         </Card>
 
         {/* 고객 정보 */}
         <Card className="md:col-span-2">
           <CardHeader className="pb-3">
-            <Skeleton className="h-6 w-32 rounded-md" /> {/* 고객 정보 타이틀 */}
+            <Skeleton className="h-6 w-32 rounded-md" />{" "}
+            {/* 고객 정보 타이틀 */}
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <Skeleton className="h-4 w-1/2 rounded-md" />
@@ -47,7 +54,8 @@ export default function StringingApplicationDetailSkeleton() {
         {/* 결제 정보 */}
         <Card>
           <CardHeader className="pb-3">
-            <Skeleton className="h-6 w-32 rounded-md" /> {/* 결제 정보 타이틀 */}
+            <Skeleton className="h-6 w-32 rounded-md" />{" "}
+            {/* 결제 정보 타이틀 */}
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <Skeleton className="h-4 w-1/2 rounded-md" />
@@ -59,7 +67,8 @@ export default function StringingApplicationDetailSkeleton() {
         {/* 신청 스트링 정보 */}
         <Card className="md:col-span-3">
           <CardHeader className="pb-3">
-            <Skeleton className="h-6 w-40 rounded-md" /> {/* 스트링 정보 타이틀 */}
+            <Skeleton className="h-6 w-40 rounded-md" />{" "}
+            {/* 스트링 정보 타이틀 */}
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <Skeleton className="h-4 w-1/3 rounded-md" /> {/* 희망 일시 */}

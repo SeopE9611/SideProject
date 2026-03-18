@@ -3,8 +3,8 @@
 // - 스키마 대수술 없이 최소 필드만 복제/연결
 // - 대여 결제에 공임/스트링 금액이 포함될 수 있으므로 servicePaid는 우선 false로 시작(정책은 3단계에서 UX와 함께 정리)
 
-import { ClientSession, Db, ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
+import { ClientSession, Db, ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 
 // 대여 DB 타입의 최소 참조용(있는 필드만 사용)
 type DBRentalLite = {
@@ -13,7 +13,7 @@ type DBRentalLite = {
   createdAt?: Date;
 
   // 대여 체크아웃에서 결정되는 수거/방문 방식
-  servicePickupMethod?: 'SELF_SEND' | 'SHOP_VISIT' | 'COURIER_VISIT';
+  servicePickupMethod?: "SELF_SEND" | "SHOP_VISIT" | "COURIER_VISIT";
 
   // 대여 시 배송/연락처(필요 필드만)
   shipping?: {
@@ -23,7 +23,7 @@ type DBRentalLite = {
     addressDetail?: string;
     postalCode?: string;
     deliveryRequest?: string;
-    shippingMethod?: 'pickup' | 'delivery'; // 레거시
+    shippingMethod?: "pickup" | "delivery"; // 레거시
   };
 
   // 대여에서 선택한 스트링(옵션) — meta에 추적용으로만 남김
@@ -67,22 +67,25 @@ type CreateAppDoc = {
   history?: Array<{ status: string; date: Date; description: string }>;
   meta?: {
     fromRental?: boolean;
-    servicePickupMethod?: 'SELF_SEND' | 'SHOP_VISIT' | 'COURIER_VISIT';
+    servicePickupMethod?: "SELF_SEND" | "SHOP_VISIT" | "COURIER_VISIT";
     stringProductId?: string | null;
     stringName?: string | null;
     stringImage?: string | null;
     stringUnitPrice?: number | null;
     mountingFee?: number | null;
-    pricingSource?: 'rental' | 'manual';
+    pricingSource?: "rental" | "manual";
   };
 };
 
-export async function createStringingApplicationFromRental(rental: DBRentalLite, opts?: { db?: Db; session?: ClientSession }): Promise<{ _id: ObjectId }> {
+export async function createStringingApplicationFromRental(
+  rental: DBRentalLite,
+  opts?: { db?: Db; session?: ClientSession },
+): Promise<{ _id: ObjectId }> {
   const db = opts?.db ?? (await clientPromise).db();
   const session = opts?.session;
 
   type StringingAppDoc = CreateAppDoc;
-  const col = db.collection<StringingAppDoc>('stringing_applications');
+  const col = db.collection<StringingAppDoc>("stringing_applications");
 
   /**
    * 멱등(upsert)로 변경
@@ -96,7 +99,12 @@ export async function createStringingApplicationFromRental(rental: DBRentalLite,
    */
 
   // 픽업 방식 정규화(기본 SELF_SEND)
-  const pickup = rental.servicePickupMethod === 'SHOP_VISIT' ? 'SHOP_VISIT' : rental.servicePickupMethod === 'COURIER_VISIT' ? 'COURIER_VISIT' : 'SELF_SEND';
+  const pickup =
+    rental.servicePickupMethod === "SHOP_VISIT"
+      ? "SHOP_VISIT"
+      : rental.servicePickupMethod === "COURIER_VISIT"
+        ? "COURIER_VISIT"
+        : "SELF_SEND";
 
   // 2) 신청서 문서 구성(최소 필드만)
   // - 대여 기반은 “이미 대여 결제에 금액이 포함될 수 있음” → 일단 serviceAmount 힌트만 넣고,
@@ -105,12 +113,13 @@ export async function createStringingApplicationFromRental(rental: DBRentalLite,
     rentalId: rental._id,
     userId: rental.userId ?? null,
     createdAt: new Date(),
-    status: 'draft',
+    status: "draft",
     servicePaid: false,
 
     // 대여 쪽 금액 구조가 케이스별로 다를 수 있어 우선 힌트 기반
     // (없으면 0으로 시작)
-    serviceAmount: (rental as any).serviceFeeHint ?? (rental as any).serviceFee ?? 0,
+    serviceAmount:
+      (rental as any).serviceFeeHint ?? (rental as any).serviceFee ?? 0,
 
     paymentSource: `rental:${rental._id.toString()}`,
 
@@ -126,17 +135,31 @@ export async function createStringingApplicationFromRental(rental: DBRentalLite,
         }
       : undefined,
 
-    history: [{ status: 'draft', date: new Date(), description: '대여 기반 자동 초안 생성' }],
+    history: [
+      {
+        status: "draft",
+        date: new Date(),
+        description: "대여 기반 자동 초안 생성",
+      },
+    ],
 
     meta: {
       fromRental: true,
       servicePickupMethod: pickup,
-      stringProductId: rental.stringing?.stringId ? String(rental.stringing.stringId) : null,
+      stringProductId: rental.stringing?.stringId
+        ? String(rental.stringing.stringId)
+        : null,
       stringName: (rental.stringing as any)?.name ?? null,
       stringImage: (rental.stringing as any)?.image ?? null,
-      stringUnitPrice: typeof (rental.stringing as any)?.price === 'number' ? (rental.stringing as any).price : null,
-      mountingFee: typeof (rental.stringing as any)?.mountingFee === 'number' ? (rental.stringing as any).mountingFee : null,
-      pricingSource: 'rental',
+      stringUnitPrice:
+        typeof (rental.stringing as any)?.price === "number"
+          ? (rental.stringing as any).price
+          : null,
+      mountingFee:
+        typeof (rental.stringing as any)?.mountingFee === "number"
+          ? (rental.stringing as any).mountingFee
+          : null,
+      pricingSource: "rental",
     },
   };
 
@@ -150,16 +173,24 @@ export async function createStringingApplicationFromRental(rental: DBRentalLite,
    * 2) upsertedId가 있으면 그걸 반환
    * 3) upsertedId가 없으면(=기존 문서) findOne으로 _id만 조회해서 반환
    */
-  const u = await col.updateOne({ rentalId: rental._id }, { $setOnInsert: doc as any }, { upsert: true, session });
+  const u = await col.updateOne(
+    { rentalId: rental._id },
+    { $setOnInsert: doc as any },
+    { upsert: true, session },
+  );
 
   const upserted = (u as any).upsertedId;
   if (upserted) {
     // 드라이버/환경에 따라 upsertedId 형태가 { _id } 또는 ObjectId일 수 있어 방어
-    const id = typeof upserted === 'object' && upserted?._id ? upserted._id : upserted;
+    const id =
+      typeof upserted === "object" && upserted?._id ? upserted._id : upserted;
     if (id) return { _id: id };
   }
 
-  const existing = await col.findOne({ rentalId: rental._id }, { session, projection: { _id: 1 } });
-  if (!existing?._id) throw new Error('UPSERT_STRINGING_APP_FAILED');
+  const existing = await col.findOne(
+    { rentalId: rental._id },
+    { session, projection: { _id: 1 } },
+  );
+  if (!existing?._id) throw new Error("UPSERT_STRINGING_APP_FAILED");
   return { _id: existing._id };
 }

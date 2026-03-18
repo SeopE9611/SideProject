@@ -1,6 +1,6 @@
-import ProfileClient from '@/app/mypage/profile/_components/ProfileClient';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import { redirect } from 'next/navigation';
+import ProfileClient from "@/app/mypage/profile/_components/ProfileClient";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import { redirect } from "next/navigation";
 
 type Props = {
   user: {
@@ -15,7 +15,7 @@ export default async function ProfilePage() {
   const user = await getCurrentUser();
 
   if (!user) {
-    const target = '/mypage/profile';
+    const target = "/mypage/profile";
     redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
@@ -23,8 +23,8 @@ export default async function ProfilePage() {
     <ProfileClient
       user={{
         id: user.id,
-        name: user.name ?? '회원',
-        email: user.email ?? '',
+        name: user.name ?? "회원",
+        email: user.email ?? "",
         role: user.role,
       }}
     />

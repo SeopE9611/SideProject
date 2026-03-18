@@ -1,33 +1,37 @@
-import type { ReactNode } from 'react';
-import { UserCog2Icon } from 'lucide-react';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import AccessDenied from '@/components/system/AccessDenied';
-import { headers } from 'next/headers';
-import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminMobileMenu from '@/components/admin/AdminMobileMenu';
-import { logInfo } from '@/lib/logger';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
+import type { ReactNode } from "react";
+import { UserCog2Icon } from "lucide-react";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import AccessDenied from "@/components/system/AccessDenied";
+import { headers } from "next/headers";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
+import { logInfo } from "@/lib/logger";
+import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 
 export const metadata = {
-  title: '관리자 페이지 - 테니스 플로우',
+  title: "관리자 페이지 - 테니스 플로우",
 };
 
 function canBypassAdminGuard(requestHeaders: Headers): boolean {
-  const providedToken = requestHeaders.get('x-e2e-admin-bypass-token');
+  const providedToken = requestHeaders.get("x-e2e-admin-bypass-token");
   if (!providedToken) {
     return false;
   }
 
-  const isTestRuntime = process.env.NODE_ENV === 'test';
-  const isProductionEnvironment = process.env.VERCEL_ENV === 'production';
-  const bypassEnabled = process.env.E2E_ADMIN_BYPASS_ENABLED === '1';
+  const isTestRuntime = process.env.NODE_ENV === "test";
+  const isProductionEnvironment = process.env.VERCEL_ENV === "production";
+  const bypassEnabled = process.env.E2E_ADMIN_BYPASS_ENABLED === "1";
 
   if (!isTestRuntime || isProductionEnvironment || !bypassEnabled) {
     logInfo({
-      msg: 'admin_guard_bypass_denied',
-      path: '/admin',
+      msg: "admin_guard_bypass_denied",
+      path: "/admin",
       extra: {
-        reason: !isTestRuntime ? 'non_test_runtime' : isProductionEnvironment ? 'production_environment' : 'feature_disabled',
+        reason: !isTestRuntime
+          ? "non_test_runtime"
+          : isProductionEnvironment
+            ? "production_environment"
+            : "feature_disabled",
         nodeEnv: process.env.NODE_ENV ?? null,
         vercelEnv: process.env.VERCEL_ENV ?? null,
       },
@@ -38,10 +42,10 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
   const expectedToken = process.env.E2E_ADMIN_BYPASS_TOKEN;
   if (!expectedToken) {
     logInfo({
-      msg: 'admin_guard_bypass_denied',
-      path: '/admin',
+      msg: "admin_guard_bypass_denied",
+      path: "/admin",
       extra: {
-        reason: 'missing_expected_token',
+        reason: "missing_expected_token",
       },
     });
     return false;
@@ -50,10 +54,12 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
   const bypassAccepted = providedToken === expectedToken;
 
   logInfo({
-    msg: bypassAccepted ? 'admin_guard_bypass_approved' : 'admin_guard_bypass_denied',
-    path: '/admin',
+    msg: bypassAccepted
+      ? "admin_guard_bypass_approved"
+      : "admin_guard_bypass_denied",
+    path: "/admin",
     extra: {
-      reason: bypassAccepted ? 'token_matched' : 'token_mismatch',
+      reason: bypassAccepted ? "token_matched" : "token_mismatch",
     },
   });
 
@@ -61,13 +67,17 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
 }
 
 /** 관리자 UI 권한 검사의 단일 진입점. (app/admin/**) */
-export default async function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
 
   if (!e2eBypass) {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== "admin") {
       return <AccessDenied />;
     }
   }
@@ -86,7 +96,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               <h1 className="text-4xl font-black mb-2">관리자 페이지</h1>
               <p className="text-muted-foreground">
                 관리자 전용 페이지 입니다.
-                <span className="font-medium text-primary"> 상품 및 주문관리</span>를 진행해보세요.
+                <span className="font-medium text-primary">
+                  {" "}
+                  상품 및 주문관리
+                </span>
+                를 진행해보세요.
               </p>
             </div>
           </div>

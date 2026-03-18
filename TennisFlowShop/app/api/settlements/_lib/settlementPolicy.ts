@@ -97,7 +97,15 @@
  * - 프로젝트 전반에서 섞여 들어올 수 있는 값을 안전하게 포함
  * - DB는 $in 매칭이 대소문자/문자열 일치 기준이므로, 가능한 값을 넓게.
  */
-export const PAID_STATUS_VALUES = ['결제완료', '결제 완료', 'paid', 'PAID', 'confirmed', 'CONFIRMED', 'Confirmed'] as const;
+export const PAID_STATUS_VALUES = [
+  "결제완료",
+  "결제 완료",
+  "paid",
+  "PAID",
+  "confirmed",
+  "CONFIRMED",
+  "Confirmed",
+] as const;
 
 export function toNumber(v: unknown): number {
   const n = Number(v);
@@ -105,9 +113,9 @@ export function toNumber(v: unknown): number {
 }
 
 export function isPaidPaymentStatus(status: unknown): boolean {
-  const raw = String(status ?? '').trim();
-  const key = raw.replace(/\s+/g, '').toLowerCase();
-  return key === '결제완료' || key === 'paid' || key === 'confirmed';
+  const raw = String(status ?? "").trim();
+  const key = raw.replace(/\s+/g, "").toLowerCase();
+  return key === "결제완료" || key === "paid" || key === "confirmed";
 }
 
 /**
@@ -153,7 +161,9 @@ export function isStandaloneStringingApplication(app: any): boolean {
  * - 결제상태가 paymentStatus / paymentInfo.status 등으로 혼재될 수 있어 OR로 커버
  * - '결제 완료'(공백) / paid / confirmed 대소문자 흔들림은 regex로 보강
  */
-export function buildPaidMatch(fields: string[] = ['paymentStatus', 'paymentInfo.status']) {
+export function buildPaidMatch(
+  fields: string[] = ["paymentStatus", "paymentInfo.status"],
+) {
   const ors: any[] = [];
   for (const f of fields) {
     ors.push({ [f]: { $in: PAID_STATUS_VALUES } });
@@ -171,7 +181,7 @@ export function buildPaidMatch(fields: string[] = ['paymentStatus', 'paymentInfo
  *   - amount.deposit: 보증금(추후 반환) → 매출/순익에서 제외하고 별도 합산
  * - 목적: 대여 통합(스트링 가격/교체비 포함) 케이스에서 누락 없이 매출 집계 + 보증금 분리
  */
-export const RENTAL_PAID_STATUS_VALUES = ['paid', 'out', 'returned'] as const;
+export const RENTAL_PAID_STATUS_VALUES = ["paid", "out", "returned"] as const;
 
 export function buildRentalPaidMatch() {
   return {
@@ -180,7 +190,16 @@ export function buildRentalPaidMatch() {
      * - 일부 흐름에서 status가 'canceled'로 바뀌더라도 paidAt이 남아있을 수 있음
      * - paidAt만으로 포함시키는 OR 조건 때문에 취소건이 정산에 섞이지 않도록 명시적으로 제외
      */
-    $and: [{ status: { $ne: 'canceled' } }, { $or: [{ status: { $in: RENTAL_PAID_STATUS_VALUES as any } }, { paidAt: { $type: 'date' } }, { 'payment.paidAt': { $type: 'date' } }] }],
+    $and: [
+      { status: { $ne: "canceled" } },
+      {
+        $or: [
+          { status: { $in: RENTAL_PAID_STATUS_VALUES as any } },
+          { paidAt: { $type: "date" } },
+          { "payment.paidAt": { $type: "date" } },
+        ],
+      },
+    ],
   };
 }
 
@@ -192,20 +211,34 @@ export function rentalPaidAmount(rental: any) {
    *   1) 대여 통합(스트링 가격/교체비 포함)에서 fee만 쓰면 매출 누락 가능
    *   2) amount.total은 포인트 차감까지 반영된 값이라 정산 기준으로 가장 안전
    */
-  const total = toNumber(rental?.amount?.total ?? rental?.paidAmount ?? rental?.totalPrice ?? rental?.total);
-  const deposit = toNumber(rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount);
+  const total = toNumber(
+    rental?.amount?.total ??
+      rental?.paidAmount ??
+      rental?.totalPrice ??
+      rental?.total,
+  );
+  const deposit = toNumber(
+    rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount,
+  );
   if (total > 0) {
     return Math.max(0, total - deposit);
   }
 
   // 레거시/예외 fallback: total이 비어있다면 (fee + stringPrice + stringingFee) 기반으로 계산(보증금 제외)
   const fee = toNumber(rental?.amount?.fee ?? rental?.fee ?? rental?.rentalFee);
-  const stringPrice = toNumber(rental?.amount?.stringPrice ?? rental?.stringPrice);
-  const stringingFee = toNumber(rental?.amount?.stringingFee ?? rental?.stringingFee ?? rental?.serviceFeeHint);
+  const stringPrice = toNumber(
+    rental?.amount?.stringPrice ?? rental?.stringPrice,
+  );
+  const stringingFee = toNumber(
+    rental?.amount?.stringingFee ??
+      rental?.stringingFee ??
+      rental?.serviceFeeHint,
+  );
   return Math.max(0, fee + stringPrice + stringingFee);
 }
 
 export function rentalDepositAmount(rental: any) {
-  const deposit = rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount ?? 0;
+  const deposit =
+    rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount ?? 0;
   return toNumber(deposit);
 }

@@ -1,29 +1,62 @@
-'use client';
+"use client";
 
-import ReviewPhotoDialog from '@/app/reviews/_components/ReviewPhotoDialog';
-import MaskedBlock from '@/components/reviews/MaskedBlock';
-import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { Eye, EyeOff, ImageIcon, Loader2, MoreHorizontal, Package, Pencil, Star, ThumbsUp, Trash2, Wrench } from 'lucide-react';
-import Image from 'next/image';
-import { useRef, useState } from 'react';
+import ReviewPhotoDialog from "@/app/reviews/_components/ReviewPhotoDialog";
+import MaskedBlock from "@/components/reviews/MaskedBlock";
+import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
+import PhotosUploader from "@/components/reviews/PhotosUploader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import {
+  Eye,
+  EyeOff,
+  ImageIcon,
+  Loader2,
+  MoreHorizontal,
+  Package,
+  Pencil,
+  Star,
+  ThumbsUp,
+  Trash2,
+  Wrench,
+} from "lucide-react";
+import Image from "next/image";
+import { useRef, useState } from "react";
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   return dateStr.slice(0, 10);
 }
 
 /* 개별 리뷰 카드: 상품/서비스 공용 */
-export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn = false }: { item: any; onMutate?: () => any; isAdmin?: boolean; isLoggedIn?: boolean }) {
+export default function ReviewCard({
+  item,
+  onMutate,
+  isAdmin = false,
+  isLoggedIn = false,
+}: {
+  item: any;
+  onMutate?: () => any;
+  isAdmin?: boolean;
+  isLoggedIn?: boolean;
+}) {
   const [voted, setVoted] = useState<boolean>(Boolean(item.votedByMe));
   const [count, setCount] = useState<number>(item.helpfulCount ?? 0);
   const [open, setOpen] = useState(false); // 사진 Dialog
@@ -31,9 +64,13 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
 
   // 수정
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState<{ rating: number | ''; content: string; photos: string[] }>({
-    rating: typeof item.rating === 'number' ? item.rating : '',
-    content: item.content ?? '',
+  const [editForm, setEditForm] = useState<{
+    rating: number | "";
+    content: string;
+    photos: string[];
+  }>({
+    rating: typeof item.rating === "number" ? item.rating : "",
+    content: item.content ?? "",
     photos: Array.isArray(item.photos) ? item.photos : [],
   });
   const [hoverRating, setHoverRating] = useState<number | null>(null);
@@ -54,36 +91,49 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
     try {
       setBusy(true);
       const res = await fetch(`/api/reviews/${item._id}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rating: rating === '' ? undefined : Number(rating),
+          rating: rating === "" ? undefined : Number(rating),
           content,
           photos: editForm.photos,
         }),
       });
-      if (!res.ok) throw new Error('수정 실패');
-      showSuccessToast('리뷰를 수정했어요.');
+      if (!res.ok) throw new Error("수정 실패");
+      showSuccessToast("리뷰를 수정했어요.");
       onMutate?.(); // 리스트 재검증
       closeEdit();
       setBusy(false);
     } catch (e: any) {
       setBusy(false);
-      showErrorToast(e?.message || '리뷰 수정에 실패했습니다.');
+      showErrorToast(e?.message || "리뷰 수정에 실패했습니다.");
     }
   };
 
   // 공개/비공개에 따른 표시 이름
-  const displayName = item.status === 'hidden' ? (item.ownedByMe ? `${item.userName ?? '내 리뷰'} (비공개)` : isAdmin ? `${item.userName ?? '사용자'} (비공개)` : '비공개 리뷰') : (item.userName ?? '익명');
+  const displayName =
+    item.status === "hidden"
+      ? item.ownedByMe
+        ? `${item.userName ?? "내 리뷰"} (비공개)`
+        : isAdmin
+          ? `${item.userName ?? "사용자"} (비공개)`
+          : "비공개 리뷰"
+      : (item.userName ?? "익명");
 
   // 마스킹 여부(서버가 내려준 masked를 우선 사용, 없으면 폴백)
-  const isMasked = item.masked ?? (item.status === 'hidden' && !(item.ownedByMe || isAdmin));
+  const isMasked =
+    item.masked ?? (item.status === "hidden" && !(item.ownedByMe || isAdmin));
 
   // 카드 제목(상품/서비스 공용)
   // - 상품: productName
   // - 서비스: serviceTargetName/serviceTitle (없으면 fallback)
-  const headerTitle = item.type === 'product' ? item.productName : item.serviceTitle || item.serviceTargetName || (item.service === 'stringing' ? '스트링 교체 서비스' : '서비스');
+  const headerTitle =
+    item.type === "product"
+      ? item.productName
+      : item.serviceTitle ||
+        item.serviceTargetName ||
+        (item.service === "stringing" ? "스트링 교체 서비스" : "서비스");
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -112,23 +162,26 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
     abortRef.current = ac;
 
     try {
-      const res = await fetch(`/api/reviews/${item._id}/helpful?desired=${desired ? 'on' : 'off'}`, {
-        method: 'POST',
-        credentials: 'include',
-        signal: ac.signal,
-      });
+      const res = await fetch(
+        `/api/reviews/${item._id}/helpful?desired=${desired ? "on" : "off"}`,
+        {
+          method: "POST",
+          credentials: "include",
+          signal: ac.signal,
+        },
+      );
       const j = await res.json();
 
       // 오래된 응답이면 무시
       if (mySeq !== reqSeqRef.current) return;
 
-      if (!res.ok) throw new Error(j?.reason || 'error');
+      if (!res.ok) throw new Error(j?.reason || "error");
 
       // 서버 "정답"으로 동기화
       setVoted(Boolean(j.voted));
       setCount(j.helpfulCount ?? 0);
     } catch (e: any) {
-      if (e?.name === 'AbortError') return; // 취소는 조용히 무시
+      if (e?.name === "AbortError") return; // 취소는 조용히 무시
       // 실패 시: 멱등 의도가 있으니 롤백 대신 화면을 현재 상태로 유지
       // (원하면 여기서 토스트 추가 가능)
     } finally {
@@ -151,7 +204,7 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
   // 클릭 핸들러: 마지막 의도 큐잉 + 낙관적 반영
   const onHelpful = () => {
     if (!isLoggedIn) {
-      showErrorToast('로그인이 필요합니다. 로그인 후 이용해주세요.');
+      showErrorToast("로그인이 필요합니다. 로그인 후 이용해주세요.");
       return;
     }
 
@@ -183,18 +236,33 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         {/* Header with badges and date */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Badge variant={item.type === 'product' ? 'info' : 'neutral'} className="gap-1.5 px-3 py-1 rounded-full font-medium">
-              {item.type === 'product' ? <Package className="h-3.5 w-3.5" /> : <Wrench className="h-3.5 w-3.5" />}
-              {item.type === 'product' ? '상품 리뷰' : '서비스 리뷰'}
+            <Badge
+              variant={item.type === "product" ? "info" : "neutral"}
+              className="gap-1.5 px-3 py-1 rounded-full font-medium"
+            >
+              {item.type === "product" ? (
+                <Package className="h-3.5 w-3.5" />
+              ) : (
+                <Wrench className="h-3.5 w-3.5" />
+              )}
+              {item.type === "product" ? "상품 리뷰" : "서비스 리뷰"}
             </Badge>
-            {!!headerTitle && <span className="text-sm font-semibold text-foreground bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">{headerTitle}</span>}
+            {!!headerTitle && (
+              <span className="text-sm font-semibold text-foreground bg-muted px-2 py-1 rounded-full max-w-[320px] truncate">
+                {headerTitle}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
             {(item.ownedByMe || isAdmin) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted" aria-label="리뷰 관리">
+                  <button
+                    type="button"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md hover:bg-muted"
+                    aria-label="리뷰 관리"
+                  >
                     <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
@@ -205,25 +273,30 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                       e.stopPropagation();
                       try {
                         setBusy(true);
-                        const next = item.status === 'visible' ? 'hidden' : 'visible';
+                        const next =
+                          item.status === "visible" ? "hidden" : "visible";
                         const res = await fetch(`/api/reviews/${item._id}`, {
-                          method: 'PATCH',
-                          credentials: 'include',
-                          headers: { 'Content-Type': 'application/json' },
+                          method: "PATCH",
+                          credentials: "include",
+                          headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({ status: next }),
                         });
-                        if (!res.ok) throw new Error('상태 변경 실패');
-                        showSuccessToast(next === 'hidden' ? '비공개로 전환했습니다.' : '공개로 전환했습니다.');
+                        if (!res.ok) throw new Error("상태 변경 실패");
+                        showSuccessToast(
+                          next === "hidden"
+                            ? "비공개로 전환했습니다."
+                            : "공개로 전환했습니다.",
+                        );
                         onMutate?.(); // 리스트 재검증
                       } catch (err: any) {
-                        showErrorToast(err?.message || '상태 변경 중 오류');
+                        showErrorToast(err?.message || "상태 변경 중 오류");
                       } finally {
                         setBusy(false);
                       }
                     }}
                     className="cursor-pointer"
                   >
-                    {item.status === 'visible' ? (
+                    {item.status === "visible" ? (
                       <>
                         <EyeOff className="mr-2 h-4 w-4" />
                         비공개로 전환
@@ -251,20 +324,20 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                   <DropdownMenuItem
                     onClick={async (e) => {
                       e.stopPropagation();
-                      if (!confirm('이 리뷰를 삭제하시겠습니까?')) return;
+                      if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
                       try {
                         setBusy(true);
                         const res = await fetch(`/api/reviews/${item._id}`, {
-                          method: 'DELETE',
-                          credentials: 'include',
+                          method: "DELETE",
+                          credentials: "include",
                         });
-                        if (!res.ok) throw new Error('삭제 실패');
-                        showSuccessToast('삭제했습니다.');
+                        if (!res.ok) throw new Error("삭제 실패");
+                        showSuccessToast("삭제했습니다.");
                         onMutate?.(); // 리스트 재검증
                         setBusy(false);
                       } catch (err: any) {
                         setBusy(false);
-                        showErrorToast(err?.message || '삭제 중 오류');
+                        showErrorToast(err?.message || "삭제 중 오류");
                       }
                     }}
                     className="cursor-pointer text-destructive focus:text-destructive"
@@ -281,19 +354,28 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         {/* Author info with tennis styling */}
         <div className="flex items-center gap-2 text-xs">
           <div className="w-6 h-6 rounded-full border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex items-center justify-center">
-            <span className="font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
+            <span className="font-bold text-[10px]">
+              {displayName.charAt(0).toUpperCase()}
+            </span>
           </div>
-          <span className="font-medium text-muted-foreground">{displayName}</span>
+          <span className="font-medium text-muted-foreground">
+            {displayName}
+          </span>
         </div>
 
         {/* Rating with tennis court styling */}
         <div className="flex items-center gap-2 p-3 bg-muted/60 rounded-2xl">
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={`h-4 w-4 ${i < (item.rating ?? 0) ? 'text-warning fill-current' : 'text-muted-foreground'}`} />
+              <Star
+                key={i}
+                className={`h-4 w-4 ${i < (item.rating ?? 0) ? "text-warning fill-current" : "text-muted-foreground"}`}
+              />
             ))}
           </div>
-          <span className="ml-1 text-sm font-bold text-foreground">{item.rating}/5</span>
+          <span className="ml-1 text-sm font-bold text-foreground">
+            {item.rating}/5
+          </span>
         </div>
 
         {/* Content */}
@@ -301,7 +383,9 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
           <MaskedBlock className="mt-1" />
         ) : (
           <div className="bg-muted rounded-2xl p-4">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.content}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+              {item.content}
+            </p>
           </div>
         )}
 
@@ -325,8 +409,17 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                   className="relative w-12 h-12 rounded-xl overflow-hidden bg-muted focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 transition-transform"
                   aria-label={`리뷰 사진 ${idx + 1} 크게 보기`}
                 >
-                  <Image src={src || '/placeholder.svg'} alt={`photo-${idx}`} fill className="object-cover" />
-                  {idx === 3 && item.photos.length > 4 && <div className="absolute inset-0 bg-overlay/60 text-foreground text-[10px] font-bold flex items-center justify-center">+{item.photos.length - 3}</div>}
+                  <Image
+                    src={src || "/placeholder.svg"}
+                    alt={`photo-${idx}`}
+                    fill
+                    className="object-cover"
+                  />
+                  {idx === 3 && item.photos.length > 4 && (
+                    <div className="absolute inset-0 bg-overlay/60 text-foreground text-[10px] font-bold flex items-center justify-center">
+                      +{item.photos.length - 3}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -337,26 +430,42 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
         <div className="pt-2 flex items-center gap-2">
           <Button
             size="sm"
-            variant={voted ? 'default' : 'secondary'}
+            variant={voted ? "default" : "secondary"}
             onClick={onHelpful}
             disabled={pending}
-            className={`rounded-full px-4 py-2 font-medium transition-all ${voted ? 'shadow-md' : ''}`}
+            className={`rounded-full px-4 py-2 font-medium transition-all ${voted ? "shadow-md" : ""}`}
             aria-pressed={voted}
-            aria-label={`도움돼요 ${count ? `(${count})` : ''}`}
+            aria-label={`도움돼요 ${count ? `(${count})` : ""}`}
           >
-            {pending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
-            도움돼요 {count ? `(${count})` : ''}
+            {pending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <ThumbsUp className="h-4 w-4 mr-2" />
+            )}
+            도움돼요 {count ? `(${count})` : ""}
           </Button>
 
           {/* 날짜 */}
-          <time className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full whitespace-nowrap shrink-0 tabular-nums">{fmt(item.createdAt)}</time>
+          <time className="ml-auto text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full whitespace-nowrap shrink-0 tabular-nums">
+            {fmt(item.createdAt)}
+          </time>
         </div>
       </CardContent>
 
       {/* 사진 Dialog */}
-      {Array.isArray(item.photos) && item.photos.length > 0 && <ReviewPhotoDialog open={open} onOpenChange={setOpen} photos={item.photos} initialIndex={viewerIndex} />}
+      {Array.isArray(item.photos) && item.photos.length > 0 && (
+        <ReviewPhotoDialog
+          open={open}
+          onOpenChange={setOpen}
+          photos={item.photos}
+          initialIndex={viewerIndex}
+        />
+      )}
 
-      <Dialog open={editOpen} onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}>
+      <Dialog
+        open={editOpen}
+        onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>리뷰 수정</DialogTitle>
@@ -370,13 +479,14 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                 aria-label="평점 선택"
                 className="flex items-center gap-1"
                 onKeyDown={(e) => {
-                  const curr = typeof editForm.rating === 'number' ? editForm.rating : 0;
-                  if (e.key === 'ArrowRight') {
+                  const curr =
+                    typeof editForm.rating === "number" ? editForm.rating : 0;
+                  if (e.key === "ArrowRight") {
                     const next = Math.min(5, curr + 1 || 1);
                     setEditForm((s) => ({ ...s, rating: next }));
                     e.preventDefault();
                   }
-                  if (e.key === 'ArrowLeft') {
+                  if (e.key === "ArrowLeft") {
                     const next = Math.max(1, (curr || 1) - 1);
                     setEditForm((s) => ({ ...s, rating: next }));
                     e.preventDefault();
@@ -384,7 +494,8 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                 }}
               >
                 {[1, 2, 3, 4, 5].map((i) => {
-                  const current = typeof editForm.rating === 'number' ? editForm.rating : 0;
+                  const current =
+                    typeof editForm.rating === "number" ? editForm.rating : 0;
                   const filled = (hoverRating ?? current) >= i;
                   return (
                     <button
@@ -398,31 +509,63 @@ export default function ReviewCard({ item, onMutate, isAdmin = false, isLoggedIn
                       onMouseLeave={() => setHoverRating(null)}
                       onClick={() => setEditForm((s) => ({ ...s, rating: i }))}
                     >
-                      <Star className={`h-6 w-6 ${filled ? 'text-warning fill-current stroke-current' : 'stroke-muted-foreground'}`} />
+                      <Star
+                        className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "stroke-muted-foreground"}`}
+                      />
                     </button>
                   );
                 })}
-                <span className="ml-2 text-sm text-muted-foreground">{typeof editForm.rating === 'number' ? editForm.rating : 0}/5</span>
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {typeof editForm.rating === "number" ? editForm.rating : 0}/5
+                </span>
               </div>
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="content">내용</Label>
-              <Textarea id="content" rows={6} value={editForm.content} onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))} placeholder="리뷰 내용을 입력하세요." />
+              <Textarea
+                id="content"
+                rows={6}
+                value={editForm.content}
+                onChange={(e) =>
+                  setEditForm((s) => ({ ...s, content: e.target.value }))
+                }
+                placeholder="리뷰 내용을 입력하세요."
+              />
               <div className="mt-3">
                 <Label>사진 (선택, 최대 5장)</Label>
-                <PhotosUploader value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} max={5} previewMode="queue" />
+                <PhotosUploader
+                  value={editForm.photos}
+                  onChange={(arr) =>
+                    setEditForm((s) => ({ ...s, photos: arr }))
+                  }
+                  max={5}
+                  previewMode="queue"
+                />
 
-                <PhotosReorderGrid value={editForm.photos} onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))} />
+                <PhotosReorderGrid
+                  value={editForm.photos}
+                  onChange={(arr) =>
+                    setEditForm((s) => ({ ...s, photos: arr }))
+                  }
+                />
               </div>
             </div>
           </div>
 
           <DialogFooter className="gap-2">
-            <button type="button" className="px-4 py-2 rounded-md border text-sm" onClick={closeEdit}>
+            <button
+              type="button"
+              className="px-4 py-2 rounded-md border text-sm"
+              onClick={closeEdit}
+            >
               취소
             </button>
-            <button type="button" className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm" onClick={submitEdit}>
+            <button
+              type="button"
+              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm"
+              onClick={submitEdit}
+            >
               저장
             </button>
           </DialogFooter>

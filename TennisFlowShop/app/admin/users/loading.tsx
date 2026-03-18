@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
@@ -39,7 +39,10 @@ export default function Loading() {
             {Array.from({ length: 8 }).map((_, rowIndex) => (
               <div key={`row-${rowIndex}`} className="grid grid-cols-6 gap-2">
                 {Array.from({ length: 6 }).map((__, colIndex) => (
-                  <Skeleton key={`cell-${rowIndex}-${colIndex}`} className="h-9 w-full" />
+                  <Skeleton
+                    key={`cell-${rowIndex}-${colIndex}`}
+                    className="h-9 w-full"
+                  />
                 ))}
               </div>
             ))}

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import PriceSummaryCard from '@/app/services/_components/PriceSummaryCard';
+import PriceSummaryCard from "@/app/services/_components/PriceSummaryCard";
 
 /**
  * Apply 페이지에서 사용되는 요금 요약 UI를 "표현(UI)만" 분리한 컴포넌트
@@ -97,12 +97,12 @@ export function ApplyPriceSummaryDesktop({
     <div
       className="hidden 2xl:block"
       style={{
-        position: 'absolute',
-        width: '320px',
-        left: 'calc(50% + 400px + 24px)',
+        position: "absolute",
+        width: "320px",
+        left: "calc(50% + 400px + 24px)",
         top: 0,
-        height: '100%',
-        pointerEvents: 'none',
+        height: "100%",
+        pointerEvents: "none",
       }}
     >
       <div className="sticky pointer-events-auto" style={{ top: stickyTop }}>

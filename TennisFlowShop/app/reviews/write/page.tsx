@@ -1,30 +1,49 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
 
-import ApplicationStatusBadge from '@/app/features/stringing-applications/components/ApplicationStatusBadge';
-import PhotosReorderGrid from '@/components/reviews/PhotosReorderGrid';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
-import LoginGate from '@/components/system/LoginGate';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
-import { useBackNavigationGuard } from '@/lib/hooks/useBackNavigationGuard';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/lib/toast';
-import NextImage from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
+import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
+import PhotosUploader from "@/components/reviews/PhotosUploader";
+import LoginGate from "@/components/system/LoginGate";
+import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
+import NextImage from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /* ---- 별점 ---- */
-function Stars({ value, onChange, disabled }: { value: number; onChange?: (v: number) => void; disabled?: boolean }) {
+function Stars({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: number;
+  onChange?: (v: number) => void;
+  disabled?: boolean;
+}) {
   return (
-    <div className={`flex justify-center gap-1 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
+    <div
+      className={`flex justify-center gap-1 ${disabled ? "opacity-60 pointer-events-none" : ""}`}
+    >
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" aria-label={`${n}점`} className={`text-3xl transition-all duration-200 ${value >= n ? 'text-warning scale-110' : 'text-foreground'} hover:scale-125 hover:text-warning`} onClick={() => onChange?.(n)}>
+        <button
+          key={n}
+          type="button"
+          aria-label={`${n}점`}
+          className={`text-3xl transition-all duration-200 ${value >= n ? "text-warning scale-110" : "text-foreground"} hover:scale-125 hover:text-warning`}
+          onClick={() => onChange?.(n)}
+        >
           ★
         </button>
       ))}
@@ -42,11 +61,18 @@ type OrderReviewItem = {
 type MiniMeta = {
   name: string;
   image: string | null;
-  kind: 'product' | 'racket';
+  kind: "product" | "racket";
   href: string;
 };
 
-type EligState = 'loading' | 'ok' | 'notPurchased' | 'already' | 'unauthorized' | 'invalid' | 'error';
+type EligState =
+  | "loading"
+  | "ok"
+  | "notPurchased"
+  | "already"
+  | "unauthorized"
+  | "invalid"
+  | "error";
 type AppLite = {
   _id: string;
   label: string;
@@ -62,34 +88,34 @@ type AppLite = {
 
 // 예약일자 포멧
 function formatKoDate(iso?: string | null) {
-  if (!iso) return '';
+  if (!iso) return "";
   try {
     const d = new Date(iso);
-    return new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     }).format(d);
   } catch {
-    return '';
+    return "";
   }
 }
 
 function formatKoTime(iso?: string | null) {
-  if (!iso) return '';
+  if (!iso) return "";
   try {
     const d = new Date(iso);
-    return new Intl.DateTimeFormat('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(d);
   } catch {
-    return '';
+    return "";
   }
 }
 
 function formatYMD(dateStr?: string | null) {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
   if (!m) return dateStr; // 예외: 그대로 표시
   const [, y, mo, d] = m;
@@ -97,51 +123,67 @@ function formatYMD(dateStr?: string | null) {
 }
 
 function formatHM(timeStr?: string | null) {
-  if (!timeStr) return '';
+  if (!timeStr) return "";
   return timeStr;
 }
 
 // 신청일자 포멧
 function formatKoDateTime(iso?: string | null) {
-  if (!iso) return '';
+  if (!iso) return "";
   try {
     const d = new Date(iso);
-    return new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(d);
   } catch {
-    return '';
+    return "";
   }
 }
 
 // 서비스 신청서에서 "라켓" 표시용 문자열을 안전하게 뽑아오기
 // - 우선순위: stringDetails.racketType(단일) -> racketType(루트) -> stringDetails.racketLines[0].racketLabel/racketType
 function getRacketSummary(a: any) {
-  const direct = (a?.stringDetails?.racketType ?? a?.racketType ?? '').toString().trim();
+  const direct = (a?.stringDetails?.racketType ?? a?.racketType ?? "")
+    .toString()
+    .trim();
   if (direct) return direct;
 
-  const lines = Array.isArray(a?.stringDetails?.racketLines) ? a.stringDetails.racketLines : [];
-  if (!lines.length) return '';
+  const lines = Array.isArray(a?.stringDetails?.racketLines)
+    ? a.stringDetails.racketLines
+    : [];
+  if (!lines.length) return "";
 
-  const first = (lines[0]?.racketLabel ?? lines[0]?.racketType ?? '').toString().trim();
-  if (first) return lines.length > 1 ? `${first} 외 ${lines.length - 1}자루` : first;
+  const first = (lines[0]?.racketLabel ?? lines[0]?.racketType ?? "")
+    .toString()
+    .trim();
+  if (first)
+    return lines.length > 1 ? `${first} 외 ${lines.length - 1}자루` : first;
 
   return `라켓 ${lines.length}자루`;
 }
 
 function buildAppLabel(a: any) {
-  const when = a?.stringDetails?.preferredDate ? `${formatYMD(a.stringDetails.preferredDate)} ${a.stringDetails.preferredTime ?? ''}`.trim() : a?.desiredDateTime ? formatKoDateTime(a.desiredDateTime) : '';
+  const when = a?.stringDetails?.preferredDate
+    ? `${formatYMD(a.stringDetails.preferredDate)} ${a.stringDetails.preferredTime ?? ""}`.trim()
+    : a?.desiredDateTime
+      ? formatKoDateTime(a.desiredDateTime)
+      : "";
 
   const racket = getRacketSummary(a);
 
-  const names = (a?.stringDetails?.stringItems || a?.stringItems || []).map((s: any) => s?.name).filter(Boolean) as string[];
-  const strings = names.length > 2 ? `${names.slice(0, 2).join(', ')} 외 ${names.length - 2}` : names.join(', ');
+  const names = (a?.stringDetails?.stringItems || a?.stringItems || [])
+    .map((s: any) => s?.name)
+    .filter(Boolean) as string[];
+  const strings =
+    names.length > 2
+      ? `${names.slice(0, 2).join(", ")} 외 ${names.length - 2}`
+      : names.join(", ");
 
-  return [when, racket, strings].filter(Boolean).join(' • ');
+  return [when, racket, strings].filter(Boolean).join(" • ");
 }
 
 export default function ReviewWritePage() {
@@ -151,9 +193,14 @@ export default function ReviewWritePage() {
   // 비회원 주문/신청 차단 정책(클라)
   // - NEXT_PUBLIC_GUEST_ORDER_MODE: 'off' | 'legacy' | 'on'
   // - 'on' 일 때만 비회원 허용
-  const rawGuestMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
-  const guestOrderMode = rawGuestMode === 'off' || rawGuestMode === 'legacy' || rawGuestMode === 'on' ? rawGuestMode : 'legacy';
-  const allowGuestCheckout = guestOrderMode === 'on';
+  const rawGuestMode = (
+    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy"
+  ).trim();
+  const guestOrderMode =
+    rawGuestMode === "off" || rawGuestMode === "legacy" || rawGuestMode === "on"
+      ? rawGuestMode
+      : "legacy";
+  const allowGuestCheckout = guestOrderMode === "on";
 
   // 로그인 여부(비회원 차단 모드에서만 의미 있음)
   const [authChecked, setAuthChecked] = useState(false);
@@ -161,10 +208,11 @@ export default function ReviewWritePage() {
 
   const nextUrl = useMemo(() => {
     const qs = sp.toString();
-    return qs ? `/reviews/write?${qs}` : '/reviews/write';
+    return qs ? `/reviews/write?${qs}` : "/reviews/write";
   }, [sp]);
 
-  const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
+  const blockedByLoginGate =
+    !allowGuestCheckout && authChecked && !isAuthenticated;
 
   // 로그인 상태 체크 (비회원 차단 모드에서만 필요)
   // - 체크가 끝나기 전에는 아래 useEffect들이(eligibility/신청서 목록/주문 아이템 조회 등) 먼저 fetch를 치지 않도록 가드.
@@ -178,7 +226,7 @@ export default function ReviewWritePage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/users/me', { credentials: 'include' });
+        const res = await fetch("/api/users/me", { credentials: "include" });
         const user = await res.json().catch(() => ({}));
         if (cancelled) return;
         setIsAuthenticated(Boolean((user as any)?.email));
@@ -196,25 +244,29 @@ export default function ReviewWritePage() {
   }, [allowGuestCheckout]);
 
   // URL 파라미터
-  const productIdParam = sp.get('productId');
-  const orderIdParam = sp.get('orderId'); // URL에서 orderId 읽기
-  const service = sp.get('service'); // 'stringing'
-  const applicationIdParam = sp.get('applicationId'); // Activity에서 넘어온 대상 신청서
+  const productIdParam = sp.get("productId");
+  const orderIdParam = sp.get("orderId"); // URL에서 orderId 읽기
+  const service = sp.get("service"); // 'stringing'
+  const applicationIdParam = sp.get("applicationId"); // Activity에서 넘어온 대상 신청서
 
   // 보정된 productId / orderId (URL이 비어있어도 서버 추천으로 채움)
-  const [resolvedProductId, setResolvedProductId] = useState<string | null>(productIdParam);
-  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(orderIdParam);
+  const [resolvedProductId, setResolvedProductId] = useState<string | null>(
+    productIdParam,
+  );
+  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(
+    orderIdParam,
+  );
 
   // 모드 결정: productId가 “보정된 값”으로 존재할 때 product 모드
-  const mode: 'product' | 'service' | 'invalid' = useMemo(() => {
-    if (resolvedProductId) return 'product';
-    if (service === 'stringing') return 'service';
-    return 'invalid';
+  const mode: "product" | "service" | "invalid" = useMemo(() => {
+    if (resolvedProductId) return "product";
+    if (service === "stringing") return "service";
+    return "invalid";
   }, [resolvedProductId, service]);
 
   // 폼 상태
   const [rating, setRating] = useState(5);
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -229,7 +281,7 @@ export default function ReviewWritePage() {
 
   const resetForm = () => {
     setRating(5);
-    setContent('');
+    setContent("");
     setPhotos([]);
   };
 
@@ -239,7 +291,7 @@ export default function ReviewWritePage() {
       go();
       return;
     }
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       go();
       return;
     }
@@ -249,13 +301,21 @@ export default function ReviewWritePage() {
 
   // E2E에서만(쿠키 __e2e=1) 최초 진입 시 샘플 이미지 3장 시드
   useEffect(() => {
-    if (typeof document !== 'undefined' && document.cookie.includes('__e2e=1') && photos.length === 0) {
-      setPhotos(['https://picsum.photos/id/10/200/200', 'https://picsum.photos/id/11/200/200', 'https://picsum.photos/id/12/200/200']);
+    if (
+      typeof document !== "undefined" &&
+      document.cookie.includes("__e2e=1") &&
+      photos.length === 0
+    ) {
+      setPhotos([
+        "https://picsum.photos/id/10/200/200",
+        "https://picsum.photos/id/11/200/200",
+        "https://picsum.photos/id/12/200/200",
+      ]);
     }
   }, [photos.length, setPhotos]);
 
   // 접근 상태
-  const [state, setState] = useState<EligState>('loading');
+  const [state, setState] = useState<EligState>("loading");
   const toastLocked = useRef(false);
 
   // 서비스 모드에서 사용할 신청서 목록/ 선택
@@ -279,14 +339,17 @@ export default function ReviewWritePage() {
     let aborted = false;
     (async () => {
       try {
-        setState('loading');
-        const r = await fetch(`/api/reviews/eligibility?orderId=${encodeURIComponent(orderIdParam)}`, {
-          credentials: 'include',
-          cache: 'no-store',
-        });
+        setState("loading");
+        const r = await fetch(
+          `/api/reviews/eligibility?orderId=${encodeURIComponent(orderIdParam)}`,
+          {
+            credentials: "include",
+            cache: "no-store",
+          },
+        );
         if (aborted) return;
         if (r.status === 401) {
-          setState('unauthorized');
+          setState("unauthorized");
           return;
         }
         const d = await r.json();
@@ -297,24 +360,32 @@ export default function ReviewWritePage() {
           }
         } else {
           // 추천 실패(이미 작성 등)
-          setState(d.reason ?? 'invalid');
+          setState(d.reason ?? "invalid");
           if (!toastLocked.current) {
             toastLocked.current = true;
-            showErrorToast('잘못된 접근입니다.');
+            showErrorToast("잘못된 접근입니다.");
           }
         }
       } catch {
-        setState('error');
+        setState("error");
         if (!toastLocked.current) {
           toastLocked.current = true;
-          showErrorToast('접근 확인 중 문제가 발생했어요.');
+          showErrorToast("접근 확인 중 문제가 발생했어요.");
         }
       }
     })();
     return () => {
       aborted = true;
     };
-  }, [productIdParam, orderIdParam, resolvedProductId, resolvedOrderId, allowGuestCheckout, authChecked, blockedByLoginGate]);
+  }, [
+    productIdParam,
+    orderIdParam,
+    resolvedProductId,
+    resolvedOrderId,
+    allowGuestCheckout,
+    authChecked,
+    blockedByLoginGate,
+  ]);
 
   // 일반 eligibility 검사
   useEffect(() => {
@@ -322,28 +393,31 @@ export default function ReviewWritePage() {
     if (blockedByLoginGate) return;
     let aborted = false;
     async function run() {
-      setState('loading');
+      setState("loading");
       // invalid인데 orderId-only 보정 대기 중이라면 잠시 보류
-      if (mode === 'invalid' && orderIdParam && !resolvedProductId) {
+      if (mode === "invalid" && orderIdParam && !resolvedProductId) {
         return; // orderId-only 보정 대기
       }
-      if (mode === 'invalid') {
-        setState('invalid');
+      if (mode === "invalid") {
+        setState("invalid");
         if (!toastLocked.current) {
           toastLocked.current = true;
-          showErrorToast('잘못된 접근입니다.');
+          showErrorToast("잘못된 접근입니다.");
         }
         return;
       }
-      const qs = mode === 'product' ? `productId=${encodeURIComponent(resolvedProductId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ''}` : `service=stringing`;
+      const qs =
+        mode === "product"
+          ? `productId=${encodeURIComponent(resolvedProductId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ""}`
+          : `service=stringing`;
       try {
         const r = await fetch(`/api/reviews/eligibility?${qs}`, {
-          credentials: 'include',
-          cache: 'no-store',
+          credentials: "include",
+          cache: "no-store",
         });
         if (aborted) return;
         if (r.status === 401) {
-          setState('unauthorized');
+          setState("unauthorized");
           return;
         }
         const data = await r.json();
@@ -351,12 +425,12 @@ export default function ReviewWritePage() {
         if (data.suggestedOrderId && !resolvedOrderId) {
           setResolvedOrderId(String(data.suggestedOrderId));
         }
-        setState(data.eligible ? 'ok' : (data.reason as EligState) || 'error');
+        setState(data.eligible ? "ok" : (data.reason as EligState) || "error");
       } catch {
-        setState('error');
+        setState("error");
         if (!toastLocked.current) {
           toastLocked.current = true;
-          showErrorToast('접근 확인 중 문제가 발생했어요.');
+          showErrorToast("접근 확인 중 문제가 발생했어요.");
         }
       }
     }
@@ -364,20 +438,28 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [mode, resolvedProductId, resolvedOrderId, orderIdParam, allowGuestCheckout, authChecked, blockedByLoginGate]);
+  }, [
+    mode,
+    resolvedProductId,
+    resolvedOrderId,
+    orderIdParam,
+    allowGuestCheckout,
+    authChecked,
+    blockedByLoginGate,
+  ]);
 
   // 서비스 모드: 내 신청서 목록 + 추천값 세팅
   useEffect(() => {
     if (!allowGuestCheckout && !authChecked) return;
     if (blockedByLoginGate) return;
-    if (mode !== 'service') return;
+    if (mode !== "service") return;
     let aborted = false;
 
     (async () => {
       // 전체 신청서(원본) 조회
-      const r = await fetch('/api/applications/stringing/list', {
-        credentials: 'include',
-        cache: 'no-store',
+      const r = await fetch("/api/applications/stringing/list", {
+        credentials: "include",
+        cache: "no-store",
       });
       const list = (await r.json()) as any[];
       if (aborted) return;
@@ -391,7 +473,8 @@ export default function ReviewWritePage() {
         stringItems: a?.stringDetails?.stringItems ?? [],
         preferredDate: a?.stringDetails?.preferredDate ?? null,
         preferredTime: a?.stringDetails?.preferredTime ?? null,
-        desiredDateTime: a?.desiredDateTime ?? a?.stringDetails?.desiredDateTime ?? null,
+        desiredDateTime:
+          a?.desiredDateTime ?? a?.stringDetails?.desiredDateTime ?? null,
         createdAt: a?.createdAt ?? null,
         requirements: a?.stringDetails?.requirements ?? null,
       }));
@@ -403,14 +486,14 @@ export default function ReviewWritePage() {
       // - 서버 eligibility 로직 기준과 동일하게:
       //   1) status === '교체완료'
       //   2) 아직 서비스 리뷰를 작성하지 않은 신청서
-      let eligibleApps = formattedAll.filter((x) => x.status === '교체완료');
+      let eligibleApps = formattedAll.filter((x) => x.status === "교체완료");
 
       // 이미 작성한 서비스 리뷰(serviceApplicationId) 제외
       // - /api/reviews/mine 은 최대 50개까지 조회 가능
       try {
-        const mine = await fetch('/api/reviews/mine?limit=50', {
-          credentials: 'include',
-          cache: 'no-store',
+        const mine = await fetch("/api/reviews/mine?limit=50", {
+          credentials: "include",
+          cache: "no-store",
         });
 
         if (mine.ok) {
@@ -431,7 +514,9 @@ export default function ReviewWritePage() {
           setReviewedMap(nextReviewedMap);
 
           const reviewedIds = new Set(reviewedIdsArr);
-          eligibleApps = eligibleApps.filter((x) => !reviewedIds.has(String(x._id)));
+          eligibleApps = eligibleApps.filter(
+            (x) => !reviewedIds.has(String(x._id)),
+          );
         } else {
           // mine API 실패 시 맵 초기화(찌꺼기 방지)
           setReviewedMap({});
@@ -444,19 +529,28 @@ export default function ReviewWritePage() {
       setApps(eligibleApps);
 
       // URL로 applicationId가 넘어오면 그걸 최우선으로 선택(단, eligibleApps 안에 있어야 함)
-      const urlPreferred = applicationIdParam && eligibleApps.some((x) => x._id === applicationIdParam) ? applicationIdParam : null;
+      const urlPreferred =
+        applicationIdParam &&
+        eligibleApps.some((x) => x._id === applicationIdParam)
+          ? applicationIdParam
+          : null;
 
       // 기본 선택: urlPreferred -> suggested(서버 추천) -> 첫 항목
       let nextId: string | null = null;
 
       try {
-        const elig = await fetch('/api/reviews/eligibility?service=stringing', {
-          credentials: 'include',
-          cache: 'no-store',
+        const elig = await fetch("/api/reviews/eligibility?service=stringing", {
+          credentials: "include",
+          cache: "no-store",
         }).then((x) => x.json());
 
-        const suggested = elig?.suggestedApplicationId ? String(elig.suggestedApplicationId) : null;
-        const suggestedOk = suggested && eligibleApps.some((x) => x._id === suggested) ? suggested : null;
+        const suggested = elig?.suggestedApplicationId
+          ? String(elig.suggestedApplicationId)
+          : null;
+        const suggestedOk =
+          suggested && eligibleApps.some((x) => x._id === suggested)
+            ? suggested
+            : null;
 
         nextId = urlPreferred ?? suggestedOk ?? eligibleApps[0]?._id ?? null;
       } catch {
@@ -469,62 +563,94 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [mode, applicationIdParam, allowGuestCheckout, authChecked, blockedByLoginGate]);
+  }, [
+    mode,
+    applicationIdParam,
+    allowGuestCheckout,
+    authChecked,
+    blockedByLoginGate,
+  ]);
 
   // 서비스 모드: 신청서 선택 시 그 대상으로 재검사
   useEffect(() => {
     if (!allowGuestCheckout && !authChecked) return;
     if (blockedByLoginGate) return;
-    if (mode !== 'service' || !selectedAppId) return;
+    if (mode !== "service" || !selectedAppId) return;
     let aborted = false;
     (async () => {
-      setState('loading');
-      const r = await fetch(`/api/reviews/eligibility?service=stringing&applicationId=${selectedAppId}`, {
-        credentials: 'include',
-        cache: 'no-store',
-      });
+      setState("loading");
+      const r = await fetch(
+        `/api/reviews/eligibility?service=stringing&applicationId=${selectedAppId}`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        },
+      );
       if (aborted) return;
       if (r.status === 401) {
-        setState('unauthorized');
+        setState("unauthorized");
         return;
       }
       const d = await r.json();
-      setState(d.eligible ? 'ok' : (d.reason ?? 'error'));
+      setState(d.eligible ? "ok" : (d.reason ?? "error"));
     })();
     return () => {
       aborted = true;
     };
-  }, [mode, selectedAppId, allowGuestCheckout, authChecked, blockedByLoginGate]);
+  }, [
+    mode,
+    selectedAppId,
+    allowGuestCheckout,
+    authChecked,
+    blockedByLoginGate,
+  ]);
 
   // 토글 기준으로 보여줄 목록
-  const shownApps = useMemo(() => (showAllApps ? allApps : apps), [showAllApps, allApps, apps]);
+  const shownApps = useMemo(
+    () => (showAllApps ? allApps : apps),
+    [showAllApps, allApps, apps],
+  );
 
   // 선택된 AppLite 계산 (전체 목록 우선)
   const selectedApp = useMemo(() => {
     if (!selectedAppId) return null;
-    return allApps.find((a) => a._id === selectedAppId) ?? apps.find((a) => a._id === selectedAppId) ?? null;
+    return (
+      allApps.find((a) => a._id === selectedAppId) ??
+      apps.find((a) => a._id === selectedAppId) ??
+      null
+    );
   }, [allApps, apps, selectedAppId]);
 
   // 잠금: 서비스 모드에서는 신청서가 선택되어 있어야 언락
-  const locked = state !== 'ok' || (mode === 'service' && !selectedAppId);
+  const locked = state !== "ok" || (mode === "service" && !selectedAppId);
 
   // 헤더 텍스트
-  const title = mode === 'product' ? '스트링 상품 리뷰 작성' : mode === 'service' ? '서비스 리뷰 작성' : '잘못된 접근';
-  const subtitle = mode === 'product' ? '구매하신 스트링 상품에 대한 솔직한 후기를 남겨주세요.' : mode === 'service' ? '스트링 교체 서비스 이용 후기를 남겨주세요.' : '리뷰 작성 경로가 올바르지 않습니다.';
+  const title =
+    mode === "product"
+      ? "스트링 상품 리뷰 작성"
+      : mode === "service"
+        ? "서비스 리뷰 작성"
+        : "잘못된 접근";
+  const subtitle =
+    mode === "product"
+      ? "구매하신 스트링 상품에 대한 솔직한 후기를 남겨주세요."
+      : mode === "service"
+        ? "스트링 교체 서비스 이용 후기를 남겨주세요."
+        : "리뷰 작성 경로가 올바르지 않습니다.";
 
   const badge =
-    state === 'loading'
-      ? '검증 중…'
-      : state === 'already'
-        ? '이미 작성한 대상입니다'
-        : state === 'notPurchased'
-          ? '구매/이용 이력이 없습니다'
-          : state === 'unauthorized'
-            ? '로그인이 필요합니다'
-            : state === 'invalid'
-              ? '작성 불가'
-              : state === 'error'
-                ? '오류'
+    state === "loading"
+      ? "검증 중…"
+      : state === "already"
+        ? "이미 작성한 대상입니다"
+        : state === "notPurchased"
+          ? "구매/이용 이력이 없습니다"
+          : state === "unauthorized"
+            ? "로그인이 필요합니다"
+            : state === "invalid"
+              ? "작성 불가"
+              : state === "error"
+                ? "오류"
                 : null;
 
   // 주문 아이템 + 현재 상품 메타 로드
@@ -537,8 +663,8 @@ export default function ReviewWritePage() {
       (async () => {
         try {
           const r = await fetch(`/api/orders/${resolvedOrderId}/review-items`, {
-            credentials: 'include',
-            cache: 'no-store',
+            credentials: "include",
+            cache: "no-store",
           });
           const data = await r.json();
           if (aborted || !data?.ok) return;
@@ -550,7 +676,9 @@ export default function ReviewWritePage() {
     if (resolvedProductId) {
       (async () => {
         try {
-          const r = await fetch(`/api/products/${resolvedProductId}/mini`, { cache: 'no-store' });
+          const r = await fetch(`/api/products/${resolvedProductId}/mini`, {
+            cache: "no-store",
+          });
           const d = await r.json();
           if (!aborted && d?.ok) {
             // 레이스 컨디션 방지:
@@ -558,19 +686,27 @@ export default function ReviewWritePage() {
             //   서로 다른 타이밍으로 도착하면서 setCurrentMeta를 "통째로 덮어쓰기"하면
             //   이름/이미지가 들쑥날쑥해질 수 있음에 따라 항상 "merge" 방식으로 업데이트.
             setCurrentMeta((prev) => {
-              const prevName = (prev?.name ?? '').trim();
-              const nextName = String(d.name ?? '').trim();
+              const prevName = (prev?.name ?? "").trim();
+              const nextName = String(d.name ?? "").trim();
 
               // prev가 더 구체적이면(prevName) 유지, 아니면 nextName 채택
-              const safeName = prevName && prevName !== '라켓' && prevName !== '상품' && prevName !== '상품 리뷰' ? prevName : nextName || prevName || '상품';
+              const safeName =
+                prevName &&
+                prevName !== "라켓" &&
+                prevName !== "상품" &&
+                prevName !== "상품 리뷰"
+                  ? prevName
+                  : nextName || prevName || "상품";
 
               const safeImage = prev?.image ?? d.image ?? null;
 
               return {
                 name: safeName,
                 image: safeImage,
-                kind: (d.kind ?? prev?.kind ?? 'product') as any,
-                href: (d.href ?? prev?.href ?? `/products/${resolvedProductId}`) as any,
+                kind: (d.kind ?? prev?.kind ?? "product") as any,
+                href: (d.href ??
+                  prev?.href ??
+                  `/products/${resolvedProductId}`) as any,
               };
             });
           }
@@ -580,7 +716,13 @@ export default function ReviewWritePage() {
     return () => {
       aborted = true;
     };
-  }, [resolvedOrderId, resolvedProductId, allowGuestCheckout, authChecked, blockedByLoginGate]);
+  }, [
+    resolvedOrderId,
+    resolvedProductId,
+    allowGuestCheckout,
+    authChecked,
+    blockedByLoginGate,
+  ]);
 
   // orderItems/현재 상품 변경 때 currentMeta 보정 (주문 스냅샷 우선)
   useEffect(() => {
@@ -592,17 +734,26 @@ export default function ReviewWritePage() {
     // - found.image가 null이거나 found.name이 '라켓' 같은 일반값이면
     //   이미 확보된(미니 메타 등) 더 좋은 값이 덮어써져 버릴 수 있음 그렇기에 "좋은 값은 유지"하는 형태로 merge.
     setCurrentMeta((prev) => {
-      const prevName = (prev?.name ?? '').trim();
-      const snapName = String(found.name ?? '').trim();
+      const prevName = (prev?.name ?? "").trim();
+      const snapName = String(found.name ?? "").trim();
 
-      const isGeneric = snapName === '라켓' || snapName === '상품' || snapName === '상품 리뷰';
-      const safeName = !snapName ? prevName || '상품' : isGeneric && prevName && prevName !== '라켓' && prevName !== '상품' && prevName !== '상품 리뷰' ? prevName : snapName;
+      const isGeneric =
+        snapName === "라켓" || snapName === "상품" || snapName === "상품 리뷰";
+      const safeName = !snapName
+        ? prevName || "상품"
+        : isGeneric &&
+            prevName &&
+            prevName !== "라켓" &&
+            prevName !== "상품" &&
+            prevName !== "상품 리뷰"
+          ? prevName
+          : snapName;
 
       const safeImage = found.image ?? prev?.image ?? null;
       return {
         name: safeName,
         image: safeImage,
-        kind: prev?.kind ?? 'product',
+        kind: prev?.kind ?? "product",
         href: prev?.href ?? `/products/${resolvedProductId}`,
       };
     });
@@ -615,10 +766,10 @@ export default function ReviewWritePage() {
       // 대상 상품이 바뀌면 “작성 중인 내용”은 의미가 달라지므로 초기화
       resetForm();
       setResolvedProductId(pid);
-      setState('loading');
+      setState("loading");
       const qp = new URLSearchParams();
-      qp.set('productId', pid);
-      if (resolvedOrderId) qp.set('orderId', resolvedOrderId);
+      qp.set("productId", pid);
+      if (resolvedOrderId) qp.set("orderId", resolvedOrderId);
       router.replace(`/reviews/write?${qp.toString()}`);
     });
   }
@@ -635,16 +786,22 @@ export default function ReviewWritePage() {
   }, [orderItems, resolvedProductId]);
 
   // 남은 미작성 개수
-  const remainingCount = useMemo(() => orderItems?.filter((x) => !x.reviewed && x.productId !== resolvedProductId).length ?? 0, [orderItems, resolvedProductId]);
+  const remainingCount = useMemo(
+    () =>
+      orderItems?.filter(
+        (x) => !x.reviewed && x.productId !== resolvedProductId,
+      ).length ?? 0,
+    [orderItems, resolvedProductId],
+  );
 
   // 제품 상세/서비스 소개로 이동 (라벨 명확화)
   const goPrimary = () => {
-    if (mode === 'product' && resolvedProductId) {
+    if (mode === "product" && resolvedProductId) {
       router.replace(currentMeta?.href ?? `/products/${resolvedProductId}`);
-    } else if (mode === 'service') {
-      router.replace('/services');
+    } else if (mode === "service") {
+      router.replace("/services");
     } else {
-      router.replace('/reviews');
+      router.replace("/reviews");
     }
   };
 
@@ -653,50 +810,51 @@ export default function ReviewWritePage() {
     e?.preventDefault?.();
     if (locked) return;
     const payload: any = { rating, content, photos };
-    if (mode === 'product') {
+    if (mode === "product") {
       if (!resolvedProductId) return;
       payload.productId = resolvedProductId;
       if (resolvedOrderId) payload.orderId = resolvedOrderId;
-    } else if (mode === 'service') {
+    } else if (mode === "service") {
       if (!selectedAppId) {
-        showInfoToast('대상 신청서를 선택해 주세요.');
+        showInfoToast("대상 신청서를 선택해 주세요.");
         return;
       }
-      payload.service = 'stringing';
+      payload.service = "stringing";
       payload.serviceApplicationId = selectedAppId;
       setIsSubmitting(true);
     }
     try {
-      const r = await fetch('/api/reviews', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+      const r = await fetch("/api/reviews", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (r.ok) {
-        showSuccessToast('후기가 등록되었습니다.');
-        if (mode === 'product' && resolvedProductId) {
+        showSuccessToast("후기가 등록되었습니다.");
+        if (mode === "product" && resolvedProductId) {
           const href = currentMeta?.href ?? `/products/${resolvedProductId}`;
-          const next = currentMeta?.kind === 'product' ? `${href}#reviews` : href;
+          const next =
+            currentMeta?.kind === "product" ? `${href}#reviews` : href;
           router.replace(next);
         } else {
-          router.replace('/reviews?tab=service');
+          router.replace("/reviews?tab=service");
         }
         return;
       }
       if (r.status === 409) {
-        setState('already');
-        showInfoToast('이미 이 대상에 대한 리뷰를 작성하셨습니다.');
+        setState("already");
+        showInfoToast("이미 이 대상에 대한 리뷰를 작성하셨습니다.");
         return;
       }
       if (r.status === 404) {
-        setState('notPurchased');
-        showInfoToast('구매/이용 이력이 있어야 리뷰를 작성할 수 있어요.');
+        setState("notPurchased");
+        showInfoToast("구매/이용 이력이 있어야 리뷰를 작성할 수 있어요.");
         return;
       }
-      showErrorToast('리뷰 등록에 실패했습니다.');
+      showErrorToast("리뷰 등록에 실패했습니다.");
     } catch {
-      showErrorToast('네트워크 오류로 실패했습니다.');
+      showErrorToast("네트워크 오류로 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -751,11 +909,19 @@ export default function ReviewWritePage() {
               <div className="relative">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-2 rounded-full bg-warning/10 dark:bg-warning/15"></div>
-                  <span className="text-sm font-medium opacity-90">{mode === 'product' ? 'PRODUCT REVIEW' : mode === 'service' ? 'SERVICE REVIEW' : 'INVALID'}</span>
+                  <span className="text-sm font-medium opacity-90">
+                    {mode === "product"
+                      ? "PRODUCT REVIEW"
+                      : mode === "service"
+                        ? "SERVICE REVIEW"
+                        : "INVALID"}
+                  </span>
                 </div>
 
                 <h1 className="text-2xl font-bold mb-2">{title}</h1>
-                <p className="text-foreground/90 text-sm leading-relaxed">{subtitle}</p>
+                <p className="text-foreground/90 text-sm leading-relaxed">
+                  {subtitle}
+                </p>
 
                 {/* 상태 뱃지 */}
                 {badge && (
@@ -768,17 +934,32 @@ export default function ReviewWritePage() {
             </div>
 
             {/* 현재 상품 정보 */}
-            {mode === 'product' && currentMeta && (
+            {mode === "product" && currentMeta && (
               <div className="rounded-xl bg-card dark:bg-muted p-4 md:p-5 shadow-lg ring-1 ring-ring">
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-ring shrink-0">
-                    {currentMeta.image ? <NextImage src={currentMeta.image} alt={currentMeta.name} fill sizes="64px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-muted text-foreground">IMG</div>}
+                    {currentMeta.image ? (
+                      <NextImage
+                        src={currentMeta.image}
+                        alt={currentMeta.name}
+                        fill
+                        sizes="64px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full grid place-items-center bg-muted text-foreground">
+                        IMG
+                      </div>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground truncate">{currentMeta.name}</h3>
+                    <h3 className="font-semibold text-foreground truncate">
+                      {currentMeta.name}
+                    </h3>
                     {orderItems && (
                       <div className="text-sm text-foreground mt-1">
-                        진행률: {orderItems.filter((x) => x.reviewed).length} / {orderItems.length} 완료
+                        진행률: {orderItems.filter((x) => x.reviewed).length} /{" "}
+                        {orderItems.length} 완료
                       </div>
                     )}
                   </div>
@@ -787,31 +968,62 @@ export default function ReviewWritePage() {
             )}
 
             {/* 다른 상품들 (세로 리스트) */}
-            {mode === 'product' && orderItems && orderItems.length > 1 && (
+            {mode === "product" && orderItems && orderItems.length > 1 && (
               <div className="rounded-xl bg-card dark:bg-muted p-4 md:p-5 shadow-lg ring-1 ring-ring">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <div className="w-1 h-4 bg-muted rounded-full"></div>이 주문의 다른 상품
+                  <div className="w-1 h-4 bg-muted rounded-full"></div>이 주문의
+                  다른 상품
                 </h3>
 
                 <div className="space-y-3">
                   {orderItems.map((it) => {
                     const isCurrent = it.productId === resolvedProductId;
-                    const statusText = it.reviewed ? '완료' : isCurrent ? '작성중' : '미작성';
-                    const statusClass = it.reviewed ? 'bg-muted text-foreground' : isCurrent ? 'bg-muted text-foreground' : 'bg-muted text-foreground';
+                    const statusText = it.reviewed
+                      ? "완료"
+                      : isCurrent
+                        ? "작성중"
+                        : "미작성";
+                    const statusClass = it.reviewed
+                      ? "bg-muted text-foreground"
+                      : isCurrent
+                        ? "bg-muted text-foreground"
+                        : "bg-muted text-foreground";
 
                     return (
-                      <div key={it.productId} className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}>
+                      <div
+                        key={it.productId}
+                        className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}
+                      >
                         <div className="relative h-10 w-10 overflow-hidden rounded-lg shrink-0">
-                          {it.image ? <NextImage src={it.image} alt={it.name} fill sizes="40px" className="object-cover" /> : <div className="h-full w-full grid place-items-center bg-card/50 text-foreground text-xs">IMG</div>}
+                          {it.image ? (
+                            <NextImage
+                              src={it.image}
+                              alt={it.name}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full grid place-items-center bg-card/50 text-foreground text-xs">
+                              IMG
+                            </div>
+                          )}
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium">{it.name}</div>
+                          <div className="truncate text-sm font-medium">
+                            {it.name}
+                          </div>
                           <div className="text-xs opacity-75">{statusText}</div>
                         </div>
 
                         {!isCurrent && (
-                          <Button size="sm" variant="ghost" onClick={() => switchProduct(it.productId)} className="shrink-0 h-7 px-2 text-xs">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => switchProduct(it.productId)}
+                            className="shrink-0 h-7 px-2 text-xs"
+                          >
                             작성
                           </Button>
                         )}
@@ -832,28 +1044,45 @@ export default function ReviewWritePage() {
               {/* 폼 헤더 */}
               <div className="bg-muted/50 px-4 md:px-6 py-4 border-b border-border">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-foreground">리뷰 작성</h2>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    리뷰 작성
+                  </h2>
                 </div>
               </div>
 
-              <form onSubmit={onSubmit} className="p-4 md:p-6 space-y-6 md:space-y-8">
+              <form
+                onSubmit={onSubmit}
+                className="p-4 md:p-6 space-y-6 md:space-y-8"
+              >
                 {/* 서비스 모드: 대상 신청서 선택 ( selector는 항상 조작 가능하게 오버레이 밖으로 분리) */}
-                {mode === 'service' && (
+                {mode === "service" && (
                   <div className="mb-6 md:mb-8">
                     <div className="flex items-end justify-between gap-3">
                       <div className="min-w-0">
-                        <Label className="text-sm font-semibold text-foreground mb-1 block">대상 신청서</Label>
-                        <div className="text-xs text-foreground/80">{showAllApps ? '전체 신청서(비활성 포함)를 표시합니다.' : '작성 가능한 신청서만 표시합니다.'}</div>
+                        <Label className="text-sm font-semibold text-foreground mb-1 block">
+                          대상 신청서
+                        </Label>
+                        <div className="text-xs text-foreground/80">
+                          {showAllApps
+                            ? "전체 신청서(비활성 포함)를 표시합니다."
+                            : "작성 가능한 신청서만 표시합니다."}
+                        </div>
                       </div>
 
-                      <button type="button" onClick={() => setShowAllApps((v) => !v)} className="shrink-0 text-xs underline underline-offset-2 hover:opacity-80 text-foreground">
-                        {showAllApps ? '작성 가능한 신청서만 보기' : '전체 신청서 보기'}
+                      <button
+                        type="button"
+                        onClick={() => setShowAllApps((v) => !v)}
+                        className="shrink-0 text-xs underline underline-offset-2 hover:opacity-80 text-foreground"
+                      >
+                        {showAllApps
+                          ? "작성 가능한 신청서만 보기"
+                          : "전체 신청서 보기"}
                       </button>
                     </div>
 
                     <select
                       className="mt-3 w-full h-12 rounded-xl border border-border bg-card dark:bg-muted px-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200 text-left whitespace-normal leading-relaxed"
-                      value={selectedAppId ?? ''}
+                      value={selectedAppId ?? ""}
                       onChange={(e) => {
                         const nextId = e.target.value || null;
                         if (nextId === selectedAppId) return;
@@ -865,18 +1094,37 @@ export default function ReviewWritePage() {
                       }}
                       disabled={!shownApps.length}
                     >
-                      {shownApps.length === 0 && <option value="">{showAllApps ? '신청서가 없습니다' : allApps.length > 0 ? '작성 가능한 신청서가 없습니다 (전체 보기로 확인)' : '작성 가능한 신청서가 없습니다'}</option>}
+                      {shownApps.length === 0 && (
+                        <option value="">
+                          {showAllApps
+                            ? "신청서가 없습니다"
+                            : allApps.length > 0
+                              ? "작성 가능한 신청서가 없습니다 (전체 보기로 확인)"
+                              : "작성 가능한 신청서가 없습니다"}
+                        </option>
+                      )}
 
                       {shownApps.map((a) => {
-                        const isEligible = a.status === '교체완료' && !reviewedMap[a._id];
-                        const reason = reviewedMap[a._id] ? '이미 리뷰 작성됨' : a.status !== '교체완료' ? `상태: ${a.status ?? '미정'}` : '';
+                        const isEligible =
+                          a.status === "교체완료" && !reviewedMap[a._id];
+                        const reason = reviewedMap[a._id]
+                          ? "이미 리뷰 작성됨"
+                          : a.status !== "교체완료"
+                            ? `상태: ${a.status ?? "미정"}`
+                            : "";
 
                         // 전체 보기(showAllApps)에서는 비활성 항목도 노출하되 선택/작성은 막음
                         const optDisabled = showAllApps ? !isEligible : false;
-                        const optLabel = reason ? `${a.label} (${reason})` : a.label;
+                        const optLabel = reason
+                          ? `${a.label} (${reason})`
+                          : a.label;
 
                         return (
-                          <option key={a._id} value={a._id} disabled={optDisabled}>
+                          <option
+                            key={a._id}
+                            value={a._id}
+                            disabled={optDisabled}
+                          >
                             {optLabel}
                           </option>
                         );
@@ -887,38 +1135,62 @@ export default function ReviewWritePage() {
                     {selectedApp && (
                       <div className="mt-3 rounded-xl border border-border bg-muted p-4">
                         <div className="flex items-center justify-between">
-                          <div className="text-sm font-medium text-foreground">{selectedApp.createdAt ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}` : ''}</div>
-                          {selectedApp.status && <ApplicationStatusBadge status={selectedApp.status} />}
+                          <div className="text-sm font-medium text-foreground">
+                            {selectedApp.createdAt
+                              ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}`
+                              : ""}
+                          </div>
+                          {selectedApp.status && (
+                            <ApplicationStatusBadge
+                              status={selectedApp.status}
+                            />
+                          )}
                         </div>
 
                         <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                           <div>
                             <dt className="text-foreground">예약일자</dt>
-                            <dd className="text-foreground">{formatYMD(selectedApp.preferredDate) || '-'}</dd>
+                            <dd className="text-foreground">
+                              {formatYMD(selectedApp.preferredDate) || "-"}
+                            </dd>
                           </div>
                           <div>
                             <dt className="text-foreground">예약시간</dt>
-                            <dd className="text-foreground">{formatHM(selectedApp.preferredTime) || '-'}</dd>
+                            <dd className="text-foreground">
+                              {formatHM(selectedApp.preferredTime) || "-"}
+                            </dd>
                           </div>
                           <div>
                             <dt className="text-foreground">라켓</dt>
-                            <dd className="text-foreground">{selectedApp.racketType || '-'}</dd>
+                            <dd className="text-foreground">
+                              {selectedApp.racketType || "-"}
+                            </dd>
                           </div>
                           <div>
                             <dt className="text-foreground">스트링</dt>
-                            <dd className="text-foreground truncate">{(selectedApp.stringItems || []).map((s) => s.name).join(', ') || '-'}</dd>
+                            <dd className="text-foreground truncate">
+                              {(selectedApp.stringItems || [])
+                                .map((s) => s.name)
+                                .join(", ") || "-"}
+                            </dd>
                           </div>
                         </dl>
 
                         {/* 요청사항 블록 */}
                         {selectedApp.requirements && (
                           <div className="mt-3 rounded-lg border border-border bg-card/60 dark:bg-muted p-3">
-                            <div className="text-xs text-foreground mb-1">요청사항</div>
-                            <p className="text-sm text-foreground whitespace-pre-line break-words">{selectedApp.requirements}</p>
+                            <div className="text-xs text-foreground mb-1">
+                              요청사항
+                            </div>
+                            <p className="text-sm text-foreground whitespace-pre-line break-words">
+                              {selectedApp.requirements}
+                            </p>
                           </div>
                         )}
 
-                        <div className="mt-2 text-xs text-foreground">신청번호 {selectedApp._id}</div>
+                        <div className="mt-2 text-xs text-foreground">
+                          신청번호 {selectedApp._id}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -930,21 +1202,45 @@ export default function ReviewWritePage() {
                     <div className="absolute inset-0 z-10 rounded-xl bg-card/80 dark:bg-muted backdrop-blur-sm flex items-center justify-center">
                       <div className="text-center px-4">
                         <div className="w-8 h-8 border-2 border-border border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                        <div className="text-sm text-foreground">{state === 'loading' ? '검증 중...' : mode === 'service' && !selectedAppId ? '대상 신청서를 선택해 주세요.' : '작성할 수 없는 상태입니다.'}</div>
+                        <div className="text-sm text-foreground">
+                          {state === "loading"
+                            ? "검증 중..."
+                            : mode === "service" && !selectedAppId
+                              ? "대상 신청서를 선택해 주세요."
+                              : "작성할 수 없는 상태입니다."}
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {/* 별점 섹션 */}
                   <div className="text-center py-6 bg-primary/10 border border-primary/20 rounded-xl dark:bg-primary/20">
-                    <label className="block text-sm font-semibold text-foreground mb-4">만족도를 별점으로 평가해주세요</label>
-                    <Stars value={rating} onChange={setRating} disabled={locked} />
-                    <div className="mt-2 text-sm text-foreground">{rating === 5 ? '최고예요!' : rating === 4 ? '좋아요!' : rating === 3 ? '보통이에요' : rating === 2 ? '아쉬워요' : '별로예요'}</div>
+                    <label className="block text-sm font-semibold text-foreground mb-4">
+                      만족도를 별점으로 평가해주세요
+                    </label>
+                    <Stars
+                      value={rating}
+                      onChange={setRating}
+                      disabled={locked}
+                    />
+                    <div className="mt-2 text-sm text-foreground">
+                      {rating === 5
+                        ? "최고예요!"
+                        : rating === 4
+                          ? "좋아요!"
+                          : rating === 3
+                            ? "보통이에요"
+                            : rating === 2
+                              ? "아쉬워요"
+                              : "별로예요"}
+                    </div>
                   </div>
 
                   {/* 후기 작성 */}
                   <div className="space-y-4 mt-8">
-                    <label className="block text-sm font-semibold text-foreground">상세 후기</label>
+                    <label className="block text-sm font-semibold text-foreground">
+                      상세 후기
+                    </label>
                     <Textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
@@ -952,36 +1248,57 @@ export default function ReviewWritePage() {
                       className="min-h-[180px] resize-y border-border focus:ring-2 focus:ring-ring focus:border-border rounded-xl"
                       disabled={locked}
                     />
-                    <div className="text-xs text-foreground text-right">{content.length} / 1000자</div>
+                    <div className="text-xs text-foreground text-right">
+                      {content.length} / 1000자
+                    </div>
                   </div>
 
                   {/* 사진 업로드 */}
                   <div className="space-y-4 mt-8">
-                    <Label className="text-sm font-semibold text-foreground">사진 첨부 (선택, 최대 5장)</Label>
+                    <Label className="text-sm font-semibold text-foreground">
+                      사진 첨부 (선택, 최대 5장)
+                    </Label>
                     <div className="rounded-xl border-2 border-dashed border-border p-4">
-                      <PhotosUploader value={photos} onChange={setPhotos} max={5} onUploadingChange={setIsUploading} previewMode="queue" />
-                      <PhotosReorderGrid value={photos} onChange={setPhotos} disabled={locked || isUploading} />
-                      {isUploading && <div className="mt-2 text-xs text-foreground">이미지 업로드 중...</div>}
+                      <PhotosUploader
+                        value={photos}
+                        onChange={setPhotos}
+                        max={5}
+                        onUploadingChange={setIsUploading}
+                        previewMode="queue"
+                      />
+                      <PhotosReorderGrid
+                        value={photos}
+                        onChange={setPhotos}
+                        disabled={locked || isUploading}
+                      />
+                      {isUploading && (
+                        <div className="mt-2 text-xs text-foreground">
+                          이미지 업로드 중...
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* 안내문 */}
-                {state !== 'ok' && mode !== 'invalid' && (
+                {state !== "ok" && mode !== "invalid" && (
                   <div className="rounded-lg bg-muted border border-border p-4">
                     <div className="text-sm text-primary">
-                      {state === 'notPurchased' && (
+                      {state === "notPurchased" && (
                         <div>
                           구매/이용 이력이 확인되어야 작성할 수 있어요.
                           <button
                             type="button"
                             onClick={() =>
                               confirmLeaveIfDirty(() => {
-                                if (mode === 'product' && resolvedProductId) {
-                                  router.replace(currentMeta?.href ?? `/products/${resolvedProductId}`);
+                                if (mode === "product" && resolvedProductId) {
+                                  router.replace(
+                                    currentMeta?.href ??
+                                      `/products/${resolvedProductId}`,
+                                  );
                                   return;
                                 }
-                                router.replace('/services');
+                                router.replace("/services");
                               })
                             }
                             className="underline underline-offset-2 hover:opacity-80 font-medium"
@@ -990,17 +1307,40 @@ export default function ReviewWritePage() {
                           </button>
                         </div>
                       )}
-                      {state === 'already' && <div>이미 작성하신 대상이에요. 변경/삭제는 마이페이지 &gt; 나의 리뷰에서 관리해 주세요.</div>}
+                      {state === "already" && (
+                        <div>
+                          이미 작성하신 대상이에요. 변경/삭제는 마이페이지 &gt;
+                          나의 리뷰에서 관리해 주세요.
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {/* 액션 버튼들 */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-border">
-                  <Button type="button" variant="outline" onClick={() => confirmLeaveIfDirty(goPrimary)} className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent">
-                    {mode === 'product' ? '제품 상세 이동' : mode === 'service' ? '서비스 소개' : '리뷰 홈'}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => confirmLeaveIfDirty(goPrimary)}
+                    className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent"
+                  >
+                    {mode === "product"
+                      ? "제품 상세 이동"
+                      : mode === "service"
+                        ? "서비스 소개"
+                        : "리뷰 홈"}
                   </Button>
-                  <Button type="button" variant="secondary" onClick={() => confirmLeaveIfDirty(() => router.replace('/mypage?tab=orders'))} className="rounded-xl shadow-sm order-3 sm:order-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() =>
+                      confirmLeaveIfDirty(() =>
+                        router.replace("/mypage?tab=orders"),
+                      )
+                    }
+                    className="rounded-xl shadow-sm order-3 sm:order-2"
+                  >
                     주문 목록으로
                   </Button>
                   <Button
@@ -1010,20 +1350,34 @@ export default function ReviewWritePage() {
                     aria-disabled={locked || isUploading}
                     className="rounded-xl shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 order-1 sm:order-3"
                   >
-                    {isUploading ? '이미지 업로드 중...' : '후기 등록하기'}
+                    {isUploading ? "이미지 업로드 중..." : "후기 등록하기"}
                   </Button>
                 </div>
 
                 {/* invalid 진입 시 CTA */}
-                {mode === 'invalid' && (
+                {mode === "invalid" && (
                   <div className="text-center py-6 text-sm text-foreground">
-                    <div className="font-medium text-foreground mb-2">도움이 필요하신가요?</div>
+                    <div className="font-medium text-foreground mb-2">
+                      도움이 필요하신가요?
+                    </div>
                     <div className="space-x-4">
-                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/services'))} className="underline underline-offset-2 hover:opacity-80 text-foreground">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          confirmLeaveIfDirty(() => router.replace("/services"))
+                        }
+                        className="underline underline-offset-2 hover:opacity-80 text-foreground"
+                      >
                         스트링 서비스 소개
                       </button>
                       <span>·</span>
-                      <button type="button" onClick={() => confirmLeaveIfDirty(() => router.replace('/reviews'))} className="underline underline-offset-2 hover:opacity-80 text-foreground">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          confirmLeaveIfDirty(() => router.replace("/reviews"))
+                        }
+                        className="underline underline-offset-2 hover:opacity-80 text-foreground"
+                      >
                         리뷰 모아보기
                       </button>
                     </div>

@@ -1,14 +1,24 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function OrderDetailLoading() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
       <div className="max-w-3xl mx-auto">
-        <Button variant="ghost" className="mb-4 pl-0 flex items-center" disabled>
+        <Button
+          variant="ghost"
+          className="mb-4 pl-0 flex items-center"
+          disabled
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           주문 목록으로 돌아가기
         </Button>
@@ -17,7 +27,9 @@ export default function OrderDetailLoading() {
           <CardHeader className="space-y-1">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
-                <CardTitle className="text-2xl font-bold">주문 상세 정보</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                  주문 상세 정보
+                </CardTitle>
                 <CardDescription className="mt-1">
                   <Skeleton className="h-4 w-40" />
                 </CardDescription>
@@ -86,7 +98,10 @@ export default function OrderDetailLoading() {
                 </h3>
                 <div className="space-y-4">
                   {[1, 2].map((i) => (
-                    <div key={i} className="flex flex-col md:flex-row border rounded-lg p-4">
+                    <div
+                      key={i}
+                      className="flex flex-col md:flex-row border rounded-lg p-4"
+                    >
                       <div className="flex-shrink-0 w-full md:w-auto flex justify-center md:justify-start mb-4 md:mb-0">
                         <Skeleton className="w-20 h-20 rounded" />
                       </div>

@@ -1,12 +1,12 @@
-import { createStore } from 'zustand/vanilla';
-import { useStore } from 'zustand';
+import { createStore } from "zustand/vanilla";
+import { useStore } from "zustand";
 
 export interface User {
   id: string;
   name: string | null;
   email: string;
   role: string;
-  socialProviders?: Array<'kakao' | 'naver'>;
+  socialProviders?: Array<"kakao" | "naver">;
   image?: string | null;
 }
 

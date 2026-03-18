@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { ClientSession, Db, ObjectId } from 'mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
-import { verifyAdminCsrf } from '@/lib/admin/verifyAdminCsrf';
+import { NextRequest, NextResponse } from "next/server";
+import { ClientSession, Db, ObjectId } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import type {
   CommunityReportDocument,
   CommunityReportModerationTargetOutcome,
-} from '@/lib/types/community-report';
+} from "@/lib/types/community-report";
 
-type Action = 'resolve' | 'reject' | 'resolve_hide_target';
+type Action = "resolve" | "reject" | "resolve_hide_target";
 
 const TARGET_OUTCOME_BY_ACTION = {
-  resolve: 'no_target_change',
-  reject: 'no_target_change',
-  resolve_hide_target: 'updated',
+  resolve: "no_target_change",
+  reject: "no_target_change",
+  resolve_hide_target: "updated",
 } as const satisfies Record<Action, CommunityReportModerationTargetOutcome>;
 
 type ResolveHideTargetResult =
@@ -25,21 +25,27 @@ type ResolveHideTargetResult =
   | {
       ok: false;
       status: 409 | 422;
-      error: 'target_not_found' | 'target_already_processed' | 'target_update_failed';
+      error:
+        | "target_not_found"
+        | "target_already_processed"
+        | "target_update_failed";
       targetBeforeStatus?: string;
       targetAfterStatus?: string;
     };
 
 class TransactionBusinessError extends Error {
   constructor(public readonly response: NextResponse) {
-    super('transaction_business_error');
+    super("transaction_business_error");
   }
 }
 
 async function supportsTransactions(db: Db) {
   try {
-    const hello = (await db.admin().command({ hello: 1 })) as { setName?: string; msg?: string };
-    return Boolean(hello.setName) || hello.msg === 'isdbgrid';
+    const hello = (await db.admin().command({ hello: 1 })) as {
+      setName?: string;
+      msg?: string;
+    };
+    return Boolean(hello.setName) || hello.msg === "isdbgrid";
   } catch {
     return false;
   }
@@ -50,31 +56,35 @@ async function resolveHideTarget(
   report: CommunityReportDocument,
   session?: ClientSession,
 ): Promise<ResolveHideTargetResult> {
-  const postsCol = db.collection('community_posts');
-  const commentsCol = db.collection('community_comments');
+  const postsCol = db.collection("community_posts");
+  const commentsCol = db.collection("community_comments");
 
-  if (report.targetType === 'post' && report.postId) {
+  if (report.targetType === "post" && report.postId) {
     // post 대상은 존재 여부와 현재 상태를 먼저 확인해, 이미 hidden/deleted인 중복 처리를 구분한다.
-    const post = await postsCol.findOne({ _id: report.postId }, { projection: { status: 1 }, session });
+    const post = await postsCol.findOne(
+      { _id: report.postId },
+      { projection: { status: 1 }, session },
+    );
 
     if (!post) {
-      return { ok: false, status: 409, error: 'target_not_found' };
+      return { ok: false, status: 409, error: "target_not_found" };
     }
 
-    const beforeStatus = typeof post.status === 'string' ? post.status : 'public';
-    if (beforeStatus === 'hidden' || beforeStatus === 'deleted') {
+    const beforeStatus =
+      typeof post.status === "string" ? post.status : "public";
+    if (beforeStatus === "hidden" || beforeStatus === "deleted") {
       return {
         ok: false,
         status: 409,
-        error: 'target_already_processed',
+        error: "target_already_processed",
         targetBeforeStatus: beforeStatus,
         targetAfterStatus: beforeStatus,
       };
     }
 
     const postUpdateResult = await postsCol.updateOne(
-      { _id: report.postId, status: { $nin: ['hidden', 'deleted'] } },
-      { $set: { status: 'hidden', updatedAt: new Date() } },
+      { _id: report.postId, status: { $nin: ["hidden", "deleted"] } },
+      { $set: { status: "hidden", updatedAt: new Date() } },
       { session },
     );
 
@@ -82,7 +92,7 @@ async function resolveHideTarget(
       return {
         ok: false,
         status: 409,
-        error: 'target_already_processed',
+        error: "target_already_processed",
         targetBeforeStatus: beforeStatus,
       };
     }
@@ -91,7 +101,7 @@ async function resolveHideTarget(
       return {
         ok: false,
         status: 422,
-        error: 'target_update_failed',
+        error: "target_update_failed",
         targetBeforeStatus: beforeStatus,
       };
     }
@@ -99,12 +109,12 @@ async function resolveHideTarget(
     return {
       ok: true,
       targetBeforeStatus: beforeStatus,
-      targetAfterStatus: 'hidden',
+      targetAfterStatus: "hidden",
       commentsCountAdjusted: false,
     };
   }
 
-  if (report.targetType === 'comment' && report.commentId) {
+  if (report.targetType === "comment" && report.commentId) {
     // comment 대상은 삭제 상태를 먼저 확인해, 이미 삭제된 댓글의 중복 처리에 대해 409를 반환한다.
     const comment = await commentsCol.findOne(
       { _id: report.commentId },
@@ -112,23 +122,24 @@ async function resolveHideTarget(
     );
 
     if (!comment) {
-      return { ok: false, status: 409, error: 'target_not_found' };
+      return { ok: false, status: 409, error: "target_not_found" };
     }
 
-    const beforeStatus = typeof comment.status === 'string' ? comment.status : 'active';
-    if (beforeStatus === 'deleted') {
+    const beforeStatus =
+      typeof comment.status === "string" ? comment.status : "active";
+    if (beforeStatus === "deleted") {
       return {
         ok: false,
         status: 409,
-        error: 'target_already_processed',
+        error: "target_already_processed",
         targetBeforeStatus: beforeStatus,
         targetAfterStatus: beforeStatus,
       };
     }
 
     const commentUpdateResult = await commentsCol.updateOne(
-      { _id: report.commentId, status: { $ne: 'deleted' } },
-      { $set: { status: 'deleted', updatedAt: new Date() } },
+      { _id: report.commentId, status: { $ne: "deleted" } },
+      { $set: { status: "deleted", updatedAt: new Date() } },
       { session },
     );
 
@@ -136,7 +147,7 @@ async function resolveHideTarget(
       return {
         ok: false,
         status: 409,
-        error: 'target_already_processed',
+        error: "target_already_processed",
         targetBeforeStatus: beforeStatus,
       };
     }
@@ -145,7 +156,7 @@ async function resolveHideTarget(
       return {
         ok: false,
         status: 422,
-        error: 'target_update_failed',
+        error: "target_update_failed",
         targetBeforeStatus: beforeStatus,
       };
     }
@@ -158,9 +169,12 @@ async function resolveHideTarget(
           {
             $set: {
               commentsCount: {
-                $max: [0, { $subtract: [{ $ifNull: ['$commentsCount', 0] }, 1] }],
+                $max: [
+                  0,
+                  { $subtract: [{ $ifNull: ["$commentsCount", 0] }, 1] },
+                ],
               },
-              updatedAt: '$$NOW',
+              updatedAt: "$$NOW",
             },
           },
         ],
@@ -171,9 +185,9 @@ async function resolveHideTarget(
         return {
           ok: false,
           status: 409,
-          error: 'target_not_found',
+          error: "target_not_found",
           targetBeforeStatus: beforeStatus,
-          targetAfterStatus: 'deleted',
+          targetAfterStatus: "deleted",
         };
       }
 
@@ -181,9 +195,9 @@ async function resolveHideTarget(
         return {
           ok: false,
           status: 422,
-          error: 'target_update_failed',
+          error: "target_update_failed",
           targetBeforeStatus: beforeStatus,
-          targetAfterStatus: 'deleted',
+          targetAfterStatus: "deleted",
         };
       }
     }
@@ -191,15 +205,18 @@ async function resolveHideTarget(
     return {
       ok: true,
       targetBeforeStatus: beforeStatus,
-      targetAfterStatus: 'deleted',
+      targetAfterStatus: "deleted",
       commentsCountAdjusted: Boolean(comment.postId),
     };
   }
 
-  return { ok: false, status: 422, error: 'target_update_failed' };
+  return { ok: false, status: 422, error: "target_update_failed" };
 }
 
-export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -207,33 +224,39 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
   const { db, admin } = guard;
 
   const { id } = await context.params;
-  if (!ObjectId.isValid(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
+  if (!ObjectId.isValid(id))
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
-  const action = String(body?.action ?? '') as Action;
+  const action = String(body?.action ?? "") as Action;
 
-  if (!['resolve', 'reject', 'resolve_hide_target'].includes(action)) {
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  if (!["resolve", "reject", "resolve_hide_target"].includes(action)) {
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
   const reportId = new ObjectId(id);
-  const reportsCol = db.collection<CommunityReportDocument>('community_reports');
+  const reportsCol =
+    db.collection<CommunityReportDocument>("community_reports");
 
   const report = await reportsCol.findOne({ _id: reportId });
-  if (!report) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  if (!report)
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const nextStatus = action === 'reject' ? 'rejected' : 'resolved';
+  const nextStatus = action === "reject" ? "rejected" : "resolved";
   const transactionSupported = await supportsTransactions(db);
   const requestAt = new Date();
-  const userAgent = req.headers.get('user-agent');
-  const forwardedFor = req.headers.get('x-forwarded-for');
-  const requestIp = forwardedFor?.split(',')[0]?.trim() || null;
+  const userAgent = req.headers.get("user-agent");
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  const requestIp = forwardedFor?.split(",")[0]?.trim() || null;
 
-  const executeStatusUpdate = async (session?: ClientSession, transactionUsed = false) => {
+  const executeStatusUpdate = async (
+    session?: ClientSession,
+    transactionUsed = false,
+  ) => {
     let hideTargetResult: ResolveHideTargetResult | null = null;
 
     // resolve_hide_target는 report 상태를 변경하기 전에 대상 업데이트를 완료해야 한다.
-    if (action === 'resolve_hide_target') {
+    if (action === "resolve_hide_target") {
       hideTargetResult = await resolveHideTarget(db, report, session);
       if (!hideTargetResult.ok) {
         return NextResponse.json(
@@ -251,11 +274,17 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     const now = new Date();
     const targetOutcome = TARGET_OUTCOME_BY_ACTION[action];
     const targetAfterStatus =
-      action === 'resolve_hide_target' && hideTargetResult?.ok ? hideTargetResult.targetAfterStatus : undefined;
+      action === "resolve_hide_target" && hideTargetResult?.ok
+        ? hideTargetResult.targetAfterStatus
+        : undefined;
     const targetBeforeStatus =
-      action === 'resolve_hide_target' && hideTargetResult?.ok ? hideTargetResult.targetBeforeStatus : undefined;
+      action === "resolve_hide_target" && hideTargetResult?.ok
+        ? hideTargetResult.targetBeforeStatus
+        : undefined;
     const commentsCountAdjusted =
-      action === 'resolve_hide_target' && hideTargetResult?.ok ? hideTargetResult.commentsCountAdjusted : false;
+      action === "resolve_hide_target" && hideTargetResult?.ok
+        ? hideTargetResult.commentsCountAdjusted
+        : false;
 
     const reportUpdateResult = await reportsCol.updateOne(
       { _id: reportId },
@@ -301,11 +330,14 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
     );
 
     if (reportUpdateResult.matchedCount === 0) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     if (reportUpdateResult.modifiedCount !== 1) {
-      return NextResponse.json({ error: 'report_update_failed' }, { status: 422 });
+      return NextResponse.json(
+        { error: "report_update_failed" },
+        { status: 422 },
+      );
     }
 
     return NextResponse.json({ ok: true });
@@ -320,7 +352,13 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
       await session.withTransaction(async () => {
         txResponse = await executeStatusUpdate(session, true);
         if (!txResponse || txResponse.status !== 200) {
-          throw new TransactionBusinessError(txResponse ?? NextResponse.json({ error: 'transaction_failed' }, { status: 422 }));
+          throw new TransactionBusinessError(
+            txResponse ??
+              NextResponse.json(
+                { error: "transaction_failed" },
+                { status: 422 },
+              ),
+          );
         }
       });
 

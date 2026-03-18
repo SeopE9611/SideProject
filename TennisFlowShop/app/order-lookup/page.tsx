@@ -1,45 +1,70 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
 
-import LoginGate from '@/components/system/LoginGate';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { ArrowLeft, Clock, Mail, Package, Phone, Search, Shield, User } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import LoginGate from "@/components/system/LoginGate";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  ArrowLeft,
+  Clock,
+  Mail,
+  Package,
+  Phone,
+  Search,
+  Shield,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const onlyDigits = (v: string) => v.replace(/\D/g, '');
-const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+const onlyDigits = (v: string) => v.replace(/\D/g, "");
+const isValidKoreanPhoneDigits = (digits: string) =>
+  digits.length === 10 || digits.length === 11;
 
 export default function OrderLookupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name: "",
+    email: "",
+    phone: "",
   });
   const [errors, setErrors] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name: "",
+    email: "",
+    phone: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 비회원 주문 조회(게스트) UI 노출 여부(클라)
   // - NEXT_PUBLIC_GUEST_ORDER_MODE=off 면: 입력 폼부터 막고 LoginGate로 유도
   // - legacy/on 면: 조회 UI 유지
-  const guestModeRaw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
-  const allowGuestLookup = guestModeRaw !== 'off';
+  const guestModeRaw = (
+    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy"
+  ).trim();
+  const allowGuestLookup = guestModeRaw !== "off";
 
   // 입력이 한 글자라도 있으면 dirty로 간주(프리필/초기값 없음)
-  const isDirty = !!formData.name.trim() || !!formData.email.trim() || !!formData.phone.trim();
+  const isDirty =
+    !!formData.name.trim() ||
+    !!formData.email.trim() ||
+    !!formData.phone.trim();
 
   // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
   // - router.push(조회 성공 후 결과 페이지 이동)는 의도된 이동이라 guard 불필요
@@ -55,14 +80,15 @@ export default function OrderLookupPage() {
     }
   };
 
-  if (!allowGuestLookup) return <LoginGate next="/mypage" variant="orderLookup" />;
+  if (!allowGuestLookup)
+    return <LoginGate next="/mypage" variant="orderLookup" />;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     // phone은 입력 중에도 숫자만 유지 (사용자가 '-' 넣어도 자동 제거)
     // - 서버는 digits(10~11자리)만 허용
     // - 클라에서도 동일하게 맞춰서 UX + 안정성 확보
-    if (name === 'phone') {
+    if (name === "phone") {
       const digits = onlyDigits(value).slice(0, 11); // 너무 긴 입력 방지(최대 11자리)
       setFormData((prev) => ({ ...prev, phone: digits }));
     } else {
@@ -71,44 +97,44 @@ export default function OrderLookupPage() {
 
     // Clear error when user types
     if (errors[name as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {
-      name: '',
-      email: '',
-      phone: '',
+      name: "",
+      email: "",
+      phone: "",
     };
     let isValid = true;
 
     const name = formData.name.trim();
     const email = formData.email.trim();
-    const phoneDigits = formData.phone ? onlyDigits(formData.phone) : '';
+    const phoneDigits = formData.phone ? onlyDigits(formData.phone) : "";
 
     if (!name) {
-      newErrors.name = '이름을 입력해주세요';
+      newErrors.name = "이름을 입력해주세요";
       isValid = false;
     } else if (name.length > 50) {
-      newErrors.name = '이름은 50자 이내로 입력해주세요';
+      newErrors.name = "이름은 50자 이내로 입력해주세요";
       isValid = false;
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요';
+      newErrors.email = "이메일을 입력해주세요";
       isValid = false;
     } else if (!EMAIL_RE.test(email)) {
-      newErrors.email = '유효한 이메일 주소를 입력해주세요';
+      newErrors.email = "유효한 이메일 주소를 입력해주세요";
       isValid = false;
     } else if (email.length > 254) {
-      newErrors.email = '이메일이 너무 깁니다';
+      newErrors.email = "이메일이 너무 깁니다";
       isValid = false;
     }
 
     // phone은 선택이지만, 입력했으면 digits 10~11자리만 허용
     if (phoneDigits && !isValidKoreanPhoneDigits(phoneDigits)) {
-      newErrors.phone = '전화번호는 숫자 10~11자리만 입력해주세요';
+      newErrors.phone = "전화번호는 숫자 10~11자리만 입력해주세요";
       isValid = false;
     }
 
@@ -128,7 +154,7 @@ export default function OrderLookupPage() {
       // - phone: digits만 (빈 값이면 아예 제외 가능)
       const normalizedName = formData.name.trim();
       const normalizedEmail = formData.email.trim();
-      const normalizedPhone = formData.phone ? onlyDigits(formData.phone) : '';
+      const normalizedPhone = formData.phone ? onlyDigits(formData.phone) : "";
 
       const payload: { name: string; email: string; phone?: string } = {
         name: normalizedName,
@@ -140,20 +166,20 @@ export default function OrderLookupPage() {
       // router.push(`/order-results?name=${encodeURIComponent(formData.name)}&email=${encodeURIComponent(formData.email)}`)
 
       // 임시로 3초 후 완료되는 것으로 시뮬레이션
-      const res = await fetch('/api/guest-orders/lookup', {
-        method: 'POST',
+      const res = await fetch("/api/guest-orders/lookup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       const data = await res.json();
 
       // 400(유효성 실패)도 여기로 들어오므로, success/ok 기준으로 분기
       if (!res.ok || !data?.success) {
-        alert(data?.error ?? '요청 값이 올바르지 않습니다.');
+        alert(data?.error ?? "요청 값이 올바르지 않습니다.");
         return;
       }
 
@@ -161,17 +187,17 @@ export default function OrderLookupPage() {
         alert(`총 ${data.orders.length}개의 주문을 찾았습니다.`);
         // results 페이지에도 "정규화된 값"을 넘김
         const qs = new URLSearchParams();
-        qs.set('name', normalizedName);
-        qs.set('email', normalizedEmail);
-        if (normalizedPhone) qs.set('phone', normalizedPhone);
+        qs.set("name", normalizedName);
+        qs.set("email", normalizedEmail);
+        if (normalizedPhone) qs.set("phone", normalizedPhone);
 
         router.push(`/order-lookup/results?${qs.toString()}`);
       } else {
-        alert('조회된 주문이 없습니다.');
+        alert("조회된 주문이 없습니다.");
       }
     } catch (error) {
-      console.error('주문 조회 중 오류 발생:', error);
-      alert('주문 조회 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error("주문 조회 중 오류 발생:", error);
+      alert("주문 조회 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -187,8 +213,12 @@ export default function OrderLookupPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-card/20 backdrop-blur-sm rounded-full mb-6">
               <Search className="w-8 h-8" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">비회원 주문 조회</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">주문 시 입력하신 정보로 간편하게 주문 내역을 확인하세요</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              비회원 주문 조회
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              주문 시 입력하신 정보로 간편하게 주문 내역을 확인하세요
+            </p>
           </div>
         </div>
       </div>
@@ -196,7 +226,11 @@ export default function OrderLookupPage() {
       <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6 md:mb-8">
-            <Link href="/login" onClick={onLeaveToLoginClick} className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group">
+            <Link
+              href="/login"
+              onClick={onLeaveToLoginClick}
+              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group"
+            >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
             </Link>
@@ -208,8 +242,12 @@ export default function OrderLookupPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4 mx-auto dark:bg-primary/20">
                 <Package className="w-6 h-6 text-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold text-foreground">주문 정보 입력</CardTitle>
-              <CardDescription className="text-base text-muted-foreground">주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다</CardDescription>
+              <CardTitle className="text-2xl font-bold text-foreground">
+                주문 정보 입력
+              </CardTitle>
+              <CardDescription className="text-base text-muted-foreground">
+                주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다
+              </CardDescription>
             </CardHeader>
 
             <Separator className="mx-6" />
@@ -218,7 +256,10 @@ export default function OrderLookupPage() {
               <CardContent className="space-y-4 md:space-y-6 pt-6 md:pt-8">
                 {/* Name Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
+                  <Label
+                    htmlFor="name"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
                     <User className="w-4 h-4 text-primary" />
                     이름 <span className="text-destructive">*</span>
                   </Label>
@@ -230,7 +271,7 @@ export default function OrderLookupPage() {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? 'border-destructive focus:border-destructive' : 'border-border focus:border-border hover:border-border'}`}
+                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.name ? "border-destructive focus:border-destructive" : "border-border focus:border-border hover:border-border"}`}
                     />
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
@@ -244,7 +285,10 @@ export default function OrderLookupPage() {
 
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
                     <Mail className="w-4 h-4 text-primary" />
                     이메일 <span className="text-destructive">*</span>
                   </Label>
@@ -257,7 +301,7 @@ export default function OrderLookupPage() {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? 'border-destructive focus:border-destructive' : 'border-border focus:border-border hover:border-border'}`}
+                      className={`pl-10 h-12 border-2 transition-all duration-200 ${errors.email ? "border-destructive focus:border-destructive" : "border-border focus:border-border hover:border-border"}`}
                     />
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   </div>
@@ -271,7 +315,10 @@ export default function OrderLookupPage() {
 
                 {/* Phone Field */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+                  <Label
+                    htmlFor="phone"
+                    className="text-sm font-medium flex items-center gap-2"
+                  >
                     <Phone className="w-4 h-4 text-primary" />
                     전화번호 (선택)
                   </Label>
@@ -306,8 +353,12 @@ export default function OrderLookupPage() {
                       <Clock className="w-5 h-5 text-primary mt-0.5" />
                     </div>
                     <div className="text-sm">
-                      <p className="font-medium text-foreground mb-1">조회 가능한 주문</p>
-                      <p className="text-muted-foreground">최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.</p>
+                      <p className="font-medium text-foreground mb-1">
+                        조회 가능한 주문
+                      </p>
+                      <p className="text-muted-foreground">
+                        최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -334,8 +385,11 @@ export default function OrderLookupPage() {
                 </Button>
 
                 <p className="text-xs text-center text-muted-foreground">
-                  회원이신가요?{' '}
-                  <Link href="/login" className="text-primary hover:text-primary font-medium">
+                  회원이신가요?{" "}
+                  <Link
+                    href="/login"
+                    className="text-primary hover:text-primary font-medium"
+                  >
                     로그인하기
                   </Link>
                 </p>
@@ -349,16 +403,24 @@ export default function OrderLookupPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 rounded-full mb-4">
                 <Shield className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-semibold text-foreground mb-2">안전한 조회</h3>
-              <p className="text-sm text-muted-foreground">개인정보 보호를 위한 안전한 주문 조회 시스템</p>
+              <h3 className="font-semibold text-foreground mb-2">
+                안전한 조회
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                개인정보 보호를 위한 안전한 주문 조회 시스템
+              </p>
             </div>
 
             <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4 dark:bg-success/15">
                 <Clock className="w-6 h-6 text-success" />
               </div>
-              <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>
-              <p className="text-sm text-muted-foreground">최신 주문 상태를 실시간으로 확인 가능</p>
+              <h3 className="font-semibold text-foreground mb-2">
+                실시간 조회
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                최신 주문 상태를 실시간으로 확인 가능
+              </p>
             </div>
 
             <div className="text-center p-4 md:p-6 bg-card/60 backdrop-blur-sm rounded-xl border border-border">
@@ -366,7 +428,9 @@ export default function OrderLookupPage() {
                 <Package className="w-6 h-6 text-foreground" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
-              <p className="text-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>
+              <p className="text-sm text-muted-foreground">
+                배송 추적부터 결제 정보까지 한눈에
+              </p>
             </div>
           </div>
         </div>

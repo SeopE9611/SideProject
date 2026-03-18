@@ -1,6 +1,6 @@
-'use client';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+"use client";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface Props {
   items: { id: string; name: string; mountingFee: number }[];
@@ -12,19 +12,27 @@ interface Props {
   hideCustom?: boolean; // 주문 기반 등에서 "직접 입력" 숨김
 }
 
-export default function StringCheckboxes({ items, stringTypes, customInput, onChange, onCustomInputChange, disabled = false, hideCustom = false }: Props) {
+export default function StringCheckboxes({
+  items,
+  stringTypes,
+  customInput,
+  onChange,
+  onCustomInputChange,
+  disabled = false,
+  hideCustom = false,
+}: Props) {
   const toggle = (id: string) => {
     if (disabled) return;
     // custom 체크박스를 토글할 때는 오직 ['custom'] 만 남기고 모두 해제
-    if (id === 'custom') {
+    if (id === "custom") {
       if (hideCustom) return;
-      const next = stringTypes.includes('custom') ? [] : ['custom'];
+      const next = stringTypes.includes("custom") ? [] : ["custom"];
       onChange(next);
       return;
     }
 
     // 일반 옵션 토글 시, custom 이 있으면 먼저 제거
-    const withoutCustom = stringTypes.filter((x) => x !== 'custom');
+    const withoutCustom = stringTypes.filter((x) => x !== "custom");
     const next = withoutCustom.includes(id)
       ? // 이미 체크된 항목이면 해제
         withoutCustom.filter((x) => x !== id)
@@ -37,36 +45,63 @@ export default function StringCheckboxes({ items, stringTypes, customInput, onCh
       {/* 상품 리스트 항목 */}
       {items.map((item) => {
         const isChecked = stringTypes.includes(item.id);
-        const isDisabled = stringTypes.includes('custom');
+        const isDisabled = stringTypes.includes("custom");
 
         return (
           <label
             key={item.id}
             className={cn(
-              'flex items-center justify-between border rounded-lg px-4 py-2 cursor-pointer transition-all',
-              'hover:border-primary',
-              isChecked ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-muted',
-              isDisabled ? 'opacity-50 pointer-events-none' : ''
+              "flex items-center justify-between border rounded-lg px-4 py-2 cursor-pointer transition-all",
+              "hover:border-primary",
+              isChecked
+                ? "border-primary bg-primary/10 dark:bg-primary/20"
+                : "border-muted",
+              isDisabled ? "opacity-50 pointer-events-none" : "",
             )}
           >
             <div className="flex items-center gap-2">
-              <input type="checkbox" className="form-checkbox" checked={isChecked} onChange={() => toggle(item.id)} disabled={isDisabled} />
+              <input
+                type="checkbox"
+                className="form-checkbox"
+                checked={isChecked}
+                onChange={() => toggle(item.id)}
+                disabled={isDisabled}
+              />
               <span className="font-medium">{item.name}</span>
             </div>
-            <span className="text-sm text-muted-foreground">{item.mountingFee?.toLocaleString()}원</span>
+            <span className="text-sm text-muted-foreground">
+              {item.mountingFee?.toLocaleString()}원
+            </span>
           </label>
         );
       })}
 
       {/* 직접 입력 항목 */}
       {!hideCustom && (
-        <label className={cn('flex flex-col gap-2 border rounded-lg px-4 py-2 cursor-pointer transition-all', stringTypes.includes('custom') ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-muted')}>
+        <label
+          className={cn(
+            "flex flex-col gap-2 border rounded-lg px-4 py-2 cursor-pointer transition-all",
+            stringTypes.includes("custom")
+              ? "border-primary bg-primary/10 dark:bg-primary/20"
+              : "border-muted",
+          )}
+        >
           <div className="flex items-center gap-2">
-            <input type="checkbox" checked={stringTypes.includes('custom')} onChange={() => toggle('custom')} />
+            <input
+              type="checkbox"
+              checked={stringTypes.includes("custom")}
+              onChange={() => toggle("custom")}
+            />
             <span className="font-medium">직접 입력하기</span>
           </div>
           {/* 직접 입력 필드 */}
-          {stringTypes.includes('custom') && <Input placeholder="직접 입력한 스트링 이름" value={customInput} onChange={(e) => onCustomInputChange(e.target.value)} />}
+          {stringTypes.includes("custom") && (
+            <Input
+              placeholder="직접 입력한 스트링 이름"
+              value={customInput}
+              onChange={(e) => onCustomInputChange(e.target.value)}
+            />
+          )}
         </label>
       )}
     </div>

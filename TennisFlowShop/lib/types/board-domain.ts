@@ -1,4 +1,4 @@
-export const BOARD_KINDS = ['free', 'market', 'gear', 'notice', 'qna'] as const;
+export const BOARD_KINDS = ["free", "market", "gear", "notice", "qna"] as const;
 
 export type BoardKind = (typeof BOARD_KINDS)[number];
 

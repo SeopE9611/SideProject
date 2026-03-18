@@ -36,5 +36,5 @@
 // }
 
 export async function POST() {
-  return new Response('Gone', { status: 410 });
+  return new Response("Gone", { status: 410 });
 }

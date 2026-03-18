@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { getDb } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
 
 /**
  * - 상단 '쪽지함 N' 뱃지용
@@ -10,14 +10,17 @@ import { getCurrentUser } from '@/lib/hooks/get-current-user';
 export async function GET() {
   const me = await getCurrentUser();
   if (!me) {
-    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401 },
+    );
   }
 
   try {
     const db = await getDb();
     const now = new Date();
 
-    const count = await db.collection('messages').countDocuments({
+    const count = await db.collection("messages").countDocuments({
       toUserId: new ObjectId(me.id),
       readAt: null,
       toDeletedAt: null,
@@ -27,7 +30,10 @@ export async function GET() {
 
     return NextResponse.json({ ok: true, count });
   } catch (e) {
-    console.error('[messages/unread-count] error', e);
-    return NextResponse.json({ ok: false, error: 'DB unavailable' }, { status: 503 });
+    console.error("[messages/unread-count] error", e);
+    return NextResponse.json(
+      { ok: false, error: "DB unavailable" },
+      { status: 503 },
+    );
   }
 }

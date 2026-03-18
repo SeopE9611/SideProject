@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
+import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth.utils";
 
 function safeVerifyAccessToken(token?: string) {
   if (!token) return null;
@@ -13,17 +13,21 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
+export const dynamic = "force-dynamic";
 
-export const dynamic = 'force-dynamic';
-
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const { id } = await params;
   const db = (await clientPromise).db();
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ message: 'BAD_ID' }, { status: 400 });
+    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   }
-  const doc = await db.collection('rental_orders').findOne({ _id: new ObjectId(id) });
-  if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  const doc = await db
+    .collection("rental_orders")
+    .findOne({ _id: new ObjectId(id) });
+  if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
   /**
    * 권한 가드(회원 대여건만)
@@ -32,24 +36,27 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
    */
   if (doc.userId) {
     const jar = await cookies();
-    const at = jar.get('accessToken')?.value;
+    const at = jar.get("accessToken")?.value;
     const payload = safeVerifyAccessToken(at);
     const ownerId = String(doc.userId);
-    const isOwner = String(payload?.sub ?? '') === ownerId;
-    const isAdmin = payload?.role === 'admin';
+    const isOwner = String(payload?.sub ?? "") === ownerId;
+    const isAdmin = payload?.role === "admin";
 
     if (!isOwner && !isAdmin) {
-      return NextResponse.json({ message: 'FORBIDDEN' }, { status: 403 });
+      return NextResponse.json({ message: "FORBIDDEN" }, { status: 403 });
     }
   }
 
   // 고객 정보
   let user: { name?: string; email?: string; phone?: string } | null = null;
 
-  const userId = doc.userId ? String(doc.userId) : '';
+  const userId = doc.userId ? String(doc.userId) : "";
   if (ObjectId.isValid(userId)) {
-    const u = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (u) user = { name: u.name ?? '', email: u.email ?? '', phone: u.phone ?? '' };
+    const u = await db
+      .collection("users")
+      .findOne({ _id: new ObjectId(userId) });
+    if (u)
+      user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
   }
 
   const cancelReq = doc.cancelRequest ?? null;
@@ -61,7 +68,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status,
+    status:
+      typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
     servicePickupMethod: doc.servicePickupMethod ?? null,
     amount: doc.amount, // { deposit, fee, total }
     // 스트링 교체 요청
@@ -69,7 +77,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       ? {
           requested: !!doc.stringing.requested,
           stringId: doc.stringing.stringId?.toString?.() ?? null,
-          name: doc.stringing.name ?? '',
+          name: doc.stringing.name ?? "",
           price: Number(doc.stringing.price ?? 0),
           mountingFee: Number(doc.stringing.mountingFee ?? 0),
           image: doc.stringing.image ?? null,
@@ -89,9 +97,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     // 취소 요청 정보
     cancelRequest: cancelReq
       ? {
-          status: cancelReq.status ?? 'requested',
-          reasonCode: cancelReq.reasonCode ?? '',
-          reasonText: cancelReq.reasonText ?? '',
+          status: cancelReq.status ?? "requested",
+          reasonCode: cancelReq.reasonCode ?? "",
+          reasonText: cancelReq.reasonText ?? "",
           requestedAt: cancelReq.requestedAt ?? null,
           processedAt: cancelReq.processedAt ?? null,
         }

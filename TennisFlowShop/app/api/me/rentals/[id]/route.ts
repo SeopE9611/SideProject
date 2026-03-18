@@ -1,83 +1,108 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { canTransitIdempotent } from '@/app/features/rentals/utils/status';
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { canTransitIdempotent } from "@/app/features/rentals/utils/status";
 
-export const dynamic = 'force-dynamic';
-
+export const dynamic = "force-dynamic";
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines))
+    return stringDetails.racketLines;
   return [];
 }
 
 function getReceptionLabel(collectionMethod?: string | null): string {
-  if (collectionMethod === 'visit') return '방문 접수';
-  if (collectionMethod === 'courier_pickup') return '기사 방문 수거';
-  return '발송 접수';
+  if (collectionMethod === "visit") return "방문 접수";
+  if (collectionMethod === "courier_pickup") return "기사 방문 수거";
+  return "발송 접수";
 }
 
-
-export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   // 인증
-  const at = (await cookies()).get('accessToken')?.value;
-  if (!at) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const at = (await cookies()).get("accessToken")?.value;
+  if (!at)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
     payload = verifyAccessToken(at);
   } catch {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const sub = String(payload?.sub ?? '');
-  if (!sub || !ObjectId.isValid(sub)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const sub = String(payload?.sub ?? "");
+  if (!sub || !ObjectId.isValid(sub))
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   const userId = new ObjectId(sub);
 
   // 파라미터
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
+  if (!ObjectId.isValid(id))
+    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
 
   const db = (await clientPromise).db();
-  const doc = await db.collection('rental_orders').findOne({
+  const doc = await db.collection("rental_orders").findOne({
     _id: new ObjectId(id),
     userId: userId, // 소유자 검증(중요)
   });
-  if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
-  const appId = (doc as any).stringingApplicationId ? (doc as any).stringingApplicationId.toString?.() ?? String((doc as any).stringingApplicationId) : null;
+  const appId = (doc as any).stringingApplicationId
+    ? ((doc as any).stringingApplicationId.toString?.() ??
+      String((doc as any).stringingApplicationId))
+    : null;
   let applicationSummary = null;
   if (appId && ObjectId.isValid(appId)) {
-    const app = await db.collection('stringing_applications').findOne(
-      { _id: new ObjectId(appId) },
-      { projection: { stringDetails: 1, collectionMethod: 1, status: 1 } },
-    );
+    const app = await db
+      .collection("stringing_applications")
+      .findOne(
+        { _id: new ObjectId(appId) },
+        { projection: { stringDetails: 1, collectionMethod: 1, status: 1 } },
+      );
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
       const tensionSet = Array.from(
         new Set(
           lines
             .map((line: any) => {
-              const main = String(line?.tensionMain ?? '').trim();
-              const cross = String(line?.tensionCross ?? '').trim();
-              if (!main && !cross) return '';
-              return cross && cross !== main ? `${main}/${cross}` : main || cross;
+              const main = String(line?.tensionMain ?? "").trim();
+              const cross = String(line?.tensionCross ?? "").trim();
+              if (!main && !cross) return "";
+              return cross && cross !== main
+                ? `${main}/${cross}`
+                : main || cross;
             })
             .filter(Boolean),
         ),
       );
-      const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? '').trim();
-      const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? '').trim();
+      const preferredDate = String(
+        (app as any)?.stringDetails?.preferredDate ?? "",
+      ).trim();
+      const preferredTime = String(
+        (app as any)?.stringDetails?.preferredTime ?? "",
+      ).trim();
       applicationSummary = {
-        status: String((app as any)?.status ?? '접수완료'),
+        status: String((app as any)?.status ?? "접수완료"),
         lineCount: lines.length,
-        stringNames: Array.from(new Set(lines.map((line: any) => String(line?.stringName ?? '').trim()).filter(Boolean))),
-        tensionSummary: tensionSet.length ? tensionSet.join(', ') : null,
+        stringNames: Array.from(
+          new Set(
+            lines
+              .map((line: any) => String(line?.stringName ?? "").trim())
+              .filter(Boolean),
+          ),
+        ),
+        tensionSummary: tensionSet.length ? tensionSet.join(", ") : null,
         receptionLabel: getReceptionLabel((app as any).collectionMethod),
-        reservationLabel: preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+        reservationLabel:
+          preferredDate && preferredTime
+            ? `${preferredDate} ${preferredTime}`
+            : null,
       };
     }
   }
@@ -89,7 +114,8 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status: typeof doc.status === 'string' ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
+    status:
+      typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
     amount: doc.amount, // { fee, deposit, stringPrice?, stringingFee?, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각
@@ -107,7 +133,10 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
      * - 신청서 ID가 비어있는 데이터가 있을 수 있으므로 boolean도 같이 내려준다.
      * - 상세 화면에서 "교체 신청하기" CTA 노출 여부 판단에 사용
      */
-    withStringService: Boolean((doc as any)?.stringing?.requested) || Boolean((doc as any)?.isStringServiceApplied) || Boolean((doc as any)?.stringingApplicationId),
+    withStringService:
+      Boolean((doc as any)?.stringing?.requested) ||
+      Boolean((doc as any)?.isStringServiceApplied) ||
+      Boolean((doc as any)?.stringingApplicationId),
 
     shipping: {
       // 운송장/배송 정보
@@ -119,54 +148,70 @@ export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) 
   });
 }
 
-export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
   // 인증
-  const at = (await cookies()).get('accessToken')?.value;
-  if (!at) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const at = (await cookies()).get("accessToken")?.value;
+  if (!at)
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
     payload = verifyAccessToken(at);
   } catch {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const sub = String(payload?.sub ?? '');
-  if (!sub || !ObjectId.isValid(sub)) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const sub = String(payload?.sub ?? "");
+  if (!sub || !ObjectId.isValid(sub))
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   const userId = new ObjectId(sub);
 
   // 파라미터
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id)) return NextResponse.json({ message: 'Bad Request' }, { status: 400 });
+  if (!ObjectId.isValid(id))
+    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
 
   // 본인 소유 대여건 조회
   const db = (await clientPromise).db();
-  const rentals = db.collection('rental_orders');
+  const rentals = db.collection("rental_orders");
   const doc = await rentals.findOne({
     _id: new ObjectId(id),
     userId: userId, // 소유자 검증(중요)
   });
-  if (!doc) return NextResponse.json({ message: 'Not Found' }, { status: 404 });
+  if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
-  const current = (doc as any).status ?? 'pending';
+  const current = (doc as any).status ?? "pending";
 
   // 멱등: 이미 취소 상태면 200 그대로
-  if (current === 'canceled') {
-    return NextResponse.json({ id, status: 'canceled', message: '이미 취소된 대여건입니다.' });
+  if (current === "canceled") {
+    return NextResponse.json({
+      id,
+      status: "canceled",
+      message: "이미 취소된 대여건입니다.",
+    });
   }
 
   // 전이 가능 여부 + created 상태에서만 허용
-  if (!canTransitIdempotent(current, 'canceled') || current !== 'pending') {
-    return NextResponse.json({ message: '현재 상태에서는 취소할 수 없습니다.', status: current }, { status: 409 });
+  if (!canTransitIdempotent(current, "canceled") || current !== "pending") {
+    return NextResponse.json(
+      { message: "현재 상태에서는 취소할 수 없습니다.", status: current },
+      { status: 409 },
+    );
   }
 
   // 상태 전이 수행
   const now = new Date().toISOString();
-  await rentals.updateOne({ _id: new ObjectId(id) }, { $set: { status: 'canceled', canceledAt: now } });
+  await rentals.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { status: "canceled", canceledAt: now } },
+  );
 
   // 라켓 예약/가용성 되돌리기 로직이 있다면 여기서 처리
   // const rackets = db.collection('used_rackets');
   // await rackets.updateOne({ _id: doc.racketId }, { $set: { reserved: false } });
 
-  return NextResponse.json({ id, status: 'canceled' });
+  return NextResponse.json({ id, status: "canceled" });
 }

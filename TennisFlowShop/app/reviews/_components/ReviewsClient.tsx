@@ -1,34 +1,40 @@
-'use client';
+"use client";
 
-import useSWRInfinite from 'swr/infinite';
-import { useMemo, useState, useCallback, useEffect } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, X, MessageSquareText, Trophy, Target } from 'lucide-react';
-import ReviewCard from './ReviewCard';
-import ReviewSkeleton from './ReviewSkeleton';
-import { getAuxiliaryMetaBadgeSpec } from '@/lib/badge-style';
+import useSWRInfinite from "swr/infinite";
+import { useMemo, useState, useCallback, useEffect } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, X, MessageSquareText, Trophy, Target } from "lucide-react";
+import ReviewCard from "./ReviewCard";
+import ReviewSkeleton from "./ReviewSkeleton";
+import { getAuxiliaryMetaBadgeSpec } from "@/lib/badge-style";
 
 /** UI 상태 타입 명시 (실수 예방) */
-type RatingFilter = 'all' | '5' | '4' | '3' | '2' | '1';
+type RatingFilter = "all" | "5" | "4" | "3" | "2" | "1";
 
 /** 서버 아이템 타입(표시용) */
 type Item = {
   _id: string;
-  type: 'product' | 'service';
+  type: "product" | "service";
   productId?: string;
   productName?: string;
   productImage?: string;
   service?: string;
   serviceApplicationId?: string;
-  serviceTitle?: string;       
-  serviceTargetName?: string;  
+  serviceTitle?: string;
+  serviceTargetName?: string;
   userName: string;
   rating: number;
   content: string;
@@ -38,34 +44,50 @@ type Item = {
   votedByMe?: boolean;
 };
 
-const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
+const fetcher = (url: string) =>
+  fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function ReviewsClient() {
   /* 컨트롤 상태 */
-  const [tab, setTab] = useState<'product' | 'service' | 'all'>('all');
-  const [sort, setSort] = useState<'latest' | 'helpful' | 'rating'>('latest');
-  const [rating, setRating] = useState<RatingFilter>('all');
+  const [tab, setTab] = useState<"product" | "service" | "all">("all");
+  const [sort, setSort] = useState<"latest" | "helpful" | "rating">("latest");
+  const [rating, setRating] = useState<RatingFilter>("all");
   const [hasPhoto, setHasPhoto] = useState<boolean>(false);
 
   /* SWR Infinite 키 생성: 서버 API 쿼리와 1:1 매칭 (디버깅/유지보수 쉬움) */
   const getKey = useCallback(
     (pageIndex: number, prev: any) => {
       if (prev && !prev.nextCursor) return null;
-      const cursor = pageIndex === 0 ? '' : `&cursor=${encodeURIComponent(prev.nextCursor)}`;
-      const q = [`type=${tab}`, 'withHidden=mask', `sort=${sort}`, rating !== 'all' ? `rating=${rating}` : '', hasPhoto ? `hasPhoto=1` : '', 'limit=10', cursor].filter(Boolean).join('&');
+      const cursor =
+        pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev.nextCursor)}`;
+      const q = [
+        `type=${tab}`,
+        "withHidden=mask",
+        `sort=${sort}`,
+        rating !== "all" ? `rating=${rating}` : "",
+        hasPhoto ? `hasPhoto=1` : "",
+        "limit=10",
+        cursor,
+      ]
+        .filter(Boolean)
+        .join("&");
       return `/api/reviews?${q}`;
     },
-    [tab, sort, rating, hasPhoto]
+    [tab, sort, rating, hasPhoto],
   );
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    fetch('/api/users/me', { credentials: 'include' })
+    fetch("/api/users/me", { credentials: "include" })
       .then((r) => r.json())
       .then((u) => {
-        const flag = u?.role === 'admin' || u?.role === 'ADMIN' || u?.isAdmin === true || (Array.isArray(u?.roles) && u.roles.includes('admin'));
+        const flag =
+          u?.role === "admin" ||
+          u?.role === "ADMIN" ||
+          u?.isAdmin === true ||
+          (Array.isArray(u?.roles) && u.roles.includes("admin"));
         setIsAdmin(Boolean(flag));
         setIsLoggedIn(!!u && !u?.error); // 로그인 여부
       })
@@ -74,26 +96,41 @@ export default function ReviewsClient() {
         setIsLoggedIn(false);
       });
   }, []);
-  const { data, size, setSize, isValidating, mutate } = useSWRInfinite(getKey, fetcher, {
-    revalidateFirstPage: false,
-    persistSize: true,
-  });
+  const { data, size, setSize, isValidating, mutate } = useSWRInfinite(
+    getKey,
+    fetcher,
+    {
+      revalidateFirstPage: false,
+      persistSize: true,
+    },
+  );
 
   /* 파생 상태 */
-  const items = useMemo<Item[]>(() => (data ? data.flatMap((d: any) => d.items as Item[]) : []), [data]);
-  const hasMore = useMemo(() => (data ? Boolean(data[data.length - 1]?.nextCursor) : true), [data]);
+  const items = useMemo<Item[]>(
+    () => (data ? data.flatMap((d: any) => d.items as Item[]) : []),
+    [data],
+  );
+  const hasMore = useMemo(
+    () => (data ? Boolean(data[data.length - 1]?.nextCursor) : true),
+    [data],
+  );
   const isFirstLoading = !data && isValidating;
 
   /* 필터 요약 칩 표시용 텍스트 */
-  const summary = [tab === 'all' ? '전체' : tab === 'product' ? '상품' : '서비스', sort === 'latest' ? '최신순' : sort === 'helpful' ? '도움순' : '평점순', rating !== 'all' ? `${rating}점만` : null, hasPhoto ? '사진만' : null]
+  const summary = [
+    tab === "all" ? "전체" : tab === "product" ? "상품" : "서비스",
+    sort === "latest" ? "최신순" : sort === "helpful" ? "도움순" : "평점순",
+    rating !== "all" ? `${rating}점만` : null,
+    hasPhoto ? "사진만" : null,
+  ]
     .filter(Boolean)
-    .join(' · ');
+    .join(" · ");
 
   /* 모든 필터 리셋 */
   const resetFilters = () => {
-    setTab('all');
-    setSort('latest');
-    setRating('all');
+    setTab("all");
+    setSort("latest");
+    setRating("all");
     setHasPhoto(false);
     // 첫 페이지부터 다시 로드
     mutate([], { revalidate: true });
@@ -102,7 +139,10 @@ export default function ReviewsClient() {
   return (
     <div className="min-h-screen bg-muted/30 relative">
       {/* Tennis court background pattern */}
-      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
+      <HeroCourtBackdrop
+        opacity="soft"
+        className="h-full w-full text-primary"
+      />
 
       <div className="relative z-10 container mx-auto px-4 py-6 md:py-8 space-y-4 md:space-y-6">
         {/* Header with tennis theme */}
@@ -113,7 +153,10 @@ export default function ReviewsClient() {
             </div>
             <h1 className="text-3xl font-bold text-foreground">고객 리뷰</h1>
           </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와 서비스 경험을 공유합니다.</p>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            전문가와 고객들의 솔직한 후기를 확인하세요. 최고의 테니스 장비와
+            서비스 경험을 공유합니다.
+          </p>
         </div>
 
         {/* Control panel with tennis court styling */}
@@ -124,13 +167,22 @@ export default function ReviewsClient() {
               {/* Tabs with tennis court styling */}
               <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
                 <TabsList className="bg-muted rounded-full p-1">
-                  <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger
+                    value="all"
+                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
                     전체
                   </TabsTrigger>
-                  <TabsTrigger value="product" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger
+                    value="product"
+                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
                     상품
                   </TabsTrigger>
-                  <TabsTrigger value="service" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsTrigger
+                    value="service"
+                    className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
                     서비스
                   </TabsTrigger>
                 </TabsList>
@@ -149,7 +201,10 @@ export default function ReviewsClient() {
               </Select>
 
               {/* Rating filter */}
-              <Select value={rating} onValueChange={(v) => setRating(v as RatingFilter)}>
+              <Select
+                value={rating}
+                onValueChange={(v) => setRating(v as RatingFilter)}
+              >
                 <SelectTrigger className="w-[130px] rounded-full border-border">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
@@ -165,17 +220,30 @@ export default function ReviewsClient() {
 
               {/* Photo filter checkbox */}
               <label className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
-                <Checkbox checked={hasPhoto} onCheckedChange={(v) => setHasPhoto(Boolean(v))} className="rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-border" />
+                <Checkbox
+                  checked={hasPhoto}
+                  onCheckedChange={(v) => setHasPhoto(Boolean(v))}
+                  className="rounded border-border data-[state=checked]:bg-primary data-[state=checked]:border-border"
+                />
                 사진만 보기
               </label>
 
               {/* Filter summary and reset */}
               <div className="ml-auto flex items-center gap-3">
-                <Badge variant={getAuxiliaryMetaBadgeSpec('attached').variant} className="gap-2 rounded-full px-3 py-1">
+                <Badge
+                  variant={getAuxiliaryMetaBadgeSpec("attached").variant}
+                  className="gap-2 rounded-full px-3 py-1"
+                >
                   <Target className="h-3.5 w-3.5" />
                   {summary}
                 </Badge>
-                <Button variant="outline" size="sm" onClick={resetFilters} className="rounded-full border-border hover:bg-muted dark:border-border dark:hover:bg-muted bg-transparent" title="필터 초기화">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="rounded-full border-border hover:bg-muted dark:border-border dark:hover:bg-muted bg-transparent"
+                  title="필터 초기화"
+                >
                   <X className="h-4 w-4 mr-1" />
                   초기화
                 </Button>
@@ -200,7 +268,13 @@ export default function ReviewsClient() {
             {items.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {items.map((it) => (
-                  <ReviewCard key={it._id} item={it} isAdmin={isAdmin} isLoggedIn={isLoggedIn} onMutate={() => mutate()} />
+                  <ReviewCard
+                    key={it._id}
+                    item={it}
+                    isAdmin={isAdmin}
+                    isLoggedIn={isLoggedIn}
+                    onMutate={() => mutate()}
+                  />
                 ))}
               </div>
             ) : (
@@ -209,8 +283,12 @@ export default function ReviewsClient() {
                   <MessageSquareText className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">리뷰가 없습니다</h3>
-                  <p className="text-sm text-muted-foreground">조건에 맞는 리뷰를 찾을 수 없습니다.</p>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    리뷰가 없습니다
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    조건에 맞는 리뷰를 찾을 수 없습니다.
+                  </p>
                 </div>
               </div>
             )}
@@ -231,11 +309,13 @@ export default function ReviewsClient() {
                       <span className="sr-only">리뷰를 불러오는 중입니다</span>
                     </>
                   ) : (
-                    '더 보기'
+                    "더 보기"
                   )}
                 </Button>
               ) : (
-                <div className="text-sm text-muted-foreground py-6 text-center">마지막 페이지입니다</div>
+                <div className="text-sm text-muted-foreground py-6 text-center">
+                  마지막 페이지입니다
+                </div>
               )}
             </div>
           </>

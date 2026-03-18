@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { UNSAVED_CHANGES_MESSAGE } from '@/lib/hooks/useUnsavedChangesGuard';
+import { useEffect } from "react";
+import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 
-const BACK_GUARD_MARKER_KEY = '__unsavedBackGuard';
+const BACK_GUARD_MARKER_KEY = "__unsavedBackGuard";
 
 const isGuardState = (state: unknown, markerId: string) => {
-  if (!state || typeof state !== 'object') return false;
+  if (!state || typeof state !== "object") return false;
   return (state as Record<string, unknown>)[BACK_GUARD_MARKER_KEY] === markerId;
 };
 
@@ -13,11 +13,14 @@ const isEditableElementFocused = () => {
   if (!(activeElement instanceof HTMLElement)) return false;
 
   const tagName = activeElement.tagName;
-  if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') return true;
+  if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT")
+    return true;
 
   if (activeElement.isContentEditable) return true;
 
-  return Boolean(activeElement.closest('[contenteditable]:not([contenteditable="false"])'));
+  return Boolean(
+    activeElement.closest('[contenteditable]:not([contenteditable="false"])'),
+  );
 };
 
 /**
@@ -26,7 +29,10 @@ const isEditableElementFocused = () => {
  * - dirty일 때만 히스토리 1칸을 추가해 back 이벤트를 로컬 confirm으로 확인
  * - 전역 click interception 없이 back 동작만 보호
  */
-export function useBackNavigationGuard(enabled: boolean, message: string = UNSAVED_CHANGES_MESSAGE) {
+export function useBackNavigationGuard(
+  enabled: boolean,
+  message: string = UNSAVED_CHANGES_MESSAGE,
+) {
   useEffect(() => {
     if (!enabled) return;
 
@@ -43,11 +49,13 @@ export function useBackNavigationGuard(enabled: boolean, message: string = UNSAV
       }
 
       const nextState = {
-        ...(currentState && typeof currentState === 'object' ? currentState : {}),
+        ...(currentState && typeof currentState === "object"
+          ? currentState
+          : {}),
         [BACK_GUARD_MARKER_KEY]: markerId,
       };
 
-      window.history.pushState(nextState, '', window.location.href);
+      window.history.pushState(nextState, "", window.location.href);
       hasGuardEntry = true;
     };
 
@@ -75,21 +83,30 @@ export function useBackNavigationGuard(enabled: boolean, message: string = UNSAV
 
       isNavigatingAway = true;
       active = false;
-      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener("popstate", onPopState);
       window.history.back();
     };
 
-    window.addEventListener('popstate', onPopState);
+    window.addEventListener("popstate", onPopState);
 
     return () => {
       active = false;
-      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener("popstate", onPopState);
 
       const currentState = window.history.state;
-      if (!isNavigatingAway && hasGuardEntry && isGuardState(currentState, markerId)) {
+      if (
+        !isNavigatingAway &&
+        hasGuardEntry &&
+        isGuardState(currentState, markerId)
+      ) {
         // 언마운트 정리 시 실제 히스토리 이동을 만들지 않도록 marker만 제거한다.
-        const { [BACK_GUARD_MARKER_KEY]: _marker, ...rest } = currentState as Record<string, unknown>;
-        window.history.replaceState(Object.keys(rest).length > 0 ? rest : null, '', window.location.href);
+        const { [BACK_GUARD_MARKER_KEY]: _marker, ...rest } =
+          currentState as Record<string, unknown>;
+        window.history.replaceState(
+          Object.keys(rest).length > 0 ? rest : null,
+          "",
+          window.location.href,
+        );
       }
     };
   }, [enabled, message]);

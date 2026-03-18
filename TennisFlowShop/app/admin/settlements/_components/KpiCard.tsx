@@ -1,5 +1,12 @@
-'use client';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+"use client";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 // 길이 추정 스케일은 제거(혹은 fallback로만 유지해도 OK)
 const MIN_SCALE = 0.66; // 너무 작아지지 않도록 하한선
@@ -16,7 +23,8 @@ type Props = {
   skeletonWidthClass?: string; // 스켈레톤 너비 클래스 (기본 w-24)
 };
 
-const numberClass = 'block tabular-nums font-extrabold tracking-tight leading-none whitespace-nowrap';
+const numberClass =
+  "block tabular-nums font-extrabold tracking-tight leading-none whitespace-nowrap";
 
 // 글자 길이에 따라 '스케일'만 변경 (폰트사이즈는 고정)
 function scaleByLength(len: number) {
@@ -26,11 +34,22 @@ function scaleByLength(len: number) {
   if (len <= 12) return 0.82;
   return 0.76; // 더 길어지면 조금 더 축소
 }
-const numberBaseClass = 'text-3xl font-bold text-foreground ' + 'tabular-nums tracking-tight leading-none whitespace-nowrap';
+const numberBaseClass =
+  "text-3xl font-bold text-foreground " +
+  "tabular-nums tracking-tight leading-none whitespace-nowrap";
 
 const formatFull = (n: number) => `₩${n.toLocaleString()}`;
 
-export default function KpiCard({ label, value, icon, storageKey, formatCompact, isLoading = false, hint = true, skeletonWidthClass = 'w-24' }: Props) {
+export default function KpiCard({
+  label,
+  value,
+  icon,
+  storageKey,
+  formatCompact,
+  isLoading = false,
+  hint = true,
+  skeletonWidthClass = "w-24",
+}: Props) {
   // SSR/CSR 모두 동일한 값으로 시작
   const [compact, setCompact] = useState<boolean>(true);
 
@@ -42,7 +61,7 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
     setHydrated(true);
     try {
       const saved = window.localStorage.getItem(storageKey);
-      if (saved !== null) setCompact(saved === '1');
+      if (saved !== null) setCompact(saved === "1");
     } catch {}
   }, [storageKey]);
 
@@ -50,11 +69,14 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
   useEffect(() => {
     if (!hydrated) return;
     try {
-      window.localStorage.setItem(storageKey, compact ? '1' : '0');
+      window.localStorage.setItem(storageKey, compact ? "1" : "0");
     } catch {}
   }, [compact, hydrated, storageKey]);
 
-  const display = useMemo(() => (compact ? formatCompact(value) : formatFull(value)), [compact, value, formatCompact]);
+  const display = useMemo(
+    () => (compact ? formatCompact(value) : formatFull(value)),
+    [compact, value, formatCompact],
+  );
 
   // 숫자 칼럼/텍스트 참조
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -68,7 +90,7 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
     if (!wrap || !text) return;
 
     // 자연 폭으로 측정하기 위해 잠시 스케일 1로
-    text.style.transform = 'scale(1)';
+    text.style.transform = "scale(1)";
     // 다음 프레임에 실제 폭을 측정
     requestAnimationFrame(() => {
       const wrapW = wrap.clientWidth; // 사용 가능한 폭
@@ -111,16 +133,18 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
               className="block w-full text-left focus:outline-none"
             >
               {isLoading ? (
-                <span className={`inline-block h-8 ${skeletonWidthClass} rounded bg-muted/70 animate-pulse`} />
+                <span
+                  className={`inline-block h-8 ${skeletonWidthClass} rounded bg-muted/70 animate-pulse`}
+                />
               ) : (
                 <span
                   ref={textRef}
                   className={numberClass}
                   style={{
-                    fontSize: '32px',
-                    transformOrigin: 'left center',
-                    display: 'inline-block',
-                    willChange: 'transform',
+                    fontSize: "32px",
+                    transformOrigin: "left center",
+                    display: "inline-block",
+                    willChange: "transform",
                     transform: `scale(${scale})`,
                   }}
                 >
@@ -128,11 +152,19 @@ export default function KpiCard({ label, value, icon, storageKey, formatCompact,
                 </span>
               )}
 
-              {hint && <span className="mt-1 block text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">클릭하여 단위 전환</span>}
+              {hint && (
+                <span className="mt-1 block text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                  클릭하여 단위 전환
+                </span>
+              )}
             </button>
           </div>
 
-          {icon && <div className="w-10 h-10 flex-shrink-0 grid place-items-center rounded-xl bg-muted/60 border border-border/60">{icon}</div>}
+          {icon && (
+            <div className="w-10 h-10 flex-shrink-0 grid place-items-center rounded-xl bg-muted/60 border border-border/60">
+              {icon}
+            </div>
+          )}
         </div>
       </div>
     </div>

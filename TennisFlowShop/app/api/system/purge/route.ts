@@ -1,1 +1,1 @@
-export { DELETE } from '@/app/api/admin/system/purge/route';
+export { DELETE } from "@/app/api/admin/system/purge/route";

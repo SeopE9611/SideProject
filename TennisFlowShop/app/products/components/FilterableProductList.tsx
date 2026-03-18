@@ -1,35 +1,53 @@
-'use client';
+"use client";
 
-import { FilterPanel } from '@/app/products/components/FilterPanel';
-import ProductCard from '@/app/products/components/ProductCard';
-import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
-import { Filter, Grid3X3, List, Search } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { FilterPanel } from "@/app/products/components/FilterPanel";
+import ProductCard from "@/app/products/components/ProductCard";
+import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { Filter, Grid3X3, List, Search } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 // 브랜드 리스트
 const brands = [
-  { label: '럭실론', value: 'luxilon' },
-  { label: '테크니화이버', value: 'tecnifibre' },
-  { label: '윌슨', value: 'wilson' },
-  { label: '바볼랏', value: 'babolat' },
-  { label: '헤드', value: 'head' },
-  { label: '요넥스', value: 'yonex' },
-  { label: '솔린코', value: 'solinco' },
-  { label: '던롭', value: 'dunlop' },
+  { label: "럭실론", value: "luxilon" },
+  { label: "테크니화이버", value: "tecnifibre" },
+  { label: "윌슨", value: "wilson" },
+  { label: "바볼랏", value: "babolat" },
+  { label: "헤드", value: "head" },
+  { label: "요넥스", value: "yonex" },
+  { label: "솔린코", value: "solinco" },
+  { label: "던롭", value: "dunlop" },
 ];
 
 // 브랜드 라벨 매핑 (소문자 key)
-const brandLabelMap: Record<string, string> = Object.fromEntries(brands.map(({ value, label }) => [value, label]));
+const brandLabelMap: Record<string, string> = Object.fromEntries(
+  brands.map(({ value, label }) => [value, label]),
+);
 
 // 가격 필터 기본값
 const DEFAULT_MIN_PRICE = 0;
 const DEFAULT_MAX_PRICE = 200000;
-const DEFAULT_PRICE_RANGE: [number, number] = [DEFAULT_MIN_PRICE, DEFAULT_MAX_PRICE];
+const DEFAULT_PRICE_RANGE: [number, number] = [
+  DEFAULT_MIN_PRICE,
+  DEFAULT_MAX_PRICE,
+];
 
 /**
  * 필터 가능한 상품 리스트 (infinite scroll 포함)
@@ -40,44 +58,57 @@ type Props = {
   initialMaterial?: string | null;
 };
 
-export default function FilterableProductList({ initialBrand = null, initialMaterial = null }: Props) {
+export default function FilterableProductList({
+  initialBrand = null,
+  initialMaterial = null,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const isApplyFlow = searchParams.get('from') === 'apply';
+  const isApplyFlow = searchParams.get("from") === "apply";
 
   // 정렬 / 뷰 모드
-  const [sortOption, setSortOption] = useState('latest');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortOption, setSortOption] = useState("latest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // 필터 상태들
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
-  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(initialMaterial);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(
+    initialBrand,
+  );
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(
+    initialMaterial,
+  );
   const [selectedBounce, setSelectedBounce] = useState<number | null>(null);
-  const [selectedDurability, setSelectedDurability] = useState<number | null>(null);
+  const [selectedDurability, setSelectedDurability] = useState<number | null>(
+    null,
+  );
   const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
   const [selectedControl, setSelectedControl] = useState<number | null>(null);
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
-  const [priceRange, setPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
+  const [priceRange, setPriceRange] =
+    useState<[number, number]>(DEFAULT_PRICE_RANGE);
 
   // 모바일(Sheet) 전용: 임시 선택값(draft)
   // - Sheet 안에서 선택해도 즉시 서버 조회가 일어나지 않게 하기 위함
   // - "적용"을 눌렀을 때만 selectedXXX로 커밋한다
   const [draftBrand, setDraftBrand] = useState<string | null>(initialBrand);
-  const [draftMaterial, setDraftMaterial] = useState<string | null>(initialMaterial);
+  const [draftMaterial, setDraftMaterial] = useState<string | null>(
+    initialMaterial,
+  );
   const [draftBounce, setDraftBounce] = useState<number | null>(null);
   const [draftDurability, setDraftDurability] = useState<number | null>(null);
   const [draftSpin, setDraftSpin] = useState<number | null>(null);
   const [draftControl, setDraftControl] = useState<number | null>(null);
   const [draftComfort, setDraftComfort] = useState<number | null>(null);
-  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
+  const [draftPriceRange, setDraftPriceRange] =
+    useState<[number, number]>(DEFAULT_PRICE_RANGE);
 
   // 모바일에서 검색 입력도 draft로만 관리 (취소 시 되돌리기 위함)
-  const [draftSearchQuery, setDraftSearchQuery] = useState('');
+  const [draftSearchQuery, setDraftSearchQuery] = useState("");
 
   // 검색어: 입력 중인 것 / 실제 제출되어 조회에 쓰이는 것
-  const [searchQuery, setSearchQuery] = useState('');
-  const [submittedQuery, setSubmittedQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
 
   // 토글 (모바일용)
   const [showFilters, setShowFilters] = useState(false);
@@ -90,42 +121,46 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
   // URL sync 초기화/변경 관리 (루프 방지)
   const isInitializingRef = useRef(true);
-  const lastSerializedRef = useRef('');
+  const lastSerializedRef = useRef("");
 
   // 초기 URL -> 상태
   useEffect(() => {
     if (isInitializingRef.current) {
-      const brand = searchParams.get('brand');
+      const brand = searchParams.get("brand");
       setSelectedBrand(brand || null);
 
-      const material = searchParams.get('material');
-      if (material && material !== selectedMaterial) setSelectedMaterial(material);
+      const material = searchParams.get("material");
+      if (material && material !== selectedMaterial)
+        setSelectedMaterial(material);
 
-      const bounce = searchParams.get('power');
+      const bounce = searchParams.get("power");
       setSelectedBounce(bounce ? Number(bounce) : null);
 
-      const control = searchParams.get('control');
+      const control = searchParams.get("control");
       setSelectedControl(control ? Number(control) : null);
 
-      const spin = searchParams.get('spin');
+      const spin = searchParams.get("spin");
       setSelectedSpin(spin ? Number(spin) : null);
 
-      const durability = searchParams.get('durability');
+      const durability = searchParams.get("durability");
       setSelectedDurability(durability ? Number(durability) : null);
 
-      const comfort = searchParams.get('comfort');
+      const comfort = searchParams.get("comfort");
       setSelectedComfort(comfort ? Number(comfort) : null);
 
-      const minPrice = searchParams.get('minPrice');
-      const maxPrice = searchParams.get('maxPrice');
-      setPriceRange([minPrice ? Number(minPrice) : DEFAULT_MIN_PRICE, maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE]);
+      const minPrice = searchParams.get("minPrice");
+      const maxPrice = searchParams.get("maxPrice");
+      setPriceRange([
+        minPrice ? Number(minPrice) : DEFAULT_MIN_PRICE,
+        maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE,
+      ]);
 
-      setSortOption(searchParams.get('sort') || 'latest');
+      setSortOption(searchParams.get("sort") || "latest");
 
-      const view = searchParams.get('view');
-      setViewMode(view === 'list' ? 'list' : 'grid');
+      const view = searchParams.get("view");
+      setViewMode(view === "list" ? "list" : "grid");
 
-      const q = searchParams.get('q') || '';
+      const q = searchParams.get("q") || "";
       setSearchQuery(q);
       setSubmittedQuery(q);
 
@@ -136,48 +171,55 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
     // 뒤로/앞으로 등 URL 변화 동기화 (필터 관련만, 검색은 submittedQuery 기준)
 
-    const brand = searchParams.get('brand');
+    const brand = searchParams.get("brand");
     if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
 
-    const material = searchParams.get('material');
-    if ((material || null) !== selectedMaterial) setSelectedMaterial(material || null);
+    const material = searchParams.get("material");
+    if ((material || null) !== selectedMaterial)
+      setSelectedMaterial(material || null);
 
-    const bounce = searchParams.get('power');
+    const bounce = searchParams.get("power");
     const bounceVal = bounce ? Number(bounce) : null;
     if (bounceVal !== selectedBounce) setSelectedBounce(bounceVal);
 
-    const control = searchParams.get('control');
+    const control = searchParams.get("control");
     const controlVal = control ? Number(control) : null;
     if (controlVal !== selectedControl) setSelectedControl(controlVal);
 
-    const spin = searchParams.get('spin');
+    const spin = searchParams.get("spin");
     const spinVal = spin ? Number(spin) : null;
     if (spinVal !== selectedSpin) setSelectedSpin(spinVal);
 
-    const durability = searchParams.get('durability');
+    const durability = searchParams.get("durability");
     const durabilityVal = durability ? Number(durability) : null;
-    if (durabilityVal !== selectedDurability) setSelectedDurability(durabilityVal);
+    if (durabilityVal !== selectedDurability)
+      setSelectedDurability(durabilityVal);
 
-    const comfort = searchParams.get('comfort');
+    const comfort = searchParams.get("comfort");
     const comfortVal = comfort ? Number(comfort) : null;
     if (comfortVal !== selectedComfort) setSelectedComfort(comfortVal);
 
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const pr: [number, number] = [minPrice ? Number(minPrice) : DEFAULT_MIN_PRICE, maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE];
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
+    const pr: [number, number] = [
+      minPrice ? Number(minPrice) : DEFAULT_MIN_PRICE,
+      maxPrice ? Number(maxPrice) : DEFAULT_MAX_PRICE,
+    ];
     if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
 
-    const sort = searchParams.get('sort') || 'latest';
+    const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
-    const view = searchParams.get('view');
-    const desiredView = view === 'list' ? 'list' : 'grid';
-    if (desiredView !== viewMode) setViewMode(desiredView as 'grid' | 'list');
+    const view = searchParams.get("view");
+    const desiredView = view === "list" ? "list" : "grid";
+    if (desiredView !== viewMode) setViewMode(desiredView as "grid" | "list");
   }, [searchParams]);
 
   // 기본 범위면 아예 min/max를 안 보내서 "가격 필터 미적용" 상태 유지
-  const minPriceParam = priceRange[0] > DEFAULT_MIN_PRICE ? priceRange[0] : undefined;
-  const maxPriceParam = priceRange[1] < DEFAULT_MAX_PRICE ? priceRange[1] : undefined;
+  const minPriceParam =
+    priceRange[0] > DEFAULT_MIN_PRICE ? priceRange[0] : undefined;
+  const maxPriceParam =
+    priceRange[1] < DEFAULT_MAX_PRICE ? priceRange[1] : undefined;
 
   // 서버 필터링 + 무한 스크롤
   const {
@@ -202,7 +244,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     limit: 6,
     minPrice: minPriceParam,
     maxPrice: maxPriceParam,
-    purpose: isApplyFlow ? 'stringing' : undefined,
+    purpose: isApplyFlow ? "stringing" : undefined,
   });
 
   /**
@@ -215,10 +257,31 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
   // "서버 조회에 영향을 주는 값"들만 묶어서 키로 만든다. (viewMode 같은 UI-only 값은 제외)
   const filterKey = useMemo(() => {
-    return [selectedBrand ?? '', selectedMaterial ?? '', selectedBounce ?? '', selectedDurability ?? '', selectedSpin ?? '', selectedControl ?? '', selectedComfort ?? '', submittedQuery ?? '', sortOption ?? '', priceRange[0], priceRange[1]].join(
-      '|',
-    );
-  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, priceRange]);
+    return [
+      selectedBrand ?? "",
+      selectedMaterial ?? "",
+      selectedBounce ?? "",
+      selectedDurability ?? "",
+      selectedSpin ?? "",
+      selectedControl ?? "",
+      selectedComfort ?? "",
+      submittedQuery ?? "",
+      sortOption ?? "",
+      priceRange[0],
+      priceRange[1],
+    ].join("|");
+  }, [
+    selectedBrand,
+    selectedMaterial,
+    selectedBounce,
+    selectedDurability,
+    selectedSpin,
+    selectedControl,
+    selectedComfort,
+    submittedQuery,
+    sortOption,
+    priceRange,
+  ]);
 
   // 필터 키가 바뀌는 "그 순간"에 전환 플래그 ON (페인트 전에 실행)
   useLayoutEffect(() => {
@@ -268,8 +331,8 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
   // 검색 초기화
   const handleClearSearch = useCallback(() => {
-    setSearchQuery('');
-    setSubmittedQuery('');
+    setSearchQuery("");
+    setSubmittedQuery("");
     setIsUiTransitioning(true);
     resetInfinite();
   }, [resetInfinite]);
@@ -285,16 +348,16 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setSelectedControl(null);
     setSelectedComfort(null);
     setPriceRange(DEFAULT_PRICE_RANGE);
-    setSortOption('latest');
-    setViewMode('grid');
-    setSearchQuery('');
-    setSubmittedQuery('');
+    setSortOption("latest");
+    setViewMode("grid");
+    setSearchQuery("");
+    setSubmittedQuery("");
     setIsUiTransitioning(true);
     resetInfinite();
   }, [resetInfinite]);
 
   const handleClearInput = useCallback(() => {
-    setSearchQuery('');
+    setSearchQuery("");
   }, []);
 
   // draft를 현재 applied(selectedXXX) 상태로 동기화 (Sheet 열 때 / 취소할 때 사용)
@@ -308,7 +371,17 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setDraftComfort(selectedComfort);
     setDraftPriceRange(priceRange);
     setDraftSearchQuery(searchQuery);
-  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, priceRange, searchQuery]);
+  }, [
+    selectedBrand,
+    selectedMaterial,
+    selectedBounce,
+    selectedDurability,
+    selectedSpin,
+    selectedControl,
+    selectedComfort,
+    priceRange,
+    searchQuery,
+  ]);
 
   // Sheet 열기: 열릴 때마다 draft를 applied로 맞춰서 "현재 상태"를 보여준다
   const openFiltersSheet = useCallback(() => {
@@ -339,7 +412,18 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setIsUiTransitioning(true);
     resetInfinite(); // 여기서만 서버 재조회 발생
     setShowFilters(false); // 적용 후 닫기
-  }, [draftBrand, draftMaterial, draftBounce, draftDurability, draftSpin, draftControl, draftComfort, draftPriceRange, draftSearchQuery, resetInfinite]);
+  }, [
+    draftBrand,
+    draftMaterial,
+    draftBounce,
+    draftDurability,
+    draftSpin,
+    draftControl,
+    draftComfort,
+    draftPriceRange,
+    draftSearchQuery,
+    resetInfinite,
+  ]);
 
   // 모바일에서만 "초기화" (draft만 초기화; 적용 전까진 실제 결과는 안 바뀜)
   const handleResetAllDraft = useCallback(() => {
@@ -352,7 +436,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     setDraftControl(null);
     setDraftComfort(null);
     setDraftPriceRange(DEFAULT_PRICE_RANGE);
-    setDraftSearchQuery('');
+    setDraftSearchQuery("");
   }, []);
 
   // Sheet overlay/ESC로 닫히는 경우도 "취소"로 처리
@@ -368,7 +452,7 @@ export default function FilterableProductList({ initialBrand = null, initialMate
   useEffect(() => {
     if (!showFilters) return;
 
-    const mql = window.matchMedia('(min-width: 1200px)');
+    const mql = window.matchMedia("(min-width: 1200px)");
     const onChange = (e: MediaQueryListEvent) => {
       if (e.matches) cancelFiltersSheet();
     };
@@ -379,16 +463,39 @@ export default function FilterableProductList({ initialBrand = null, initialMate
       return;
     }
 
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
   }, [showFilters, cancelFiltersSheet]);
 
   // active filter 개수 계산
-  const priceChanged = priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;
-  const activeFiltersCount = [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, priceChanged].filter(Boolean).length;
+  const priceChanged =
+    priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;
+  const activeFiltersCount = [
+    selectedBrand,
+    selectedMaterial,
+    selectedBounce,
+    selectedDurability,
+    selectedSpin,
+    selectedControl,
+    selectedComfort,
+    submittedQuery,
+    priceChanged,
+  ].filter(Boolean).length;
 
-  const draftPriceChanged = draftPriceRange[0] > DEFAULT_MIN_PRICE || draftPriceRange[1] < DEFAULT_MAX_PRICE;
-  const activeDraftCount = [draftBrand, draftMaterial, draftBounce, draftDurability, draftSpin, draftControl, draftComfort, draftSearchQuery, draftPriceChanged].filter(Boolean).length;
+  const draftPriceChanged =
+    draftPriceRange[0] > DEFAULT_MIN_PRICE ||
+    draftPriceRange[1] < DEFAULT_MAX_PRICE;
+  const activeDraftCount = [
+    draftBrand,
+    draftMaterial,
+    draftBounce,
+    draftDurability,
+    draftSpin,
+    draftControl,
+    draftComfort,
+    draftSearchQuery,
+    draftPriceChanged,
+  ].filter(Boolean).length;
 
   // 상태 -> URL 반영 (검색어는 submittedQuery만)
   useEffect(() => {
@@ -402,28 +509,64 @@ export default function FilterableProductList({ initialBrand = null, initialMate
       else params.delete(key);
     };
 
-    setOrDelete('brand', selectedBrand);
-    setOrDelete('material', selectedMaterial);
-    setOrDelete('power', selectedBounce !== null ? String(selectedBounce) : null);
-    setOrDelete('control', selectedControl !== null ? String(selectedControl) : null);
-    setOrDelete('spin', selectedSpin !== null ? String(selectedSpin) : null);
-    setOrDelete('durability', selectedDurability !== null ? String(selectedDurability) : null);
-    setOrDelete('comfort', selectedComfort !== null ? String(selectedComfort) : null);
-    setOrDelete('q', submittedQuery ? submittedQuery : null);
+    setOrDelete("brand", selectedBrand);
+    setOrDelete("material", selectedMaterial);
+    setOrDelete(
+      "power",
+      selectedBounce !== null ? String(selectedBounce) : null,
+    );
+    setOrDelete(
+      "control",
+      selectedControl !== null ? String(selectedControl) : null,
+    );
+    setOrDelete("spin", selectedSpin !== null ? String(selectedSpin) : null);
+    setOrDelete(
+      "durability",
+      selectedDurability !== null ? String(selectedDurability) : null,
+    );
+    setOrDelete(
+      "comfort",
+      selectedComfort !== null ? String(selectedComfort) : null,
+    );
+    setOrDelete("q", submittedQuery ? submittedQuery : null);
 
     // 기본값이면 URL에 굳이 남기지 않기(기존 동작 유지)
-    setOrDelete('sort', sortOption && sortOption !== 'latest' ? sortOption : null);
-    setOrDelete('view', viewMode !== 'grid' ? viewMode : null);
-    setOrDelete('minPrice', priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null);
-    setOrDelete('maxPrice', priceRange[1] < DEFAULT_MAX_PRICE ? String(priceRange[1]) : null);
+    setOrDelete(
+      "sort",
+      sortOption && sortOption !== "latest" ? sortOption : null,
+    );
+    setOrDelete("view", viewMode !== "grid" ? viewMode : null);
+    setOrDelete(
+      "minPrice",
+      priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null,
+    );
+    setOrDelete(
+      "maxPrice",
+      priceRange[1] < DEFAULT_MAX_PRICE ? String(priceRange[1]) : null,
+    );
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
     lastSerializedRef.current = newSearch;
 
-    const nextUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+    const nextUrl = `${pathname}${newSearch ? `?${newSearch}` : ""}`;
     router.replace(nextUrl, { scroll: false });
-  }, [selectedBrand, selectedMaterial, selectedBounce, selectedDurability, selectedSpin, selectedControl, selectedComfort, submittedQuery, sortOption, viewMode, priceRange, router, pathname, searchParams]);
+  }, [
+    selectedBrand,
+    selectedMaterial,
+    selectedBounce,
+    selectedDurability,
+    selectedSpin,
+    selectedControl,
+    selectedComfort,
+    submittedQuery,
+    sortOption,
+    viewMode,
+    priceRange,
+    router,
+    pathname,
+    searchParams,
+  ]);
   // infinite scroll 관찰자
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastProductRef = useCallback(
@@ -502,21 +645,29 @@ export default function FilterableProductList({ initialBrand = null, initialMate
     brands,
     onClose: cancelFiltersSheet, // X/닫기 = 취소
     onSearchSubmit: applyFiltersSheet, // "검색" 버튼/엔터 = 적용+닫기+조회
-    onClearSearch: () => setDraftSearchQuery(''),
-    onClearInput: () => setDraftSearchQuery(''),
+    onClearSearch: () => setDraftSearchQuery(""),
+    onClearInput: () => setDraftSearchQuery(""),
   };
 
   return (
     <>
       <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
-        <SheetContent side="right" className="w-[92vw] max-w-sm p-0 overflow-y-auto">
+        <SheetContent
+          side="right"
+          className="w-[92vw] max-w-sm p-0 overflow-y-auto"
+        >
           <FilterPanel {...mobileFilterPanelProps} />
         </SheetContent>
       </Sheet>
 
       <div className="grid grid-cols-1 gap-4 bp-md:gap-8 bp-lg:grid-cols-4">
         {/* 필터 사이드바 */}
-        <div className={cn('hidden bp-lg:block', 'space-y-4 md:space-y-6 bp-lg:col-span-1')}>
+        <div
+          className={cn(
+            "hidden bp-lg:block",
+            "space-y-4 md:space-y-6 bp-lg:col-span-1",
+          )}
+        >
           <div className="sticky top-20 self-start">
             <FilterPanel {...desktopFilterPanelProps} />
           </div>
@@ -526,9 +677,24 @@ export default function FilterableProductList({ initialBrand = null, initialMate
         <div className="bp-lg:col-span-3">
           <div className="mb-6 bp-md:mb-8 space-y-3">
             <div className="flex items-center justify-between">
-              <div className="text-base bp-sm:text-lg font-semibold text-foreground tabular-nums" aria-live="polite">
-                총 {isCountLoading ? <Skeleton className="inline-block h-5 w-12 align-middle" /> : <span className="text-primary font-bold">{total}</span>}개
-                {isCountLoading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : <span className="ml-2 text-sm text-muted-foreground">(표시중 {loadedCount}개)</span>}
+              <div
+                className="text-base bp-sm:text-lg font-semibold text-foreground tabular-nums"
+                aria-live="polite"
+              >
+                총{" "}
+                {isCountLoading ? (
+                  <Skeleton className="inline-block h-5 w-12 align-middle" />
+                ) : (
+                  <span className="text-primary font-bold">{total}</span>
+                )}
+                개
+                {isCountLoading ? (
+                  <Skeleton className="inline-block h-5 w-10 align-middle" />
+                ) : (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    (표시중 {loadedCount}개)
+                  </span>
+                )}
               </div>
               <Button
                 variant="outline"
@@ -549,10 +715,20 @@ export default function FilterableProductList({ initialBrand = null, initialMate
             <div className="flex items-center justify-between gap-3 bp-sm:justify-end">
               {/* 뷰 모드 토글 */}
               <div className="flex items-center border border-border rounded-lg p-1 bg-card">
-                <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="h-8 w-9 p-0">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-8 w-9 p-0"
+                >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
-                <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="h-8 w-9 p-0">
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 w-9 p-0"
+                >
                   <List className="w-4 h-4" />
                 </Button>
               </div>
@@ -574,12 +750,19 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
           {/* 콘텐츠 */}
           {isInitialLikeLoading ? (
-            <div data-cy="products-initial-loading" className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-10 text-center">
-              <p className="text-sm text-muted-foreground">상품 목록을 불러오는 중입니다.</p>
+            <div
+              data-cy="products-initial-loading"
+              className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-10 text-center"
+            >
+              <p className="text-sm text-muted-foreground">
+                상품 목록을 불러오는 중입니다.
+              </p>
             </div>
           ) : error ? (
             <div className="text-center py-10 md:py-16">
-              <p className="text-destructive mb-2">불러오는 중 오류가 발생했습니다.</p>
+              <p className="text-destructive mb-2">
+                불러오는 중 오류가 발생했습니다.
+              </p>
               <Button onClick={() => loadMore()}>다시 시도</Button>
             </div>
           ) : loadedCount === 0 ? (
@@ -587,20 +770,46 @@ export default function FilterableProductList({ initialBrand = null, initialMate
               <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-muted/30 rounded-full flex items-center justify-center">
                 <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">검색 결과가 없습니다</h3>
-              <p className="text-muted-foreground mb-4">다른 검색어나 필터를 시도해보세요</p>
-              <Button onClick={handleResetAll} variant="outline" className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent">
+              <h3 className="text-xl font-semibold mb-2 text-foreground">
+                검색 결과가 없습니다
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                다른 검색어나 필터를 시도해보세요
+              </p>
+              <Button
+                onClick={handleResetAll}
+                variant="outline"
+                className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
+              >
                 필터 초기화
               </Button>
             </div>
           ) : (
             <>
-              <div className={cn('grid gap-4 bp-md:gap-6', viewMode === 'grid' ? 'grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3' : 'grid-cols-1')}>
+              <div
+                className={cn(
+                  "grid gap-4 bp-md:gap-6",
+                  viewMode === "grid"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-xl:grid-cols-3"
+                    : "grid-cols-1",
+                )}
+              >
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (
-                    <div key={product._id} ref={isLast ? lastProductRef : undefined}>
-                      <ProductCard product={product} viewMode={viewMode} brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand} isApplyFlow={isApplyFlow} />
+                    <div
+                      key={product._id}
+                      ref={isLast ? lastProductRef : undefined}
+                    >
+                      <ProductCard
+                        product={product}
+                        viewMode={viewMode}
+                        brandLabel={
+                          brandLabelMap[product.brand.toLowerCase()] ??
+                          product.brand
+                        }
+                        isApplyFlow={isApplyFlow}
+                      />
                     </div>
                   );
                 })}
@@ -608,7 +817,10 @@ export default function FilterableProductList({ initialBrand = null, initialMate
 
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
-                <div aria-live="polite" className="text-center py-4 flex justify-center items-center gap-2">
+                <div
+                  aria-live="polite"
+                  className="text-center py-4 flex justify-center items-center gap-2"
+                >
                   <div className="h-4 w-4 rounded-full border-2 border-border border-t-transparent animate-spin" />
                   <Skeleton className="h-4 w-24" />
                 </div>

@@ -5,7 +5,7 @@
 /* 데스크탑에서 스크롤바 유무와 관계없이 '항상 같은 폭'을 유지 (레이아웃 shift 제거) */
 html {
   scrollbar-gutter: stable;
-   -webkit-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
@@ -160,14 +160,14 @@ html body[data-scroll-locked] {
 
 body {
   font-family:
-    'Spoqa Han Sans Neo',
+    "Spoqa Han Sans Neo",
     system-ui,
     -apple-system,
-    'Segoe UI',
+    "Segoe UI",
     Roboto,
-    'Noto Sans KR',
-    'Apple SD Gothic Neo',
-    'Malgun Gothic',
+    "Noto Sans KR",
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
     sans-serif;
   @apply bg-background text-foreground transition-colors duration-300;
 }

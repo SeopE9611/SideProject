@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -12,13 +17,21 @@ type Props = {
   initialIndex?: number;
 };
 
-export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialIndex = 0 }: Props) {
+export default function ReviewPhotoDialog({
+  open,
+  onOpenChange,
+  photos,
+  initialIndex = 0,
+}: Props) {
   const [idx, setIdx] = useState(initialIndex);
 
   // 다이얼로그 열릴 때마다 시작 인덱스 맞춰줌
   useEffect(() => {
     if (!open) return;
-    const safe = Math.min(Math.max(initialIndex, 0), Math.max(photos.length - 1, 0));
+    const safe = Math.min(
+      Math.max(initialIndex, 0),
+      Math.max(photos.length - 1, 0),
+    );
     setIdx(safe);
   }, [open, initialIndex, photos.length]);
 
@@ -33,14 +46,32 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
         </DialogHeader>
 
         <div className="relative w-full aspect-video">
-          {photos[idx] && <Image src={photos[idx] || '/placeholder.svg'} alt={`리뷰 사진 ${idx + 1}`} fill className="object-contain" priority />}
+          {photos[idx] && (
+            <Image
+              src={photos[idx] || "/placeholder.svg"}
+              alt={`리뷰 사진 ${idx + 1}`}
+              fill
+              className="object-contain"
+              priority
+            />
+          )}
 
           {photos.length > 1 && (
             <>
-              <button type="button" onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/20 hover:bg-card/30" aria-label="이전 사진">
+              <button
+                type="button"
+                onClick={prev}
+                className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/20 hover:bg-card/30"
+                aria-label="이전 사진"
+              >
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <button type="button" onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/20 hover:bg-card/30" aria-label="다음 사진">
+              <button
+                type="button"
+                onClick={next}
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/20 hover:bg-card/30"
+                aria-label="다음 사진"
+              >
                 <ChevronRight className="h-5 w-5" />
               </button>
             </>
@@ -50,8 +81,19 @@ export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialI
         {photos.length > 1 && (
           <div className="p-3 flex flex-wrap gap-2 justify-center bg-overlay/70">
             {photos.map((src, i) => (
-              <button key={i} type="button" onClick={() => setIdx(i)} className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? 'ring-2 ring-ring' : ''}`} aria-label={`썸네일 ${i + 1}`}>
-                <Image src={src || '/placeholder.svg'} alt={`썸네일 ${i + 1}`} fill className="object-cover" />
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIdx(i)}
+                className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === idx ? "ring-2 ring-ring" : ""}`}
+                aria-label={`썸네일 ${i + 1}`}
+              >
+                <Image
+                  src={src || "/placeholder.svg"}
+                  alt={`썸네일 ${i + 1}`}
+                  fill
+                  className="object-cover"
+                />
               </button>
             ))}
           </div>

@@ -1,8 +1,10 @@
-import type { ObjectId } from 'mongodb';
+import type { ObjectId } from "mongodb";
 
-export type CommunityReportTargetType = 'post' | 'comment';
-export type CommunityReportStatus = 'pending' | 'resolved' | 'rejected';
-export type CommunityReportModerationTargetOutcome = 'updated' | 'no_target_change';
+export type CommunityReportTargetType = "post" | "comment";
+export type CommunityReportStatus = "pending" | "resolved" | "rejected";
+export type CommunityReportModerationTargetOutcome =
+  | "updated"
+  | "no_target_change";
 
 /**
  * 관리자 신고 목록 검색에서 사용하는 필드.
@@ -10,9 +12,14 @@ export type CommunityReportModerationTargetOutcome = 'updated' | 'no_target_chan
  * - 생성 라우트에서 동일 필드를 항상 저장하도록 맞춰
  *   검색 조건($or)과 저장 스키마가 1:1로 대응되도록 유지한다.
  */
-export const COMMUNITY_REPORT_SEARCHABLE_FIELDS = ['reason', 'reporterNickname', 'reporterEmail'] as const;
+export const COMMUNITY_REPORT_SEARCHABLE_FIELDS = [
+  "reason",
+  "reporterNickname",
+  "reporterEmail",
+] as const;
 
-export type CommunityReportSearchableField = (typeof COMMUNITY_REPORT_SEARCHABLE_FIELDS)[number];
+export type CommunityReportSearchableField =
+  (typeof COMMUNITY_REPORT_SEARCHABLE_FIELDS)[number];
 
 /** community_reports 컬렉션 저장 문서 타입 */
 export interface CommunityReportDocument {
@@ -30,7 +37,7 @@ export interface CommunityReportDocument {
   resolvedAt: Date | null;
   updatedAt?: Date;
   resolvedByAdminId?: string;
-  resolutionAction?: 'resolve' | 'reject' | 'resolve_hide_target';
+  resolutionAction?: "resolve" | "reject" | "resolve_hide_target";
   moderationAudit?: {
     actor: {
       adminId: string;
@@ -39,7 +46,7 @@ export interface CommunityReportDocument {
       role: string;
     };
     reportId: string;
-    action: 'resolve' | 'reject' | 'resolve_hide_target';
+    action: "resolve" | "reject" | "resolve_hide_target";
     nextStatus: CommunityReportStatus;
     target: {
       type: CommunityReportTargetType;

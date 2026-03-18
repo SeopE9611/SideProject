@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import type { Filter } from 'mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import type { Filter } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
 import {
   COMMUNITY_REPORT_SEARCHABLE_FIELDS,
   type CommunityReportDocument,
   type CommunityReportStatus,
   type CommunityReportTargetType,
-} from '@/lib/types/community-report';
+} from "@/lib/types/community-report";
 
 function escapeRegExp(s: string) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function toInt(v: string | null, fallback: number, min: number, max: number) {
@@ -20,34 +20,38 @@ function toInt(v: string | null, fallback: number, min: number, max: number) {
   return Math.min(max, Math.max(min, i));
 }
 
-function isCommunityReportStatus(value: unknown): value is CommunityReportStatus {
-  return value === 'pending' || value === 'resolved' || value === 'rejected';
+function isCommunityReportStatus(
+  value: unknown,
+): value is CommunityReportStatus {
+  return value === "pending" || value === "resolved" || value === "rejected";
 }
 
 function parseCommunityReportStatus(value: unknown) {
-  if (typeof value !== 'string') return null;
+  if (typeof value !== "string") return null;
   const normalized = value.trim();
   return isCommunityReportStatus(normalized) ? normalized : null;
 }
 
-function isCommunityReportTargetType(value: unknown): value is CommunityReportTargetType {
-  return value === 'post' || value === 'comment';
+function isCommunityReportTargetType(
+  value: unknown,
+): value is CommunityReportTargetType {
+  return value === "post" || value === "comment";
 }
 
 function parseCommunityReportTargetType(value: unknown) {
-  if (typeof value !== 'string') return null;
+  if (typeof value !== "string") return null;
   const normalized = value.trim();
   return isCommunityReportTargetType(normalized) ? normalized : null;
 }
 
 function maskEmail(email?: string | null) {
-  if (!email) return '';
-  const [localPart, domainPart] = String(email).split('@');
-  if (!localPart || !domainPart) return '';
+  if (!email) return "";
+  const [localPart, domainPart] = String(email).split("@");
+  if (!localPart || !domainPart) return "";
 
   const visibleCount = Math.min(2, localPart.length);
   const maskedCount = Math.max(1, localPart.length - visibleCount);
-  return `${localPart.slice(0, visibleCount)}${'*'.repeat(maskedCount)}@${domainPart}`;
+  return `${localPart.slice(0, visibleCount)}${"*".repeat(maskedCount)}@${domainPart}`;
 }
 
 function normalizeReporterUserId(value: unknown) {
@@ -58,9 +62,11 @@ function normalizeReporterUserId(value: unknown) {
   return ObjectId.isValid(asStr) ? asStr : null;
 }
 
-function pickDisplayName(user?: { nickname?: string; name?: string; email?: string } | null) {
-  if (!user) return '';
-  return user.nickname?.trim() || user.name?.trim() || '';
+function pickDisplayName(
+  user?: { nickname?: string; name?: string; email?: string } | null,
+) {
+  if (!user) return "";
+  return user.nickname?.trim() || user.name?.trim() || "";
 }
 
 export async function GET(req: NextRequest) {
@@ -69,26 +75,30 @@ export async function GET(req: NextRequest) {
   const { db } = guard;
 
   const { searchParams } = new URL(req.url);
-  const page = toInt(searchParams.get('page'), 1, 1, 100000);
-  const limit = toInt(searchParams.get('limit'), 20, 1, 50);
+  const page = toInt(searchParams.get("page"), 1, 1, 100000);
+  const limit = toInt(searchParams.get("limit"), 20, 1, 50);
   const skip = (page - 1) * limit;
 
-  const status = parseCommunityReportStatus(searchParams.get('status'));
-  const targetType = parseCommunityReportTargetType(searchParams.get('targetType'));
-  const boardType = (searchParams.get('boardType') ?? 'all').trim(); // all|free|market...
-  const q = (searchParams.get('q') ?? '').trim();
+  const status = parseCommunityReportStatus(searchParams.get("status"));
+  const targetType = parseCommunityReportTargetType(
+    searchParams.get("targetType"),
+  );
+  const boardType = (searchParams.get("boardType") ?? "all").trim(); // all|free|market...
+  const q = (searchParams.get("q") ?? "").trim();
 
   const match: Filter<CommunityReportDocument> = {};
   if (status) match.status = status;
   if (targetType) match.targetType = targetType;
-  if (boardType !== 'all') match.boardType = boardType;
+  if (boardType !== "all") match.boardType = boardType;
 
   if (q) {
-    const r = new RegExp(escapeRegExp(q), 'i');
-    match.$or = COMMUNITY_REPORT_SEARCHABLE_FIELDS.map((field) => ({ [field]: r })) as Filter<CommunityReportDocument>[];
+    const r = new RegExp(escapeRegExp(q), "i");
+    match.$or = COMMUNITY_REPORT_SEARCHABLE_FIELDS.map((field) => ({
+      [field]: r,
+    })) as Filter<CommunityReportDocument>[];
   }
 
-  const col = db.collection<CommunityReportDocument>('community_reports');
+  const col = db.collection<CommunityReportDocument>("community_reports");
 
   const [items, total] = await Promise.all([
     col
@@ -101,22 +111,27 @@ export async function GET(req: NextRequest) {
         // post lookup
         {
           $lookup: {
-            from: 'community_posts',
-            localField: 'postId',
-            foreignField: '_id',
-            as: 'post',
+            from: "community_posts",
+            localField: "postId",
+            foreignField: "_id",
+            as: "post",
           },
         },
         // comment lookup
         {
           $lookup: {
-            from: 'community_comments',
-            localField: 'commentId',
-            foreignField: '_id',
-            as: 'comment',
+            from: "community_comments",
+            localField: "commentId",
+            foreignField: "_id",
+            as: "comment",
           },
         },
-        { $addFields: { post: { $first: '$post' }, comment: { $first: '$comment' } } },
+        {
+          $addFields: {
+            post: { $first: "$post" },
+            comment: { $first: "$comment" },
+          },
+        },
 
         {
           $project: {
@@ -146,32 +161,51 @@ export async function GET(req: NextRequest) {
   const fallbackUserIds = Array.from(
     new Set(
       items
-        .filter((d: any) => !String(d?.reporterNickname ?? '').trim())
+        .filter((d: any) => !String(d?.reporterNickname ?? "").trim())
         .map((d: any) => normalizeReporterUserId(d?.reporterUserId))
         .filter((id): id is string => !!id),
     ),
   );
 
-  const fallbackUserMap = new Map<string, { nickname?: string; name?: string; email?: string }>();
+  const fallbackUserMap = new Map<
+    string,
+    { nickname?: string; name?: string; email?: string }
+  >();
   if (fallbackUserIds.length > 0) {
     const users = (await db
-      .collection('users')
-      .find({ _id: { $in: fallbackUserIds.map((id) => new ObjectId(id)) } }, { projection: { _id: 1, nickname: 1, name: 1, email: 1 } })
-      .toArray()) as Array<{ _id: ObjectId; nickname?: string; name?: string; email?: string }>;
+      .collection("users")
+      .find(
+        { _id: { $in: fallbackUserIds.map((id) => new ObjectId(id)) } },
+        { projection: { _id: 1, nickname: 1, name: 1, email: 1 } },
+      )
+      .toArray()) as Array<{
+      _id: ObjectId;
+      nickname?: string;
+      name?: string;
+      email?: string;
+    }>;
 
-    users.forEach((user) => fallbackUserMap.set(user._id.toString(), { nickname: user.nickname, name: user.name, email: user.email }));
+    users.forEach((user) =>
+      fallbackUserMap.set(user._id.toString(), {
+        nickname: user.nickname,
+        name: user.name,
+        email: user.email,
+      }),
+    );
   }
 
   return NextResponse.json({
     items: items.map((d: any) => {
       const reporterUserId = normalizeReporterUserId(d?.reporterUserId);
-      const fallbackUser = reporterUserId ? fallbackUserMap.get(reporterUserId) : undefined;
+      const fallbackUser = reporterUserId
+        ? fallbackUserMap.get(reporterUserId)
+        : undefined;
       const reporterDisplay =
-        String(d?.reporterNickname ?? '').trim() ||
+        String(d?.reporterNickname ?? "").trim() ||
         pickDisplayName(fallbackUser) ||
         maskEmail(d?.reporterEmail) ||
         maskEmail(fallbackUser?.email) ||
-        '-';
+        "-";
 
       return {
         id: d._id.toString(),
@@ -180,23 +214,27 @@ export async function GET(req: NextRequest) {
         reason: d.reason,
         status: d.status,
         reporterDisplay,
-        reporterNickname: String(d?.reporterNickname ?? '').trim(),
-        createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
-        resolvedAt: d.resolvedAt instanceof Date ? d.resolvedAt.toISOString() : null,
+        reporterNickname: String(d?.reporterNickname ?? "").trim(),
+        createdAt:
+          d.createdAt instanceof Date
+            ? d.createdAt.toISOString()
+            : new Date().toISOString(),
+        resolvedAt:
+          d.resolvedAt instanceof Date ? d.resolvedAt.toISOString() : null,
         post: d.post
           ? {
               id: d.post._id?.toString?.() ?? null,
-              title: d.post.title ?? '',
+              title: d.post.title ?? "",
               postNo: d.post.postNo ?? null,
-              status: d.post.status ?? 'public',
+              status: d.post.status ?? "public",
             }
           : null,
         comment: d.comment
           ? {
               id: d.comment._id?.toString?.() ?? null,
-              content: d.comment.content ?? '',
-              nickname: d.comment.nickname ?? '',
-              status: d.comment.status ?? 'active',
+              content: d.comment.content ?? "",
+              nickname: d.comment.nickname ?? "",
+              status: d.comment.status ?? "active",
             }
           : null,
       };

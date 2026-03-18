@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
-import { GRIP_SIZE_OPTIONS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, normalizeGripSize } from '@/lib/constants';
-import clientPromise from '@/lib/mongodb';
+import { NextResponse } from "next/server";
+import {
+  GRIP_SIZE_OPTIONS,
+  normalizeAndValidateGripSize,
+  normalizeAndValidateStringPattern,
+  normalizeGripSize,
+} from "@/lib/constants";
+import clientPromise from "@/lib/mongodb";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 function toNum(v: string | null) {
   if (v == null) return null;
@@ -25,7 +30,7 @@ function buildPatternCandidates(patterns: string[]) {
     if (!normalized) continue;
     values.add(normalized);
     values.add(normalized.toUpperCase());
-    values.add(normalized.replace('x', 'X'));
+    values.add(normalized.replace("x", "X"));
   }
   return Array.from(values);
 }
@@ -40,16 +45,18 @@ function buildGripSizeCandidates(gripSizes: string[]) {
     values.add(normalized.toLowerCase());
 
     // G1/G2/G3 value에 대응하는 화면 label도 검색 후보로 포함
-    const label = GRIP_SIZE_OPTIONS.find((option) => option.value === normalized)?.label;
+    const label = GRIP_SIZE_OPTIONS.find(
+      (option) => option.value === normalized,
+    )?.label;
     if (label) {
       values.add(label);
-      values.add(label.replace(/\s+/g, ''));
+      values.add(label.replace(/\s+/g, ""));
     }
 
     // 문자열 숫자 표기(예: 4 1/8) 일부도 후보에 추가
-    if (normalized === 'G1') values.add('4 1/8');
-    if (normalized === 'G2') values.add('4 1/4');
-    if (normalized === 'G3') values.add('4 3/8');
+    if (normalized === "G1") values.add("4 1/8");
+    if (normalized === "G2") values.add("4 1/4");
+    if (normalized === "G3") values.add("4 3/8");
   }
 
   return Array.from(values).map((value) => normalizeGripSize(value));
@@ -59,16 +66,24 @@ function normalizeRental(r: any) {
   if (!r) return null;
 
   const fee = r.fee;
-  const feeOk = fee && Number.isFinite(Number(fee.d7)) && Number.isFinite(Number(fee.d15)) && Number.isFinite(Number(fee.d30));
+  const feeOk =
+    fee &&
+    Number.isFinite(Number(fee.d7)) &&
+    Number.isFinite(Number(fee.d15)) &&
+    Number.isFinite(Number(fee.d30));
 
   const enabled = !!r.enabled && feeOk;
 
   return {
     enabled,
     deposit: Number.isFinite(Number(r.deposit)) ? Number(r.deposit) : 0,
-    fee: feeOk ? { d7: Number(fee.d7), d15: Number(fee.d15), d30: Number(fee.d30) } : undefined,
+    fee: feeOk
+      ? { d7: Number(fee.d7), d15: Number(fee.d15), d30: Number(fee.d30) }
+      : undefined,
     // enabled=true인데 fee가 없으면, UI가 "대여 불가"로 떨어지도록 사유를 세팅
-    disabledReason: enabled ? null : r.disabledReason ?? '대여 정보(요금)가 누락되었습니다.',
+    disabledReason: enabled
+      ? null
+      : (r.disabledReason ?? "대여 정보(요금)가 누락되었습니다."),
   };
 }
 
@@ -88,36 +103,45 @@ function maybeRangeWithNull(field: string, r: any, strict: boolean) {
 type SortResolved =
   | {
       key: string;
-      kind: 'find';
+      kind: "find";
       sort: Record<string, 1 | -1>;
     }
   | {
       key: string;
-      kind: 'agg';
+      kind: "agg";
       field: string;
       dir: 1 | -1;
     };
 
 function resolveSort(sortKey: string | null): SortResolved {
-  const key = (sortKey ?? 'createdAt_desc').trim();
+  const key = (sortKey ?? "createdAt_desc").trim();
 
   // 기본: 최신순
-  if (key === 'createdAt_desc') return { key, kind: 'find', sort: { createdAt: -1 } };
+  if (key === "createdAt_desc")
+    return { key, kind: "find", sort: { createdAt: -1 } };
 
   // 가격 정렬(가격은 null 가능성이 거의 없으므로 find sort로 충분)
-  if (key === 'price_asc') return { key, kind: 'find', sort: { price: 1, createdAt: -1 } };
-  if (key === 'price_desc') return { key, kind: 'find', sort: { price: -1, createdAt: -1 } };
+  if (key === "price_asc")
+    return { key, kind: "find", sort: { price: 1, createdAt: -1 } };
+  if (key === "price_desc")
+    return { key, kind: "find", sort: { price: -1, createdAt: -1 } };
 
   // 스펙 정렬(특정 스펙이 null/누락인 라켓이 있을 수 있으므로 "null은 항상 아래"로 보내기 위해 aggregation 사용)
-  if (key === 'swingWeight_asc') return { key, kind: 'agg', field: 'spec.swingWeight', dir: 1 as const };
-  if (key === 'swingWeight_desc') return { key, kind: 'agg', field: 'spec.swingWeight', dir: -1 as const };
-  if (key === 'weight_asc') return { key, kind: 'agg', field: 'spec.weight', dir: 1 as const };
-  if (key === 'weight_desc') return { key, kind: 'agg', field: 'spec.weight', dir: -1 as const };
-  if (key === 'stiffnessRa_asc') return { key, kind: 'agg', field: 'spec.stiffnessRa', dir: 1 as const };
-  if (key === 'stiffnessRa_desc') return { key, kind: 'agg', field: 'spec.stiffnessRa', dir: -1 as const };
+  if (key === "swingWeight_asc")
+    return { key, kind: "agg", field: "spec.swingWeight", dir: 1 as const };
+  if (key === "swingWeight_desc")
+    return { key, kind: "agg", field: "spec.swingWeight", dir: -1 as const };
+  if (key === "weight_asc")
+    return { key, kind: "agg", field: "spec.weight", dir: 1 as const };
+  if (key === "weight_desc")
+    return { key, kind: "agg", field: "spec.weight", dir: -1 as const };
+  if (key === "stiffnessRa_asc")
+    return { key, kind: "agg", field: "spec.stiffnessRa", dir: 1 as const };
+  if (key === "stiffnessRa_desc")
+    return { key, kind: "agg", field: "spec.stiffnessRa", dir: -1 as const };
 
   // 알 수 없는 값이면 안전하게 기본값으로
-  return { key: 'createdAt_desc', kind: 'find', sort: { createdAt: -1 } };
+  return { key: "createdAt_desc", kind: "find", sort: { createdAt: -1 } };
 }
 
 export async function GET(req: Request) {
@@ -125,51 +149,69 @@ export async function GET(req: Request) {
   const sp = new URL(req.url).searchParams;
 
   // pagination
-  const page = Math.max(1, Number(sp.get('page') ?? 1));
-  const pageSize = Math.min(48, Math.max(1, Number(sp.get('pageSize') ?? 12)));
+  const page = Math.max(1, Number(sp.get("page") ?? 1));
+  const pageSize = Math.min(48, Math.max(1, Number(sp.get("pageSize") ?? 12)));
   const skip = (page - 1) * pageSize;
 
   // text
-  const q = (sp.get('q') ?? '').trim();
+  const q = (sp.get("q") ?? "").trim();
 
   // basic filters
-  const brand = (sp.get('brand') ?? '').trim().toLowerCase();
-  const condition = (sp.get('condition') ?? '').trim().toUpperCase(); // A/B/C
+  const brand = (sp.get("brand") ?? "").trim().toLowerCase();
+  const condition = (sp.get("condition") ?? "").trim().toUpperCase(); // A/B/C
 
   // strict toggle
-  const strict = sp.get('strict') === '1';
+  const strict = sp.get("strict") === "1";
 
   // sort
-  const sortResolved = resolveSort(sp.get('sort'));
+  const sortResolved = resolveSort(sp.get("sort"));
 
   // multi patterns (pattern=16x19&pattern=18x20 ...)
   const patternsRaw = sp
-    .getAll('pattern')
+    .getAll("pattern")
     .map((pattern) => normalizeAndValidateStringPattern(pattern))
     .filter(Boolean);
 
   // multi grip size (gripSize=G1&gripSize=G2 ...)
   const gripSizesRaw = sp
-    .getAll('gripSize')
+    .getAll("gripSize")
     .map((gripSize) => normalizeAndValidateGripSize(gripSize))
     .filter(Boolean);
 
   // numeric ranges
-  const priceR = range(toNum(sp.get('minPrice')), toNum(sp.get('maxPrice')));
-  const headR = range(toNum(sp.get('minHeadSize')), toNum(sp.get('maxHeadSize')));
-  const weightR = range(toNum(sp.get('minWeight')), toNum(sp.get('maxWeight')));
-  const balanceR = range(toNum(sp.get('minBalance')), toNum(sp.get('maxBalance')));
-  const lenR = range(toNum(sp.get('minLengthIn')), toNum(sp.get('maxLengthIn')));
-  const raR = range(toNum(sp.get('minStiffnessRa')), toNum(sp.get('maxStiffnessRa')));
-  const swR = range(toNum(sp.get('minSwingWeight')), toNum(sp.get('maxSwingWeight')));
+  const priceR = range(toNum(sp.get("minPrice")), toNum(sp.get("maxPrice")));
+  const headR = range(
+    toNum(sp.get("minHeadSize")),
+    toNum(sp.get("maxHeadSize")),
+  );
+  const weightR = range(toNum(sp.get("minWeight")), toNum(sp.get("maxWeight")));
+  const balanceR = range(
+    toNum(sp.get("minBalance")),
+    toNum(sp.get("maxBalance")),
+  );
+  const lenR = range(
+    toNum(sp.get("minLengthIn")),
+    toNum(sp.get("maxLengthIn")),
+  );
+  const raR = range(
+    toNum(sp.get("minStiffnessRa")),
+    toNum(sp.get("maxStiffnessRa")),
+  );
+  const swR = range(
+    toNum(sp.get("minSwingWeight")),
+    toNum(sp.get("maxSwingWeight")),
+  );
 
   // match
   const match: any = {
-    status: { $nin: ['inactive', '비노출', 'sold'] },
+    status: { $nin: ["inactive", "비노출", "sold"] },
   };
 
   if (q) {
-    match.$or = [{ model: { $regex: q, $options: 'i' } }, { searchKeywords: { $elemMatch: { $regex: q, $options: 'i' } } }];
+    match.$or = [
+      { model: { $regex: q, $options: "i" } },
+      { searchKeywords: { $elemMatch: { $regex: q, $options: "i" } } },
+    ];
   }
   if (brand) match.brand = brand;
   if (condition) match.condition = condition;
@@ -177,12 +219,12 @@ export async function GET(req: Request) {
 
   // 스펙 범위 필터: strict=1이면 누락 제외, 기본은 누락 포함(B)
   const specClauses: any[] = [];
-  const c1 = maybeRangeWithNull('spec.headSize', headR, strict);
-  const c2 = maybeRangeWithNull('spec.weight', weightR, strict);
-  const c3 = maybeRangeWithNull('spec.balance', balanceR, strict);
-  const c4 = maybeRangeWithNull('spec.lengthIn', lenR, strict);
-  const c5 = maybeRangeWithNull('spec.stiffnessRa', raR, strict);
-  const c6 = maybeRangeWithNull('spec.swingWeight', swR, strict);
+  const c1 = maybeRangeWithNull("spec.headSize", headR, strict);
+  const c2 = maybeRangeWithNull("spec.weight", weightR, strict);
+  const c3 = maybeRangeWithNull("spec.balance", balanceR, strict);
+  const c4 = maybeRangeWithNull("spec.lengthIn", lenR, strict);
+  const c5 = maybeRangeWithNull("spec.stiffnessRa", raR, strict);
+  const c6 = maybeRangeWithNull("spec.swingWeight", swR, strict);
   if (c1) specClauses.push(c1);
   if (c2) specClauses.push(c2);
   if (c3) specClauses.push(c3);
@@ -193,15 +235,15 @@ export async function GET(req: Request) {
 
   if (patternsRaw.length) {
     // 서버 저장 value 기준 + 과거 자유입력 형태를 함께 커버
-    match['spec.pattern'] = { $in: buildPatternCandidates(patternsRaw) };
+    match["spec.pattern"] = { $in: buildPatternCandidates(patternsRaw) };
   }
 
   if (gripSizesRaw.length) {
     // 신규 value(G1/G2/G3) 기준 + 과거 자유입력 표기를 함께 커버
-    match['spec.gripSize'] = { $in: buildGripSizeCandidates(gripSizesRaw) };
+    match["spec.gripSize"] = { $in: buildGripSizeCandidates(gripSizesRaw) };
   }
 
-  const col = db.collection('used_rackets');
+  const col = db.collection("used_rackets");
   const total = await col.countDocuments(match);
 
   const projection = {
@@ -221,10 +263,10 @@ export async function GET(req: Request) {
 
   let docs: any[] = [];
 
-  if (sortResolved.kind === 'agg') {
+  if (sortResolved.kind === "agg") {
     // null/누락 스펙은 항상 하단으로 밀기
     // __sortNull: 0(값 있음) / 1(null 또는 누락)
-    const fieldRef = '$' + sortResolved.field;
+    const fieldRef = "$" + sortResolved.field;
     const sortStage: any = { __sortNull: 1 };
     sortStage[sortResolved.field] = sortResolved.dir;
     sortStage.createdAt = -1; // 타이브레이커(최신 우선)
@@ -244,7 +286,13 @@ export async function GET(req: Request) {
       ])
       .toArray();
   } else {
-    docs = await col.find(match).project(projection).sort(sortResolved.sort).skip(skip).limit(pageSize).toArray();
+    docs = await col
+      .find(match)
+      .project(projection)
+      .sort(sortResolved.sort)
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
   }
 
   const items = docs.map((d: any) => ({
@@ -253,5 +301,12 @@ export async function GET(req: Request) {
     _id: undefined,
     rental: normalizeRental(d.rental),
   }));
-  return NextResponse.json({ items, total, page, pageSize, strict, sort: sortResolved.key });
+  return NextResponse.json({
+    items,
+    total,
+    page,
+    pageSize,
+    strict,
+    sort: sortResolved.key,
+  });
 }

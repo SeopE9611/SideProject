@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useCartStore } from '@/app/store/cartStore';
-import { useBuyNowStore } from '@/app/store/buyNowStore';
-import { usePdpBundleStore } from '@/app/store/pdpBundleStore';
+import { useEffect, useRef } from "react";
+import { useCartStore } from "@/app/store/cartStore";
+import { useBuyNowStore } from "@/app/store/buyNowStore";
+import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 
 export default function ClearCartOnMount() {
   const clearCart = useCartStore((s) => s.clearCart);

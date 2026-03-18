@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreditCard, ReceiptText } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CreditCard, ReceiptText } from "lucide-react";
 
 type Props = {
   won: (n: number) => string;
@@ -19,7 +25,14 @@ type Props = {
  * - 대여 결제에서 이미 결제가 완료되므로 입력 UI 대신 '확인용 요약'만 제공한다.
  */
 // export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stringPrice, stringingFee, total, rentalId }: Props) {
-export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stringPrice, stringingFee, total }: Props) {
+export default function Step3PaymentInfoRentalReadonly({
+  won,
+  deposit,
+  fee,
+  stringPrice,
+  stringingFee,
+  total,
+}: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
@@ -36,7 +49,9 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
             대여 결제 요약
           </CardTitle>
           <CardDescription className="text-sm">
-            대여 결제에 <span className="font-medium">스트링 상품</span>과 <span className="font-medium">교체 서비스 비용</span>까지 포함되어 있어 추가 결제정보 입력이 필요하지 않습니다.
+            대여 결제에 <span className="font-medium">스트링 상품</span>과{" "}
+            <span className="font-medium">교체 서비스 비용</span>까지 포함되어
+            있어 추가 결제정보 입력이 필요하지 않습니다.
             {/* {rentalId ? <span className="ml-1 text-xs text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
           </CardDescription>
         </CardHeader>
@@ -55,7 +70,9 @@ export default function Step3PaymentInfoRentalReadonly({ won, deposit, fee, stri
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">교체 서비스</span>
-            <span className="font-medium tabular-nums">{won(stringingFee)}</span>
+            <span className="font-medium tabular-nums">
+              {won(stringingFee)}
+            </span>
           </div>
           <div className="pt-2 border-t flex items-center justify-between">
             <span className="font-semibold">합계</span>

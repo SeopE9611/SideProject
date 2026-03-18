@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 
 // 주문 객체의 타입 정의
 
@@ -16,7 +16,7 @@ type ShippingInfo = {
   postalCode: string;
   depositor: string;
   deliveryRequest?: string;
-  shippingMethod?: 'courier' | 'quick' | 'visit';
+  shippingMethod?: "courier" | "quick" | "visit";
   estimatedDate?: string;
 };
 
@@ -26,7 +26,7 @@ export interface OrderItemSnapshot {
   price: number;
   imageUrl: string | null;
   quantity: number;
-  kind?: 'product' | 'racket';
+  kind?: "product" | "racket";
 }
 
 export type DBOrder = {
@@ -48,7 +48,7 @@ export type DBOrder = {
   paymentInfo?: {
     method: string;
     status?: string;
-    bank?: 'shinhan' | 'kookmin' | 'woori' | string;
+    bank?: "shinhan" | "kookmin" | "woori" | string;
   };
   paymentStatus?: string;
   status: string;
@@ -58,5 +58,5 @@ export type DBOrder = {
   };
   isStringServiceApplied?: boolean;
   idemKey?: string | null;
-   serviceFee?: number;
+  serviceFee?: number;
 };

@@ -1,11 +1,11 @@
-import FreeBoardEditClient from '@/app/board/market/[id]/edit/_components/FreeBoardEditClient';
+import FreeBoardEditClient from "@/app/board/market/[id]/edit/_components/FreeBoardEditClient";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
 export const metadata = {
-  title: '중고 거래 글 수정 | 테니스 플로우',
+  title: "중고 거래 글 수정 | 테니스 플로우",
   // description: '자유 게시판에 작성된 글을 수정합니다.',
 };
 

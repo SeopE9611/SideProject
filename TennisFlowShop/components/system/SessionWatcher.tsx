@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuthStore } from '@/app/store/authStore';
-import { onAuthExpired, onAuthForbidden } from '@/lib/authEvents';
-import { showErrorToast, showInfoToast } from '@/lib/toast';
+import { useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/app/store/authStore";
+import { onAuthExpired, onAuthForbidden } from "@/lib/authEvents";
+import { showErrorToast, showInfoToast } from "@/lib/toast";
 
 export default function SessionWatcher() {
   const { setUser } = useAuthStore();
@@ -21,9 +21,12 @@ export default function SessionWatcher() {
       lockExpired.current = true;
 
       setUser(null);
-      showErrorToast('세션이 만료되었습니다. 다시 로그인해 주세요.');
+      showErrorToast("세션이 만료되었습니다. 다시 로그인해 주세요.");
 
-      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+      const redirectTo =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : "/";
       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
 
       setTimeout(() => {
@@ -36,11 +39,11 @@ export default function SessionWatcher() {
       if (lockForbidden.current) return;
       lockForbidden.current = true;
 
-      showInfoToast('권한이 없습니다. 접근 권한이 필요한 기능입니다.');
+      showInfoToast("권한이 없습니다. 접근 권한이 필요한 기능입니다.");
 
       // 관리 영역에 머무르면 UX가 꼬이니 홈으로 안전 이동
-      if (pathname.startsWith('/admin')) {
-        router.replace('/');
+      if (pathname.startsWith("/admin")) {
+        router.replace("/");
       }
 
       setTimeout(() => {

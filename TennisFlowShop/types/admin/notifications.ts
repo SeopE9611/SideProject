@@ -1,10 +1,10 @@
-export type AdminOutboxStatus = 'queued' | 'failed' | 'sent';
-export type AdminOutboxChannel = 'email' | 'slack' | 'sms';
+export type AdminOutboxStatus = "queued" | "failed" | "sent";
+export type AdminOutboxChannel = "email" | "slack" | "sms";
 
 export interface AdminOutboxListRequestDto {
   page: number;
   limit: number;
-  status: 'all' | AdminOutboxStatus;
+  status: "all" | AdminOutboxStatus;
   q: string;
 }
 

@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { REFUND_BANK_CATALOG } from '@/lib/refund-bank-catalog';
-import { cn } from '@/lib/utils';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { REFUND_BANK_CATALOG } from "@/lib/refund-bank-catalog";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 
 type RefundBankComboboxProps = {
   value: string;
@@ -17,19 +21,25 @@ type RefundBankComboboxProps = {
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
-export default function RefundBankCombobox({ value, onChange, placeholder = '은행을 검색해 선택하세요', disabled = false }: RefundBankComboboxProps) {
+export default function RefundBankCombobox({
+  value,
+  onChange,
+  placeholder = "은행을 검색해 선택하세요",
+  disabled = false,
+}: RefundBankComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
 
   const resetSearchState = () => {
-    setQuery('');
+    setQuery("");
     if (listRef.current) {
       listRef.current.scrollTop = 0;
     }
   };
 
-  const selectedItem = REFUND_BANK_CATALOG.find((bank) => bank.code === value) ?? null;
+  const selectedItem =
+    REFUND_BANK_CATALOG.find((bank) => bank.code === value) ?? null;
 
   const filteredBanks = useMemo(() => {
     const q = normalize(query);
@@ -51,16 +61,42 @@ export default function RefundBankCombobox({ value, onChange, placeholder = '은
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" role="combobox" aria-expanded={open} disabled={disabled} className="w-full justify-between font-normal">
-          <span className="truncate text-left">{selectedItem?.label ?? placeholder}</span>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className="w-full justify-between font-normal"
+        >
+          <span className="truncate text-left">
+            {selectedItem?.label ?? placeholder}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2" align="start" portalled={false}>
-        <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="은행명/키워드 검색" className="mb-2" autoFocus />
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-2"
+        align="start"
+        portalled={false}
+      >
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="은행명/키워드 검색"
+          className="mb-2"
+          autoFocus
+        />
 
-        <div ref={listRef} className="max-h-64 overflow-y-auto rounded-md border border-border/60">
-          {filteredBanks.length === 0 && <p className="px-3 py-2 text-sm text-muted-foreground">검색 결과가 없습니다.</p>}
+        <div
+          ref={listRef}
+          className="max-h-64 overflow-y-auto rounded-md border border-border/60"
+        >
+          {filteredBanks.length === 0 && (
+            <p className="px-3 py-2 text-sm text-muted-foreground">
+              검색 결과가 없습니다.
+            </p>
+          )}
 
           {filteredBanks.map((bank) => (
             <button
@@ -73,7 +109,12 @@ export default function RefundBankCombobox({ value, onChange, placeholder = '은
               }}
             >
               <span>{bank.label}</span>
-              <Check className={cn('h-4 w-4 text-primary', value === bank.code ? 'opacity-100' : 'opacity-0')} />
+              <Check
+                className={cn(
+                  "h-4 w-4 text-primary",
+                  value === bank.code ? "opacity-100" : "opacity-0",
+                )}
+              />
             </button>
           ))}
         </div>

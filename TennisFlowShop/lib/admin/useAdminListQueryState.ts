@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReadonlyURLSearchParams } from 'next/navigation';
-import { buildQueryString, replaceQueryUrl } from '@/lib/admin/urlQuerySync';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { buildQueryString, replaceQueryUrl } from "@/lib/admin/urlQuerySync";
 
 type ReplaceFn = (url: string, options?: { scroll?: boolean }) => void;
 
@@ -12,7 +12,9 @@ interface UseAdminListQueryStateOptions<TState extends { page: number }> {
   replace: ReplaceFn;
   defaults: TState;
   parse: (sp: URLSearchParams, defaults: TState) => TState;
-  toQueryParams: (state: TState) => Record<string, string | number | boolean | null | undefined>;
+  toQueryParams: (
+    state: TState,
+  ) => Record<string, string | number | boolean | null | undefined>;
   pageResetKeys: (keyof TState)[];
 }
 
@@ -39,8 +41,18 @@ export function useAdminListQueryState<TState extends { page: number }>({
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    const parsed = parse(new URLSearchParams(searchParams.toString()), defaults);
-    setState((prev) => (shallowEqual(prev as Record<string, unknown>, parsed as Record<string, unknown>) ? prev : parsed));
+    const parsed = parse(
+      new URLSearchParams(searchParams.toString()),
+      defaults,
+    );
+    setState((prev) =>
+      shallowEqual(
+        prev as Record<string, unknown>,
+        parsed as Record<string, unknown>,
+      )
+        ? prev
+        : parsed,
+    );
     initializedRef.current = true;
   }, [defaults, parse, searchParams]);
 
@@ -49,21 +61,34 @@ export function useAdminListQueryState<TState extends { page: number }>({
     const queryString = buildQueryString(toQueryParams(state));
     const currentQueryString = searchParams.toString();
     if (queryString === currentQueryString) return;
-    replaceQueryUrl(pathname, queryString, (url) => replace(url, { scroll: false }));
+    replaceQueryUrl(pathname, queryString, (url) =>
+      replace(url, { scroll: false }),
+    );
   }, [pathname, replace, searchParams, state, toQueryParams]);
 
   const patchState = useCallback(
     (patch: Partial<TState>) => {
       setState((prev) => {
         const next = { ...prev, ...patch } as TState;
-        const includesPage = Object.prototype.hasOwnProperty.call(patch, 'page');
-        if (!includesPage && pageResetKeys.some((key) => prev[key] !== next[key])) {
+        const includesPage = Object.prototype.hasOwnProperty.call(
+          patch,
+          "page",
+        );
+        if (
+          !includesPage &&
+          pageResetKeys.some((key) => prev[key] !== next[key])
+        ) {
           next.page = 1;
         }
-        return shallowEqual(prev as Record<string, unknown>, next as Record<string, unknown>) ? prev : next;
+        return shallowEqual(
+          prev as Record<string, unknown>,
+          next as Record<string, unknown>,
+        )
+          ? prev
+          : next;
       });
     },
-    [pageResetKeys]
+    [pageResetKeys],
   );
 
   return useMemo(
@@ -73,6 +98,6 @@ export function useAdminListQueryState<TState extends { page: number }>({
       setPage: (page: number) => patchState({ page } as Partial<TState>),
       setState,
     }),
-    [patchState, state]
+    [patchState, state],
   );
 }

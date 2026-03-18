@@ -1,9 +1,9 @@
-import { SolapiMessageService } from 'solapi';
+import { SolapiMessageService } from "solapi";
 
-const norm = (n?: string) => (n || '').replace(/[^\d]/g, '');
+const norm = (n?: string) => (n || "").replace(/[^\d]/g, "");
 const maskPhone = (n: string) => {
-  if (!n) return '';
-  if (n.length <= 4) return '*'.repeat(n.length);
+  if (!n) return "";
+  if (n.length <= 4) return "*".repeat(n.length);
   // 010****5678 형태
   const head = n.slice(0, 3);
   const tail = n.slice(-4);
@@ -12,13 +12,14 @@ const maskPhone = (n: string) => {
 
 export async function sendSMS(toRaw: string, text: string) {
   // 안전장치 (플래그 & 허용목록)
-  const enabled = process.env.NOTIFY_SMS_ENABLED === 'true';
+  const enabled = process.env.NOTIFY_SMS_ENABLED === "true";
   // allowlist env 통일(호환 fallback)
   // - 정식: SAFE_SMS_ALLOWLIST
   // - fallback: SAFE_SMS_TO_ALLOWLIST (과거/디버그용 이름)
-  const allowEnv = process.env.SAFE_SMS_ALLOWLIST ?? process.env.SAFE_SMS_TO_ALLOWLIST ?? '';
+  const allowEnv =
+    process.env.SAFE_SMS_ALLOWLIST ?? process.env.SAFE_SMS_TO_ALLOWLIST ?? "";
   const allow = allowEnv
-    .split(',')
+    .split(",")
     .map((s) => norm(s.trim()))
     .filter(Boolean);
 
@@ -31,11 +32,16 @@ export async function sendSMS(toRaw: string, text: string) {
   const from = norm(process.env.SOLAPI_SENDER);
 
   if (!apiKey || !apiSecret || !from) {
-    throw new Error('SOLAPI env missing');
+    throw new Error("SOLAPI env missing");
   }
   // 운영에서 PII 출력 방지: 개발 환경에서만, 마스킹해서 로그
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[sms] send', { to: maskPhone(to), from: maskPhone(from), textLen: text.length, allowCount: allow.length });
+  if (process.env.NODE_ENV === "development") {
+    console.log("[sms] send", {
+      to: maskPhone(to),
+      from: maskPhone(from),
+      textLen: text.length,
+      allowCount: allow.length,
+    });
   }
 
   const svc = new SolapiMessageService(apiKey, apiSecret);
@@ -43,6 +49,6 @@ export async function sendSMS(toRaw: string, text: string) {
     to,
     from,
     text,
-    type: text.length > 90 ? 'LMS' : 'SMS',
+    type: text.length > 90 ? "LMS" : "SMS",
   });
 }

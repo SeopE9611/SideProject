@@ -1,19 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { ObjectId } from 'mongodb';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { ObjectId } from "mongodb";
+import { z } from "zod";
 
-import { getDb } from '@/lib/mongodb';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { resolveReporterSnapshot } from '@/lib/community/reporting';
-import { logInfo, reqMeta, startTimer } from '@/lib/logger';
-import { COMMUNITY_RATE_LIMIT_POLICIES, enforceCommunityRateLimit, verifyCommunityCsrf } from '@/lib/community/security';
-import type { CommunityReportDocument } from '@/lib/types/community-report';
+import { getDb } from "@/lib/mongodb";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { resolveReporterSnapshot } from "@/lib/community/reporting";
+import { logInfo, reqMeta, startTimer } from "@/lib/logger";
+import {
+  COMMUNITY_RATE_LIMIT_POLICIES,
+  enforceCommunityRateLimit,
+  verifyCommunityCsrf,
+} from "@/lib/community/security";
+import type { CommunityReportDocument } from "@/lib/types/community-report";
 
 // 로그인된 사용자 정보 가져오기 (없으면 null)
 async function getAuthPayload() {
   const jar = await cookies();
-  const token = jar.get('accessToken')?.value;
+  const token = jar.get("accessToken")?.value;
   if (!token) return null;
 
   // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 "비로그인" 처리
@@ -25,7 +29,7 @@ async function getAuthPayload() {
   }
 
   // sub는 ObjectId 문자열이어야 함 (신고자 식별/자기글 신고 차단/중복 신고 방지 로직 안정화)
-  const subStr = payload?.sub ? String(payload.sub) : '';
+  const subStr = payload?.sub ? String(payload.sub) : "";
   if (!subStr || !ObjectId.isValid(subStr)) return null;
 
   return payload ?? null;
@@ -34,7 +38,11 @@ async function getAuthPayload() {
 // -------------------------- 신고 요청 스키마 -----------------------------
 
 const reportSchema = z.object({
-  reason: z.string().trim().min(10, '신고 사유는 최소 10자 이상이어야 합니다.').max(500, '신고 사유는 500자 이하로 입력해주세요.'),
+  reason: z
+    .string()
+    .trim()
+    .min(10, "신고 사유는 최소 10자 이상이어야 합니다.")
+    .max(500, "신고 사유는 500자 이하로 입력해주세요."),
 });
 
 type ReportInput = z.infer<typeof reportSchema>;
@@ -42,14 +50,17 @@ type ReportInput = z.infer<typeof reportSchema>;
 // -----------------------------------------------------------------------
 // POST: 게시글 신고 생성
 // -----------------------------------------------------------------------
-export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
   const stop = startTimer();
   const meta = reqMeta(req);
 
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     logInfo({
-      msg: 'community:report:csrf_failed',
+      msg: "community:report:csrf_failed",
       status: 403,
       durationMs: stop(),
       extra: { reason: csrf.code },
@@ -62,7 +73,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   // 1) ID 유효성 검사
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json({ ok: false, error: 'invalid_id' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_id" },
+      { status: 400 },
+    );
   }
 
   // 2) 요청 본문 파싱 + Zod 검증
@@ -70,7 +84,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   try {
     json = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: 'invalid_body' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_body" },
+      { status: 400 },
+    );
   }
 
   const parsed = reportSchema.safeParse(json);
@@ -78,7 +95,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json(
       {
         ok: false,
-        error: 'validation_failed',
+        error: "validation_failed",
         details: parsed.error.flatten(),
       },
       { status: 400 },
@@ -88,12 +105,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const { reason } = parsed.data as ReportInput;
 
   const db = await getDb();
-  const postsCol = db.collection('community_posts');
+  const postsCol = db.collection("community_posts");
 
   const _id = new ObjectId(id);
 
   // 3) 대상 게시글 존재 여부 확인 (삭제된 글은 신고 불가)
-  const post = await postsCol.findOne({ _id, status: { $ne: 'deleted' } });
+  const post = await postsCol.findOne({ _id, status: { $ne: "deleted" } });
 
   if (!post) {
     // logInfo({
@@ -104,7 +121,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     //   ...meta,
     // });
 
-    return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+    return NextResponse.json(
+      { ok: false, error: "not_found" },
+      { status: 404 },
+    );
   }
 
   // 4) 신고자 정보 (회원만 허용)
@@ -112,7 +132,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   if (!payload) {
     // 비회원은 신고 불가
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    return NextResponse.json(
+      { ok: false, error: "unauthorized" },
+      { status: 401 },
+    );
   }
 
   // 여기까지 왔으면 인증된 사용자
@@ -125,20 +148,27 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   });
   if (!rateLimit.ok) {
     logInfo({
-      msg: 'community:report:rate_limited',
+      msg: "community:report:rate_limited",
       status: 429,
       durationMs: stop(),
-      extra: { reporterUserId: reporter.reporterUserId, scope: rateLimit.scope },
+      extra: {
+        reporterUserId: reporter.reporterUserId,
+        scope: rateLimit.scope,
+      },
       ...meta,
     });
     return rateLimit.response;
   }
 
-  const reportsCol = db.collection<CommunityReportDocument>('community_reports');
+  const reportsCol =
+    db.collection<CommunityReportDocument>("community_reports");
 
   // 자기글은 신고불가
   if (post.userId && String(post.userId) === reporter.reporterUserId) {
-    return NextResponse.json({ ok: false, error: 'cannot_report_own_post' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "cannot_report_own_post" },
+      { status: 400 },
+    );
   }
 
   // 5)  중복 신고 방지 로직
@@ -154,7 +184,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     });
 
     if (recent) {
-      return NextResponse.json({ ok: false, error: 'too_many_requests' }, { status: 429 });
+      return NextResponse.json(
+        { ok: false, error: "too_many_requests" },
+        { status: 429 },
+      );
     }
   }
 
@@ -162,15 +195,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const now = new Date();
 
   const doc: CommunityReportDocument = {
-    targetType: 'post',
+    targetType: "post",
     postId: _id,
     // 게시판 종류: DB에서는 type 필드 사용 중 (free / brand)
-    boardType: post.type ?? 'free',
+    boardType: post.type ?? "free",
     reason,
     reporterUserId: reporter.reporterUserId,
     reporterEmail: reporter.reporterEmail,
     reporterNickname: reporter.reporterNickname,
-    status: 'pending' as const,
+    status: "pending" as const,
     createdAt: now,
     resolvedAt: null,
   };
@@ -178,7 +211,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const result = await reportsCol.insertOne(doc);
 
   logInfo({
-    msg: 'community:report:create',
+    msg: "community:report:create",
     status: 201,
     durationMs: stop(),
     extra: {

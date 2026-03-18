@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   children: React.ReactNode;
@@ -19,11 +19,14 @@ export default function AuthGuard({ children }: Props) {
 
   useEffect(() => {
     (async () => {
-      const redirectTo = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/';
+      const redirectTo =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : "/";
       try {
-        const res = await fetch('/api/users/me', { credentials: 'include' });
+        const res = await fetch("/api/users/me", { credentials: "include" });
         if (res.status === 403) {
-          router.replace('/suspended');
+          router.replace("/suspended");
           return;
         }
         if (res.status === 401) {

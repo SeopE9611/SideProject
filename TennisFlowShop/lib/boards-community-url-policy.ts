@@ -1,7 +1,15 @@
-type UrlValidationFailureReason = 'invalid_url' | 'invalid_scheme' | 'invalid_host' | 'invalid_path';
+type UrlValidationFailureReason =
+  | "invalid_url"
+  | "invalid_scheme"
+  | "invalid_host"
+  | "invalid_path";
 
-export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>(['cwzpxxahtayoyqqskmnt.supabase.co']);
-export const BOARD_ASSET_ALLOWED_PATH_PREFIXES = ['/storage/v1/object/public/tennis-images/'] as const;
+export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>([
+  "cwzpxxahtayoyqqskmnt.supabase.co",
+]);
+export const BOARD_ASSET_ALLOWED_PATH_PREFIXES = [
+  "/storage/v1/object/public/tennis-images/",
+] as const;
 
 export type UrlValidationResult =
   | { ok: true }
@@ -13,30 +21,31 @@ export type UrlValidationResult =
  * - 허용 호스트/경로 prefix 화이트리스트 통과 필수
  */
 export function validateBoardAssetUrl(url: unknown): UrlValidationResult {
-  if (typeof url !== 'string') {
-    return { ok: false, reason: 'invalid_url' };
+  if (typeof url !== "string") {
+    return { ok: false, reason: "invalid_url" };
   }
 
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
-    return { ok: false, reason: 'invalid_url' };
+    return { ok: false, reason: "invalid_url" };
   }
 
-  if (parsed.protocol !== 'https:') {
-    return { ok: false, reason: 'invalid_scheme' };
+  if (parsed.protocol !== "https:") {
+    return { ok: false, reason: "invalid_scheme" };
   }
 
   if (!BOARD_ASSET_ALLOWED_HOSTS.has(parsed.hostname)) {
-    return { ok: false, reason: 'invalid_host' };
+    return { ok: false, reason: "invalid_host" };
   }
 
-  const hasAllowedPath = BOARD_ASSET_ALLOWED_PATH_PREFIXES.some((prefix) => parsed.pathname.startsWith(prefix));
+  const hasAllowedPath = BOARD_ASSET_ALLOWED_PATH_PREFIXES.some((prefix) =>
+    parsed.pathname.startsWith(prefix),
+  );
   if (!hasAllowedPath) {
-    return { ok: false, reason: 'invalid_path' };
+    return { ok: false, reason: "invalid_path" };
   }
 
   return { ok: true };
 }
-

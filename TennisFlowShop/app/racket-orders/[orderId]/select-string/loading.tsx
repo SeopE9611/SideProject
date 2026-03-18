@@ -1,6 +1,6 @@
-import SiteContainer from '@/components/layout/SiteContainer';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (

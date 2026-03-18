@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
 
 type StepItem = {
   id: number;
@@ -22,16 +22,26 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
           <div key={step.id} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${ currentStep >= step.id ? 'bg-primary/10 border-primary/20 text-primary dark:bg-primary/20' : 'border-border text-muted-foreground bg-card' }`}
+                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${currentStep >= step.id ? "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20" : "border-border text-muted-foreground bg-card"}`}
               >
                 <step.icon className="h-6 w-6" />
               </div>
               <div className="mt-2 text-center">
-                <p className={`text-sm font-medium ${currentStep >= step.id ? 'text-primary' : 'text-muted-foreground'}`}>{step.title}</p>
-                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">{step.description}</p>
+                <p
+                  className={`text-sm font-medium ${currentStep >= step.id ? "text-primary" : "text-muted-foreground"}`}
+                >
+                  {step.title}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                  {step.description}
+                </p>
               </div>
             </div>
-            {index < steps.length - 1 && <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? 'bg-primary/30' : 'bg-muted'}`} />}
+            {index < steps.length - 1 && (
+              <div
+                className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? "bg-primary/30" : "bg-muted"}`}
+              />
+            )}
           </div>
         ))}
       </div>

@@ -32,7 +32,7 @@ export function calcOrderEarnPoints(totalPrice: number): number {
 
 function envBool(v: string | undefined, fallback = false) {
   if (v === undefined) return fallback;
-  return v === '1' || v.toLowerCase() === 'true' || v.toLowerCase() === 'yes';
+  return v === "1" || v.toLowerCase() === "true" || v.toLowerCase() === "yes";
 }
 
 function envNumber(v: string | undefined, fallback: number) {
@@ -41,34 +41,49 @@ function envNumber(v: string | undefined, fallback: number) {
 }
 // KST 기준 날짜(YYYY-MM-DD)를 Date로 변환
 function kstDate(dateStr: string, endOfDay = false): Date | null {
-  const s = (dateStr ?? '').trim();
+  const s = (dateStr ?? "").trim();
   if (!s) return null;
   // KST(+09:00) 기준으로 고정 파싱 (Vercel UTC 환경에서도 안전)
-  const time = endOfDay ? '23:59:59' : '00:00:00';
+  const time = endOfDay ? "23:59:59" : "00:00:00";
   const d = new Date(`${s}T${time}+09:00`);
   return Number.isFinite(d.getTime()) ? d : null;
 }
 
 // Client 컴포넌트(app/page.tsx 등)에서도 팝업 노출 판단이 필요해서
 // server env(SIGNUP_BONUS_*)가 없을 경우 NEXT_PUBLIC_* 값을 fallback으로 사용
-const RAW_SIGNUP_BONUS_ENABLED = process.env.SIGNUP_BONUS_ENABLED ?? process.env.NEXT_PUBLIC_SIGNUP_BONUS_ENABLED;
-const RAW_SIGNUP_BONUS_POINTS = process.env.SIGNUP_BONUS_POINTS ?? process.env.NEXT_PUBLIC_SIGNUP_BONUS_POINTS;
-const RAW_SIGNUP_BONUS_START_DATE = process.env.SIGNUP_BONUS_START_DATE ?? process.env.NEXT_PUBLIC_SIGNUP_BONUS_START_DATE;
-const RAW_SIGNUP_BONUS_END_DATE = process.env.SIGNUP_BONUS_END_DATE ?? process.env.NEXT_PUBLIC_SIGNUP_BONUS_END_DATE;
-const RAW_SIGNUP_BONUS_CAMPAIGN_ID = process.env.SIGNUP_BONUS_CAMPAIGN_ID ?? process.env.NEXT_PUBLIC_SIGNUP_BONUS_CAMPAIGN_ID;
+const RAW_SIGNUP_BONUS_ENABLED =
+  process.env.SIGNUP_BONUS_ENABLED ??
+  process.env.NEXT_PUBLIC_SIGNUP_BONUS_ENABLED;
+const RAW_SIGNUP_BONUS_POINTS =
+  process.env.SIGNUP_BONUS_POINTS ??
+  process.env.NEXT_PUBLIC_SIGNUP_BONUS_POINTS;
+const RAW_SIGNUP_BONUS_START_DATE =
+  process.env.SIGNUP_BONUS_START_DATE ??
+  process.env.NEXT_PUBLIC_SIGNUP_BONUS_START_DATE;
+const RAW_SIGNUP_BONUS_END_DATE =
+  process.env.SIGNUP_BONUS_END_DATE ??
+  process.env.NEXT_PUBLIC_SIGNUP_BONUS_END_DATE;
+const RAW_SIGNUP_BONUS_CAMPAIGN_ID =
+  process.env.SIGNUP_BONUS_CAMPAIGN_ID ??
+  process.env.NEXT_PUBLIC_SIGNUP_BONUS_CAMPAIGN_ID;
 
 export const SIGNUP_BONUS_ENABLED = envBool(RAW_SIGNUP_BONUS_ENABLED, false);
 export const SIGNUP_BONUS_POINTS = envNumber(RAW_SIGNUP_BONUS_POINTS, 3000);
-export const SIGNUP_BONUS_START_DATE = (RAW_SIGNUP_BONUS_START_DATE ?? '').trim(); // YYYY-MM-DD
-export const SIGNUP_BONUS_END_DATE = (RAW_SIGNUP_BONUS_END_DATE ?? '').trim();     // YYYY-MM-DD
-export const SIGNUP_BONUS_CAMPAIGN_ID = (RAW_SIGNUP_BONUS_CAMPAIGN_ID ?? 'signup_bonus').trim();
+export const SIGNUP_BONUS_START_DATE = (
+  RAW_SIGNUP_BONUS_START_DATE ?? ""
+).trim(); // YYYY-MM-DD
+export const SIGNUP_BONUS_END_DATE = (RAW_SIGNUP_BONUS_END_DATE ?? "").trim(); // YYYY-MM-DD
+export const SIGNUP_BONUS_CAMPAIGN_ID = (
+  RAW_SIGNUP_BONUS_CAMPAIGN_ID ?? "signup_bonus"
+).trim();
 
 export function isSignupBonusActive(now = new Date()): boolean {
   if (!SIGNUP_BONUS_ENABLED) return false;
-  if (!Number.isFinite(SIGNUP_BONUS_POINTS) || SIGNUP_BONUS_POINTS <= 0) return false;
+  if (!Number.isFinite(SIGNUP_BONUS_POINTS) || SIGNUP_BONUS_POINTS <= 0)
+    return false;
 
   const start = kstDate(SIGNUP_BONUS_START_DATE, false);
- const end = kstDate(SIGNUP_BONUS_END_DATE, true);
+  const end = kstDate(SIGNUP_BONUS_END_DATE, true);
 
   if (start && now < start) return false;
   if (end && now > end) return false;
@@ -77,6 +92,6 @@ export function isSignupBonusActive(now = new Date()): boolean {
 
 // refKey는 points_transactions에 unique 인덱스가 걸려있어서 “중복 지급”을 구조적으로 차단함
 export function signupBonusRefKey(userId: { toString(): string } | string) {
-  const uid = typeof userId === 'string' ? userId : userId.toString();
+  const uid = typeof userId === "string" ? userId : userId.toString();
   return `signup_bonus:${SIGNUP_BONUS_CAMPAIGN_ID}:${uid}`;
 }

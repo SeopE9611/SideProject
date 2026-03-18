@@ -1,16 +1,18 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
-const dbName = process.env.MONGODB_DB || 'tennis_academy';
-const sampleSize = Number(process.env.SMOKE_SAMPLE_SIZE || '20');
+const dbName = process.env.MONGODB_DB || "tennis_academy";
+const sampleSize = Number(process.env.SMOKE_SAMPLE_SIZE || "20");
 
 if (!uri) {
-  console.error('[smoke-admin-community-posts-metrics] MONGODB_URI is required');
+  console.error(
+    "[smoke-admin-community-posts-metrics] MONGODB_URI is required",
+  );
   process.exit(1);
 }
 
 function isValidMetricNumber(value) {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
 }
 
 async function main() {
@@ -19,7 +21,7 @@ async function main() {
 
   try {
     const db = client.db(dbName);
-    const posts = db.collection('community_posts');
+    const posts = db.collection("community_posts");
 
     // 배포 전 실데이터 스모크 체크: 최신 게시글 샘플에서 메트릭 필드 숫자 타입 검증
     const samples = await posts
@@ -41,21 +43,28 @@ async function main() {
       .toArray();
 
     if (samples.length === 0) {
-      console.log('[smoke-admin-community-posts-metrics] community_posts 샘플이 없어 검증을 건너뜁니다.');
+      console.log(
+        "[smoke-admin-community-posts-metrics] community_posts 샘플이 없어 검증을 건너뜁니다.",
+      );
       return;
     }
 
     const invalid = samples.filter(
-      (doc) => !isValidMetricNumber(doc.views) || !isValidMetricNumber(doc.likes) || !isValidMetricNumber(doc.commentsCount),
+      (doc) =>
+        !isValidMetricNumber(doc.views) ||
+        !isValidMetricNumber(doc.likes) ||
+        !isValidMetricNumber(doc.commentsCount),
     );
 
     if (invalid.length > 0) {
-      console.error(`[smoke-admin-community-posts-metrics] 메트릭 숫자 검증 실패: ${invalid.length}/${samples.length}`);
+      console.error(
+        `[smoke-admin-community-posts-metrics] 메트릭 숫자 검증 실패: ${invalid.length}/${samples.length}`,
+      );
       for (const doc of invalid.slice(0, 10)) {
         console.error(
           JSON.stringify({
             id: String(doc._id),
-            title: doc.title ?? '',
+            title: doc.title ?? "",
             views: doc.views,
             likes: doc.likes,
             commentsCount: doc.commentsCount,
@@ -85,6 +94,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('[smoke-admin-community-posts-metrics] failed', error);
+  console.error("[smoke-admin-community-posts-metrics] failed", error);
   process.exit(1);
 });

@@ -1,6 +1,6 @@
-import AdminReviewListClient from '@/app/admin/reviews/_components/AdminReviewListClient';
-import AdminReviewMaintenancePanel from '@/app/admin/reviews/_components/AdminReviewMaintenancePanel';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import AdminReviewListClient from "@/app/admin/reviews/_components/AdminReviewListClient";
+import AdminReviewMaintenancePanel from "@/app/admin/reviews/_components/AdminReviewMaintenancePanel";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function ReviewsPage() {
   return (

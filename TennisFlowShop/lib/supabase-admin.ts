@@ -1,8 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 
 const createMockAdmin = () =>
   ({
@@ -16,8 +16,11 @@ const createMockAdmin = () =>
 
 if (!url || !serviceKey) {
   if (!isBuildPhase) {
-    throw new Error('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing.');
+    throw new Error("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing.");
   }
 }
 
-export const supabaseAdmin = !url || !serviceKey ? createMockAdmin() : createClient(url, serviceKey, { auth: { persistSession: false } });
+export const supabaseAdmin =
+  !url || !serviceKey
+    ? createMockAdmin()
+    : createClient(url, serviceKey, { auth: { persistSession: false } });

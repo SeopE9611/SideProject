@@ -1,8 +1,8 @@
-import type { ObjectId } from 'mongodb';
-import type { BoardType, QnaCategory } from '@/lib/types/board';
-import type { BoardListItem } from '@/lib/boards.queries';
-import type { CommunityBoardType } from '@/lib/types/community';
-import type { MarketMeta } from '@/lib/market';
+import type { ObjectId } from "mongodb";
+import type { BoardType, QnaCategory } from "@/lib/types/board";
+import type { BoardListItem } from "@/lib/boards.queries";
+import type { CommunityBoardType } from "@/lib/types/community";
+import type { MarketMeta } from "@/lib/market";
 
 export type AccessTokenPayload = {
   sub?: string;
@@ -86,14 +86,21 @@ export interface BoardCreateMongoDoc {
   type: BoardType;
   title: string;
   content: string;
-  category?: QnaCategory | '일반' | undefined;
+  category?: QnaCategory | "일반" | undefined;
   productRef?: { productId: string; name?: string; image?: string | null };
   isSecret: boolean;
   isPinned: boolean;
-  attachments: Array<{ url: string; name: string; size?: number; mime?: string; width?: number; height?: number }>;
+  attachments: Array<{
+    url: string;
+    name: string;
+    size?: number;
+    mime?: string;
+    width?: number;
+    height?: number;
+  }>;
   authorId: string;
   authorName?: string;
-  status: 'published';
+  status: "published";
   viewCount: number;
   createdAt: Date;
 }

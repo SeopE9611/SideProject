@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { CartItem } from '@/app/store/cartStore';
+import { create } from "zustand";
+import type { CartItem } from "@/app/store/cartStore";
 
 // Buy-Now 모드에서 한 번에 결제할 상품 1개를 보관하는 스토어
 type BuyNowState = {

@@ -1,7 +1,13 @@
-import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import { getDb } from '@/lib/mongodb';
-import { PAID_STATUS_VALUES, orderPaidAmount, applicationPaidAmount, refundsAmount, isStandaloneStringingApplication } from '@/app/api/settlements/_lib/settlementPolicy';
+import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { getDb } from "@/lib/mongodb";
+import {
+  PAID_STATUS_VALUES,
+  orderPaidAmount,
+  applicationPaidAmount,
+  refundsAmount,
+  isStandaloneStringingApplication,
+} from "@/app/api/settlements/_lib/settlementPolicy";
 
 // KST 00:00을 UTC로 보정해 월 경계 계산 (DST 없음 가정: KST=UTC+9)
 function kstMonthRangeToUtc(yyyymm: string) {
@@ -25,7 +31,7 @@ function prevYYYMM_KST() {
   const m = kst.getMonth(); // 0-based (KST)
   // 지난달
   const d = new Date(y, m - 1, 1);
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
 // 지난달 yyyymm
@@ -33,15 +39,15 @@ function prevYYYMM() {
   const d = new Date();
   d.setMonth(d.getMonth() - 1);
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
   return `${y}${m}`;
 }
 
 export async function POST() {
   try {
-    const secret = (await headers()).get('x-cron-secret');
+    const secret = (await headers()).get("x-cron-secret");
     if (secret !== process.env.CRON_SECRET) {
-      return NextResponse.json({ message: 'forbidden' }, { status: 403 });
+      return NextResponse.json({ message: "forbidden" }, { status: 403 });
     }
 
     const db = await getDb();
@@ -49,46 +55,101 @@ export async function POST() {
     const { start, end } = kstMonthRangeToUtc(yyyymm);
 
     const orders = await db
-      .collection('orders')
-      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { paidAmount: 1, totalPrice: 1, refunds: 1, paymentStatus: 1 } })
-      .toArray();
-
-    const apps = await db
-      .collection('stringing_applications')
-      .find({ createdAt: { $gte: start, $lt: end }, paymentStatus: { $in: PAID_STATUS_VALUES } }, { projection: { totalPrice: 1, serviceAmount: 1, orderId: 1, rentalId: 1, refunds: 1, paymentStatus: 1 } })
-      .toArray();
-
-    // 패키지 주문: 결제완료만 월 범위로 수금 합산
-    const packages = await db
-      .collection('packageOrders')
+      .collection("orders")
       .find(
         {
           createdAt: { $gte: start, $lt: end },
           paymentStatus: { $in: PAID_STATUS_VALUES },
         },
-        { projection: { totalPrice: 1, paidAmount: 1, refunds: 1, paymentStatus: 1 } },
+        {
+          projection: {
+            paidAmount: 1,
+            totalPrice: 1,
+            refunds: 1,
+            paymentStatus: 1,
+          },
+        },
+      )
+      .toArray();
+
+    const apps = await db
+      .collection("stringing_applications")
+      .find(
+        {
+          createdAt: { $gte: start, $lt: end },
+          paymentStatus: { $in: PAID_STATUS_VALUES },
+        },
+        {
+          projection: {
+            totalPrice: 1,
+            serviceAmount: 1,
+            orderId: 1,
+            rentalId: 1,
+            refunds: 1,
+            paymentStatus: 1,
+          },
+        },
+      )
+      .toArray();
+
+    // 패키지 주문: 결제완료만 월 범위로 수금 합산
+    const packages = await db
+      .collection("packageOrders")
+      .find(
+        {
+          createdAt: { $gte: start, $lt: end },
+          paymentStatus: { $in: PAID_STATUS_VALUES },
+        },
+        {
+          projection: {
+            totalPrice: 1,
+            paidAmount: 1,
+            refunds: 1,
+            paymentStatus: 1,
+          },
+        },
       )
       .toArray();
 
     // 연결된 신청서는 중복 정산 방지(주문/대여 결제 앵커에 포함되므로 신청서는 제외)
-    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
+    const standaloneApps = apps.filter((a: any) =>
+      isStandaloneStringingApplication(a),
+    );
 
     // paid/net 계산 (정책 함수 사용)
-    const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
-    const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
-    const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
+    const paidOrders = orders.reduce(
+      (s: number, o: any) => s + orderPaidAmount(o),
+      0,
+    );
+    const paidApps = standaloneApps.reduce(
+      (s: number, a: any) => s + applicationPaidAmount(a),
+      0,
+    );
+    const paidPackages = packages.reduce(
+      (s: number, p: any) => s + orderPaidAmount(p),
+      0,
+    );
     const paid = paidOrders + paidApps + paidPackages;
 
-    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
-    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
-    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
+    const refundOrders = orders.reduce(
+      (s: number, o: any) => s + refundsAmount(o),
+      0,
+    );
+    const refundApps = standaloneApps.reduce(
+      (s: number, a: any) => s + refundsAmount(a),
+      0,
+    );
+    const refundPackages = packages.reduce(
+      (s: number, p: any) => s + refundsAmount(p),
+      0,
+    );
     const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
 
-    await db.collection('settlements').updateOne(
+    await db.collection("settlements").updateOne(
       { yyyymm },
       {
-        $setOnInsert: { createdAt: new Date(), createdBy: 'cron' },
+        $setOnInsert: { createdAt: new Date(), createdBy: "cron" },
         $set: {
           totals: { paid, refund, net },
           breakdown: {
@@ -97,13 +158,13 @@ export async function POST() {
             packages: packages.length,
           },
           lastGeneratedAt: new Date(),
-          lastGeneratedBy: 'cron',
+          lastGeneratedBy: "cron",
         },
       },
       { upsert: true },
     );
 
-    console.log('[cron-monthly]', {
+    console.log("[cron-monthly]", {
       yyyymm,
       totals: { paid, refund, net },
       counts: {
@@ -116,7 +177,7 @@ export async function POST() {
 
     return NextResponse.json({ ok: true, yyyymm });
   } catch (e) {
-    console.error('[cron-monthly]', e);
-    return NextResponse.json({ message: 'internal_error' }, { status: 500 });
+    console.error("[cron-monthly]", e);
+    return NextResponse.json({ message: "internal_error" }, { status: 500 });
   }
 }

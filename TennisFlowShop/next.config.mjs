@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-process.env.NEXT_FONT_GOOGLE_DISABLE_DOWNLOADS = '1';
+process.env.NEXT_FONT_GOOGLE_DISABLE_DOWNLOADS = "1";
 
 const nextConfig = {
   typescript: {
@@ -8,6 +8,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;

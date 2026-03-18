@@ -3,9 +3,9 @@ let inflight: Promise<Response> | null = null;
 
 export function refreshOnce() {
   if (!inflight) {
-    inflight = fetch('/api/refresh', {
-      method: 'POST',
-      credentials: 'include',
+    inflight = fetch("/api/refresh", {
+      method: "POST",
+      credentials: "include",
     }).finally(() => {
       inflight = null;
     });

@@ -1,40 +1,81 @@
-'use client';
-import PhotosUploader from '@/components/reviews/PhotosUploader';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Package, DollarSign, Settings, ImageIcon, Save, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import ImageUploader from '@/components/admin/ImageUploader';
-import { GRIP_SIZE_OPTIONS, RACKET_BRANDS, STRING_PATTERN_OPTIONS, normalizeAndValidateGripSize, normalizeAndValidateStringPattern, racketBrandLabel, type RacketBrand } from '@/lib/constants';
-import { Textarea } from '@/components/ui/textarea';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { asRecord, safeNumber } from '@/lib/admin/parsers';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-type BrandState = RacketBrand | ''; // 폼 상태에서만 '' 허용
+"use client";
+import PhotosUploader from "@/components/reviews/PhotosUploader";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Package,
+  DollarSign,
+  Settings,
+  ImageIcon,
+  Save,
+  ArrowLeft,
+} from "lucide-react";
+import Link from "next/link";
+import ImageUploader from "@/components/admin/ImageUploader";
+import {
+  GRIP_SIZE_OPTIONS,
+  RACKET_BRANDS,
+  STRING_PATTERN_OPTIONS,
+  normalizeAndValidateGripSize,
+  normalizeAndValidateStringPattern,
+  racketBrandLabel,
+  type RacketBrand,
+} from "@/lib/constants";
+import { Textarea } from "@/components/ui/textarea";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { asRecord, safeNumber } from "@/lib/admin/parsers";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+type BrandState = RacketBrand | ""; // 폼 상태에서만 '' 허용
 
 // 관리자 폼 유효성(클라이언트) 보강
 const MODEL_MIN = 2;
 const MODEL_MAX = 80;
 const PRICE_MIN = 1; // "가격 필수" 라벨이므로 0원 저장은 기본적으로 막는 편이 안전
 
-const isFiniteNumber = (v: unknown) => Number.isFinite(safeNumber(v, Number.NaN));
+const isFiniteNumber = (v: unknown) =>
+  Number.isFinite(safeNumber(v, Number.NaN));
 const nonNegative = (v: unknown) => isFiniteNumber(v) && safeNumber(v) >= 0;
-const positiveOrNull = (v: unknown) => (v == null || v === '' ? true : isFiniteNumber(v) && safeNumber(v) >= 1);
+const positiveOrNull = (v: unknown) =>
+  v == null || v === "" ? true : isFiniteNumber(v) && safeNumber(v) >= 1;
 
 export type RacketForm = {
   brand: BrandState;
   model: string;
   year: number | null;
   price: number;
-  condition: 'A' | 'B' | 'C';
-  status: 'available' | 'rented' | 'sold' | 'inactive';
-  spec: { weight: number | null; balance: number | null; headSize: number | null; lengthIn: number | null; swingWeight: number | null; stiffnessRa: number | null; pattern: string; gripSize: string };
+  condition: "A" | "B" | "C";
+  status: "available" | "rented" | "sold" | "inactive";
+  spec: {
+    weight: number | null;
+    balance: number | null;
+    headSize: number | null;
+    lengthIn: number | null;
+    swingWeight: number | null;
+    stiffnessRa: number | null;
+    pattern: string;
+    gripSize: string;
+  };
   rental: {
     enabled: boolean;
     deposit: number;
@@ -47,28 +88,36 @@ export type RacketForm = {
   searchKeywords?: string[];
 };
 
-
-type RacketCondition = RacketForm['condition'];
-type RacketStatus = RacketForm['status'];
-const RACKET_CONDITIONS: readonly RacketCondition[] = ['A', 'B', 'C'];
-const RACKET_STATUSES: readonly RacketStatus[] = ['available', 'rented', 'sold', 'inactive'];
+type RacketCondition = RacketForm["condition"];
+type RacketStatus = RacketForm["status"];
+const RACKET_CONDITIONS: readonly RacketCondition[] = ["A", "B", "C"];
+const RACKET_STATUSES: readonly RacketStatus[] = [
+  "available",
+  "rented",
+  "sold",
+  "inactive",
+];
 
 function getInitialPattern(value: unknown) {
   // 기존 자유입력 데이터도 가능한 경우 value(16x19 등)로 맞춰서 Select에 표시
-  return normalizeAndValidateStringPattern(String(value ?? ''));
+  return normalizeAndValidateStringPattern(String(value ?? ""));
 }
 
 function getInitialGripSize(value: unknown) {
   // 기존 자유입력 데이터도 가능한 경우 value(G1/G2/G3)로 맞춰서 Select에 표시
-  return normalizeAndValidateGripSize(String(value ?? ''));
+  return normalizeAndValidateGripSize(String(value ?? ""));
 }
 
 function toCondition(value: unknown): RacketCondition {
-  return RACKET_CONDITIONS.includes(value as RacketCondition) ? (value as RacketCondition) : 'B';
+  return RACKET_CONDITIONS.includes(value as RacketCondition)
+    ? (value as RacketCondition)
+    : "B";
 }
 
 function toStatus(value: unknown): RacketStatus {
-  return RACKET_STATUSES.includes(value as RacketStatus) ? (value as RacketStatus) : 'available';
+  return RACKET_STATUSES.includes(value as RacketStatus)
+    ? (value as RacketStatus)
+    : "available";
 }
 
 function toNullableNumber(value: unknown): number | null {
@@ -82,10 +131,14 @@ type Props = {
   onSubmit: (data: RacketForm) => Promise<void>;
 };
 
-export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Props) {
+export default function AdminRacketForm({
+  initial,
+  submitLabel,
+  onSubmit,
+}: Props) {
   const [form, setForm] = useState<RacketForm>({
-    brand: (initial?.brand as BrandState) ?? '',
-    model: initial?.model ?? '',
+    brand: (initial?.brand as BrandState) ?? "",
+    model: initial?.model ?? "",
     year: initial?.year ?? null,
     price: initial?.price ?? 0,
     quantity: initial?.quantity ?? 1,
@@ -109,21 +162,25 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         d15: initial?.rental?.fee?.d15 ?? 0,
         d30: initial?.rental?.fee?.d30 ?? 0,
       },
-      disabledReason: initial?.rental?.disabledReason ?? '',
+      disabledReason: initial?.rental?.disabledReason ?? "",
     },
     images: Array.isArray(initial?.images) ? initial!.images! : [],
   });
 
   // 검색 키워드 입력 상태
-  const [searchKeywordsText, setSearchKeywordsText] = useState(Array.isArray(initial?.searchKeywords) ? initial!.searchKeywords!.join(', ') : '');
+  const [searchKeywordsText, setSearchKeywordsText] = useState(
+    Array.isArray(initial?.searchKeywords)
+      ? initial!.searchKeywords!.join(", ")
+      : "",
+  );
 
   // 더블클릭/연타 레이스 방지(제출 시작~끝까지 1회만 허용)
   const submitRef = useRef(false);
 
   const handleGenerateKeywords = () => {
-    const base = `${form.brand ?? ''} ${form.model ?? ''}`.trim();
+    const base = `${form.brand ?? ""} ${form.model ?? ""}`.trim();
     if (!base) {
-      showErrorToast('브랜드와 모델명을 먼저 입력해 주세요.');
+      showErrorToast("브랜드와 모델명을 먼저 입력해 주세요.");
       return;
     }
 
@@ -133,24 +190,28 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       .filter((t) => t.length > 1);
 
     const unique = Array.from(new Set(tokens.map((t) => t.toLowerCase())));
-    setSearchKeywordsText(unique.join(', '));
+    setSearchKeywordsText(unique.join(", "));
   };
 
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
 
   // ---------------------------
   // Unsaved changes guard
   // ---------------------------
   const baselineRef = useRef<string | null>(null);
-  const snapshot = useMemo(() => JSON.stringify({ form, searchKeywordsText }), [form, searchKeywordsText]);
+  const snapshot = useMemo(
+    () => JSON.stringify({ form, searchKeywordsText }),
+    [form, searchKeywordsText],
+  );
 
   useEffect(() => {
     // 최초 1회 baseline 설정
     if (baselineRef.current === null) baselineRef.current = snapshot;
   }, [snapshot]);
 
-  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
+  const isDirty =
+    baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !loading);
 
   const confirmLeave = (e: React.MouseEvent) => {
@@ -166,17 +227,17 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
     if (loading || submitRef.current) return;
 
     // 1) 제출 직전 최종 유효성 검사(관리자 입력 실수 방지)
-    const modelTrim = (form.model ?? '').trim();
-    const patternTrim = (form.spec?.pattern ?? '').trim();
-    const gripSizeTrim = (form.spec?.gripSize ?? '').trim();
+    const modelTrim = (form.model ?? "").trim();
+    const patternTrim = (form.spec?.pattern ?? "").trim();
+    const gripSizeTrim = (form.spec?.gripSize ?? "").trim();
 
     if (!form.brand) {
-      showErrorToast('브랜드를 선택하세요.');
+      showErrorToast("브랜드를 선택하세요.");
       return;
     }
 
     if (!modelTrim) {
-      showErrorToast('모델명을 입력하세요.');
+      showErrorToast("모델명을 입력하세요.");
       return;
     }
     if (modelTrim.length < MODEL_MIN) {
@@ -194,7 +255,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       return;
     }
     if (!isFiniteNumber(form.quantity) || Number(form.quantity) < 1) {
-      showErrorToast('보유 수량은 1 이상이어야 합니다.');
+      showErrorToast("보유 수량은 1 이상이어야 합니다.");
       return;
     }
 
@@ -203,43 +264,55 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       const y = Number(form.year);
       const now = new Date().getFullYear();
       if (!Number.isFinite(y) || y < 1900 || y > now + 1) {
-        showErrorToast('연식(year)이 유효하지 않습니다.');
+        showErrorToast("연식(year)이 유효하지 않습니다.");
         return;
       }
     }
 
     // 스펙 숫자 필드: 입력했으면 최소 1 이상(빈값은 null로 허용)
-    if (!positiveOrNull(form.spec.weight)) return showErrorToast('무게(weight)는 1 이상 숫자만 입력하세요.');
-    if (!positiveOrNull(form.spec.balance)) return showErrorToast('밸런스(balance)는 1 이상 숫자만 입력하세요.');
-    if (!positiveOrNull(form.spec.headSize)) return showErrorToast('헤드사이즈(headSize)는 1 이상 숫자만 입력하세요.');
-    if (!positiveOrNull(form.spec.lengthIn)) return showErrorToast('길이(lengthIn)는 1 이상 숫자만 입력하세요.');
-    if (!positiveOrNull(form.spec.swingWeight)) return showErrorToast('스윙웨이트(swingWeight)는 1 이상 숫자만 입력하세요.');
-    if (!positiveOrNull(form.spec.stiffnessRa)) return showErrorToast('강성(stiffnessRa)은 1 이상 숫자만 입력하세요.');
+    if (!positiveOrNull(form.spec.weight))
+      return showErrorToast("무게(weight)는 1 이상 숫자만 입력하세요.");
+    if (!positiveOrNull(form.spec.balance))
+      return showErrorToast("밸런스(balance)는 1 이상 숫자만 입력하세요.");
+    if (!positiveOrNull(form.spec.headSize))
+      return showErrorToast("헤드사이즈(headSize)는 1 이상 숫자만 입력하세요.");
+    if (!positiveOrNull(form.spec.lengthIn))
+      return showErrorToast("길이(lengthIn)는 1 이상 숫자만 입력하세요.");
+    if (!positiveOrNull(form.spec.swingWeight))
+      return showErrorToast(
+        "스윙웨이트(swingWeight)는 1 이상 숫자만 입력하세요.",
+      );
+    if (!positiveOrNull(form.spec.stiffnessRa))
+      return showErrorToast("강성(stiffnessRa)은 1 이상 숫자만 입력하세요.");
 
     // 패턴/그립: Select 기반 value만 허용(운영자 자유입력으로 인한 검색 파손 방지)
     const normalizedPattern = normalizeAndValidateStringPattern(patternTrim);
     const normalizedGripSize = normalizeAndValidateGripSize(gripSizeTrim);
 
     if (!normalizedPattern) {
-      showErrorToast('스트링 패턴을 선택하세요.');
+      showErrorToast("스트링 패턴을 선택하세요.");
       return;
     }
     if (!normalizedGripSize) {
-      showErrorToast('그립 사이즈를 선택하세요.');
+      showErrorToast("그립 사이즈를 선택하세요.");
       return;
     }
 
     if (form.rental.enabled === false && !form.rental.disabledReason?.trim()) {
-      showErrorToast('대여 불가 사유를 입력하세요.');
+      showErrorToast("대여 불가 사유를 입력하세요.");
       return;
     }
 
     // 대여 ON일 때 요금 음수 방지
     if (form.rental.enabled) {
-      if (!nonNegative(form.rental.deposit)) return showErrorToast('보증금은 0 이상 숫자만 입력하세요.');
-      if (!nonNegative(form.rental.fee?.d7)) return showErrorToast('7일 대여료는 0 이상 숫자만 입력하세요.');
-      if (!nonNegative(form.rental.fee?.d15)) return showErrorToast('15일 대여료는 0 이상 숫자만 입력하세요.');
-      if (!nonNegative(form.rental.fee?.d30)) return showErrorToast('30일 대여료는 0 이상 숫자만 입력하세요.');
+      if (!nonNegative(form.rental.deposit))
+        return showErrorToast("보증금은 0 이상 숫자만 입력하세요.");
+      if (!nonNegative(form.rental.fee?.d7))
+        return showErrorToast("7일 대여료는 0 이상 숫자만 입력하세요.");
+      if (!nonNegative(form.rental.fee?.d15))
+        return showErrorToast("15일 대여료는 0 이상 숫자만 입력하세요.");
+      if (!nonNegative(form.rental.fee?.d30))
+        return showErrorToast("30일 대여료는 0 이상 숫자만 입력하세요.");
     }
 
     setLoading(true);
@@ -254,10 +327,18 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         spec: {
           weight: form.spec.weight != null ? Number(form.spec.weight) : null,
           balance: form.spec.balance != null ? Number(form.spec.balance) : null,
-          headSize: form.spec.headSize != null ? Number(form.spec.headSize) : null,
-          lengthIn: form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
-          swingWeight: form.spec.swingWeight != null ? Number(form.spec.swingWeight) : null,
-          stiffnessRa: form.spec.stiffnessRa != null ? Number(form.spec.stiffnessRa) : null,
+          headSize:
+            form.spec.headSize != null ? Number(form.spec.headSize) : null,
+          lengthIn:
+            form.spec.lengthIn != null ? Number(form.spec.lengthIn) : null,
+          swingWeight:
+            form.spec.swingWeight != null
+              ? Number(form.spec.swingWeight)
+              : null,
+          stiffnessRa:
+            form.spec.stiffnessRa != null
+              ? Number(form.spec.stiffnessRa)
+              : null,
           // 서버/DB 저장값은 value 기준으로 통일(패턴: 16x19, 그립: G2 등)
           pattern: normalizedPattern,
           gripSize: normalizedGripSize,
@@ -271,11 +352,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
             d30: Number(form.rental.fee.d30 || 0),
           },
           // ON이면 공백으로, OFF면 사용자가 입력한 사유 보냄
-          disabledReason: form.rental.enabled ? '' : form.rental.disabledReason?.trim() || '',
+          disabledReason: form.rental.enabled
+            ? ""
+            : form.rental.disabledReason?.trim() || "",
         },
         images: form.images || [],
         searchKeywords: searchKeywordsText
-          .split(',')
+          .split(",")
           .map((k) => k.trim())
           .filter((k) => k.length > 0),
       };
@@ -283,10 +366,10 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
       await onSubmit(normalized);
       // 저장 성공 → 현재 상태를 baseline으로 갱신(다음 이탈 시 경고 안 뜨게)
       baselineRef.current = snapshot;
-      showSuccessToast('저장되었습니다.');
+      showSuccessToast("저장되었습니다.");
     } catch (e) {
       console.error(e);
-      showErrorToast('저장 중 오류가 발생했습니다.');
+      showErrorToast("저장 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
       submitRef.current = false;
@@ -295,30 +378,51 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-muted border border-border">
-          <TabsTrigger value="basic" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger
+            value="basic"
+            className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             기본 정보
           </TabsTrigger>
-          <TabsTrigger value="specs" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger
+            value="specs"
+            className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             상세 스펙
           </TabsTrigger>
-          <TabsTrigger value="rental" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger
+            value="rental"
+            className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             대여 설정
           </TabsTrigger>
-          <TabsTrigger value="images" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger
+            value="images"
+            className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
             이미지
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+          <Card
+            variant="ghost"
+            className="shadow-xl bg-muted/30 border border-border"
+          >
             <CardHeader className="bg-muted/30 border-b border-border">
               <div className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">기본 정보</CardTitle>
               </div>
-              <CardDescription className="text-muted-foreground">라켓의 기본 정보를 입력하세요</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                라켓의 기본 정보를 입력하세요
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -326,7 +430,12 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                   <Label htmlFor="brand">
                     브랜드 <span className="text-destructive">*</span>
                   </Label>
-                  <Select value={form.brand} onValueChange={(v: RacketBrand) => setForm({ ...form, brand: v })}>
+                  <Select
+                    value={form.brand}
+                    onValueChange={(v: RacketBrand) =>
+                      setForm({ ...form, brand: v })
+                    }
+                  >
                     <SelectTrigger id="brand" className="w-56">
                       <SelectValue placeholder="브랜드 선택" />
                     </SelectTrigger>
@@ -343,27 +452,75 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                   <Label htmlFor="model">
                     모델 <span className="text-destructive">*</span>
                   </Label>
-                  <Input id="model" placeholder="예: Pro Staff 97" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+                  <Input
+                    id="model"
+                    placeholder="예: Pro Staff 97"
+                    value={form.model}
+                    onChange={(e) =>
+                      setForm({ ...form, model: e.target.value })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="year">연식</Label>
-                  <Input id="year" type="number" placeholder="예: 2023" value={form.year ?? ''} onChange={(e) => setForm({ ...form, year: e.target.value ? Number(e.target.value) : null })} />
+                  <Input
+                    id="year"
+                    type="number"
+                    placeholder="예: 2023"
+                    value={form.year ?? ""}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        year: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="price">
                     가격 (원) <span className="text-destructive">*</span>
                   </Label>
-                  <Input id="price" type="number" placeholder="예: 150000" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value || 0) })} />
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="예: 150000"
+                    value={form.price}
+                    onChange={(e) =>
+                      setForm({ ...form, price: Number(e.target.value || 0) })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quantity">보유 수량</Label>
-                  <p className="text-xs text-muted-foreground">보유 수량은 판매로만 감소합니다. 대여 중 점유는 ‘판매가능(available)’로 계산되어 표시됩니다.</p>
-                  <Input id="quantity" type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: Math.max(1, Number(e.target.value || 1)) })} />
-                  <p className="text-xs text-muted-foreground">최소 1개. 다수 보유 시 사용자에게 '잔여 n/총 m'로 표시됩니다.</p>
+                  <p className="text-xs text-muted-foreground">
+                    보유 수량은 판매로만 감소합니다. 대여 중 점유는
+                    ‘판매가능(available)’로 계산되어 표시됩니다.
+                  </p>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    min={1}
+                    value={form.quantity}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        quantity: Math.max(1, Number(e.target.value || 1)),
+                      })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    최소 1개. 다수 보유 시 사용자에게 '잔여 n/총 m'로
+                    표시됩니다.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="condition">상태 등급</Label>
-                  <Select value={form.condition} onValueChange={(value: RacketCondition) => setForm({ ...form, condition: value })}>
+                  <Select
+                    value={form.condition}
+                    onValueChange={(value: RacketCondition) =>
+                      setForm({ ...form, condition: value })
+                    }
+                  >
                     <SelectTrigger id="condition">
                       <SelectValue />
                     </SelectTrigger>
@@ -376,7 +533,12 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status">판매 상태</Label>
-                  <Select value={form.status} onValueChange={(value: RacketStatus) => setForm({ ...form, status: value })}>
+                  <Select
+                    value={form.status}
+                    onValueChange={(value: RacketStatus) =>
+                      setForm({ ...form, status: value })
+                    }
+                  >
                     <SelectTrigger id="status">
                       <SelectValue />
                     </SelectTrigger>
@@ -390,14 +552,28 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 {/* 검색 키워드 입력 */}
                 <div className="space-y-2">
-                  <Label htmlFor="racket-search-keywords">검색 키워드 (쉼표로 구분)</Label>
+                  <Label htmlFor="racket-search-keywords">
+                    검색 키워드 (쉼표로 구분)
+                  </Label>
                   <div className="flex flex-col gap-2 md:flex-row md:items-center">
-                    <Input id="racket-search-keywords" placeholder="예: 윌슨 프로스태프, 블레이드, RF97" value={searchKeywordsText} onChange={(e) => setSearchKeywordsText(e.target.value)} />
-                    <Button type="button" variant="outline" className="md:ml-2 shrink-0" onClick={handleGenerateKeywords}>
+                    <Input
+                      id="racket-search-keywords"
+                      placeholder="예: 윌슨 프로스태프, 블레이드, RF97"
+                      value={searchKeywordsText}
+                      onChange={(e) => setSearchKeywordsText(e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="md:ml-2 shrink-0"
+                      onClick={handleGenerateKeywords}
+                    >
                       브랜드/모델 기준 자동 생성
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">검색창에서 이 키워드들로도 라켓을 찾을 수 있습니다.</p>
+                  <p className="text-xs text-muted-foreground">
+                    검색창에서 이 키워드들로도 라켓을 찾을 수 있습니다.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -405,13 +581,18 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="specs" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+          <Card
+            variant="ghost"
+            className="shadow-xl bg-muted/30 border border-border"
+          >
             <CardHeader className="bg-muted/30 border-b border-border">
               <div className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">상세 스펙</CardTitle>
               </div>
-              <CardDescription className="text-muted-foreground">라켓의 상세 스펙을 입력하세요</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                라켓의 상세 스펙을 입력하세요
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -421,11 +602,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                     id="weight"
                     type="number"
                     placeholder="예: 305"
-                    value={form.spec.weight ?? ''}
+                    value={form.spec.weight ?? ""}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        spec: { ...form.spec, weight: e.target.value ? Number(e.target.value) : null },
+                        spec: {
+                          ...form.spec,
+                          weight: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
                       })
                     }
                   />
@@ -436,11 +622,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                     id="balance"
                     type="number"
                     placeholder="예: 315"
-                    value={form.spec.balance ?? ''}
+                    value={form.spec.balance ?? ""}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        spec: { ...form.spec, balance: e.target.value ? Number(e.target.value) : null },
+                        spec: {
+                          ...form.spec,
+                          balance: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
                       })
                     }
                   />
@@ -451,11 +642,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                     id="headSize"
                     type="number"
                     placeholder="예: 97"
-                    value={form.spec.headSize ?? ''}
+                    value={form.spec.headSize ?? ""}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        spec: { ...form.spec, headSize: e.target.value ? Number(e.target.value) : null },
+                        spec: {
+                          ...form.spec,
+                          headSize: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
                       })
                     }
                   />
@@ -466,11 +662,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                     id="lengthIn"
                     type="number"
                     placeholder="예: 27"
-                    value={form.spec.lengthIn ?? ''}
+                    value={form.spec.lengthIn ?? ""}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        spec: { ...form.spec, lengthIn: e.target.value ? Number(e.target.value) : null },
+                        spec: {
+                          ...form.spec,
+                          lengthIn: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
                       })
                     }
                   />
@@ -481,11 +682,16 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                     id="swingWeight"
                     type="number"
                     placeholder="예: 320"
-                    value={form.spec.swingWeight ?? ''}
+                    value={form.spec.swingWeight ?? ""}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        spec: { ...form.spec, swingWeight: e.target.value ? Number(e.target.value) : null },
+                        spec: {
+                          ...form.spec,
+                          swingWeight: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
                       })
                     }
                   />
@@ -496,18 +702,31 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                     id="stiffnessRa"
                     type="number"
                     placeholder="예: 65"
-                    value={form.spec.stiffnessRa ?? ''}
+                    value={form.spec.stiffnessRa ?? ""}
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        spec: { ...form.spec, stiffnessRa: e.target.value ? Number(e.target.value) : null },
+                        spec: {
+                          ...form.spec,
+                          stiffnessRa: e.target.value
+                            ? Number(e.target.value)
+                            : null,
+                        },
                       })
                     }
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="pattern">스트링 패턴</Label>
-                  <Select value={form.spec.pattern || undefined} onValueChange={(value) => setForm({ ...form, spec: { ...form.spec, pattern: value } })}>
+                  <Select
+                    value={form.spec.pattern || undefined}
+                    onValueChange={(value) =>
+                      setForm({
+                        ...form,
+                        spec: { ...form.spec, pattern: value },
+                      })
+                    }
+                  >
                     <SelectTrigger id="pattern">
                       <SelectValue placeholder="스트링 패턴 선택" />
                     </SelectTrigger>
@@ -522,7 +741,15 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="gripSize">그립 사이즈</Label>
-                  <Select value={form.spec.gripSize || undefined} onValueChange={(value) => setForm({ ...form, spec: { ...form.spec, gripSize: value } })}>
+                  <Select
+                    value={form.spec.gripSize || undefined}
+                    onValueChange={(value) =>
+                      setForm({
+                        ...form,
+                        spec: { ...form.spec, gripSize: value },
+                      })
+                    }
+                  >
                     <SelectTrigger id="gripSize">
                       <SelectValue placeholder="그립 사이즈 선택" />
                     </SelectTrigger>
@@ -541,21 +768,37 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="rental" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+          <Card
+            variant="ghost"
+            className="shadow-xl bg-muted/30 border border-border"
+          >
             <CardHeader className="bg-muted/30 border-b border-border">
               <div className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">대여 설정</CardTitle>
               </div>
-              <CardDescription className="text-muted-foreground">대여 가능 여부 및 요금을 설정하세요</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                대여 가능 여부 및 요금을 설정하세요
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label htmlFor="rental-enabled">대여 가능</Label>
-                  <p className="text-sm text-muted-foreground">이 라켓을 대여할 수 있도록 설정합니다</p>
+                  <p className="text-sm text-muted-foreground">
+                    이 라켓을 대여할 수 있도록 설정합니다
+                  </p>
                 </div>
-                <Switch id="rental-enabled" checked={form.rental.enabled} onCheckedChange={(checked) => setForm({ ...form, rental: { ...form.rental, enabled: checked } })} />
+                <Switch
+                  id="rental-enabled"
+                  checked={form.rental.enabled}
+                  onCheckedChange={(checked) =>
+                    setForm({
+                      ...form,
+                      rental: { ...form.rental, enabled: checked },
+                    })
+                  }
+                />
               </div>
 
               {!form.rental.enabled && (
@@ -566,7 +809,15 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                       id="disabledReason"
                       placeholder="예: 그립 파손 / 프레임 크랙 등"
                       value={form.rental.disabledReason}
-                      onChange={(e) => setForm({ ...form, rental: { ...form.rental, disabledReason: e.target.value } })}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          rental: {
+                            ...form.rental,
+                            disabledReason: e.target.value,
+                          },
+                        })
+                      }
                       className="min-h-[84px]"
                     />
                   </div>
@@ -577,7 +828,21 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
                   <div className="space-y-2">
                     <Label htmlFor="deposit">보증금 (원)</Label>
-                    <Input id="deposit" type="number" placeholder="예: 100000" value={form.rental.deposit} onChange={(e) => setForm({ ...form, rental: { ...form.rental, deposit: Number(e.target.value || 0) } })} />
+                    <Input
+                      id="deposit"
+                      type="number"
+                      placeholder="예: 100000"
+                      value={form.rental.deposit}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          rental: {
+                            ...form.rental,
+                            deposit: Number(e.target.value || 0),
+                          },
+                        })
+                      }
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="fee7">7일 대여료 (원)</Label>
@@ -589,7 +854,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                       onChange={(e) =>
                         setForm({
                           ...form,
-                          rental: { ...form.rental, fee: { ...form.rental.fee, d7: Number(e.target.value || 0) } },
+                          rental: {
+                            ...form.rental,
+                            fee: {
+                              ...form.rental.fee,
+                              d7: Number(e.target.value || 0),
+                            },
+                          },
                         })
                       }
                     />
@@ -604,7 +875,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                       onChange={(e) =>
                         setForm({
                           ...form,
-                          rental: { ...form.rental, fee: { ...form.rental.fee, d15: Number(e.target.value || 0) } },
+                          rental: {
+                            ...form.rental,
+                            fee: {
+                              ...form.rental.fee,
+                              d15: Number(e.target.value || 0),
+                            },
+                          },
                         })
                       }
                     />
@@ -619,7 +896,13 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
                       onChange={(e) =>
                         setForm({
                           ...form,
-                          rental: { ...form.rental, fee: { ...form.rental.fee, d30: Number(e.target.value || 0) } },
+                          rental: {
+                            ...form.rental,
+                            fee: {
+                              ...form.rental.fee,
+                              d30: Number(e.target.value || 0),
+                            },
+                          },
                         })
                       }
                     />
@@ -631,31 +914,51 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: Prop
         </TabsContent>
 
         <TabsContent value="images" className="space-y-4">
-          <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+          <Card
+            variant="ghost"
+            className="shadow-xl bg-muted/30 border border-border"
+          >
             <CardHeader className="bg-muted/30 border-b border-border">
               <div className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-primary" />
                 <CardTitle className="text-primary">이미지</CardTitle>
               </div>
-              <CardDescription className="text-muted-foreground">라켓 이미지를 업로드하세요 (최대 10장)</CardDescription>
+              <CardDescription className="text-muted-foreground">
+                라켓 이미지를 업로드하세요 (최대 10장)
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <ImageUploader value={form.images} onChange={(next) => setForm({ ...form, images: next })} max={10} variant="racket" enablePrimary />
+              <ImageUploader
+                value={form.images}
+                onChange={(next) => setForm({ ...form, images: next })}
+                max={10}
+                variant="racket"
+                enablePrimary
+              />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
       <div className="flex items-center justify-end space-x-2">
-        <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-          <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
+        <Button
+          variant="outline"
+          type="button"
+          asChild
+          className="bg-muted/40 hover:bg-muted border-border"
+        >
+          <Link
+            href="/admin/rackets"
+            data-no-unsaved-guard
+            onClick={confirmLeave}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             취소
           </Link>
         </Button>
         <Button onClick={handleSubmit} disabled={loading} variant="default">
           <Save className="mr-2 h-4 w-4" />
-          {loading ? '저장 중...' : submitLabel}
+          {loading ? "저장 중..." : submitLabel}
         </Button>
       </div>
     </div>

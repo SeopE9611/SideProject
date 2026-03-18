@@ -1,11 +1,11 @@
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import ReviewsClient from './_components/ReviewsClient';
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import ReviewsClient from "./_components/ReviewsClient";
 
 export const metadata = {
-  title: '리뷰 게시판 | 테니스 플로우',
-  description: '상품/서비스 리뷰를 한 곳에서 확인할 수 있는 리뷰 게시판입니다.',
-  alternates: { canonical: '/reviews' },
+  title: "리뷰 게시판 | 테니스 플로우",
+  description: "상품/서비스 리뷰를 한 곳에서 확인할 수 있는 리뷰 게시판입니다.",
+  alternates: { canonical: "/reviews" },
 };
 
 export default function ReviewsPage() {
@@ -19,7 +19,9 @@ export default function ReviewsPage() {
             <span>리뷰 게시판</span>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">리뷰 게시판</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            리뷰 게시판
+          </h1>
         </div>
 
         <Button asChild variant="outline" size="sm" className="shrink-0">

@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect } from "next/navigation";
 
 /**
  * 과거 경로 호환용 페이지입니다.
@@ -8,5 +8,5 @@ import { redirect } from 'next/navigation';
  */
 export default async function AdminStringingApplicationsPage() {
   // 통합 주문관리로 이동 (교체서비스 프리셋)
-  redirect('/admin/orders?preset=stringing');
+  redirect("/admin/orders?preset=stringing");
 }

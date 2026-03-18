@@ -1,7 +1,7 @@
-import RacketFinderClient from '@/app/rackets/finder/_components/RacketFinderClient';
-import SiteContainer from '@/components/layout/SiteContainer';
+import RacketFinderClient from "@/app/rackets/finder/_components/RacketFinderClient";
+import SiteContainer from "@/components/layout/SiteContainer";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function RacketFinderPage() {
   return (

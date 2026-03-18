@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 /**
  * Legacy endpoint sunset.
@@ -10,9 +10,10 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   return NextResponse.json(
     {
-      message: 'This endpoint is gone. Use /api/applications/me or /api/applications/stringing/list.',
-      code: 'GONE_LEGACY_ENDPOINT',
-      canonicalCollection: 'stringing_applications',
+      message:
+        "This endpoint is gone. Use /api/applications/me or /api/applications/stringing/list.",
+      code: "GONE_LEGACY_ENDPOINT",
+      canonicalCollection: "stringing_applications",
     },
     { status: 410 },
   );

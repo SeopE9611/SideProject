@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
-import { ClipboardList, MessageSquare } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
+import { ClipboardList, MessageSquare } from "lucide-react";
 
-import FinalRequestSection from '@/app/features/stringing-applications/components/apply-shared/FinalRequestSection';
-import MountingInfoSection from '@/app/features/stringing-applications/components/apply-shared/MountingInfoSection';
-import type useCheckoutStringingServiceAdapter from '@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter';
+import FinalRequestSection from "@/app/features/stringing-applications/components/apply-shared/FinalRequestSection";
+import MountingInfoSection from "@/app/features/stringing-applications/components/apply-shared/MountingInfoSection";
+import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 
-type SectionType = 'mounting' | 'final';
-type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
+type SectionType = "mounting" | "final";
+type CheckoutStringingServiceAdapter = ReturnType<
+  typeof useCheckoutStringingServiceAdapter
+>;
 
 type Props = {
   section: SectionType;
@@ -16,10 +23,14 @@ type Props = {
   adapter: CheckoutStringingServiceAdapter;
 };
 
-export default function CheckoutStringingServiceSections({ section, withStringService, adapter }: Props) {
+export default function CheckoutStringingServiceSections({
+  section,
+  withStringService,
+  adapter,
+}: Props) {
   if (!withStringService) return null;
 
-  if (section === 'mounting') {
+  if (section === "mounting") {
     return (
       <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
         <div className="bg-card p-4 bp-sm:p-6">
@@ -27,7 +38,9 @@ export default function CheckoutStringingServiceSections({ section, withStringSe
             <ClipboardList className="h-5 w-5 text-foreground" />
             장착 정보
           </CardTitle>
-          <CardDescription className="mt-2">교체 서비스 라켓/스트링 정보를 확인하고 입력해주세요.</CardDescription>
+          <CardDescription className="mt-2">
+            교체 서비스 라켓/스트링 정보를 확인하고 입력해주세요.
+          </CardDescription>
         </div>
         <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
           <MountingInfoSection
@@ -59,7 +72,7 @@ export default function CheckoutStringingServiceSections({ section, withStringSe
             isCombinedPdpMode={false}
             pdpStringPrice={0}
             racketPrice={null}
-            won={(n) => `${n.toLocaleString('ko-KR')}원`}
+            won={(n) => `${n.toLocaleString("ko-KR")}원`}
             packagePreview={adapter.packagePreview}
             canApplyPackage={adapter.canApplyPackage}
             packageInsufficient={adapter.packageInsufficient}
@@ -88,7 +101,9 @@ export default function CheckoutStringingServiceSections({ section, withStringSe
           <MessageSquare className="h-5 w-5 text-foreground" />
           추가 요청
         </CardTitle>
-        <CardDescription className="mt-2">교체 서비스 관련 요청사항을 남겨주세요.</CardDescription>
+        <CardDescription className="mt-2">
+          교체 서비스 관련 요청사항을 남겨주세요.
+        </CardDescription>
       </div>
       <CardContent className="p-3 bp-sm:p-4 bp-lg:p-6">
         <FinalRequestSection

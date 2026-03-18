@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import CartPageClient from '@/app/cart/CartPageClient';
+import CartPageClient from "@/app/cart/CartPageClient";
 
 export default function CartPage() {
   return <CartPageClient />;

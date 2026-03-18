@@ -1,5 +1,5 @@
 export function createSearchKeywords(name: string, brand: string) {
-  const base = `${name ?? ''} ${brand ?? ''}`.trim();
+  const base = `${name ?? ""} ${brand ?? ""}`.trim();
   if (!base) return null;
 
   const tokens = base

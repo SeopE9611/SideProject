@@ -17,7 +17,11 @@
  * }} params
  * @returns {Promise<BoardViewerContext>}
  */
-export async function resolveBoardViewerContext({ accessToken, verifyToken, fetchUserRoleById }) {
+export async function resolveBoardViewerContext({
+  accessToken,
+  verifyToken,
+  fetchUserRoleById,
+}) {
   if (!accessToken) {
     return { viewerId: null, isAdmin: false, payload: null };
   }
@@ -43,7 +47,7 @@ export async function resolveBoardViewerContext({ accessToken, verifyToken, fetc
 
   return {
     viewerId,
-    isAdmin: role === 'admin',
+    isAdmin: role === "admin",
     payload,
   };
 }
@@ -76,6 +80,6 @@ export function maskSecretTitle(item, viewer) {
 
   return {
     ...item,
-    title: canView ? String(item?.title ?? '') : '비밀글입니다',
+    title: canView ? String(item?.title ?? "") : "비밀글입니다",
   };
 }

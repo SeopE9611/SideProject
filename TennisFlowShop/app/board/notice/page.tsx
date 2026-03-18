@@ -1,36 +1,45 @@
-import { getBoardList } from '@/lib/boards.queries';
-import type { Metadata } from 'next';
-import NoticeListClient from './_components/NoticeListClient';
+import { getBoardList } from "@/lib/boards.queries";
+import type { Metadata } from "next";
+import NoticeListClient from "./_components/NoticeListClient";
 
 export const metadata: Metadata = {
-  title: '공지사항 | 테니스 플로우',
-  description: '테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
-  alternates: { canonical: '/board/notice' },
+  title: "공지사항 | 테니스 플로우",
+  description:
+    "테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
+  alternates: { canonical: "/board/notice" },
   openGraph: {
-    title: '공지사항 | 테니스 플로우',
-    description: '테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
-    url: '/board/notice',
-    type: 'website',
+    title: "공지사항 | 테니스 플로우",
+    description:
+      "테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
+    url: "/board/notice",
+    type: "website",
   },
   twitter: {
-    card: 'summary',
-    title: '공지사항 | 테니스 플로우',
-    description: '테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.',
+    card: "summary",
+    title: "공지사항 | 테니스 플로우",
+    description:
+      "테니스 플로우의 운영 공지, 이벤트, 서비스 업데이트 소식을 확인하는 게시판입니다.",
   },
 };
 
 // ISR(30s): 페이지 단위 캐시
 export const revalidate = 30;
 
-const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+const clamp = (n: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, n));
 
 // 1) 공지 목록 조회: HTTP가 아니라 DB를 직접 조회
-async function fetchNotices(opts: { page: number; limit: number; q: string; field: 'all' | 'title' | 'content' | 'title_content' }) {
+async function fetchNotices(opts: {
+  page: number;
+  limit: number;
+  q: string;
+  field: "all" | "title" | "content" | "title_content";
+}) {
   const { page, limit, q, field } = opts;
 
   try {
     const { items, total } = await getBoardList({
-      type: 'notice',
+      type: "notice",
       page,
       limit,
       // URL 쿼리(검색/필드)를 서버 프리로드에도 동일하게 반영
@@ -49,7 +58,7 @@ async function fetchNotices(opts: { page: number; limit: number; q: string; fiel
     };
   } catch (error) {
     // 서버 렌더링 시 쿼리 실패해도 전체 페이지가 터지지 않도록 방어
-    console.error('Failed to load notices from DB', error);
+    console.error("Failed to load notices from DB", error);
     return {
       // 프리로드 실패를 빈 목록(0건)으로 오인하지 않도록 null로 전달
       items: null,
@@ -60,25 +69,40 @@ async function fetchNotices(opts: { page: number; limit: number; q: string; fiel
   }
 }
 
-export default async function Page({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   // URL 쿼리로 직접 진입하는 케이스(/board/notice?page=3&q=...&field=title 등)에서
   // 서버 프리로드가 항상 page=1로 뜨는 문제를 방지
-  const pick = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+  const pick = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
 
   const resolvedSearchParams = await searchParams;
 
   const rawPage = pick(resolvedSearchParams?.page);
-  const rawQ = pick(resolvedSearchParams?.q) ?? '';
-  const rawField = pick(resolvedSearchParams?.field) ?? 'all';
+  const rawQ = pick(resolvedSearchParams?.q) ?? "";
+  const rawField = pick(resolvedSearchParams?.field) ?? "all";
 
-  const page = clamp(Number.parseInt(String(rawPage ?? '1'), 10) || 1, 1, 10_000);
+  const page = clamp(
+    Number.parseInt(String(rawPage ?? "1"), 10) || 1,
+    1,
+    10_000,
+  );
   const limit = 20;
 
-  const field: 'all' | 'title' | 'content' | 'title_content' = rawField === 'title' || rawField === 'content' || rawField === 'title_content' ? rawField : 'all';
+  const field: "all" | "title" | "content" | "title_content" =
+    rawField === "title" ||
+    rawField === "content" ||
+    rawField === "title_content"
+      ? rawField
+      : "all";
 
   const q = rawQ;
 
-  const { items, total, initialLoadError, initialErrorMessage } = await fetchNotices({ page, limit, q, field });
+  const { items, total, initialLoadError, initialErrorMessage } =
+    await fetchNotices({ page, limit, q, field });
 
   return (
     <NoticeListClient

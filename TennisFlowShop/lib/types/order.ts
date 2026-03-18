@@ -25,7 +25,7 @@ export type Order = {
   userId?: string;
 
   shippingInfo?: {
-    shippingMethod?: 'delivery' | 'quick' | 'visit';
+    shippingMethod?: "delivery" | "quick" | "visit";
     estimatedDate?: string;
     withStringService?: boolean;
     invoice?: {
@@ -36,11 +36,11 @@ export type Order = {
 
   date: string; // ISO 8601 날짜 문자열
 
-  status: '대기중' | '처리중' | '완료' | '취소' | '환불';
+  status: "대기중" | "처리중" | "완료" | "취소" | "환불";
 
-  paymentStatus: '결제완료' | '결제대기' | '결제실패';
+  paymentStatus: "결제완료" | "결제대기" | "결제실패";
 
-  type: '상품' | '서비스' | '클래스';
+  type: "상품" | "서비스" | "클래스";
 
   total: number;
 
@@ -49,13 +49,13 @@ export type Order = {
   // 장착 서비스 신청용 요약 문자열 (예: '듀로플렉스 125 외 1종')
   stringSummary?: string;
 
-  cancelStatus?: 'requested' | 'approved' | 'rejected';
+  cancelStatus?: "requested" | "approved" | "rejected";
   refundAccountReady?: boolean;
   refundBankLabel?: string | null;
 };
 
 export type OrderWithType = Order & {
-  __type: 'order' | 'stringing_application' | 'rental_order';
+  __type: "order" | "stringing_application" | "rental_order";
   linkedOrderId?: string | null;
 };
 

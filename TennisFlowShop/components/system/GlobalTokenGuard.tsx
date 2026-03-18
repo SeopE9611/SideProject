@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { useAuthStore } from '@/app/store/authStore';
-import { bootstrapOnce } from '@/lib/auth/bootstrap';
+import { useEffect, useRef } from "react";
+import { useAuthStore } from "@/app/store/authStore";
+import { bootstrapOnce } from "@/lib/auth/bootstrap";
 
 // 부트스트랩은 탭당 딱 한 번만 실행
 export default function GlobalTokenGuard() {
@@ -28,9 +28,11 @@ export default function GlobalTokenGuard() {
         return;
       }
 
-      void bootstrapOnce(setUser, () => latestUser.current as any).finally(() => {
-        setAuthChecked(true);
-      });
+      void bootstrapOnce(setUser, () => latestUser.current as any).finally(
+        () => {
+          setAuthChecked(true);
+        },
+      );
     }, 0);
 
     return () => window.clearTimeout(timer);

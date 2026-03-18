@@ -1,13 +1,13 @@
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { isTerminalPackageOrderStatus } from '@/lib/package-order-policy';
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { isTerminalPackageOrderStatus } from "@/lib/package-order-policy";
 
 export async function findBlockingPackageOrderByUserId(userId: string) {
   if (!ObjectId.isValid(userId)) return null;
 
   const objectUserId = new ObjectId(userId);
   const db = (await clientPromise).db();
-  const packageOrders = db.collection('packageOrders');
+  const packageOrders = db.collection("packageOrders");
 
   const recentOrders = await packageOrders
     .find(
@@ -26,5 +26,8 @@ export async function findBlockingPackageOrderByUserId(userId: string) {
     .limit(20)
     .toArray();
 
-  return recentOrders.find((order) => !isTerminalPackageOrderStatus(order as any)) ?? null;
+  return (
+    recentOrders.find((order) => !isTerminalPackageOrderStatus(order as any)) ??
+    null
+  );
 }

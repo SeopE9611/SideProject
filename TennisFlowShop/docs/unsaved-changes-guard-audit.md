@@ -45,7 +45,6 @@ rg -n "useUnsavedChangesGuard|UNSAVED_CHANGES_MESSAGE|window\.confirm" app lib
 rg -n "router\.push|router\.back|history\.back|Link href|popstate" app/<target-files> lib/hooks
 ```
 
-
 ## 5차 확장 반영 사항 (게시판/리뷰 write·edit opt-in)
 
 - 범위: **긴 글 작성/수정 화면(write/edit)만** `useBackNavigationGuard`를 opt-in으로 확장.

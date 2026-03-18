@@ -1,8 +1,11 @@
-export type AdminPackageType = '10회권' | '30회권' | '50회권' | '100회권';
-export type AdminPackageServiceType = '방문' | '출장';
-export type AdminPackagePassStatus = '비활성' | '활성' | '만료' | '취소';
-export type AdminPackagePassStatusDetail = '대기' | '일시정지' | Exclude<AdminPackagePassStatus, '비활성'>;
-export type AdminPackagePaymentStatus = '결제완료' | '결제대기' | '결제취소';
+export type AdminPackageType = "10회권" | "30회권" | "50회권" | "100회권";
+export type AdminPackageServiceType = "방문" | "출장";
+export type AdminPackagePassStatus = "비활성" | "활성" | "만료" | "취소";
+export type AdminPackagePassStatusDetail =
+  | "대기"
+  | "일시정지"
+  | Exclude<AdminPackagePassStatus, "비활성">;
+export type AdminPackagePaymentStatus = "결제완료" | "결제대기" | "결제취소";
 
 export interface AdminPackageCustomerDto {
   name?: string;
@@ -21,7 +24,7 @@ export interface AdminPackageListItemDto {
   price: number;
   purchaseDate: string | null;
   expiryDate: string | null;
-  passStatus: AdminPackagePassStatus | '대기';
+  passStatus: AdminPackagePassStatus | "대기";
   paymentStatus: AdminPackagePaymentStatus | string;
   serviceType: AdminPackageServiceType;
 }
@@ -51,8 +54,8 @@ export interface AdminPackageOperationHistoryDto {
   adminEmail?: string;
   from?: string | null;
   to?: string | null;
-  paymentStatus?: AdminPackagePaymentStatus | '취소';
-  eventType?: 'extend_expiry' | 'adjust_sessions' | 'payment_status_change';
+  paymentStatus?: AdminPackagePaymentStatus | "취소";
+  eventType?: "extend_expiry" | "adjust_sessions" | "payment_status_change";
 }
 
 export interface AdminPackageUsageHistoryDto {

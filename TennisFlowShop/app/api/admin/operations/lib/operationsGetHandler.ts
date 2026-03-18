@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import { requireAdmin } from '@/lib/admin.guard';
+import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { requireAdmin } from "@/lib/admin.guard";
 import {
   toISO,
   normalizeOrderStatus,
@@ -10,7 +10,7 @@ import {
   pickCustomerFromDoc,
   normalizeRentalAmountTotal,
   normalizeRentalPaymentMeta,
-} from '@/lib/admin-ops-normalize';
+} from "@/lib/admin-ops-normalize";
 import type {
   AdminOperationFlow as Flow,
   AdminOperationItem as OpItem,
@@ -19,14 +19,16 @@ import type {
   SettlementAnchor,
   AdminOperationsListRequestDto,
   AdminOperationsListResponseDto,
-} from '@/types/admin/operations';
-import { enforceAdminRateLimit } from '@/lib/admin/adminRateLimit';
-import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from '@/lib/admin/adminEndpointCostPolicy';
-import { inferNextActionForOperationItem } from '@/lib/admin/next-action-guidance';
-import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
-import { getRefundBankLabel } from '@/lib/cancel-request/refund-account';
+} from "@/types/admin/operations";
+import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
+import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
+import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
+import {
+  getOrderStatusLabelForDisplay,
+  isVisitPickupOrder,
+} from "@/lib/order-shipping";
+import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
-
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
@@ -50,16 +52,21 @@ type UnknownDoc = Record<string, unknown>;
 type UnknownArray = UnknownDoc[];
 
 function asDoc(value: unknown): UnknownDoc | null {
-  return typeof value === 'object' && value !== null ? (value as UnknownDoc) : null;
+  return typeof value === "object" && value !== null
+    ? (value as UnknownDoc)
+    : null;
 }
 
 function asDocArray(value: unknown): UnknownArray {
-  return Array.isArray(value) ? value.filter((item): item is UnknownDoc => asDoc(item) !== null) : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is UnknownDoc => asDoc(item) !== null)
+    : [];
 }
 
 function getString(value: unknown): string | null {
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean")
+    return String(value);
   return null;
 }
 
@@ -68,12 +75,12 @@ function getIdString(value: unknown): string | null {
   if (asString) return asString;
   const obj = asDoc(value);
   if (!obj) return null;
-  if (typeof obj.toString === 'function') return obj.toString();
+  if (typeof obj.toString === "function") return obj.toString();
   return null;
 }
 
 type NormalizedCancel = {
-  status: 'none' | 'requested' | 'approved' | 'rejected';
+  status: "none" | "requested" | "approved" | "rejected";
   requestedAt?: string | null;
   handledAt?: string | null;
   reason?: string;
@@ -81,13 +88,15 @@ type NormalizedCancel = {
   refundBankLabel?: string | null;
 };
 
-function normalizeCancelStatus(raw: unknown): NormalizedCancel['status'] {
-  const v = String(raw ?? '').trim().toLowerCase();
-  if (!v) return 'none';
-  if (v === 'requested' || v === '요청') return 'requested';
-  if (v === 'approved' || v === '승인') return 'approved';
-  if (v === 'rejected' || v === '거절') return 'rejected';
-  return 'none';
+function normalizeCancelStatus(raw: unknown): NormalizedCancel["status"] {
+  const v = String(raw ?? "")
+    .trim()
+    .toLowerCase();
+  if (!v) return "none";
+  if (v === "requested" || v === "요청") return "requested";
+  if (v === "approved" || v === "승인") return "approved";
+  if (v === "rejected" || v === "거절") return "rejected";
+  return "none";
 }
 
 function hasRefundAccount(account: UnknownDoc | null) {
@@ -109,26 +118,42 @@ function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
   const cancel = asDoc(doc?.cancelRequest);
   const status = normalizeCancelStatus(cancel?.status);
   const requestedAt = toISO(cancel?.requestedAt ?? cancel?.createdAt ?? null);
-  const handledAt = toISO(cancel?.processedAt ?? cancel?.approvedAt ?? cancel?.rejectedAt ?? null);
+  const handledAt = toISO(
+    cancel?.processedAt ?? cancel?.approvedAt ?? cancel?.rejectedAt ?? null,
+  );
   const reasonCode = getString(cancel?.reasonCode);
-  const reasonText = getString(cancel?.reasonText) ?? getString(cancel?.rejectReason);
-  const reason = [reasonCode, reasonText].filter(Boolean).join(' · ') || undefined;
+  const reasonText =
+    getString(cancel?.reasonText) ?? getString(cancel?.rejectReason);
+  const reason =
+    [reasonCode, reasonText].filter(Boolean).join(" · ") || undefined;
   const refundAccount = asDoc(cancel?.refundAccount);
-  const refundAccountReady = status === 'none' ? undefined : hasRefundAccount(refundAccount);
-  const refundBankLabel = status === 'none' ? null : resolveRefundBankLabel(refundAccount);
-  return { status, requestedAt, handledAt, reason, refundAccountReady, refundBankLabel };
+  const refundAccountReady =
+    status === "none" ? undefined : hasRefundAccount(refundAccount);
+  const refundBankLabel =
+    status === "none" ? null : resolveRefundBankLabel(refundAccount);
+  return {
+    status,
+    requestedAt,
+    handledAt,
+    reason,
+    refundAccountReady,
+    refundBankLabel,
+  };
 }
 
-
 function hasRacketItems(items: unknown) {
-  return asDocArray(items).some((it) => it.kind === 'racket' || it.kind === 'used_racket');
+  return asDocArray(items).some(
+    (it) => it.kind === "racket" || it.kind === "used_racket",
+  );
 }
 
 function hasOrderShippingInfo(order: UnknownDoc) {
   const shippingInfo = asDoc(order?.shippingInfo);
   if (!shippingInfo) return false;
 
-  const shippingMethod = getString(shippingInfo.shippingMethod) ?? getString(shippingInfo.deliveryMethod);
+  const shippingMethod =
+    getString(shippingInfo.shippingMethod) ??
+    getString(shippingInfo.deliveryMethod);
   const estimatedDate = getString(shippingInfo.estimatedDate);
   const invoice = asDoc(shippingInfo.invoice);
   const invoiceCourier = getString(invoice?.courier);
@@ -139,44 +164,44 @@ function hasOrderShippingInfo(order: UnknownDoc) {
 
   return Boolean(
     (shippingMethod && shippingMethod.trim()) ||
-      (estimatedDate && estimatedDate.trim()) ||
-      (invoiceCourier && invoiceCourier.trim()) ||
-      (trackingNumber && trackingNumber.trim()),
+    (estimatedDate && estimatedDate.trim()) ||
+    (invoiceCourier && invoiceCourier.trim()) ||
+    (trackingNumber && trackingNumber.trim()),
   );
 }
 
 function flowLabelOf(flow: Flow) {
   switch (flow) {
     case 1:
-      return '스트링 단품 구매';
+      return "스트링 단품 구매";
     case 2:
-      return '스트링 구매 + 교체서비스 신청(통합)';
+      return "스트링 구매 + 교체서비스 신청(통합)";
     case 3:
-      return '교체서비스 단일 신청';
+      return "교체서비스 단일 신청";
     case 4:
-      return '라켓 단품 구매';
+      return "라켓 단품 구매";
     case 5:
-      return '라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)';
+      return "라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)";
     case 6:
-      return '라켓 단품 대여';
+      return "라켓 단품 대여";
     case 7:
-      return '라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)';
+      return "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)";
     default:
-      return '미분류';
+      return "미분류";
   }
 }
 
 function settlementLabelOf(anchor: SettlementAnchor) {
   // 화면에서 “금액=정산금액?” 혼동을 막기 위한 최소 라벨
   switch (anchor) {
-    case 'order':
-      return '정산: 주문';
-    case 'rental':
-      return '정산: 대여';
-    case 'application':
-      return '정산: 신청(단독)';
+    case "order":
+      return "정산: 주문";
+    case "rental":
+      return "정산: 대여";
+    case "application":
+      return "정산: 신청(단독)";
     default:
-      return '정산: -';
+      return "정산: -";
   }
 }
 
@@ -191,19 +216,23 @@ function rentalFlowByWithService(withService: boolean): Flow {
 
 function groupKeyOf(it: OpItem): string {
   // 주문/대여는 자기 자신이 앵커
-  if (it.kind === 'order') return `order:${it.id}`;
-  if (it.kind === 'rental') return `rental:${it.id}`;
+  if (it.kind === "order") return `order:${it.id}`;
+  if (it.kind === "rental") return `rental:${it.id}`;
 
   // 신청서는 연결된 "주문/대여"를 앵커로
   const rel = it.related;
-  if (rel?.kind === 'order') return `order:${rel.id}`;
-  if (rel?.kind === 'rental') return `rental:${rel.id}`;
+  if (rel?.kind === "order") return `order:${rel.id}`;
+  if (rel?.kind === "rental") return `rental:${rel.id}`;
   // 단독 신청서
   return `app:${it.id}`;
 }
 
 function pickAnchor(groupItems: OpItem[]): OpItem {
-  return groupItems.find((x) => x.kind === 'order') ?? groupItems.find((x) => x.kind === 'rental') ?? groupItems[0]!;
+  return (
+    groupItems.find((x) => x.kind === "order") ??
+    groupItems.find((x) => x.kind === "rental") ??
+    groupItems[0]!
+  );
 }
 
 function isWarnGroup(g: OpGroup) {
@@ -213,37 +242,48 @@ function isWarnGroup(g: OpGroup) {
 function deriveStringingPaymentLabel(app: UnknownDoc): {
   paymentLabel: string;
   derived: boolean;
-  source: 'explicit' | 'package' | 'order' | 'rental' | 'service_paid' | 'pending' | 'unknown';
+  source:
+    | "explicit"
+    | "package"
+    | "order"
+    | "rental"
+    | "service_paid"
+    | "pending"
+    | "unknown";
 } {
   const rawPaymentStatus = getString(app?.paymentStatus);
   if (rawPaymentStatus && rawPaymentStatus.trim()) {
-    return { paymentLabel: normalizePaymentStatus(rawPaymentStatus), derived: false, source: 'explicit' };
+    return {
+      paymentLabel: normalizePaymentStatus(rawPaymentStatus),
+      derived: false,
+      source: "explicit",
+    };
   }
 
   if (app?.packageApplied === true) {
-    return { paymentLabel: '패키지차감', derived: true, source: 'package' };
+    return { paymentLabel: "패키지차감", derived: true, source: "package" };
   }
 
-  const paymentSource = getString(app?.paymentSource) ?? '';
-  if (paymentSource.startsWith('order:')) {
-    return { paymentLabel: '주문결제포함', derived: true, source: 'order' };
+  const paymentSource = getString(app?.paymentSource) ?? "";
+  if (paymentSource.startsWith("order:")) {
+    return { paymentLabel: "주문결제포함", derived: true, source: "order" };
   }
 
-  if (paymentSource.startsWith('rental:')) {
-    return { paymentLabel: '대여결제포함', derived: true, source: 'rental' };
+  if (paymentSource.startsWith("rental:")) {
+    return { paymentLabel: "대여결제포함", derived: true, source: "rental" };
   }
 
   if (app?.servicePaid === true) {
-    return { paymentLabel: '결제완료', derived: true, source: 'service_paid' };
+    return { paymentLabel: "결제완료", derived: true, source: "service_paid" };
   }
 
   const totalPrice = Number(app?.totalPrice ?? 0);
   const serviceAmount = Number(app?.serviceAmount ?? 0);
   if (totalPrice > 0 || serviceAmount > 0) {
-    return { paymentLabel: '결제대기', derived: true, source: 'pending' };
+    return { paymentLabel: "결제대기", derived: true, source: "pending" };
   }
 
-  return { paymentLabel: '확인필요', derived: true, source: 'unknown' };
+  return { paymentLabel: "확인필요", derived: true, source: "unknown" };
 }
 
 function filterWarnGroups(list: OpItem[]): OpItem[] {
@@ -257,7 +297,9 @@ function filterWarnGroups(list: OpItem[]): OpItem[] {
   const groups: OpGroup[] = Array.from(map.entries()).map(([key, items]) => {
     items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
     const anchor = pickAnchor(items);
-    const ts = Math.max(...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)));
+    const ts = Math.max(
+      ...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)),
+    );
     const createdAt = ts ? new Date(ts).toISOString() : null;
     return { key, anchor, createdAt, items };
   });
@@ -277,8 +319,8 @@ function filterWarnGroups(list: OpItem[]): OpItem[] {
 
 function parseIntegrated(v: string | null): boolean | null {
   // integrated=1 (통합만) / integrated=0 (단독만)
-  if (v === '1') return true;
-  if (v === '0') return false;
+  if (v === "1") return true;
+  if (v === "0") return false;
   return null;
 }
 
@@ -290,33 +332,51 @@ function parseFlow(v: string | null): Flow | null {
   return n as Flow;
 }
 
-function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
+function parseIntParam(
+  v: string | null,
+  opts: { defaultValue: number; min: number; max: number },
+) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-function parseKind(v: string | null): Kind | 'all' {
-  if (v === 'order' || v === 'rental' || v === 'stringing_application') return v;
-  return 'all';
+function parseKind(v: string | null): Kind | "all" {
+  if (v === "order" || v === "rental" || v === "stringing_application")
+    return v;
+  return "all";
 }
 
 function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
-  const page = parseIntParam(url.searchParams.get('page'), { defaultValue: 1, min: 1, max: 10_000 });
-  const pageSize = parseIntParam(url.searchParams.get('pageSize'), { defaultValue: DEFAULT_PAGE_SIZE, min: 1, max: MAX_PAGE_SIZE });
-  const kind = parseKind(url.searchParams.get('kind'));
-  const q = String(url.searchParams.get('q') ?? '')
+  const page = parseIntParam(url.searchParams.get("page"), {
+    defaultValue: 1,
+    min: 1,
+    max: 10_000,
+  });
+  const pageSize = parseIntParam(url.searchParams.get("pageSize"), {
+    defaultValue: DEFAULT_PAGE_SIZE,
+    min: 1,
+    max: MAX_PAGE_SIZE,
+  });
+  const kind = parseKind(url.searchParams.get("kind"));
+  const q = String(url.searchParams.get("q") ?? "")
     .trim()
     .toLowerCase();
-  const warn = url.searchParams.get('warn') === '1';
-  const flow = parseFlow(url.searchParams.get('flow'));
-  const integrated = parseIntegrated(url.searchParams.get('integrated'));
+  const warn = url.searchParams.get("warn") === "1";
+  const flow = parseFlow(url.searchParams.get("flow"));
+  const integrated = parseIntegrated(url.searchParams.get("integrated"));
   return { page, pageSize, kind, q, warn, flow, integrated };
 }
 
-function toOperationsListResponseDto(items: OpItem[], total: number): AdminOperationsListResponseDto {
+function toOperationsListResponseDto(
+  items: OpItem[],
+  total: number,
+): AdminOperationsListResponseDto {
   return {
-    items: items.map((item) => ({ ...item, createdAt: item.createdAt ?? null })),
+    items: items.map((item) => ({
+      ...item,
+      createdAt: item.createdAt ?? null,
+    })),
     total,
   };
 }
@@ -327,7 +387,12 @@ export async function handleAdminOperationsGet(req: Request) {
   const { db } = guard;
 
   // 운영 흐름 목록은 대량 merge/sort 조회를 수행하므로 고비용 API로 레이트리밋을 건다.
-  const limited = await enforceAdminRateLimit(req, db, String(guard.admin._id), ADMIN_EXPENSIVE_ENDPOINT_POLICIES.adminOperationsList);
+  const limited = await enforceAdminRateLimit(
+    req,
+    db,
+    String(guard.admin._id),
+    ADMIN_EXPENSIVE_ENDPOINT_POLICIES.adminOperationsList,
+  );
   if (limited) return limited;
 
   const url = new URL(req.url);
@@ -336,8 +401,8 @@ export async function handleAdminOperationsGet(req: Request) {
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
-    .collection('stringing_applications')
-    .find({ status: { $ne: 'draft' } })
+    .collection("stringing_applications")
+    .find({ status: { $ne: "draft" } })
     .project({
       _id: 1,
       createdAt: 1,
@@ -396,7 +461,7 @@ export async function handleAdminOperationsGet(req: Request) {
 
   // 2) 주문 조회
   const rawOrders = await db
-    .collection('orders')
+    .collection("orders")
     .find({})
     .project({
       _id: 1,
@@ -420,7 +485,7 @@ export async function handleAdminOperationsGet(req: Request) {
 
   // 3) 대여 조회(+ userId 배치 매핑: 고객명/이메일 정확도 향상)
   const rawRentals = await db
-    .collection('rental_orders')
+    .collection("rental_orders")
     .find({})
     .project({
       _id: 1,
@@ -469,8 +534,8 @@ export async function handleAdminOperationsGet(req: Request) {
 
   if (linkOr.length > 0) {
     const extraLinkedApps = await db
-      .collection('stringing_applications')
-      .find({ status: { $ne: 'draft' }, $or: linkOr })
+      .collection("stringing_applications")
+      .find({ status: { $ne: "draft" }, $or: linkOr })
       .project({
         _id: 1,
         createdAt: 1,
@@ -532,15 +597,25 @@ export async function handleAdminOperationsGet(req: Request) {
     }
   }
 
-  const userIds = Array.from(new Set(rawRentals.map((r) => r?.userId).filter(Boolean)));
+  const userIds = Array.from(
+    new Set(rawRentals.map((r) => r?.userId).filter(Boolean)),
+  );
   const userMap = new Map<string, { name?: string; email?: string }>();
   if (userIds.length > 0) {
     const users = await db
-      .collection('users')
-      .find({ _id: { $in: userIds.map((id) => (ObjectId.isValid(String(id)) ? new ObjectId(String(id)) : id)) } })
+      .collection("users")
+      .find({
+        _id: {
+          $in: userIds.map((id) =>
+            ObjectId.isValid(String(id)) ? new ObjectId(String(id)) : id,
+          ),
+        },
+      })
       .project({ name: 1, email: 1 })
       .toArray();
-    users.forEach((u) => userMap.set(String(u._id), { name: u.name, email: u.email }));
+    users.forEach((u) =>
+      userMap.set(String(u._id), { name: u.name, email: u.email }),
+    );
   }
 
   // 주문 아이템에서 '라켓 포함 여부'를 미리 계산해두면,
@@ -551,7 +626,9 @@ export async function handleAdminOperationsGet(req: Request) {
   }
 
   // 3) 연결 무결성(양방향 링크) 경고 사유 계산
-  const appById = new Map<string, UnknownDoc>(asDocArray(rawApps).map((a) => [String(a._id), a]));
+  const appById = new Map<string, UnknownDoc>(
+    asDocArray(rawApps).map((a) => [String(a._id), a]),
+  );
   const warnByKey = new Map<string, string[]>();
   const pushWarn = (kind: Kind, id: string, reason: string) => {
     const key = `${kind}:${id}`;
@@ -575,20 +652,26 @@ export async function handleAdminOperationsGet(req: Request) {
   {
     const candidateIds = new Set<string>();
     for (const o of rawOrders) {
-      if (o?.stringingApplicationId) candidateIds.add(String(o.stringingApplicationId));
+      if (o?.stringingApplicationId)
+        candidateIds.add(String(o.stringingApplicationId));
     }
     for (const r of rawRentals) {
-      if (r?.stringingApplicationId) candidateIds.add(String(r.stringingApplicationId));
+      if (r?.stringingApplicationId)
+        candidateIds.add(String(r.stringingApplicationId));
     }
 
-    const missingIds = Array.from(candidateIds).filter((id) => !appById.has(id));
+    const missingIds = Array.from(candidateIds).filter(
+      (id) => !appById.has(id),
+    );
     if (missingIds.length > 0) {
-      const objectIds = missingIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
+      const objectIds = missingIds
+        .filter((id) => ObjectId.isValid(id))
+        .map((id) => new ObjectId(id));
 
       if (objectIds.length > 0) {
         const rawDrafts = await db
-          .collection('stringing_applications')
-          .find({ _id: { $in: objectIds }, status: 'draft' })
+          .collection("stringing_applications")
+          .find({ _id: { $in: objectIds }, status: "draft" })
           .project({ _id: 1, status: 1, orderId: 1, rentalId: 1, createdAt: 1 })
           .toArray();
         for (const d of asDocArray(rawDrafts)) {
@@ -602,13 +685,23 @@ export async function handleAdminOperationsGet(req: Request) {
   for (const o of rawOrders) {
     const oid = String(o._id);
     const appIdsFromApps = orderToAppIds.get(oid) ?? [];
-    const appIdInOrder = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
+    const appIdInOrder = o?.stringingApplicationId
+      ? String(o.stringingApplicationId)
+      : null;
 
     if (appIdsFromApps.length > 1) {
-      pushWarn('order', oid, `주문에 연결된 신청서가 ${appIdsFromApps.length}개입니다(중복/분기 오류 가능).`);
+      pushWarn(
+        "order",
+        oid,
+        `주문에 연결된 신청서가 ${appIdsFromApps.length}개입니다(중복/분기 오류 가능).`,
+      );
     }
     if (appIdsFromApps.length > 0 && !appIdInOrder) {
-      pushWarn('order', oid, '신청서→주문 연결은 존재하지만 주문.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+      pushWarn(
+        "order",
+        oid,
+        "신청서→주문 연결은 존재하지만 주문.stringingApplicationId가 비어있습니다(역방향 링크 누락).",
+      );
     }
 
     if (appIdInOrder) {
@@ -616,7 +709,11 @@ export async function handleAdminOperationsGet(req: Request) {
       if (!a) {
         const d = draftById.get(appIdInOrder);
         if (d) {
-          pushPending('order', oid, '교체서비스 신청서가 초안(draft) 상태입니다(작성대기).');
+          pushPending(
+            "order",
+            oid,
+            "교체서비스 신청서가 초안(draft) 상태입니다(작성대기).",
+          );
         } else {
           // 사용자가 신청을 "아예 진행하지 않은/완료하지 않은" 케이스까지 무조건 오류로 잡으면 오탐.
           // - 주문이 "신청 완료" 상태라고 명시(isStringServiceApplied=true)했거나
@@ -625,20 +722,40 @@ export async function handleAdminOperationsGet(req: Request) {
           // 그 외에는 "미신청/작성 전"으로 보고 pending으로 분류한다.
           const orderClaimsApplied = Boolean(o?.isStringServiceApplied);
           if (!orderClaimsApplied && appIdsFromApps.length === 0) {
-            pushPending('order', oid, '교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).');
+            pushPending(
+              "order",
+              oid,
+              "교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).",
+            );
           } else {
-            pushWarn('order', oid, '주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+            pushWarn(
+              "order",
+              oid,
+              "주문.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.",
+            );
           }
         }
       } else {
-        const aOrderId = a?.orderId ? String(a.orderId) : '';
+        const aOrderId = a?.orderId ? String(a.orderId) : "";
         if (aOrderId && aOrderId !== oid) {
-          pushWarn('order', oid, '주문↔신청서 연결이 불일치합니다(신청서.orderId가 이 주문을 가리키지 않음).');
-          pushWarn('stringing_application', String(a._id), '신청서.orderId가 주문과 불일치합니다(주문.stringingApplicationId와 양방향 아님).');
+          pushWarn(
+            "order",
+            oid,
+            "주문↔신청서 연결이 불일치합니다(신청서.orderId가 이 주문을 가리키지 않음).",
+          );
+          pushWarn(
+            "stringing_application",
+            String(a._id),
+            "신청서.orderId가 주문과 불일치합니다(주문.stringingApplicationId와 양방향 아님).",
+          );
         }
       }
       if (appIdsFromApps.length > 0 && !appIdsFromApps.includes(appIdInOrder)) {
-        pushWarn('order', oid, '주문.stringingApplicationId와 신청서.orderId 매핑이 일치하지 않습니다.');
+        pushWarn(
+          "order",
+          oid,
+          "주문.stringingApplicationId와 신청서.orderId 매핑이 일치하지 않습니다.",
+        );
       }
     }
   }
@@ -647,13 +764,23 @@ export async function handleAdminOperationsGet(req: Request) {
   for (const r of rawRentals) {
     const rid = String(r._id);
     const appIdsFromApps = rentalToAppIds.get(rid) ?? [];
-    const appIdInRental = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
+    const appIdInRental = r?.stringingApplicationId
+      ? String(r.stringingApplicationId)
+      : null;
 
     if (appIdsFromApps.length > 1) {
-      pushWarn('rental', rid, `대여에 연결된 신청서가 ${appIdsFromApps.length}개입니다(중복/분기 오류 가능).`);
+      pushWarn(
+        "rental",
+        rid,
+        `대여에 연결된 신청서가 ${appIdsFromApps.length}개입니다(중복/분기 오류 가능).`,
+      );
     }
     if (appIdsFromApps.length > 0 && !appIdInRental) {
-      pushWarn('rental', rid, '신청서→대여 연결은 존재하지만 대여.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+      pushWarn(
+        "rental",
+        rid,
+        "신청서→대여 연결은 존재하지만 대여.stringingApplicationId가 비어있습니다(역방향 링크 누락).",
+      );
     }
 
     if (appIdInRental) {
@@ -661,24 +788,51 @@ export async function handleAdminOperationsGet(req: Request) {
       if (!a) {
         const d = draftById.get(appIdInRental);
         if (d) {
-          pushPending('rental', rid, '교체서비스 신청서가 초안(draft) 상태입니다(작성대기).');
+          pushPending(
+            "rental",
+            rid,
+            "교체서비스 신청서가 초안(draft) 상태입니다(작성대기).",
+          );
         } else {
           const rentalClaimsApplied = Boolean(r?.isStringServiceApplied);
           if (!rentalClaimsApplied && appIdsFromApps.length === 0) {
-            pushPending('rental', rid, '교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).');
+            pushPending(
+              "rental",
+              rid,
+              "교체서비스 신청이 아직 제출되지 않았습니다(미신청/작성 전).",
+            );
           } else {
-            pushWarn('rental', rid, '대여.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.');
+            pushWarn(
+              "rental",
+              rid,
+              "대여.stringingApplicationId가 가리키는 신청서를 DB에서 찾지 못했습니다.",
+            );
           }
         }
       } else {
-        const aRentalId = a?.rentalId ? String(a.rentalId) : '';
+        const aRentalId = a?.rentalId ? String(a.rentalId) : "";
         if (aRentalId && aRentalId !== rid) {
-          pushWarn('rental', rid, '대여↔신청서 연결이 불일치합니다(신청서.rentalId가 이 대여를 가리키지 않음).');
-          pushWarn('stringing_application', String(a._id), '신청서.rentalId가 대여와 불일치합니다(대여.stringingApplicationId와 양방향 아님).');
+          pushWarn(
+            "rental",
+            rid,
+            "대여↔신청서 연결이 불일치합니다(신청서.rentalId가 이 대여를 가리키지 않음).",
+          );
+          pushWarn(
+            "stringing_application",
+            String(a._id),
+            "신청서.rentalId가 대여와 불일치합니다(대여.stringingApplicationId와 양방향 아님).",
+          );
         }
       }
-      if (appIdsFromApps.length > 0 && !appIdsFromApps.includes(appIdInRental)) {
-        pushWarn('rental', rid, '대여.stringingApplicationId와 신청서.rentalId 매핑이 일치하지 않습니다.');
+      if (
+        appIdsFromApps.length > 0 &&
+        !appIdsFromApps.includes(appIdInRental)
+      ) {
+        pushWarn(
+          "rental",
+          rid,
+          "대여.stringingApplicationId와 신청서.rentalId 매핑이 일치하지 않습니다.",
+        );
       }
     }
   }
@@ -691,13 +845,27 @@ export async function handleAdminOperationsGet(req: Request) {
     if (oid) {
       const o = rawOrders.find((x) => String(x._id) === oid);
       if (!o) {
-        pushWarn('stringing_application', aid, '신청서.orderId가 가리키는 주문이 DB에 없습니다.');
+        pushWarn(
+          "stringing_application",
+          aid,
+          "신청서.orderId가 가리키는 주문이 DB에 없습니다.",
+        );
       } else {
-        const back = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
+        const back = o?.stringingApplicationId
+          ? String(o.stringingApplicationId)
+          : null;
         if (!back) {
-          pushWarn('stringing_application', aid, '신청서→주문은 연결되어 있으나 주문.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+          pushWarn(
+            "stringing_application",
+            aid,
+            "신청서→주문은 연결되어 있으나 주문.stringingApplicationId가 비어있습니다(역방향 링크 누락).",
+          );
         } else if (back !== aid) {
-          pushWarn('stringing_application', aid, '주문.stringingApplicationId가 다른 신청서를 가리킵니다(양방향 링크 불일치).');
+          pushWarn(
+            "stringing_application",
+            aid,
+            "주문.stringingApplicationId가 다른 신청서를 가리킵니다(양방향 링크 불일치).",
+          );
         }
       }
     }
@@ -706,13 +874,27 @@ export async function handleAdminOperationsGet(req: Request) {
     if (rid) {
       const r = rawRentals.find((x) => String(x._id) === rid);
       if (!r) {
-        pushWarn('stringing_application', aid, '신청서.rentalId가 가리키는 대여가 DB에 없습니다.');
+        pushWarn(
+          "stringing_application",
+          aid,
+          "신청서.rentalId가 가리키는 대여가 DB에 없습니다.",
+        );
       } else {
-        const back = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
+        const back = r?.stringingApplicationId
+          ? String(r.stringingApplicationId)
+          : null;
         if (!back) {
-          pushWarn('stringing_application', aid, '신청서→대여는 연결되어 있으나 대여.stringingApplicationId가 비어있습니다(역방향 링크 누락).');
+          pushWarn(
+            "stringing_application",
+            aid,
+            "신청서→대여는 연결되어 있으나 대여.stringingApplicationId가 비어있습니다(역방향 링크 누락).",
+          );
         } else if (back !== aid) {
-          pushWarn('stringing_application', aid, '대여.stringingApplicationId가 다른 신청서를 가리킵니다(양방향 링크 불일치).');
+          pushWarn(
+            "stringing_application",
+            aid,
+            "대여.stringingApplicationId가 다른 신청서를 가리킵니다(양방향 링크 불일치).",
+          );
         }
       }
     }
@@ -725,19 +907,25 @@ export async function handleAdminOperationsGet(req: Request) {
     const appId = orderToApp.get(id) ?? null;
     const isIntegrated = !!appId;
     const hasShippingInfo = hasOrderShippingInfo(o);
-    const shippingMethod = getString(asDoc(o?.shippingInfo)?.shippingMethod) ?? getString(asDoc(o?.shippingInfo)?.deliveryMethod);
-    const hasOutboundTracking = Boolean(getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim());
+    const shippingMethod =
+      getString(asDoc(o?.shippingInfo)?.shippingMethod) ??
+      getString(asDoc(o?.shippingInfo)?.deliveryMethod);
+    const hasOutboundTracking = Boolean(
+      getString(asDoc(asDoc(o?.shippingInfo)?.invoice)?.trackingNumber)?.trim(),
+    );
     const statusLabel = normalizeOrderStatus(o.status);
     // NOTE: statusDisplayLabel은 현재 order 문맥(방문 수령 노출 문구)에서만 사용한다.
     const statusDisplayLabel = getOrderStatusLabelForDisplay(statusLabel, {
       shippingMethod,
       deliveryMethod: getString(asDoc(o?.shippingInfo)?.deliveryMethod),
     });
-    const paymentLabel = normalizePaymentStatus(getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status));
+    const paymentLabel = normalizePaymentStatus(
+      getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status),
+    );
     const cancel = normalizeCancelRequest(o);
     return {
       id,
-      kind: 'order',
+      kind: "order",
       createdAt: toISO(o.createdAt),
       customer: cust,
       title: summarizeOrderItems(o.items),
@@ -746,26 +934,40 @@ export async function handleAdminOperationsGet(req: Request) {
       paymentLabel,
       amount: Number(o.totalPrice ?? 0),
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
-      flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
-      settlementAnchor: 'order',
-      settlementLabel: settlementLabelOf('order'),
+      flowLabel: flowLabelOf(
+        orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
+      ),
+      settlementAnchor: "order",
+      settlementLabel: settlementLabelOf("order"),
       href: `/admin/orders/${id}`,
-      related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
+      related: appId
+        ? {
+            kind: "stringing_application",
+            id: appId,
+            href: `/admin/applications/stringing/${appId}`,
+          }
+        : null,
       isIntegrated,
       hasShippingInfo,
       hasOutboundTracking,
       warnReasons: warnByKey.get(`order:${id}`) ?? [],
       pendingReasons: [
         ...(pendingByKey.get(`order:${id}`) ?? []),
-        ...(cancel.status === 'requested' ? ['취소 요청 처리 필요'] : []),
+        ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
       ],
       warn: (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
       cancel,
       ...inferNextActionForOperationItem({
-        kind: 'order',
+        kind: "order",
         statusLabel,
         paymentLabel,
-        related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
+        related: appId
+          ? {
+              kind: "stringing_application",
+              id: appId,
+              href: `/admin/applications/stringing/${appId}`,
+            }
+          : null,
         hasShippingInfo,
         hasOutboundTracking,
         shippingMethod,
@@ -787,74 +989,116 @@ export async function handleAdminOperationsGet(req: Request) {
     const amount = Number(a?.totalPrice ?? a?.serviceAmount ?? 0);
 
     // 연결 우선순위: 주문 연결 > 대여 연결 (필요 시 UX 기준으로 바꿔도 됨)
-    const related = linkedOrderId ? { kind: 'order' as const, id: linkedOrderId, href: `/admin/orders/${linkedOrderId}` } : linkedRentalId ? { kind: 'rental' as const, id: linkedRentalId, href: `/admin/rentals/${linkedRentalId}` } : null;
+    const related = linkedOrderId
+      ? {
+          kind: "order" as const,
+          id: linkedOrderId,
+          href: `/admin/orders/${linkedOrderId}`,
+        }
+      : linkedRentalId
+        ? {
+            kind: "rental" as const,
+            id: linkedRentalId,
+            href: `/admin/rentals/${linkedRentalId}`,
+          }
+        : null;
 
     const paymentDerived = deriveStringingPaymentLabel(a);
-    const paymentSource = getString(a?.paymentSource) ?? '';
+    const paymentSource = getString(a?.paymentSource) ?? "";
     const serviceFeeBefore = Number(a?.serviceFeeBefore ?? 0);
     const cancel = normalizeCancelRequest(a);
     const reviewReasons: string[] = [];
     const reviewInfoReasons: string[] = [];
     const reviewActionReasons: string[] = [];
-    if (linkedOrderId && !getString(a?.paymentStatus)) reviewInfoReasons.push('주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
-    if (linkedRentalId && !getString(a?.paymentStatus)) reviewInfoReasons.push('대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.');
-    if (a?.packageApplied === true) reviewInfoReasons.push('패키지 차감 기반 신청서입니다.');
-    if (paymentSource.startsWith('order:')) reviewInfoReasons.push('결제 소스가 주문(order:)을 가리킵니다.');
-    if (paymentSource.startsWith('rental:')) reviewInfoReasons.push('결제 소스가 대여(rental:)를 가리킵니다.');
-    if (paymentDerived.derived) reviewInfoReasons.push('신청서 결제상태를 정책 규칙으로 파생했습니다.');
-    if (paymentDerived.source === 'unknown') reviewActionReasons.push('신청서 결제소스를 판별할 수 없어 확인이 필요합니다.');
+    if (linkedOrderId && !getString(a?.paymentStatus))
+      reviewInfoReasons.push(
+        "주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.",
+      );
+    if (linkedRentalId && !getString(a?.paymentStatus))
+      reviewInfoReasons.push(
+        "대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.",
+      );
+    if (a?.packageApplied === true)
+      reviewInfoReasons.push("패키지 차감 기반 신청서입니다.");
+    if (paymentSource.startsWith("order:"))
+      reviewInfoReasons.push("결제 소스가 주문(order:)을 가리킵니다.");
+    if (paymentSource.startsWith("rental:"))
+      reviewInfoReasons.push("결제 소스가 대여(rental:)를 가리킵니다.");
+    if (paymentDerived.derived)
+      reviewInfoReasons.push("신청서 결제상태를 정책 규칙으로 파생했습니다.");
+    if (paymentDerived.source === "unknown")
+      reviewActionReasons.push(
+        "신청서 결제소스를 판별할 수 없어 확인이 필요합니다.",
+      );
     reviewReasons.push(...reviewActionReasons, ...reviewInfoReasons);
-    const reviewLevel: AdminOperationReviewLevel = reviewActionReasons.length > 0 ? 'action' : reviewInfoReasons.length > 0 ? 'info' : 'none';
+    const reviewLevel: AdminOperationReviewLevel =
+      reviewActionReasons.length > 0
+        ? "action"
+        : reviewInfoReasons.length > 0
+          ? "info"
+          : "none";
 
     const amountNote = (() => {
       if (amount !== 0) return undefined;
-      if (a?.packageApplied === true) return '패키지차감';
-      if (paymentSource.startsWith('order:') || linkedOrderId) return '주문결제포함';
-      if (paymentSource.startsWith('rental:') || linkedRentalId) return '대여결제포함';
-      if (paymentDerived.source === 'unknown') return '확인필요';
-      return '별도청구없음';
+      if (a?.packageApplied === true) return "패키지차감";
+      if (paymentSource.startsWith("order:") || linkedOrderId)
+        return "주문결제포함";
+      if (paymentSource.startsWith("rental:") || linkedRentalId)
+        return "대여결제포함";
+      if (paymentDerived.source === "unknown") return "확인필요";
+      return "별도청구없음";
     })();
 
     return {
       id,
-      kind: 'stringing_application',
+      kind: "stringing_application",
       createdAt: toISO(a.createdAt),
       customer: cust,
-      title: '교체 서비스 신청',
-      statusLabel: String(a?.status ?? '접수완료'),
+      title: "교체 서비스 신청",
+      statusLabel: String(a?.status ?? "접수완료"),
       paymentLabel: paymentDerived.paymentLabel,
       amount,
       amountNote,
-      amountReference: amount === 0 && serviceFeeBefore > 0 ? serviceFeeBefore : undefined,
-      amountReferenceLabel: amount === 0 && serviceFeeBefore > 0 ? '기준금액' : undefined,
+      amountReference:
+        amount === 0 && serviceFeeBefore > 0 ? serviceFeeBefore : undefined,
+      amountReferenceLabel:
+        amount === 0 && serviceFeeBefore > 0 ? "기준금액" : undefined,
       flow: (() => {
         if (!isIntegrated) return 3 as Flow;
-        if (related?.kind === 'order') return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
-        if (related?.kind === 'rental') return 7 as Flow;
+        if (related?.kind === "order")
+          return orderFlowByHasRacket(
+            orderHasRacket.get(String(related.id)) ?? false,
+            true,
+          );
+        if (related?.kind === "rental") return 7 as Flow;
         return 3 as Flow;
       })(),
       flowLabel: (() => {
         const f = (() => {
           if (!isIntegrated) return 3 as Flow;
-          if (related?.kind === 'order') return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
-          if (related?.kind === 'rental') return 7 as Flow;
+          if (related?.kind === "order")
+            return orderFlowByHasRacket(
+              orderHasRacket.get(String(related.id)) ?? false,
+              true,
+            );
+          if (related?.kind === "rental") return 7 as Flow;
           return 3 as Flow;
         })();
         return flowLabelOf(f);
       })(),
       settlementAnchor: (() => {
         // 통합 신청서는 정산이 “앵커(주문/대여)”로 잡히는 것이 원칙
-        if (!isIntegrated) return 'application' as SettlementAnchor;
-        if (related?.kind === 'order') return 'order' as SettlementAnchor;
-        if (related?.kind === 'rental') return 'rental' as SettlementAnchor;
-        return 'application' as SettlementAnchor;
+        if (!isIntegrated) return "application" as SettlementAnchor;
+        if (related?.kind === "order") return "order" as SettlementAnchor;
+        if (related?.kind === "rental") return "rental" as SettlementAnchor;
+        return "application" as SettlementAnchor;
       })(),
       settlementLabel: (() => {
         const anchor = (() => {
-          if (!isIntegrated) return 'application' as SettlementAnchor;
-          if (related?.kind === 'order') return 'order' as SettlementAnchor;
-          if (related?.kind === 'rental') return 'rental' as SettlementAnchor;
-          return 'application' as SettlementAnchor;
+          if (!isIntegrated) return "application" as SettlementAnchor;
+          if (related?.kind === "order") return "order" as SettlementAnchor;
+          if (related?.kind === "rental") return "rental" as SettlementAnchor;
+          return "application" as SettlementAnchor;
         })();
         return settlementLabelOf(anchor);
       })(),
@@ -864,17 +1108,22 @@ export async function handleAdminOperationsGet(req: Request) {
       warnReasons: warnByKey.get(`stringing_application:${id}`) ?? [],
       pendingReasons: [
         ...(pendingByKey.get(`stringing_application:${id}`) ?? []),
-        ...(cancel.status === 'requested' ? ['취소 요청 처리 필요'] : []),
+        ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
       ],
       warn: (warnByKey.get(`stringing_application:${id}`)?.length ?? 0) > 0,
-      needsReview: reviewLevel === 'action',
+      needsReview: reviewLevel === "action",
       reviewLevel,
-      reviewTitle: reviewLevel === 'action' ? '결제 상태 확인 필요' : reviewLevel === 'info' ? '정상 파생(조치 필요 없음)' : undefined,
+      reviewTitle:
+        reviewLevel === "action"
+          ? "결제 상태 확인 필요"
+          : reviewLevel === "info"
+            ? "정상 파생(조치 필요 없음)"
+            : undefined,
       reviewReasons,
       cancel,
       ...inferNextActionForOperationItem({
-        kind: 'stringing_application',
-        statusLabel: String(a?.status ?? '접수완료'),
+        kind: "stringing_application",
+        statusLabel: String(a?.status ?? "접수완료"),
         paymentLabel: paymentDerived.paymentLabel,
         cancelStatus: cancel.status,
         refundAccountReady: cancel.refundAccountReady,
@@ -885,11 +1134,17 @@ export async function handleAdminOperationsGet(req: Request) {
   const rentalItems: OpItem[] = rawRentals.map((r) => {
     const id = String(r._id);
     const u = r?.userId ? userMap.get(String(r.userId)) : null;
-    const cust = u?.name || u?.email ? { name: String(u?.name ?? ''), email: String(u?.email ?? '') } : pickCustomerFromDoc(r);
+    const cust =
+      u?.name || u?.email
+        ? { name: String(u?.name ?? ""), email: String(u?.email ?? "") }
+        : pickCustomerFromDoc(r);
     const rawAppId = r?.stringingApplicationId ?? null;
     const stringingApplicationId = rawAppId ? getIdString(rawAppId) : null;
     const appId = stringingApplicationId || (rentalToApp.get(id) ?? null);
-    const withStringService = Boolean(r?.stringing?.requested) || Boolean(r?.isStringServiceApplied) || Boolean(appId);
+    const withStringService =
+      Boolean(r?.stringing?.requested) ||
+      Boolean(r?.isStringServiceApplied) ||
+      Boolean(appId);
     const isIntegrated = Boolean(appId);
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
@@ -898,51 +1153,79 @@ export async function handleAdminOperationsGet(req: Request) {
     const linkedApplication = appId ? appById.get(appId) : null;
     const stringingDoc = asDoc(r?.stringing);
     const stringingName = getString(stringingDoc?.name);
-    const stringPrice = Number(r?.amount?.stringPrice ?? (stringingDoc?.requested ? stringingDoc?.price : 0) ?? 0);
-    const mountingFee = Number(r?.amount?.stringingFee ?? (stringingDoc?.requested ? stringingDoc?.mountingFee : 0) ?? 0);
-    const requested = Boolean(stringingDoc?.requested) || stringPrice > 0 || mountingFee > 0 || Boolean(appId);
-    const reviewLevel: AdminOperationReviewLevel = rentalPaymentMeta.source === 'derived' ? 'info' : 'none';
+    const stringPrice = Number(
+      r?.amount?.stringPrice ??
+        (stringingDoc?.requested ? stringingDoc?.price : 0) ??
+        0,
+    );
+    const mountingFee = Number(
+      r?.amount?.stringingFee ??
+        (stringingDoc?.requested ? stringingDoc?.mountingFee : 0) ??
+        0,
+    );
+    const requested =
+      Boolean(stringingDoc?.requested) ||
+      stringPrice > 0 ||
+      mountingFee > 0 ||
+      Boolean(appId);
+    const reviewLevel: AdminOperationReviewLevel =
+      rentalPaymentMeta.source === "derived" ? "info" : "none";
     const cancel = normalizeCancelRequest(r);
 
     return {
       id,
-      kind: 'rental',
+      kind: "rental",
       createdAt: toISO(r.createdAt),
       customer: cust,
-      title: `${String(r?.brand ?? '')} ${String(r?.model ?? '')}`.trim() + (days ? ` (${days}일)` : ''),
+      title:
+        `${String(r?.brand ?? "")} ${String(r?.model ?? "")}`.trim() +
+        (days ? ` (${days}일)` : ""),
       statusLabel: normalizeRentalStatus(r?.status),
       paymentLabel: rentalPaymentMeta.label,
       amount,
       flow: rentalFlowByWithService(withStringService),
       flowLabel: flowLabelOf(rentalFlowByWithService(withStringService)),
-      settlementAnchor: 'rental',
-      settlementLabel: settlementLabelOf('rental'),
+      settlementAnchor: "rental",
+      settlementLabel: settlementLabelOf("rental"),
       href: `/admin/rentals/${id}`,
-      related: appId ? { kind: 'stringing_application', id: appId, href: `/admin/applications/stringing/${appId}` } : null,
+      related: appId
+        ? {
+            kind: "stringing_application",
+            id: appId,
+            href: `/admin/applications/stringing/${appId}`,
+          }
+        : null,
       isIntegrated,
       warnReasons: warnByKey.get(`rental:${id}`) ?? [],
       pendingReasons: [
         ...(pendingByKey.get(`rental:${id}`) ?? []),
-        ...(cancel.status === 'requested' ? ['취소 요청 처리 필요'] : []),
+        ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
       ],
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
       needsReview: false,
       reviewLevel,
-      reviewTitle: reviewLevel === 'info' ? '정상 파생(조치 필요 없음)' : undefined,
-      reviewReasons: reviewLevel === 'info' ? ['대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다.'] : [],
+      reviewTitle:
+        reviewLevel === "info" ? "정상 파생(조치 필요 없음)" : undefined,
+      reviewReasons:
+        reviewLevel === "info"
+          ? [
+              "대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다.",
+            ]
+          : [],
       stringingSummary: requested
         ? {
             requested,
             name: stringingName ?? undefined,
             price: stringPrice > 0 ? stringPrice : undefined,
             mountingFee: mountingFee > 0 ? mountingFee : undefined,
-            applicationStatus: getString(linkedApplication?.status) ?? undefined,
+            applicationStatus:
+              getString(linkedApplication?.status) ?? undefined,
           }
         : undefined,
       hasOutboundTracking,
       cancel,
       ...inferNextActionForOperationItem({
-        kind: 'rental',
+        kind: "rental",
         statusLabel: normalizeRentalStatus(r?.status),
         paymentLabel: rentalPaymentMeta.label,
         hasOutboundTracking,
@@ -953,20 +1236,22 @@ export async function handleAdminOperationsGet(req: Request) {
   });
 
   // 5) 병합 → 최신순 정렬 → kind/q 필터 → 페이지 슬라이스
-  let merged: OpItem[] = [...orderItems, ...appItems, ...rentalItems].sort((a, b) => {
-    const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return tb - ta;
-  });
+  let merged: OpItem[] = [...orderItems, ...appItems, ...rentalItems].sort(
+    (a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    },
+  );
 
-  if (kind !== 'all') merged = merged.filter((x) => x.kind === kind);
+  if (kind !== "all") merged = merged.filter((x) => x.kind === kind);
 
   if (q) {
     merged = merged.filter((x) => {
       const idMatch = x.id.toLowerCase().includes(q);
-      const nameMatch = (x.customer?.name ?? '').toLowerCase().includes(q);
-      const emailMatch = (x.customer?.email ?? '').toLowerCase().includes(q);
-      const titleMatch = (x.title ?? '').toLowerCase().includes(q);
+      const nameMatch = (x.customer?.name ?? "").toLowerCase().includes(q);
+      const emailMatch = (x.customer?.email ?? "").toLowerCase().includes(q);
+      const titleMatch = (x.title ?? "").toLowerCase().includes(q);
       return idMatch || nameMatch || emailMatch || titleMatch;
     });
   }

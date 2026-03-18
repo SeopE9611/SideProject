@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
-import { showErrorToast } from '@/lib/toast';
-import { AlertCircle, ImagePlus, Loader2, X } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
+import { showErrorToast } from "@/lib/toast";
+import { AlertCircle, ImagePlus, Loader2, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 type Photo = string;
 
-const BUCKET = 'tennis-images'; // 상품과 동일 버킷 사용
-const FOLDER = 'reviews'; // 리뷰 전용 하위 폴더
+const BUCKET = "tennis-images"; // 상품과 동일 버킷 사용
+const FOLDER = "reviews"; // 리뷰 전용 하위 폴더
 
 type QueueItem = { id: string; url: string };
 
@@ -25,16 +25,25 @@ type Props = {
    * - 'queue': 업로드 중(큐)만 표시 (완료된 사진은 아래 PhotosReorderGrid에서만 보이게)
    * - 'none' : 업로드 버튼만 표시 (미리보기 전부 숨김)
    */
-  previewMode?: 'all' | 'queue' | 'none';
+  previewMode?: "all" | "queue" | "none";
 };
 
-export default function PhotosUploader({ value, onChange, max = 5, onUploadingChange, previewMode = 'all' }: Props) {
+export default function PhotosUploader({
+  value,
+  onChange,
+  max = 5,
+  onUploadingChange,
+  previewMode = "all",
+}: Props) {
   // Supabase Storage key는 ':' 같은 특수문자를 허용하지 않아 React useId() 값을 경로에 쓰면
   // 400 Invalid key가 발생 -> 안전한 문자(영문/숫자/_, -)만으로 prefix를 생성.
   const queueIdPrefixRef = useRef<string | null>(null);
   if (!queueIdPrefixRef.current) {
-    const raw = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    queueIdPrefixRef.current = raw.replace(/[^a-zA-Z0-9_-]/g, '');
+    const raw =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    queueIdPrefixRef.current = raw.replace(/[^a-zA-Z0-9_-]/g, "");
   }
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
@@ -43,10 +52,11 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
   const queueIdRef = useRef(0);
 
   // previewMode에 따라 어떤 미리보기를 보여줄지 결정
-  const showQueue = previewMode !== 'none';
-  const showDone = previewMode === 'all';
+  const showQueue = previewMode !== "none";
+  const showDone = previewMode === "all";
 
-  const sanitizeStorageKey = (key: string) => key.replace(/[^a-zA-Z0-9/_.-]/g, '_');
+  const sanitizeStorageKey = (key: string) =>
+    key.replace(/[^a-zA-Z0-9/_.-]/g, "_");
 
   const totalCount = (value?.length ?? 0) + queue.length;
   const hasRoom = totalCount < max;
@@ -54,7 +64,10 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
   const onPick = () => inputRef.current?.click();
 
   //timeout 가드 (resolve/reject 안 되어도 ms 지나면 null로 돌아오게)
-  const withTimeout = async <T,>(p: Promise<T>, ms = 45000): Promise<T | null> => {
+  const withTimeout = async <T,>(
+    p: Promise<T>,
+    ms = 45000,
+  ): Promise<T | null> => {
     let done = false;
     return await Promise.race([
       p
@@ -63,17 +76,21 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
           return v;
         })
         .catch(() => null),
-      new Promise<null>((resolve) => setTimeout(() => !done && resolve(null), ms)),
+      new Promise<null>((resolve) =>
+        setTimeout(() => !done && resolve(null), ms),
+      ),
     ]);
   };
 
   const uploadOne = async (file: File): Promise<string | null> => {
-    const ext = file.name.split('.').pop() || 'jpg';
-    const path = sanitizeStorageKey(`${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = sanitizeStorageKey(
+      `${FOLDER}/${Date.now()}-${queueIdPrefix}-${queueIdRef.current++}.${ext}`,
+    );
 
     const res = await withTimeout(
       supabase.storage.from(BUCKET).upload(path, file, {
-        cacheControl: '3600',
+        cacheControl: "3600",
         upsert: false,
         contentType: file.type || undefined,
       }),
@@ -82,14 +99,18 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
 
     const err = (res as any)?.error;
     if (!res || err) {
-      console.error('[PhotosUploader] upload failed', {
+      console.error("[PhotosUploader] upload failed", {
         bucket: BUCKET,
         path,
         file: { name: file.name, size: file.size, type: file.type },
         error: err,
       });
 
-      showErrorToast(err?.message ? `이미지 업로드 실패 (${err?.statusCode ?? '??'}): ${err.message}` : '이미지 업로드가 지연되거나 실패했어요. 다시 시도해 주세요.');
+      showErrorToast(
+        err?.message
+          ? `이미지 업로드 실패 (${err?.statusCode ?? "??"}): ${err.message}`
+          : "이미지 업로드가 지연되거나 실패했어요. 다시 시도해 주세요.",
+      );
       return null;
     }
 
@@ -100,7 +121,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
   const handleFiles = async (files: FileList | null) => {
     if (!files?.length) return;
     if (!navigator.onLine) {
-      showErrorToast('오프라인 상태예요. 네트워크 연결 후 다시 시도해 주세요.');
+      showErrorToast("오프라인 상태예요. 네트워크 연결 후 다시 시도해 주세요.");
       return;
     }
 
@@ -113,10 +134,10 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
 
     try {
       for (const f of list) {
-        if (!f.type.startsWith('image/')) continue;
+        if (!f.type.startsWith("image/")) continue;
         if (f.size > 10 * 1024 * 1024) {
           // 10MB 제한
-          showErrorToast('10MB 이하 이미지만 업로드할 수 있어요.');
+          showErrorToast("10MB 이하 이미지만 업로드할 수 있어요.");
           continue;
         }
 
@@ -158,7 +179,12 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || isUploading}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onPick}
+          disabled={!hasRoom || isUploading}
+        >
           <ImagePlus className="h-4 w-4 mr-2" />
           이미지 추가 ({totalCount}/{max})
         </Button>
@@ -170,7 +196,7 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
           className="hidden"
           onChange={(e) => {
             handleFiles(e.target.files);
-            e.currentTarget.value = ''; // 같은 파일 재선택 허용
+            e.currentTarget.value = ""; // 같은 파일 재선택 허용
           }}
           disabled={isUploading}
         />
@@ -187,10 +213,22 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
           {/* 업로드 중 썸네일 */}
           {showQueue &&
             queue.map((q) => (
-              <div key={`q-${q.id}`} className="relative rounded-md overflow-hidden border bg-background">
-                <Image src={q.url} alt="uploading" width={160} height={160} className="object-cover w-full h-24" />
+              <div
+                key={`q-${q.id}`}
+                className="relative rounded-md overflow-hidden border bg-background"
+              >
+                <Image
+                  src={q.url}
+                  alt="uploading"
+                  width={160}
+                  height={160}
+                  className="object-cover w-full h-24"
+                />
                 <div className="absolute inset-0 bg-overlay/35 flex items-center justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-foreground" aria-label="업로드 중" />
+                  <Loader2
+                    className="h-5 w-5 animate-spin text-foreground"
+                    aria-label="업로드 중"
+                  />
                 </div>
               </div>
             ))}
@@ -198,13 +236,29 @@ export default function PhotosUploader({ value, onChange, max = 5, onUploadingCh
           {/* 완료된 썸네일 */}
           {showDone &&
             value.map((src, i) => (
-            <div key={src + i} className="relative group rounded-md overflow-hidden border">
-              <Image src={src} alt={`photo-${i}`} width={160} height={160} className="object-cover w-full h-24" loading="lazy" />
-              <button type="button" onClick={() => removeAt(i)} className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-label="삭제" title="삭제">
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          ))}
+              <div
+                key={src + i}
+                className="relative group rounded-md overflow-hidden border"
+              >
+                <Image
+                  src={src}
+                  alt={`photo-${i}`}
+                  width={160}
+                  height={160}
+                  className="object-cover w-full h-24"
+                  loading="lazy"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeAt(i)}
+                  className="absolute top-1 right-1 inline-flex p-1 rounded-full bg-overlay/55 text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="삭제"
+                  title="삭제"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
         </div>
       )}
 

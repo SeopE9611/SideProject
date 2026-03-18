@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import useEmblaCarousel from 'embla-carousel-react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect } from 'react';
+import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect } from "react";
 
 type Slide = {
   img: string;
@@ -12,7 +12,7 @@ type Slide = {
 };
 
 export default function HeroSlider({ slides }: { slides: Slide[] }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -24,7 +24,10 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
 
   return (
     <section className="relative">
-      <div className="overflow-hidden rounded-2xl mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0" ref={emblaRef}>
+      <div
+        className="overflow-hidden rounded-2xl mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0"
+        ref={emblaRef}
+      >
         <div className="flex">
           {slides.map((s, i) => {
             const body = (
@@ -33,13 +36,21 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
                     - grid place-items-center: 중앙 정렬
                     - max-w/max-h: 작은 이미지를 억지로 확대하지 않음(원본 크기 느낌 유지) */}
                 <div className="absolute inset-0 grid place-items-center bg-background">
-                  <img src={s.img} alt={s.alt ?? `slide-${i + 1}`} className="max-w-full max-h-full object-contain" loading="eager" decoding="async" />
+                  <img
+                    src={s.img}
+                    alt={s.alt ?? `slide-${i + 1}`}
+                    className="max-w-full max-h-full object-contain"
+                    loading="eager"
+                    decoding="async"
+                  />
                 </div>
                 {/* 상단 그라데이션/얇은 라인으로 품질감 */}
                 <div className="absolute inset-0 bg-muted/30" />
                 {s.caption && (
                   <div className="absolute bottom-4 left-4 bp-sm:bottom-6 bp-sm:left-6 bp-md:bottom-8 bp-md:left-10">
-                    <span className="inline-block rounded-full bg-background/80 text-foreground border border-border text-xs bp-md:text-sm px-3 py-1 shadow-sm backdrop-blur dark:bg-background/30 dark:hover:bg-background/40">{s.caption}</span>
+                    <span className="inline-block rounded-full bg-background/80 text-foreground border border-border text-xs bp-md:text-sm px-3 py-1 shadow-sm backdrop-blur dark:bg-background/30 dark:hover:bg-background/40">
+                      {s.caption}
+                    </span>
                   </div>
                 )}
               </div>

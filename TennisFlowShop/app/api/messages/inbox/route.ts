@@ -1,18 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/mongodb';
-import { getCurrentUser } from '@/lib/hooks/get-current-user';
-import { mapMessageListItem, notExpiredClause, parseListQuery } from '../_utils';
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
+import { getDb } from "@/lib/mongodb";
+import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import {
+  mapMessageListItem,
+  notExpiredClause,
+  parseListQuery,
+} from "../_utils";
 
 export async function GET(req: NextRequest) {
   const me = await getCurrentUser();
-  if (!me) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  if (!me)
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401 },
+    );
 
   const { page, limit } = parseListQuery(req);
   const skip = (page - 1) * limit;
 
   const db = await getDb();
-  const col = db.collection('messages');
+  const col = db.collection("messages");
   const now = new Date();
 
   const filter = {
@@ -46,5 +54,8 @@ export async function GET(req: NextRequest) {
     .limit(limit)
     .toArray();
 
-  return NextResponse.json({ ok: true, items: docs.map(mapMessageListItem), total, page, limit }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
+  return NextResponse.json(
+    { ok: true, items: docs.map(mapMessageListItem), total, page, limit },
+    { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } },
+  );
 }

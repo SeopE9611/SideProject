@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Filter } from 'lucide-react';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Filter } from "lucide-react";
 
 interface Props {
   value: string; // 'all' | 'active' | 'low_stock' | 'out_of_stock'

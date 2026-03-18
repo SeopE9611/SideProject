@@ -1,6 +1,6 @@
-import SiteContainer from '@/components/layout/SiteContainer';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
@@ -16,7 +16,10 @@ export default function Loading() {
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12 space-y-5 bp-sm:space-y-6">
+      <SiteContainer
+        variant="wide"
+        className="py-6 bp-sm:py-8 bp-md:py-12 space-y-5 bp-sm:space-y-6"
+      >
         <Card className="border-border/60 bg-card/90 p-4 bp-sm:p-5">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="space-y-2 min-w-0">
@@ -41,7 +44,10 @@ export default function Loading() {
 
         <div className="grid grid-cols-2 bp-sm:grid-cols-3 bp-md:grid-cols-4 gap-4">
           {Array.from({ length: 12 }).map((_, index) => (
-            <Card key={index} className="overflow-hidden border-border/50 bg-background/70">
+            <Card
+              key={index}
+              className="overflow-hidden border-border/50 bg-background/70"
+            >
               <Skeleton className="h-40 w-full" />
               <div className="p-3 space-y-2">
                 <Skeleton className="h-4 w-16" />

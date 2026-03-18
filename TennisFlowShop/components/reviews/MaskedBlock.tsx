@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Shield } from 'lucide-react';
-import clsx from 'clsx';
+import React from "react";
+import { Shield } from "lucide-react";
+import clsx from "clsx";
 
 type Props = {
   children?: React.ReactNode; // 뒤에서 흐리게 보일 내용(없어도 됨)
@@ -11,11 +11,26 @@ type Props = {
   blurStrength?: number; // px
 };
 
-export default function MaskedBlock({ children, label = '비공개된 리뷰입니다. 관리자와 작성자만 확인할 수 있어요.', className, blurStrength = 3 }: Props) {
+export default function MaskedBlock({
+  children,
+  label = "비공개된 리뷰입니다. 관리자와 작성자만 확인할 수 있어요.",
+  className,
+  blurStrength = 3,
+}: Props) {
   return (
-    <div className={clsx('relative rounded-md border border-border overflow-hidden', 'bg-card/60', className)}>
+    <div
+      className={clsx(
+        "relative rounded-md border border-border overflow-hidden",
+        "bg-card/60",
+        className,
+      )}
+    >
       {/* 아래층(블러 처리) */}
-      <div aria-hidden className="pointer-events-none select-none" style={{ filter: `blur(${blurStrength}px)` }}>
+      <div
+        aria-hidden
+        className="pointer-events-none select-none"
+        style={{ filter: `blur(${blurStrength}px)` }}
+      >
         {/* children이 없을 때도 형태감이 보이도록 플래시홀더 */}
         <div className="p-3">
           {children ?? (

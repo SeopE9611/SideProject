@@ -1,46 +1,71 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Save, ArrowLeft, Upload, Info, Package } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Save, ArrowLeft, Upload, Info, Package } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Slider } from '@/components/ui/slider';
-import { supabase } from '@/lib/supabase';
-import { Loader2 } from 'lucide-react';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import ImageUploader from '@/components/admin/ImageUploader';
-import AdminConfirmDialog from '@/components/admin/AdminConfirmDialog';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { brands, colors, gauges, materials } from '@/app/admin/products/_lib/productFormOptions';
-import { adminMutator, getAdminErrorMessage } from '@/lib/admin/adminFetcher';
-import { adminFormHintTooltipClass } from '@/lib/tooltip-style';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/lib/supabase";
+import { Loader2 } from "lucide-react";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import ImageUploader from "@/components/admin/ImageUploader";
+import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  brands,
+  colors,
+  gauges,
+  materials,
+} from "@/app/admin/products/_lib/productFormOptions";
+import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
 
 export default function NewStringPage() {
   // 기본 정보
   const [basicInfo, setBasicInfo] = useState({
-    name: '',
-    sku: '',
-    shortDescription: '',
-    description: '',
-    brand: '',
-    material: '',
-    gauge: '',
-    color: '',
-    length: '',
+    name: "",
+    sku: "",
+    shortDescription: "",
+    description: "",
+    brand: "",
+    material: "",
+    gauge: "",
+    color: "",
+    length: "",
     price: 0,
     mountingFee: 0,
   });
@@ -69,7 +94,7 @@ export default function NewStringPage() {
   const [inventory, setInventory] = useState({
     stock: 0,
     lowStock: 5,
-    status: 'instock', // 'instock' | 'outofstock' | 'backorder'
+    status: "instock", // 'instock' | 'outofstock' | 'backorder'
     manageStock: false,
     allowBackorder: false,
     isFeatured: false,
@@ -79,13 +104,13 @@ export default function NewStringPage() {
   });
 
   // 검색 키워드 입력값 (쉼표로 구분)
-  const [searchKeywordsInput, setSearchKeywordsInput] = useState('');
+  const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
 
   // 추가 특성 정보
-  const [additionalFeatures, setAdditionalFeatures] = useState('');
+  const [additionalFeatures, setAdditionalFeatures] = useState("");
 
   // 탭 상태관리
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
 
   const [images, setImages] = useState<string[]>([]);
 
@@ -99,10 +124,10 @@ export default function NewStringPage() {
   // 이미지 추가 핸들러
   const sanitizeFileName = (file: File) => {
     const timestamp = Date.now();
-    const extension = file.name.split('.').pop();
+    const extension = file.name.split(".").pop();
     const base = file.name
-      .replace(/\.[^/.]+$/, '') // 확장자 제거
-      .replace(/[^a-zA-Z0-9_-]/g, ''); // 특수문자 제거
+      .replace(/\.[^/.]+$/, "") // 확장자 제거
+      .replace(/[^a-zA-Z0-9_-]/g, ""); // 특수문자 제거
 
     return `${timestamp}-${base}.${extension}`;
   };
@@ -119,8 +144,10 @@ export default function NewStringPage() {
     const availableSlots = MAX_IMAGE_COUNT - images.length;
 
     if (totalSelected > availableSlots) {
-      e.target.value = '';
-      showErrorToast(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+      e.target.value = "";
+      showErrorToast(
+        `최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`,
+      );
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
@@ -128,14 +155,20 @@ export default function NewStringPage() {
 
     for (const file of filesToUpload) {
       const fileName = sanitizeFileName(file);
-      const { error } = await supabase.storage.from('tennis-images').upload(fileName, file);
+      const { error } = await supabase.storage
+        .from("tennis-images")
+        .upload(fileName, file);
       if (error) {
         // 업로드 실패: 다음 파일은 계속 진행하되, 실패 사실은 알려줌
-        showErrorToast('이미지 업로드에 실패했습니다. 잠시 후 다시 시도하세요.');
+        showErrorToast(
+          "이미지 업로드에 실패했습니다. 잠시 후 다시 시도하세요.",
+        );
         continue;
       }
       if (!error) {
-        const { data: publicData } = supabase.storage.from('tennis-images').getPublicUrl(fileName);
+        const { data: publicData } = supabase.storage
+          .from("tennis-images")
+          .getPublicUrl(fileName);
         const imageUrl = publicData?.publicUrl;
         if (imageUrl) {
           setImages((prev) => [...prev, imageUrl]);
@@ -144,7 +177,7 @@ export default function NewStringPage() {
     }
 
     setUploading(false);
-    e.target.value = ''; // <- 동일 파일 다시 선택 가능하도록
+    e.target.value = ""; // <- 동일 파일 다시 선택 가능하도록
   };
 
   // 대표 이미지 설정
@@ -152,32 +185,37 @@ export default function NewStringPage() {
 
   // 하이브리드 구성(메인/크로스) 입력값 — material==='hybrid'일 때만 사용
   const [hybridMain, setHybridMain] = useState({
-    brand: '',
-    name: '',
-    gauge: '',
-    color: '',
-    role: 'mains' as const,
+    brand: "",
+    name: "",
+    gauge: "",
+    color: "",
+    role: "mains" as const,
   });
   const [hybridCross, setHybridCross] = useState({
-    brand: '',
-    name: '',
-    gauge: '',
-    color: '',
-    role: 'cross' as const,
+    brand: "",
+    name: "",
+    gauge: "",
+    color: "",
+    role: "cross" as const,
   });
 
   useEffect(() => {
     // 하이브리드일 때만 동기화
-    if (basicInfo.material !== 'hybrid') return;
+    if (basicInfo.material !== "hybrid") return;
 
     setBasicInfo((prev) => ({
       ...prev,
       brand: prev.brand || hybridMain.brand || prev.brand,
       gauge: prev.gauge || hybridMain.gauge || prev.gauge,
       color: prev.color || hybridMain.color || prev.color,
-      length: prev.length || '12m',
+      length: prev.length || "12m",
     }));
-  }, [basicInfo.material, hybridMain.brand, hybridMain.gauge, hybridMain.color]);
+  }, [
+    basicInfo.material,
+    hybridMain.brand,
+    hybridMain.gauge,
+    hybridMain.color,
+  ]);
 
   // 대표이미지 설정 핸들러
   const handleSetMainImage = (index: number) => {
@@ -198,9 +236,9 @@ export default function NewStringPage() {
 
   // 상품명 + 브랜드 기준으로 간단한 검색 키워드 자동 생성
   const handleGenerateKeywords = () => {
-    const base = `${basicInfo.name ?? ''} ${basicInfo.brand ?? ''}`.trim();
+    const base = `${basicInfo.name ?? ""} ${basicInfo.brand ?? ""}`.trim();
     if (!base) {
-      showErrorToast('먼저 스트링명과 브랜드를 입력해 주세요.');
+      showErrorToast("먼저 스트링명과 브랜드를 입력해 주세요.");
       return;
     }
 
@@ -213,7 +251,7 @@ export default function NewStringPage() {
     // 중복 제거 + 소문자 통일
     const unique = Array.from(new Set(tokens.map((t) => t.toLowerCase())));
 
-    setSearchKeywordsInput(unique.join(', '));
+    setSearchKeywordsInput(unique.join(", "));
   };
 
   const router = useRouter(); // 페이지 이동을 위한 라우터
@@ -231,7 +269,17 @@ export default function NewStringPage() {
         hybridMain,
         hybridCross,
       }),
-    [basicInfo, features, tags, inventory, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross],
+    [
+      basicInfo,
+      features,
+      tags,
+      inventory,
+      searchKeywordsInput,
+      additionalFeatures,
+      images,
+      hybridMain,
+      hybridCross,
+    ],
   );
 
   const baselineRef = useRef<string | null>(null);
@@ -239,7 +287,8 @@ export default function NewStringPage() {
     if (baselineRef.current === null) baselineRef.current = snapshot;
   }, [snapshot]);
 
-  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
+  const isDirty =
+    baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !submitting && !uploading);
 
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -258,16 +307,16 @@ export default function NewStringPage() {
     // 중복 제출/업로드 중 제출 방지
     if (submitting || submitRef.current) return;
     if (uploading) {
-      showErrorToast('이미지 업로드 중입니다. 업로드가 끝난 뒤 저장해 주세요.');
+      showErrorToast("이미지 업로드 중입니다. 업로드가 끝난 뒤 저장해 주세요.");
       return;
     }
 
     // 색션명 상수
     const SECTIONS = {
-      BASIC: '기본정보',
-      PERFORMANCE: '성능 및 특성',
-      INVENTORY: '재고관리',
-      IMAGE: '이미지',
+      BASIC: "기본정보",
+      PERFORMANCE: "성능 및 특성",
+      INVENTORY: "재고관리",
+      IMAGE: "이미지",
     };
 
     // 기본 유효성 검사
@@ -361,9 +410,17 @@ export default function NewStringPage() {
       length: basicInfo.length,
     };
 
-    if (basicInfo.material === 'hybrid') {
-      const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
-      const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
+    if (basicInfo.material === "hybrid") {
+      const hasMain =
+        hybridMain.brand ||
+        hybridMain.name ||
+        hybridMain.gauge ||
+        hybridMain.color;
+      const hasCross =
+        hybridCross.brand ||
+        hybridCross.name ||
+        hybridCross.gauge ||
+        hybridCross.color;
       if (hasMain || hasCross) {
         specifications.hybrid = {
           main: { ...hybridMain },
@@ -374,7 +431,7 @@ export default function NewStringPage() {
 
     // 검색 키워드: 쉼표 기준으로 잘라 배열로 변환
     const searchKeywords = searchKeywordsInput
-      .split(',')
+      .split(",")
       .map((k) => k.trim())
       .filter((k) => k.length > 0);
 
@@ -406,23 +463,26 @@ export default function NewStringPage() {
     setSubmitting(true);
     submitRef.current = true;
     try {
-      const data = await adminMutator<{ id: string }>('/api/admin/products', {
+      const data = await adminMutator<{ id: string }>("/api/admin/products", {
         // API 겨로
-        method: 'POST', // POST 요청
+        method: "POST", // POST 요청
         headers: {
           // 헤더 설정
-          'Content-Type': 'application/json', // JSON 형식
+          "Content-Type": "application/json", // JSON 형식
         },
         body: JSON.stringify(product), // JSON 문자열로 변환
       });
 
-      showSuccessToast('상품이 등록되었습니다.');
+      showSuccessToast("상품이 등록되었습니다.");
 
       // router.push('/admin/products'); // 상품 목록 페이지로 즉시 이동
       router.push(`/products/${data.id}`); // 등록된 상품 상세 페이지로 즉시 이동
     } catch (error) {
       // 상품 등록 중 에러 발생시
-      showErrorToast(getAdminErrorMessage(error) || '서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.');
+      showErrorToast(
+        getAdminErrorMessage(error) ||
+          "서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.",
+      );
     } finally {
       setSubmitting(false);
       submitRef.current = false;
@@ -441,18 +501,35 @@ export default function NewStringPage() {
                     <Package className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold tracking-tight">스트링 등록</h2>
-                    <p className="text-muted-foreground">새로운 테니스 스트링 정보를 입력하고 등록하세요.</p>
+                    <h2 className="text-3xl font-bold tracking-tight">
+                      스트링 등록
+                    </h2>
+                    <p className="text-muted-foreground">
+                      새로운 테니스 스트링 정보를 입력하고 등록하세요.
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                    <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    asChild
+                    className="bg-muted/40 hover:bg-muted border-border"
+                  >
+                    <Link
+                      href="/admin/products"
+                      data-no-unsaved-guard
+                      onClick={confirmLeave}
+                    >
                       <ArrowLeft className="mr-2 h-4 w-4" />
                       취소
                     </Link>
                   </Button>
-                  <Button type="submit" disabled={submitting || uploading} variant="default">
+                  <Button
+                    type="submit"
+                    disabled={submitting || uploading}
+                    variant="default"
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     저장
                   </Button>
@@ -462,28 +539,49 @@ export default function NewStringPage() {
 
             <Separator className="bg-border" />
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-4"
+            >
               <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 bg-muted border border-border">
-                <TabsTrigger value="basic" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="basic"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   기본 정보
                 </TabsTrigger>
-                <TabsTrigger value="features" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="features"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   성능 및 특성
                 </TabsTrigger>
-                <TabsTrigger value="inventory" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="inventory"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   재고 관리
                 </TabsTrigger>
-                <TabsTrigger value="images" className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger
+                  value="images"
+                  className="text-muted-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                >
                   이미지
                 </TabsTrigger>
               </TabsList>
 
               {/* 기본 정보 탭 */}
               <TabsContent value="basic" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">기본 정보</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 기본 정보를 입력하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 기본 정보를 입력하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -491,45 +589,100 @@ export default function NewStringPage() {
                         <Label htmlFor="string-name">
                           스트링명 <span className="text-destructive">*</span>
                         </Label>
-                        <Input id="string-name" placeholder="스트링명을 입력하세요" value={basicInfo.name} onChange={(e) => setBasicInfo({ ...basicInfo, name: e.target.value })} />
+                        <Input
+                          id="string-name"
+                          placeholder="스트링명을 입력하세요"
+                          value={basicInfo.name}
+                          onChange={(e) =>
+                            setBasicInfo({ ...basicInfo, name: e.target.value })
+                          }
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-sku">SKU (재고 관리 코드)</Label>
-                        <Input id="string-sku" placeholder="예: STR-LUX-001" value={basicInfo.sku} onChange={(e) => setBasicInfo({ ...basicInfo, sku: e.target.value })} />
+                        <Input
+                          id="string-sku"
+                          placeholder="예: STR-LUX-001"
+                          value={basicInfo.sku}
+                          onChange={(e) =>
+                            setBasicInfo({ ...basicInfo, sku: e.target.value })
+                          }
+                        />
                       </div>
                     </div>
                     {/* 검색 키워드 입력 */}
                     <div className="space-y-2">
-                      <Label htmlFor="string-search-keywords">검색 키워드 (쉼표로 구분)</Label>
+                      <Label htmlFor="string-search-keywords">
+                        검색 키워드 (쉼표로 구분)
+                      </Label>
                       <div className="flex flex-col gap-2 md:flex-row md:items-center">
-                        <Input id="string-search-keywords" placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU, 내추럴 거트" value={searchKeywordsInput} onChange={(e) => setSearchKeywordsInput(e.target.value)} />
-                        <Button type="button" variant="outline" className="md:ml-2 shrink-0" onClick={handleGenerateKeywords}>
+                        <Input
+                          id="string-search-keywords"
+                          placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU, 내추럴 거트"
+                          value={searchKeywordsInput}
+                          onChange={(e) =>
+                            setSearchKeywordsInput(e.target.value)
+                          }
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="md:ml-2 shrink-0"
+                          onClick={handleGenerateKeywords}
+                        >
                           상품명 기준 자동 생성
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground">검색창에서 이 키워드들로도 상품을 찾을 수 있게 설정합니다. 쉼표(,)로 구분해서 입력하거나 자동 생성 버튼을 사용하세요.</p>
+                      <p className="text-xs text-muted-foreground">
+                        검색창에서 이 키워드들로도 상품을 찾을 수 있게
+                        설정합니다. 쉼표(,)로 구분해서 입력하거나 자동 생성
+                        버튼을 사용하세요.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="string-short-description">짧은 설명</Label>
+                      <Label htmlFor="string-short-description">
+                        짧은 설명
+                      </Label>
                       <Textarea
                         id="string-short-description"
                         placeholder="스트링에 대한 짧은 설명을 입력하세요"
                         className="min-h-[80px]"
                         value={basicInfo.shortDescription}
-                        onChange={(e) => setBasicInfo({ ...basicInfo, shortDescription: e.target.value })}
+                        onChange={(e) =>
+                          setBasicInfo({
+                            ...basicInfo,
+                            shortDescription: e.target.value,
+                          })
+                        }
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="string-description">상세 설명</Label>
-                      <Textarea id="string-description" placeholder="스트링에 대한 상세 설명을 입력하세요" className="min-h-[200px]" value={basicInfo.description} onChange={(e) => setBasicInfo({ ...basicInfo, description: e.target.value })} />
+                      <Textarea
+                        id="string-description"
+                        placeholder="스트링에 대한 상세 설명을 입력하세요"
+                        className="min-h-[200px]"
+                        value={basicInfo.description}
+                        onChange={(e) =>
+                          setBasicInfo({
+                            ...basicInfo,
+                            description: e.target.value,
+                          })
+                        }
+                      />
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-brand">브랜드</Label>
-                        <Select value={basicInfo.brand} onValueChange={(value) => setBasicInfo({ ...basicInfo, brand: value })}>
+                        <Select
+                          value={basicInfo.brand}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, brand: value })
+                          }
+                        >
                           <SelectTrigger id="string-brand">
                             <SelectValue placeholder="브랜드 선택" />
                           </SelectTrigger>
@@ -544,7 +697,12 @@ export default function NewStringPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-material">재질</Label>
-                        <Select value={basicInfo.material} onValueChange={(value) => setBasicInfo({ ...basicInfo, material: value })}>
+                        <Select
+                          value={basicInfo.material}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, material: value })
+                          }
+                        >
                           <SelectTrigger id="string-material">
                             <SelectValue placeholder="재질 선택" />
                           </SelectTrigger>
@@ -562,7 +720,12 @@ export default function NewStringPage() {
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-gauge">게이지</Label>
-                        <Select value={basicInfo.gauge} onValueChange={(value) => setBasicInfo({ ...basicInfo, gauge: value })}>
+                        <Select
+                          value={basicInfo.gauge}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, gauge: value })
+                          }
+                        >
                           <SelectTrigger id="string-gauge">
                             <SelectValue placeholder="게이지 선택" />
                           </SelectTrigger>
@@ -577,7 +740,12 @@ export default function NewStringPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="string-color">색상</Label>
-                        <Select value={basicInfo.color} onValueChange={(value) => setBasicInfo({ ...basicInfo, color: value })}>
+                        <Select
+                          value={basicInfo.color}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, color: value })
+                          }
+                        >
                           <SelectTrigger id="string-color">
                             <SelectValue placeholder="색상 선택" />
                           </SelectTrigger>
@@ -595,7 +763,12 @@ export default function NewStringPage() {
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="string-length">길이 (m)</Label>
-                        <Select value={basicInfo.length} onValueChange={(value) => setBasicInfo({ ...basicInfo, length: value })}>
+                        <Select
+                          value={basicInfo.length}
+                          onValueChange={(value) =>
+                            setBasicInfo({ ...basicInfo, length: value })
+                          }
+                        >
                           <SelectTrigger id="string-length">
                             <SelectValue placeholder="길이 선택" />
                           </SelectTrigger>
@@ -611,26 +784,35 @@ export default function NewStringPage() {
                   </CardContent>
                 </Card>
 
-                {basicInfo.material === 'hybrid' && (
+                {basicInfo.material === "hybrid" && (
                   <Card
                     variant="ghost"
                     className="mt-6 shadow-xl bg-muted/30 border border-border"
                   >
-                    <CardHeader
-                      className="bg-muted/30 border-b border-border"
-                    >
-                      <CardTitle className="text-primary">하이브리드 구성</CardTitle>
-                      <CardDescription className="text-muted-foreground">메인/크로스 스트링 정보를 입력하세요.</CardDescription>
+                    <CardHeader className="bg-muted/30 border-b border-border">
+                      <CardTitle className="text-primary">
+                        하이브리드 구성
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        메인/크로스 스트링 정보를 입력하세요.
+                      </CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* MAIN */}
                       <div className="space-y-3">
-                        <div className="text-sm font-medium text-muted-foreground">메인 (Mains)</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          메인 (Mains)
+                        </div>
 
                         {/* 브랜드 */}
                         <div className="space-y-1.5">
                           <Label>브랜드</Label>
-                          <Select value={hybridMain.brand} onValueChange={(v) => setHybridMain((s) => ({ ...s, brand: v }))}>
+                          <Select
+                            value={hybridMain.brand}
+                            onValueChange={(v) =>
+                              setHybridMain((s) => ({ ...s, brand: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="브랜드 선택" />
                             </SelectTrigger>
@@ -647,13 +829,27 @@ export default function NewStringPage() {
                         {/* 제품명(자유입력 유지: 같은 브랜드라도 모델명이 매우 다양) */}
                         <div className="space-y-1.5">
                           <Label>제품명</Label>
-                          <Input placeholder="예: RPM Blast" value={hybridMain.name} onChange={(e) => setHybridMain((s) => ({ ...s, name: e.target.value }))} />
+                          <Input
+                            placeholder="예: RPM Blast"
+                            value={hybridMain.name}
+                            onChange={(e) =>
+                              setHybridMain((s) => ({
+                                ...s,
+                                name: e.target.value,
+                              }))
+                            }
+                          />
                         </div>
 
                         {/* 게이지 */}
                         <div className="space-y-1.5">
                           <Label>게이지</Label>
-                          <Select value={hybridMain.gauge} onValueChange={(v) => setHybridMain((s) => ({ ...s, gauge: v }))}>
+                          <Select
+                            value={hybridMain.gauge}
+                            onValueChange={(v) =>
+                              setHybridMain((s) => ({ ...s, gauge: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="게이지 선택" />
                             </SelectTrigger>
@@ -670,7 +866,12 @@ export default function NewStringPage() {
                         {/* 색상 */}
                         <div className="space-y-1.5">
                           <Label>색상</Label>
-                          <Select value={hybridMain.color} onValueChange={(v) => setHybridMain((s) => ({ ...s, color: v }))}>
+                          <Select
+                            value={hybridMain.color}
+                            onValueChange={(v) =>
+                              setHybridMain((s) => ({ ...s, color: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="색상 선택" />
                             </SelectTrigger>
@@ -687,12 +888,19 @@ export default function NewStringPage() {
 
                       {/* CROSS */}
                       <div className="space-y-3">
-                        <div className="text-sm font-medium text-muted-foreground">크로스 (Crosses)</div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          크로스 (Crosses)
+                        </div>
 
                         {/* 브랜드 */}
                         <div className="space-y-1.5">
                           <Label>브랜드</Label>
-                          <Select value={hybridCross.brand} onValueChange={(v) => setHybridCross((s) => ({ ...s, brand: v }))}>
+                          <Select
+                            value={hybridCross.brand}
+                            onValueChange={(v) =>
+                              setHybridCross((s) => ({ ...s, brand: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="브랜드 선택" />
                             </SelectTrigger>
@@ -709,13 +917,27 @@ export default function NewStringPage() {
                         {/* 제품명(자유입력) */}
                         <div className="space-y-1.5">
                           <Label>제품명</Label>
-                          <Input placeholder="예: Touch VS" value={hybridCross.name} onChange={(e) => setHybridCross((s) => ({ ...s, name: e.target.value }))} />
+                          <Input
+                            placeholder="예: Touch VS"
+                            value={hybridCross.name}
+                            onChange={(e) =>
+                              setHybridCross((s) => ({
+                                ...s,
+                                name: e.target.value,
+                              }))
+                            }
+                          />
                         </div>
 
                         {/* 게이지 */}
                         <div className="space-y-1.5">
                           <Label>게이지</Label>
-                          <Select value={hybridCross.gauge} onValueChange={(v) => setHybridCross((s) => ({ ...s, gauge: v }))}>
+                          <Select
+                            value={hybridCross.gauge}
+                            onValueChange={(v) =>
+                              setHybridCross((s) => ({ ...s, gauge: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="게이지 선택" />
                             </SelectTrigger>
@@ -732,7 +954,12 @@ export default function NewStringPage() {
                         {/* 색상 */}
                         <div className="space-y-1.5">
                           <Label>색상</Label>
-                          <Select value={hybridCross.color} onValueChange={(v) => setHybridCross((s) => ({ ...s, color: v }))}>
+                          <Select
+                            value={hybridCross.color}
+                            onValueChange={(v) =>
+                              setHybridCross((s) => ({ ...s, color: v }))
+                            }
+                          >
                             <SelectTrigger>
                               <SelectValue placeholder="색상 선택" />
                             </SelectTrigger>
@@ -751,10 +978,15 @@ export default function NewStringPage() {
                 )}
 
                 {/* 가격 정보 카드 */}
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">가격 정보</CardTitle>
-                    <CardDescription className="text-muted-foreground">소비자 가격과 장착 서비스 비용을 함께 설정해주세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      소비자 가격과 장착 서비스 비용을 함께 설정해주세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -773,7 +1005,10 @@ export default function NewStringPage() {
                                 sideOffset={4}
                                 className={adminFormHintTooltipClass}
                               >
-                                <p>해당 스트링을 이용한 장착 서비스 비용을 입력하세요.</p>
+                                <p>
+                                  해당 스트링을 이용한 장착 서비스 비용을
+                                  입력하세요.
+                                </p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -785,14 +1020,19 @@ export default function NewStringPage() {
                             placeholder="0"
                             value={basicInfo.mountingFee.toLocaleString()}
                             onChange={(e) => {
-                              const raw = e.target.value.replace(/,/g, '');
+                              const raw = e.target.value.replace(/,/g, "");
                               const numeric = Number(raw);
                               if (!isNaN(numeric)) {
-                                setBasicInfo({ ...basicInfo, mountingFee: numeric });
+                                setBasicInfo({
+                                  ...basicInfo,
+                                  mountingFee: numeric,
+                                });
                               }
                             }}
                           />
-                          <span className="ml-2 flex items-center text-sm">원</span>
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
                         </div>
                       </div>
 
@@ -808,14 +1048,16 @@ export default function NewStringPage() {
                             placeholder="0"
                             value={basicInfo.price.toLocaleString()}
                             onChange={(e) => {
-                              const raw = e.target.value.replace(/,/g, '');
+                              const raw = e.target.value.replace(/,/g, "");
                               const numeric = Number(raw);
                               if (!isNaN(numeric)) {
                                 setBasicInfo({ ...basicInfo, price: numeric });
                               }
                             }}
                           />
-                          <span className="ml-2 flex items-center text-sm">원</span>
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -825,10 +1067,15 @@ export default function NewStringPage() {
 
               {/* 성능 및 특성 탭 */}
               <TabsContent value="features" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">성능 및 특성</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 성능과 특성을 설정하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 성능과 특성을 설정하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
                     <div className="space-y-4">
@@ -842,7 +1089,9 @@ export default function NewStringPage() {
                         max={5}
                         step={1}
                         value={[features.power]}
-                        onValueChange={(value) => setFeatures({ ...features, power: value[0] })}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, power: value[0] })
+                        }
                         className="w-full h-4 data-[orientation=horizontal]:bg-muted/50 [&>[data-slider-track]]:bg-muted [&>[data-slider-range]]:bg-primary"
                       />
 
@@ -855,9 +1104,20 @@ export default function NewStringPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="control-rating">컨트롤</Label>
-                        <span className="font-medium">{features.control}/5</span>
+                        <span className="font-medium">
+                          {features.control}/5
+                        </span>
                       </div>
-                      <Slider id="control-rating" min={1} max={5} step={1} value={[features.control]} onValueChange={(value) => setFeatures({ ...features, control: value[0] })} />
+                      <Slider
+                        id="control-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.control]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, control: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -869,7 +1129,16 @@ export default function NewStringPage() {
                         <Label htmlFor="spin-rating">스핀</Label>
                         <span className="font-medium">{features.spin}/5</span>
                       </div>
-                      <Slider id="spin-rating" min={1} max={5} step={1} value={[features.spin]} onValueChange={(value) => setFeatures({ ...features, spin: value[0] })} />
+                      <Slider
+                        id="spin-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.spin]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, spin: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -879,9 +1148,20 @@ export default function NewStringPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="durability-rating">내구성</Label>
-                        <span className="font-medium">{features.durability}/5</span>
+                        <span className="font-medium">
+                          {features.durability}/5
+                        </span>
                       </div>
-                      <Slider id="durability-rating" min={1} max={5} step={1} value={[features.durability]} onValueChange={(value) => setFeatures({ ...features, durability: value[0] })} />
+                      <Slider
+                        id="durability-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.durability]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, durability: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -891,9 +1171,20 @@ export default function NewStringPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="comfort-rating">편안함</Label>
-                        <span className="font-medium">{features.comfort}/5</span>
+                        <span className="font-medium">
+                          {features.comfort}/5
+                        </span>
                       </div>
-                      <Slider id="comfort-rating" min={1} max={5} step={1} value={[features.comfort]} onValueChange={(value) => setFeatures({ ...features, comfort: value[0] })} />
+                      <Slider
+                        id="comfort-rating"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={[features.comfort]}
+                        onValueChange={(value) =>
+                          setFeatures({ ...features, comfort: value[0] })
+                        }
+                      />
                       <div className="flex justify-between text-xs text-muted-foreground">
                         <span>낮음</span>
                         <span>높음</span>
@@ -903,40 +1194,92 @@ export default function NewStringPage() {
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">추천 플레이어 타입</h3>
+                      <h3 className="text-lg font-medium text-primary">
+                        추천 플레이어 타입
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="player-beginner" checked={tags.beginner} onCheckedChange={(checked) => setTags({ ...tags, beginner: checked })} />
+                          <Switch
+                            id="player-beginner"
+                            checked={tags.beginner}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, beginner: checked })
+                            }
+                          />
                           <Label htmlFor="player-beginner">초보자</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="player-intermediate" checked={tags.intermediate} onCheckedChange={(checked) => setTags({ ...tags, intermediate: checked })} />
+                          <Switch
+                            id="player-intermediate"
+                            checked={tags.intermediate}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, intermediate: checked })
+                            }
+                          />
                           <Label htmlFor="player-intermediate">중급자</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="player-advanced" checked={tags.advanced} onCheckedChange={(checked) => setTags({ ...tags, advanced: checked })} />
+                          <Switch
+                            id="player-advanced"
+                            checked={tags.advanced}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, advanced: checked })
+                            }
+                          />
                           <Label htmlFor="player-advanced">상급자</Label>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">추천 플레이 스타일</h3>
+                      <h3 className="text-lg font-medium text-primary">
+                        추천 플레이 스타일
+                      </h3>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-baseline" checked={tags.baseline} onCheckedChange={(checked) => setTags({ ...tags, baseline: checked })} />
-                          <Label htmlFor="style-baseline">베이스라인 플레이어</Label>
+                          <Switch
+                            id="style-baseline"
+                            checked={tags.baseline}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, baseline: checked })
+                            }
+                          />
+                          <Label htmlFor="style-baseline">
+                            베이스라인 플레이어
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-serve-volley" checked={tags.serveVolley} onCheckedChange={(checked) => setTags({ ...tags, serveVolley: checked })} />
-                          <Label htmlFor="style-serve-volley">서브 앤 발리 플레이어</Label>
+                          <Switch
+                            id="style-serve-volley"
+                            checked={tags.serveVolley}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, serveVolley: checked })
+                            }
+                          />
+                          <Label htmlFor="style-serve-volley">
+                            서브 앤 발리 플레이어
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-all-court" checked={tags.allCourt} onCheckedChange={(checked) => setTags({ ...tags, allCourt: checked })} />
-                          <Label htmlFor="style-all-court">올코트 플레이어</Label>
+                          <Switch
+                            id="style-all-court"
+                            checked={tags.allCourt}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, allCourt: checked })
+                            }
+                          />
+                          <Label htmlFor="style-all-court">
+                            올코트 플레이어
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Switch id="style-power" checked={tags.power} onCheckedChange={(checked) => setTags({ ...tags, power: checked })} />
+                          <Switch
+                            id="style-power"
+                            checked={tags.power}
+                            onCheckedChange={(checked) =>
+                              setTags({ ...tags, power: checked })
+                            }
+                          />
                           <Label htmlFor="style-power">파워 히터</Label>
                         </div>
                       </div>
@@ -944,7 +1287,13 @@ export default function NewStringPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="string-features">추가 특성</Label>
-                      <Textarea id="string-features" placeholder="스트링의 추가 특성이나 장점을 입력하세요" className="min-h-[100px]" value={additionalFeatures} onChange={(e) => setAdditionalFeatures(e.target.value)} />
+                      <Textarea
+                        id="string-features"
+                        placeholder="스트링의 추가 특성이나 장점을 입력하세요"
+                        className="min-h-[100px]"
+                        value={additionalFeatures}
+                        onChange={(e) => setAdditionalFeatures(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -952,10 +1301,15 @@ export default function NewStringPage() {
 
               {/* 재고 관리 탭 */}
               <TabsContent value="inventory" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
                     <CardTitle className="text-primary">재고 관리</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 재고 관련 정보를 설정하세요.</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 재고 관련 정보를 설정하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
@@ -967,7 +1321,7 @@ export default function NewStringPage() {
                           placeholder="0"
                           value={inventory.stock.toLocaleString()}
                           onChange={(e) => {
-                            const raw = e.target.value.replace(/,/g, '');
+                            const raw = e.target.value.replace(/,/g, "");
                             const numeric = Number(raw);
                             if (!isNaN(numeric)) {
                               setInventory({ ...inventory, stock: numeric });
@@ -976,14 +1330,16 @@ export default function NewStringPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="string-low-stock">재고 부족 알림 기준</Label>
+                        <Label htmlFor="string-low-stock">
+                          재고 부족 알림 기준
+                        </Label>
                         <Input
                           id="string-low-stock"
                           type="text"
                           placeholder="0"
                           value={inventory.lowStock.toLocaleString()}
                           onChange={(e) => {
-                            const raw = e.target.value.replace(/,/g, '');
+                            const raw = e.target.value.replace(/,/g, "");
                             const numeric = Number(raw);
                             if (!isNaN(numeric)) {
                               setInventory({ ...inventory, lowStock: numeric });
@@ -995,7 +1351,12 @@ export default function NewStringPage() {
 
                     <div className="space-y-2">
                       <Label>재고 상태</Label>
-                      <RadioGroup value={inventory.status} onValueChange={(value) => setInventory({ ...inventory, status: value })}>
+                      <RadioGroup
+                        value={inventory.status}
+                        onValueChange={(value) =>
+                          setInventory({ ...inventory, status: value })
+                        }
+                      >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="instock" id="instock" />
                           <Label htmlFor="instock">재고 있음</Label>
@@ -1013,43 +1374,94 @@ export default function NewStringPage() {
 
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <Switch id="string-manage-stock" checked={inventory.manageStock} onCheckedChange={(checked) => setInventory({ ...inventory, manageStock: checked })} />
-                        <Label htmlFor="string-manage-stock">재고 관리 사용</Label>
+                        <Switch
+                          id="string-manage-stock"
+                          checked={inventory.manageStock}
+                          onCheckedChange={(checked) =>
+                            setInventory({ ...inventory, manageStock: checked })
+                          }
+                        />
+                        <Label htmlFor="string-manage-stock">
+                          재고 관리 사용
+                        </Label>
                       </div>
-                      <p className="text-sm text-muted-foreground">재고 관리를 사용하면 판매될 때마다 재고가 자동으로 감소합니다.</p>
+                      <p className="text-sm text-muted-foreground">
+                        재고 관리를 사용하면 판매될 때마다 재고가 자동으로
+                        감소합니다.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
-                        <Switch id="string-backorders" checked={inventory.allowBackorder} onCheckedChange={(checked) => setInventory({ ...inventory, allowBackorder: checked })} />
-                        <Label htmlFor="string-backorders">품절 시 주문 허용</Label>
+                        <Switch
+                          id="string-backorders"
+                          checked={inventory.allowBackorder}
+                          onCheckedChange={(checked) =>
+                            setInventory({
+                              ...inventory,
+                              allowBackorder: checked,
+                            })
+                          }
+                        />
+                        <Label htmlFor="string-backorders">
+                          품절 시 주문 허용
+                        </Label>
                       </div>
-                      <p className="text-sm text-muted-foreground">재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.</p>
+                      <p className="text-sm text-muted-foreground">
+                        재고가 없을 때도 고객이 주문할 수 있도록 허용합니다.
+                      </p>
                     </div>
 
                     <Separator className="bg-border" />
 
                     <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-primary">판매 옵션</h3>
+                      <h3 className="text-lg font-medium text-primary">
+                        판매 옵션
+                      </h3>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="string-featured" checked={inventory.isFeatured} onCheckedChange={(checked) => setInventory({ ...inventory, isFeatured: checked })} />
-                          <Label htmlFor="string-featured">추천 상품으로 표시</Label>
+                          <Switch
+                            id="string-featured"
+                            checked={inventory.isFeatured}
+                            onCheckedChange={(checked) =>
+                              setInventory({
+                                ...inventory,
+                                isFeatured: checked,
+                              })
+                            }
+                          />
+                          <Label htmlFor="string-featured">
+                            추천 상품으로 표시
+                          </Label>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="string-new" checked={inventory.isNew} onCheckedChange={(checked) => setInventory({ ...inventory, isNew: checked })} />
+                          <Switch
+                            id="string-new"
+                            checked={inventory.isNew}
+                            onCheckedChange={(checked) =>
+                              setInventory({ ...inventory, isNew: checked })
+                            }
+                          />
                           <Label htmlFor="string-new">신상품으로 표시</Label>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Switch id="string-sale" checked={inventory.isSale} onCheckedChange={(checked) => setInventory({ ...inventory, isSale: checked })} />
-                          <Label htmlFor="string-sale">할인 상품으로 표시</Label>
+                          <Switch
+                            id="string-sale"
+                            checked={inventory.isSale}
+                            onCheckedChange={(checked) =>
+                              setInventory({ ...inventory, isSale: checked })
+                            }
+                          />
+                          <Label htmlFor="string-sale">
+                            할인 상품으로 표시
+                          </Label>
                         </div>
                       </div>
 
@@ -1061,16 +1473,21 @@ export default function NewStringPage() {
                             type="text"
                             value={inventory.salePrice.toLocaleString()} // 보기에는 콤마 포함
                             onChange={(e) => {
-                              const rawValue = e.target.value.replace(/,/g, ''); // 콤마 제거
+                              const rawValue = e.target.value.replace(/,/g, ""); // 콤마 제거
                               const numeric = Number(rawValue);
 
                               if (!isNaN(numeric)) {
-                                setInventory({ ...inventory, salePrice: numeric });
+                                setInventory({
+                                  ...inventory,
+                                  salePrice: numeric,
+                                });
                               }
                             }}
                             placeholder="0"
                           />
-                          <span className="ml-2 flex items-center text-sm">원</span>
+                          <span className="ml-2 flex items-center text-sm">
+                            원
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1080,10 +1497,18 @@ export default function NewStringPage() {
 
               {/* 이미지 탭 */}
               <TabsContent value="images" className="space-y-4">
-                <Card variant="ghost" className="shadow-xl bg-muted/30 border border-border">
+                <Card
+                  variant="ghost"
+                  className="shadow-xl bg-muted/30 border border-border"
+                >
                   <CardHeader className="bg-muted/30 border-b border-border">
-                    <CardTitle className="text-primary">스트링 이미지</CardTitle>
-                    <CardDescription className="text-muted-foreground">스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표 이미지로 사용됩니다.</CardDescription>
+                    <CardTitle className="text-primary">
+                      스트링 이미지
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                      스트링의 이미지를 추가하세요. 첫 번째 이미지가 대표
+                      이미지로 사용됩니다.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <ImageUploader
@@ -1101,7 +1526,10 @@ export default function NewStringPage() {
                             최대 4장까지 업로드 가능합니다.
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형 이미지를 사용하세요.</p>
+                            <p>
+                              최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형
+                              이미지를 사용하세요.
+                            </p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -1112,8 +1540,17 @@ export default function NewStringPage() {
             </Tabs>
 
             <div className="flex items-center justify-end space-x-2">
-              <Button variant="outline" type="button" asChild className="bg-muted/40 hover:bg-muted border-border">
-                <Link href="/admin/products" data-no-unsaved-guard onClick={confirmLeave}>
+              <Button
+                variant="outline"
+                type="button"
+                asChild
+                className="bg-muted/40 hover:bg-muted border-border"
+              >
+                <Link
+                  href="/admin/products"
+                  data-no-unsaved-guard
+                  onClick={confirmLeave}
+                >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   취소
                 </Link>
@@ -1131,7 +1568,7 @@ export default function NewStringPage() {
         onOpenChange={setLeaveDialogOpen}
         onConfirm={() => {
           setLeaveDialogOpen(false);
-          router.push('/admin/products');
+          router.push("/admin/products");
         }}
         title="작성 중인 내용이 있습니다"
         description={UNSAVED_CHANGES_MESSAGE}

@@ -1,10 +1,10 @@
-import SelectStringClient from '@/app/racket-orders/[orderId]/select-string/SelectStringClient';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { notFound } from 'next/navigation';
-import { verifyAccessToken } from '@/lib/auth.utils';
-import { cookies } from 'next/headers';
-import LoginGate from '@/components/system/LoginGate';
+import SelectStringClient from "@/app/racket-orders/[orderId]/select-string/SelectStringClient";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { notFound } from "next/navigation";
+import { verifyAccessToken } from "@/lib/auth.utils";
+import { cookies } from "next/headers";
+import LoginGate from "@/components/system/LoginGate";
 
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
 function safeVerifyAccessToken(token?: string) {
@@ -24,11 +24,15 @@ export default async function SelectStringPage({ params }: PageProps) {
   // orderId 형식 검증 (24자/hex 형태가 아니면 즉시 404)
   if (!ObjectId.isValid(orderId)) notFound();
 
-  const guestOrderMode = (process.env.GUEST_ORDER_MODE ?? process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? 'legacy').trim();
-  const allowGuestCheckout = guestOrderMode === 'on';
+  const guestOrderMode = (
+    process.env.GUEST_ORDER_MODE ??
+    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ??
+    "legacy"
+  ).trim();
+  const allowGuestCheckout = guestOrderMode === "on";
 
   if (!allowGuestCheckout) {
-    const token = (await cookies()).get('accessToken')?.value;
+    const token = (await cookies()).get("accessToken")?.value;
     const payload = safeVerifyAccessToken(token);
     if (!payload?.sub) {
       const next = `/racket-orders/${orderId}/select-string`;
@@ -39,11 +43,15 @@ export default async function SelectStringPage({ params }: PageProps) {
   // 주문 존재 여부 + 라켓 항목 포함 여부 확인
   const db = (await clientPromise).db();
   // projection으로 필요한 필드만 가져와 성능·보안 모두 이점
-  const order = await db.collection('orders').findOne({ _id: new ObjectId(orderId) }, { projection: { items: 1 } });
+  const order = await db
+    .collection("orders")
+    .findOne({ _id: new ObjectId(orderId) }, { projection: { items: 1 } });
 
   if (!order) notFound();
 
-  const hasRacket = Array.isArray(order.items) && order.items.some((it: any) => it?.kind === 'racket');
+  const hasRacket =
+    Array.isArray(order.items) &&
+    order.items.some((it: any) => it?.kind === "racket");
 
   // 라켓 구매 주문이 아니면 선택 모드로 올 수 없음
   if (!hasRacket) notFound();
@@ -56,7 +64,9 @@ export default async function SelectStringPage({ params }: PageProps) {
         <p className="text-sm text-muted-foreground">
           주문 ID: <span className="font-mono">{orderId}</span>
         </p>
-        <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground">아래 목록에서 스트링을 고른 뒤, 교체 서비스 신청으로 연결됩니다.</div>
+        <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground">
+          아래 목록에서 스트링을 고른 뒤, 교체 서비스 신청으로 연결됩니다.
+        </div>
       </div>
       <SelectStringClient orderId={orderId} />
     </div>

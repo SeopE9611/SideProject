@@ -1,7 +1,13 @@
-import { Db, ObjectId } from 'mongodb';
-import { appendAudit, parseClientMeta } from '@/lib/audit';
+import { Db, ObjectId } from "mongodb";
+import { appendAudit, parseClientMeta } from "@/lib/audit";
 
-type JsonLike = Record<string, unknown> | Array<unknown> | string | number | boolean | null;
+type JsonLike =
+  | Record<string, unknown>
+  | Array<unknown>
+  | string
+  | number
+  | boolean
+  | null;
 
 export type AdminAuditPayload = {
   type: string;
@@ -26,17 +32,19 @@ const DEFAULT_RETRY_POLICY: AdminAuditRetryPolicy = {
 function resolveRequestId(req?: Request): string | null {
   if (!req) return null;
   const value =
-    req.headers.get('x-request-id') ??
-    req.headers.get('x-correlation-id') ??
-    req.headers.get('cf-ray') ??
-    req.headers.get('x-amzn-trace-id');
+    req.headers.get("x-request-id") ??
+    req.headers.get("x-correlation-id") ??
+    req.headers.get("cf-ray") ??
+    req.headers.get("x-amzn-trace-id");
 
   if (!value) return null;
   const normalized = value.trim();
   return normalized ? normalized.slice(0, 120) : null;
 }
 
-function normalizeObjectId(value?: ObjectId | string | null): ObjectId | string | undefined {
+function normalizeObjectId(
+  value?: ObjectId | string | null,
+): ObjectId | string | undefined {
   if (!value) return undefined;
   if (value instanceof ObjectId) return value;
   const raw = String(value).trim();
@@ -44,16 +52,25 @@ function normalizeObjectId(value?: ObjectId | string | null): ObjectId | string 
   return ObjectId.isValid(raw) ? new ObjectId(raw) : raw;
 }
 
-function calcNextRetryAt(retryCount: number, policy: AdminAuditRetryPolicy): Date {
+function calcNextRetryAt(
+  retryCount: number,
+  policy: AdminAuditRetryPolicy,
+): Date {
   const exp = Math.max(0, retryCount - 1);
   const delay = Math.min(policy.maxDelayMs, policy.baseDelayMs * 2 ** exp);
   return new Date(Date.now() + delay);
 }
 
-async function enqueueAdminAuditRetry(db: Db, req: Request | undefined, payload: AdminAuditPayload, error: unknown, policy: AdminAuditRetryPolicy) {
+async function enqueueAdminAuditRetry(
+  db: Db,
+  req: Request | undefined,
+  payload: AdminAuditPayload,
+  error: unknown,
+  policy: AdminAuditRetryPolicy,
+) {
   const clientMeta = parseClientMeta(req);
-  await db.collection('admin_audit_retry_queue').insertOne({
-    status: 'queued',
+  await db.collection("admin_audit_retry_queue").insertOne({
+    status: "queued",
     retryCount: 0,
     maxRetries: policy.maxRetries,
     nextRetryAt: calcNextRetryAt(1, policy),
@@ -79,8 +96,16 @@ async function enqueueAdminAuditRetry(db: Db, req: Request | undefined, payload:
  * 실패해도 본 처리 성공을 가리지 않기 위해 예외를 삼키고,
  * 별도 재시도 큐(admin_audit_retry_queue)에 적재한다.
  */
-export async function appendAdminAudit(db: Db, payload: AdminAuditPayload, req?: Request, retryPolicy: Partial<AdminAuditRetryPolicy> = {}) {
-  const policy: AdminAuditRetryPolicy = { ...DEFAULT_RETRY_POLICY, ...retryPolicy };
+export async function appendAdminAudit(
+  db: Db,
+  payload: AdminAuditPayload,
+  req?: Request,
+  retryPolicy: Partial<AdminAuditRetryPolicy> = {},
+) {
+  const policy: AdminAuditRetryPolicy = {
+    ...DEFAULT_RETRY_POLICY,
+    ...retryPolicy,
+  };
   const requestId = resolveRequestId(req);
 
   try {
@@ -97,12 +122,18 @@ export async function appendAdminAudit(db: Db, payload: AdminAuditPayload, req?:
       req,
     );
   } catch (error) {
-    console.error('[appendAdminAudit] write failed. fallback queue enqueue start', error);
+    console.error(
+      "[appendAdminAudit] write failed. fallback queue enqueue start",
+      error,
+    );
     try {
       await enqueueAdminAuditRetry(db, req, payload, error, policy);
-      console.error('[appendAdminAudit] fallback queue enqueue done');
+      console.error("[appendAdminAudit] fallback queue enqueue done");
     } catch (queueError) {
-      console.error('[appendAdminAudit] fallback queue enqueue failed', queueError);
+      console.error(
+        "[appendAdminAudit] fallback queue enqueue failed",
+        queueError,
+      );
     }
   }
 }

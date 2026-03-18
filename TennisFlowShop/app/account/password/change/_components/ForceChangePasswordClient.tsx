@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import type React from 'react';
+import type React from "react";
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { showErrorToast, showSuccessToast } from '@/lib/toast';
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 type FieldErrors = Partial<{
   newPassword: string;
@@ -19,21 +25,21 @@ type FieldErrors = Partial<{
 const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
 const focusById = (id: string) => {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   const el = document.getElementById(id) as HTMLElement | null;
   if (!el) return;
   (el as any).focus?.();
-  el.scrollIntoView?.({ block: 'center' });
+  el.scrollIntoView?.({ block: "center" });
 };
 
 export default function ForceChangePasswordClient() {
-  const [newPassword, setNewPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const router = useRouter();
   const qp = useSearchParams();
-  const reason = qp.get('reason');
+  const reason = qp.get("reason");
 
   // 이 페이지를 떠나려 할 때 경고를 띄울지 여부(성공하면 false로 꺼서 더는 방해 안 함)
   const [leaveGuard, setLeaveGuard] = useState(true);
@@ -42,7 +48,7 @@ export default function ForceChangePasswordClient() {
   const logoutBeforeLeave = async () => {
     try {
       // click/back 같은 소프트 내비게이션
-      await fetch('/api/logout', { method: 'POST', keepalive: true });
+      await fetch("/api/logout", { method: "POST", keepalive: true });
     } catch {}
     setLeaveGuard(false);
   };
@@ -50,11 +56,11 @@ export default function ForceChangePasswordClient() {
   // 새로고침/창닫기에서 로그아웃 시도(쿠키 제거)
   const logoutBeacon = () => {
     try {
-      if ('sendBeacon' in navigator) {
-        const blob = new Blob([], { type: 'application/json' });
-        navigator.sendBeacon('/api/logout', blob);
+      if ("sendBeacon" in navigator) {
+        const blob = new Blob([], { type: "application/json" });
+        navigator.sendBeacon("/api/logout", blob);
       } else {
-        fetch('/api/logout', { method: 'POST', keepalive: true });
+        fetch("/api/logout", { method: "POST", keepalive: true });
       }
     } catch {}
   };
@@ -70,23 +76,30 @@ export default function ForceChangePasswordClient() {
       logoutBeacon(); // ← 떠나기 전에 쿠키 제거 시도
       // 대부분 브라우저에서 커스텀 메시지는 무시되고, 기본 경고만 표시됩니다.
       e.preventDefault();
-      e.returnValue = '';
+      e.returnValue = "";
     };
-    window.addEventListener('beforeunload', onBeforeUnload);
+    window.addEventListener("beforeunload", onBeforeUnload);
 
     // 공통 확인 함수
-    const confirmLeave = () => window.confirm('아직 비밀번호를 바꾸지 않았습니다.\n떠나면 임시 비밀번호를 다시 볼 수 없어요.\n계속 이동할까요?');
+    const confirmLeave = () =>
+      window.confirm(
+        "아직 비밀번호를 바꾸지 않았습니다.\n떠나면 임시 비밀번호를 다시 볼 수 없어요.\n계속 이동할까요?",
+      );
 
     // 2) 내부 링크/버튼으로 다른 경로로 나가려는 경우(캡처 단계에서 선차단)
     const onClickCapture = async (e: MouseEvent) => {
       const el = e.target as HTMLElement | null;
-      const anchor = el?.closest('a');
+      const anchor = el?.closest("a");
       if (!anchor) return;
-      const href = anchor.getAttribute('href');
+      const href = anchor.getAttribute("href");
       if (!href) return;
       // 새 탭/다운로드/외부 링크 등은 건너뜀
-      if (anchor.getAttribute('target') && anchor.getAttribute('target') !== '_self') return;
-      if (anchor.hasAttribute('download')) return;
+      if (
+        anchor.getAttribute("target") &&
+        anchor.getAttribute("target") !== "_self"
+      )
+        return;
+      if (anchor.hasAttribute("download")) return;
       const url = new URL(href, window.location.href);
       if (url.origin !== window.location.origin) return; // 외부 링크면 건너뜀
       // 같은 페이지 내 해시 이동은 허용
@@ -103,10 +116,11 @@ export default function ForceChangePasswordClient() {
         window.location.assign(url.href); // 전체 페이지 로드
       }
     };
-    document.addEventListener('click', onClickCapture, true); // 캡처 단계!
+    document.addEventListener("click", onClickCapture, true); // 캡처 단계!
 
     // 3) 뒤로 가기: 현재 히스토리 위에 "잠금 스냅샷"을 한 번 더 쌓아두고 popstate에서 복귀
-    const pushLock = () => history.pushState({ pwdChangeLock: true }, '', window.location.href);
+    const pushLock = () =>
+      history.pushState({ pwdChangeLock: true }, "", window.location.href);
     pushLock();
     const onPopState = async () => {
       if (!confirmLeave()) {
@@ -114,16 +128,16 @@ export default function ForceChangePasswordClient() {
       } else {
         await logoutBeforeLeave();
         // 뒤로가려던 곳으로 전체 이동(참조 없으면 홈)
-        window.location.replace(document.referrer || '/');
+        window.location.replace(document.referrer || "/");
       }
     };
-    window.addEventListener('popstate', onPopState);
+    window.addEventListener("popstate", onPopState);
 
     // 정리
     return () => {
-      window.removeEventListener('beforeunload', onBeforeUnload);
-      document.removeEventListener('click', onClickCapture, true);
-      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      document.removeEventListener("click", onClickCapture, true);
+      window.removeEventListener("popstate", onPopState);
     };
   }, [leaveGuard]);
 
@@ -135,15 +149,16 @@ export default function ForceChangePasswordClient() {
     const cf = confirm;
 
     if (!pw) {
-      nextErrors.newPassword = '새 비밀번호를 입력해주세요.';
+      nextErrors.newPassword = "새 비밀번호를 입력해주세요.";
     } else if (!PASSWORD_POLICY_RE.test(pw)) {
-      nextErrors.newPassword = '비밀번호는 8자 이상이며 영문과 숫자를 포함해야 합니다.';
+      nextErrors.newPassword =
+        "비밀번호는 8자 이상이며 영문과 숫자를 포함해야 합니다.";
     }
 
     if (!cf) {
-      nextErrors.confirm = '비밀번호 확인을 입력해주세요.';
+      nextErrors.confirm = "비밀번호 확인을 입력해주세요.";
     } else if (pw && pw !== cf) {
-      nextErrors.confirm = '비밀번호 확인이 일치하지 않습니다.';
+      nextErrors.confirm = "비밀번호 확인이 일치하지 않습니다.";
     }
 
     const firstMsg = nextErrors.newPassword || nextErrors.confirm;
@@ -151,8 +166,8 @@ export default function ForceChangePasswordClient() {
       setFieldErrors(nextErrors);
       // 기존 UX 유지: 토스트도 띄우되, “어디가 문제인지”는 인라인으로 보이게 함
       showErrorToast(firstMsg);
-      if (nextErrors.newPassword) focusById('newPassword');
-      else focusById('confirmPassword');
+      if (nextErrors.newPassword) focusById("newPassword");
+      else focusById("confirmPassword");
       return;
     }
 
@@ -161,20 +176,20 @@ export default function ForceChangePasswordClient() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/users/me/password', {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
+      const res = await fetch("/api/users/me/password", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ newPassword }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err?.message || '변경에 실패했습니다.');
+        throw new Error(err?.message || "변경에 실패했습니다.");
       }
-      showSuccessToast('비밀번호가 변경되었습니다.');
+      showSuccessToast("비밀번호가 변경되었습니다.");
       setLeaveGuard(false);
-      router.replace('/'); // 성공 후 홈(또는 /mypage)로 이동
+      router.replace("/"); // 성공 후 홈(또는 /mypage)로 이동
     } catch (e: any) {
-      showErrorToast(e?.message || '변경에 실패했습니다.');
+      showErrorToast(e?.message || "변경에 실패했습니다.");
     } finally {
       setLoading(false);
     }
@@ -186,8 +201,14 @@ export default function ForceChangePasswordClient() {
         <div className="mx-auto max-w-lg">
           <Card className="border-border/40 bg-card/60 backdrop-blur shadow-xl">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">비밀번호 변경</CardTitle>
-              <CardDescription className="text-base">{reason === 'must' ? '보안을 위해 먼저 비밀번호를 변경해 주세요.' : '새 비밀번호로 변경해 주세요.'}</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                비밀번호 변경
+              </CardTitle>
+              <CardDescription className="text-base">
+                {reason === "must"
+                  ? "보안을 위해 먼저 비밀번호를 변경해 주세요."
+                  : "새 비밀번호로 변경해 주세요."}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
@@ -201,16 +222,29 @@ export default function ForceChangePasswordClient() {
                     value={newPassword}
                     onChange={(e) => {
                       setNewPassword(e.target.value);
-                      if (fieldErrors.newPassword) setFieldErrors((prev) => ({ ...prev, newPassword: undefined }));
+                      if (fieldErrors.newPassword)
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          newPassword: undefined,
+                        }));
                     }}
                     placeholder="8자 이상 입력해주세요"
                     required
-                    className={fieldErrors.newPassword ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
+                    className={
+                      fieldErrors.newPassword
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
+                        : ""
+                    }
                   />
-                  <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.newPassword ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-destructive">
+                    {fieldErrors.newPassword ?? ""}
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  <Label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-medium"
+                  >
                     새 비밀번호 확인 <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -219,16 +253,31 @@ export default function ForceChangePasswordClient() {
                     value={confirm}
                     onChange={(e) => {
                       setConfirm(e.target.value);
-                      if (fieldErrors.confirm) setFieldErrors((prev) => ({ ...prev, confirm: undefined }));
+                      if (fieldErrors.confirm)
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          confirm: undefined,
+                        }));
                     }}
                     placeholder="비밀번호를 다시 입력해주세요"
                     required
-                    className={fieldErrors.confirm ? 'border-destructive focus-visible:border-destructive focus-visible:ring-ring' : ''}
+                    className={
+                      fieldErrors.confirm
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
+                        : ""
+                    }
                   />
-                  <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.confirm ?? ''}</p>
+                  <p className="min-h-[18px] text-sm text-destructive">
+                    {fieldErrors.confirm ?? ""}
+                  </p>
                 </div>
-                <Button type="submit" disabled={loading} variant="default" className="w-full font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200">
-                  {loading ? '변경 중…' : '비밀번호 변경'}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  variant="default"
+                  className="w-full font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  {loading ? "변경 중…" : "비밀번호 변경"}
                 </Button>
               </form>
             </CardContent>

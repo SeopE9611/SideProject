@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useInfiniteProducts } from '@/app/products/hooks/useInfiniteProducts';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type SelectableStringProduct = {
   _id: string;
@@ -17,7 +17,14 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
 
-  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore, error } = useInfiniteProducts({ limit: 6 });
+  const {
+    products,
+    isLoadingInitial,
+    isFetchingMore,
+    hasMore,
+    loadMore,
+    error,
+  } = useInfiniteProducts({ limit: 6 });
 
   // 스트링 선택 핸들러: 주문은 건드리지 않고 단순히 "선택 정보"만 들고 신청 페이지로 이동
   const handleSelectString = async (productId: string) => {
@@ -37,15 +44,27 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
   };
 
   if (isLoadingInitial) {
-    return <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">스트링 목록을 준비하고 있습니다.</div>;
+    return (
+      <div className="rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground">
+        스트링 목록을 준비하고 있습니다.
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">목록을 불러오는 중 오류가 발생했습니다. {error}</div>;
+    return (
+      <div className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">
+        목록을 불러오는 중 오류가 발생했습니다. {error}
+      </div>
+    );
   }
 
   if (!products || products.length === 0) {
-    return <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">표시할 스트링이 없습니다. 필터를 변경하거나 나중에 다시 시도해 주세요.</div>;
+    return (
+      <div className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
+        표시할 스트링이 없습니다. 필터를 변경하거나 나중에 다시 시도해 주세요.
+      </div>
+    );
   }
 
   return (
@@ -64,9 +83,19 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               onClick={() => handleSelectString(p._id)}
             >
               <div className="font-medium">{p.name}</div>
-              <div className="text-sm text-muted-foreground">{typeof p.price === 'number' ? `${p.price.toLocaleString()}원` : '가격 정보 없음'}</div>
-              {typeof p.mountingFee === 'number' && <div className="mt-1 text-xs text-muted-foreground">장착비: {p.mountingFee.toLocaleString()}원</div>}
-              <div className="mt-2 text-sm text-primary">{isAdding ? '이동 중…' : '이 스트링 선택'}</div>
+              <div className="text-sm text-muted-foreground">
+                {typeof p.price === "number"
+                  ? `${p.price.toLocaleString()}원`
+                  : "가격 정보 없음"}
+              </div>
+              {typeof p.mountingFee === "number" && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  장착비: {p.mountingFee.toLocaleString()}원
+                </div>
+              )}
+              <div className="mt-2 text-sm text-primary">
+                {isAdding ? "이동 중…" : "이 스트링 선택"}
+              </div>
             </button>
           );
         })}
@@ -74,8 +103,19 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
       {hasMore && (
         <div className="pt-2">
-          <Button type="button" variant="outline" data-cy="racket-string-load-more" onClick={loadMore} disabled={isFetchingMore || !!addingProductId} className="w-full border-border bg-card text-foreground">
-            {isFetchingMore ? <Skeleton className="mx-auto h-4 w-20" /> : '더 보기'}
+          <Button
+            type="button"
+            variant="outline"
+            data-cy="racket-string-load-more"
+            onClick={loadMore}
+            disabled={isFetchingMore || !!addingProductId}
+            className="w-full border-border bg-card text-foreground"
+          >
+            {isFetchingMore ? (
+              <Skeleton className="mx-auto h-4 w-20" />
+            ) : (
+              "더 보기"
+            )}
           </Button>
         </div>
       )}

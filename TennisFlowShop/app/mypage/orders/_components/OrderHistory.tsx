@@ -1,62 +1,74 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import useSWRInfinite from 'swr/infinite';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Package, Truck, CreditCard, RotateCcw, XCircle, Pencil, Clock, PackageCheck } from 'lucide-react';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+"use client";
+import React, { useState, useEffect } from "react";
+import useSWRInfinite from "swr/infinite";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Package,
+  Truck,
+  CreditCard,
+  RotateCcw,
+  XCircle,
+  Pencil,
+  Clock,
+  PackageCheck,
+} from "lucide-react";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 // 상태별로 아이콘 컴포넌트와 클래스 리턴하는 헬퍼 함수
 function getIconProps(status: string) {
   switch (status) {
-    case '대기중':
+    case "대기중":
       return {
         Icon: Clock,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
-    case '결제완료':
+    case "결제완료":
       return {
         Icon: CreditCard,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
-    case '배송중':
+    case "배송중":
       return {
         Icon: Truck,
-        wrapperClasses: 'border border-primary/20 bg-primary/10 dark:bg-primary/20',
-        iconClasses: 'text-primary',
+        wrapperClasses:
+          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        iconClasses: "text-primary",
       };
-    case '배송완료':
+    case "배송완료":
       return {
         Icon: PackageCheck,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
-    case '환불':
+    case "환불":
       return {
         Icon: RotateCcw,
-        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
-        iconClasses: 'text-destructive',
+        wrapperClasses:
+          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        iconClasses: "text-destructive",
       };
-    case '취소':
+    case "취소":
       return {
         Icon: XCircle,
-        wrapperClasses: 'border border-destructive/30 bg-destructive/10 dark:bg-destructive/15',
-        iconClasses: 'text-destructive',
+        wrapperClasses:
+          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        iconClasses: "text-destructive",
       };
-    case '배송정보변경':
+    case "배송정보변경":
       return {
         Icon: Pencil,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
     default:
       return {
         Icon: Package,
-        wrapperClasses: 'border border-border bg-muted dark:bg-card',
-        iconClasses: 'text-foreground',
+        wrapperClasses: "border border-border bg-muted dark:bg-card",
+        iconClasses: "text-foreground",
       };
   }
 }
@@ -78,10 +90,11 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   const [page, setPage] = useState(1);
 
   // getKey: pageIndex마다 서버에 page=pageIndex+1 요청
-  const getKey = (orderId: string) => (pageIndex: number, prev: HistoryResponse | null) => {
-    if (prev && prev.history.length === 0) return null; // 더 이상 페이지 없으면 중단
-    return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
-  };
+  const getKey =
+    (orderId: string) => (pageIndex: number, prev: HistoryResponse | null) => {
+      if (prev && prev.history.length === 0) return null; // 더 이상 페이지 없으면 중단
+      return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+    };
   // useSWRInfinite 훅: pages[0]은 page=1 응답, pages[1]은 page=2 응답...
   const {
     data: pages,
@@ -104,9 +117,9 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   //상태 변경 후 'order-history-page-reset' 이벤트를 받으면  page를 1로 리셋하도록
   useEffect(() => {
     const reset = () => setPage(1);
-    window.addEventListener('order-history-page-reset', reset);
+    window.addEventListener("order-history-page-reset", reset);
     return () => {
-      window.removeEventListener('order-history-page-reset', reset);
+      window.removeEventListener("order-history-page-reset", reset);
     };
   }, []);
 
@@ -115,10 +128,15 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
   const pageData = pages?.[page - 1];
   const hasDataError = !!error;
   const isInitialLoading = pages === undefined && !hasDataError;
-  const isPageTransitionLoading = !isInitialLoading && !hasDataError && (page > size || !pageData);
+  const isPageTransitionLoading =
+    !isInitialLoading && !hasDataError && (page > size || !pageData);
   const hasResolvedPageData = !!pageData && !hasDataError;
-  const pageHistory = hasResolvedPageData && Array.isArray(pageData.history) ? pageData.history : null;
-  const hasResolvedTotal = hasResolvedPageData && typeof pageData.total === 'number';
+  const pageHistory =
+    hasResolvedPageData && Array.isArray(pageData.history)
+      ? pageData.history
+      : null;
+  const hasResolvedTotal =
+    hasResolvedPageData && typeof pageData.total === "number";
 
   // 내림차순 정렬 (최신 먼저)
   const toTime = (raw: string) => {
@@ -126,22 +144,26 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
     return Number.isNaN(t) ? 0 : t; // Invalid Date면 0으로 밀어버림
   };
 
-  const pageItems = pageHistory ? [...pageHistory].sort((a, b) => toTime(b.date) - toTime(a.date)) : [];
+  const pageItems = pageHistory
+    ? [...pageHistory].sort((a, b) => toTime(b.date) - toTime(a.date))
+    : [];
 
-  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil(pageData.total / LIMIT)) : 1;
+  const totalPages = hasResolvedTotal
+    ? Math.max(1, Math.ceil(pageData.total / LIMIT))
+    : 1;
   const shouldShowRows = hasResolvedPageData && pageItems.length > 0;
   const shouldShowEmptyState = hasResolvedPageData && pageItems.length === 0;
 
   // 날짜 안전 포멧 함수
   const formatHistoryDate = (raw: string) => {
     const d = new Date(raw);
-    if (Number.isNaN(d.getTime())) return '날짜 없음';
-    return new Intl.DateTimeFormat('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
+    if (Number.isNaN(d.getTime())) return "날짜 없음";
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(d);
   };
 
@@ -149,7 +171,9 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
     <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
       <CardHeader className="pb-3">
         <CardTitle>처리 이력</CardTitle>
-        <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
+        <p className="text-sm text-muted-foreground">
+          최신 변경이 맨 위에 표시됩니다.
+        </p>
       </CardHeader>
       <CardContent>
         {/* 로딩 중일 때 스켈레톤 5줄 */}
@@ -164,25 +188,37 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
             </div>
           ))
         ) : hasDataError ? (
-          <div className="py-10 text-center text-destructive">처리 이력을 불러올 수 없습니다.</div>
+          <div className="py-10 text-center text-destructive">
+            처리 이력을 불러올 수 없습니다.
+          </div>
         ) : /* 빈 상태일 때 메시지 */
         shouldShowEmptyState ? (
-          <div className="py-10 text-center text-muted-foreground">아직 처리 이력이 없습니다.</div>
+          <div className="py-10 text-center text-muted-foreground">
+            아직 처리 이력이 없습니다.
+          </div>
         ) : shouldShowRows ? (
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status);
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(
+              item.status,
+            );
             return (
               <div key={idx} className="flex space-x-4 py-3">
-                <div className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}>
+                <div
+                  className={`h-10 w-10 flex items-center justify-center rounded-full border ${wrapperClasses}`}
+                >
                   <Icon className={`h-6 w-6 ${iconClasses}`} />
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between">
                     <span className="font-semibold">{item.status}</span>
-                    <span className="text-sm text-muted-foreground">{formatHistoryDate(item.date)}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {formatHistoryDate(item.date)}
+                    </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               </div>
             );
@@ -192,13 +228,23 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
         {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="mt-6 flex justify-center gap-3">
-            <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
               이전
             </Button>
             <span className="text-sm text-muted-foreground">
               {page} / {totalPages}
             </span>
-            <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(page + 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
               다음
             </Button>
           </div>

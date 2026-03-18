@@ -1,4 +1,4 @@
-import { defineConfig } from 'cypress';
+import { defineConfig } from "cypress";
 
 export default defineConfig({
   video: false,
@@ -8,7 +8,7 @@ export default defineConfig({
     E2E_ADMIN_BYPASS_TOKEN: process.env.E2E_ADMIN_BYPASS_TOKEN,
   },
   e2e: {
-    baseUrl: 'http://localhost:3000',
-    supportFile: 'cypress/support/e2e.ts',
+    baseUrl: "http://localhost:3000",
+    supportFile: "cypress/support/e2e.ts",
   },
 });

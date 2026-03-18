@@ -2,13 +2,13 @@
 
 ## 1) 사용 위치 분류
 
-| 분류 | 허용 토큰 | 사용 예시 |
-|---|---|---|
-| 배지(Badge) | `success`, `warning`, `destructive` | 신고 상태(대기/완료/반려), 휴무 표시 |
-| 토스트(Toast) | `success`, `warning`, `destructive` | 저장 성공/유효성 경고/실패 안내 |
-| 에러 영역(Error Surface) | `destructive` | 목록 로드 실패, 검증 실패 메시지 |
-| 위험 버튼(Danger Action) | `destructive` | 삭제, 숨김 처리, 취소/파기 액션 |
-| 일반 장식(Decorative) | `text-foreground`, `text-primary`, `bg-muted` 중심 | 아이콘, 카드 강조 배경, 구분용 점/칩 |
+| 분류                     | 허용 토큰                                          | 사용 예시                            |
+| ------------------------ | -------------------------------------------------- | ------------------------------------ |
+| 배지(Badge)              | `success`, `warning`, `destructive`                | 신고 상태(대기/완료/반려), 휴무 표시 |
+| 토스트(Toast)            | `success`, `warning`, `destructive`                | 저장 성공/유효성 경고/실패 안내      |
+| 에러 영역(Error Surface) | `destructive`                                      | 목록 로드 실패, 검증 실패 메시지     |
+| 위험 버튼(Danger Action) | `destructive`                                      | 삭제, 숨김 처리, 취소/파기 액션      |
+| 일반 장식(Decorative)    | `text-foreground`, `text-primary`, `bg-muted` 중심 | 아이콘, 카드 강조 배경, 구분용 점/칩 |
 
 ## 2) 색상 의미 사전
 

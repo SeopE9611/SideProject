@@ -1,72 +1,84 @@
-import HeroCourtBackdrop from '@/components/system/HeroCourtBackdrop';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, MapPin, Phone, Train } from 'lucide-react';
-import Link from 'next/link';
+import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock, MapPin, Phone, Train } from "lucide-react";
+import Link from "next/link";
 
 export default function LocationsPage() {
   const locations = [
     {
-      name: '테니스 플로우',
-      address: '서울 동작구 노량진로 22 B1',
-      phone: '0507-1392-3493',
-      email: 'info@tennis-flow.com',
+      name: "테니스 플로우",
+      address: "서울 동작구 노량진로 22 B1",
+      phone: "0507-1392-3493",
+      email: "info@tennis-flow.com",
       hours: {
-        weekday: '10:00 - 22:00',
-        weekend: '09:00 - 18:00',
-        holiday: '휴무',
+        weekday: "10:00 - 22:00",
+        weekend: "09:00 - 18:00",
+        holiday: "휴무",
       },
-      services: ['스트링 장착', '텐션 가이드', '스트링 추천', '라켓 상담'],
-      transport: ['대방역 2번출구'],
+      services: ["스트링 장착", "텐션 가이드", "스트링 추천", "라켓 상담"],
+      transport: ["대방역 2번출구"],
       isMain: true,
-      specialNote: '매장에 방문하시면 친절하게 상담해드립니다.',
+      specialNote: "매장에 방문하시면 친절하게 상담해드립니다.",
     },
   ];
 
   const reservationSteps = [
     {
       step: 1,
-      title: '서비스 선택',
-      description: '스트링 장착 서비스를 선택하세요',
+      title: "서비스 선택",
+      description: "스트링 장착 서비스를 선택하세요",
     },
     {
       step: 2,
-      title: '날짜/시간 선택',
-      description: '편리한 시간을 예약하세요',
+      title: "날짜/시간 선택",
+      description: "편리한 시간을 예약하세요",
     },
     {
       step: 3,
-      title: '상담 및 확인',
-      description: '전화 또는 방문 상담을 받으세요',
+      title: "상담 및 확인",
+      description: "전화 또는 방문 상담을 받으세요",
     },
     {
       step: 4,
-      title: '서비스 완료',
-      description: '전문적인 스트링 장착을 받으세요',
+      title: "서비스 완료",
+      description: "전문적인 스트링 장착을 받으세요",
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-primary" />
+      <HeroCourtBackdrop
+        opacity="soft"
+        className="h-full w-full text-primary"
+      />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full mb-6">
             <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">오프라인 매장 찾기</span>
+            <span className="text-sm font-semibold text-primary">
+              오프라인 매장 찾기
+            </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">매장 위치 안내</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">가까운 매장을 찾아 편리하게 서비스를 이용하세요</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            매장 위치 안내
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            가까운 매장을 찾아 편리하게 서비스를 이용하세요
+          </p>
         </div>
 
         {/* Locations */}
         <div className="mb-16">
           <div className="max-w-2xl mx-auto">
             {locations.map((location, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 ring-2 ring-ring">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-all duration-300 ring-2 ring-ring"
+              >
                 <CardHeader>
                   <CardTitle className="flex items-start justify-between">
                     <div>
@@ -110,7 +122,9 @@ export default function LocationsPage() {
                   </div>
 
                   <div className="bg-primary/10 dark:bg-primary/20 p-3 rounded-lg border border-primary/20">
-                    <p className="text-sm font-medium text-primary">{location.specialNote}</p>
+                    <p className="text-sm font-medium text-primary">
+                      {location.specialNote}
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap gap-1">
@@ -122,7 +136,9 @@ export default function LocationsPage() {
                   </div>
 
                   <Button className="w-full" asChild>
-                    <Link href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5">네이버 지도 검색</Link>
+                    <Link href="https://map.naver.com/p/entry/place/1907032343?c=15.00,0,0,0,dh&placePath=/home?from=map&fromPanelNum=1&additionalHeight=76&timestamp=202601042339&locale=ko&svcName=map_pcv5">
+                      네이버 지도 검색
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>

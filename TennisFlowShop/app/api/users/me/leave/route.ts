@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
-import { verifyAccessToken } from '@/lib/auth.utils';
-
+import { NextRequest, NextResponse } from "next/server";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth.utils";
 
 function safeVerifyAccessToken(token?: string | null) {
   if (!token) return null;
@@ -32,31 +31,44 @@ export async function DELETE(req: NextRequest) {
 
     // 토큰 검증
     const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
+    const token = cookieStore.get("accessToken")?.value;
 
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!token)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const payload = safeVerifyAccessToken(token);
 
-    if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!payload)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const userId = payload?.sub;
-    if (!ObjectId.isValid(String(userId))) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
-    if (!userId) return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+    if (!ObjectId.isValid(String(userId)))
+      return NextResponse.json(
+        { error: "Invalid token payload" },
+        { status: 400 },
+      );
+    if (!userId)
+      return NextResponse.json(
+        { error: "Invalid token payload" },
+        { status: 400 },
+      );
 
     // MongoDB 연결
     const db = (await clientPromise).db();
 
     // 아직 처리 중인 주문 있는지 확인 (배송 완료 전, 취소 전)
-    const pending = await db.collection('orders').findOne({
+    const pending = await db.collection("orders").findOne({
       userId: new ObjectId(userId),
-      status: { $in: ['대기중', '배송중'] },
+      status: { $in: ["대기중", "배송중"] },
     });
     if (pending) {
-      return NextResponse.json({ error: '아직 처리 중인 주문이 있어 탈퇴할 수 없습니다.' }, { status: 400 });
+      return NextResponse.json(
+        { error: "아직 처리 중인 주문이 있어 탈퇴할 수 없습니다." },
+        { status: 400 },
+      );
     }
 
     // soft-delete 처리
-    await db.collection('users').updateOne(
+    await db.collection("users").updateOne(
       { _id: new ObjectId(userId) },
       {
         $set: {
@@ -65,13 +77,13 @@ export async function DELETE(req: NextRequest) {
           withdrawalReason: reason,
           withdrawalDetail: detail,
         },
-      }
+      },
     );
 
     // 성공 응답
-    return NextResponse.json({ message: '탈퇴 완료' }, { status: 200 });
+    return NextResponse.json({ message: "탈퇴 완료" }, { status: 200 });
   } catch (err) {
-    console.error('회원 탈퇴 중 오류:', err);
-    return NextResponse.json({ error: '서버 오류 발생' }, { status: 500 });
+    console.error("회원 탈퇴 중 오류:", err);
+    return NextResponse.json({ error: "서버 오류 발생" }, { status: 500 });
   }
 }

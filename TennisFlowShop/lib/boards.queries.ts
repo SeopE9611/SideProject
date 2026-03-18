@@ -1,7 +1,7 @@
-import { getDb } from '@/lib/mongodb';
-import { findList } from '@/lib/board.repository';
-import type { BoardType } from '@/lib/types/board';
-import type { Sort } from 'mongodb';
+import { getDb } from "@/lib/mongodb";
+import { findList } from "@/lib/board.repository";
+import type { BoardType } from "@/lib/types/board";
+import type { Sort } from "mongodb";
 
 /**
  * 게시판 목록 아이템 타입
@@ -44,14 +44,14 @@ export type BoardListParams = {
 
   // 검색
   q?: string;
-  field?: 'all' | 'title' | 'content' | 'title_content';
+  field?: "all" | "title" | "content" | "title_content";
 
   // 필터
   category?: string | null;
   productId?: string | null;
 
   // QnA 전용: 답변 상태 필터
-  answer?: 'waiting' | 'completed' | null;
+  answer?: "waiting" | "completed" | null;
 };
 
 /**
@@ -59,14 +59,25 @@ export type BoardListParams = {
  * - 서버 컴포넌트 / API 라우트 양쪽에서 재사용
  * - HTTP 없이 MongoDB에서 바로 읽는다.
  */
-export async function getBoardList(params: BoardListParams): Promise<{ items: BoardListItem[]; total: number }> {
-  const { type, page, limit, q = '', field = 'all', category, productId, answer } = params;
+export async function getBoardList(
+  params: BoardListParams,
+): Promise<{ items: BoardListItem[]; total: number }> {
+  const {
+    type,
+    page,
+    limit,
+    q = "",
+    field = "all",
+    category,
+    productId,
+    answer,
+  } = params;
 
   const db = await getDb();
   // 1) 기본 필터: 게시판 타입 + 게시 상태
   const filter: Record<string, any> = {
     type,
-    status: 'published',
+    status: "published",
   };
 
   // 2) 카테고리 필터
@@ -76,16 +87,16 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
 
   // 3) 상품 필터 (QnA 전용)
   if (productId) {
-    filter['productRef.productId'] = productId;
+    filter["productRef.productId"] = productId;
   }
 
   // 답변 상태 필터 (QnA 전용)
   // - waiting: answer가 null(또는 없음)인 글
   // - completed: answer가 존재하고 null이 아닌 글
-  if (type === 'qna' && answer) {
-    if (answer === 'waiting') {
+  if (type === "qna" && answer) {
+    if (answer === "waiting") {
       filter.answer = null; // null 또는 미존재까지 포함
-    } else if (answer === 'completed') {
+    } else if (answer === "completed") {
       filter.answer = { $exists: true, $ne: null };
     }
   }
@@ -95,12 +106,12 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
     const keyword = q.trim();
 
     // 정규식 특수문자 escape
-    const esc = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(esc(keyword), 'i');
+    const esc = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(esc(keyword), "i");
 
-    if (field === 'title') {
+    if (field === "title") {
       filter.title = { $regex: re };
-    } else if (field === 'content') {
+    } else if (field === "content") {
       filter.content = { $regex: re };
     } else {
       // all / title_content → 제목+내용 OR 검색
@@ -112,7 +123,7 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
 
   // 6) 정렬 조건
   const sort: Sort =
-    type === 'notice'
+    type === "notice"
       ? { isPinned: -1, createdAt: -1 } // pinned가 1순위, 그 다음 최신순
       : { createdAt: -1 };
 
@@ -127,23 +138,31 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
   };
 
   // QnA 목록에서 필요한 필드만 추가로 내려준다.
-  if (type === 'qna') {
+  if (type === "qna") {
     projection.authorName = 1;
     projection.authorId = 1;
     projection.isSecret = 1;
-    projection['answer.authorName'] = 1;
-    projection['answer.createdAt'] = 1;
-    projection['answer.updatedAt'] = 1;
+    projection["answer.authorName"] = 1;
+    projection["answer.createdAt"] = 1;
+    projection["answer.updatedAt"] = 1;
   }
-  const { total, items: rawItems } = await findList(db, 'board_posts', filter, projection, sort, page, limit);
+  const { total, items: rawItems } = await findList(
+    db,
+    "board_posts",
+    filter,
+    projection,
+    sort,
+    page,
+    limit,
+  );
 
   // 8) 첨부 메타 계산 (이미지 / 파일 개수)
   const items: BoardListItem[] = rawItems.map((doc: any) => {
     const attachments = Array.isArray(doc.attachments) ? doc.attachments : [];
 
     const isImage = (a: any) => {
-      const mime = (a?.mime as string | undefined) ?? '';
-      const url = (a?.url as string | undefined) ?? '';
+      const mime = (a?.mime as string | undefined) ?? "";
+      const url = (a?.url as string | undefined) ?? "";
       const byMime = /^image\//i.test(mime);
       const byExt = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
       return byMime || byExt;
@@ -154,17 +173,22 @@ export async function getBoardList(params: BoardListParams): Promise<{ items: Bo
 
     return {
       _id: String(doc._id),
-      title: doc.title ?? '',
+      title: doc.title ?? "",
       createdAt: doc.createdAt ?? new Date(),
       viewCount: doc.viewCount ?? 0,
       isPinned: !!doc.isPinned,
       category: doc.category ?? null,
       // QnA 리스트 UI에서 필요한 필드(답변상태/비밀글/작성자)
-      authorName: type === 'qna' ? (doc.authorName ?? null) : undefined,
-      authorId: type === 'qna' ? (doc.authorId ? String(doc.authorId) : null) : undefined,
-      isSecret: type === 'qna' ? !!doc.isSecret : undefined,
+      authorName: type === "qna" ? (doc.authorName ?? null) : undefined,
+      authorId:
+        type === "qna"
+          ? doc.authorId
+            ? String(doc.authorId)
+            : null
+          : undefined,
+      isSecret: type === "qna" ? !!doc.isSecret : undefined,
       answer:
-        type === 'qna' && doc.answer
+        type === "qna" && doc.answer
           ? {
               authorName: doc.answer?.authorName,
               createdAt: doc.answer?.createdAt,

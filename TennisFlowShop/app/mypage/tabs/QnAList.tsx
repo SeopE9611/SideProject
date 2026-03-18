@@ -1,15 +1,24 @@
-'use client';
+"use client";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from 'lucide-react';
-import Link from 'next/link';
-import { useMemo } from 'react';
-import useSWRInfinite from 'swr/infinite';
-import { getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from '@/lib/badge-style';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock,
+  MessageCircleQuestion,
+} from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import useSWRInfinite from "swr/infinite";
+import {
+  getAnswerStatusBadgeSpec,
+  getQnaCategoryBadgeSpec,
+} from "@/lib/badge-style";
 
 type Qna = {
   id: string;
@@ -24,8 +33,6 @@ type QnaPage = { items: Qna[]; total: number };
 const LIMIT = 10;
 
 const fetcher = (url: string) => authenticatedSWRFetcher<QnaPage>(url);
-
-
 
 const QnAListSkeleton = ({ count = 4 }: { count?: number }) => (
   <div className="space-y-4">
@@ -56,12 +63,17 @@ export default function QnAList() {
   // SWR Infinite 키 생성
   const getKey = (pageIndex: number, previousPageData: QnaPage | null) => {
     // 직전 페이지가 LIMIT 미만이면 다음 페이지 없음
-    if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT) return null;
+    if (
+      previousPageData &&
+      previousPageData.items &&
+      previousPageData.items.length < LIMIT
+    )
+      return null;
 
     const page = pageIndex + 1;
     const params = new URLSearchParams();
-    params.set('page', String(page));
-    params.set('limit', String(LIMIT));
+    params.set("page", String(page));
+    params.set("limit", String(LIMIT));
     // if (statusFilter) params.set('status', statusFilter);
     // if (categoryFilter) params.set('category', categoryFilter);
     // if (keyword) params.set('q', keyword);
@@ -69,14 +81,21 @@ export default function QnAList() {
     return `/api/qna/me?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error } = useSWRInfinite<QnaPage>(getKey, fetcher, {
-    revalidateFirstPage: true,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const { data, size, setSize, isValidating, error } = useSWRInfinite<QnaPage>(
+    getKey,
+    fetcher,
+    {
+      revalidateFirstPage: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   // 누적 리스트
-  const qnas = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
+  const qnas = useMemo(
+    () => (data ? data.flatMap((d) => d.items) : []),
+    [data],
+  );
 
   // 더 보기 가능 여부
   const hasMore = useMemo(() => {
@@ -87,7 +106,9 @@ export default function QnAList() {
 
   // 에러
   if (error) {
-    return <p className="text-center py-6 text-destructive">에러: {error.message}</p>;
+    return (
+      <p className="text-center py-6 text-destructive">에러: {error.message}</p>
+    );
   }
 
   const isInitialLoading = !data && isValidating;
@@ -100,10 +121,20 @@ export default function QnAList() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
             <MessageCircleQuestion className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">문의 내역이 없습니다</h3>
-          <p className="mb-4 text-foreground md:mb-6">궁금한 점이 있으시면 언제든지 문의해주세요!</p>
-          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200">
-            <Link href="/board/qna/write" className="inline-flex items-center gap-2">
+          <h3 className="mb-2 text-xl font-semibold text-foreground">
+            문의 내역이 없습니다
+          </h3>
+          <p className="mb-4 text-foreground md:mb-6">
+            궁금한 점이 있으시면 언제든지 문의해주세요!
+          </p>
+          <Button
+            asChild
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <Link
+              href="/board/qna/write"
+              className="inline-flex items-center gap-2"
+            >
               문의하기
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -117,11 +148,19 @@ export default function QnAList() {
   return (
     <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? (
-        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">Q&A 내역을 불러오는 중입니다...</div>
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+          Q&A 내역을 불러오는 중입니다...
+        </div>
       ) : null}
       {qnas.map((qna) => (
-        <Card key={qna.id} className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '1px' }}>
+        <Card
+          key={qna.id}
+          className="group relative overflow-hidden border-0 bg-card shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            className="absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ padding: "1px" }}
+          >
             <div className="h-full w-full bg-card rounded-lg" />
           </div>
 
@@ -132,14 +171,32 @@ export default function QnAList() {
                   <MessageCircleQuestion className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  {(() => { const c = getQnaCategoryBadgeSpec(qna.category); return <Badge variant={c.variant} className="mb-2">{qna.category}</Badge>; })()}
-                  <h3 className="font-semibold text-foreground line-clamp-2">{qna.title}</h3>
+                  {(() => {
+                    const c = getQnaCategoryBadgeSpec(qna.category);
+                    return (
+                      <Badge variant={c.variant} className="mb-2">
+                        {qna.category}
+                      </Badge>
+                    );
+                  })()}
+                  <h3 className="font-semibold text-foreground line-clamp-2">
+                    {qna.title}
+                  </h3>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                {qna.status === '답변 완료' ? <CheckCircle className="h-5 w-5 text-success" /> : <Clock className="h-5 w-5 text-warning" />}
-                {(() => { const st = getAnswerStatusBadgeSpec(qna.status === '답변 완료'); return <Badge variant={st.variant}>{qna.status}</Badge>; })()}
+                {qna.status === "답변 완료" ? (
+                  <CheckCircle className="h-5 w-5 text-success" />
+                ) : (
+                  <Clock className="h-5 w-5 text-warning" />
+                )}
+                {(() => {
+                  const st = getAnswerStatusBadgeSpec(
+                    qna.status === "답변 완료",
+                  );
+                  return <Badge variant={st.variant}>{qna.status}</Badge>;
+                })()}
               </div>
             </div>
 
@@ -149,8 +206,16 @@ export default function QnAList() {
                 <span>{qna.date}</span>
               </div>
 
-              <Button size="sm" variant="outline" asChild className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 transition-colors bg-transparent">
-                <Link href={`/board/qna/${qna.id}`} className="inline-flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 transition-colors bg-transparent"
+              >
+                <Link
+                  href={`/board/qna/${qna.id}`}
+                  className="inline-flex items-center gap-1"
+                >
                   상세보기
                   <ArrowRight className="h-3 w-3" />
                 </Link>
@@ -163,11 +228,17 @@ export default function QnAList() {
       {/* '더 보기' */}
       <div className="mt-6 flex justify-center items-center">
         {hasMore ? (
-          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
+          <Button
+            variant="outline"
+            onClick={() => setSize(size + 1)}
+            disabled={isValidating}
+          >
             더 보기
           </Button>
         ) : qnas.length ? (
-          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
+          <span className="text-sm text-muted-foreground">
+            마지막 페이지입니다
+          </span>
         ) : null}
       </div>
 

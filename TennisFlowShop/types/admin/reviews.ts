@@ -1,11 +1,11 @@
-export type AdminReviewStatus = 'visible' | 'hidden';
-export type AdminReviewType = 'product' | 'service';
+export type AdminReviewStatus = "visible" | "hidden";
+export type AdminReviewType = "product" | "service";
 
 export interface AdminReviewsListRequestDto {
   page: number;
   limit: number;
-  status: 'all' | AdminReviewStatus;
-  type: 'all' | AdminReviewType;
+  status: "all" | AdminReviewStatus;
+  type: "all" | AdminReviewType;
   q: string;
   withDeleted: boolean;
 }

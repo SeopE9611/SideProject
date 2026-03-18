@@ -1,15 +1,30 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import RefundAccountFields from '@/components/refund/RefundAccountFields';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { validateRefundAccountInput } from '@/lib/cancel-request/refund-account-client';
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
-import { showErrorToast } from '@/lib/toast';
-import { useEffect, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import RefundAccountFields from "@/components/refund/RefundAccountFields";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { validateRefundAccountInput } from "@/lib/cancel-request/refund-account-client";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast } from "@/lib/toast";
+import { useEffect, useState } from "react";
 
 interface CancelStringingDialogProps {
   open: boolean;
@@ -26,16 +41,27 @@ interface CancelStringingDialogProps {
   isSubmitting?: boolean;
 }
 
-const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = false }: CancelStringingDialogProps) => {
+const CancelStringingDialog = ({
+  open,
+  onOpenChange,
+  onConfirm,
+  isSubmitting = false,
+}: CancelStringingDialogProps) => {
   // 로컬 상태: 사유 선택값, 기타 입력값
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
-  const [otherReason, setOtherReason] = useState('');
-  const [refundBank, setRefundBank] = useState<string>('');
-  const [refundAccount, setRefundAccount] = useState('');
-  const [refundHolder, setRefundHolder] = useState('');
+  const [otherReason, setOtherReason] = useState("");
+  const [refundBank, setRefundBank] = useState<string>("");
+  const [refundAccount, setRefundAccount] = useState("");
+  const [refundHolder, setRefundHolder] = useState("");
 
   // 입력/선택이 있는 상태에서 이탈(뒤로가기/링크/탭닫기) 방지
-  const isDirty = open && (selectedReason !== undefined || otherReason.trim().length > 0 || refundBank !== '' || refundAccount.trim().length > 0 || refundHolder.trim().length > 0);
+  const isDirty =
+    open &&
+    (selectedReason !== undefined ||
+      otherReason.trim().length > 0 ||
+      refundBank !== "" ||
+      refundAccount.trim().length > 0 ||
+      refundHolder.trim().length > 0);
   useUnsavedChangesGuard(isDirty);
 
   // X/오버레이/ESC/닫기 버튼으로 “모달 자체”를 닫을 때도 입력 유실 방지
@@ -51,20 +77,20 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
   useEffect(() => {
     if (!open) {
       setSelectedReason(undefined);
-      setOtherReason('');
-      setRefundBank('');
-      setRefundAccount('');
-      setRefundHolder('');
+      setOtherReason("");
+      setRefundBank("");
+      setRefundAccount("");
+      setRefundHolder("");
     }
   }, [open]);
 
   const handleSubmit = () => {
     if (!selectedReason) {
-      showErrorToast('취소 사유를 선택해주세요.');
+      showErrorToast("취소 사유를 선택해주세요.");
       return;
     }
-    if (selectedReason === '기타' && !otherReason.trim()) {
-      showErrorToast('기타 사유를 입력해주세요.');
+    if (selectedReason === "기타" && !otherReason.trim()) {
+      showErrorToast("기타 사유를 입력해주세요.");
       return;
     }
     const refundValidation = validateRefundAccountInput({
@@ -79,7 +105,7 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
 
     onConfirm({
       reasonCode: selectedReason,
-      reasonText: selectedReason === '기타' ? otherReason.trim() : undefined,
+      reasonText: selectedReason === "기타" ? otherReason.trim() : undefined,
       refundAccount: {
         bank: refundValidation.value.bank,
         account: refundValidation.value.account,
@@ -106,12 +132,21 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
               <SelectItem value="단순 변심">단순 변심</SelectItem>
               <SelectItem value="상품 정보와 다름">상품 정보와 다름</SelectItem>
               <SelectItem value="배송 지연">배송 지연</SelectItem>
-              <SelectItem value="다른 상품으로 대체">다른 상품으로 대체</SelectItem>
+              <SelectItem value="다른 상품으로 대체">
+                다른 상품으로 대체
+              </SelectItem>
               <SelectItem value="기타">기타</SelectItem>
             </SelectContent>
           </Select>
 
-          {selectedReason === '기타' && <Textarea className="mt-2" placeholder="기타 사유를 입력해주세요" value={otherReason} onChange={(e) => setOtherReason(e.target.value)} />}
+          {selectedReason === "기타" && (
+            <Textarea
+              className="mt-2"
+              placeholder="기타 사유를 입력해주세요"
+              value={otherReason}
+              onChange={(e) => setOtherReason(e.target.value)}
+            />
+          )}
           <RefundAccountFields
             bank={refundBank}
             account={refundAccount}
@@ -125,11 +160,19 @@ const CancelStringingDialog = ({ open, onOpenChange, onConfirm, isSubmitting = f
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={isSubmitting}
+          >
             닫기
           </Button>
-          <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? '요청 처리 중...' : '취소 요청하기'}
+          <Button
+            variant="destructive"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "요청 처리 중..." : "취소 요청하기"}
           </Button>
         </DialogFooter>
       </DialogContent>

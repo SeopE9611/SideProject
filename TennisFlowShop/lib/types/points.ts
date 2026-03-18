@@ -1,8 +1,17 @@
-import type { ObjectId } from 'mongodb';
+import type { ObjectId } from "mongodb";
 
-export type PointTransactionType = 'admin_adjust' | 'review_reward_product' | 'review_reward_service' | 'order_reward' | 'signup_bonus' | 'spend_on_order' | 'reversal' | 'hold_on_order' | 'release_hold';
+export type PointTransactionType =
+  | "admin_adjust"
+  | "review_reward_product"
+  | "review_reward_service"
+  | "order_reward"
+  | "signup_bonus"
+  | "spend_on_order"
+  | "reversal"
+  | "hold_on_order"
+  | "release_hold";
 
-export type PointTransactionStatus = 'confirmed' | 'held' | 'canceled';
+export type PointTransactionStatus = "confirmed" | "held" | "canceled";
 
 export type PointTransaction = {
   _id: ObjectId;

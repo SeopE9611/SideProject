@@ -3,6 +3,7 @@
 ## 1) Mutating API 목록
 
 ### 커뮤니티
+
 - `POST /api/community/posts`
 - `PATCH /api/community/posts/:id`
 - `DELETE /api/community/posts/:id`
@@ -15,6 +16,7 @@
 - `POST /api/community/posts/:id/view`
 
 ### 게시판
+
 - `POST /api/boards`
 - `PATCH /api/boards/:id`
 - `DELETE /api/boards/:id`
@@ -66,6 +68,7 @@
 ## 4) 실패 응답 코드 표준
 
 ### CSRF
+
 - `403 csrf_invalid_fetch_site`
 - `403 csrf_invalid_origin`
 - `403 csrf_invalid_referer`
@@ -86,6 +89,7 @@
 ```
 
 ### Rate Limit
+
 - `429 too_many_requests`
 
 응답 본문 공통 필드:

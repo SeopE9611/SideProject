@@ -1,17 +1,38 @@
-import type { BoardAttachment, BoardPostBase } from '@/lib/types/board-domain';
-import type { MarketMeta } from '@/lib/market';
+import type { BoardAttachment, BoardPostBase } from "@/lib/types/board-domain";
+import type { MarketMeta } from "@/lib/market";
 
 /** 커뮤니티 글 노출 상태 */
-export type CommunityStatus = 'public' | 'hidden' | 'deleted';
+export type CommunityStatus = "public" | "hidden" | "deleted";
 
 /** 커뮤니티 게시판 종류 목록 */
-export const COMMUNITY_BOARD_TYPES = ['free', 'brand', 'market', 'gear'] as const;
+export const COMMUNITY_BOARD_TYPES = [
+  "free",
+  "brand",
+  "market",
+  "gear",
+] as const;
 
 /** 커뮤니티 게시판 종류 타입 */
 export type CommunityBoardType = (typeof COMMUNITY_BOARD_TYPES)[number];
 
 /** 자유 게시판 카테고리 목록 (제목 머릿말 용) */
-export const COMMUNITY_CATEGORIES = ['general', 'info', 'qna', 'tip', 'etc', 'racket', 'string', 'equipment', 'shoes', 'bag', 'apparel', 'grip', 'accessory', 'ball', 'other'] as const;
+export const COMMUNITY_CATEGORIES = [
+  "general",
+  "info",
+  "qna",
+  "tip",
+  "etc",
+  "racket",
+  "string",
+  "equipment",
+  "shoes",
+  "bag",
+  "apparel",
+  "grip",
+  "accessory",
+  "ball",
+  "other",
+] as const;
 
 /** 자유 게시판 카테고리 타입 */
 export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number];
@@ -23,7 +44,16 @@ export type CommunityAttachment = BoardAttachment;
  * - DB에서는 community_posts 컬렉션에 저장
  * - createdAt/updatedAt 는 ISO 문자열로 내려줌
  */
-export interface CommunityPost extends Omit<BoardPostBase, 'kind' | '_id' | 'createdAt' | 'updatedAt' | 'attachments' | 'authorId' | 'viewCount'> {
+export interface CommunityPost extends Omit<
+  BoardPostBase,
+  | "kind"
+  | "_id"
+  | "createdAt"
+  | "updatedAt"
+  | "attachments"
+  | "authorId"
+  | "viewCount"
+> {
   /** MongoDB _id 문자열 */
   id: string;
 
@@ -144,7 +174,7 @@ export interface CommunityComment {
 }
 
 /** 신고 처리 상태 */
-export type CommunityReportStatus = 'pending' | 'reviewed' | 'ignored';
+export type CommunityReportStatus = "pending" | "reviewed" | "ignored";
 
 /** 커뮤니티 게시글 신고 데이터 타입 (API 응답용) */
 export interface CommunityReport {
