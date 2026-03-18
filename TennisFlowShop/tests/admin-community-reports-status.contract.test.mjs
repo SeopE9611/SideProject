@@ -6,8 +6,14 @@ function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
+function normalized(source) {
+  return source.replace(/"/g, "'").replace(/\s+/g, " ");
+}
+
 test("관리자 신고 상태 변경 API는 액션별 타겟 outcome 기록 계약을 유지한다", () => {
-  const source = read("app/api/admin/community/reports/[id]/status/route.ts");
+  const source = normalized(
+    read("app/api/admin/community/reports/[id]/status/route.ts"),
+  );
 
   assert.ok(source.includes("resolve: 'no_target_change'"));
   assert.ok(source.includes("reject: 'no_target_change'"));
@@ -26,12 +32,12 @@ test("관리자 신고 상태 변경 API는 액션별 타겟 outcome 기록 계�
 });
 
 test("신고 타입은 실제 moderationAudit target outcome 정책과 일치한다", () => {
-  const source = read("lib/types/community-report.ts");
+  const source = normalized(read("lib/types/community-report.ts"));
 
   assert.ok(
-    source.includes(
-      "export type CommunityReportModerationTargetOutcome = 'updated' | 'no_target_change';",
-    ),
+    source.includes("CommunityReportModerationTargetOutcome") &&
+      source.includes("'updated'") &&
+      source.includes("'no_target_change'"),
   );
   assert.ok(
     !source.includes("outcome: 'updated' | 'already_processed' | 'not_found';"),

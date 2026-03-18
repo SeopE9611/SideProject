@@ -8,8 +8,12 @@ function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
+function normalized(source) {
+  return source.replace(/"/g, "'").replace(/\s+/g, " ");
+}
+
 test("관리자 게시판 목록 계약: boardLabel은 brand 키를 표준으로 사용한다", () => {
-  const source = read("app/admin/boards/BoardsClient.tsx");
+  const source = normalized(read("app/admin/boards/BoardsClient.tsx"));
 
   assert.ok(
     source.includes("brand: '브랜드'"),
@@ -22,7 +26,7 @@ test("관리자 게시판 목록 계약: boardLabel은 brand 키를 표준으로
 });
 
 test("관리자 게시판 목록 계약: 레거시 brands 데이터는 별칭으로 라벨 배지에 매핑된다", () => {
-  const source = read("app/admin/boards/BoardsClient.tsx");
+  const source = normalized(read("app/admin/boards/BoardsClient.tsx"));
 
   assert.ok(
     source.includes("const legacyBoardTypeAlias: Record<string, string> = {"),

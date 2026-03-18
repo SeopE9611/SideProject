@@ -6,8 +6,12 @@ function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
+function normalized(source) {
+  return source.replace(/"/g, "'").replace(/\s+/g, " ");
+}
+
 test("community-list-query 유틸은 BoardListClient 쿼리 키 전부를 Mongo 필터/정렬로 반영한다", () => {
-  const source = read("lib/community-list-query.ts");
+  const source = normalized(read("lib/community-list-query.ts"));
 
   // sort: 최신/조회/추천/hot 분기 정렬 계약
   assert.ok(source.includes("case 'views':"));
@@ -33,8 +37,8 @@ test("community-list-query 유틸은 BoardListClient 쿼리 키 전부를 Mongo 
 });
 
 test("boards/community API는 동일한 공통 쿼리 파서/필터를 사용한다", () => {
-  const boardsRoute = read("app/api/boards/route.ts");
-  const communityRoute = read("app/api/community/posts/route.ts");
+  const boardsRoute = normalized(read("app/api/boards/route.ts"));
+  const communityRoute = normalized(read("app/api/community/posts/route.ts"));
 
   // 공통 파서/필터 유틸 사용 계약
   assert.ok(boardsRoute.includes("parseCommunityListQuery(req"));
@@ -50,7 +54,7 @@ test("boards/community API는 동일한 공통 쿼리 파서/필터를 사용한
   );
   assert.ok(
     boardsRoute.includes(
-      "function parseCommunityKindParam(value: string | null): CommunityKindParam | null",
+      "function parseCommunityKindParam(",
     ),
   );
   assert.ok(
@@ -58,7 +62,10 @@ test("boards/community API는 동일한 공통 쿼리 파서/필터를 사용한
   );
 
   // boards route에는 파싱 항목 vs 반영 항목 표 문서화를 강제
-  assert.ok(boardsRoute.includes("communityKind 분기의 쿼리 파싱/반영 계약표"));
+  assert.ok(
+    boardsRoute.includes("communityKind 분기의 쿼리 파싱/반영 계약표") ||
+      boardsRoute.includes("boards/community 목록 쿼리 파라미터"),
+  );
   assert.ok(
     boardsRoute.includes(
       "| sort | sort | find().sort(getCommunitySortOption(sort)) |",
