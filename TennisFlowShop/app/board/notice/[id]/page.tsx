@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { attachFileColor, attachImageColor, badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec, noticePinColor } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from '@/lib/badge-style';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowLeft, ArrowUp, Bell, Calendar, ChevronLeft, ChevronRight, Clock, Download, ExternalLink, Eye, FileText, ImageIcon, Pencil, Pin, Trash2 } from 'lucide-react';
@@ -240,20 +240,20 @@ export default function NoticeDetailPage() {
                     <div className="flex-1 min-w-0">
                       <div className="mb-4 flex flex-wrap items-center gap-2.5">
                         {notice.isPinned && (
-                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`} title="고정 공지" aria-label="고정 공지">
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="고정 공지" aria-label="고정 공지">
                             <Pin className="h-3 w-3" />
                           </Badge>
                         )}
-                        <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticeCategoryBadge.className} font-medium`}>
+                        <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                           {notice.category || '일반'}
                         </Badge>
                         {imageAtts.length > 0 && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachImageColor}`} title="이미지 첨부" aria-label="이미지 첨부">
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="이미지 첨부" aria-label="이미지 첨부">
                             <ImageIcon className="h-3 w-3" />
                           </Badge>
                         )}
                         {fileAtts.length > 0 && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} ${attachFileColor}`} title="첨부파일 있음" aria-label="첨부파일 있음">
+                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="첨부파일 있음" aria-label="첨부파일 있음">
                             <FileText className="h-3 w-3" />
                           </Badge>
                         )}
