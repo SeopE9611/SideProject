@@ -764,7 +764,7 @@ export default function FilterableProductList({
               kind="error"
               variant="page-center"
               resourceName="상품 목록"
-              onAction={() => loadMore()}
+              onAction={() => resetInfinite()}
             />
           ) : loadedCount === 0 ? (
             <div className="space-y-4">

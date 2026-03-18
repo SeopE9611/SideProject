@@ -27,8 +27,23 @@ import RacketFilterPanel from "./RacketFilterPanel";
 import { SkeletonProductCard } from "@/app/products/components/SkeletonProductCard";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { credentials: "include" });
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const message =
+      data &&
+      typeof data === "object" &&
+      "error" in data &&
+      typeof (data as { error?: unknown }).error === "string"
+        ? (data as { error: string }).error
+        : `${res.status} ${res.statusText}`;
+    throw new Error(message);
+  }
+
+  return data;
+};
 
 type RacketItem = {
   id: string;
