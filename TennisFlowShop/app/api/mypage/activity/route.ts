@@ -74,6 +74,10 @@ type ActivityOrderSummary = {
   hasStringItem: boolean;
   hasProductItem: boolean;
   linkedApplicationCount: number;
+  reviewPendingCount: number;
+  hasPendingReview: boolean;
+  reviewAllDone: boolean;
+  reviewNextTargetProductId: string | null;
 };
 
 type ActivityRentalSummary = {
@@ -190,12 +194,15 @@ function isApplicationTodoActionable(app?: ActivityApplicationSummary | null) {
 function isOrderTodoActionable(group: ActivityGroup) {
   if (group.kind !== 'order') return false;
   const status = normalizeMypageStatus(group.order?.status);
+  const isConfirmed = Boolean(group.order?.userConfirmedAt) || status === '구매확정';
+  const hasPendingReview = (group.order?.reviewPendingCount ?? 0) > 0;
   const hasActionableLinkedApplication =
     group.order?.applicationSummaries?.some((app) => isApplicationTodoActionable(app)) ?? false;
 
   return Boolean(
     status === '배송완료' ||
       hasActionableLinkedApplication ||
+      (isConfirmed && hasPendingReview) ||
       isApplicationTodoActionable(group.application),
   );
 }
@@ -371,10 +378,55 @@ export async function GET(req: Request) {
    * - (Activity API는 take만큼만 로드하므로, 여기서는 로드된 orders 범위에서만 판단하면 충분)
    */
   const orderHasRacketById = new Map<string, boolean>();
+  const orderReviewProductIdsById = new Map<string, string[]>();
+  const confirmedOrderIds: ObjectId[] = [];
+  const reviewProductIdsPool = new Set<string>();
+
   for (const o of orders as any[]) {
+    const orderId = String(o._id);
     const items = Array.isArray(o.items) ? o.items : [];
     const hasRacket = items.some((it: any) => it?.kind === 'racket' || it?.kind === 'used_racket');
-    orderHasRacketById.set(String(o._id), hasRacket);
+    orderHasRacketById.set(orderId, hasRacket);
+
+    const reviewTargetProductIds = Array.from(
+      new Set(
+        items
+          .map((it: any) => (it?.productId ? String(it.productId) : null))
+          .filter((productId: string | null): productId is string => Boolean(productId) && ObjectId.isValid(productId)),
+      ),
+    );
+    orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
+
+    const status = normalizeMypageStatus(o?.status);
+    const isConfirmed = Boolean(o?.userConfirmedAt) || status === '구매확정';
+    if (isConfirmed && reviewTargetProductIds.length > 0) {
+      confirmedOrderIds.push(new ObjectId(orderId));
+      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
+    }
+  }
+
+  const reviewedProductIdsByOrderId = new Map<string, Set<string>>();
+  if (confirmedOrderIds.length > 0 && reviewProductIdsPool.size > 0) {
+    const reviewedDocs = await db
+      .collection('reviews')
+      .find(
+        {
+          userId,
+          orderId: { $in: confirmedOrderIds },
+          productId: { $in: Array.from(reviewProductIdsPool).map((id) => new ObjectId(id)) },
+          isDeleted: { $ne: true },
+        },
+        { projection: { orderId: 1, productId: 1 } },
+      )
+      .toArray();
+
+    for (const reviewed of reviewedDocs as any[]) {
+      const orderId = String(reviewed.orderId);
+      const productId = String(reviewed.productId);
+      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+      bucket.add(productId);
+      reviewedProductIdsByOrderId.set(orderId, bucket);
+    }
   }
 
   // 5) 연결 신청서 로드(주문/대여 후보에 붙일 용도)
@@ -482,6 +534,15 @@ export async function GET(req: Request) {
     const orderId = String(o._id);
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
+    const status = normalizeMypageStatus(o?.status);
+    const isConfirmed = Boolean(o?.userConfirmedAt) || status === '구매확정';
+    const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
+    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+    const reviewPendingProductIds = reviewTargetProductIds.filter((productId) => !reviewedProductIds.has(productId));
+    const reviewPendingCount = isConfirmed ? reviewPendingProductIds.length : 0;
+    const hasPendingReview = reviewPendingCount > 0;
+    const reviewAllDone = isConfirmed && reviewTargetProductIds.length > 0 && reviewPendingCount === 0;
+    const reviewNextTargetProductId = hasPendingReview ? reviewPendingProductIds[0] ?? null : null;
 
     const linkedApps = appByOrderId.get(orderId) ?? [];
     const linked = pickPrimaryLinkedApplication(linkedApps);
@@ -532,6 +593,10 @@ export async function GET(req: Request) {
         hasStringItem,
         hasProductItem,
         linkedApplicationCount: linkedApps.length,
+        reviewPendingCount,
+        hasPendingReview,
+        reviewAllDone,
+        reviewNextTargetProductId,
       },
       application: linked, // 연결 신청서가 있으면 같이 내려줌(카드에서 CTA 가능)
     });

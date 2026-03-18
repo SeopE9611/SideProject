@@ -62,6 +62,10 @@ type ActivityGroup = {
     stringingApplicationId?: string | null;
     cancelStatus?: string | null;
     userConfirmedAt?: string | null;
+    reviewPendingCount?: number;
+    hasPendingReview?: boolean;
+    reviewAllDone?: boolean;
+    reviewNextTargetProductId?: string | null;
     applicationSummaries?: ActivityApplicationSummary[];
   };
   rental?: {
@@ -255,6 +259,8 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     const actionableApplication = group.order?.applicationSummaries?.find((app) => isApplicationTodoActionable(app));
     if (isApplicationTrackingNeeded(actionableApplication)) return '운송장 등록 필요';
     if (isApplicationConfirmNeeded(actionableApplication)) return '교체확정 필요';
+    const isConfirmed = Boolean(group.order?.userConfirmedAt) || getMypageNormalizedStatus(group.order?.status) === '구매확정';
+    if (isConfirmed && (group.order?.reviewPendingCount ?? 0) > 0) return '리뷰 작성 필요';
     return null;
   }
 
@@ -515,7 +521,7 @@ export default function TransactionFlowList() {
         {/* Fade edge indicator for scroll */}
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-background to-transparent sm:hidden" />
       </div>
-      {scope === 'todo' ? <p className="text-xs text-muted-foreground">해야 할 일은 구매확정·운송장 등록·교체확정처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
+      {scope === 'todo' ? <p className="text-xs text-muted-foreground">해야 할 일은 구매확정·운송장 등록·교체확정·리뷰 작성처럼 지금 바로 처리할 항목만 모아 보여줍니다.</p> : null}
       <p className="text-xs text-muted-foreground">주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.</p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
