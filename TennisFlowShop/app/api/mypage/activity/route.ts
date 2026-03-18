@@ -58,6 +58,7 @@ type ActivityOrderSummary = {
   createdAt: string;
   updatedAt: string;
   status: string;
+  userConfirmedAt: string | null;
   paymentStatus: string;
   shippingMethod: string;
   totalPrice: number;
@@ -302,6 +303,7 @@ export async function GET(req: Request) {
             createdAt: 1,
             updatedAt: 1,
             status: 1,
+            userConfirmedAt: 1,
             paymentStatus: 1,
             paymentInfo: 1,
             totalPrice: 1,
@@ -514,6 +516,7 @@ export async function GET(req: Request) {
         createdAt,
         updatedAt,
         status: o.status ?? '',
+        userConfirmedAt: o.userConfirmedAt instanceof Date ? o.userConfirmedAt.toISOString() : typeof o.userConfirmedAt === 'string' ? o.userConfirmedAt : null,
         paymentStatus: resolveOrderPaymentStatus(o),
         shippingMethod: String(o?.shippingInfo?.shippingMethod ?? o?.shippingInfo?.method ?? o?.shippingInfo?.type ?? ''),
         totalPrice: calcOrderTotal(o),
