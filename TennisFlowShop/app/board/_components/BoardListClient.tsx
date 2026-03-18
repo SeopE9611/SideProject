@@ -13,6 +13,7 @@ import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialo
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AsyncState from '@/components/system/AsyncState';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { badgeSizeSm, getBoardCategoryTone } from '@/lib/badge-style';
@@ -567,7 +568,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
     setPage(1);
   };
 
-  const { data, error, isLoading } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, (url: string) => boardFetcher<ListResponse>(url));
+  const { data, error, isLoading, mutate } = useSWR<ListResponse>(`/api/boards?${qs.toString()}`, (url: string) => boardFetcher<ListResponse>(url));
   const listError = parseApiError(error, config.errorMessage);
 
   // 로딩/에러/성공을 분리해서 헤더 수치가 0건처럼 먼저 보이지 않게 처리
@@ -1094,13 +1095,17 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
             {/* 로딩/에러/빈 상태 처리 */}
             {isLoading && <ListSkeleton />}
-            {error && !isLoading && <ErrorBox message={listError.message} status={listError.status} fallbackMessage={config.errorMessage} />}
+            {error && !isLoading && <ErrorBox message={listError.message} status={listError.status} fallbackMessage={config.errorMessage} onRetry={() => mutate()} />}
 
             {shouldShowEmptyState && (
-              <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/20 px-4 py-12 text-center">
-                <PackageSearch className="h-8 w-8 text-muted-foreground/50" />
-                <p className="text-sm font-medium text-foreground">{qParam ? '검색 결과가 없습니다' : activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}</p>
-                <p className="text-xs text-muted-foreground">{qParam ? '검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요' : activeMarketFilterCount > 0 ? '필터 조건을 변경하거나 초기화해 보세요' : config.emptyDescription}</p>
+              <div className="space-y-2">
+                <AsyncState
+                  kind="empty"
+                  variant="card"
+                  icon={<PackageSearch className="h-4 w-4" />}
+                  title={qParam ? '검색 결과가 없습니다' : activeMarketFilterCount > 0 ? '조건에 맞는 매물이 없습니다' : '아직 등록된 글이 없습니다'}
+                  description={qParam ? '검색어를 바꾸거나 전체 글 보기로 돌아가 다시 확인해 보세요' : activeMarketFilterCount > 0 ? '필터 조건을 변경하거나 초기화해 보세요' : config.emptyDescription}
+                />
                 <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2 sm:w-auto sm:justify-start">
                   {qParam && (
                     <Button type="button" variant="outline" size="sm" onClick={handleSearchReset}>

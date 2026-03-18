@@ -1,5 +1,6 @@
 "use client";
-import { AlertTriangle, ChevronRight, Tags } from "lucide-react";
+import AsyncState from "@/components/system/AsyncState";
+import { ChevronRight, Tags } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -56,26 +57,13 @@ export default function HomeMarketPreview() {
             ))}
           </div>
         ) : hasError ? (
-          <div className="mx-2 my-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 bp-sm:p-5 text-sm text-destructive">
-            <div className="flex items-start gap-2.5">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <div className="flex-1">
-                <p className="font-semibold">
-                  중고장터 글을 불러오지 못했어요.
-                </p>
-                <p className="mt-1 text-xs opacity-90">
-                  네트워크/서버 상태를 확인한 뒤 다시 시도해 주세요.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => mutate()}
-                  className="mt-3 inline-flex items-center rounded-lg bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm ring-1 ring-inset ring-border hover:bg-muted"
-                >
-                  다시 시도
-                </button>
-              </div>
-            </div>
-          </div>
+          <AsyncState
+            kind="error"
+            variant="card"
+            resourceName="중고장터 글"
+            className="mx-2 my-2"
+            onAction={() => mutate()}
+          />
         ) : items.length > 0 ? (
           <div className="flex flex-col gap-0.5">
             {items.map((p, idx) => (
@@ -100,14 +88,14 @@ export default function HomeMarketPreview() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-center py-12 bp-sm:py-16">
-            <div className="text-center">
-              <Tags className="mx-auto h-8 w-8 text-muted-foreground/40" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                등록된 게시글이 없습니다
-              </p>
-            </div>
-          </div>
+          <AsyncState
+            kind="empty"
+            variant="card"
+            title="등록된 게시글이 없습니다"
+            description="새 글이 등록되면 이곳에서 가장 먼저 볼 수 있어요."
+            icon={<Tags className="h-4 w-4" />}
+            className="mx-2 my-2"
+          />
         )}
       </div>
     </div>

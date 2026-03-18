@@ -16,6 +16,7 @@ import {
 import useSWR from "swr";
 
 import SiteContainer from "@/components/layout/SiteContainer";
+import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   badgeBaseOutlined,
@@ -234,11 +235,7 @@ function FiveLineSkeleton() {
 }
 
 function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했습니다." }) {
-  return (
-    <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">
-      {message}
-    </div>
-  );
+  return <AsyncState kind="error" variant="inline" title={message} />;
 }
 
 type NoticeItem = {
@@ -346,9 +343,12 @@ function NoticeCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">
-              등록된 공지가 없습니다.
-            </div>
+            <AsyncState
+              kind="empty"
+              variant="card"
+              title="등록된 공지가 없습니다."
+              description="새 소식이 등록되면 이곳에서 확인하실 수 있습니다."
+            />
           ) : (
             items.map((notice) => (
               <div
@@ -505,9 +505,12 @@ function QnaCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">
-              등록된 문의가 없습니다.
-            </div>
+            <AsyncState
+              kind="empty"
+              variant="card"
+              title="등록된 문의가 없습니다."
+              description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
+            />
           ) : (
             items.map((qna) => (
               <div

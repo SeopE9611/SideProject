@@ -1,6 +1,7 @@
 "use client";
 import ErrorBox from "@/app/board/_components/ErrorBox";
 import PinnedNoticeStrip from "@/app/board/_components/PinnedNoticeStrip";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -349,7 +350,7 @@ export default function QnaPageClient({
       createdAt: notice.createdAt,
     }));
 
-  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(
+  const { data, error, isLoading, isValidating, mutate } = useSWR<BoardListRes>(
     key,
     (url) => boardFetcher<BoardListRes>(url),
     {
@@ -768,6 +769,7 @@ export default function QnaPageClient({
                   }
                   status={hasPreloadError ? 500 : listError.status}
                   fallbackMessage="Q&A 목록을 불러오지 못했습니다."
+                  onRetry={() => mutate()}
                 />
               )}
 
@@ -879,13 +881,13 @@ export default function QnaPageClient({
                 })}
 
               {shouldShowSearchEmptyState && (
-                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
-                  <p className="text-sm font-medium text-foreground">
-                    검색 결과가 없습니다.
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요.
-                  </p>
+                <div className="space-y-3">
+                  <AsyncState
+                    kind="empty"
+                    variant="card"
+                    title="검색 결과가 없습니다."
+                    description="검색어를 바꾸거나 필터를 초기화한 뒤 다시 확인해 보세요."
+                  />
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <Button
                       type="button"
@@ -916,13 +918,13 @@ export default function QnaPageClient({
                 </div>
               )}
               {shouldShowActualEmptyState && (
-                <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
-                  <p className="text-sm font-medium text-foreground">
-                    등록된 문의가 없습니다.
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    궁금한 점이 있다면 첫 문의를 남겨 주세요.
-                  </p>
+                <div className="space-y-3">
+                  <AsyncState
+                    kind="empty"
+                    variant="card"
+                    title="등록된 문의가 없습니다."
+                    description="궁금한 점이 있다면 첫 문의를 남겨 주세요."
+                  />
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <Button asChild size="sm">
                       <Link href="/board/qna/write">

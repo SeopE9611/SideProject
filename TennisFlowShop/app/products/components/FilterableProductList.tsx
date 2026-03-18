@@ -3,6 +3,7 @@
 import { FilterPanel } from "@/app/products/components/FilterPanel";
 import ProductCard from "@/app/products/components/ProductCard";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -759,23 +760,21 @@ export default function FilterableProductList({
               </p>
             </div>
           ) : error ? (
-            <div className="text-center py-10 md:py-16">
-              <p className="text-destructive mb-2">
-                불러오는 중 오류가 발생했습니다.
-              </p>
-              <Button onClick={() => loadMore()}>다시 시도</Button>
-            </div>
+            <AsyncState
+              kind="error"
+              variant="page-center"
+              resourceName="상품 목록"
+              onAction={() => loadMore()}
+            />
           ) : loadedCount === 0 ? (
-            <div className="text-center py-10 md:py-16">
-              <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-muted/30 rounded-full flex items-center justify-center">
-                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">
-                검색 결과가 없습니다
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                다른 검색어나 필터를 시도해보세요
-              </p>
+            <div className="space-y-4">
+              <AsyncState
+                kind="empty"
+                variant="page-center"
+                title="검색 결과가 없습니다"
+                description="다른 검색어나 필터를 시도해보세요"
+                icon={<Search className="h-4 w-4" />}
+              />
               <Button
                 onClick={handleResetAll}
                 variant="outline"

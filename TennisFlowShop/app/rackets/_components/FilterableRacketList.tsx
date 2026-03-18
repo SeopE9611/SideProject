@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import AsyncState from "@/components/system/AsyncState";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -642,23 +643,21 @@ export default function FilterableRacketList({
               ))}
             </div>
           ) : error ? (
-            <div className="py-10 text-center bp-md:py-16">
-              <p className="text-destructive mb-2">
-                불러오는 중 오류가 발생했습니다.
-              </p>
-              <Button onClick={() => mutate()}>다시 시도</Button>
-            </div>
+            <AsyncState
+              kind="error"
+              variant="page-center"
+              resourceName="라켓 목록"
+              onAction={() => mutate()}
+            />
           ) : products.length === 0 ? (
-            <div className="py-10 text-center bp-md:py-16">
-              <div className="w-20 h-20 bp-md:w-24 bp-md:h-24 mx-auto mb-6 bg-muted/30 rounded-full flex items-center justify-center">
-                <Search className="w-10 h-10 bp-md:w-12 bp-md:h-12 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">
-                검색 결과가 없습니다
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                다른 검색어나 필터를 시도해보세요
-              </p>
+            <div className="space-y-4">
+              <AsyncState
+                kind="empty"
+                variant="page-center"
+                title="검색 결과가 없습니다"
+                description="다른 검색어나 필터를 시도해보세요"
+                icon={<Search className="h-4 w-4" />}
+              />
               <Button
                 onClick={handleResetAll}
                 variant="outline"

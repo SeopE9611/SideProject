@@ -1,5 +1,6 @@
 "use client";
 import ErrorBox from "@/app/board/_components/ErrorBox";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -228,7 +229,7 @@ export default function NoticeListClient({
           limit,
         }
       : undefined;
-  const { data, error, isLoading, isValidating } = useSWR<BoardListRes>(
+  const { data, error, isLoading, isValidating, mutate } = useSWR<BoardListRes>(
     key,
     (url) => boardFetcher<BoardListRes>(url),
     {
@@ -418,18 +419,19 @@ export default function NoticeListClient({
                   }
                   status={hasPreloadError ? 500 : listError.status}
                   fallbackMessage="공지 목록을 불러오지 못했습니다."
+                  onRetry={() => mutate()}
                 />
               )}
               {!shouldShowLoadingState &&
                 !hasDataError &&
                 shouldShowActualEmptyState && (
-                  <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
-                    <p className="text-sm font-medium text-foreground">
-                      등록된 공지사항이 없습니다.
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요.
-                    </p>
+                  <div className="space-y-3">
+                    <AsyncState
+                      kind="empty"
+                      variant="card"
+                      title="등록된 공지사항이 없습니다."
+                      description="새 소식이 등록되면 이곳에서 가장 먼저 안내해 드릴게요."
+                    />
                     <div className="mt-3">
                       <Button asChild variant="outline" size="sm">
                         <Link href="/support">고객센터 홈으로</Link>
@@ -441,13 +443,13 @@ export default function NoticeListClient({
                 !hasDataError &&
                 !shouldShowActualEmptyState &&
                 shouldShowSearchEmptyState && (
-                  <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
-                    <p className="text-sm font-medium text-foreground">
-                      검색 결과가 없습니다.
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요.
-                    </p>
+                  <div className="space-y-3">
+                    <AsyncState
+                      kind="empty"
+                      variant="card"
+                      title="검색 결과가 없습니다."
+                      description="검색어를 바꾸거나 전체 공지 목록으로 돌아가 확인해 보세요."
+                    />
                     <div className="mt-3">
                       <Button
                         type="button"
