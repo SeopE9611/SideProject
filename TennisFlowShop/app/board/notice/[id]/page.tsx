@@ -238,13 +238,13 @@ export default function NoticeDetailPage() {
                   <div className="flex items-start justify-between gap-4">
                     {/* 왼쪽: 배지 · 제목 · 메타 */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                      <div className="mb-4 flex flex-wrap items-center gap-2.5">
                         {notice.isPinned && (
-                          <Badge className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`} title="고정 공지" aria-label="고정 공지">
+                          <Badge variant="brand" className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticePinColor}`} title="고정 공지" aria-label="고정 공지">
                             <Pin className="h-3 w-3" />
                           </Badge>
                         )}
-                        <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
+                        <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} ${noticeCategoryBadge.className} font-medium`}>
                           {notice.category || '일반'}
                         </Badge>
                         {imageAtts.length > 0 && (
@@ -349,7 +349,7 @@ export default function NoticeDetailPage() {
                             </button>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                             {imageAtts.map((att: any, i: number) => {
                               const url = typeof att === 'string' ? att : att?.url;
                               const name = typeof att === 'string' ? `image-${i + 1}` : att?.name || `image-${i + 1}`;
@@ -361,7 +361,7 @@ export default function NoticeDetailPage() {
                                     className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-border transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-border"
                                     aria-label={`${name} 이미지 보기`}
                                   >
-                                    <img src={url || '/placeholder.svg'} alt={name} className="w-full h-40 object-cover" />
+                                    <img src={url || '/placeholder.svg'} alt={name} className="h-56 w-full object-cover sm:h-52" />
                                     <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
                                       <ExternalLink className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </div>
@@ -394,7 +394,7 @@ export default function NoticeDetailPage() {
                             const isPdf = mime === 'application/pdf' || /\.pdf$/i.test(name);
 
                             return (
-                              <div key={`file-${i}`} className="rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40 sm:flex sm:items-center sm:justify-between sm:gap-4">
+                              <div key={`file-${i}`} className="w-full min-w-0 overflow-hidden rounded-lg border border-border bg-card p-4 transition-colors duration-200 hover:bg-muted/40 sm:flex sm:items-center sm:justify-between sm:gap-4">
                                 <div className="flex min-w-0 items-center gap-3 sm:flex-1">
                                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
                                     <FileText className="h-5 w-5" />
@@ -405,7 +405,7 @@ export default function NoticeDetailPage() {
                                   </div>
                                 </div>
 
-                                <div className="mt-3 grid grid-cols-1 gap-2 min-[430px]:grid-cols-2 sm:mt-0 sm:shrink-0 sm:flex sm:flex-wrap sm:justify-end">
+                                <div className="mt-3 grid min-w-0 grid-cols-1 gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:grid-flow-col sm:auto-cols-max sm:justify-end">
                                   {isPdf && (
                                     <Button variant="outline" size="sm" asChild className="w-full min-w-0 sm:w-auto">
                                       <a href={url} target="_blank" rel="noreferrer">
@@ -414,7 +414,7 @@ export default function NoticeDetailPage() {
                                       </a>
                                     </Button>
                                   )}
-                                  <Button size="sm" variant="outline" asChild className={`w-full min-w-0 sm:w-auto ${isPdf ? '' : 'min-[430px]:col-span-2'}`}>
+                                  <Button size="sm" variant="outline" asChild className="w-full min-w-0 sm:w-auto">
                                     <a href={downloadUrl}>
                                       <Download className="h-4 w-4 mr-1" />
                                       다운로드

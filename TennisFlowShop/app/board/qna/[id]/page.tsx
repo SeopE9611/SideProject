@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import useSWR from 'swr';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec } from '@/lib/badge-style';
+import { badgeBaseOutlined, badgeSizeSm, getQnaCategoryBadgeSpec, getAnswerStatusBadgeSpec, badgeToneClass } from '@/lib/badge-style';
 import type { BoardPost } from '@/lib/types/board';
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from '@/lib/hooks/useUnsavedChangesGuard';
 import { communityFetch } from '@/lib/community/communityFetch.client';
@@ -223,23 +223,23 @@ export default function QnaDetailPage() {
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
+                        <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryBadgeSpec(qna.category).className} font-medium`}>
                           {qna.category ?? '일반문의'}
                         </Badge>
                         {qna.isSecret && (
-                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                          <Badge variant="neutral" className={`${badgeBaseOutlined} ${badgeSizeSm} text-xs flex items-center gap-1`}>
                             <Lock className="h-3 w-3" /> 비밀글
                           </Badge>
                         )}
                         {qna.productRef?.productId && (
                           <Link href={`/products/${qna.productRef.productId}`}>
-                            <Badge variant="secondary" className="hover:bg-primary/20 transition-colors duration-200">
+                            <Badge variant="info" className={`${badgeBaseOutlined} ${badgeSizeSm} hover:bg-info/20 transition-colors duration-200`}>
                               상품: {qna.productRef.name ?? '상품'}
                             </Badge>
                           </Link>
                         )}
                       </div>
-                      <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} font-medium`}>
+                      <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusBadgeSpec(!!qna.answer).className} font-medium`}>
                         {qna.answer ? (
                           <>
                             <CheckCircle className="h-3 w-3 mr-1" />
@@ -333,7 +333,7 @@ export default function QnaDetailPage() {
                                   onClick={() => setLightbox({ open: true, src: url, alt: name })}
                                   className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-primary"
                                 >
-                                  <img src={url || '/placeholder.svg'} alt={name} className="w-full h-32 object-cover" />
+                                  <img src={url || '/placeholder.svg'} alt={name} className="h-52 w-full object-cover sm:h-48" />
                                   <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
                                     <ExternalLink className="h-5 w-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                   </div>
@@ -436,7 +436,7 @@ export default function QnaDetailPage() {
                         <MessageCircle className="h-4 w-4 text-primary" />
                       </div>
                       <h2 className="text-xl font-bold text-foreground">관리자 답변</h2>
-                      <Badge variant="secondary" className="bg-success/15 text-success dark:bg-success/20">
+                      <Badge variant="success" className={`${badgeBaseOutlined} ${badgeSizeSm} ${badgeToneClass('success')}`}>
                         <CheckCircle className="h-3 w-3 mr-1" />
                         답변 완료
                       </Badge>
@@ -531,14 +531,14 @@ export default function QnaDetailPage() {
 
           <div className="pt-4 space-y-3 border-t border-border">
             <p className="text-sm text-muted-foreground">Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록 중심으로 이동을 제공합니다.</p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <Button variant="outline" size="lg" asChild className="w-full justify-start px-5">
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <Button variant="outline" size="default" asChild className="w-full sm:w-auto justify-center px-4">
                 <Link href={listHref} onClick={confirmLeave}>
                   <ArrowUp className="mr-2 h-4 w-4" />
                   목록으로 돌아가기
                 </Link>
               </Button>
-              <Button size="lg" asChild className="w-full justify-start px-5 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button size="default" asChild className="w-full sm:w-auto justify-center px-4 bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link href="/board/qna/write" onClick={confirmLeave}>
                   <MessageCircle className="mr-2 h-4 w-4" />새 문의하기
                 </Link>
