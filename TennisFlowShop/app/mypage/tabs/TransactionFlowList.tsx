@@ -315,7 +315,7 @@ export default function TransactionFlowList() {
     return `/api/mypage/activity?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error } = useSWRInfinite<ActivityResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<ActivityResponse>(getKey, fetcher, {
     revalidateFirstPage: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
@@ -347,6 +347,41 @@ export default function TransactionFlowList() {
         showErrorToast(data?.error || data?.message || '구매확정 처리 중 오류가 발생했습니다.');
         return;
       }
+
+      const optimisticConfirmedAt = new Date().toISOString();
+      await mutate(
+        (currentPages) => {
+          if (!currentPages) return currentPages;
+
+          return currentPages.map((page) => ({
+            ...page,
+            items: page.items.map((item) => {
+              if (item.order?.id !== orderId) return item;
+
+              const patchConfirmedApp = (app: ActivityApplicationSummary) => {
+                if (app.userConfirmedAt || getMypageNormalizedStatus(app.status) !== '교체완료') return app;
+                return { ...app, userConfirmedAt: optimisticConfirmedAt };
+              };
+
+              const patchedSelectedApplication = item.application ? patchConfirmedApp(item.application) : item.application;
+
+              return {
+                ...item,
+                order: item.order
+                  ? {
+                      ...item.order,
+                      status: '구매확정',
+                      userConfirmedAt: optimisticConfirmedAt,
+                      applicationSummaries: item.order.applicationSummaries?.map((app) => patchConfirmedApp(app)),
+                    }
+                  : item.order,
+                application: patchedSelectedApplication,
+              };
+            }),
+          }));
+        },
+        { revalidate: false },
+      );
 
       showSuccessToast('구매확정이 완료되었습니다.');
       await refreshRelatedQueries();
