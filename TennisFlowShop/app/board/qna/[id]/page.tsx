@@ -223,23 +223,23 @@ export default function QnaDetailPage() {
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} ${getQnaCategoryBadgeSpec(qna.category).className} font-medium`}>
+                        <Badge variant={getQnaCategoryBadgeSpec(qna.category).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                           {qna.category ?? '일반문의'}
                         </Badge>
                         {qna.isSecret && (
-                          <Badge variant="neutral" className={`${badgeBaseOutlined} ${badgeSizeSm} text-xs flex items-center gap-1`}>
+                          <Badge variant="secondary" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 inline-flex items-center gap-1`}>
                             <Lock className="h-3 w-3" /> 비밀글
                           </Badge>
                         )}
                         {qna.productRef?.productId && (
                           <Link href={`/products/${qna.productRef.productId}`}>
-                            <Badge variant="info" className={`${badgeBaseOutlined} ${badgeSizeSm} hover:bg-info/20 transition-colors duration-200`}>
+                            <Badge variant="info" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                               상품: {qna.productRef.name ?? '상품'}
                             </Badge>
                           </Link>
                         )}
                       </div>
-                      <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm} ${getAnswerStatusBadgeSpec(!!qna.answer).className} font-medium`}>
+                      <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
                         {qna.answer ? (
                           <>
                             <CheckCircle className="h-3 w-3 mr-1" />
