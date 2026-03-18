@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from '@/lib/badge-style';
 import { communityFetch } from '@/lib/community/communityFetch.client';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { ArrowLeft, ArrowUp, Bell, Calendar, ChevronLeft, ChevronRight, Clock, Download, ExternalLink, Eye, FileText, ImageIcon, Pencil, Pin, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowUp, Bell, Calendar, ChevronLeft, ChevronRight, Clock, Download, ExternalLink, Eye, FileText, ImageIcon, Paperclip, Pencil, Pin, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -247,15 +247,19 @@ export default function NoticeDetailPage() {
                         <Badge variant={noticeCategoryBadge.variant} className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
                           {notice.category || '일반'}
                         </Badge>
-                        {imageAtts.length > 0 && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="이미지 첨부" aria-label="이미지 첨부">
-                            <ImageIcon className="h-3 w-3" />
-                          </Badge>
-                        )}
-                        {fileAtts.length > 0 && (
-                          <Badge variant="outline" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`} title="첨부파일 있음" aria-label="첨부파일 있음">
-                            <FileText className="h-3 w-3" />
-                          </Badge>
+                        {(imageAtts.length > 0 || fileAtts.length > 0) && (
+                          <span className="flex items-center gap-1.5 text-muted-foreground" aria-label="첨부 정보">
+                            {imageAtts.length > 0 && (
+                              <span title="이미지 첨부" aria-label="이미지 첨부">
+                                <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                              </span>
+                            )}
+                            {fileAtts.length > 0 && (
+                              <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                                <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
+                              </span>
+                            )}
+                          </span>
                         )}
                       </div>
 
