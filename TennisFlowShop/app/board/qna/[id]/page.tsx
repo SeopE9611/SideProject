@@ -164,10 +164,10 @@ export default function QnaDetailPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 sm:px-6 py-7 sm:py-9 md:py-10 space-y-5 sm:space-y-7">
-        <div className="space-y-3 sm:space-y-5">
+      <div className="container mx-auto px-4 py-5 md:py-7 space-y-5 md:space-y-7">
+        <div className="space-y-3 md:space-y-5">
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-success">고객센터</span>
+            <span className="font-medium text-primary">고객센터</span>
             <span className="mx-1">›</span>
             <span>Q&amp;A</span>
             <span className="mx-1">›</span>
@@ -206,7 +206,7 @@ export default function QnaDetailPage() {
         </div>
 
         <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
+          <CardHeader className="bg-muted/30 border-b p-4 md:p-5">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
@@ -284,7 +284,7 @@ export default function QnaDetailPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="p-4 sm:p-5 md:p-6 space-y-4 md:space-y-6">
+            <CardContent className="p-4 md:p-5 space-y-4 md:space-y-5">
               {!isLoading && error && (
                 <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
                   <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{errorBody}</div>
