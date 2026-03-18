@@ -65,6 +65,19 @@ export default function MypageClient({ user }: Props) {
     }
     return data.total;
   };
+  const todoCountFetcher = async (url: string) => {
+    const res = await fetch(url, { credentials: "include" });
+    if (!res.ok) {
+      throw new Error(`todo count fetch failed: ${res.status}`);
+    }
+    const data = (await res.json().catch(() => null)) as {
+      counts?: { todo?: unknown };
+    } | null;
+    if (typeof data?.counts?.todo !== "number") {
+      throw new Error("todo count is not a number");
+    }
+    return data.counts.todo;
+  };
 
   const { data: ordersCount, isLoading: isOrdersLoading } = useSWR(
     "/api/users/me/orders",
@@ -82,8 +95,8 @@ export default function MypageClient({ user }: Props) {
     { revalidateOnFocus: true },
   );
   const { data: todoCount, isLoading: isTodoLoading } = useSWR(
-    "/api/mypage/activity?page=1&pageSize=1&scope=todo",
-    countFetcher,
+    "/api/mypage/activity/counts",
+    todoCountFetcher,
     { revalidateOnFocus: true },
   );
   const summaryLoading =

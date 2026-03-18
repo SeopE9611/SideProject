@@ -1,5 +1,6 @@
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { verifyAccessToken } from '@/lib/auth.utils';
+import { isApplicationTodoActionable, isOrderTodoActionable, isRentalTodoActionable, normalizeMypageTodoStatus } from '@/lib/mypage/activity-todo';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
@@ -38,20 +39,6 @@ function resolveOrderPaymentStatus(o: any): string {
   return '결제대기';
 }
 
-function normalizeMypageStatus(status?: string | null): string {
-  const raw = String(status ?? '').trim();
-  if (!raw) return '';
-  const lower = raw.toLowerCase();
-
-  if (['pending', '대기중'].includes(lower)) return '대기중';
-  if (['paid', '결제완료'].includes(lower)) return '결제완료';
-  if (['delivered', '배송완료'].includes(lower)) return '배송완료';
-  if (['requested', '접수완료', 'received'].includes(lower)) return '접수완료';
-  if (['reviewing', '검토중', '검토 중'].includes(lower)) return '검토 중';
-  if (['completed', '완료', '교체완료'].includes(lower)) return '교체완료';
-
-  return raw;
-}
 
 type ActivityOrderSummary = {
   id: string;
@@ -180,29 +167,6 @@ function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
   // 1) 사용자 액션(운송장 등록)이 필요한 신청서를 우선 대표로 노출
   // 2) 없으면 최신 업데이트 신청서를 대표로 사용
   return apps.find((app) => isActionableInboundTracking(app)) ?? apps[0];
-}
-
-function isApplicationTodoActionable(app?: ActivityApplicationSummary | null) {
-  if (!app) return false;
-  const status = normalizeMypageStatus(app.status);
-  return Boolean((app.needsInboundTracking && !app.hasTracking) || (status === '교체완료' && !app.userConfirmedAt));
-}
-
-function isOrderTodoActionable(group: ActivityGroup) {
-  if (group.kind !== 'order') return false;
-  const status = normalizeMypageStatus(group.order?.status);
-  const isConfirmed = Boolean(group.order?.userConfirmedAt) || status === '구매확정';
-  const hasPendingReview = (group.order?.reviewPendingCount ?? 0) > 0;
-  const hasActionableLinkedApplication = group.order?.applicationSummaries?.some((app) => isApplicationTodoActionable(app)) ?? false;
-
-  return Boolean(status === '배송완료' || hasActionableLinkedApplication || (isConfirmed && hasPendingReview) || isApplicationTodoActionable(group.application));
-}
-
-function isRentalTodoActionable(group: ActivityGroup) {
-  if (group.kind !== 'rental') return false;
-  const hasActionableLinkedApplication = group.rental?.applicationSummaries?.some((app) => isApplicationTodoActionable(app)) ?? false;
-
-  return Boolean(hasActionableLinkedApplication || isApplicationTodoActionable(group.application) || (!group.rental?.stringingApplicationId && group.rental?.withStringService));
 }
 
 function calcOrderTotal(o: any): number {
@@ -396,7 +360,7 @@ export async function GET(req: Request) {
     ];
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
-    const status = normalizeMypageStatus(o?.status);
+    const status = normalizeMypageTodoStatus(o?.status);
     const isConfirmed = Boolean(o?.userConfirmedAt) || status === '구매확정';
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
@@ -535,7 +499,7 @@ export async function GET(req: Request) {
     const orderId = String(o._id);
     const items = Array.isArray(o.items) ? o.items : [];
     const first = items[0] ?? null;
-    const status = normalizeMypageStatus(o?.status);
+    const status = normalizeMypageTodoStatus(o?.status);
     const isConfirmed = Boolean(o?.userConfirmedAt) || status === '구매확정';
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
     const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
@@ -715,8 +679,23 @@ export async function GET(req: Request) {
 
     if (scope === 'todo') {
       const applicationNeedsAction = group.kind === 'application' && isApplicationTodoActionable(group.application);
-      const orderNeedsAction = isOrderTodoActionable(group);
-      const rentalNeedsAction = isRentalTodoActionable(group);
+      const orderNeedsAction =
+        group.kind === 'order' &&
+        isOrderTodoActionable({
+          status: group.order?.status,
+          userConfirmedAt: group.order?.userConfirmedAt,
+          reviewPendingCount: group.order?.reviewPendingCount,
+          linkedApplications: group.order?.applicationSummaries,
+          primaryApplication: group.application,
+        });
+      const rentalNeedsAction =
+        group.kind === 'rental' &&
+        isRentalTodoActionable({
+          linkedApplications: group.rental?.applicationSummaries,
+          primaryApplication: group.application,
+          stringingApplicationId: group.rental?.stringingApplicationId,
+          withStringService: group.rental?.withStringService,
+        });
 
       return orderNeedsAction || applicationNeedsAction || rentalNeedsAction;
     }
