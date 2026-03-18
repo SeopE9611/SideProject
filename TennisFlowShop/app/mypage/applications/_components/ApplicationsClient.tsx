@@ -760,6 +760,7 @@ export default function ApplicationsClient() {
                       <ServiceReviewCTA
                         applicationId={app.id}
                         status={app.status}
+                        userConfirmedAt={app.userConfirmedAt ?? null}
                         className="w-auto"
                       />
                     )}
