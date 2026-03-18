@@ -18,7 +18,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { mutate as globalMutate } from 'swr';
 import useSWRInfinite from 'swr/infinite';
 
@@ -889,27 +889,29 @@ export default function TransactionFlowList() {
 
                     return (
                       <>
-                        {inlineActions.map((action) => action.node)}
+                        {inlineActions.map((action) => (
+                          <Fragment key={action.key}>{action.node}</Fragment>
+                        ))}
 
                         {secondaryActions.length > 0 ? (
                           <button
                             type="button"
                             className={`
-                            group relative flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium
-                            transition-all duration-200 ease-out
-                            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1
-                            ${isSecondaryOpen ? 'border-primary/30 bg-primary/5 text-primary shadow-sm' : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-foreground'}
-                          `}
+        group relative flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium
+        transition-all duration-200 ease-out
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1
+        ${isSecondaryOpen ? 'border-primary/30 bg-primary/5 text-primary shadow-sm' : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-foreground'}
+      `}
                             onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
                           >
                             <Sparkles className={`h-3.5 w-3.5 transition-all duration-200 ${isSecondaryOpen ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-primary/70'}`} />
                             <span>{isSecondaryOpen ? '기타 작업 닫기' : '기타 작업 더보기'}</span>
                             <span
                               className={`
-                            flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
-                            transition-colors duration-200
-                            ${isSecondaryOpen ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/20 text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}
-                          `}
+        flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
+        transition-colors duration-200
+        ${isSecondaryOpen ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/20 text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary'}
+      `}
                             >
                               {secondaryActions.length}
                             </span>
@@ -919,7 +921,9 @@ export default function TransactionFlowList() {
 
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
                           <div className="flex w-full animate-in fade-in slide-in-from-top-2 flex-wrap justify-end gap-2 rounded-lg border border-dashed border-border/50 bg-muted/20 p-3 duration-200">
-                            {secondaryActions.map((action) => action.node)}
+                            {secondaryActions.map((action) => (
+                              <Fragment key={action.key}>{action.node}</Fragment>
+                            ))}
                           </div>
                         ) : null}
                       </>
