@@ -6,8 +6,12 @@ function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 }
 
+function normalized(source) {
+  return source.replace(/\s+/g, " ");
+}
+
 test("주문 목록 API는 신청서를 최신순으로 조회하고 첫 원소를 대표 ID로 사용한다", () => {
-  const route = read("app/api/users/me/orders/route.ts");
+  const route = normalized(read("app/api/users/me/orders/route.ts"));
 
   assert.ok(route.includes(".sort({ updatedAt: -1, createdAt: -1 })"));
   assert.ok(

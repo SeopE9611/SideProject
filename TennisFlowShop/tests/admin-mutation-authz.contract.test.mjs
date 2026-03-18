@@ -55,7 +55,9 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
 
     const hasExplicitAdminRoleGuard =
       route.src.includes("if (me.role !== 'admin')") ||
-      route.src.includes("if (user.role !== 'admin')");
+      route.src.includes('if (me.role !== "admin")') ||
+      route.src.includes("if (user.role !== 'admin')") ||
+      route.src.includes('if (user.role !== "admin")');
 
     assert.ok(
       route.src.includes("requireAdmin(") ||
@@ -79,9 +81,10 @@ test("관리자 변경성 API는 비로그인/일반유저/admin 권한 계약(4
       !hasExplicitAdminRoleGuard
     ) {
       assert.ok(
-        route.src.includes("verifyAdminCsrf(") ||
+          route.src.includes("verifyAdminCsrf(") ||
           route.src.includes("proxyToLegacyAdminRoute(") ||
-          route.src.includes("req.headers.get('origin')"),
+          route.src.includes("req.headers.get('origin')") ||
+          route.src.includes('req.headers.get("origin")'),
         `${pathForMsg}: 변경성 메서드는 CSRF/Origin 보호를 포함해야 합니다.`,
       );
     }

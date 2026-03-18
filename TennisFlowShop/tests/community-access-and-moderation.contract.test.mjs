@@ -7,6 +7,10 @@ function readRoute(relativePath) {
   return fs.readFileSync(path.resolve(process.cwd(), relativePath), "utf8");
 }
 
+function normalized(source) {
+  return source.replace(/"/g, "'").replace(/\s+/g, " ");
+}
+
 const boardDetailRoute = readRoute("app/api/boards/[id]/route.ts");
 const boardViewRoute = readRoute("app/api/boards/[id]/view/route.ts");
 const communityViewRoute = readRoute(
@@ -24,20 +28,27 @@ const adminReportListRoute = readRoute(
 const adminReportStatusRoute = readRoute(
   "app/api/admin/community/reports/[id]/status/route.ts",
 );
+const boardDetailRouteN = normalized(boardDetailRoute);
+const postReportRouteN = normalized(postReportRoute);
+const commentReportRouteN = normalized(commentReportRoute);
+const adminReportListRouteN = normalized(adminReportListRoute);
+const adminReportStatusRouteN = normalized(adminReportStatusRoute);
 
 // -----------------------------------------------------------------------------
 // 1) 권한 시나리오 계약(비회원/회원/작성자/관리자): 읽기·수정·삭제·비밀글 접근
 // -----------------------------------------------------------------------------
 test("게시글 권한 계약: 읽기(GET)에서 비밀글은 비회원 401, 비작성자 회원 403으로 분기한다", () => {
   assert.match(boardDetailRoute, /if \(post\.isSecret\)/);
-  assert.match(
-    boardDetailRoute,
-    /error:\s*\{ code: 'unauthorized', message: 'Unauthorized' \}/,
+  assert.ok(
+    boardDetailRouteN.includes(
+      "error: { code: 'unauthorized', message: 'Unauthorized' }",
+    ),
   );
   assert.match(boardDetailRoute, /status:\s*401/);
-  assert.match(
-    boardDetailRoute,
-    /error:\s*\{ code: 'forbidden', message: 'Forbidden' \}/,
+  assert.ok(
+    boardDetailRouteN.includes(
+      "error: { code: 'forbidden', message: 'Forbidden' }",
+    ),
   );
   assert.match(boardDetailRoute, /status:\s*403/);
 });
@@ -47,9 +58,10 @@ test("게시글 권한 계약: 수정(PATCH)은 비회원 401, 작성자/관리�
   assert.match(boardDetailRoute, /if \(!payload\)/);
   assert.match(boardDetailRoute, /boards:patch:unauthorized/);
   assert.match(boardDetailRoute, /boards:patch:forbidden/);
-  assert.match(
-    boardDetailRoute,
-    /if \(!canEdit\(\{ viewerId: String\(payload\?\.sub \|\| ''\), isAdmin \}, post\)\)/,
+  assert.ok(
+    boardDetailRouteN.includes(
+      "if (!canEdit({ viewerId: String(payload?.sub || ''), isAdmin }, post))",
+    ),
   );
 });
 
@@ -97,9 +109,9 @@ test("신고 중복 제한 계약: 게시글 신고는 동일 사용자의 5분 
     postReportRoute,
     /const fiveMinutesAgo = new Date\(now\.getTime\(\) - 5 \* 60 \* 1000\);/,
   );
-  assert.match(postReportRoute, /reporterUserId: reporter\.reporterUserId/);
-  assert.match(postReportRoute, /createdAt: \{ \$gte: fiveMinutesAgo \}/);
-  assert.match(postReportRoute, /error: 'too_many_requests'/);
+  assert.match(postReportRoute, /reporterUserId:\s*reporter\.reporterUserId/);
+  assert.match(postReportRoute, /createdAt:\s*\{\s*\$gte:\s*fiveMinutesAgo\s*\}/);
+  assert.ok(postReportRouteN.includes("error: 'too_many_requests'"));
   assert.match(postReportRoute, /status: 429/);
 });
 
@@ -108,9 +120,15 @@ test("신고 중복 제한 계약: 댓글 신고도 동일 사용자의 5분 내
     commentReportRoute,
     /const fiveMinutesAgo = new Date\(now\.getTime\(\) - 5 \* 60 \* 1000\);/,
   );
-  assert.match(commentReportRoute, /reporterUserId: reporter\.reporterUserId/);
-  assert.match(commentReportRoute, /createdAt: \{ \$gte: fiveMinutesAgo \}/);
-  assert.match(commentReportRoute, /error: 'too_many_requests'/);
+  assert.match(
+    commentReportRoute,
+    /reporterUserId:\s*reporter\.reporterUserId/,
+  );
+  assert.match(
+    commentReportRoute,
+    /createdAt:\s*\{\s*\$gte:\s*fiveMinutesAgo\s*\}/,
+  );
+  assert.ok(commentReportRouteN.includes("error: 'too_many_requests'"));
   assert.match(commentReportRoute, /status: 429/);
 });
 
@@ -119,22 +137,25 @@ test("신고 중복 제한 계약: 댓글 신고도 동일 사용자의 5분 내
 // -----------------------------------------------------------------------------
 test("관리자 상태 변경 계약: resolve_hide_target은 대상 업데이트 결과를 검사하고 실패 시 report 상태를 보존한다", () => {
   assert.match(adminReportStatusRoute, /resolve_hide_target/);
-  assert.match(adminReportStatusRoute, /if \(!hideTargetResult\.ok\)/);
-  assert.match(adminReportStatusRoute, /reportStatusPreserved: true/);
+  assert.ok(adminReportStatusRouteN.includes("if (!hideTargetResult.ok)"));
+  assert.ok(adminReportStatusRouteN.includes("reportStatusPreserved: true"));
   assert.match(
     adminReportStatusRoute,
     /\{ status: hideTargetResult\.status \}/,
   );
-  assert.match(
-    adminReportStatusRoute,
-    /error: 'target_not_found' \| 'target_already_processed' \| 'target_update_failed'/,
-  );
+  assert.ok(adminReportStatusRouteN.includes("target_not_found"));
+  assert.ok(adminReportStatusRouteN.includes("target_already_processed"));
+  assert.ok(adminReportStatusRouteN.includes("target_update_failed"));
 });
 
 test("관리자 상태 변경 계약: 댓글 삭제 시 commentsCount 하한(0)을 보장하는 파이프라인 감소를 사용한다", () => {
-  assert.match(
-    adminReportStatusRoute,
-    /\$max: \[0, \{ \$subtract: \[\{ \$ifNull: \['\$commentsCount', 0\] \}, 1\] \}\]/,
+  assert.ok(
+    adminReportStatusRouteN.includes(
+      "$max: [ 0, { $subtract: [{ $ifNull: ['$commentsCount', 0] }, 1] }, ],",
+    ) ||
+      adminReportStatusRouteN.includes(
+        "$max: [0, { $subtract: [{ $ifNull: ['$commentsCount', 0] }, 1] }]",
+      ),
   );
   assert.match(
     adminReportStatusRoute,
@@ -168,18 +189,11 @@ test("관리자 상태 변경 계약: 감사 로그에 처리 관리자/행동/�
 });
 
 test("관리자 상태 변경 계약: 대상 없음/이미 삭제됨(중복 처리)/업데이트 실패를 각각 409 또는 422로 구분한다", () => {
-  assert.match(
-    adminReportStatusRoute,
-    /status: 409,\s*error: 'target_not_found'/,
+  assert.ok(adminReportStatusRouteN.includes("status: 409, error: 'target_not_found'"));
+  assert.ok(
+    adminReportStatusRouteN.includes("status: 409, error: 'target_already_processed'"),
   );
-  assert.match(
-    adminReportStatusRoute,
-    /status: 409,\s*error: 'target_already_processed'/,
-  );
-  assert.match(
-    adminReportStatusRoute,
-    /status: 422,\s*error: 'target_update_failed'/,
-  );
+  assert.ok(adminReportStatusRouteN.includes("status: 422, error: 'target_update_failed'"));
 });
 
 test("관리자 상태 반영 조회 계약: 신고 목록 API는 신고/게시글/댓글의 최신 status 필드를 응답으로 노출한다", () => {
@@ -192,10 +206,7 @@ test("관리자 상태 반영 조회 계약: 신고 목록 API는 신고/게시�
     adminReportListRoute,
     /comment: \{ _id: 1, content: 1, nickname: 1, status: 1 \}/,
   );
-  assert.match(adminReportListRoute, /status: d\.status,/);
-  assert.match(adminReportListRoute, /status: d\.post\.status \?\? 'public',/);
-  assert.match(
-    adminReportListRoute,
-    /status: d\.comment\.status \?\? 'active',/,
-  );
+  assert.ok(adminReportListRouteN.includes("status: d.status,"));
+  assert.ok(adminReportListRouteN.includes("status: d.post.status ?? 'public',"));
+  assert.ok(adminReportListRouteN.includes("status: d.comment.status ?? 'active',"));
 });
