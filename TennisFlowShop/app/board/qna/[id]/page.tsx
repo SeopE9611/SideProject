@@ -164,18 +164,35 @@ export default function QnaDetailPage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container py-6 md:py-8">
-        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-          <div className="mb-6 space-y-3">
-            <div className="text-sm text-muted-foreground">
-              <span className="font-medium text-primary">고객센터</span>
-              <span className="mx-1">›</span>
-              <span>Q&amp;A</span>
+      <div className="container mx-auto px-4 sm:px-6 py-7 sm:py-9 md:py-10 space-y-5 sm:space-y-7">
+        <div className="space-y-3 sm:space-y-5">
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium text-success">고객센터</span>
+            <span className="mx-1">›</span>
+            <span>Q&amp;A</span>
+            <span className="mx-1">›</span>
+            <span>상세</span>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-2.5 sm:gap-4">
+              <Button variant="ghost" asChild className="p-2">
+                <Link href={listHref} onClick={confirmLeave}>
+                  <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                </Link>
+              </Button>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
+                  <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-tight text-foreground">고객센터 · Q&amp;A</h1>
+                  <p className="text-sm sm:text-base text-muted-foreground">Q&amp;A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다.</p>
+                </div>
+              </div>
             </div>
             <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
               <Button asChild variant="outline" size="sm">
                 <Link href={listHref} onClick={confirmLeave}>
-                  <ArrowLeft className="h-4 w-4 mr-1" />
                   Q&amp;A 목록으로
                 </Link>
               </Button>
@@ -186,9 +203,10 @@ export default function QnaDetailPage() {
               </Button>
             </div>
           </div>
+        </div>
 
-          <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
-            <CardHeader className="border-b border-border bg-muted/60">
+        <Card className="shadow-xl border-0 bg-card backdrop-blur-sm dark:bg-card">
+          <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
               <div className="space-y-4">
                 {isLoading && (
                   <div className="animate-pulse space-y-3">
@@ -266,7 +284,7 @@ export default function QnaDetailPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
+            <CardContent className="p-4 sm:p-5 md:p-6 space-y-4 md:space-y-6">
               {!isLoading && error && (
                 <div className="prose prose-lg max-w-none prose-gray dark:prose-invert">
                   <div className="whitespace-pre-line break-words leading-relaxed text-foreground">{errorBody}</div>
@@ -527,7 +545,6 @@ export default function QnaDetailPage() {
               </Button>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );
