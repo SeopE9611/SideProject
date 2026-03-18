@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { ArrowLeft, ArrowUp, MessageCircle, Pencil, Trash2, Calendar, Eye, CheckCircle, AlertCircle, FileText, ExternalLink, MessageSquare, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowUp, MessageCircle, Pencil, Trash2, Calendar, Eye, CheckCircle, FileText, ExternalLink, MessageSquare, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -227,30 +227,20 @@ export default function QnaDetailPage() {
                           {qna.category ?? '일반문의'}
                         </Badge>
                         {qna.isSecret && (
-                          <Badge variant="secondary" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0 inline-flex items-center gap-1`}>
+                          <Badge variant="secondary" className="shrink-0 text-xs inline-flex items-center gap-1">
                             <Lock className="h-3 w-3" /> 비밀글
                           </Badge>
                         )}
                         {qna.productRef?.productId && (
                           <Link href={`/products/${qna.productRef.productId}`}>
-                            <Badge variant="info" className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}>
+                            <Badge variant="secondary" className={`${badgeSizeSm} shrink-0`}>
                               상품: {qna.productRef.name ?? '상품'}
                             </Badge>
                           </Link>
                         )}
                       </div>
                       <Badge variant={getAnswerStatusBadgeSpec(!!qna.answer).variant} className={`${badgeBaseOutlined} ${badgeSizeSm}`}>
-                        {qna.answer ? (
-                          <>
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            답변 완료
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            답변 대기
-                          </>
-                        )}
+                        {qna.answer ? '답변 완료' : '답변 대기'}
                       </Badge>
                     </div>
 
