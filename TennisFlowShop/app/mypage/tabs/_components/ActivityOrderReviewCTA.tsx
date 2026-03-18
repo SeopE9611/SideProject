@@ -9,6 +9,7 @@ const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r)
 type Props = {
   orderId: string;
   orderStatus?: string; // 예: '배송완료' | '구매확정'
+  userConfirmedAt?: string | null;
   className?: string;
 };
 
@@ -16,8 +17,8 @@ type Props = {
  * Activity(전체내역)에서도 "리뷰 작성하기" CTA를 보여주기 위한 래퍼
  * - review-items API에서 remaining/nextProductId를 가져와 OrderReviewCTA에 그대로 주입
  */
-export default function ActivityOrderReviewCTA({ orderId, orderStatus, className }: Props) {
-  const completed = orderStatus === '배송완료' || orderStatus === '구매확정';
+export default function ActivityOrderReviewCTA({ orderId, orderStatus, userConfirmedAt, className }: Props) {
+  const completed = Boolean(userConfirmedAt) || orderStatus === '구매확정';
   const { data, isLoading } = useSWR(completed ? `/api/orders/${orderId}/review-items` : null, fetcher, { revalidateOnFocus: false });
 
   if (!completed) return null;
@@ -35,5 +36,5 @@ export default function ActivityOrderReviewCTA({ orderId, orderStatus, className
   const nextProductId = data?.nextProductId;
   if (typeof remaining !== 'number') return null;
 
-  return <OrderReviewCTA orderId={orderId} orderStatus={orderStatus} showOnlyWhenCompleted reviewAllDone={remaining === 0} unreviewedCount={remaining} reviewNextTargetProductId={nextProductId} className={className} />;
+  return <OrderReviewCTA orderId={orderId} orderStatus={orderStatus} userConfirmedAt={userConfirmedAt} showOnlyWhenCompleted reviewAllDone={remaining === 0} unreviewedCount={remaining} reviewNextTargetProductId={nextProductId} className={className} />;
 }

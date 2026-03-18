@@ -38,6 +38,11 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ ok: false, error: 'orderNotFound' }, { status: 404 });
   }
 
+  const isOrderConfirmed = Boolean((order as any).userConfirmedAt) || String((order as any).status ?? '') === '구매확정';
+  if (!isOrderConfirmed) {
+    return NextResponse.json({ ok: false, error: 'notConfirmed', reason: 'notConfirmed' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
+  }
+
   const items: any[] = Array.isArray(order.items) ? order.items : [];
 
   // 주문 스냅샷에 레거시 productId(비 ObjectId) 값이 섞여 있을 수 있으므로 ObjectId 유효성으로 1차 필터

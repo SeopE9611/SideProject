@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb';
 import { getDb } from '@/lib/mongodb';
 import { verifyAccessToken } from '@/lib/auth.utils';
 
+const isOrderReviewConfirmed = (order: any) => Boolean(order?.userConfirmedAt) || String(order?.status ?? '') === '구매확정';
+const isStringingReviewConfirmed = (app: any) => Boolean(app?.userConfirmedAt);
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const productId = url.searchParams.get('productId');
@@ -45,6 +48,9 @@ export async function GET(req: Request) {
 
       const order = await db.collection('orders').findOne({ _id: orderIdObj, userId });
       if (!order) return NextResponse.json({ eligible: false, reason: 'orderNotFound' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+      if (!isOrderReviewConfirmed(order)) {
+        return NextResponse.json({ eligible: false, reason: 'notConfirmed' }, { headers: { 'Cache-Control': 'no-store' } });
+      }
 
       const hasProduct = Array.isArray(order.items) && order.items.some((it: any) => String(it.productId || '') === String(productId));
       if (!hasProduct) {
@@ -64,7 +70,7 @@ export async function GET(req: Request) {
     }
 
     // orderId가 없으면: 내 주문 중 아직 리뷰 안 쓴 주문을 추천
-    const myOrders = await db.collection('orders').find({ userId, 'items.productId': productIdObj }).project({ _id: 1, createdAt: 1 }).sort({ createdAt: -1 }).toArray();
+    const myOrders = await db.collection('orders').find({ userId, 'items.productId': productIdObj, $or: [{ userConfirmedAt: { $exists: true, $ne: null } }, { status: '구매확정' }] }).project({ _id: 1, createdAt: 1 }).sort({ createdAt: -1 }).toArray();
 
     if (!myOrders.length) {
       return NextResponse.json({ eligible: false, reason: 'noPurchase' }, { headers: { 'Cache-Control': 'no-store' } });
@@ -94,6 +100,9 @@ export async function GET(req: Request) {
 
     const order = await db.collection('orders').findOne({ _id: orderIdObj, userId });
     if (!order) return NextResponse.json({ eligible: false, reason: 'orderNotFound' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+    if (!isOrderReviewConfirmed(order)) {
+      return NextResponse.json({ eligible: false, reason: 'notConfirmed' }, { headers: { 'Cache-Control': 'no-store' } });
+    }
 
     const productIds: string[] = (Array.isArray(order.items) ? order.items : []).map((it: any) => (it.productId ? String(it.productId) : null)).filter((v: any): v is string => !!v);
 
@@ -136,9 +145,8 @@ export async function GET(req: Request) {
         return NextResponse.json({ eligible: false, reason: 'notFound' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
       }
 
-      // 이용 완료 상태만 리뷰 허용 (필요 시 조건 완화 가능)
-      if (app.status !== '교체완료') {
-        return NextResponse.json({ eligible: false, reason: 'notCompleted' }, { headers: { 'Cache-Control': 'no-store' } });
+      if (!isStringingReviewConfirmed(app)) {
+        return NextResponse.json({ eligible: false, reason: 'notConfirmed' }, { headers: { 'Cache-Control': 'no-store' } });
       }
 
       // 중복 작성 방지
@@ -155,9 +163,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ eligible: true, reason: null }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
-    // 추천 모드: 아직 리뷰 안 쓴 '교체완료' 신청서 하나 추천
+    // 추천 모드: 아직 리뷰 안 쓴 '사용자 확정 완료' 신청서 하나 추천
     const myApps = await col
-      .find({ userId, status: '교체완료' }, { projection: { _id: 1, createdAt: 1, desiredDateTime: 1 } })
+      .find({ userId, userConfirmedAt: { $exists: true, $ne: null } }, { projection: { _id: 1, createdAt: 1, desiredDateTime: 1 } })
       .sort({ createdAt: -1 })
       .toArray();
 

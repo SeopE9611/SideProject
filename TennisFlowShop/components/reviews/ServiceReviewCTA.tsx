@@ -8,22 +8,23 @@ import { Check, MessageSquarePlus } from 'lucide-react';
 type Props = {
   applicationId?: string;
   status?: string;
+  userConfirmedAt?: string | null;
   className?: string;
 };
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then((r) => r.json());
 
-export default function ServiceReviewCTA({ applicationId, status, className }: Props) {
-  // status가 주어지면 완료 상태에서만 호출 (UX 최적화)
-  const completedSet = new Set(['교체완료', '완료', 'completed']);
-  const allowFetchByStatus = status ? completedSet.has(status) : true;
+export default function ServiceReviewCTA({ applicationId, status, userConfirmedAt, className }: Props) {
+  void status;
+  // 서비스 리뷰는 사용자 확정 이후에만 허용
+  const allowFetchByConfirmation = applicationId ? Boolean(userConfirmedAt) : true;
 
   // applicationId 유무에 따라 eligibility URL 분기
   const url = applicationId ? `/api/reviews/eligibility?service=stringing&applicationId=${applicationId}` : `/api/reviews/eligibility?service=stringing`;
 
-  const { data, isLoading } = useSWR(allowFetchByStatus ? url : null, fetcher);
+  const { data, isLoading } = useSWR(allowFetchByConfirmation ? url : null, fetcher);
 
-  if (!allowFetchByStatus) return null;
+  if (!allowFetchByConfirmation) return null;
   if (isLoading) {
     return (
       <Button size="sm" variant="outline" className={className} disabled>
