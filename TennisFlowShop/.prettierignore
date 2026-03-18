@@ -1,0 +1,24 @@
+node_modules
+pnpm-lock.yaml
+.next
+dist
+build
+out
+
+# cache / metadata
+.eslintcache
+tsconfig.tsbuildinfo
+
+# test/runtime artifacts
+coverage
+.turbo
+.vercel
+cypress/downloads
+cypress/screenshots
+cypress/videos
+
+# generated baselines / scan reports
+scripts/admin-any-baseline.json
+scripts/token-palette-blue-baseline.json
+docs/color-class-scan-before.md
+docs/color-class-scan-after.md
