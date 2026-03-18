@@ -61,6 +61,7 @@ type ActivityGroup = {
     linkedApplicationCount: number;
     stringingApplicationId?: string | null;
     cancelStatus?: string | null;
+    userConfirmedAt?: string | null;
     applicationSummaries?: ActivityApplicationSummary[];
   };
   rental?: {
@@ -693,7 +694,7 @@ export default function TransactionFlowList() {
                       ),
                     });
 
-                    const canRenderOrderReview = ['배송완료', '구매확정'].includes(normalizedStatus);
+                    const canRenderOrderReview = Boolean(g.order?.userConfirmedAt) || normalizedStatus === '구매확정';
 
                     if (prefersApplicationView) {
                       if (orderId) {
@@ -774,7 +775,7 @@ export default function TransactionFlowList() {
                         actions.push({
                           key: 'order-review',
                           priority: 4,
-                          node: <ActivityOrderReviewCTA key="order-review" orderId={orderId} orderStatus={status} className="bg-transparent" />,
+                          node: <ActivityOrderReviewCTA key="order-review" orderId={orderId} orderStatus={status} userConfirmedAt={g.order?.userConfirmedAt} className="bg-transparent" />,
                         });
                       }
                     }
@@ -854,11 +855,11 @@ export default function TransactionFlowList() {
                         });
                       }
 
-                      if (getMypageUserStatusLabel(applicationActionTarget.status) === '교체완료') {
+                      if (applicationActionTarget.userConfirmedAt) {
                         actions.push({
                           key: 'application-review',
                           priority: 4,
-                          node: <ServiceReviewCTA key="application-review" applicationId={applicationActionTarget.id} status={applicationActionTarget.status} />,
+                          node: <ServiceReviewCTA key="application-review" applicationId={applicationActionTarget.id} status={applicationActionTarget.status} userConfirmedAt={applicationActionTarget.userConfirmedAt} />,
                         });
                       }
                     }

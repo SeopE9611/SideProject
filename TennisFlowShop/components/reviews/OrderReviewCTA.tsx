@@ -13,6 +13,7 @@ type Props = {
 
   // 상태 게이트용
   orderStatus?: string;
+  userConfirmedAt?: string | null;
   showOnlyWhenCompleted?: boolean;
 
   loading?: boolean;
@@ -21,12 +22,10 @@ type Props = {
   className?: string;
 };
 
-export default function OrderReviewCTA({ orderId, reviewAllDone, unreviewedCount, reviewNextTargetProductId, orderStatus, showOnlyWhenCompleted = false, size = 'sm', loading = false, className }: Props) {
-  // 완료 상태 정의
-  const completedSet = new Set(['배송완료', '완료', '구매확정']);
-
-  // 완료 상태 게이트
-  if (showOnlyWhenCompleted && !completedSet.has(orderStatus ?? '')) {
+export default function OrderReviewCTA({ orderId, reviewAllDone, unreviewedCount, reviewNextTargetProductId, orderStatus, userConfirmedAt, showOnlyWhenCompleted = false, size = 'sm', loading = false, className }: Props) {
+  // 완료(구매확정) 상태 게이트
+  const isConfirmed = Boolean(userConfirmedAt) || orderStatus === '구매확정';
+  if (showOnlyWhenCompleted && !isConfirmed) {
     return null;
   }
 
