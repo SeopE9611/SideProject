@@ -113,6 +113,7 @@ function CommunityLatestCard({
   items,
   isLoading,
   error,
+  onRetry,
   emptyText,
 }: {
   kind: BoardKind;
@@ -124,6 +125,7 @@ function CommunityLatestCard({
   items: CommunityListItem[];
   isLoading?: boolean;
   error?: any;
+  onRetry?: () => void;
   emptyText: string;
 }) {
   return (
@@ -153,7 +155,10 @@ function CommunityLatestCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message={`${title} 불러오기에 실패했습니다.`} />
+            <ErrorBox
+              message={`${title} 불러오기에 실패했습니다.`}
+              onRetry={onRetry}
+            />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -234,8 +239,16 @@ function FiveLineSkeleton() {
   );
 }
 
-function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했습니다." }) {
-  return <AsyncState kind="error" variant="inline" title={message} />;
+function ErrorBox({
+  message = "데이터를 불러오는 중 오류가 발생했습니다.",
+  onRetry,
+}: {
+  message?: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />
+  );
 }
 
 type NoticeItem = {
@@ -296,8 +309,23 @@ function reviewExcerpt(r: ReviewItem, max = 60) {
 }
 
 // 데이터 fetcher
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url, { credentials: "include" });
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const message =
+      data &&
+      typeof data === "object" &&
+      "error" in data &&
+      typeof (data as { error?: unknown }).error === "string"
+        ? (data as { error: string }).error
+        : `${res.status} ${res.statusText}`;
+    throw new Error(message);
+  }
+
+  return data;
+};
 const fmt = (v: string | Date) => new Date(v).toLocaleDateString();
 
 function NoticeCard({
@@ -305,11 +333,13 @@ function NoticeCard({
   isAdmin,
   isLoading,
   error,
+  onRetry,
 }: {
   items: NoticeItem[];
   isAdmin?: boolean;
   isLoading?: boolean;
   error?: any;
+  onRetry?: () => void;
 }) {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
@@ -339,7 +369,7 @@ function NoticeCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="공지 불러오기에 실패했습니다." />
+            <ErrorBox message="공지 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -470,10 +500,12 @@ function QnaCard({
   items,
   isLoading,
   error,
+  onRetry,
 }: {
   items: QnaItem[];
   isLoading?: boolean;
   error?: any;
+  onRetry?: () => void;
 }) {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
@@ -501,7 +533,7 @@ function QnaCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="Q&A 불러오기에 실패했습니다." />
+            <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -580,10 +612,12 @@ function ReviewCard({
   items,
   isLoading,
   error,
+  onRetry,
 }: {
   items: ReviewItem[];
   isLoading?: boolean;
   error?: any;
+  onRetry?: () => void;
 }) {
   return (
     <Card className="border-0 bg-card shadow-xl backdrop-blur-sm h-full">
@@ -611,7 +645,7 @@ function ReviewCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="리뷰 불러오기에 실패했습니다." />
+            <ErrorBox message="리뷰 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -759,6 +793,7 @@ export default function BoardPage() {
     data: rData,
     error: rError,
     isLoading: rLoading,
+    mutate: mutateReviews,
   } = useSWR(
     "/api/reviews?type=all&withHidden=mask&sort=latest&limit=5",
     fetcher,
@@ -772,16 +807,19 @@ export default function BoardPage() {
     data: fData,
     error: fError,
     isLoading: fLoading,
+    mutate: mutateFree,
   } = useSWR("/api/boards?kind=free&sort=latest&limit=5&page=1", fetcher);
   const {
     data: mData,
     error: mError,
     isLoading: mLoading,
+    mutate: mutateMarket,
   } = useSWR("/api/boards?kind=market&sort=latest&limit=5&page=1", fetcher);
   const {
     data: gData,
     error: gError,
     isLoading: gLoading,
+    mutate: mutateGear,
   } = useSWR("/api/boards?kind=gear&sort=latest&limit=5&page=1", fetcher);
 
   const freePosts = Array.isArray(fData?.items)
@@ -821,7 +859,12 @@ export default function BoardPage() {
 
         {/* 최신글 섹션 4개: 리뷰 → 자게 → 중고 → 사용기 */}
         <div className="space-y-5 bp-md:space-y-6">
-          <ReviewCard items={reviews} isLoading={rLoading} error={rError} />
+          <ReviewCard
+            items={reviews}
+            isLoading={rLoading}
+            error={rError}
+            onRetry={() => mutateReviews()}
+          />
 
           <CommunityLatestCard
             kind="free"
@@ -833,6 +876,7 @@ export default function BoardPage() {
             items={freePosts}
             isLoading={fLoading}
             error={fError}
+            onRetry={() => mutateFree()}
             emptyText="등록된 자유게시판 글이 없습니다."
           />
 
@@ -846,6 +890,7 @@ export default function BoardPage() {
             items={marketPosts}
             isLoading={mLoading}
             error={mError}
+            onRetry={() => mutateMarket()}
             emptyText="등록된 중고거래 글이 없습니다."
           />
 
@@ -859,6 +904,7 @@ export default function BoardPage() {
             items={gearPosts}
             isLoading={gLoading}
             error={gError}
+            onRetry={() => mutateGear()}
             emptyText="등록된 장비 사용기 글이 없습니다."
           />
         </div>

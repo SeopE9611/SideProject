@@ -141,8 +141,16 @@ function FiveLineSkeleton() {
   );
 }
 
-function ErrorBox({ message = "데이터를 불러오는 중 오류가 발생했습니다." }) {
-  return <AsyncState kind="error" variant="inline" title={message} />;
+function ErrorBox({
+  message = "데이터를 불러오는 중 오류가 발생했습니다.",
+  onRetry,
+}: {
+  message?: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />
+  );
 }
 
 // ---------------------- 공지 카드 ----------------------
@@ -152,11 +160,13 @@ function NoticeCard({
   isAdmin,
   isLoading,
   error,
+  onRetry,
 }: {
   items: NoticeItem[];
   isAdmin?: boolean;
   isLoading?: boolean;
   error?: any;
+  onRetry?: () => void;
 }) {
   const supportQuery = "from=support&returnTo=%2Fsupport";
   return (
@@ -198,7 +208,7 @@ function NoticeCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="공지 불러오기에 실패했습니다." />
+            <ErrorBox message="공지 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -306,12 +316,14 @@ function QnaCard({
   isAdmin,
   isLoading,
   error,
+  onRetry,
 }: {
   items: QnaItem[];
   viewerId?: string | null;
   isAdmin?: boolean;
   isLoading?: boolean;
   error?: any;
+  onRetry?: () => void;
 }) {
   const [secretBlock, setSecretBlock] = useState<{
     open: boolean;
@@ -401,7 +413,7 @@ function QnaCard({
         </Dialog>
         <div className="space-y-4">
           {error ? (
-            <ErrorBox message="Q&A 불러오기에 실패했습니다." />
+            <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -544,7 +556,7 @@ function QnaCard({
 
 export default function SupportPage() {
   // 공지/Q&A 묶어서 가져오는 기존 API 재사용
-  const { data, error, isLoading } = useSWR<BoardsMainRes>(
+  const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>(
     "/api/boards/main",
     fetcher,
   );
@@ -585,6 +597,7 @@ export default function SupportPage() {
             isAdmin={isAdmin}
             isLoading={isLoading}
             error={error}
+            onRetry={() => mutate()}
           />
           <QnaCard
             items={qnas}
@@ -592,6 +605,7 @@ export default function SupportPage() {
             isAdmin={isAdmin}
             isLoading={isLoading}
             error={error}
+            onRetry={() => mutate()}
           />
         </div>
       </div>
