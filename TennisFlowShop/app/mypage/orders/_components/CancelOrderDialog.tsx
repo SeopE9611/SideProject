@@ -35,6 +35,7 @@ interface CancelOrderDialogProps {
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onSuccess?: () => void | Promise<void>;
 }
 
 const CancelOrderDialog = ({
@@ -42,6 +43,7 @@ const CancelOrderDialog = ({
   children,
   open,
   onOpenChange,
+  onSuccess,
 }: CancelOrderDialogProps) => {
   const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -228,6 +230,9 @@ const CancelOrderDialog = ({
 
       //  주문 전체 데이터 (/api/orders/{orderId}) 갱신 : OrderDetailClient가 이 키로 데이터를 가져오기 때문
       await mutate(`/api/orders/${orderId}`, undefined, { revalidate: true });
+      if (onSuccess) {
+        await onSuccess();
+      }
       // router.refresh(); //   주문 상세 UI 갱신
 
       // 다이얼로그 닫기/상태 초기화는 여기서 처리할지,
