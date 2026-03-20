@@ -6,8 +6,12 @@ import { signOrderAccessToken } from "@/lib/auth.utils";
 type GuestOrderMode = "off" | "legacy" | "on";
 
 function getGuestOrderMode(): GuestOrderMode {
-  const raw = (process.env.GUEST_ORDER_MODE ?? "on").trim();
-  return raw === "off" || raw === "legacy" || raw === "on" ? raw : "on";
+  const raw = (
+    process.env.GUEST_ORDER_MODE ??
+    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ??
+    "legacy"
+  ).trim();
+  return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
 }
 
 // POST /api/rentals/:id/guest-token
