@@ -411,6 +411,14 @@ export default function TransactionFlowList() {
     ]);
   };
 
+  const syncOrderRelatedCaches = async (orderId: string) => {
+    await Promise.all([
+      globalMutate(`/api/orders/${orderId}/status`, undefined, { revalidate: true }),
+      globalMutate(`/api/orders/${orderId}/history`, undefined, { revalidate: true }),
+      globalMutate(`/api/orders/${orderId}`, undefined, { revalidate: true }),
+    ]);
+  };
+
   const handleConfirmPurchase = async (orderId: string) => {
     if (confirmingOrderId) return;
     if (!window.confirm('구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.')) return;
@@ -545,7 +553,7 @@ export default function TransactionFlowList() {
 
       showSuccessToast('주문 취소 요청을 철회했습니다.');
       await patchOrderCancelStatus(orderId, null);
-      await refreshRelatedQueries();
+      await syncOrderRelatedCaches(orderId);
     } catch (e) {
       console.error(e);
       showErrorToast('취소 요청 철회 중 오류가 발생했습니다.');
@@ -1119,7 +1127,6 @@ export default function TransactionFlowList() {
         onSuccess={async (orderId) => {
           if (!orderId) return;
           await patchOrderCancelStatus(orderId, 'requested');
-          await refreshRelatedQueries();
         }}
       />
 
