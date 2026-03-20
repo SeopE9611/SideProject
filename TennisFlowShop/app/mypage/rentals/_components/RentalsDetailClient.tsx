@@ -2,6 +2,7 @@
 
 import { getDepositBanner } from "@/app/features/rentals/utils/ui";
 import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Rental = {
   id: string;
@@ -257,21 +258,26 @@ export default function RentalsDetailClient({
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`/api/me/rentals/${id}`, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error((await res.json()).message || "조회 실패");
-        setData(await res.json());
-      } catch (e: any) {
-        setErr(e.message ?? "오류가 발생했습니다.");
-      } finally {
-        setLoading(false);
+  const loadRentalDetail = useCallback(async () => {
+    try {
+      setErr(null);
+      const res = await fetch(`/api/me/rentals/${id}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error((await res.json()).message || "조회 실패");
       }
-    })();
+      setData(await res.json());
+    } catch (e: any) {
+      setErr(e?.message ?? "오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    void loadRentalDetail();
+  }, [loadRentalDetail]);
 
   // 교체 서비스 포함 여부(상세에서도 리스트와 동일한 분기 기준이 필요)
   // - stringingApplicationId가 있으면: 이미 신청서가 연결된 상태
@@ -323,24 +329,29 @@ export default function RentalsDetailClient({
 
   if (err) {
     return (
-      <Card className="border-0 bg-muted/30">
-        <CardContent className="p-6 md:p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/15 dark:bg-destructive/20">
-            <AlertCircle className="h-8 w-8 text-destructive" />
-          </div>
-          <p className="text-destructive">에러: {err}</p>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        tone="user"
+        variant="card"
+        resourceName="대여 상세"
+        onAction={() => {
+          setLoading(true);
+          void loadRentalDetail();
+        }}
+      />
     );
   }
 
   if (!data) {
     return (
-      <Card className="border-0 bg-muted/30">
-        <CardContent className="p-6 md:p-8 text-center">
-          <p className="text-muted-foreground">존재하지 않는 대여 건입니다.</p>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="empty"
+        tone="user"
+        variant="card"
+        resourceName="대여 상세"
+        title="대여 정보를 찾을 수 없어요"
+        description="대여 번호를 확인한 뒤 다시 시도해 주세요."
+      />
     );
   }
 

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import AsyncState from "@/components/system/AsyncState";
 import {
   CreditCard,
   Play,
@@ -168,7 +169,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
   const pageSize = 5;
   const isVisitPickup = servicePickupMethod === "SHOP_VISIT";
 
-  const { data, isLoading, error } = useSWR<{
+  const { data, isLoading, error, mutate } = useSWR<{
     ok: boolean;
     items: HistoryItem[];
     page: number;
@@ -236,15 +237,27 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
         )}
 
         {!isLoading && hasDataError && (
-          <div className="py-6 text-center text-sm text-destructive">
-            {commonErrorMessage}
-          </div>
+          <AsyncState
+            kind="error"
+            tone="admin"
+            variant="card"
+            resourceName="대여 처리 이력"
+            description={commonErrorMessage ?? undefined}
+            onAction={() => {
+              void mutate();
+            }}
+          />
         )}
 
         {shouldShowHistoryEmpty && (
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            아직 처리 이력이 없습니다.
-          </div>
+          <AsyncState
+            kind="empty"
+            tone="admin"
+            variant="card"
+            resourceName="대여 처리 이력"
+            title="아직 처리 이력이 없습니다"
+            description="상태 변경이 발생하면 이곳에 표시됩니다."
+          />
         )}
 
         {/* 실제 이력 리스트 */}

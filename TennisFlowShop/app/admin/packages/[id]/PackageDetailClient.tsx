@@ -33,6 +33,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -322,12 +323,33 @@ export default function PackageDetailClient({
     );
   }
 
-  if (error || !data) {
+  if (error) {
     return (
       <div className="container py-6">
-        <div className="text-center text-destructive">
-          패키지 정보를 불러오는 중 오류가 발생했습니다.
-        </div>
+        <AsyncState
+          kind="error"
+          tone="admin"
+          variant="page-center"
+          resourceName="패키지 상세"
+          onAction={() => {
+            void mutate();
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="container py-6">
+        <AsyncState
+          kind="empty"
+          tone="admin"
+          variant="page-center"
+          resourceName="패키지 상세"
+          title="패키지 정보를 찾을 수 없습니다"
+          description="패키지 ID를 확인한 뒤 다시 시도해 주세요."
+        />
       </div>
     );
   }

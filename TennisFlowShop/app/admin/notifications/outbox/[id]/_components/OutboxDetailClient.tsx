@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AsyncState from "@/components/system/AsyncState";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -306,10 +307,15 @@ export default function OutboxDetailClient({ id }: { id: string }) {
           )}
 
           {error && (
-            <div className="text-sm text-destructive">
-              상세 로드 실패:{" "}
-              {error instanceof Error ? error.message : String(error)}
-            </div>
+            <AsyncState
+              kind="error"
+              tone="admin"
+              variant="card"
+              resourceName="알림 상세"
+              onAction={() => {
+                void mutate();
+              }}
+            />
           )}
 
           {vm && (
