@@ -37,9 +37,14 @@ function getOrderScopedTokenSecret(): Secret {
   return process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
 }
 
+type OrderScopedAccessTokenPayload =
+  | { orderId: string; emailHash?: string }
+  | { rentalId: string; emailHash?: string };
+
 //  주문 접근 전용 토큰 발급 (게스트용)
 export function signOrderAccessToken(
-  payload: { orderId: string; emailHash?: string },
+
+  payload: OrderScopedAccessTokenPayload,
   // 7일(초)로 기본값 설정
   expiresIn: SignOptions["expiresIn"] = 60 * 60 * 24 * 7,
 ) {
@@ -52,10 +57,7 @@ export function signOrderAccessToken(
 export function verifyOrderAccessToken(token: string) {
   try {
     const secret = getOrderScopedTokenSecret();
-    return jwt.verify(token, secret) as {
-      orderId?: string;
-      rentalId?: string;
-      emailHash?: string;
+   return jwt.verify(token, secret) as OrderScopedAccessTokenPayload & {
       iat: number;
       exp: number;
     };
