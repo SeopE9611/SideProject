@@ -3,7 +3,8 @@
 import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, AlertTriangle, Store, Truck } from "lucide-react";
+import AsyncState from "@/components/system/AsyncState";
+import { Loader2, Store, Truck } from "lucide-react";
 import ShippingForm from "@/app/admin/applications/stringing/[id]/shipping-update/shipping-form";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { isVisitPickupOrder } from "@/lib/order-shipping";
@@ -51,7 +52,7 @@ export default function ShippingFormClient({
   applicationId,
   onSuccess,
 }: Props) {
-  const { data, error, isLoading } = useSWR<Application>(
+  const { data, error, isLoading, mutate } = useSWR<Application>(
     `/api/admin/applications/stringing/${applicationId}`,
     authenticatedSWRFetcher,
     {
@@ -115,12 +116,15 @@ export default function ShippingFormClient({
     );
   } else if (error || !data) {
     content = (
-      <Card className="border-destructive">
-        <CardContent className="py-10 flex items-center justify-center gap-3 text-destructive">
-          <AlertTriangle className="h-5 w-5" />
-          <span>신청 정보를 불러올 수 없습니다.</span>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        tone="admin"
+        variant="card"
+        resourceName="신청 정보"
+        onAction={() => {
+          void mutate();
+        }}
+      />
     );
   } else {
     content = (

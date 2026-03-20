@@ -30,6 +30,7 @@ import { Switch } from "@/components/ui/switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import AsyncState from "@/components/system/AsyncState";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -124,6 +125,7 @@ export default function StringingSettingsPage() {
     data: serverSettings,
     error,
     isLoading: loading,
+    mutate,
   } = useSWR<StringingSettings | null>(
     "/api/admin/settings/stringing",
     authenticatedSWRFetcher,
@@ -276,6 +278,24 @@ export default function StringingSettingsPage() {
             <div className="h-96 animate-pulse rounded-3xl bg-card border border-border shadow-lg" />
             <div className="h-96 animate-pulse rounded-3xl bg-card border border-border shadow-lg" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="mx-auto max-w-7xl">
+          <AsyncState
+            kind="error"
+            tone="admin"
+            variant="page-center"
+            resourceName="스케줄링 설정"
+            onAction={() => {
+              void mutate();
+            }}
+          />
         </div>
       </div>
     );
