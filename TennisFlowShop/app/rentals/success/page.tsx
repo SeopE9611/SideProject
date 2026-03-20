@@ -1,4 +1,5 @@
 import RentalsSuccessClient from "@/app/rentals/success/_components/RentalsSuccessClient";
+import SetGuestRentalToken from "@/app/rentals/success/_components/SetGuestRentalToken";
 import LoginGate from "@/components/system/LoginGate";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
@@ -230,18 +231,22 @@ export default async function Page({
   if (!isMemberOwner && !isGuestOwner) return notFound();
 
   const data = await getData(db, id, rental);
+  const isGuestRental = !rental.userId;
   return (
-    <RentalsSuccessClient
-      data={{
-        ...data,
-        queryHint: {
-          withService: parseBooleanHint(withService),
-          stringingSubmitted: parseBooleanHint(stringingSubmitted),
-          stringingApplicationId: stringingApplicationId
-            ? String(stringingApplicationId)
-            : null,
-        },
-      }}
-    />
+    <>
+      <SetGuestRentalToken rentalId={id} isGuest={isGuestRental} />
+      <RentalsSuccessClient
+        data={{
+          ...data,
+          queryHint: {
+            withService: parseBooleanHint(withService),
+            stringingSubmitted: parseBooleanHint(stringingSubmitted),
+            stringingApplicationId: stringingApplicationId
+              ? String(stringingApplicationId)
+              : null,
+          },
+        }}
+      />
+    </>
   );
 }

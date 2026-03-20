@@ -53,7 +53,8 @@ export function verifyOrderAccessToken(token: string) {
   try {
     const secret = getOrderScopedTokenSecret();
     return jwt.verify(token, secret) as {
-      orderId: string;
+      orderId?: string;
+      rentalId?: string;
       emailHash?: string;
       iat: number;
       exp: number;

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { cookies } from "next/headers";
-import { verifyAccessToken } from "@/lib/auth.utils";
+import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 
 /**
  * 목적: 라켓 대여(rental_orders) 기반 “draft 이어쓰기”를 지원
@@ -30,6 +30,7 @@ export async function GET(
     const rentalObjectId = new ObjectId(rentalId);
     const cookieStore = await cookies();
     const at = cookieStore.get("accessToken")?.value ?? null;
+    const oax = cookieStore.get("orderAccessToken")?.value ?? null;
 
     let payload: any = null;
     try {
@@ -37,9 +38,17 @@ export async function GET(
     } catch {
       payload = null;
     }
+    let guestClaims: any = null;
+    try {
+      guestClaims = oax ? verifyOrderAccessToken(oax) : null;
+    } catch {
+      guestClaims = null;
+    }
 
     const userSub = typeof payload?.sub === "string" ? payload.sub : null;
     const isAdmin = payload?.role === "admin";
+    const guestRentalId =
+      typeof guestClaims?.rentalId === "string" ? guestClaims.rentalId : null;
 
     let rental: any = null;
     if (userSub && ObjectId.isValid(userSub)) {
@@ -60,6 +69,18 @@ export async function GET(
         );
     }
 
+    if (!rental && guestRentalId) {
+      rental = await db
+        .collection("rental_orders")
+        .findOne(
+          {
+            _id: rentalObjectId,
+            $or: [{ userId: { $exists: false } }, { userId: null }],
+          },
+          { projection: { _id: 1, userId: 1 } },
+        );
+    }
+
     if (!rental) {
       return new NextResponse(JSON.stringify({ found: false }), {
         status: 404,
@@ -67,8 +88,14 @@ export async function GET(
       });
     }
 
-    if (!isAdmin && !(rental as any).userId) {
-      // guest rental 검증 토큰 체계가 API 라우트에서 확정적으로 존재하지 않아 fail-closed
+    const isGuestRental = !(rental as any).userId;
+    const guestOwnsRental = !!(
+      isGuestRental &&
+      guestRentalId &&
+      guestRentalId === String((rental as any)._id)
+    );
+
+    if (isGuestRental && !isAdmin && !guestOwnsRental) {
       return new NextResponse(JSON.stringify({ found: false }), {
         status: 404,
         headers: { "Cache-Control": "no-store" },
