@@ -8,6 +8,7 @@ import CancelRentalDialog from '@/app/mypage/rentals/_components/CancelRentalDia
 import ActivityOrderReviewCTA from '@/app/mypage/tabs/_components/ActivityOrderReviewCTA';
 import OrderShippingInfoDialog from '@/app/mypage/tabs/_components/OrderShippingInfoDialog';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
+import AsyncState from '@/components/system/AsyncState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -510,9 +511,7 @@ export default function TransactionFlowList() {
 
   if (error) {
     return (
-      <Card className="border-0 bg-card">
-        <CardContent className="p-8 text-center text-sm text-destructive">거래 흐름을 불러오는 중 오류가 발생했습니다.</CardContent>
-      </Card>
+      <AsyncState kind="error" variant="card" resourceName="거래 흐름" onAction={() => mutate()} />
     );
   }
 

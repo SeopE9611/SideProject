@@ -79,22 +79,22 @@ export default function MypageClient({ user }: Props) {
     return data.counts.todo;
   };
 
-  const { data: ordersCount, isLoading: isOrdersLoading } = useSWR(
+  const { data: ordersCount, isLoading: isOrdersLoading, error: ordersCountError } = useSWR(
     "/api/users/me/orders",
     countFetcher,
     { revalidateOnFocus: true },
   );
-  const { data: applicationsCount, isLoading: isApplicationsLoading } = useSWR(
+  const { data: applicationsCount, isLoading: isApplicationsLoading, error: applicationsCountError } = useSWR(
     "/api/applications/me",
     countFetcher,
     { revalidateOnFocus: true },
   );
-  const { data: activityFlowCount, isLoading: isActivityLoading } = useSWR(
+  const { data: activityFlowCount, isLoading: isActivityLoading, error: activityCountError } = useSWR(
     "/api/mypage/activity?page=1&pageSize=1",
     countFetcher,
     { revalidateOnFocus: true },
   );
-  const { data: todoCount, isLoading: isTodoLoading } = useSWR(
+  const { data: todoCount, isLoading: isTodoLoading, error: todoCountError } = useSWR(
     "/api/mypage/activity/counts",
     todoCountFetcher,
     { revalidateOnFocus: true },
@@ -104,6 +104,11 @@ export default function MypageClient({ user }: Props) {
     isApplicationsLoading ||
     isActivityLoading ||
     isTodoLoading;
+  const hasSummaryError =
+    !!ordersCountError ||
+    !!applicationsCountError ||
+    !!activityCountError ||
+    !!todoCountError;
 
   const resolveOrdersScope = (scope: string | null) => {
     if (
@@ -320,6 +325,11 @@ export default function MypageClient({ user }: Props) {
                 </div>
               </div>
             </div>
+            {hasSummaryError ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                일부 지표를 불러오지 못해 숫자를 "-"로 표시하고 있어요. 잠시 후 다시 확인해 주세요.
+              </p>
+            ) : null}
           </div>
         </SiteContainer>
       </div>

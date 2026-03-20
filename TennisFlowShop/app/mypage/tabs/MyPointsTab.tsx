@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import AsyncState from "@/components/system/AsyncState";
 import type { PointTransactionListItem } from "@/lib/types/points";
 import {
   fallbackReason,
@@ -119,23 +120,12 @@ export default function MyPointsTab() {
 
   if (!isInitialLoading && hasDataError) {
     return (
-      <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm">
-        <CardContent className="flex flex-col items-center justify-center py-10 bp-sm:py-14">
-          <div className="bg-destructive/10 rounded-full p-4 mb-4 dark:bg-destructive/15">
-            <Coins className="h-8 w-8 text-destructive" />
-          </div>
-          <p className="text-base font-medium mb-2">
-            포인트 정보를 불러올 수 없습니다
-          </p>
-          <p className="text-sm text-muted-foreground mb-6">
-            {data?.error ?? "UNKNOWN"}
-          </p>
-          <Button onClick={() => mutate()} variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            다시 시도
-          </Button>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        variant="card"
+        resourceName="포인트 정보"
+        onAction={() => mutate()}
+      />
     );
   }
 

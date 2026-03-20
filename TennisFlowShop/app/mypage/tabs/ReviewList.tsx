@@ -7,6 +7,7 @@ import useSWRInfinite from "swr/infinite";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -446,11 +447,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   // 에러 카드
   if (error) {
     return (
-      <Card className="border-0 bg-muted/30">
-        <CardContent className="p-6 md:p-8 text-center">
-          오류가 발생했습니다. 잠시 후 다시 시도해 주세요.
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        variant="card"
+        resourceName="리뷰 내역"
+        onAction={() => mutate()}
+      />
     );
   }
 
@@ -648,10 +650,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <Star className="h-10 w-10 text-warning" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-foreground">
-              작성한 리뷰가 없습니다
+              {swrItems.length > 0 ? "조건에 맞는 리뷰가 없습니다" : "작성한 리뷰가 없습니다"}
             </h3>
             <p className="mb-4 md:mb-6 text-muted-foreground">
-              구매하신 상품이나 서비스에 대한 후기를 남겨주세요!
+              {swrItems.length > 0
+                ? "필터 조건을 변경해서 다른 리뷰를 확인해 보세요."
+                : "구매하신 상품이나 서비스에 대한 후기를 남겨주세요!"}
             </p>
           </CardContent>
         </Card>

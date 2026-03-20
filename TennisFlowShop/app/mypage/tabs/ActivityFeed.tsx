@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import AsyncState from "@/components/system/AsyncState";
 import { cn } from "@/lib/utils";
 import {
   getApplicationStatusBadgeSpec,
@@ -631,15 +632,12 @@ export default function ActivityFeed() {
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-muted/30 p-8 bp-sm:p-12 text-center fade-in">
-        <AlertCircle className="h-12 w-12 bp-sm:h-16 bp-sm:w-16 text-destructive mx-auto mb-4" />
-        <p className="text-base bp-sm:text-lg font-medium text-destructive">
-          전체 활동을 불러오는 중 오류가 발생했습니다.
-        </p>
-        <p className="text-sm text-destructive mt-2">
-          잠시 후 다시 시도해주세요.
-        </p>
-      </div>
+      <AsyncState
+        kind="error"
+        variant="card"
+        resourceName="전체 활동"
+        onAction={() => mutateActivity()}
+      />
     );
   }
 
