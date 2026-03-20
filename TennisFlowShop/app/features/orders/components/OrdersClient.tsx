@@ -10,6 +10,7 @@ import ApplicationStatusBadge from "@/app/features/stringing-applications/compon
 import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -206,7 +207,7 @@ export default function OrdersClient() {
   }, [searchParams]);
 
   // SWR 훅: page/limit + 검색/필터/날짜까지 쿼리로 포함
-  const { data, error } = useSWR<ApiResponse>(
+  const { data, error, mutate } = useSWR<ApiResponse>(
     `/api/orders?${qs}`,
     authenticatedSWRFetcher,
     {
@@ -865,11 +866,16 @@ export default function OrdersClient() {
             <TableBody>
               {error ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={10}
-                    className="text-center text-destructive"
-                  >
-                    주문 데이터를 불러오는 중 오류가 발생했습니다.
+                  <TableCell colSpan={10} className={tdClasses}>
+                    <AsyncState
+                      kind="error"
+                      tone="admin"
+                      variant="inline"
+                      resourceName="주문 데이터"
+                      onAction={() => {
+                        void mutate();
+                      }}
+                    />
                   </TableCell>
                 </TableRow>
               ) : !data ? (
@@ -887,12 +893,12 @@ export default function OrdersClient() {
               ) : data.items.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={10} className={tdClasses}>
-                    <div className="flex flex-col items-center gap-2">
-                      <Search className="h-8 w-8 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">
-                        불러올 주문이 없습니다.
-                      </p>
-                    </div>
+                    <AsyncState
+                      kind="empty"
+                      tone="admin"
+                      variant="inline"
+                      resourceName="주문 데이터"
+                    />
                   </TableCell>
                 </TableRow>
               ) : sortedOrders.length === 0 ? (

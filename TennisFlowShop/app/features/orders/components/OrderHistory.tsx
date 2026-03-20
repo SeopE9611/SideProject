@@ -4,6 +4,7 @@ import useSWRInfinite from "swr/infinite";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import AsyncState from "@/components/system/AsyncState";
 import {
   Package,
   Truck,
@@ -221,14 +222,23 @@ export default function OrderHistory({
             </div>
           ))
         ) : hasDataError ? (
-          <div className="py-10 text-center text-destructive">
-            처리 이력을 불러올 수 없습니다.
-          </div>
+          <AsyncState
+            kind="error"
+            variant="card"
+            tone="admin"
+            resourceName="주문 처리 이력"
+            onAction={() => {
+              void mutateHistory();
+            }}
+          />
         ) : /* 빈 상태일 때 메시지 */
         shouldShowEmptyState ? (
-          <div className="py-10 text-center text-muted-foreground">
-            아직 처리 이력이 없습니다.
-          </div>
+          <AsyncState
+            kind="empty"
+            variant="card"
+            tone="admin"
+            resourceName="주문 처리 이력"
+          />
         ) : shouldShowRows ? (
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {

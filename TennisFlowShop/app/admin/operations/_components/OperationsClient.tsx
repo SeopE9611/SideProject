@@ -49,13 +49,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import AsyncState from "@/components/system/AsyncState";
 import {
   opsKindBadgeTone,
   opsKindLabel,
   opsStatusBadgeTone,
   type OpsBadgeTone,
 } from "@/lib/admin-ops-taxonomy";
-import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
@@ -613,7 +613,10 @@ export default function OperationsClient() {
   });
   const key = `/api/admin/operations?${queryString}`;
 
-  const { data, isLoading, error } = useSWR<{ items: OpItem[]; total: number }>(
+  const { data, isLoading, error, mutate } = useSWR<{
+    items: OpItem[];
+    total: number;
+  }>(
     key,
     authenticatedSWRFetcher,
     {
@@ -628,7 +631,6 @@ export default function OperationsClient() {
     typeof total === "number"
       ? Math.max(1, Math.ceil(total / effectivePageSize))
       : null;
-  const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
 
   // 리스트를 "그룹(묶음)" 단위로 변환
   const groups = useMemo(() => buildGroups(items ?? []), [items]);
@@ -939,10 +941,17 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-4 lg:py-5">
-      {commonErrorMessage && (
-        <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:bg-destructive/15">
-          {commonErrorMessage}
-        </div>
+      {error && (
+        <AsyncState
+          kind="error"
+          tone="admin"
+          variant="inline"
+          resourceName="운영 데이터"
+          className="mb-3"
+          onAction={() => {
+            void mutate();
+          }}
+        />
       )}
       {/* 페이지 헤더 */}
       <div className="mx-auto mb-4 max-w-[1440px]">
