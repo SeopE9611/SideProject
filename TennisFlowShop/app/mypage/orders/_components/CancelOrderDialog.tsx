@@ -25,7 +25,6 @@ import {
 } from "@/lib/cancel-request/refund-account-client";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { mutate } from "swr";
 
@@ -45,7 +44,6 @@ const CancelOrderDialog = ({
   onOpenChange,
   onSuccess,
 }: CancelOrderDialogProps) => {
-  const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
 
   /**
