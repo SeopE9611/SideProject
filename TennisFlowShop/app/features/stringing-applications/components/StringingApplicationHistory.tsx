@@ -143,9 +143,11 @@ interface HistoryResponse {
 export default function StringingApplicationHistory({
   applicationId,
   onHistoryMutate,
+  isAdmin = false,
 }: {
   applicationId: string;
   onHistoryMutate?: (mutateFn: () => Promise<any>) => void;
+  isAdmin?: boolean;
 }) {
   const [page, setPage] = useState(1);
   const url = `/api/applications/stringing/${applicationId}/history?page=${page}&limit=${LIMIT}`;
@@ -215,6 +217,7 @@ export default function StringingApplicationHistory({
           <AsyncState
             kind="error"
             variant="card"
+            tone={isAdmin ? "admin" : "user"}
             resourceName="신청 처리 이력"
             onAction={() => {
               void mutateHistory();

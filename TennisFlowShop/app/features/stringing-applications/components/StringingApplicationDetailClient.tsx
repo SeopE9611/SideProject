@@ -2124,6 +2124,7 @@ export default function StringingApplicationDetailClient({
             <div className="mt-6">
               <StringingApplicationHistory
                 applicationId={applicationId}
+                isAdmin={isAdmin}
                 onHistoryMutate={(mutateFn) => {
                   historyMutateRef.current = mutateFn;
                 }}
