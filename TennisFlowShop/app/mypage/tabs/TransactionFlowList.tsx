@@ -334,6 +334,7 @@ export default function TransactionFlowList() {
   const [cancelOrderDialogId, setCancelOrderDialogId] = useState<string | null>(null);
   const [cancelApplicationDialogId, setCancelApplicationDialogId] = useState<string | null>(null);
   const [isCancelApplicationSubmitting, setIsCancelApplicationSubmitting] = useState(false);
+  const [withdrawingOrderCancelId, setWithdrawingOrderCancelId] = useState<string | null>(null);
 
   const getKey = (pageIndex: number, previousPageData: ActivityResponse | null) => {
     if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT) return null;
@@ -475,6 +476,33 @@ export default function TransactionFlowList() {
       showErrorToast('신청 취소 요청 처리 중 오류가 발생했습니다.');
     } finally {
       setIsCancelApplicationSubmitting(false);
+    }
+  };
+
+  const handleOrderCancelWithdraw = async (orderId: string) => {
+    if (withdrawingOrderCancelId) return;
+    if (!window.confirm('이 주문의 취소 요청을 철회하시겠습니까?')) return;
+
+    try {
+      setWithdrawingOrderCancelId(orderId);
+      const res = await fetch(`/api/orders/${orderId}/cancel-request-withdraw`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const body = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        showErrorToast(body?.message || '취소 요청 철회 중 오류가 발생했습니다.');
+        return;
+      }
+
+      showSuccessToast('주문 취소 요청을 철회했습니다.');
+      await refreshRelatedQueries();
+    } catch (e) {
+      console.error(e);
+      showErrorToast('취소 요청 철회 중 오류가 발생했습니다.');
+    } finally {
+      setWithdrawingOrderCancelId(null);
     }
   };
 
@@ -814,7 +842,25 @@ export default function TransactionFlowList() {
                         });
                       }
 
-                      if (['대기중', '결제완료'].includes(normalizedStatus) && g.order?.cancelStatus !== 'requested') {
+                      if (g.order?.cancelStatus === 'requested') {
+                        actions.push({
+                          key: 'order-cancel-withdraw',
+                          priority: 1,
+                          forceSecondary: true,
+                          node: (
+                            <Button
+                              key="order-cancel-withdraw"
+                              size="sm"
+                              variant="destructive"
+                              disabled={withdrawingOrderCancelId === orderId}
+                              onClick={() => handleOrderCancelWithdraw(orderId)}
+                            >
+                              <Undo2 className="mr-1 h-3.5 w-3.5" />
+                              {withdrawingOrderCancelId === orderId ? '철회 중...' : '취소 요청 철회'}
+                            </Button>
+                          ),
+                        });
+                      } else if (['대기중', '결제완료'].includes(normalizedStatus)) {
                         actions.push({
                           key: 'order-cancel-request',
                           priority: 1,
