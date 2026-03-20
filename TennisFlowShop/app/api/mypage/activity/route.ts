@@ -183,6 +183,26 @@ function calcOrderTotal(o: any): number {
   }, 0);
 }
 
+function resolveOrderShippingMethod(shippingInfo: any): string {
+  if (!shippingInfo || typeof shippingInfo !== 'object') return '';
+
+  // 서버 저장 기준은 deliveryMethod(택배수령/방문수령)가 우선이다.
+  // 레거시/혼합 저장 형태를 위해 shippingMethod/method/type 도 순차 fallback 한다.
+  const candidates = [
+    shippingInfo.deliveryMethod,
+    shippingInfo.shippingMethod,
+    shippingInfo.method,
+    shippingInfo.type,
+  ];
+
+  for (const value of candidates) {
+    const normalized = String(value ?? '').trim();
+    if (normalized) return normalized;
+  }
+
+  return '';
+}
+
 function summarizeRacketType(details: any): string {
   // 신청서 목록(route.ts)처럼 “완벽”하게 만들기보다, 통합 피드용 최소 요약만
   if (details?.racketType && typeof details.racketType === 'string' && details.racketType.trim()) {
@@ -549,7 +569,7 @@ export async function GET(req: Request) {
         status: o.status ?? '',
         userConfirmedAt: o.userConfirmedAt instanceof Date ? o.userConfirmedAt.toISOString() : typeof o.userConfirmedAt === 'string' ? o.userConfirmedAt : null,
         paymentStatus: resolveOrderPaymentStatus(o),
-        shippingMethod: String(o?.shippingInfo?.shippingMethod ?? o?.shippingInfo?.method ?? o?.shippingInfo?.type ?? ''),
+        shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? '(상품명 없음)',
         itemsCount: items.length,
