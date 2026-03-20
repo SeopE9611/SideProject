@@ -603,6 +603,10 @@ export default function TransactionFlowList() {
           const displayMetaLabel = prefersApplicationView ? '교체서비스 신청' : FLOW_TYPE_META_LABEL[g.flowType];
           const showLinkedStatusBadge = g.flowType !== 'application_only' && linkedCount > 0 && !prefersApplicationView;
           const standaloneApplicationIdMeta = isStandaloneApplication(displayApplication) && displayApplication?.id ? ` · #${shortId(displayApplication.id) ?? '-'}` : '';
+          const isCancelRequested =
+            (displayKind === 'order' && g.order?.cancelStatus === 'requested') ||
+            (displayKind === 'rental' && g.rental?.cancelStatus === 'requested') ||
+            (displayKind === 'application' && (displayApplication ?? g.application)?.cancelStatus === 'requested');
 
           return (
             <Card key={g.key} className="group relative overflow-hidden border-0 bg-card shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -625,6 +629,7 @@ export default function TransactionFlowList() {
                   {todoPrimaryReason ? <Badge variant="default">해야 할 일: {todoPrimaryReason}</Badge> : null}
                   {shouldShowFlowBadge ? <Badge variant="outline">{g.flowLabel}</Badge> : null}
                   {showLinkedStatusBadge ? <Badge variant="secondary">{getLinkedApplicationStatusSummary(linkedApps)}</Badge> : null}
+                  {isCancelRequested ? <Badge variant="warning">취소 요청됨</Badge> : null}
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
@@ -1008,7 +1013,12 @@ export default function TransactionFlowList() {
         </div>
       ) : null}
 
-      <CancelOrderDialog open={Boolean(cancelOrderDialogId)} onOpenChange={(open) => !open && setCancelOrderDialogId(null)} orderId={cancelOrderDialogId ?? ''} />
+      <CancelOrderDialog
+        open={Boolean(cancelOrderDialogId)}
+        onOpenChange={(open) => !open && setCancelOrderDialogId(null)}
+        orderId={cancelOrderDialogId ?? ''}
+        onSuccess={refreshRelatedQueries}
+      />
 
       <CancelStringingDialog open={Boolean(cancelApplicationDialogId)} onOpenChange={(open) => !open && setCancelApplicationDialogId(null)} onConfirm={handleApplicationCancelRequest} isSubmitting={isCancelApplicationSubmitting} />
     </div>
