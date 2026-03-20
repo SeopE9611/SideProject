@@ -48,6 +48,7 @@ import {
   Phone,
   ShoppingCart,
   Truck,
+  Undo2,
   User,
 } from "lucide-react";
 import Link from "next/link";
@@ -619,14 +620,15 @@ export default function OrderDetailClient({
             {canWithdrawCancelRequest && (
               <Button
                 size="sm"
-                variant="outline"
+                variant="destructive"
                 onClick={handleWithdrawCancelRequest}
                 disabled={isWithdrawingCancelRequest}
-                className="w-full bp-sm:w-auto bp-sm:ml-4 border-border bg-card/70 text-primary hover:bg-muted hover:text-primary"
+                className="w-full gap-1.5 bp-sm:ml-4 bp-sm:w-auto"
               >
+                <Undo2 className="h-4 w-4" />
                 {isWithdrawingCancelRequest
                   ? "취소 철회 중..."
-                  : "취소 철회하기"}
+                  : "취소 요청 철회"}
               </Button>
             )}
           </div>
