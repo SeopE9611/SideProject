@@ -33,14 +33,17 @@ export function verifyAccessToken(token: string) {
   }
 }
 
+function getOrderScopedTokenSecret(): Secret {
+  return process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+}
+
 //  주문 접근 전용 토큰 발급 (게스트용)
 export function signOrderAccessToken(
   payload: { orderId: string; emailHash?: string },
   // 7일(초)로 기본값 설정
   expiresIn: SignOptions["expiresIn"] = 60 * 60 * 24 * 7,
 ) {
-  const secret: Secret =
-    process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
+  const secret = getOrderScopedTokenSecret();
   const options: SignOptions = { expiresIn };
   return jwt.sign(payload, secret, options);
 }
@@ -48,12 +51,32 @@ export function signOrderAccessToken(
 // 주문 접근 전용 토큰 검증 (게스트용)
 export function verifyOrderAccessToken(token: string) {
   try {
-    const secret: Secret =
-      process.env.ORDER_ACCESS_TOKEN_SECRET ||
-      process.env.REFRESH_TOKEN_SECRET!;
+    const secret = getOrderScopedTokenSecret();
     return jwt.verify(token, secret) as {
       orderId: string;
       emailHash?: string;
+      iat: number;
+      exp: number;
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function signApplicationAccessToken(
+  payload: { applicationId: string },
+  expiresIn: SignOptions["expiresIn"] = 60 * 60 * 24 * 7,
+) {
+  const secret = getOrderScopedTokenSecret();
+  const options: SignOptions = { expiresIn };
+  return jwt.sign(payload, secret, options);
+}
+
+export function verifyApplicationAccessToken(token: string) {
+  try {
+    const secret = getOrderScopedTokenSecret();
+    return jwt.verify(token, secret) as {
+      applicationId: string;
       iat: number;
       exp: number;
     };

@@ -1,4 +1,8 @@
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import {
+  verifyAccessToken,
+  verifyApplicationAccessToken,
+  verifyOrderAccessToken,
+} from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -25,13 +29,18 @@ export async function canAccessStringingApplicationById(
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? null;
   const orderAccessToken = cookieStore.get("orderAccessToken")?.value ?? null;
+  const applicationAccessToken =
+    cookieStore.get("applicationAccessToken")?.value ?? null;
 
   const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;
   const guestClaims = orderAccessToken
     ? verifyOrderAccessToken(orderAccessToken)
     : null;
+  const applicationClaims = applicationAccessToken
+    ? verifyApplicationAccessToken(applicationAccessToken)
+    : null;
 
-  if (!accessPayload && !guestClaims) {
+  if (!accessPayload && !guestClaims && !applicationClaims) {
     return {
       ok: false as const,
       response: Response.json({ error: "Unauthorized" }, { status: 401 }),
@@ -102,8 +111,26 @@ export async function canAccessStringingApplicationById(
     !!guestRentalId &&
     !!(application as any).rentalId &&
     String((application as any).rentalId) === guestRentalId;
+  const tokenApplicationId =
+    typeof applicationClaims?.applicationId === "string"
+      ? applicationClaims.applicationId
+      : null;
+  const isStandaloneApplication =
+    !(application as any).userId &&
+    !(application as any).orderId &&
+    !(application as any).rentalId;
+  const isGuestStandaloneOwner =
+    !!tokenApplicationId &&
+    isStandaloneApplication &&
+    String((application as any)._id) === tokenApplicationId;
 
-  if (!isAdmin && !isMemberOwner && !isGuestOrderOwner && !isGuestRentalOwner) {
+  if (
+    !isAdmin &&
+    !isMemberOwner &&
+    !isGuestOrderOwner &&
+    !isGuestRentalOwner &&
+    !isGuestStandaloneOwner
+  ) {
     return {
       ok: false as const,
       response: Response.json({ error: "Forbidden" }, { status: 403 }),
