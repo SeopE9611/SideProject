@@ -12,7 +12,11 @@ import {
   loadStringingSettings,
   validateBookingWindow,
 } from "@/app/features/stringing-applications/lib/slotEngine";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import {
+  signApplicationAccessToken,
+  verifyAccessToken,
+  verifyOrderAccessToken,
+} from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import { normalizeEmail } from "@/lib/claims";
 import clientPromise, { getDb } from "@/lib/mongodb";
@@ -2323,10 +2327,38 @@ export async function handleSubmitStringingApplication(req: Request) {
       adminDetailUrl,
     });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { message: "success", applicationId: result.applicationId },
       { status: 201 },
     );
+
+    const hasGuestOrderToken = typeof guestClaims?.orderId === "string";
+    const hasGuestRentalToken = typeof (guestClaims as any)?.rentalId === "string";
+    const hasOrderIdInPayload =
+      typeof body?.orderId === "string" && body.orderId.trim().length > 0;
+    const hasRentalIdInPayload =
+      typeof body?.rentalId === "string" && body.rentalId.trim().length > 0;
+    const isGuestStandaloneSubmit =
+      !userId &&
+      !hasGuestOrderToken &&
+      !hasGuestRentalToken &&
+      !hasOrderIdInPayload &&
+      !hasRentalIdInPayload;
+
+    if (isGuestStandaloneSubmit) {
+      const applicationAccessToken = signApplicationAccessToken({
+        applicationId: String(result.applicationId),
+      });
+      response.cookies.set("applicationAccessToken", applicationAccessToken, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    }
+
+    return response;
   } catch (e: any) {
     if (e?.status) {
       return NextResponse.json(

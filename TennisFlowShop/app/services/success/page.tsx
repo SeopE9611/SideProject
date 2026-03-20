@@ -18,7 +18,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import {
+  verifyAccessToken,
+  verifyApplicationAccessToken,
+  verifyOrderAccessToken,
+} from "@/lib/auth.utils";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
 import jwt from "jsonwebtoken";
@@ -81,13 +85,9 @@ function safeVerifyOrderAccessToken(token?: string) {
 function safeVerifyApplicationAccessToken(token?: string) {
   if (!token) return null;
   try {
-    const secret =
-      process.env.ORDER_ACCESS_TOKEN_SECRET ||
-      process.env.REFRESH_TOKEN_SECRET!;
-    return jwt.verify(token, secret) as {
-      orderId?: string;
+    return verifyApplicationAccessToken(token) as {
       applicationId?: string;
-    };
+    } | null;
   } catch {
     return null;
   }
@@ -201,10 +201,7 @@ export default async function StringServiceSuccessPage(props: Props) {
       ownerOrderId &&
       orderAccessPayload.orderId === ownerOrderId) ||
     (applicationAccessPayload?.applicationId &&
-      applicationAccessPayload.applicationId === ownerApplicationId) ||
-    (applicationAccessPayload?.orderId &&
-      ownerOrderId &&
-      applicationAccessPayload.orderId === ownerOrderId)
+      applicationAccessPayload.applicationId === ownerApplicationId)
   );
 
   if (!isMemberOwner && !isGuestOwner) return notFound();
