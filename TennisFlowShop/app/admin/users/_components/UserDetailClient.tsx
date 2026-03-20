@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import AsyncState from "@/components/system/AsyncState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +168,7 @@ type AuditLog = {
 
 export default function UserDetailClient({ id }: { id: string }) {
   const router = useRouter();
-  const { data, isLoading, mutate } = useSWR<UserDetail>(
+  const { data, error, isLoading, mutate } = useSWR<UserDetail>(
     `/api/admin/users/${id}`,
     authenticatedSWRFetcher,
     {
@@ -404,7 +405,21 @@ export default function UserDetailClient({ id }: { id: string }) {
         })
       : "-";
 
-  if (isLoading || !user) {
+  if (error) {
+    return (
+      <AsyncState
+        kind="error"
+        tone="admin"
+        variant="page-center"
+        resourceName="회원 상세"
+        onAction={() => {
+          void mutate();
+        }}
+      />
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="h-10 w-64 rounded-xl bg-muted animate-pulse" />
@@ -413,6 +428,19 @@ export default function UserDetailClient({ id }: { id: string }) {
           <div className="h-60 rounded-2xl border border-border bg-muted/30 animate-pulse" />
         </div>
       </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <AsyncState
+        kind="empty"
+        tone="admin"
+        variant="page-center"
+        resourceName="회원 상세"
+        title="회원 정보를 찾을 수 없습니다"
+        description="회원 ID를 확인한 뒤 다시 시도해 주세요."
+      />
     );
   }
 

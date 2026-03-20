@@ -20,6 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import {
@@ -95,7 +96,7 @@ export default function AdminRentalDetailClient() {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
 
-  const { data, isLoading, mutate } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     id ? `/api/admin/rentals/${id}` : null,
     fetcher,
     {
@@ -315,6 +316,23 @@ export default function AdminRentalDetailClient() {
   };
 
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+        <div className="container py-10">
+          <AsyncState
+            kind="error"
+            tone="admin"
+            variant="page-center"
+            resourceName="대여 상세"
+            onAction={() => {
+              void mutate();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-muted/30 dark:bg-muted/30">

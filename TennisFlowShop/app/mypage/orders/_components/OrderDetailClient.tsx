@@ -8,6 +8,7 @@ import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -304,9 +305,19 @@ export default function OrderDetailClient({
   // 에러/로딩 처리
   if (orderError) {
     return (
-      <div className="text-center text-destructive">
-        주문을 불러오는 중 오류가 발생했습니다.
-      </div>
+      <main className="w-full">
+        <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
+          <AsyncState
+            kind="error"
+            tone="user"
+            variant="page-center"
+            resourceName="주문 상세"
+            onAction={() => {
+              void mutateOrderDetail();
+            }}
+          />
+        </SiteContainer>
+      </main>
     );
   }
 
@@ -326,9 +337,18 @@ export default function OrderDetailClient({
 
   if (!orderDetail) {
     return (
-      <div className="text-center text-muted-foreground">
-        주문 정보를 찾을 수 없습니다.
-      </div>
+      <main className="w-full">
+        <SiteContainer variant="wide" className="py-4 bp-sm:py-6">
+          <AsyncState
+            kind="empty"
+            tone="user"
+            variant="page-center"
+            resourceName="주문 상세"
+            title="주문 정보를 찾을 수 없어요"
+            description="주문 번호를 확인한 뒤 다시 시도해 주세요."
+          />
+        </SiteContainer>
+      </main>
     );
   }
   // quantity 기반으로 총 '장착 서비스 대상 스트링 수량' 계산
