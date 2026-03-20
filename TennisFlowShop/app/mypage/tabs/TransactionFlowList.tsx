@@ -16,7 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useMemo, useState } from 'react';
@@ -62,6 +62,7 @@ type ActivityGroup = {
     linkedApplicationCount: number;
     stringingApplicationId?: string | null;
     cancelStatus?: string | null;
+    cancelReasonSummary?: string | null;
     userConfirmedAt?: string | null;
     reviewPendingCount?: number;
     hasPendingReview?: boolean;
@@ -354,8 +355,54 @@ export default function TransactionFlowList() {
     revalidateOnReconnect: false,
   });
 
+  const patchOrderCancelStatus = async (orderId: string, nextCancelStatus: 'requested' | null) => {
+    await mutate(
+      (currentPages) => {
+        if (!currentPages) return currentPages;
+
+        return currentPages.map((page) => ({
+          ...page,
+          items: page.items.map((item) => {
+            const isTargetOrderCard = item.order?.id === orderId;
+            const isTargetLinkedApplication = item.application?.orderId === orderId;
+
+            if (!isTargetOrderCard && !isTargetLinkedApplication) return item;
+
+            const nextApplication = item.application
+              ? {
+                  ...item.application,
+                  cancelStatus: isTargetLinkedApplication ? nextCancelStatus : item.application.cancelStatus,
+                }
+              : item.application;
+
+            const nextOrder =
+              isTargetOrderCard && item.order
+                ? {
+                    ...item.order,
+                    cancelStatus: nextCancelStatus,
+                    cancelReasonSummary: nextCancelStatus === null ? null : item.order.cancelReasonSummary ?? null,
+                    applicationSummaries: item.order.applicationSummaries?.map((app) =>
+                      app.orderId === orderId
+                        ? {
+                            ...app,
+                            cancelStatus: nextCancelStatus,
+                          }
+                        : app,
+                    ),
+                  }
+                : item.order;
+
+            return { ...item, order: nextOrder, application: nextApplication };
+          }),
+        }));
+      },
+      { revalidate: false },
+    );
+  };
+
   const refreshRelatedQueries = async () => {
     await Promise.all([
+      mutate(undefined, { revalidate: true }),
       globalMutate((key) => typeof key === 'string' && key.startsWith('/api/mypage/activity'), undefined, { revalidate: true }),
       globalMutate((key) => typeof key === 'string' && key.startsWith('/api/users/me/orders'), undefined, { revalidate: true }),
       globalMutate((key) => typeof key === 'string' && key.startsWith('/api/me/rentals'), undefined, { revalidate: true }),
@@ -497,6 +544,7 @@ export default function TransactionFlowList() {
       }
 
       showSuccessToast('주문 취소 요청을 철회했습니다.');
+      await patchOrderCancelStatus(orderId, null);
       await refreshRelatedQueries();
     } catch (e) {
       console.error(e);
@@ -657,7 +705,12 @@ export default function TransactionFlowList() {
                   {todoPrimaryReason ? <Badge variant="default">해야 할 일: {todoPrimaryReason}</Badge> : null}
                   {shouldShowFlowBadge ? <Badge variant="outline">{g.flowLabel}</Badge> : null}
                   {showLinkedStatusBadge ? <Badge variant="secondary">{getLinkedApplicationStatusSummary(linkedApps)}</Badge> : null}
-                  {isCancelRequested ? <Badge variant="warning">취소 요청됨</Badge> : null}
+                  {isCancelRequested ? (
+                    <Badge variant="danger" className="gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      취소 요청됨
+                    </Badge>
+                  ) : null}
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
@@ -1063,7 +1116,11 @@ export default function TransactionFlowList() {
         open={Boolean(cancelOrderDialogId)}
         onOpenChange={(open) => !open && setCancelOrderDialogId(null)}
         orderId={cancelOrderDialogId ?? ''}
-        onSuccess={refreshRelatedQueries}
+        onSuccess={async (orderId) => {
+          if (!orderId) return;
+          await patchOrderCancelStatus(orderId, 'requested');
+          await refreshRelatedQueries();
+        }}
       />
 
       <CancelStringingDialog open={Boolean(cancelApplicationDialogId)} onOpenChange={(open) => !open && setCancelApplicationDialogId(null)} onConfirm={handleApplicationCancelRequest} isSubmitting={isCancelApplicationSubmitting} />
