@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import AsyncState from "@/components/system/AsyncState";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,20 +65,12 @@ export default function PassList() {
 
   if (!isInitialLoading && (error || !data)) {
     return (
-      <Card className="border-0 shadow-2xl">
-        <CardHeader>
-          <CardTitle>패키지 이용권</CardTitle>
-          <CardDescription>보유 중인 교체 서비스 패키지 목록</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-destructive">
-            이용권 정보를 불러오는 중 오류가 발생했습니다.
-          </p>
-          <Button onClick={() => mutate()} variant="outline" className="mt-3">
-            다시 시도
-          </Button>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        variant="card"
+        resourceName="이용권 정보"
+        onAction={() => mutate()}
+      />
     );
   }
 

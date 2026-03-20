@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
@@ -81,7 +82,7 @@ export default function QnAList() {
     return `/api/qna/me?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error } = useSWRInfinite<QnaPage>(
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<QnaPage>(
     getKey,
     fetcher,
     {
@@ -107,7 +108,12 @@ export default function QnAList() {
   // 에러
   if (error) {
     return (
-      <p className="text-center py-6 text-destructive">에러: {error.message}</p>
+      <AsyncState
+        kind="error"
+        variant="card"
+        resourceName="문의 내역"
+        onAction={() => mutate()}
+      />
     );
   }
 

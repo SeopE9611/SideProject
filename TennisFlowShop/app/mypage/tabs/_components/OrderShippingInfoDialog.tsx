@@ -6,6 +6,7 @@ import useSWR from 'swr';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import AsyncState from '@/components/system/AsyncState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -73,7 +74,7 @@ async function copyToClipboard(text: string) {
 export default function OrderShippingInfoDialog({ orderId, className, triggerLabel = '배송/수령 정보' }: { orderId: string; className?: string; triggerLabel?: string }) {
   const [open, setOpen] = useState(false);
   const [cachedData, setCachedData] = useState<OrderDetail | null>(null);
-  const { data, isLoading } = useSWR<OrderDetail>(open ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
+  const { data, isLoading, error, mutate } = useSWR<OrderDetail>(open ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
@@ -154,6 +155,13 @@ export default function OrderShippingInfoDialog({ orderId, className, triggerLab
               <Skeleton className="h-4 w-2/3" />
             </div>
           </div>
+        ) : error && !displayData ? (
+          <AsyncState
+            kind="error"
+            variant="inline"
+            resourceName="배송/수령 정보"
+            onAction={() => mutate()}
+          />
         ) : !hasInvoice ? (
           <div className="space-y-2 text-sm">
             {isVisitPickup ? (

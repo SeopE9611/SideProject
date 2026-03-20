@@ -4,6 +4,7 @@ import ApplicationStatusBadge from "@/app/features/stringing-applications/compon
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -375,9 +376,7 @@ export default function ApplicationsClient() {
 
   // 에러
   if (error) {
-    return (
-      <p className="text-center py-4 text-destructive">에러: {error.message}</p>
-    );
+    return <AsyncState kind="error" variant="card" resourceName="신청 내역" onAction={() => mutate()} />;
   }
 
   const isInitialLoading = !data && isValidating;
