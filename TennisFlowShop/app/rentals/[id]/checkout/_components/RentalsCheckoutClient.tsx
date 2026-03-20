@@ -705,9 +705,6 @@ export default function RentalsCheckoutClient({
         return;
       }
 
-      clearRentalIdemKey();
-      submitIdemKeyRef.current = null;
-
       // 성공 페이지에서 안내를 위해(기존 로직 유지)
       try {
         sessionStorage.setItem("rentals-last-bank", String(selectedBankValue));
@@ -719,6 +716,28 @@ export default function RentalsCheckoutClient({
       } catch {}
 
       const rentalId = String(json?.id ?? "");
+      if (!rentalId) {
+        showErrorToast("결제 완료 정보를 확인하지 못했습니다. 다시 시도해주세요.");
+        return;
+      }
+
+      // 게스트 대여는 success 진입 전에 접근 토큰을 먼저 심는다.
+      if (!userId) {
+        const guestTokenRes = await fetch(
+          `/api/rentals/${rentalId}/guest-token`,
+          {
+            method: "POST",
+            credentials: "include",
+          },
+        );
+        if (!guestTokenRes.ok) {
+          showErrorToast("접근 토큰 설정에 실패했습니다. 다시 시도해주세요.");
+          return;
+        }
+      }
+
+      clearRentalIdemKey();
+      submitIdemKeyRef.current = null;
 
       // 성공 분기는 success 페이지에서 DB 상태를 기준으로 판단한다.
       // legacy query 플래그(withService/stringingSubmitted/stringingApplicationId)는 더 이상 전달하지 않는다.
