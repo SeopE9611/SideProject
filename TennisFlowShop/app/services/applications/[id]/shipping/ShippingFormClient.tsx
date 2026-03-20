@@ -62,6 +62,8 @@ const COURIER_OPTIONS = [
 type Application = {
   _id: string;
   status: string;
+  orderId?: string | null;
+  rentalId?: string | null;
   shippingInfo?: {
     collectionMethod?: string; // 실제 스키마
     selfShip?: SelfShipInfo;
@@ -286,15 +288,22 @@ function SelfShipForm({
   );
 
   const isEdit = Boolean(initial.trackingNo);
+  const defaultReturnTo = `/mypage?${new URLSearchParams({
+    tab: "orders",
+    flowType: "application",
+    flowId: applicationId,
+    from: "orders",
+  }).toString()}`;
 
-  const mypageUrl = `/mypage?${new URLSearchParams({ tab: "applications", id: applicationId }).toString()}`;
-
-  // 신청서로 돌아갈 URL (orderId를 응답에 포함시키고 있으니 그걸 사용)
+  // 신청서로 돌아갈 URL (order/rental/single 문맥 유지)
   const applyUrl = useMemo(() => {
-    const oid = (application as any)?.orderId;
-    return oid
-      ? `/services/apply?orderId=${oid}`
-      : "/services/apply?mode=single";
+    const orderId = application.orderId;
+    if (orderId) return `/services/apply?orderId=${orderId}`;
+
+    const rentalId = application.rentalId;
+    if (rentalId) return `/services/apply?rentalId=${rentalId}`;
+
+    return "/services/apply?mode=single";
   }, [application]);
 
   const [form, setForm] = useState<FormValues>(initial);
@@ -392,10 +401,9 @@ function SelfShipForm({
         router.refresh();
         return;
       }
-      // 3) fallback: 신청 상세(마이페이지)로 이동
-      const mypageUrlFinal = `/mypage?${new URLSearchParams({ tab: "applications", id: applicationId }).toString()}`;
+      // 3) fallback: 통합 마이페이지 상세 진입 규칙(flowType/flowId)으로 이동
       success = true;
-      router.replace(mypageUrlFinal);
+      router.replace(defaultReturnTo);
       router.refresh();
       return;
     } catch (err: any) {
