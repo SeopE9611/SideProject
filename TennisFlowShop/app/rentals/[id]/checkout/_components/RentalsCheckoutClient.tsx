@@ -722,13 +722,18 @@ export default function RentalsCheckoutClient({
       }
 
       // 게스트 대여는 success 진입 전에 접근 토큰을 먼저 심는다.
-      const guestTokenRes = await fetch(`/api/rentals/${rentalId}/guest-token`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!guestTokenRes.ok && guestTokenRes.status !== 400) {
-        showErrorToast("접근 토큰 설정에 실패했습니다. 다시 시도해주세요.");
-        return;
+      if (!userId) {
+        const guestTokenRes = await fetch(
+          `/api/rentals/${rentalId}/guest-token`,
+          {
+            method: "POST",
+            credentials: "include",
+          },
+        );
+        if (!guestTokenRes.ok) {
+          showErrorToast("접근 토큰 설정에 실패했습니다. 다시 시도해주세요.");
+          return;
+        }
       }
 
       clearRentalIdemKey();
