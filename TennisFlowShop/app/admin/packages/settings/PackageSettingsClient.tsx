@@ -27,6 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import AsyncState from "@/components/system/AsyncState";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   type PackageConfig,
@@ -92,7 +93,7 @@ export default function PackageSettingsClient() {
     }
   };
 
-  const { data, isLoading, error } = useSWR<PackageSettingsResponse>(
+  const { data, isLoading, error, mutate } = useSWR<PackageSettingsResponse>(
     "/api/admin/packages/settings",
     authenticatedSWRFetcher,
     {
@@ -284,6 +285,24 @@ export default function PackageSettingsClient() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-muted/30">
+        <div className="container py-6">
+          <AsyncState
+            kind="error"
+            tone="admin"
+            variant="page-center"
+            resourceName="패키지 설정"
+            onAction={() => {
+              void mutate();
+            }}
+          />
         </div>
       </div>
     );

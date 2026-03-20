@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import AsyncState from "@/components/system/AsyncState";
 import {
   Tooltip,
   TooltipContent,
@@ -418,17 +419,15 @@ export default function AdminDashboardClient() {
 
   if (error || !data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>대시보드 데이터를 불러오지 못했습니다</CardTitle>
-          <CardDescription className="break-all">
-            {String(error?.message || "Unknown error")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={() => mutate()}>다시 시도</Button>
-        </CardContent>
-      </Card>
+      <AsyncState
+        kind="error"
+        tone="admin"
+        variant="card"
+        resourceName="대시보드 데이터"
+        onAction={() => {
+          void mutate();
+        }}
+      />
     );
   }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import Loading from "@/app/admin/orders/[id]/loading";
 import AdminCancelOrderDialog from "@/app/features/orders/components/AdminCancelOrderDialog";
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
@@ -13,6 +12,7 @@ import LinkedDocsCard, {
   LinkedDocItem,
 } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -225,13 +225,23 @@ export default function OrderDetailClient({ orderId }: Props) {
   // 로딩/에러 처리
   if (orderError) {
     return (
-      <div className="text-center text-destructive">
-        주문을 불러오는 중 오류가 발생했습니다.
-      </div>
+      <AsyncState
+        kind="error"
+        tone="admin"
+        variant="page-center"
+        resourceName="주문 상세"
+        onAction={() => {
+          void mutateOrder();
+        }}
+      />
     );
   }
   if (!orderDetail) {
-    return <Loading />;
+    return (
+      <div className="py-24 text-center text-sm text-muted-foreground">
+        주문 정보를 불러오는 중입니다.
+      </div>
+    );
   }
 
   // remainingSlots 값을 안전하게 읽어오는 파생값

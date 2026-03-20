@@ -22,6 +22,7 @@ import LinkedDocsCard, {
 } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
+import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -610,9 +611,15 @@ export default function StringingApplicationDetailClient({
 
   if (error)
     return (
-      <div className="text-destructive p-4">
-        신청서를 불러오는 중 오류가 발생했습니다.
-      </div>
+      <AsyncState
+        kind="error"
+        tone={isAdmin ? "admin" : "user"}
+        variant="page-center"
+        resourceName="신청서 상세"
+        onAction={() => {
+          void mutate();
+        }}
+      />
     );
   if (isLoading || !data) return <StringingApplicationDetailSkeleton />;
 
@@ -2117,6 +2124,7 @@ export default function StringingApplicationDetailClient({
             <div className="mt-6">
               <StringingApplicationHistory
                 applicationId={applicationId}
+                isAdmin={isAdmin}
                 onHistoryMutate={(mutateFn) => {
                   historyMutateRef.current = mutateFn;
                 }}

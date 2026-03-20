@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import AsyncState from "@/components/system/AsyncState";
 import {
   Clock,
   CheckCircle,
@@ -142,9 +143,11 @@ interface HistoryResponse {
 export default function StringingApplicationHistory({
   applicationId,
   onHistoryMutate,
+  isAdmin = false,
 }: {
   applicationId: string;
   onHistoryMutate?: (mutateFn: () => Promise<any>) => void;
+  isAdmin?: boolean;
 }) {
   const [page, setPage] = useState(1);
   const url = `/api/applications/stringing/${applicationId}/history?page=${page}&limit=${LIMIT}`;
@@ -211,13 +214,17 @@ export default function StringingApplicationHistory({
             </div>
           ))
         ) : hasDataError ? (
-          <div className="py-10 text-center text-destructive">
-            처리 이력을 불러올 수 없습니다.
-          </div>
+          <AsyncState
+            kind="error"
+            variant="card"
+            tone={isAdmin ? "admin" : "user"}
+            resourceName="신청 처리 이력"
+            onAction={() => {
+              void mutateHistory();
+            }}
+          />
         ) : shouldShowEmptyState ? (
-          <div className="py-10 text-center text-muted-foreground">
-            아직 처리 이력이 없습니다.
-          </div>
+          <AsyncState kind="empty" variant="card" resourceName="신청 처리 이력" />
         ) : shouldShowRows ? (
           historyItems.map((log, idx) => {
             const { Icon, wrapperClasses, iconClasses } = getIconProps(
