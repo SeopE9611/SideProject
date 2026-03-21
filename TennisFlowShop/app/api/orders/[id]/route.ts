@@ -17,6 +17,7 @@ import {
   LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
   isApplicationEligibleForLinkedStage,
 } from "@/lib/admin/linked-flow-stage";
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -79,13 +80,6 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   if (collectionMethod === "visit") return "방문 접수";
   if (collectionMethod === "courier_pickup") return "기사 방문 수거";
   return "발송 접수";
-}
-
-function needsInboundTracking(collectionMethod?: string | null): boolean {
-  const normalized = String(collectionMethod ?? "")
-    .trim()
-    .toLowerCase();
-  return ["self_ship", "self_send", "self-ship"].includes(normalized);
 }
 
 function getTensionSummary(lines: any[]): string | null {
@@ -357,15 +351,30 @@ export async function GET(
         app?.stringDetails?.preferredTime ?? "",
       ).trim();
       const selfShip = app?.shippingInfo?.selfShip ?? null;
+      const collectionMethod = normalizeCollection(
+        app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "self_ship",
+      );
+      const orderHasRacket =
+        Array.isArray(order?.items) &&
+        order.items.some((it: any) => it?.kind === "racket");
+      const inboundRequired = app?.rentalId
+        ? false
+        : app?.orderId
+          ? !orderHasRacket
+          : true;
+      const needsInboundTracking =
+        inboundRequired && collectionMethod === "self_ship";
       return {
         id: app._id?.toString(),
         status: app.status ?? "draft",
         cancelRequestStatus: app?.cancelRequest?.status ?? null,
         createdAt: app.createdAt ?? null,
         updatedAt: app.updatedAt ?? null,
-        needsInboundTracking: needsInboundTracking(app?.collectionMethod),
+        collectionMethod,
+        inboundRequired,
+        needsInboundTracking,
         racketCount: lines.length,
-        receptionLabel: getReceptionLabel(app?.collectionMethod),
+        receptionLabel: getReceptionLabel(collectionMethod),
         tensionSummary: getTensionSummary(lines),
         stringNames,
         reservationLabel:

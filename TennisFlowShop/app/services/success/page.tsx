@@ -316,6 +316,21 @@ export default async function StringServiceSuccessPage(props: Props) {
   const order = orderObjectId
     ? await db.collection("orders").findOne({ _id: orderObjectId })
     : null;
+  const orderHasRacket =
+    Array.isArray((order as any)?.items) &&
+    (order as any).items.some((it: any) => it?.kind === "racket");
+  const inboundRequired =
+    typeof (application as any)?.inboundRequired === "boolean"
+      ? Boolean((application as any).inboundRequired)
+      : application.rentalId
+        ? false
+        : application.orderId
+          ? !orderHasRacket
+          : true;
+  const needsInboundTracking =
+    typeof (application as any)?.needsInboundTracking === "boolean"
+      ? Boolean((application as any).needsInboundTracking)
+      : inboundRequired && cm === "self_ship";
 
   // 합계 계산 유틸
   const sumBy = (items: any[], pred: (it: any) => boolean) =>
@@ -433,7 +448,7 @@ export default async function StringServiceSuccessPage(props: Props) {
             </div>
           </div>
 
-          {isSelfShip && (
+          {needsInboundTracking && (
             <div className="mt-8 md:mt-10 max-w-2xl mx-auto px-4">
               <div className="bg-muted/30 backdrop-blur-sm border border-border rounded-xl p-4 md:p-6 text-center">
                 <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">

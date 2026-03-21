@@ -115,6 +115,13 @@ function makeSms(
 
 // 자가발송이면 운송장 등록 CTA 추가
 function selfShipCta(app: ApplicationCtx, baseUrl: string) {
+  if ((app as any)?.needsInboundTracking === false) return null;
+  if ((app as any)?.needsInboundTracking === true) {
+    return {
+      label: "운송장 등록하기",
+      url: `${baseUrl}/services/applications/${app.applicationId}/shipping`,
+    };
+  }
   const method =
     (app as any)?.shippingInfo?.collectionMethod ??
     (app as any)?.collectionMethod ??
