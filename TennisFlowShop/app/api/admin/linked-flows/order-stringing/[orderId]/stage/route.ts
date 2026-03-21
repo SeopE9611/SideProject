@@ -2,6 +2,7 @@ import {
   onScheduleConfirmed,
   onStatusUpdated,
 } from "@/app/features/notifications/triggers/stringing";
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import { NextResponse } from "next/server";
 import { ClientSession, ObjectId } from "mongodb";
@@ -359,6 +360,31 @@ export async function PATCH(
         stringDetails: appDoc?.stringDetails,
         shippingInfo: appDoc?.shippingInfo,
       };
+      const normalizedCollectionMethod = normalizeCollection(
+        (appDoc as any)?.collectionMethod ??
+          (appDoc as any)?.shippingInfo?.collectionMethod ??
+          "self_ship",
+      );
+      const linkedOrder = await guard.db
+        .collection("orders")
+        .findOne(
+          { _id: new ObjectId(resultPayload.orderId) },
+          { projection: { items: 1 } },
+        );
+      const orderHasRacket =
+        Array.isArray((linkedOrder as any)?.items) &&
+        (linkedOrder as any).items.some((it: any) => it?.kind === "racket");
+      const inboundRequired = (appDoc as any)?.rentalId
+        ? false
+        : appDoc?.orderId
+          ? !orderHasRacket
+          : true;
+      Object.assign(appCtx, {
+        collectionMethod: normalizedCollectionMethod,
+        inboundRequired,
+        needsInboundTracking:
+          inboundRequired && normalizedCollectionMethod === "self_ship",
+      });
 
       const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/admin/applications/stringing/${String(appDoc._id)}`;
 

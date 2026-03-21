@@ -64,6 +64,7 @@ type Application = {
   status: string;
   orderId?: string | null;
   rentalId?: string | null;
+  orderHasRacket?: boolean;
   inboundRequired?: boolean;
   needsInboundTracking?: boolean;
   collectionMethod?: string;
@@ -185,11 +186,15 @@ export default function ShippingFormClient({
     null;
   const normalizedMethod =
     typeof rawMethod === "string" ? normalizeCollection(rawMethod) : "self_ship";
+  const fallbackOrderHasRacket =
+    typeof data.orderHasRacket === "boolean" ? data.orderHasRacket : false;
   const inboundRequired =
     typeof data.inboundRequired === "boolean"
       ? data.inboundRequired
       : data.rentalId
         ? false
+        : data.orderId
+          ? !fallbackOrderHasRacket
         : true;
   const needsInboundTracking =
     typeof data.needsInboundTracking === "boolean"
