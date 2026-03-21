@@ -75,6 +75,35 @@ function getApplicationLines(stringDetails: any): any[] {
   return [];
 }
 
+async function resolveInboundTrackingPolicy(
+  db: any,
+  appDoc: any,
+  preloadedOrder?: any | null,
+) {
+  const collectionMethod = normalizeCollection(
+    appDoc?.collectionMethod ?? appDoc?.shippingInfo?.collectionMethod ?? 'self_ship',
+  );
+
+  let order = preloadedOrder ?? null;
+  if (!order && appDoc?.orderId && ObjectId.isValid(String(appDoc.orderId))) {
+    order = await db.collection('orders').findOne(
+      { _id: new ObjectId(String(appDoc.orderId)) },
+      { projection: { items: 1 } },
+    );
+  }
+
+  const orderHasRacket = Array.isArray(order?.items) && order.items.some((it: any) => it?.kind === 'racket');
+  const inboundRequired = appDoc?.rentalId ? false : appDoc?.orderId ? !orderHasRacket : true;
+  const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+
+  return {
+    collectionMethod,
+    inboundRequired,
+    needsInboundTracking,
+    orderHasRacket,
+  };
+}
+
 async function requireAdminUserFromAccessToken() {
   const cookieStore = await cookies();
   const token = cookieStore.get('accessToken')?.value;
@@ -224,10 +253,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // - 그 외(스트링만 구매+교체 / 단독 신청): 고객 라켓 기반 → 입고 필요
     // - 운송장 필요: 입고가 필요 + self_ship(자가발송)인 경우
     // -------------------------------------------
-    const collectionMethod = normalizeCollection(app.collectionMethod ?? app.shippingInfo?.collectionMethod ?? 'self_ship');
-    const orderHasRacket = Array.isArray(order?.items) && (order as any).items.some((it: any) => it?.kind === 'racket');
-    const inboundRequired = (app as any).rentalId ? false : app.orderId ? !orderHasRacket : true;
-    const needsInboundTracking = inboundRequired && collectionMethod === 'self_ship';
+    const { collectionMethod, inboundRequired, needsInboundTracking, orderHasRacket } = await resolveInboundTrackingPolicy(db, app, order);
 
     // 체크박스 옵션으로 그대로 사용
     const purchasedStrings = orderStrings;
@@ -367,6 +393,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       })),
       purchasedStrings,
       orderStrings,
+      orderHasRacket,
     });
   } catch (e) {
     console.error('[GET stringing_application]', e);
@@ -620,12 +647,17 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
           email: appAfter?.customer?.email ?? appAfter?.userSnapshot?.email ?? appAfter?.guestEmail,
         };
         const appStatus: AppStatus = toAppStatus(appAfter.status ?? '') ?? '검토 중'; //
+        const inboundPolicy = await resolveInboundTrackingPolicy(db, appAfter);
         const appCtx = {
           applicationId: String(appAfter._id),
           orderId: appAfter?.orderId ? String(appAfter.orderId) : null,
+          rentalId: appAfter?.rentalId ? String(appAfter.rentalId) : null,
           status: appStatus,
           stringDetails: appAfter?.stringDetails,
           shippingInfo: appAfter?.shippingInfo,
+          collectionMethod: inboundPolicy.collectionMethod,
+          inboundRequired: inboundPolicy.inboundRequired,
+          needsInboundTracking: inboundPolicy.needsInboundTracking,
         };
 
         // 규칙:
@@ -726,10 +758,17 @@ export async function handleUpdateApplicationStatus(req: Request, context: { par
     //
     applicationId: id,
     orderId: appDoc?.orderId ? String(appDoc.orderId) : null,
+    rentalId: appDoc?.rentalId ? String(appDoc.rentalId) : null,
     status, // 위에서 유효성 보장된 유니온
     stringDetails: appDoc?.stringDetails,
     shippingInfo: appDoc?.shippingInfo,
   };
+  const inboundPolicy = await resolveInboundTrackingPolicy(db, appDoc);
+  Object.assign(appCtx, {
+    collectionMethod: inboundPolicy.collectionMethod,
+    inboundRequired: inboundPolicy.inboundRequired,
+    needsInboundTracking: inboundPolicy.needsInboundTracking,
+  });
 
   const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${id}`; //
 
@@ -1828,6 +1867,21 @@ export async function handleSubmitStringingApplication(req: Request) {
       phone,
       contactPhone,
     };
+    const normalizedCollectionMethod = normalizeCollection(body?.shippingInfo?.collectionMethod ?? 'self_ship');
+    let orderHasRacket = false;
+    if (result.orderObjectId) {
+      const linkedOrder = await db.collection('orders').findOne(
+        { _id: result.orderObjectId },
+        { projection: { items: 1 } },
+      );
+      orderHasRacket = Array.isArray(linkedOrder?.items) && linkedOrder.items.some((it: any) => it?.kind === 'racket');
+    }
+    const inboundRequired = result.rentalObjectId ? false : result.orderObjectId ? !orderHasRacket : true;
+    Object.assign(appCtx, {
+      collectionMethod: normalizedCollectionMethod,
+      inboundRequired,
+      needsInboundTracking: inboundRequired && normalizedCollectionMethod === 'self_ship',
+    });
     const adminDetailUrl = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/admin/applications/stringing/${String(result.applicationId)}`;
 
     await onApplicationSubmitted({

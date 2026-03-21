@@ -14,6 +14,10 @@ export type ShippingInfo = {
 export type ApplicationCtx = {
   applicationId: string;
   orderId?: string | null;
+  rentalId?: string | null;
+  collectionMethod?: string;
+  inboundRequired?: boolean;
+  needsInboundTracking?: boolean;
   status: "draft" | "검토 중" | "접수완료" | "작업 중" | "교체완료" | "취소";
   stringDetails?: {
     preferredDate?: string; // '2025-10-05'
