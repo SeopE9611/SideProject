@@ -23,6 +23,7 @@ import LinkedDocsCard, {
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
+import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -220,6 +221,7 @@ interface ApplicationDetail {
   // 고객→매장 입고/운송장 필요 여부 (서버에서 내려줌)
   inboundRequired?: boolean;
   needsInboundTracking?: boolean;
+  orderHasRacket?: boolean;
 }
 
 // 스트링 교체 서비스용 택배사 라벨/URL 헬퍼
@@ -854,1090 +856,1276 @@ export default function StringingApplicationDetailClient({
   const canEditSelfShip =
     (isAdmin || (userEditableStatuses ?? []).includes(data.status)) &&
     !completedLikeStatuses.includes(data.status);
+  const shouldShowReturnMethod = !(
+    data.orderId && data.orderHasRacket === true
+  );
 
   return (
-    <div className="container py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8">
-      <div className="mx-auto max-w-4xl">
-        {/* 헤더 */}
-        <div className="bg-primary/10 rounded-2xl p-4 border border-primary/20 shadow-lg mb-6 dark:bg-primary/20 bp-sm:p-8 bp-sm:mb-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 bp-sm:mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="bg-card rounded-full p-3 shadow-md">
-                {isAdmin ? (
-                  <Settings className="h-8 w-8 text-foreground" />
-                ) : (
-                  <Target className="h-8 w-8 text-foreground" />
-                )}
+    <main className="w-full">
+      <SiteContainer
+        variant={isAdmin ? "default" : "wide"}
+        className={cn(
+          "py-6 space-y-6 bp-sm:py-10 bp-sm:space-y-8",
+          !isAdmin && "px-0 bp-sm:px-4 bp-md:px-6",
+        )}
+      >
+        <div className={cn("mx-auto", isAdmin ? "max-w-4xl" : "max-w-6xl")}>
+          {/* 헤더 */}
+          <div
+            className={cn(
+              "rounded-2xl shadow-lg mb-6 bp-sm:mb-8",
+              isAdmin
+                ? "bg-primary/10 p-4 border border-primary/20 dark:bg-primary/20 bp-sm:p-8"
+                : "bg-muted/30 border border-border p-4 bp-sm:p-6 bp-md:p-8",
+            )}
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4 bp-sm:mb-6">
+              <div className="flex items-center space-x-4">
+                <div className="bg-card rounded-full p-3 shadow-md">
+                  {isAdmin ? (
+                    <Settings className="h-8 w-8 text-foreground" />
+                  ) : (
+                    <Target className="h-8 w-8 text-foreground" />
+                  )}
+                </div>
+                <div>
+                  <h1
+                    className={cn(
+                      "font-bold tracking-tight text-foreground",
+                      isAdmin ? "text-3xl" : "text-2xl bp-sm:text-3xl",
+                    )}
+                  >
+                    {isAdmin ? "스트링 신청 관리" : "교체서비스 신청 상세"}
+                  </h1>
+                  <p className="mt-1 text-muted-foreground break-all text-sm">
+                    {isAdmin
+                      ? `신청 번호: #${toShortApplicationId(data.id)}`
+                      : `신청번호: ${data.id}`}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                  {isAdmin ? "스트링 신청 관리" : "스트링 신청 상세"}
-                </h1>
-                <p className="mt-1 text-muted-foreground">
-                  신청 번호: #{toShortApplicationId(data.id)}
-                </p>
-              </div>
-            </div>
-            <TooltipProvider>
-              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
-                {!isAdmin && needsInboundTracking && (
+              <TooltipProvider>
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <Link
-                    href={`/services/applications/${data.id}/shipping?${new URLSearchParams(
-                      {
-                        return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
-                      },
-                    ).toString()}`}
+                    href={backUrl}
+                    className="basis-full sm:basis-auto sm:mr-1"
                   >
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
+                      className="w-full bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 sm:w-auto"
                     >
-                      <Truck className="w-4 h-4 mr-2" />
-                      {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      신청 목록으로 돌아가기
                     </Button>
                   </Link>
-                )}
 
-                {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
-                {isAdmin && (
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
-                  >
+                  {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
+                  {!isAdmin && needsInboundTracking && (
                     <Link
-                      href={`/admin/applications/stringing/${data.id}/shipping-update`}
+                      href={`/services/applications/${data.id}/shipping?${new URLSearchParams(
+                        {
+                          return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
+                        },
+                      ).toString()}`}
                     >
-                      <Truck className="mr-1 h-4 w-4" />
-                      {invoice?.trackingNumber
-                        ? "반송 운송장 수정"
-                        : "반송 운송장 등록"}
-                    </Link>
-                  </Button>
-                )}
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
                       <Button
-                        variant={isEditMode ? "destructive" : "outline"}
+                        variant="outline"
                         size="sm"
-                        disabled={!isEditableAllowed}
-                        className={
-                          !isEditableAllowed
-                            ? "opacity-50 cursor-not-allowed"
-                            : isEditMode
-                              ? ""
-                              : "bg-card/70 backdrop-blur-sm border-border hover:bg-muted \
- dark:bg-card/60 dark:hover:bg-secondary/60"
-                        }
-                        onClick={() => {
-                          if (!isEditableAllowed) return;
-                          setIsEditMode((m) => !m);
-                          setEditingCustomer(false);
-                        }}
+                        className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
                       >
-                        <Pencil className="mr-1 h-4 w-4" />
-                        {isEditMode ? "편집 취소" : "편집 모드"}
+                        <Truck className="w-4 h-4 mr-2" />
+                        {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
                       </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!isEditableAllowed && (
-                    <TooltipContent>
-                      현재 상태에서는 편집할 수 없습니다.
-                    </TooltipContent>
+                    </Link>
                   )}
-                </Tooltip>
 
-                {/* 사용자: 서비스 리뷰 작성 버튼 (교체확정 이후에만 노출) */}
-                {!isAdmin && (
-                  <ServiceReviewCTA
-                    applicationId={data.id}
-                    status={data.status}
-                    userConfirmedAt={data.userConfirmedAt ?? null}
-                    className="w-auto h-9 px-3 text-sm"
-                  />
+                  {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
+                  {isAdmin && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="bg-card/70 backdrop-blur-sm border-border hover:bg-muted dark:bg-card/60 dark:hover:bg-secondary/60"
+                    >
+                      <Link
+                        href={`/admin/applications/stringing/${data.id}/shipping-update`}
+                      >
+                        <Truck className="mr-1 h-4 w-4" />
+                        {invoice?.trackingNumber
+                          ? "반송 운송장 수정"
+                          : "반송 운송장 등록"}
+                      </Link>
+                    </Button>
+                  )}
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-block">
+                        <Button
+                          variant={isEditMode ? "destructive" : "outline"}
+                          size="sm"
+                          disabled={!isEditableAllowed}
+                          className={
+                            !isEditableAllowed
+                              ? "opacity-50 cursor-not-allowed"
+                              : isEditMode
+                                ? ""
+                                : "bg-card/70 backdrop-blur-sm border-border hover:bg-muted \
+ dark:bg-card/60 dark:hover:bg-secondary/60"
+                          }
+                          onClick={() => {
+                            if (!isEditableAllowed) return;
+                            setIsEditMode((m) => !m);
+                            setEditingCustomer(false);
+                          }}
+                        >
+                          <Pencil className="mr-1 h-4 w-4" />
+                          {isEditMode ? "편집 취소" : "편집 모드"}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!isEditableAllowed && (
+                      <TooltipContent>
+                        현재 상태에서는 편집할 수 없습니다.
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+
+                  {/* 사용자: 서비스 리뷰 작성 버튼 (교체확정 이후에만 노출) */}
+                  {!isAdmin && (
+                    <ServiceReviewCTA
+                      applicationId={data.id}
+                      status={data.status}
+                      userConfirmedAt={data.userConfirmedAt ?? null}
+                      className="w-auto h-9 px-3 text-sm"
+                    />
+                  )}
+
+                  {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
+                  {!isAdmin && showConfirmExchangeButton && (
+                    <Button
+                      size="sm"
+                      disabled={!canConfirmExchange || isConfirmSubmitting}
+                      onClick={handleConfirmExchange}
+                    >
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      {isConfirmSubmitting
+                        ? "확정 중..."
+                        : isUserConfirmed
+                          ? "교체서비스 확정 완료"
+                          : "교체서비스 확정"}
+                    </Button>
+                  )}
+                </div>
+              </TooltipProvider>
+            </div>
+
+            {/* 신청 요약 정보 */}
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4 bp-sm:gap-6">
+              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    신청일시
+                  </span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {new Date(data.requestedAt).toLocaleDateString()}
+                </p>
+              </div>
+
+              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    총 비용
+                  </span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {data.totalPrice.toLocaleString()}원
+                </p>
+              </div>
+
+              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    라켓 종류
+                  </span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {racketTypeSummary}
+                </p>
+              </div>
+
+              <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    희망 일시
+                  </span>
+                </div>
+                <p className="text-lg font-semibold text-foreground">
+                  {visitTimeLabel}
+                </p>
+              </div>
+            </div>
+            {data.orderId && (
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">주문 수령 방식</span>
+                <Badge
+                  className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass("danger")}`}
+                >
+                  {linkedOrderPickupBadge?.label ?? "선택 없음"}
+                </Badge>
+              </div>
+            )}
+
+            {shouldShowReturnMethod && (
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-foreground">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">반환 방식</span>
+                <Badge
+                  className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}
+                >
+                  {shippingMethodBadge.label}
+                </Badge>
+                {shippingMethodBadge.label === "선택 없음" && (
+                  <span className="text-xs text-muted-foreground">
+                    반환 방식이 아직 선택되지 않았습니다.
+                  </span>
                 )}
-
-                {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
-                {!isAdmin && showConfirmExchangeButton && (
-                  <Button
-                    size="sm"
-                    disabled={!canConfirmExchange || isConfirmSubmitting}
-                    onClick={handleConfirmExchange}
-                  >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    {isConfirmSubmitting
-                      ? "확정 중..."
-                      : isUserConfirmed
-                        ? "교체서비스 확정 완료"
-                        : "교체서비스 확정"}
-                  </Button>
-                )}
-
-                <Link href={backUrl} className="basis-full sm:basis-auto">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start text-muted-foreground/80 hover:text-muted-foreground sm:w-auto sm:justify-center sm:ml-2"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    신청 목록으로 돌아가기
-                  </Button>
-                </Link>
               </div>
-            </TooltipProvider>
-          </div>
+            )}
 
-          {/* 신청 요약 정보 */}
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-4 bp-sm:gap-6">
-            <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  신청일시
-                </span>
+            {!isAdmin && (
+              <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  진행 단계
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  현재 단계:{" "}
+                  <span className="font-medium text-foreground">
+                    {userProgressSteps[currentStepIndex]?.label ?? "접수완료"}
+                  </span>
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {userProgressSteps.map((step, index) => (
+                    <Badge
+                      key={step.key}
+                      variant={index <= currentStepIndex ? "info" : "neutral"}
+                    >
+                      {step.label}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-              <p className="text-lg font-semibold text-foreground">
-                {new Date(data.requestedAt).toLocaleDateString()}
-              </p>
-            </div>
-
-            <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-              <div className="flex items-center space-x-2 mb-2">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  총 비용
-                </span>
-              </div>
-              <p className="text-lg font-semibold text-foreground">
-                {data.totalPrice.toLocaleString()}원
-              </p>
-            </div>
-
-            <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-              <div className="flex items-center space-x-2 mb-2">
-                <Target className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  라켓 종류
-                </span>
-              </div>
-              <p className="text-lg font-semibold text-foreground">
-                {racketTypeSummary}
-              </p>
-            </div>
-
-            <div className="bg-card/70 rounded-xl p-4 backdrop-blur-sm">
-              <div className="flex items-center space-x-2 mb-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">
-                  희망 일시
-                </span>
-              </div>
-              <p className="text-lg font-semibold text-foreground">
-                {visitTimeLabel}
-              </p>
-            </div>
-          </div>
-          {data.orderId && (
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-foreground">
-              <Truck className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">주문 수령 방식</span>
-              <Badge
-                className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass("danger")}`}
-              >
-                {linkedOrderPickupBadge?.label ?? "선택 없음"}
-              </Badge>
-            </div>
-          )}
-
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-foreground">
-            <Truck className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">반환 방식</span>
-            <Badge
-              className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}
-            >
-              {shippingMethodBadge.label}
-            </Badge>
-            {shippingMethodBadge.label === "선택 없음" && (
-              <span className="text-xs text-muted-foreground">
-                반환 방식이 아직 선택되지 않았습니다.
-              </span>
+            )}
+            {/* 취소 요청 상태 안내 (관리자용) */}
+            {isAdmin && cancelInfo && (
+              <AdminCancelRequestCard
+                badgeLabel={cancelInfo.badgeLabel}
+                description={cancelInfo.description}
+                reasonSummary={cancelInfo.reasonSummary}
+                tone={cancelInfo.tone}
+                rightSlot={
+                  <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      환불 계좌 정보
+                    </p>
+                    <dl className="mt-2 space-y-1 text-xs text-foreground">
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">환불 은행</dt>
+                        <dd>
+                          {cancelInfo.refundAccount?.bankLabel || "미입력"}
+                        </dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">계좌번호</dt>
+                        <dd className="font-mono">
+                          {cancelInfo.refundAccount?.account || "미입력"}
+                        </dd>
+                      </div>
+                      <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                        <dt className="text-muted-foreground">예금주</dt>
+                        <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                }
+              />
             )}
           </div>
 
-          {!isAdmin && (
-            <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3">
-              <p className="text-sm font-semibold text-foreground">진행 단계</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                현재 단계:{" "}
-                <span className="font-medium text-foreground">
-                  {userProgressSteps[currentStepIndex]?.label ?? "접수완료"}
-                </span>
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {userProgressSteps.map((step, index) => (
-                  <Badge
-                    key={step.key}
-                    variant={index <= currentStepIndex ? "info" : "neutral"}
-                  >
-                    {step.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-          {/* 취소 요청 상태 안내 (관리자용) */}
-          {isAdmin && cancelInfo && (
-            <AdminCancelRequestCard
-              badgeLabel={cancelInfo.badgeLabel}
-              description={cancelInfo.description}
-              reasonSummary={cancelInfo.reasonSummary}
-              tone={cancelInfo.tone}
-              rightSlot={
-                <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    환불 계좌 정보
-                  </p>
-                  <dl className="mt-2 space-y-1 text-xs text-foreground">
-                    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                      <dt className="text-muted-foreground">환불 은행</dt>
-                      <dd>{cancelInfo.refundAccount?.bankLabel || "미입력"}</dd>
-                    </div>
-                    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                      <dt className="text-muted-foreground">계좌번호</dt>
-                      <dd className="font-mono">
-                        {cancelInfo.refundAccount?.account || "미입력"}
-                      </dd>
-                    </div>
-                    <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                      <dt className="text-muted-foreground">예금주</dt>
-                      <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
-                    </div>
-                  </dl>
-                </div>
-              }
+          {isAdmin && data.orderId && hasOrderStatus && (
+            <LinkedFlowStageCard
+              className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
+              orderId={String(data.orderId)}
+              orderStatus={String(data.orderStatus)}
+              applicationStatus={data.status}
+              disabled={Boolean(linkedStageDisabledReason)}
+              disabledReason={linkedStageDisabledReason}
+              onSaved={async () => {
+                await mutate();
+                await historyMutateRef.current?.();
+                router.refresh();
+              }}
             />
           )}
-        </div>
 
-        {isAdmin && data.orderId && hasOrderStatus && (
-          <LinkedFlowStageCard
-            className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
-            orderId={String(data.orderId)}
-            orderStatus={String(data.orderStatus)}
-            applicationStatus={data.status}
-            disabled={Boolean(linkedStageDisabledReason)}
-            disabledReason={linkedStageDisabledReason}
-            onSaved={async () => {
-              await mutate();
-              await historyMutateRef.current?.();
-              router.refresh();
-            }}
-          />
-        )}
-
-        {/* 상태 카드 */}
-        <Card className="border border-border shadow-xl bg-card overflow-hidden mb-6 bp-sm:mb-8">
-          <CardHeader className="bg-muted/50 border-b border-border pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle>신청 상태</CardTitle>
-              <ApplicationStatusBadge status={data.status} />
-            </div>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              {/* 왼쪽: 안내 문구 */}
-              <div className="text-sm text-muted-foreground">
-                {isCancelled && (
-                  <span className="italic">
-                    취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.
-                  </span>
-                )}
-
-                {!isCancelled && isCancelRequested && (
-                  <span className="italic">
-                    취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.
-                  </span>
-                )}
-
-                {!isCancelled && !isCancelRequested && (
-                  <span>
-                    {new Date(data.requestedAt).toLocaleDateString()}에 접수된
-                    신청입니다.
-                  </span>
-                )}
-                {!isCancelled &&
-                  !isCancelRequested &&
-                  !canConfirmExchange &&
-                  !isUserConfirmed && (
-                    <span className="block">
-                      교체 완료 후 교체서비스 확정을 진행할 수 있습니다.
+          {/* 상태 카드 */}
+          <Card className="border border-border shadow-xl bg-card overflow-hidden mb-6 bp-sm:mb-8">
+            <CardHeader className="bg-muted/50 border-b border-border pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle>신청 상태</CardTitle>
+                <ApplicationStatusBadge status={data.status} />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                {/* 왼쪽: 안내 문구 */}
+                <div className="text-sm text-muted-foreground">
+                  {isCancelled && (
+                    <span className="italic">
+                      취소된 신청서입니다. 상태 변경 및 취소가 불가능합니다.
                     </span>
                   )}
-                {!isCancelled && !isCancelRequested && (
-                  <span className="block">
-                    주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
-                  </span>
-                )}
-              </div>
 
-              <div className="flex flex-wrap gap-2 justify-end">
-                {/* 관리자: 상태 드롭다운 */}
-                {isAdmin && (
-                  <ApplicationStatusSelect
-                    applicationId={data.id}
-                    currentStatus={data.status}
-                    onUpdated={async () => {
-                      await mutate();
-                      if (historyMutateRef.current) {
-                        await historyMutateRef.current();
-                      }
-                    }}
-                    disabled={isCancelled}
-                  />
-                )}
-
-                {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
-                {!isAdmin && !isCancelled && !isCancelRequested && (
-                  <Button
-                    variant="destructive"
-                    onClick={handleOpenCancelDialog}
-                    disabled={isPending}
-                  >
-                    <XCircle className="mr-2 h-4 w-4" />
-                    신청 취소 요청
-                  </Button>
-                )}
-
-                {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
-                {!isAdmin && !isCancelled && isCancelRequested && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleWithdrawCancelRequest}
-                    disabled={isWithdrawingCancel}
-                    className="border-border text-primary hover:bg-muted hover:text-primary"
-                  >
-                    {isWithdrawingCancel
-                      ? "취소 요청 철회 중..."
-                      : "취소 요청 철회"}
-                  </Button>
-                )}
-
-                {/* 관리자: 취소 요청이 들어온 경우에만 승인/거절 버튼 노출 */}
-                {isAdmin &&
-                  isCancelRequested &&
-                  !isCancelled &&
-                  !hasOrderCancelRequested && (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={handleAdminApproveCancel}
-                        disabled={isPending}
-                      >
-                        <XCircle className="mr-1 h-4 w-4" />
-                        취소 승인
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleAdminRejectCancel}
-                        disabled={isPending}
-                      >
-                        취소 거절
-                      </Button>
-                    </>
+                  {!isCancelled && isCancelRequested && (
+                    <span className="italic">
+                      취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.
+                    </span>
                   )}
 
-                {/* 주문에 취소 요청이 걸려 있으면 신청 단독 승인/거절 막기 */}
-                {isAdmin && hasOrderCancelRequested && !isCancelled && (
-                  <p className="text-xs text-destructive mt-2">
-                    이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종
-                    취소 승인/거절은 주문 상세 화면에서 처리해 주세요.
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        {/* 연결 문서(공용 카드) */}
-        {linkedDocs.length > 0 && (
-          <LinkedDocsCard
-            docs={linkedDocs}
-            description={linkedDocsDescription}
-            className="mb-4"
-          />
-        )}
-
-        {isAdmin && (data.orderId || data.rentalId) && (
-          <Card className="mb-8 border border-primary/20 bg-primary/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                연결 업무 기준 관리자 할 일
-              </CardTitle>
-              <CardDescription>
-                {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을
-                안내합니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <p className="text-muted-foreground">
-                현재 단계: {appGuide.stage}
-              </p>
-              <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid gap-4 md:grid-cols-2 bp-sm:gap-6">
-          {/* 고객 정보 */}
-          <Card className="border border-border shadow-xl bg-card overflow-hidden">
-            <CardHeader className="bg-muted/50 border-b border-border pb-3">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <User className="h-5 w-5 text-primary" />
-                  <span>고객 정보</span>
+                  {!isCancelled && !isCancelRequested && (
+                    <span>
+                      {new Date(data.requestedAt).toLocaleDateString()}에 접수된
+                      신청입니다.
+                    </span>
+                  )}
+                  {!isCancelled &&
+                    !isCancelRequested &&
+                    !canConfirmExchange &&
+                    !isUserConfirmed && (
+                      <span className="block">
+                        교체 완료 후 교체서비스 확정을 진행할 수 있습니다.
+                      </span>
+                    )}
+                  {!isCancelled && !isCancelRequested && (
+                    <span className="block">
+                      주문 구매확정과 교체서비스 확정은 별도로 처리됩니다.
+                    </span>
+                  )}
                 </div>
-                {isEditMode && (
-                  <Edit3 className="h-4 w-4 text-muted-foreground" />
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 bp-sm:p-6">
-              {editingCustomer ? (
-                <CustomerEditForm
-                  initialData={{
-                    name: data.customer.name ?? "이름 미입력",
-                    email: data.customer.email ?? "이메일 미입력",
-                    phone: data.customer?.phone ?? "전화번호 미입력",
-                    address: data.customer?.address ?? "주소 미입력",
-                    addressDetail:
-                      data.customer?.addressDetail ?? "상세 주소 미입력",
-                    postalCode: data.customer?.postalCode ?? "우편번호 미입력",
-                  }}
-                  resourcePath={`${baseUrl}/api/applications/stringing`}
-                  entityId={data.id}
-                  onSuccess={() => {
-                    mutate(); // 상세 데이터 갱신
-                    historyMutateRef.current?.(); // 이력 갱신
-                    setEditingCustomer(false); // 폼 닫기
-                  }}
-                  onCancel={() => setEditingCustomer(false)}
-                />
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">이름</p>
-                      <p className="font-semibold text-foreground">
-                        {data.customer.name ?? "정보 없음"}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">이메일</p>
-                      <p className="font-semibold text-foreground">
-                        {data.customer.email ?? "정보 없음"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">전화번호</p>
-                      <p className="font-semibold text-foreground">
-                        {data.customer?.phone ?? "정보 없음"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        {customerAddressLabel}
-                      </p>
-                      <p className="font-semibold text-foreground">
-                        {customerAddressValue}
-                      </p>
-                      {!isVisit && data.customer?.addressDetail && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {data.customer.addressDetail}
-                        </p>
-                      )}
-                      {customerAddressSubValue && (
-                        <p className="text-sm text-muted-foreground">
-                          {customerAddressSubLabel}: {customerAddressSubValue}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-
-            {!editingCustomer && isEditMode && (
-              <CardFooter className="pt-2 flex justify-center bg-muted/50">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingCustomer(true)}
-                  className="hover:bg-muted border-border"
-                >
-                  고객 정보 수정
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-
-          {/* 결제 정보 */}
-          <Card className="border border-border shadow-xl bg-card overflow-hidden">
-            <CardHeader className="bg-muted/50 border-b border-border flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
-              </CardTitle>
-              <div className="flex items-center space-x-2">
-                {(() => {
-                  const pay = getPaymentStatusBadgeSpec(paymentStatus);
-                  return (
-                    <Badge
-                      variant={pay.variant}
-                      className={cn(badgeBase, badgeSizeSm)}
-                    >
-                      {paymentStatus}
-                    </Badge>
-                  );
-                })()}
-                {isEditMode && (
-                  <Edit3 className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-4 bp-sm:p-6">
-              {editingPayment ? (
-                <PaymentEditForm
-                  initialData={{
-                    depositor: data.shippingInfo?.depositor || "",
-                  }}
-                  resourcePath={`${baseUrl}/api/applications/stringing`}
-                  entityId={data.id}
-                  onSuccess={() => {
-                    mutate(); // 상세 데이터 갱신
-                    historyMutateRef.current?.(); // 처리 이력 컴포넌트 갱신
-                    setEditingPayment(false); // 폼 닫기
-                  }}
-                  onCancel={() => setEditingPayment(false)}
-                />
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-3 bg-muted rounded-lg">
-                    <PaymentMethodDetail
-                      method={paymentMethodLabel}
-                      bankKey={data.shippingInfo?.bank}
-                      depositor={data.shippingInfo?.depositor}
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {/* 관리자: 상태 드롭다운 */}
+                  {isAdmin && (
+                    <ApplicationStatusSelect
+                      applicationId={data.id}
+                      currentStatus={data.status}
+                      onUpdated={async () => {
+                        await mutate();
+                        if (historyMutateRef.current) {
+                          await historyMutateRef.current();
+                        }
+                      }}
+                      disabled={isCancelled}
                     />
-                  </div>
-                  {/* 패키지 사용 정보 요약 */}
-                  {data.packageInfo && (
-                    <div
-                      className={
-                        data.packageInfo.applied
-                          ? "p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted"
-                          : "p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40"
-                      }
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className="mt-0.5">
-                          <Ticket className="h-4 w-4 text-foreground" />
-                        </div>
-                        <div className="flex-1 text-xs leading-relaxed">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-foreground">
-                              패키지 사용 정보
-                            </span>
-                            <Badge
-                              variant="outline"
-                              className={
-                                data.packageInfo.applied
-                                  ? "border-border text-foreground"
-                                  : "border-border text-muted-foreground "
-                              }
-                            >
-                              {data.packageInfo.applied
-                                ? "이번 신청에 패키지 적용"
-                                : "이번 신청에는 패키지 미사용"}
-                            </Badge>
-                          </div>
-
-                          {/* 본문 설명 */}
-                          {data.packageInfo.applied ? (
-                            <p className="text-foreground">
-                              이번 신청에서 패키지{" "}
-                              <span className="font-semibold">
-                                {data.packageInfo.useCount}회
-                              </span>
-                              가 차감되었습니다.
-                            </p>
-                          ) : (
-                            <p className="text-muted-foreground">
-                              이 신청은 패키지 기준으로는{" "}
-                              <span className="font-semibold">
-                                {data.packageInfo.useCount}회
-                              </span>
-                              에 해당하지만, 실제로 패키지는 사용되지
-                              않았습니다.
-                            </p>
-                          )}
-
-                          {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
-                          {data.packageInfo.passId && (
-                            <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                              {data.packageInfo.passTitle && (
-                                <span className="font-medium">
-                                  {data.packageInfo.passTitle}
-                                </span>
-                              )}
-                              {typeof data.packageInfo.packageSize ===
-                                "number" && (
-                                <span>총 {data.packageInfo.packageSize}회</span>
-                              )}
-                              {typeof data.packageInfo.usedCount ===
-                                "number" && (
-                                <span>사용 {data.packageInfo.usedCount}회</span>
-                              )}
-                              {typeof data.packageInfo.remainingCount ===
-                                "number" && (
-                                <span>
-                                  잔여 {data.packageInfo.remainingCount}회
-                                </span>
-                              )}
-                              {data.packageInfo.expiresAt && (
-                                <span>
-                                  만료일{" "}
-                                  {new Date(
-                                    data.packageInfo.expiresAt,
-                                  ).toLocaleDateString("ko-KR")}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
                   )}
 
-                  {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
-                  {data.packageConsumptions &&
-                    data.packageConsumptions.length > 0 && (
-                      <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted">
-                        <div className="mb-1 flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-foreground" />
-                            <span className="font-semibold">
-                              패키지 차감 이력
-                            </span>
-                          </div>
-                          <span className="text-[11px] text-muted-foreground">
-                            총 {totalPackageConsumed}회
-                          </span>
-                        </div>
-                        <ul className="space-y-1.5">
-                          {data.packageConsumptions.map((c) => (
-                            <li
-                              key={c.id}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="text-[11px] text-muted-foreground">
-                                {new Date(c.usedAt).toLocaleString("ko-KR", {
-                                  dateStyle: "short",
-                                  timeStyle: "short",
-                                })}
-                              </span>
-                              <span className="text-[11px] font-medium text-primary">
-                                {c.count ?? 1}회 사용
-                                {c.reverted && (
-                                  <span className="ml-1 text-[10px] text-destructive">
-                                    (복원됨)
-                                  </span>
-                                )}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                  {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
+                  {!isAdmin && !isCancelled && !isCancelRequested && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleOpenCancelDialog}
+                      disabled={isPending}
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      신청 취소 요청
+                    </Button>
+                  )}
+
+                  {/* 사용자: 이미 취소 요청 상태 → "취소 요청 철회" 버튼 */}
+                  {!isAdmin && !isCancelled && isCancelRequested && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleWithdrawCancelRequest}
+                      disabled={isWithdrawingCancel}
+                      className="border-border text-primary hover:bg-muted hover:text-primary"
+                    >
+                      {isWithdrawingCancel
+                        ? "취소 요청 철회 중..."
+                        : "취소 요청 철회"}
+                    </Button>
+                  )}
+
+                  {/* 관리자: 취소 요청이 들어온 경우에만 승인/거절 버튼 노출 */}
+                  {isAdmin &&
+                    isCancelRequested &&
+                    !isCancelled &&
+                    !hasOrderCancelRequested && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={handleAdminApproveCancel}
+                          disabled={isPending}
+                        >
+                          <XCircle className="mr-1 h-4 w-4" />
+                          취소 승인
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleAdminRejectCancel}
+                          disabled={isPending}
+                        >
+                          취소 거절
+                        </Button>
+                      </>
                     )}
 
-                  <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20 dark:bg-primary/20">
-                    <div>
-                      <p className="text-sm text-muted-foreground">결제 금액</p>
-                      <p className="text-xl font-bold text-primary dark:text-foreground">
-                        {data.totalPrice.toLocaleString()}원
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-
-            {!editingPayment && isEditMode && (
-              <CardFooter className="flex justify-center bg-muted/50">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingPayment(true)}
-                  className="hover:bg-muted border-border"
-                >
-                  결제 정보 수정
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-
-          {/* 스트링 정보 */}
-          <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
-            <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
-              <ShoppingCart className="w-6 h-6 text-foreground" />
-              <CardTitle className="mt-2 text-lg font-semibold">
-                신청 스트링 정보
-              </CardTitle>
-            </CardHeader>
-
-            <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant="neutral"
-                    className="px-3 py-1 text-xs sm:text-sm font-medium"
-                  >
-                    스트링 {stringTypeCount}종
-                  </Badge>
-                  <Badge
-                    variant="neutral"
-                    className="px-3 py-1 text-xs sm:text-sm font-medium"
-                  >
-                    라켓 {racketCount}자루
-                  </Badge>
-                </div>
-
-                <div className="text-xs sm:text-sm font-semibold text-primary">
-                  총 장착비 {totalPrice.toLocaleString()}원
-                </div>
-              </div>
-            </div>
-
-            <CardContent className="px-4 pb-4 bp-sm:px-6 bp-sm:pb-6">
-              <div className="space-y-6">
-                <section className="flex items-start justify-between border-b border-dashed border-border pb-4">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <Calendar className="w-5 h-5" />
-                    <span className="font-medium">희망 일시</span>
-                  </div>
-                  <div className="text-right text-foreground text-sm">
-                    {visitTimeLabel}
-                  </div>
-                </section>
-
-                {/* 섹션 2: 라켓별 장착 정보 */}
-                {Array.isArray(data.lines) && data.lines.length > 0 && (
-                  <section className="space-y-3">
-                    <div className="flex items-center gap-2 text-foreground">
-                      <Target className="w-5 h-5" />
-                      <span className="font-medium">라켓별 장착 정보</span>
-                    </div>
-
-                    <div className="space-y-3">
-                      {data.lines.map((line, index) => (
-                        <div
-                          key={line.id ?? index}
-                          className="rounded-xl px-4 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40"
-                        >
-                          {/* 라켓 이름 + 순번 */}
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="font-medium text-foreground">
-                              라켓 {index + 1}
-                              {line.racketType ? ` · ${line.racketType}` : ""}
-                            </p>
-                            {(line.tensionMain || line.tensionCross) && (
-                              <Badge
-                                variant="info"
-                                className="px-2 py-1 text-xs"
-                              >
-                                텐션{" "}
-                                {line.tensionMain
-                                  ? `${line.tensionMain}LB`
-                                  : "-"}{" "}
-                                /{" "}
-                                {line.tensionCross
-                                  ? `${line.tensionCross}LB`
-                                  : "-"}
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* 스트링 이름 */}
-                          {line.stringName && (
-                            <p className="text-xs text-foreground">
-                              스트링:{" "}
-                              <span className="font-medium">
-                                {line.stringName}
-                              </span>
-                            </p>
-                          )}
-
-                          {/* 라켓별 메모 */}
-                          {line.note && (
-                            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                              메모: {line.note}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* 섹션 3: 장착 상품 정보 (스트링 상품 리스트) */}
-                {data.items && data.items.length > 0 && (
-                  <section className="space-y-2">
-                    <div className="flex items-center gap-2 text-foreground">
-                      <ShoppingCart className="w-5 h-5" />
-                      <span className="font-medium">장착 상품 정보</span>
-                    </div>
-
-                    <div className="overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60">
-                      {/* 헤더 행 */}
-                      <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted dark:bg-card/70">
-                        <span>상품명</span>
-                        <span className="text-center">수량</span>
-                        <span className="text-right">장착비</span>
-                      </div>
-
-                      {/* 데이터 행 */}
-                      {data.items.map((item, index) => (
-                        <div
-                          key={`${item.id}-${index}`}
-                          className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-border/70"
-                        >
-                          <div className="pr-2">
-                            <p className="font-medium text-foreground truncate">
-                              {item.name}
-                            </p>
-                          </div>
-                          <div className="text-center text-xs text-muted-foreground">
-                            x {item.quantity}개
-                          </div>
-                          <div className="text-right font-semibold text-foreground">
-                            {item.price.toLocaleString()}원
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* 섹션 4: 라켓 종류 요약 */}
-                <section className="flex items-start justify-between border-t border-dashed border-border pt-4">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <Target className="w-5 h-5" />
-                    <span className="font-medium">라켓 종류</span>
-                  </div>
-                  <div className="text-right text-foreground text-sm max-w-xs">
-                    {racketTypeSummary}
-                  </div>
-                </section>
-              </div>
-            </CardContent>
-
-            {/* 수정 버튼 */}
-            {isEditMode && (
-              <CardFooter className="flex justify-center pt-2 bg-muted/50">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsStringModalOpen(true)}
-                  className="hover:bg-muted border-border"
-                >
-                  스트링 정보 수정
-                </Button>
-              </CardFooter>
-            )}
-
-            <Dialog
-              open={isStringModalOpen}
-              onOpenChange={setIsStringModalOpen}
-            >
-              <DialogTrigger asChild></DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogTitle className="text-xl font-semibold mb-4">
-                  신청 스트링 정보 수정
-                </DialogTitle>
-                <StringInfoEditForm
-                  id={data.id}
-                  initial={{
-                    desiredDateTime:
-                      data.stringDetails.preferredDate &&
-                      data.stringDetails.preferredTime
-                        ? `${data.stringDetails.preferredDate}T${data.stringDetails.preferredTime}`
-                        : "",
-                    stringTypes: data.stringDetails.stringTypes,
-                    customStringName: data.stringDetails.customStringName,
-                    racketType: data.stringDetails.racketType,
-                  }}
-                  stringOptions={data.purchasedStrings}
-                  onDone={() => setIsStringModalOpen(false)}
-                  mutateData={mutate}
-                  mutateHistory={() => historyMutateRef.current?.()}
-                  /** 필드 제한: 관리자 전체, 일반 사용자는 desiredDateTime만 */
-                  fields={
-                    isAdmin
-                      ? ["desiredDateTime", "stringType", "racketType"]
-                      : ["desiredDateTime"]
-                  }
-                />
-                <DialogClose asChild>
-                  <Button variant="outline" className="mt-4 bg-transparent">
-                    닫기
-                  </Button>
-                </DialogClose>
-              </DialogContent>
-            </Dialog>
-          </Card>
-
-          {/* 요청사항 카드 */}
-          <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
-            <CardHeader className="bg-muted/50 border-b border-border pb-3">
-              <CardTitle className="flex items-center justify-between">
-                <span>요청사항</span>
-                {isEditMode && (
-                  <Edit3 className="h-4 w-4 text-muted-foreground" />
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 bp-sm:p-6">
-              {editingRequirements ? (
-                <RequirementsEditForm
-                  initial={data.stringDetails.requirements ?? ""}
-                  resourcePath={`${baseUrl}/api/applications/stringing`}
-                  entityId={data.id}
-                  onSuccess={() => {
-                    mutate();
-                    historyMutateRef.current?.();
-                    setEditingRequirements(false);
-                  }}
-                  onCancel={() => setEditingRequirements(false)}
-                />
-              ) : data.stringDetails.requirements?.trim() ? (
-                <div className="bg-warning/10 border border-border rounded-lg p-4 dark:bg-warning/15">
-                  <p className="text-foreground whitespace-pre-line">
-                    {data.stringDetails.requirements}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-muted-foreground italic">
-                  요청사항이 없습니다.
-                </p>
-              )}
-            </CardContent>
-            {!editingRequirements && isEditMode && (
-              <CardFooter className="flex justify-center bg-muted/50">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setEditingRequirements(true)}
-                  className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
-                >
-                  요청사항 수정
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-        </div>
-        {/* 관리자 전용 운송장 정보 카드 */}
-        <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
-          {isAdmin && (
-            <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
-              <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
-                <Truck className="h-5 w-5 text-foreground" />
-                <CardTitle className="mt-2 text-lg font-semibold">
-                  배송 방향별 운송 정보
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
-                {/* 자가 발송(사용자 → 매장) */}
-                <div className="rounded-lg border border-dashed border-border p-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    라켓 발송 정보
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    매장으로 보내는 라켓의 택배 정보를 확인합니다.
-                  </p>
-                  {data.shippingInfo?.selfShip?.trackingNo ? (
-                    <div className="mt-2 space-y-1 text-sm text-foreground">
-                      <p>
-                        택배사: {data.shippingInfo.selfShip.courier || "미입력"}
-                      </p>
-                      <p>
-                        운송장:
-                        <a
-                          href={
-                            buildTrackingUrl(
-                              data.shippingInfo.selfShip.courier,
-                              data.shippingInfo.selfShip.trackingNo,
-                            ) ?? "#"
-                          }
-                          target="_blank"
-                          rel="noreferrer"
-                          className="underline underline-offset-2"
-                        >
-                          {data.shippingInfo.selfShip.trackingNo}
-                        </a>
-                      </p>
-                      <p>
-                        발송일:{" "}
-                        {data.shippingInfo.selfShip.shippedAt
-                          ? new Date(
-                              data.shippingInfo.selfShip.shippedAt,
-                            ).toLocaleDateString("ko-KR")
-                          : "-"}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      등록된 라켓 발송 정보가 없습니다.
+                  {/* 주문에 취소 요청이 걸려 있으면 신청 단독 승인/거절 막기 */}
+                  {isAdmin && hasOrderCancelRequested && !isCancelled && (
+                    <p className="text-xs text-destructive mt-2">
+                      이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다.
+                      최종 취소 승인/거절은 주문 상세 화면에서 처리해 주세요.
                     </p>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+          {/* 연결 문서(공용 카드) */}
+          {linkedDocs.length > 0 && (
+            <LinkedDocsCard
+              docs={linkedDocs}
+              description={linkedDocsDescription}
+              className="mb-4"
+            />
+          )}
 
-                {/* 매장 발송(매장 → 사용자) */}
-                <div className="rounded-lg border border-dashed border-border p-4">
-                  <p className="text-sm font-semibold text-foreground">
-                    반송 정보
+          {isAdmin && (data.orderId || data.rentalId) && (
+            <Card className="mb-8 border border-primary/20 bg-primary/5">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">
+                  연결 업무 기준 관리자 할 일
+                </CardTitle>
+                <CardDescription>
+                  {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을
+                  안내합니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-1 text-sm">
+                <p className="text-muted-foreground">
+                  현재 단계: {appGuide.stage}
+                </p>
+                <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="grid gap-4 md:grid-cols-2 bp-sm:gap-6">
+            {/* 고객 정보 */}
+            <Card className="border border-border shadow-xl bg-card overflow-hidden">
+              <CardHeader className="bg-muted/50 border-b border-border pb-3">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-5 w-5 text-primary" />
+                    <span>고객 정보</span>
+                  </div>
+                  {isEditMode && (
+                    <Edit3 className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 bp-sm:p-6">
+                {editingCustomer ? (
+                  <CustomerEditForm
+                    initialData={{
+                      name: data.customer.name ?? "이름 미입력",
+                      email: data.customer.email ?? "이메일 미입력",
+                      phone: data.customer?.phone ?? "전화번호 미입력",
+                      address: data.customer?.address ?? "주소 미입력",
+                      addressDetail:
+                        data.customer?.addressDetail ?? "상세 주소 미입력",
+                      postalCode:
+                        data.customer?.postalCode ?? "우편번호 미입력",
+                    }}
+                    resourcePath={`${baseUrl}/api/applications/stringing`}
+                    entityId={data.id}
+                    onSuccess={() => {
+                      mutate(); // 상세 데이터 갱신
+                      historyMutateRef.current?.(); // 이력 갱신
+                      setEditingCustomer(false); // 폼 닫기
+                    }}
+                    onCancel={() => setEditingCustomer(false)}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                      <User className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">이름</p>
+                        <p className="font-semibold text-foreground">
+                          {data.customer.name ?? "정보 없음"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">이메일</p>
+                        <p className="font-semibold text-foreground">
+                          {data.customer.email ?? "정보 없음"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          전화번호
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {data.customer?.phone ?? "정보 없음"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
+                      <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          {customerAddressLabel}
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {customerAddressValue}
+                        </p>
+                        {!isVisit && data.customer?.addressDetail && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {data.customer.addressDetail}
+                          </p>
+                        )}
+                        {customerAddressSubValue && (
+                          <p className="text-sm text-muted-foreground">
+                            {customerAddressSubLabel}: {customerAddressSubValue}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+
+              {!editingCustomer && isEditMode && (
+                <CardFooter className="pt-2 flex justify-center bg-muted/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingCustomer(true)}
+                    className="hover:bg-muted border-border"
+                  >
+                    고객 정보 수정
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+
+            {/* 결제 정보 */}
+            <Card className="border border-border shadow-xl bg-card overflow-hidden">
+              <CardHeader className="bg-muted/50 border-b border-border flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
+                </CardTitle>
+                <div className="flex items-center space-x-2">
+                  {(() => {
+                    const pay = getPaymentStatusBadgeSpec(paymentStatus);
+                    return (
+                      <Badge
+                        variant={pay.variant}
+                        className={cn(badgeBase, badgeSizeSm)}
+                      >
+                        {paymentStatus}
+                      </Badge>
+                    );
+                  })()}
+                  {isEditMode && (
+                    <Edit3 className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
+              </CardHeader>
+
+              <CardContent className="p-4 bp-sm:p-6">
+                {editingPayment ? (
+                  <PaymentEditForm
+                    initialData={{
+                      depositor: data.shippingInfo?.depositor || "",
+                    }}
+                    resourcePath={`${baseUrl}/api/applications/stringing`}
+                    entityId={data.id}
+                    onSuccess={() => {
+                      mutate(); // 상세 데이터 갱신
+                      historyMutateRef.current?.(); // 처리 이력 컴포넌트 갱신
+                      setEditingPayment(false); // 폼 닫기
+                    }}
+                    onCancel={() => setEditingPayment(false)}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-3 bg-muted rounded-lg">
+                      <PaymentMethodDetail
+                        method={paymentMethodLabel}
+                        bankKey={data.shippingInfo?.bank}
+                        depositor={data.shippingInfo?.depositor}
+                      />
+                    </div>
+                    {/* 패키지 사용 정보 요약 */}
+                    {data.packageInfo && (
+                      <div
+                        className={
+                          data.packageInfo.applied
+                            ? "p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted"
+                            : "p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40"
+                        }
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="mt-0.5">
+                            <Ticket className="h-4 w-4 text-foreground" />
+                          </div>
+                          <div className="flex-1 text-xs leading-relaxed">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-foreground">
+                                패키지 사용 정보
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  data.packageInfo.applied
+                                    ? "border-border text-foreground"
+                                    : "border-border text-muted-foreground "
+                                }
+                              >
+                                {data.packageInfo.applied
+                                  ? "이번 신청에 패키지 적용"
+                                  : "이번 신청에는 패키지 미사용"}
+                              </Badge>
+                            </div>
+
+                            {/* 본문 설명 */}
+                            {data.packageInfo.applied ? (
+                              <p className="text-foreground">
+                                이번 신청에서 패키지{" "}
+                                <span className="font-semibold">
+                                  {data.packageInfo.useCount}회
+                                </span>
+                                가 차감되었습니다.
+                              </p>
+                            ) : (
+                              <p className="text-muted-foreground">
+                                이 신청은 패키지 기준으로는{" "}
+                                <span className="font-semibold">
+                                  {data.packageInfo.useCount}회
+                                </span>
+                                에 해당하지만, 실제로 패키지는 사용되지
+                                않았습니다.
+                              </p>
+                            )}
+
+                            {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
+                            {data.packageInfo.passId && (
+                              <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                                {data.packageInfo.passTitle && (
+                                  <span className="font-medium">
+                                    {data.packageInfo.passTitle}
+                                  </span>
+                                )}
+                                {typeof data.packageInfo.packageSize ===
+                                  "number" && (
+                                  <span>
+                                    총 {data.packageInfo.packageSize}회
+                                  </span>
+                                )}
+                                {typeof data.packageInfo.usedCount ===
+                                  "number" && (
+                                  <span>
+                                    사용 {data.packageInfo.usedCount}회
+                                  </span>
+                                )}
+                                {typeof data.packageInfo.remainingCount ===
+                                  "number" && (
+                                  <span>
+                                    잔여 {data.packageInfo.remainingCount}회
+                                  </span>
+                                )}
+                                {data.packageInfo.expiresAt && (
+                                  <span>
+                                    만료일{" "}
+                                    {new Date(
+                                      data.packageInfo.expiresAt,
+                                    ).toLocaleDateString("ko-KR")}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
+                    {data.packageConsumptions &&
+                      data.packageConsumptions.length > 0 && (
+                        <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted">
+                          <div className="mb-1 flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5 text-foreground" />
+                              <span className="font-semibold">
+                                패키지 차감 이력
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-muted-foreground">
+                              총 {totalPackageConsumed}회
+                            </span>
+                          </div>
+                          <ul className="space-y-1.5">
+                            {data.packageConsumptions.map((c) => (
+                              <li
+                                key={c.id}
+                                className="flex items-center justify-between"
+                              >
+                                <span className="text-[11px] text-muted-foreground">
+                                  {new Date(c.usedAt).toLocaleString("ko-KR", {
+                                    dateStyle: "short",
+                                    timeStyle: "short",
+                                  })}
+                                </span>
+                                <span className="text-[11px] font-medium text-primary">
+                                  {c.count ?? 1}회 사용
+                                  {c.reverted && (
+                                    <span className="ml-1 text-[10px] text-destructive">
+                                      (복원됨)
+                                    </span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                    <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20 dark:bg-primary/20">
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          결제 금액
+                        </p>
+                        <p className="text-xl font-bold text-primary dark:text-foreground">
+                          {data.totalPrice.toLocaleString()}원
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+
+              {!editingPayment && isEditMode && (
+                <CardFooter className="flex justify-center bg-muted/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingPayment(true)}
+                    className="hover:bg-muted border-border"
+                  >
+                    결제 정보 수정
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+
+            {/* 스트링 정보 */}
+            <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
+              <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
+                <ShoppingCart className="w-6 h-6 text-foreground" />
+                <CardTitle className="mt-2 text-lg font-semibold">
+                  신청 스트링 정보
+                </CardTitle>
+              </CardHeader>
+
+              <div className="mx-6 mt-4 mb-3 rounded-xl border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant="neutral"
+                      className="px-3 py-1 text-xs sm:text-sm font-medium"
+                    >
+                      스트링 {stringTypeCount}종
+                    </Badge>
+                    <Badge
+                      variant="neutral"
+                      className="px-3 py-1 text-xs sm:text-sm font-medium"
+                    >
+                      라켓 {racketCount}자루
+                    </Badge>
+                  </div>
+
+                  <div className="text-xs sm:text-sm font-semibold text-primary">
+                    총 장착비 {totalPrice.toLocaleString()}원
+                  </div>
+                </div>
+              </div>
+
+              <CardContent className="px-4 pb-4 bp-sm:px-6 bp-sm:pb-6">
+                <div className="space-y-6">
+                  <section className="flex items-start justify-between border-b border-dashed border-border pb-4">
+                    <div className="flex items-center gap-2 text-foreground">
+                      <Calendar className="w-5 h-5" />
+                      <span className="font-medium">희망 일시</span>
+                    </div>
+                    <div className="text-right text-foreground text-sm">
+                      {visitTimeLabel}
+                    </div>
+                  </section>
+
+                  {/* 섹션 2: 라켓별 장착 정보 */}
+                  {Array.isArray(data.lines) && data.lines.length > 0 && (
+                    <section className="space-y-3">
+                      <div className="flex items-center gap-2 text-foreground">
+                        <Target className="w-5 h-5" />
+                        <span className="font-medium">라켓별 장착 정보</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {data.lines.map((line, index) => (
+                          <div
+                            key={line.id ?? index}
+                            className="rounded-xl px-4 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40"
+                          >
+                            {/* 라켓 이름 + 순번 */}
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="font-medium text-foreground">
+                                라켓 {index + 1}
+                                {line.racketType ? ` · ${line.racketType}` : ""}
+                              </p>
+                              {(line.tensionMain || line.tensionCross) && (
+                                <Badge
+                                  variant="info"
+                                  className="px-2 py-1 text-xs"
+                                >
+                                  텐션{" "}
+                                  {line.tensionMain
+                                    ? `${line.tensionMain}LB`
+                                    : "-"}{" "}
+                                  /{" "}
+                                  {line.tensionCross
+                                    ? `${line.tensionCross}LB`
+                                    : "-"}
+                                </Badge>
+                              )}
+                            </div>
+
+                            {/* 스트링 이름 */}
+                            {line.stringName && (
+                              <p className="text-xs text-foreground">
+                                스트링:{" "}
+                                <span className="font-medium">
+                                  {line.stringName}
+                                </span>
+                              </p>
+                            )}
+
+                            {/* 라켓별 메모 */}
+                            {line.note && (
+                              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                                메모: {line.note}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* 섹션 3: 장착 상품 정보 (스트링 상품 리스트) */}
+                  {data.items && data.items.length > 0 && (
+                    <section className="space-y-2">
+                      <div className="flex items-center gap-2 text-foreground">
+                        <ShoppingCart className="w-5 h-5" />
+                        <span className="font-medium">장착 상품 정보</span>
+                      </div>
+
+                      <div className="overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60">
+                        {/* 헤더 행 */}
+                        <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-xs font-semibold text-muted-foreground bg-muted dark:bg-card/70">
+                          <span>상품명</span>
+                          <span className="text-center">수량</span>
+                          <span className="text-right">장착비</span>
+                        </div>
+
+                        {/* 데이터 행 */}
+                        {data.items.map((item, index) => (
+                          <div
+                            key={`${item.id}-${index}`}
+                            className="grid grid-cols-[minmax(0,1.6fr)_80px_100px] px-4 py-2 text-sm border-t border-border/70"
+                          >
+                            <div className="pr-2">
+                              <p className="font-medium text-foreground truncate">
+                                {item.name}
+                              </p>
+                            </div>
+                            <div className="text-center text-xs text-muted-foreground">
+                              x {item.quantity}개
+                            </div>
+                            <div className="text-right font-semibold text-foreground">
+                              {item.price.toLocaleString()}원
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* 섹션 4: 라켓 종류 요약 */}
+                  <section className="flex items-start justify-between border-t border-dashed border-border pt-4">
+                    <div className="flex items-center gap-2 text-foreground">
+                      <Target className="w-5 h-5" />
+                      <span className="font-medium">라켓 종류</span>
+                    </div>
+                    <div className="text-right text-foreground text-sm max-w-xs">
+                      {racketTypeSummary}
+                    </div>
+                  </section>
+                </div>
+              </CardContent>
+
+              {/* 수정 버튼 */}
+              {isEditMode && (
+                <CardFooter className="flex justify-center pt-2 bg-muted/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsStringModalOpen(true)}
+                    className="hover:bg-muted border-border"
+                  >
+                    스트링 정보 수정
+                  </Button>
+                </CardFooter>
+              )}
+
+              <Dialog
+                open={isStringModalOpen}
+                onOpenChange={setIsStringModalOpen}
+              >
+                <DialogTrigger asChild></DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogTitle className="text-xl font-semibold mb-4">
+                    신청 스트링 정보 수정
+                  </DialogTitle>
+                  <StringInfoEditForm
+                    id={data.id}
+                    initial={{
+                      desiredDateTime:
+                        data.stringDetails.preferredDate &&
+                        data.stringDetails.preferredTime
+                          ? `${data.stringDetails.preferredDate}T${data.stringDetails.preferredTime}`
+                          : "",
+                      stringTypes: data.stringDetails.stringTypes,
+                      customStringName: data.stringDetails.customStringName,
+                      racketType: data.stringDetails.racketType,
+                    }}
+                    stringOptions={data.purchasedStrings}
+                    onDone={() => setIsStringModalOpen(false)}
+                    mutateData={mutate}
+                    mutateHistory={() => historyMutateRef.current?.()}
+                    /** 필드 제한: 관리자 전체, 일반 사용자는 desiredDateTime만 */
+                    fields={
+                      isAdmin
+                        ? ["desiredDateTime", "stringType", "racketType"]
+                        : ["desiredDateTime"]
+                    }
+                  />
+                  <DialogClose asChild>
+                    <Button variant="outline" className="mt-4 bg-transparent">
+                      닫기
+                    </Button>
+                  </DialogClose>
+                </DialogContent>
+              </Dialog>
+            </Card>
+
+            {/* 요청사항 카드 */}
+            <Card className="md:col-span-2 border border-border shadow-xl bg-card overflow-hidden">
+              <CardHeader className="bg-muted/50 border-b border-border pb-3">
+                <CardTitle className="flex items-center justify-between">
+                  <span>요청사항</span>
+                  {isEditMode && (
+                    <Edit3 className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 bp-sm:p-6">
+                {editingRequirements ? (
+                  <RequirementsEditForm
+                    initial={data.stringDetails.requirements ?? ""}
+                    resourcePath={`${baseUrl}/api/applications/stringing`}
+                    entityId={data.id}
+                    onSuccess={() => {
+                      mutate();
+                      historyMutateRef.current?.();
+                      setEditingRequirements(false);
+                    }}
+                    onCancel={() => setEditingRequirements(false)}
+                  />
+                ) : data.stringDetails.requirements?.trim() ? (
+                  <div className="bg-warning/10 border border-border rounded-lg p-4 dark:bg-warning/15">
+                    <p className="text-foreground whitespace-pre-line">
+                      {data.stringDetails.requirements}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">
+                    요청사항이 없습니다.
                   </p>
-                  {hasStoreShippingInfo ? (
-                    <div className="mt-2 space-y-1 text-sm text-foreground">
-                      {isCourierShipping && invoice?.trackingNumber ? (
-                        <>
-                          <p>택배사: {getCourierLabel(invoice.courier)}</p>
-                          <p>
-                            운송장:
+                )}
+              </CardContent>
+              {!editingRequirements && isEditMode && (
+                <CardFooter className="flex justify-center bg-muted/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingRequirements(true)}
+                    className="hover:bg-warning/10 dark:hover:bg-warning/15 border-border"
+                  >
+                    요청사항 수정
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+          </div>
+          {/* 관리자 전용 운송장 정보 카드 */}
+          <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
+            {isAdmin && (
+              <Card className="border-0 shadow-xl bg-card/80 dark:bg-background/80 backdrop-blur mb-8">
+                <CardHeader className="bg-muted/50 border-b border-border flex flex-col items-center py-4">
+                  <Truck className="h-5 w-5 text-foreground" />
+                  <CardTitle className="mt-2 text-lg font-semibold">
+                    배송 방향별 운송 정보
+                  </CardTitle>
+                </CardHeader>
+
+                <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
+                  {/* 자가 발송(사용자 → 매장) */}
+                  <div className="rounded-lg border border-dashed border-border p-4">
+                    <p className="text-sm font-semibold text-foreground">
+                      라켓 발송 정보
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      매장으로 보내는 라켓의 택배 정보를 확인합니다.
+                    </p>
+                    {data.shippingInfo?.selfShip?.trackingNo ? (
+                      <div className="mt-2 space-y-1 text-sm text-foreground">
+                        <p>
+                          택배사:{" "}
+                          {data.shippingInfo.selfShip.courier || "미입력"}
+                        </p>
+                        <p>
+                          운송장:
+                          <a
+                            href={
+                              buildTrackingUrl(
+                                data.shippingInfo.selfShip.courier,
+                                data.shippingInfo.selfShip.trackingNo,
+                              ) ?? "#"
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline underline-offset-2"
+                          >
+                            {data.shippingInfo.selfShip.trackingNo}
+                          </a>
+                        </p>
+                        <p>
+                          발송일:{" "}
+                          {data.shippingInfo.selfShip.shippedAt
+                            ? new Date(
+                                data.shippingInfo.selfShip.shippedAt,
+                              ).toLocaleDateString("ko-KR")
+                            : "-"}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        등록된 라켓 발송 정보가 없습니다.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 매장 발송(매장 → 사용자) */}
+                  <div className="rounded-lg border border-dashed border-border p-4">
+                    <p className="text-sm font-semibold text-foreground">
+                      반송 정보
+                    </p>
+                    {hasStoreShippingInfo ? (
+                      <div className="mt-2 space-y-1 text-sm text-foreground">
+                        {isCourierShipping && invoice?.trackingNumber ? (
+                          <>
+                            <p>택배사: {getCourierLabel(invoice.courier)}</p>
+                            <p>
+                              운송장:
+                              <a
+                                href={
+                                  buildTrackingUrl(
+                                    invoice.courier,
+                                    invoice.trackingNumber,
+                                  ) ?? undefined
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline underline-offset-2"
+                              >
+                                {invoice.trackingNumber}
+                              </a>
+                            </p>
+                            <p>
+                              발송일:{" "}
+                              {invoice.shippedAt
+                                ? new Date(
+                                    invoice.shippedAt,
+                                  ).toLocaleDateString("ko-KR")
+                                : "-"}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p>
+                              배송 방식:{" "}
+                              {shippingMethod
+                                ? orderShippingMethodLabel(shippingMethod)
+                                : "미입력"}
+                            </p>
+                            <p>
+                              예정일:{" "}
+                              {data.shippingInfo?.estimatedDate
+                                ? new Date(
+                                    data.shippingInfo.estimatedDate,
+                                  ).toLocaleDateString("ko-KR")
+                                : "-"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              운송장 번호는 발급되지 않는 배송 방식입니다.
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        등록된 반송 운송장 정보가 없습니다.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 신청 타임라인: 마이페이지 전용 */}
+            {!isAdmin && (
+              <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
+                <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
+                  <CardTitle className="flex items-center space-x-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <span>신청 타임라인</span>
+                  </CardTitle>
+                  <CardDescription>
+                    접수, 작업, 반송, 확정까지의 진행 흐름을 확인할 수 있습니다.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 bp-sm:p-6">
+                  <div className="space-y-4">
+                    {/* 신청 접수 */}
+                    <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                        <Clock className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">
+                          신청 접수
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {data?.requestedAt
+                            ? new Date(data.requestedAt).toLocaleString("ko-KR")
+                            : "-"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 자가 발송(사용자 → 매장) */}
+                    {selfShip?.trackingNo && (
+                      <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                          <Truck className="h-5 w-5 text-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-foreground">
+                            라켓 발송 완료
+                          </p>
+                          {/* 날짜 */}
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {selfShip.shippedAt
+                              ? new Date(selfShip.shippedAt).toLocaleDateString(
+                                  "ko-KR",
+                                )
+                              : "운송장 번호가 등록되었습니다."}
+                          </p>
+                          {/* 택배사 + 운송장번호 + 조회 링크 */}
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {(selfShip.courier || "택배사 미입력") + " · "}
+                            <a
+                              href={
+                                buildTrackingUrl(
+                                  selfShip.courier,
+                                  selfShip.trackingNo,
+                                ) ?? "#"
+                              }
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline underline-offset-2"
+                            >
+                              {selfShip.trackingNo}
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {/* 매장 발송(매장 → 사용자) */}
+                    {invoice?.trackingNumber && (
+                      <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                          <Truck className="h-5 w-5 text-primary dark:text-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-foreground">
+                            반송 운송장 등록
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {invoice.shippedAt
+                              ? new Date(invoice.shippedAt).toLocaleDateString(
+                                  "ko-KR",
+                                )
+                              : "고객에게 발송을 위한 운송장 번호가 등록되었습니다."}
+                          </p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {getCourierLabel(invoice.courier) + " · "}
                             <a
                               href={
                                 buildTrackingUrl(
                                   invoice.courier,
                                   invoice.trackingNumber,
-                                ) ?? undefined
+                                ) ?? "#"
                               }
                               target="_blank"
                               rel="noreferrer"
@@ -1946,193 +2134,51 @@ export default function StringingApplicationDetailClient({
                               {invoice.trackingNumber}
                             </a>
                           </p>
-                          <p>
-                            발송일:{" "}
-                            {invoice.shippedAt
-                              ? new Date(invoice.shippedAt).toLocaleDateString(
-                                  "ko-KR",
-                                )
-                              : "-"}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p>
-                            배송 방식:{" "}
-                            {shippingMethod
-                              ? orderShippingMethodLabel(shippingMethod)
-                              : "미입력"}
-                          </p>
-                          <p>
-                            예정일:{" "}
-                            {data.shippingInfo?.estimatedDate
-                              ? new Date(
-                                  data.shippingInfo.estimatedDate,
-                                ).toLocaleDateString("ko-KR")
-                              : "-"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            운송장 번호는 발급되지 않는 배송 방식입니다.
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      등록된 반송 운송장 정보가 없습니다.
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                        </div>
+                      </div>
+                    )}
 
-          {/* 신청 타임라인: 마이페이지 전용 */}
-          {!isAdmin && (
-            <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
-              <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-primary" />
-                  <span>신청 타임라인</span>
-                </CardTitle>
-                <CardDescription>
-                  접수, 작업, 반송, 확정까지의 진행 흐름을 확인할 수 있습니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 bp-sm:p-6">
-                <div className="space-y-4">
-                  {/* 신청 접수 */}
-                  <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">
-                        신청 접수
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {data?.requestedAt
-                          ? new Date(data.requestedAt).toLocaleString("ko-KR")
-                          : "-"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 자가 발송(사용자 → 매장) */}
-                  {selfShip?.trackingNo && (
+                    {/* 전체 상태 요약 */}
                     <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        <Truck className="h-5 w-5 text-foreground" />
+                        <CheckCircle2 className="h-5 w-5 text-foreground" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">
-                          라켓 발송 완료
+                          현재 상태
                         </p>
-                        {/* 날짜 */}
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {selfShip.shippedAt
-                            ? new Date(selfShip.shippedAt).toLocaleDateString(
-                                "ko-KR",
-                              )
-                            : "운송장 번호가 등록되었습니다."}
+                        <p className="text-sm text-muted-foreground">
+                          {data?.status
+                            ? `현재 상태: ${data.status}`
+                            : "상태 정보가 없습니다."}
                         </p>
-                        {/* 택배사 + 운송장번호 + 조회 링크 */}
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {(selfShip.courier || "택배사 미입력") + " · "}
-                          <a
-                            href={
-                              buildTrackingUrl(
-                                selfShip.courier,
-                                selfShip.trackingNo,
-                              ) ?? "#"
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                            className="underline underline-offset-2"
-                          >
-                            {selfShip.trackingNo}
-                          </a>
-                        </p>
+                        {data?.updatedAt && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            마지막 변경:{" "}
+                            {new Date(data.updatedAt).toLocaleString("ko-KR")}
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  )}
-                  {/* 매장 발송(매장 → 사용자) */}
-                  {invoice?.trackingNumber && (
-                    <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                        <Truck className="h-5 w-5 text-primary dark:text-foreground" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">
-                          반송 운송장 등록
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {invoice.shippedAt
-                            ? new Date(invoice.shippedAt).toLocaleDateString(
-                                "ko-KR",
-                              )
-                            : "고객에게 발송을 위한 운송장 번호가 등록되었습니다."}
-                        </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {getCourierLabel(invoice.courier) + " · "}
-                          <a
-                            href={
-                              buildTrackingUrl(
-                                invoice.courier,
-                                invoice.trackingNumber,
-                              ) ?? "#"
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                            className="underline underline-offset-2"
-                          >
-                            {invoice.trackingNumber}
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 전체 상태 요약 */}
-                  <div className="flex items-start gap-3 p-3 bg-muted dark:bg-card rounded-lg bp-sm:gap-4 bp-sm:p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                      <CheckCircle2 className="h-5 w-5 text-foreground" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">
-                        현재 상태
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {data?.status
-                          ? `현재 상태: ${data.status}`
-                          : "상태 정보가 없습니다."}
-                      </p>
-                      {data?.updatedAt && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          마지막 변경:{" "}
-                          {new Date(data.updatedAt).toLocaleString("ko-KR")}
-                        </p>
-                      )}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          {/* 처리 이력 */}
-          {applicationId && (
-            <div className="mt-6">
-              <StringingApplicationHistory
-                applicationId={applicationId}
-                isAdmin={isAdmin}
-                onHistoryMutate={(mutateFn) => {
-                  historyMutateRef.current = mutateFn;
-                }}
-              />
-            </div>
-          )}
+                </CardContent>
+              </Card>
+            )}
+            {/* 처리 이력 */}
+            {applicationId && (
+              <div className="mt-6">
+                <StringingApplicationHistory
+                  applicationId={applicationId}
+                  isAdmin={isAdmin}
+                  onHistoryMutate={(mutateFn) => {
+                    historyMutateRef.current = mutateFn;
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </SiteContainer>
       {/* 관리자: 취소 요청 거절 모달 */}
       {isAdmin && (
         <Dialog
@@ -2191,6 +2237,6 @@ export default function StringingApplicationDetailClient({
         onConfirm={handleConfirmCancelRequest}
         isSubmitting={isPending}
       />
-    </div>
+    </main>
   );
 }
