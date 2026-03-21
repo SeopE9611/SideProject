@@ -64,6 +64,9 @@ type Application = {
   status: string;
   orderId?: string | null;
   rentalId?: string | null;
+  inboundRequired?: boolean;
+  needsInboundTracking?: boolean;
+  collectionMethod?: string;
   shippingInfo?: {
     collectionMethod?: string; // 실제 스키마
     selfShip?: SelfShipInfo;
@@ -178,16 +181,25 @@ export default function ShippingFormClient({
   // 자가발송 여부
   const rawMethod =
     data.shippingInfo?.collectionMethod ??
-    (data as any)?.collectionMethod ?? // 최상위 값 폴백
+    data.collectionMethod ??
     null;
-  const isSelfShip =
-    typeof rawMethod === "string" &&
-    normalizeCollection(rawMethod) === "self_ship";
+  const normalizedMethod =
+    typeof rawMethod === "string" ? normalizeCollection(rawMethod) : "self_ship";
+  const inboundRequired =
+    typeof data.inboundRequired === "boolean"
+      ? data.inboundRequired
+      : data.rentalId
+        ? false
+        : true;
+  const needsInboundTracking =
+    typeof data.needsInboundTracking === "boolean"
+      ? data.needsInboundTracking
+      : inboundRequired && normalizedMethod === "self_ship";
 
   // 종료 상태(수정 금지)
   const CLOSED = ["작업 중", "교체완료"];
   const isClosed = CLOSED.includes(String(data?.status));
-  if (!isSelfShip) {
+  if (!needsInboundTracking) {
     return (
       <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
         <Card className="border-border shadow-lg">
@@ -198,12 +210,11 @@ export default function ShippingFormClient({
               </div>
               <div className="space-y-3">
                 <h3 className="text-xl font-bold text-foreground">
-                  자가발송 신청이 아닙니다
+                  운송장 입력이 필요하지 않은 신청입니다
                 </h3>
                 <p className="text-muted-foreground leading-relaxed max-w-md">
-                  현재 신청은 택배 수거 또는 매장 방문 방식입니다.
-                  <br />
-                  운송장 입력이 필요하지 않습니다.
+                  현재 신청은 고객 라켓 입고가 필요하지 않은 유형입니다.
+                  운송장 입력 없이 진행됩니다.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 mt-4">
