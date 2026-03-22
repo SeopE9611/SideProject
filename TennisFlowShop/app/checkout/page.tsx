@@ -1117,7 +1117,7 @@ export default function CheckoutPage() {
                         placeholder="수령인 이름을 입력하세요"
                         className={cn("border-2 focus:border-border transition-colors", showNameError && "border-destructive/30 focus:border-destructive/30")}
                       />
-                      {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
+                      <div className="min-h-[16px]">{showNameError && <p className="text-xs text-destructive">{fieldErrors.name}</p>}</div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm">

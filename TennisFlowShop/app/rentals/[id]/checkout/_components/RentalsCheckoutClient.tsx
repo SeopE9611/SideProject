@@ -69,10 +69,7 @@ const ALLOWED_BANKS = new Set<Bank>(["shinhan", "kookmin", "woori"]);
 const POSTAL_RE = /^\d{5}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
-const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11;
-};
+const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 const isValidAccountDigits = (v: string) => {
   const d = onlyDigits(v);
   return d.length >= 8 && d.length <= 20;
@@ -587,7 +584,7 @@ export default function RentalsCheckoutClient({
         return;
       }
       if (!isValidKoreanPhone(phoneDigits)) {
-        showErrorToast("연락처는 숫자 10~11자리로 입력해주세요.");
+        showErrorToast("올바른 연락처 형식(01012345678)으로 입력해주세요.");
         return;
       }
       if (!isVisitPickup && !POSTAL_RE.test(postalDigits)) {

@@ -60,10 +60,7 @@ type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
-const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11; // 01012345678 / 0212345678 등
-};
+const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
 type UserLite = { id: string; name?: string; email?: string };
 
@@ -428,7 +425,7 @@ export default function PackageCheckoutClient({
     const phoneDigits = onlyDigits(phone);
     if (!phoneDigits) errs.phone = "연락처는 필수입니다.";
     else if (!isValidKoreanPhone(phoneDigits))
-      errs.phone = "연락처는 숫자 10~11자리를 입력해주세요.";
+      errs.phone = "올바른 연락처 형식(01012345678)으로 입력해주세요.";
 
     const depositorTrim = depositor.trim();
     if (!depositorTrim) errs.depositor = "입금자명은 필수입니다.";

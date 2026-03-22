@@ -31,10 +31,7 @@ type Bank = "shinhan" | "kookmin" | "woori";
 // 제출 직전 최종 유효성 가드
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
-const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11;
-};
+const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 const ALLOWED_BANKS = new Set<Bank>(["shinhan", "kookmin", "woori"]);
 const ALLOWED_PICKUP = new Set<PickupMethod>(["courier", "visit"]);
 
@@ -189,7 +186,7 @@ export default function RacketPurchaseCheckoutClient({
       return;
     }
     if (!isValidKoreanPhone(phoneDigits)) {
-      showErrorToast("연락처는 숫자 10~11자리로 입력해주세요.");
+      showErrorToast("올바른 연락처 형식(01012345678)으로 입력해주세요.");
       return;
     }
     if (needsShippingAddress) {
