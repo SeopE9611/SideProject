@@ -8,23 +8,28 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { getDb } from "@/lib/mongodb";
 
 function resolveCheckoutAuthPayload(accessToken?: string, refreshToken?: string) {
   // 1) 우선 accessToken을 사용한다.
   const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;
-  if (accessPayload?.sub) return accessPayload;
+  if (accessPayload?.sub) return { payload: accessPayload, recoveredByRefresh: false };
 
   // 2) accessToken이 만료/누락된 "타이밍 엇갈림" 구간에서는 refreshToken으로 1회 회복 기회를 준다.
   //    여기서 바로 LoginGate로 보내면 로그인 직후/만료 직후에 체감 흔들림이 커지기 때문이다.
-  if (!refreshToken) return null;
+  if (!refreshToken) return { payload: null, recoveredByRefresh: false };
   try {
     const refreshPayload = jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET!,
     ) as jwt.JwtPayload;
-    return refreshPayload?.sub ? refreshPayload : null;
+    return {
+      payload: refreshPayload?.sub ? refreshPayload : null,
+      recoveredByRefresh: Boolean(refreshPayload?.sub),
+    };
   } catch {
-    return null;
+    return { payload: null, recoveredByRefresh: false };
   }
 }
 
@@ -37,13 +42,42 @@ export default async function Page({
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
-  const payload = resolveCheckoutAuthPayload(accessToken, refreshToken);
+  const { payload, recoveredByRefresh } = resolveCheckoutAuthPayload(
+    accessToken,
+    refreshToken,
+  );
 
   if (!payload?.sub) {
     const next =
       "/services/packages/checkout" +
       (sp?.package ? `?package=${sp.package}` : "");
     return <LoginGate next={next} />;
+  }
+
+  if (recoveredByRefresh) {
+    // refresh token 서명 검증 통과만으로 보호 페이지를 열어주면 안 된다.
+    // 만료 직후 회복 UX는 유지하되, users/me · mypage/activity와 같은 기준으로
+    // DB 사용자 상태(존재/탈퇴/정지)를 확인해 정책 일관성을 맞춘다.
+    const subStr = String(payload.sub);
+    if (!ObjectId.isValid(subStr)) {
+      const next =
+        "/services/packages/checkout" +
+        (sp?.package ? `?package=${sp.package}` : "");
+      return <LoginGate next={next} />;
+    }
+    const db = await getDb();
+    const authUser = await db
+      .collection("users")
+      .findOne(
+        { _id: new ObjectId(subStr) },
+        { projection: { _id: 1, isDeleted: 1, isSuspended: 1 } },
+      );
+    if (!authUser || authUser.isDeleted || authUser.isSuspended) {
+      const next =
+        "/services/packages/checkout" +
+        (sp?.package ? `?package=${sp.package}` : "");
+      return <LoginGate next={next} />;
+    }
   }
 
   const blockingOrder = await findBlockingPackageOrderByUserId(
