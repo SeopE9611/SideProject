@@ -8,8 +8,6 @@ import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { getDb } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
 import { AuthHydrator } from "@/app/providers/AuthHydrator";
 import GlobalTokenGuard from "@/components/system/GlobalTokenGuard";
 import TokenRefresher from "@/components/system/TokenRefresher";
@@ -47,25 +45,19 @@ export default async function RootLayout({
 
   let initialUser: any = null;
   if (token) {
-    try {
-      const payload = verifyAccessToken(token);
-      if (payload?.sub) {
-        const db = await getDb();
-        const doc = await db
-          .collection("users")
-          .findOne({ _id: new ObjectId(payload.sub) });
-        if (doc) {
-          initialUser = {
-            id: doc._id.toString(),
-            name: doc.name ?? null,
-            email: doc.email,
-            role: doc.role ?? "user",
-            image: doc.image ?? null,
-          };
-        }
-      }
-    } catch {
-      // 토큰 오류는 초기유저 null
+    const payload = verifyAccessToken(token);
+    if (payload?.sub) {
+      // 루트 layout은 모든 페이지 전환의 공통 경로이므로,
+      // 여기서 매번 DB users.findOne()까지 수행하면 전환 체감이 느려질 수 있다.
+      // 따라서 이번 단계에서는 토큰 payload 기반 "최소 initialUser"만 주입하고,
+      // 상세 사용자 동기화는 기존 bootstrap(/api/users/me → refresh 재시도) 흐름에 맡긴다.
+      initialUser = {
+        id: String(payload.sub),
+        name: typeof payload.name === "string" ? payload.name : null,
+        email: typeof payload.email === "string" ? payload.email : null,
+        role: typeof payload.role === "string" ? payload.role : "user",
+        image: null,
+      };
     }
   }
   // throw new Error('[TEST] app/global error.tsx 동작 확인용');
