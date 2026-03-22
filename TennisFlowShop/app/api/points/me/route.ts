@@ -26,7 +26,7 @@ function mapTx(d: any): PointTransactionListItem {
 }
 
 // 마이페이지에서 "현재 보유 포인트" 및 "최근 적립/사용 내역"을 빠르게 표시하기 위한 엔드포인트
-export async function GET() {
+export async function GET(request: Request) {
   // getCurrentUser 내부에서 토큰 검증(verifyAccessToken 등)이 throw 되어도
   // 라우터가 500으로 터지지 않도록 방어(= 401로 정리)
   let me: any = null;
@@ -51,6 +51,8 @@ export async function GET() {
   }
   const userId = new ObjectId(uidStr);
   const db = await getDb();
+  const url = new URL(request.url);
+  const summaryOnly = url.searchParams.get("summary") === "1";
 
   // 1) 현재 잔액(캐시)
   const user = await db
@@ -74,6 +76,19 @@ export async function GET() {
   const balance = Math.max(0, Math.trunc(balanceRaw));
   const debt = Math.max(0, Math.trunc(debtRaw));
 
+  // 실제 “사용 가능 포인트”
+  const available = Math.max(0, balance - debt);
+
+  // 성능 관점:
+  // - 헤더에서는 recent 내역이 필요 없으므로 summary=1일 때 조회를 생략
+  // - points_transactions 정렬/limit 쿼리를 줄여 페이지 전환 시 체감 지연을 완화
+  if (summaryOnly) {
+    return NextResponse.json(
+      { ok: true, balance, debt, available },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } },
+    );
+  }
+
   // 2) 최근 10개 내역(원장)
   const recentDocs = await db
     .collection("points_transactions")
@@ -81,9 +96,6 @@ export async function GET() {
     .sort({ createdAt: -1 })
     .limit(10)
     .toArray();
-
-  // 실제 “사용 가능 포인트”
-  const available = Math.max(0, balance - debt);
 
   return NextResponse.json(
     { ok: true, balance, debt, available, recent: recentDocs.map(mapTx) },

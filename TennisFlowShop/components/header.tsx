@@ -51,6 +51,19 @@ import { MdSportsTennis } from "react-icons/md";
 /** 재질 카테고리(스트링 타입) 노출 온/오프 */
 const SHOW_MATERIAL_MENU = false;
 
+/**
+ * 헤더 포인트는 "네비게이션마다" 재조회할 필요가 없습니다.
+ * - 같은 세션 안에서는 짧은 TTL 캐시를 사용해 스피너 깜빡임을 줄입니다.
+ * - 결제/적립 직후처럼 강제 갱신이 필요할 때만 커스텀 이벤트로 무효화할 수 있게 준비합니다.
+ */
+const HEADER_POINTS_CACHE_TTL_MS = 30_000;
+let headerPointsCache:
+  | {
+      fetchedAt: number;
+      balance: number;
+    }
+  | null = null;
+
 /** 모바일 브랜드 그리드 */
 function MobileBrandGrid({
   brands,
@@ -260,9 +273,21 @@ const Header = () => {
     }
 
     let cancelled = false;
+    const canUseCache =
+      headerPointsCache &&
+      Date.now() - headerPointsCache.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
+
+    if (canUseCache) {
+      // UX 목적:
+      // - 라우팅/탭 이동 때 "매번 로딩 스피너"를 막기 위해 캐시된 값을 즉시 사용
+      // - 캐시 TTL이 짧아 데이터 신선도도 크게 해치지 않음
+      setPointsBalance(headerPointsCache.balance);
+      setPointsStatus("ready");
+      return;
+    }
 
     setPointsStatus("loading");
-    fetch("/api/points/me", { credentials: "include" })
+    fetch("/api/points/me?summary=1", { credentials: "include" })
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text().catch(() => "");
@@ -273,12 +298,16 @@ const Header = () => {
       .then((data) => {
         if (cancelled) return;
 
-        // 응답이 정상일 때만 실제 값을 렌더한다. (실제 0 포함)
+        // 헤더는 잔액 숫자만 필요하므로 summary 응답 형식만 검증
         if (!data?.ok || typeof data?.balance !== "number") {
           throw new Error("포인트 응답 형식이 올바르지 않습니다.");
         }
         const raw = Number(data.balance);
         const bal = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : 0;
+        headerPointsCache = {
+          fetchedAt: Date.now(),
+          balance: bal,
+        };
         setPointsBalance(bal);
         setPointsStatus("ready");
       })
@@ -292,8 +321,12 @@ const Header = () => {
     return () => {
       cancelled = true;
     };
-    // pathname을 넣어두면 페이지 이동 후에도(체크아웃 성공 이동 등) 헤더 값이 갱신됨
-  }, [user?.id, pathname]);
+    /**
+     * 의존성 설명:
+     * - user.id가 바뀔 때(로그인/로그아웃/계정전환)만 재조회
+     * - pathname 의존성을 제거해 페이지 이동마다 불필요한 포인트 fetch를 막음
+     */
+  }, [user?.id]);
 
   const NAV_LINKS = {
     strings: {
