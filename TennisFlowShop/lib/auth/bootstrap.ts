@@ -8,10 +8,13 @@ let bootInflight: Promise<void> | null = null;
 export function bootstrapOnce(
   setUser: (u: User | null) => void,
   getUser: () => User | null,
+  options?: { force?: boolean },
 ) {
   if (bootInflight) return bootInflight;
-  // 이미 user가 있다면 네트워크 호출 없이 즉시 종료
-  if (getUser()) return Promise.resolve();
+  // 기본 동작은 기존과 동일: 이미 user가 있으면 네트워크 호출 없이 즉시 종료
+  // 단, layout에서 토큰 payload만으로 만든 최소 사용자(부분 정보)는
+  // /api/users/me 기준 상세 동기화가 1회 필요하므로 force 옵션을 허용한다.
+  if (getUser() && !options?.force) return Promise.resolve();
 
   bootInflight = (async () => {
     try {
