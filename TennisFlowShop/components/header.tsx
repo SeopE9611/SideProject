@@ -60,6 +60,7 @@ const HEADER_POINTS_CACHE_TTL_MS = 30_000;
 let headerPointsCache:
   | {
       fetchedAt: number;
+      userId: string;
       balance: number;
     }
   | null = null;
@@ -267,21 +268,37 @@ const Header = () => {
 
   useEffect(() => {
     if (!user) {
+      // 중요:
+      // - 로그아웃(또는 인증 해제) 시 이전 사용자 캐시를 즉시 제거해야
+      //   다음 사용자 로그인 순간에 타인 포인트가 잠깐 보이는 문제를 막을 수 있습니다.
+      // - 이 초기화가 없으면 TTL 안에서 이전 계정 값이 재사용될 수 있습니다.
+      headerPointsCache = null;
       setPointsBalance(null);
       setPointsStatus("loading");
       return;
     }
 
     let cancelled = false;
+    const currentUserId = String(user.id ?? "");
+    // 타입 안정성:
+    // - headerPointsCache를 지역 상수로 먼저 받아두면
+    //   아래 if 블록에서 TS가 null 아님을 안전하게 추론할 수 있습니다.
+    // - 직접 headerPointsCache.balance에 접근하면
+    //   정적 점검에서 "possibly null" 경고가 다시 발생할 수 있습니다.
+    const cachedPoints = headerPointsCache;
     const canUseCache =
-      headerPointsCache &&
-      Date.now() - headerPointsCache.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
+      !!cachedPoints &&
+      cachedPoints.userId === currentUserId &&
+      Date.now() - cachedPoints.fetchedAt < HEADER_POINTS_CACHE_TTL_MS;
 
     if (canUseCache) {
       // UX 목적:
       // - 라우팅/탭 이동 때 "매번 로딩 스피너"를 막기 위해 캐시된 값을 즉시 사용
       // - 캐시 TTL이 짧아 데이터 신선도도 크게 해치지 않음
-      setPointsBalance(headerPointsCache.balance);
+      // userId 비교 이유:
+      // - TTL만 보면 "다른 사용자"의 캐시까지 재사용되는 문제가 생깁니다.
+      // - 반드시 로그인 사용자와 캐시 소유자(userId)가 같을 때만 사용합니다.
+      setPointsBalance(cachedPoints.balance);
       setPointsStatus("ready");
       return;
     }
@@ -306,6 +323,7 @@ const Header = () => {
         const bal = Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : 0;
         headerPointsCache = {
           fetchedAt: Date.now(),
+          userId: currentUserId,
           balance: bal,
         };
         setPointsBalance(bal);
@@ -930,6 +948,9 @@ const Header = () => {
                     variant="destructive"
                     className="h-10 w-full justify-center rounded-xl transition-all duration-200"
                     onClick={async () => {
+                      // 로그아웃 직전 캐시를 선제적으로 비워
+                      // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
+                      headerPointsCache = null;
                       await fetch("/api/logout", {
                         method: "POST",
                         credentials: "include",
