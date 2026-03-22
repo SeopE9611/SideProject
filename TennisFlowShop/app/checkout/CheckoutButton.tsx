@@ -22,10 +22,7 @@ const ALLOWED_SERVICE_PICKUP = new Set([
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
-const isValidKoreanPhone = (v: string) => {
-  const d = onlyDigits(v);
-  return d.length === 10 || d.length === 11;
-};
+const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
 // checkout/page.tsx 의 input id를 활용해 첫 오류 필드로 포커스 이동
 const focusFirst = (ids: string[]) => {
@@ -252,7 +249,7 @@ export default function CheckoutButton({
       }
       if (!isValidKoreanPhone(phoneDigits)) {
         focusFirst(["recipient-phone"]);
-        showErrorToast("연락처는 숫자 10~11자리로 입력해주세요.");
+        showErrorToast("올바른 연락처 형식(01012345678)으로 입력해주세요.");
         return;
       }
 

@@ -536,7 +536,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <Phone className="mt-0.5 h-5 w-5 text-primary" />
                       <div>
                         <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
-                        <p className="text-sm text-muted-foreground">{isVisitPickup ? '방문 수령 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.' : '배송 관련 문의사항은 고객센터(02-123-4567)로 연락주세요.'}</p>
+                        <p className="text-sm text-muted-foreground">{isVisitPickup ? '방문 수령 관련 문의사항은 고객센터(0507-1392-3493)로 연락주세요.' : '배송 관련 문의사항은 고객센터(0507-1392-3493)로 연락주세요.'}</p>
                       </div>
                     </div>
                   </div>
