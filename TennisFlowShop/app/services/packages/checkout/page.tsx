@@ -7,6 +7,26 @@ import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import jwt from "jsonwebtoken";
+
+function resolveCheckoutAuthPayload(accessToken?: string, refreshToken?: string) {
+  // 1) 우선 accessToken을 사용한다.
+  const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;
+  if (accessPayload?.sub) return accessPayload;
+
+  // 2) accessToken이 만료/누락된 "타이밍 엇갈림" 구간에서는 refreshToken으로 1회 회복 기회를 준다.
+  //    여기서 바로 LoginGate로 보내면 로그인 직후/만료 직후에 체감 흔들림이 커지기 때문이다.
+  if (!refreshToken) return null;
+  try {
+    const refreshPayload = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET!,
+    ) as jwt.JwtPayload;
+    return refreshPayload?.sub ? refreshPayload : null;
+  } catch {
+    return null;
+  }
+}
 
 export default async function Page({
   searchParams,
@@ -14,8 +34,10 @@ export default async function Page({
   searchParams: Promise<{ package?: string }>;
 }) {
   const sp = await searchParams;
-  const token = (await cookies()).get("accessToken")?.value;
-  const payload = token ? verifyAccessToken(token) : null;
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+  const payload = resolveCheckoutAuthPayload(accessToken, refreshToken);
 
   if (!payload?.sub) {
     const next =

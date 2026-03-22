@@ -5,6 +5,7 @@ import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 
 export const dynamic = 'force-dynamic';
 
@@ -229,17 +230,26 @@ function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
  *   해당 주문/대여 그룹에 붙여서 1건의 활동으로 보여준다.
  */
 export async function GET(req: Request) {
-  // 1) 인증(프로젝트 기존 패턴 준수)
+  // 1) 인증
+  // - accessToken이 유효하면 그대로 통과
+  // - accessToken 만료/누락 시에도 refreshToken으로 "1회 회복 기회"를 준다.
+  //   (즉시 401을 반환하면 로그인 상태 사용자도 타이밍 이슈로 간헐 Unauthorized를 겪을 수 있음)
   const jar = await cookies();
   const at = jar.get('accessToken')?.value;
-  if (!at) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  const rt = jar.get('refreshToken')?.value;
 
-  let payload: any;
-  try {
-    payload = verifyAccessToken(at);
-  } catch {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  let payload: jwt.JwtPayload | null = at ? (verifyAccessToken(at) as jwt.JwtPayload | null) : null;
+  let recoveredByRefresh = false;
+
+  if (!payload?.sub && rt) {
+    try {
+      payload = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!) as jwt.JwtPayload;
+      recoveredByRefresh = Boolean(payload?.sub);
+    } catch {
+      payload = null;
+    }
   }
+
   if (!payload?.sub) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   const subStr = String(payload.sub);
@@ -269,6 +279,22 @@ export async function GET(req: Request) {
   const take = page * pageSize + pageSize; // buffer = pageSize
 
   const db = (await clientPromise).db();
+  if (recoveredByRefresh) {
+    // refresh 기반 회복으로 진입했을 때만 사용자 상태를 1회 검증한다.
+    // 이렇게 해야 "만료 직후 즉시 401" 문제를 줄이면서도 탈퇴/정지 계정을 우회하지 않는다.
+    const authUser = await db
+      .collection('users')
+      .findOne(
+        { _id: userId },
+        { projection: { _id: 1, isDeleted: 1, isSuspended: 1 } },
+      );
+    if (!authUser || authUser.isDeleted) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    if (authUser.isSuspended) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+  }
 
   const standaloneAppsFilter = {
     userId,
