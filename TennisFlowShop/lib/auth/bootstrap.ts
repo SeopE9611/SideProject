@@ -45,8 +45,18 @@ export function bootstrapOnce(
         }
       }
 
-      // 3) 실패 → 이미 user가 있지 않다면 null로 확정
-      if (!getUser()) setUser(null);
+      // 3) 실패 처리
+      // - 일반 bootstrap(force 아님): 기존 보수 정책 유지
+      //   -> 이미 user가 있으면 UI 흔들림 방지를 위해 즉시 null로 덮어쓰지 않는다.
+      // - 강제 bootstrap(force): layout 토큰 payload 기반 "최소 사용자"를
+      //   /api/users/me로 "상세 사용자 검증"하는 단계이므로,
+      //   여기서 최종 실패하면 해당 최소 사용자는 신뢰할 수 없는 임시값이다.
+      //   따라서 stale 로그인 UI를 막기 위해 반드시 null로 정리한다.
+      if (options?.force) {
+        setUser(null);
+      } else if (!getUser()) {
+        setUser(null);
+      }
     } finally {
       bootInflight = null;
     }
