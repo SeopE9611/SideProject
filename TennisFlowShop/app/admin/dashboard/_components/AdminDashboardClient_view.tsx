@@ -16,6 +16,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatAdminKRW, formatAdminNumber, formatIsoToKstShort } from "@/lib/admin/formatters";
 import { labelOrderStatus, labelPaymentStatus, labelStringingStatus } from "@/lib/admin/status-labels";
+import {
+  getApplicationStatusBadgeSpec,
+  getOrderStatusBadgeSpec,
+  getPaymentStatusBadgeSpec,
+  getWorkflowMetaBadgeSpec,
+} from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
@@ -750,7 +756,10 @@ export default function AdminDashboardClient() {
                   {data.queueDetails.cancelRequests.slice(0, 5).map((it) => {
                     const statusLabel = getCancelRequestStatusLabel(it.status);
                     const quickSignal = getCancelQueueQuickSignal(it.status, it.refundAccountReady);
-                    const quickSignalTone = quickSignal?.tone === "success" ? "default" : "secondary";
+                    const quickSignalTone =
+                      quickSignal?.tone === "success"
+                        ? getWorkflowMetaBadgeSpec("application_linked").variant
+                        : getWorkflowMetaBadgeSpec("action_required").variant;
 
                     return (
                       <div key={`${it.kind}-${it.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
@@ -763,7 +772,16 @@ export default function AdminDashboardClient() {
                               {it.kind}
                             </Badge>
                             {statusLabel && (
-                              <Badge variant={statusLabel === "취소요청" ? "destructive" : "secondary"} className="text-xs">
+                              <Badge
+                                variant={
+                                  statusLabel === "취소요청"
+                                    ? getWorkflowMetaBadgeSpec(
+                                        "cancel_requested",
+                                      ).variant
+                                    : "secondary"
+                                }
+                                className="text-xs"
+                              >
                                 {statusLabel}
                               </Badge>
                             )}
@@ -1153,16 +1171,20 @@ export default function AdminDashboardClient() {
                       rawStatusLabel,
                       { shippingMethod: o.shippingMethod },
                     );
+                    const paymentSpec = getPaymentStatusBadgeSpec(
+                      labelPaymentStatus(o.paymentStatus),
+                    );
+                    const statusSpec = getOrderStatusBadgeSpec(rawStatusLabel);
                     return (
                       <Link key={o.id} href={`/admin/orders/${o.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
                         <div className="min-w-0 flex-1 space-y-1">
                           <p className="truncate text-sm font-medium">{o.name}</p>
                           <p className="text-xs text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
                           <div className="flex flex-wrap gap-1">
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant={paymentSpec.variant} className="text-xs">
                               {labelPaymentStatus(o.paymentStatus)}
                             </Badge>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant={statusSpec.variant} className="text-xs">
                               {displayStatusLabel}
                             </Badge>
                           </div>
@@ -1187,21 +1209,31 @@ export default function AdminDashboardClient() {
             <CardContent>
               <div className="space-y-3">
                 {data.recent.applications.map((a) => (
-                  <Link key={a.id} href={`/admin/applications/stringing/${a.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <p className="truncate text-sm font-medium">{a.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatIsoToKstShort(a.createdAt)}</p>
-                      <div className="flex flex-wrap gap-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {labelPaymentStatus(a.paymentStatus)}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {labelStringingStatus(a.status)}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(a.totalPrice)}</div>
-                  </Link>
+                  (() => {
+                    const paymentSpec = getPaymentStatusBadgeSpec(
+                      labelPaymentStatus(a.paymentStatus),
+                    );
+                    const statusSpec = getApplicationStatusBadgeSpec(
+                      labelStringingStatus(a.status),
+                    );
+                    return (
+                      <Link key={a.id} href={`/admin/applications/stringing/${a.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <p className="truncate text-sm font-medium">{a.name}</p>
+                          <p className="text-xs text-muted-foreground">{formatIsoToKstShort(a.createdAt)}</p>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant={paymentSpec.variant} className="text-xs">
+                              {labelPaymentStatus(a.paymentStatus)}
+                            </Badge>
+                            <Badge variant={statusSpec.variant} className="text-xs">
+                              {labelStringingStatus(a.status)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(a.totalPrice)}</div>
+                      </Link>
+                    );
+                  })()
                 ))}
                 <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                   <Link href="/admin/applications/stringing">전체 신청 보기</Link>

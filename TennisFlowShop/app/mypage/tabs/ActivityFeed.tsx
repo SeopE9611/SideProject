@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { cn } from "@/lib/utils";
 import {
+  badgeToneClass,
   getApplicationStatusBadgeSpec,
   getOrderStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
@@ -289,8 +290,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (cnt > 0) {
       pills.push({
         text: `${cnt}개 항목`,
-        className:
-          "border border-info/45 bg-info/15 text-info text-xs font-semibold dark:bg-info/24 dark:border-info/55",
+        className: badgeToneClass("info"),
       });
     }
   }
@@ -301,8 +301,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (typeof days === "number") {
       pills.push({
         text: `${days}일 대여`,
-        className:
-          "bg-info/15 text-info border border-info/45 dark:bg-info/24 dark:border-info/55",
+        className: badgeToneClass("info"),
       });
     }
   }
@@ -317,8 +316,8 @@ function metaPills(g: ActivityGroup): MetaPill[] {
       pills.push({
         text: linked.hasTracking ? "운송장 등록" : "운송장 대기",
         className: linked.hasTracking
-          ? "bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55"
-          : "bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55",
+          ? badgeToneClass("success")
+          : badgeToneClass("warning"),
       });
     }
   }
@@ -334,8 +333,8 @@ function metaPills(g: ActivityGroup): MetaPill[] {
         pills.push({
           text: app.hasTracking ? "운송장 등록" : "운송장 대기",
           className: app.hasTracking
-            ? "bg-success/15 text-success border border-success/45 dark:bg-success/24 dark:border-success/55"
-            : "bg-warning/15 text-warning border border-warning/45 dark:bg-warning/26 dark:border-warning/55",
+            ? badgeToneClass("success")
+            : badgeToneClass("warning"),
         });
       }
     }
