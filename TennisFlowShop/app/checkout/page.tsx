@@ -1,7 +1,8 @@
 "use client";
 import CheckoutButton from "@/app/checkout/CheckoutButton";
+import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
-import useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
+import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { applyPackageToServiceFee, resolvePackageUsage } from "@/app/features/stringing-applications/lib/package-pricing";
 import { useAuthStore, type User } from "@/app/store/authStore";
@@ -52,6 +53,7 @@ type CheckoutPrefillUser = User & {
   address?: string | null;
   addressDetail?: string | null;
 };
+type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
 
 // 유효성(클라 UI용) - 서버는 별도로 강제
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -473,41 +475,9 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkoutStringingAdapter = useCheckoutStringingServiceAdapter({
-    withStringService,
-    orderItems,
-    mountingFeeByProductId,
-    serviceTargetIds,
-    name,
-    email,
-    phone,
-    postalCode,
-    address,
-    addressDetail,
-    depositor,
-    selectedBank,
-    servicePickupMethod,
-    isMember: !!user,
-  });
-
-  const checkoutPackageUsage = useMemo(
-    () =>
-      resolvePackageUsage({
-        hasPackage: !!checkoutStringingAdapter.packagePreview?.has,
-        packageRemaining: checkoutStringingAdapter.packageRemaining,
-        requiredPassCount: checkoutStringingAdapter.requiredPassCount,
-        packageOptOut: !!checkoutStringingAdapter.formData.packageOptOut,
-      }),
-    [checkoutStringingAdapter.packagePreview?.has, checkoutStringingAdapter.packageRemaining, checkoutStringingAdapter.requiredPassCount, checkoutStringingAdapter.formData.packageOptOut],
-  );
-
-  const serviceFee = useMemo(() => {
-    if (!withStringService) return 0;
-    return applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage);
-  }, [withStringService, baseServiceFee, checkoutPackageUsage]);
-
+  const serviceFeeForPolicy = withStringService ? baseServiceFee : 0;
   // 최종 결제 금액 = 상품 + 배송 + 서비스
-  const total = subtotal + shippingFee + serviceFee;
+  const total = subtotal + shippingFee + serviceFeeForPolicy;
 
   // 포인트(적립금) 상태
   // - balance: 원장 기준 총 잔액(캐시)
@@ -539,7 +509,6 @@ export default function CheckoutPage() {
 
   const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
   const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
-  const payableTotal = total - appliedPoints;
 
   // 포인트 입력값 보정(유저 잔액/정책/전액사용 토글에 따라 자동 보정)
   useEffect(() => {
@@ -724,51 +693,6 @@ export default function CheckoutPage() {
   const hasFieldErrors = Object.keys(fieldErrors).length > 0;
   const canSubmit = !loading && agreeTerms && agreePrivacy && agreeRefund && !hasFieldErrors && (!withStringService || isMountingFeeReady);
 
-  const stringingApplicationInput = useMemo<StringingApplicationInput | undefined>(() => {
-    if (!withStringService) return undefined;
-
-    const form = checkoutStringingAdapter.formData;
-    const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
-    const stringTypes = (form.stringTypes ?? []).filter(Boolean);
-
-    if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
-      return undefined;
-    }
-
-    return {
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      shippingInfo: {
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        address: address.trim(),
-        addressDetail: addressDetail.trim(),
-        postalCode: postalCode.trim(),
-        depositor: depositor.trim(),
-        bank: selectedBank,
-        deliveryRequest: deliveryRequest.trim(),
-        collectionMethod: form.collectionMethod,
-      },
-      stringTypes,
-      customStringName: form.customStringType?.trim() || undefined,
-      preferredDate: form.preferredDate,
-      preferredTime: form.preferredTime,
-      requirements: form.requirements,
-      packageOptOut: !!form.packageOptOut,
-      lines: lines.map((line) => ({
-        racketType: line.racketType,
-        stringProductId: line.stringProductId,
-        stringName: line.stringName,
-        tensionMain: line.tensionMain,
-        tensionCross: line.tensionCross,
-        note: line.note,
-        mountingFee: line.mountingFee,
-      })),
-    };
-  }, [withStringService, checkoutStringingAdapter.formData, checkoutStringingAdapter.linesForSubmit, name, phone, email, address, addressDetail, postalCode, depositor, selectedBank, deliveryRequest]);
-
   // 비회원 체크아웃 허용: quiet 조회 사용 (401이어도 전역 만료 금지)
   useEffect(() => {
     let cancelled = false;
@@ -890,7 +814,67 @@ export default function CheckoutPage() {
     return <LoginGate next={checkoutHref} variant="checkout" />;
   }
 
-  return (
+  const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
+    const checkoutPackageUsage =
+      withStringService && checkoutStringingAdapter
+        ? resolvePackageUsage({
+            hasPackage: !!checkoutStringingAdapter.packagePreview?.has,
+            packageRemaining: checkoutStringingAdapter.packageRemaining,
+            requiredPassCount: checkoutStringingAdapter.requiredPassCount,
+            packageOptOut: !!checkoutStringingAdapter.formData.packageOptOut,
+          })
+        : null;
+
+    const serviceFee = withStringService && checkoutPackageUsage ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage) : 0;
+    const totalPrice = subtotal + shippingFee + serviceFee;
+    const payableTotalPrice = totalPrice - appliedPoints;
+
+    const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
+      if (!withStringService || !checkoutStringingAdapter) return undefined;
+
+      const form = checkoutStringingAdapter.formData;
+      const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
+      const stringTypes = (form.stringTypes ?? []).filter(Boolean);
+
+      if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
+        return undefined;
+      }
+
+      return {
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        shippingInfo: {
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          address: address.trim(),
+          addressDetail: addressDetail.trim(),
+          postalCode: postalCode.trim(),
+          depositor: depositor.trim(),
+          bank: selectedBank,
+          deliveryRequest: deliveryRequest.trim(),
+          collectionMethod: form.collectionMethod,
+        },
+        stringTypes,
+        customStringName: form.customStringType?.trim() || undefined,
+        preferredDate: form.preferredDate,
+        preferredTime: form.preferredTime,
+        requirements: form.requirements,
+        packageOptOut: !!form.packageOptOut,
+        lines: lines.map((line) => ({
+          racketType: line.racketType,
+          stringProductId: line.stringProductId,
+          stringName: line.stringName,
+          tensionMain: line.tensionMain,
+          tensionCross: line.tensionCross,
+          note: line.note,
+          mountingFee: line.mountingFee,
+        })),
+      };
+    })();
+
+    return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
@@ -1255,7 +1239,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <CheckoutStringingServiceSections section="mounting" withStringService={withStringService} adapter={checkoutStringingAdapter} />
+            {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections section="mounting" withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
             {/* 결제 정보 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
@@ -1314,7 +1298,7 @@ export default function CheckoutPage() {
                     <div className="min-h-[16px]">{showDepositorError && <p className="text-xs text-destructive">{fieldErrors.depositor}</p>}</div>
                   </div>
 
-                  {withStringService && (
+                  {withStringService && checkoutStringingAdapter && (
                     <CheckoutStringingPaymentAddon
                       packagePreview={checkoutStringingAdapter.packagePreview}
                       packageRemaining={checkoutStringingAdapter.packageRemaining}
@@ -1356,7 +1340,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <CheckoutStringingServiceSections section="final" withStringService={withStringService} adapter={checkoutStringingAdapter} />
+            {withStringService && checkoutStringingAdapter && <CheckoutStringingServiceSections section="final" withStringService={withStringService} adapter={checkoutStringingAdapter} />}
 
             {/* 주문자 동의 */}
             <Card className="bg-card bp-lg:backdrop-blur-sm bp-lg:bg-card/80 bp-lg:dark:bg-card/80 border border-border bp-lg:border-0 shadow-sm bp-lg:shadow-xl overflow-hidden">
@@ -1561,12 +1545,12 @@ export default function CheckoutPage() {
                     <Separator />
                     <div className="flex justify-between items-center text-xl font-bold">
                       <span>총 결제 금액</span>
-                      <span className="text-foreground">{total.toLocaleString()}원</span>
+                      <span className="text-foreground">{totalPrice.toLocaleString()}원</span>
                     </div>
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center text-lg font-bold">
                         <span className="text-muted-foreground">포인트 적용 후 결제 예정 금액</span>
-                        <span className="text-foreground">{payableTotal.toLocaleString()}원</span>
+                        <span className="text-foreground">{payableTotalPrice.toLocaleString()}원</span>
                       </div>
                     )}
                   </div>
@@ -1621,7 +1605,7 @@ export default function CheckoutPage() {
                     address={address}
                     addressDetail={addressDetail}
                     depositor={depositor}
-                    totalPrice={total}
+                    totalPrice={totalPrice}
                     shippingFee={shippingFee}
                     selectedBank={selectedBank}
                     deliveryRequest={deliveryRequest}
@@ -1647,5 +1631,29 @@ export default function CheckoutPage() {
         </div>
       </SiteContainer>
     </div>
+   );
+  };
+
+  if (!withStringService) return renderCheckout();
+
+  return (
+    <CheckoutStringingRuntimeBridge
+      withStringService={withStringService}
+      orderItems={orderItems}
+      mountingFeeByProductId={mountingFeeByProductId}
+      serviceTargetIds={serviceTargetIds}
+      name={name}
+      email={email}
+      phone={phone}
+      postalCode={postalCode}
+      address={address}
+      addressDetail={addressDetail}
+      depositor={depositor}
+      selectedBank={selectedBank}
+      servicePickupMethod={servicePickupMethod}
+      isMember={!!user}
+    >
+      {(checkoutStringingAdapter: CheckoutStringingServiceAdapter) => renderCheckout(checkoutStringingAdapter)}
+    </CheckoutStringingRuntimeBridge>
   );
 }
