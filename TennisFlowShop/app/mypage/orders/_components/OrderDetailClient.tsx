@@ -1265,7 +1265,7 @@ export default function OrderDetailClient({
         {/* 처리 이력 */}
         <OrderHistory
           orderId={orderId}
-          shippingMethod={orderDetail?.shippingInfo?.deliveryMethod}
+          shippingMethod={shippingMethodValue}
         />
       </SiteContainer>
     </main>
