@@ -7,18 +7,21 @@ import useSWR from 'swr';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AsyncState from '@/components/system/AsyncState';
+import { getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
-import { getOrderDeliveryInfoTitle, isVisitPickupOrder } from '@/lib/order-shipping';
+import { getOrderDeliveryInfoTitle, getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 type CourierCode = 'cj' | 'hanjin' | 'logen' | 'lotte' | 'post' | 'daesin' | 'ilogen' | 'kr' | 'etc' | string;
 
 type OrderDetail = {
+  status?: string;
   shippingInfo?: {
     shippingMethod?: string;
     deliveryMethod?: string;
+    estimatedDate?: string;
     name?: string;
     phone?: string;
     address?: string;
@@ -67,6 +70,17 @@ async function copyToClipboard(text: string) {
   }
 }
 
+const formatDate = (value?: string | null) => {
+  if (!value) return '미정';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '미정';
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
 /**
  * 전체내역(Activity) 카드에서 운송장/배송 정보를 빠르게 확인하기 위한 모달
  * - Activity API에는 invoice가 없으므로, 모달이 열릴 때만 주문 상세 API를 호출합니다.
@@ -109,6 +123,8 @@ export default function OrderShippingInfoDialog({ orderId, className, triggerLab
   const courier = invoice?.courier;
   const trackingNumber = invoice?.trackingNumber;
   const hasInvoice = Boolean(courier || trackingNumber);
+  const rawStatusLabel = getMypageUserStatusLabel(displayData?.status);
+  const displayStatusLabel = getOrderStatusLabelForDisplay(rawStatusLabel, displayData?.shippingInfo);
 
   const addressText = useMemo(() => {
     const s = displayData?.shippingInfo;
@@ -162,19 +178,31 @@ export default function OrderShippingInfoDialog({ orderId, className, triggerLab
             resourceName="배송/수령 정보"
             onAction={() => mutate()}
           />
+        ) : isVisitPickup ? (
+          <div className="space-y-4">
+            <div className="space-y-1 text-sm">
+              <div className="font-medium">수령 방법</div>
+              <div className="text-muted-foreground">방문 수령</div>
+            </div>
+
+            <div className="space-y-1 text-sm">
+              <div className="font-medium">예상 수령일</div>
+              <div className="text-muted-foreground">{formatDate(displayData?.shippingInfo?.estimatedDate)}</div>
+            </div>
+
+            <div className="space-y-1 text-sm">
+              <div className="font-medium">현재 상태</div>
+              <div className="text-muted-foreground">{displayStatusLabel || '상태 미정'}</div>
+            </div>
+
+            <Separator />
+
+            <p className="text-sm text-muted-foreground">방문 수령 주문입니다. 준비 완료 후 매장에서 수령해주세요.</p>
+          </div>
         ) : !hasInvoice ? (
           <div className="space-y-2 text-sm">
-            {isVisitPickup ? (
-              <>
-                <p className="text-muted-foreground">방문 수령 주문입니다. 방문 일정/상태는 주문 상세에서 확인해주세요.</p>
-                <p className="text-muted-foreground">운송장 정보가 없는 것이 정상일 수 있습니다.</p>
-              </>
-            ) : (
-              <>
-                <p className="text-muted-foreground">아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.</p>
-                <p className="text-muted-foreground">관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수 있습니다.</p>
-              </>
-            )}
+            <p className="text-muted-foreground">아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.</p>
+            <p className="text-muted-foreground">관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수 있습니다.</p>
           </div>
         ) : (
           <div className="space-y-4">

@@ -985,21 +985,19 @@ export default function OrderDetailClient({
                   </div>
                 </div>
 
-                {showDeliveryOnlyFields && (
-                  <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        예상 수령일
-                      </p>
-                      <p className="font-semibold text-foreground">
-                        {orderDetail.shippingInfo?.estimatedDate
-                          ? formatDate(orderDetail.shippingInfo.estimatedDate)
-                          : "미등록"}
-                      </p>
-                    </div>
+                <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      예상 수령일
+                    </p>
+                    <p className="font-semibold text-foreground">
+                      {orderDetail.shippingInfo?.estimatedDate
+                        ? formatDate(orderDetail.shippingInfo.estimatedDate)
+                        : "미등록"}
+                    </p>
                   </div>
-                )}
+                </div>
 
                 {!showDeliveryOnlyFields && (
                   <p className="text-sm text-muted-foreground">
