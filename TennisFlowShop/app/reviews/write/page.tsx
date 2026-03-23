@@ -326,6 +326,11 @@ export default function ReviewWritePage() {
   const [allApps, setAllApps] = useState<AppLite[]>([]);
   const [showAllApps, setShowAllApps] = useState(false);
   const [reviewedMap, setReviewedMap] = useState<Record<string, true>>({});
+  // 서비스 모드에서 서버 eligibility가 추천한 신청서 ID를 저장해
+  // 중복 네트워크 호출 없이 기본 선택값 계산에 재사용합니다.
+  const [serviceSuggestedAppId, setServiceSuggestedAppId] = useState<string | null>(
+    null,
+  );
 
   // 주문 아이템/현재 상품 메타
   const [orderItems, setOrderItems] = useState<OrderReviewItem[] | null>(null);
@@ -425,6 +430,20 @@ export default function ReviewWritePage() {
         if (data.suggestedOrderId && !resolvedOrderId) {
           setResolvedOrderId(String(data.suggestedOrderId));
         }
+
+        // 서비스 모드의 추천 신청서 ID를 별도 상태에 저장해
+        // 아래 서비스 목록 effect에서 eligibility를 다시 호출하지 않도록 합니다.
+        // (초기 진입 시 불필요한 1회 fetch 제거)
+        if (mode === "service") {
+          setServiceSuggestedAppId(
+            data.suggestedApplicationId
+              ? String(data.suggestedApplicationId)
+              : null,
+          );
+        } else {
+          setServiceSuggestedAppId(null);
+        }
+
         setState(data.eligible ? "ok" : (data.reason as EligState) || "error");
       } catch {
         setState("error");
@@ -456,12 +475,22 @@ export default function ReviewWritePage() {
     let aborted = false;
 
     (async () => {
-      // 전체 신청서(원본) 조회
-      const r = await fetch("/api/applications/stringing/list", {
+      // 초기 진입 체감 개선 포인트:
+      // - 신청서 목록(list)과 내 리뷰 목록(mine)은 서로 의존하지 않으므로 병렬 시작
+      // - UI의 "첫 선택 가능 상태"를 빠르게 만들기 위해 목록을 먼저 반영하고
+      //   mine 결과는 후순위로 적용해(중복 작성한 신청서 제외) 목록을 정교화합니다.
+      const listPromise = fetch("/api/applications/stringing/list", {
         credentials: "include",
         cache: "no-store",
       });
-      const list = (await r.json()) as any[];
+      const minePromise = fetch("/api/reviews/mine?limit=50", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      // 전체 신청서(원본) 조회
+      const listRes = await listPromise;
+      const list = (await listRes.json()) as any[];
       if (aborted) return;
 
       // 라벨/요약을 가진 AppLite로 포맷
@@ -482,19 +511,36 @@ export default function ReviewWritePage() {
       // 전체 목록 세팅(토글용)
       setAllApps(formattedAll);
 
-      // UX 정책: 드롭다운에는 “작성 가능한 신청서”만 노출
-      // - 서버 eligibility 로직 기준과 동일하게:
-      //   1) status === '교체완료'
-      //   2) 아직 서비스 리뷰를 작성하지 않은 신청서
-      let eligibleApps = formattedAll.filter((x) => x.status === "교체완료");
+      // 1차(초기 필수) 목록: 교체완료 상태만 반영
+      // - 첫 진입에서는 "선택 가능한 최소 목록"이 우선 필요
+      // - 이미 리뷰한 신청서 제외는 아래 mine 응답이 오면 후순위로 정밀 반영
+      const eligibleByStatus = formattedAll.filter((x) => x.status === "교체완료");
+      setApps(eligibleByStatus);
 
-      // 이미 작성한 서비스 리뷰(serviceApplicationId) 제외
-      // - /api/reviews/mine 은 최대 50개까지 조회 가능
+      // URL로 applicationId가 넘어오면 그걸 최우선으로 선택(단, eligible 목록 안에 있어야 함)
+      const urlPreferred =
+        applicationIdParam &&
+        eligibleByStatus.some((x) => x._id === applicationIdParam)
+          ? applicationIdParam
+          : null;
+
+      // 중복 fetch 제거:
+      // - 기존에는 여기서 eligibility를 다시 호출해 suggestedApplicationId를 가져왔지만
+      //   상단 "일반 eligibility 검사" effect에서 이미 받아온 값을 재사용합니다.
+      const suggestedOk =
+        serviceSuggestedAppId &&
+        eligibleByStatus.some((x) => x._id === serviceSuggestedAppId)
+          ? serviceSuggestedAppId
+          : null;
+
+      const initialNextId =
+        urlPreferred ?? suggestedOk ?? eligibleByStatus[0]?._id ?? null;
+
+      if (!aborted) setSelectedAppId(initialNextId);
+
+      // 2차(후순위) 목록 정교화: 이미 서비스 리뷰를 작성한 신청서는 제외
       try {
-        const mine = await fetch("/api/reviews/mine?limit=50", {
-          credentials: "include",
-          cache: "no-store",
-        });
+        const mine = await minePromise;
 
         if (mine.ok) {
           const mineJson = (await mine.json()) as any;
@@ -514,50 +560,32 @@ export default function ReviewWritePage() {
           setReviewedMap(nextReviewedMap);
 
           const reviewedIds = new Set(reviewedIdsArr);
-          eligibleApps = eligibleApps.filter(
+          const refinedEligibleApps = eligibleByStatus.filter(
             (x) => !reviewedIds.has(String(x._id)),
           );
+          setApps(refinedEligibleApps);
+
+          // 초기 선택값이 후순위 정교화 결과에서 제외됐다면 안전하게 대체 선택
+          setSelectedAppId((prev) => {
+            if (!prev || refinedEligibleApps.some((x) => x._id === prev)) return prev;
+            const fallbackId =
+              urlPreferred ??
+              (serviceSuggestedAppId &&
+              refinedEligibleApps.some((x) => x._id === serviceSuggestedAppId)
+                ? serviceSuggestedAppId
+                : null) ??
+              refinedEligibleApps[0]?._id ??
+              null;
+            return fallbackId;
+          });
         } else {
           // mine API 실패 시 맵 초기화(찌꺼기 방지)
           setReviewedMap({});
         }
       } catch {
-        // 네트워크/권한 이슈가 있어도 최소한 status 필터는 유지
+        // 네트워크/권한 이슈가 있어도 1차 목록(교체완료)은 유지
         setReviewedMap({});
       }
-
-      setApps(eligibleApps);
-
-      // URL로 applicationId가 넘어오면 그걸 최우선으로 선택(단, eligibleApps 안에 있어야 함)
-      const urlPreferred =
-        applicationIdParam &&
-        eligibleApps.some((x) => x._id === applicationIdParam)
-          ? applicationIdParam
-          : null;
-
-      // 기본 선택: urlPreferred -> suggested(서버 추천) -> 첫 항목
-      let nextId: string | null = null;
-
-      try {
-        const elig = await fetch("/api/reviews/eligibility?service=stringing", {
-          credentials: "include",
-          cache: "no-store",
-        }).then((x) => x.json());
-
-        const suggested = elig?.suggestedApplicationId
-          ? String(elig.suggestedApplicationId)
-          : null;
-        const suggestedOk =
-          suggested && eligibleApps.some((x) => x._id === suggested)
-            ? suggested
-            : null;
-
-        nextId = urlPreferred ?? suggestedOk ?? eligibleApps[0]?._id ?? null;
-      } catch {
-        nextId = urlPreferred ?? eligibleApps[0]?._id ?? null;
-      }
-
-      if (!aborted) setSelectedAppId(nextId);
     })();
 
     return () => {
@@ -566,6 +594,7 @@ export default function ReviewWritePage() {
   }, [
     mode,
     applicationIdParam,
+    serviceSuggestedAppId,
     allowGuestCheckout,
     authChecked,
     blockedByLoginGate,
