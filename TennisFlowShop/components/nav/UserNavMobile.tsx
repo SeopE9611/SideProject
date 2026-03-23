@@ -9,17 +9,28 @@ import { Badge } from "@/components/ui/badge";
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
+  unreadCount?: number | null;
 }
 
-export function UserNavMobile({ setOpen }: UserNavMobileProps) {
+export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
   const router = useRouter();
   const { user, loading } = useCurrentUser();
   const { logout } = useAuthStore();
-  const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(
-    !loading && !!user,
+  // 모바일 메뉴가 자체 unread API를 다시 부르면
+  // 헤더(상단 공통)에서 이미 가져온 값과 중복 호출이 됩니다.
+  // 따라서 상위에서 unreadCount를 내려준 경우에는 재호출을 완전히 건너뜁니다.
+  const shouldPollUnread = unreadCount == null;
+  const { count: polledUnreadCount, status: unreadStatus } = useUnreadMessageCount(
+    shouldPollUnread && !loading && !!user,
   );
-  const resolvedUnreadCount =
-    unreadStatus === "ready" ? (unreadCount ?? 0) : null;
+  // 상위 unreadCount가 있으면 그 값을 단일 소스로 사용하고,
+  // 없을 때만(호환 목적) 기존 훅 결과를 사용합니다.
+  // 이렇게 하면 데스크톱/모바일이 같은 unread 데이터 소스를 공유할 수 있습니다.
+  const resolvedUnreadCount = shouldPollUnread
+    ? unreadStatus === "ready"
+      ? (polledUnreadCount ?? 0)
+      : null
+    : unreadCount;
 
   if (loading) {
     return (
