@@ -933,6 +933,7 @@ export async function handleAdminOperationsGet(req: Request) {
       statusDisplayLabel,
       paymentLabel,
       amount: Number(o.totalPrice ?? 0),
+      shippingMethod,
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
       flowLabel: flowLabelOf(
         orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
@@ -960,6 +961,7 @@ export async function handleAdminOperationsGet(req: Request) {
       ...inferNextActionForOperationItem({
         kind: "order",
         statusLabel,
+        statusDisplayLabel,
         paymentLabel,
         related: appId
           ? {
