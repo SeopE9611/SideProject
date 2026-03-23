@@ -9,7 +9,6 @@ import {
   getPackageVariantByIndex,
   toPackageVariant,
 } from "@/app/services/packages/_lib/packageVariant";
-import { useAuthStore, type User } from "@/app/store/authStore";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,7 +29,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { getMyInfo } from "@/lib/auth.client";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import {
   UNSAVED_CHANGES_MESSAGE,
@@ -63,6 +61,20 @@ const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 const isValidKoreanPhone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
 type UserLite = { id: string; name?: string; email?: string };
+type UserPrefill = UserLite & { phone?: string };
+
+type PackageConfigLike = {
+  id?: string;
+  name?: string;
+  sessions?: number;
+  price?: number;
+  originalPrice?: number;
+  isPopular?: boolean;
+  description?: string;
+  validityDays?: number | string;
+  features?: string[];
+  variant?: string;
+};
 
 const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
   "10-sessions": normalizePackageCardData({
@@ -133,12 +145,72 @@ const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
   }),
 };
 
+function mapSelectedPackageFromConfigs(
+  packageId: string | null,
+  configs: PackageConfigLike[],
+): PackageCardData | null {
+  if (!packageId) return null;
+
+  // DB 설정에서 동일 ID를 찾는다. (checkout 첫 진입에 필요한 핵심 데이터)
+  const configIndex = configs.findIndex((pkg) => pkg.id === packageId);
+  const config = configIndex >= 0 ? configs[configIndex] : null;
+
+  if (!config) {
+    // 옛 URL fallback
+    return TEMPLATE_PACKAGES[packageId] ?? null;
+  }
+
+  const sessions = Number(config.sessions || 0);
+  const price = Number(config.price || 0);
+  const originalPrice = Number(
+    config.originalPrice != null ? config.originalPrice : price,
+  );
+
+  const templateKey =
+    sessions === 10
+      ? "10-sessions"
+      : sessions === 30
+        ? "30-sessions"
+        : sessions === 50
+          ? "50-sessions"
+          : sessions === 100
+            ? "100-sessions"
+            : undefined;
+  const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
+  const variant = toPackageVariant(
+    config.variant,
+    base?.variant ??
+      (config.isPopular ? "accent" : getPackageVariantByIndex(configIndex)),
+  );
+
+  return normalizePackageCardData({
+    id: config.id ?? packageId,
+    title: config.name || base?.title || "",
+    sessions,
+    price,
+    originalPrice,
+    popular: Boolean(config.isPopular ?? base?.popular),
+    description: config.description || base?.description || "",
+    validityPeriod: config.validityDays,
+    variant,
+    features:
+      Array.isArray(config.features) && config.features.length > 0
+        ? config.features
+        : (base?.features ?? []),
+    benefits: base?.benefits ?? [],
+  });
+}
+
 export default function PackageCheckoutClient({
   initialUser,
   initialQuery,
+  initialPackageConfigs = [],
+  initialOwnershipBlockedMessage = null,
 }: {
-  initialUser: UserLite;
+  initialUser: UserPrefill;
   initialQuery?: { package?: string };
+  initialPackageConfigs?: PackageConfigLike[];
+  initialOwnershipBlockedMessage?: string | null;
 }) {
   const searchParams = useSearchParams();
   const packageId =
@@ -147,17 +219,17 @@ export default function PackageCheckoutClient({
   // 선택된 패키지 정보 (DB 설정 + 템플릿 병합 결과)
   const [selectedPackage, setSelectedPackage] =
     useState<PackageCardData | null>(() => {
-      if (!packageId) return null;
-      // 옛날 URL (?package=10-sessions)로 들어올 수도 있으니 일단 템플릿에서 한 번 찾아봄
-      return TEMPLATE_PACKAGES[packageId] ?? null;
+      return mapSelectedPackageFromConfigs(packageId, initialPackageConfigs);
     });
 
-  // 패키지 설정 로딩 상태
-  const [isPackageLoading, setIsPackageLoading] = useState(true);
+  // 서버 선조회가 있으면 mount 후 추가 fetch 없이 즉시 화면을 안정화할 수 있다.
+  const [isPackageLoading, setIsPackageLoading] = useState(
+    packageId ? initialPackageConfigs.length === 0 : false,
+  );
   const [selectedBank, setSelectedBank] = useState("shinhan");
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState(initialUser.name ?? "");
+  const [phone, setPhone] = useState(initialUser.phone ?? "");
+  const [email, setEmail] = useState(initialUser.email ?? "");
   const [serviceRequest, setServiceRequest] = useState("");
   const [depositor, setDepositor] = useState("");
 
@@ -178,19 +250,17 @@ export default function PackageCheckoutClient({
   };
 
   const [saveInfo, setSaveInfo] = useState(false);
-  const { logout } = useAuthStore();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const isLoggedIn = Boolean(initialUser?.id);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [agreeRefund, setAgreeRefund] = useState(false);
 
-  const [prefillDone, setPrefillDone] = useState(false);
-  const [ownershipBlockedMessage, setOwnershipBlockedMessage] = useState<
-    string | null
-  >(null);
+  const [prefillDone] = useState(true);
+  const [ownershipBlockedMessage] = useState<string | null>(
+    initialOwnershipBlockedMessage,
+  );
 
   const fingerprint = useMemo(
     () =>
@@ -246,167 +316,49 @@ export default function PackageCheckoutClient({
 
   // 패키지 설정 로딩 & 선택된 패키지 매핑
   useEffect(() => {
+    // checkout 첫 화면의 체감 지연 원인:
+    // - 기존에는 mount 후 /api/packages/settings를 재요청해서 선택 패키지를 확정했다.
+    // - 서버 페이지에서 이미 전달한 설정값이 있으면 같은 계산을 즉시 수행하고 네트워크 요청을 생략한다.
+    if (!packageId) {
+      setSelectedPackage(null);
+      setIsPackageLoading(false);
+      return;
+    }
+
+    if (initialPackageConfigs.length > 0) {
+      setSelectedPackage(
+        mapSelectedPackageFromConfigs(packageId, initialPackageConfigs),
+      );
+      setIsPackageLoading(false);
+      return;
+    }
+
+    // 안전 fallback: 서버 선조회가 비어있을 때만 API를 호출한다.
+    let cancelled = false;
     const fetchPackage = async () => {
-      // 쿼리에 packageId가 없으면 그냥 종료
-      if (!packageId) {
-        setSelectedPackage(null);
-        setIsPackageLoading(false);
-        return;
-      }
-
       try {
-        const res = await fetch("/api/packages/settings", {
-          cache: "no-store",
-        });
-        if (!res.ok) {
-          throw new Error("패키지 설정 API 응답 오류");
-        }
-
+        const res = await fetch("/api/packages/settings", { cache: "no-store" });
+        if (!res.ok) throw new Error("패키지 설정 API 응답 오류");
         const data = await res.json();
-        const configs: any[] = Array.isArray(data.packages)
+        const configs: PackageConfigLike[] = Array.isArray(data.packages)
           ? data.packages
           : [];
-
-        // DB에 저장된 패키지 설정 중, 현재 선택된 ID와 같은 것 찾기 (예: 'package-10')
-        const configIndex = configs.findIndex((pkg) => pkg.id === packageId);
-        const config = configIndex >= 0 ? configs[configIndex] : null;
-
-        if (config) {
-          const sessions = Number(config.sessions || 0);
-          const price = Number(config.price || 0);
-          const originalPrice = Number(
-            config.originalPrice != null ? config.originalPrice : price,
-          );
-
-          const templateKey =
-            sessions === 10
-              ? "10-sessions"
-              : sessions === 30
-                ? "30-sessions"
-                : sessions === 50
-                  ? "50-sessions"
-                  : sessions === 100
-                    ? "100-sessions"
-                    : undefined;
-          const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
-          const variant = toPackageVariant(
-            config.variant,
-            base?.variant ??
-              (config.isPopular
-                ? "accent"
-                : getPackageVariantByIndex(configIndex)),
-          );
-
-          const merged = normalizePackageCardData({
-            id: config.id,
-            title: config.name || base?.title || "",
-            sessions,
-            price,
-            originalPrice,
-            popular: Boolean(config.isPopular ?? base?.popular),
-            description: config.description || base?.description || "",
-            validityPeriod: config.validityDays,
-            variant,
-            features:
-              Array.isArray(config.features) && config.features.length > 0
-                ? config.features
-                : (base?.features ?? []),
-            benefits: base?.benefits ?? [],
-          });
-
-          setSelectedPackage(merged);
-        } else {
-          // DB에서 못 찾으면 옛날 방식 (?package=10-sessions 같은)으로 템플릿에서 바로 조회
-          setSelectedPackage(TEMPLATE_PACKAGES[packageId] ?? null);
-        }
+        if (cancelled) return;
+        setSelectedPackage(mapSelectedPackageFromConfigs(packageId, configs));
       } catch (error) {
         console.error("패키지 설정 불러오기 실패", error);
-        // 에러일 때도 최소한 템플릿으로는 동작하도록
+        if (cancelled) return;
         setSelectedPackage(TEMPLATE_PACKAGES[packageId] ?? null);
       } finally {
-        setIsPackageLoading(false);
+        if (!cancelled) setIsPackageLoading(false);
       }
     };
 
     fetchPackage();
-  }, [packageId]);
-
-  useEffect(() => {
-    let cancelled = false;
-    getMyInfo({ quiet: true })
-      .then(({ user }) => {
-        if (!cancelled) setUser(user);
-      })
-      .catch(() => {
-        /* quiet: 401은 정상. 아무 것도 하지 않음 */
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  useEffect(() => {
-    if (loading) return;
-    if (user) return;
-    setPrefillDone(true);
-  }, [loading, user]);
-
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    setPrefillDone(false);
-    const fetchUserInfo = async () => {
-      try {
-        const res = await fetch("/api/users/me", { credentials: "include" });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
-        setName(data.name || "");
-        setPhone(data.phone || "");
-        setEmail(data.email || "");
-      } finally {
-        if (!cancelled) setPrefillDone(true);
-      }
-    };
-    fetchUserInfo();
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchOwnership = async () => {
-      try {
-        const res = await fetch("/api/packages/ownership", {
-          cache: "no-store",
-          credentials: "include",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
-        if (data?.hasBlockingPackage) {
-          setOwnershipBlockedMessage(
-            data?.message ??
-              "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.",
-          );
-          return;
-        }
-        setOwnershipBlockedMessage(null);
-      } catch {
-        // UX 보조용 조회 실패는 치명 오류로 보지 않음
-      }
-    };
-
-    fetchOwnership();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [packageId, initialPackageConfigs]);
 
   // 필드별 에러 계산
   const fieldErrors = useMemo<CheckoutFieldErrors>(() => {
@@ -436,7 +388,9 @@ export default function PackageCheckoutClient({
   }, [name, email, phone, depositor]);
 
   const isFormValid = Object.keys(fieldErrors).length === 0;
-  const isFrameLoading = loading || isPackageLoading;
+  // 초기 필수 데이터(선택 패키지/기본 입력값)가 준비되면 바로 입력 가능해야 하므로
+  // frame loading은 package 계산 상태만 반영한다.
+  const isFrameLoading = isPackageLoading;
   const canSubmit =
     agreeTerms &&
     agreePrivacy &&
@@ -657,16 +611,16 @@ export default function PackageCheckoutClient({
                         id="save-info"
                         checked={saveInfo}
                         onCheckedChange={(checked) => setSaveInfo(!!checked)}
-                        disabled={!user || isFrameLoading}
+                        disabled={!isLoggedIn || isFrameLoading}
                       />
                       <label
                         htmlFor="save-info"
-                        className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-primary"}`}
+                        className={`text-sm font-medium ${!isLoggedIn ? "text-muted-foreground" : "text-primary"}`}
                       >
                         이 정보를 저장
                       </label>
                     </div>
-                    {!user && (
+                    {!isLoggedIn && (
                       <p className="text-xs text-muted-foreground ml-6 mt-1">
                         로그인 후 정보를 저장할 수 있습니다.
                       </p>
