@@ -1,7 +1,5 @@
 "use client";
 import CheckoutButton from "@/app/checkout/CheckoutButton";
-import CheckoutStringingPaymentAddon from "@/app/checkout/_components/CheckoutStringingPaymentAddon";
-import CheckoutStringingServiceSections from "@/app/checkout/_components/CheckoutStringingServiceSections";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
@@ -30,9 +28,13 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+const CheckoutStringingServiceSections = dynamic(() => import("@/app/checkout/_components/CheckoutStringingServiceSections"), { loading: () => null });
+const CheckoutStringingPaymentAddon = dynamic(() => import("@/app/checkout/_components/CheckoutStringingPaymentAddon"), { loading: () => null });
 
 declare global {
   interface Window {
