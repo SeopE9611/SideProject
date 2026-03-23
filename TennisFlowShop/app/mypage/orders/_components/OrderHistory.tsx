@@ -16,6 +16,7 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 
 // 상태별로 아이콘 컴포넌트와 클래스 리턴하는 헬퍼 함수
 function getIconProps(status: string) {
@@ -87,7 +88,13 @@ interface HistoryResponse {
   total: number;
 }
 
-export default function OrderHistory({ orderId }: { orderId: string }) {
+export default function OrderHistory({
+  orderId,
+  shippingMethod,
+}: {
+  orderId: string;
+  shippingMethod?: string | null;
+}) {
   const [page, setPage] = useState(1);
 
   // getKey: pageIndex마다 서버에 page=pageIndex+1 요청
@@ -211,6 +218,9 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
         ) : shouldShowRows ? (
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
+            const displayStatus = getOrderStatusLabelForDisplay(item.status, {
+              shippingMethod,
+            });
             const { Icon, wrapperClasses, iconClasses } = getIconProps(
               item.status,
             );
@@ -223,7 +233,7 @@ export default function OrderHistory({ orderId }: { orderId: string }) {
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <span className="font-semibold">{item.status}</span>
+                    <span className="font-semibold">{displayStatus}</span>
                     <span className="text-sm text-muted-foreground">
                       {formatHistoryDate(item.date)}
                     </span>
