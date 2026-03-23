@@ -1188,7 +1188,7 @@ export default function OrderDetailClient({
                               href={`/products/${item.id}?tab=reviews`}
                             >
                               <Button size="sm" variant="secondary">
-                                리뷰 상세보기
+                                리뷰 상세 보기
                               </Button>
                             </Link>
                           ) : (

@@ -573,7 +573,7 @@ export default function OrderList() {
                       href={detailHref}
                       className="inline-flex items-center gap-1"
                     >
-                      상세보기
+                      상세 보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
@@ -701,7 +701,7 @@ export default function OrderList() {
                       href={detailHref}
                       className="inline-flex w-full items-center justify-center gap-1"
                     >
-                      상세보기
+                      상세 보기
                       <ArrowRight className="h-3 w-3" />
                     </Link>
                   </Button>
