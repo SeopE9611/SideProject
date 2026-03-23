@@ -1,4 +1,6 @@
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
+import { labelOrderStatus } from "@/lib/admin/status-labels";
+import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import type { AdminDashboardMetricsResponseDto } from "@/types/admin/dashboard";
 import type { Db } from "mongodb";
 import type { UnknownDoc } from "./metrics-pure-utils";
@@ -571,9 +573,32 @@ export async function getDashboardMetrics(db: Db) {
 
   const orderStatusDistP = ordersCol
     .aggregate<{
-      _id: string;
+      _id: {
+        status: string;
+        shippingMethod: string | null;
+      };
       count: number;
-    }>([{ $match: { createdAt: { $gte: monthStartUtc, $lte: now } } }, { $group: { _id: { $ifNull: ["$status", "미지정"] }, count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+    }>([
+      { $match: { createdAt: { $gte: monthStartUtc, $lte: now } } },
+      {
+        $project: {
+          status: { $ifNull: ["$status", "미지정"] },
+          shippingMethod: {
+            $ifNull: ["$shippingInfo.shippingMethod", "$deliveryMethod"],
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            status: "$status",
+            shippingMethod: "$shippingMethod",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ])
     .toArray();
 
   const orderPayStatusDistP = ordersCol
@@ -1959,6 +1984,15 @@ export async function getDashboardMetrics(db: Db) {
       .sort((a, b) => b.count - a.count);
   };
 
+  const normalizeOrderStatusLabel = (v: unknown) => {
+    const rowId = asDoc(v);
+    const rawStatus = getString(rowId?.status) || getString(v) || "미지정";
+    const shippingMethod = getString(rowId?.shippingMethod) || null;
+    const normalizedRawStatusLabel = labelOrderStatus(rawStatus);
+    return getOrderStatusLabelForDisplay(normalizedRawStatusLabel, { shippingMethod });
+  };
+
+  const orderStatusDist = mergeDistByLabel(asDocArray(orderStatusDistRows), normalizeOrderStatusLabel);
   const orderPaymentStatusDist = mergeDistByLabel(asDocArray(orderPayStatusDistRows), normalizePaymentStatusLabel);
 
   // 정산 스냅샷 누락 방지:
@@ -2074,10 +2108,7 @@ export async function getDashboardMetrics(db: Db) {
     },
 
     dist: {
-      orderStatus: asDocArray(orderStatusDistRows).map((r) => ({
-        label: String(r._id),
-        count: Number(r.count || 0),
-      })),
+      orderStatus: orderStatusDist,
       orderPaymentStatus: orderPaymentStatusDist,
       applicationStatus: asDocArray(appStatusDistRows).map((r) => ({
         label: String(r._id),

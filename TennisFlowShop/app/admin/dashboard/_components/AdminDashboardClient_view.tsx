@@ -1251,7 +1251,7 @@ export default function AdminDashboardClient() {
               <div className="space-y-2">
                 {data.dist.orderStatus.slice(0, 8).map((d) => (
                   <div key={d.label} className="flex items-center justify-between rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                    <span className="truncate">{labelOrderStatus(d.label)}</span>
+                    <span className="truncate">{d.label}</span>
                     <Badge variant="outline">{formatAdminNumber(d.count)}</Badge>
                   </div>
                 ))}
