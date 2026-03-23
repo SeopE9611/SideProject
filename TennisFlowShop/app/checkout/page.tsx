@@ -4,7 +4,7 @@ import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutS
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
-import { applyPackageToServiceFee, resolvePackageUsage } from "@/app/features/stringing-applications/lib/package-pricing";
+import { applyPackageToServiceFee, resolvePackageUsage, type PackageUsageResult } from "@/app/features/stringing-applications/lib/package-pricing";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
@@ -54,6 +54,36 @@ type CheckoutPrefillUser = User & {
   addressDetail?: string | null;
 };
 type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
+
+const resolveCheckoutPackageUsage = (withStringService: boolean, checkoutStringingAdapter?: CheckoutStringingServiceAdapter): PackageUsageResult | null => {
+  if (!withStringService || !checkoutStringingAdapter) return null;
+  return resolvePackageUsage({
+    hasPackage: !!checkoutStringingAdapter.packagePreview?.has,
+    packageRemaining: checkoutStringingAdapter.packageRemaining,
+    requiredPassCount: checkoutStringingAdapter.requiredPassCount,
+    packageOptOut: !!checkoutStringingAdapter.formData.packageOptOut,
+  });
+};
+
+const isSamePackageUsage = (a: PackageUsageResult | null, b: PackageUsageResult | null) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.canApplyPackage === b.canApplyPackage && a.packageInsufficient === b.packageInsufficient && a.usingPackage === b.usingPackage;
+};
+
+function CheckoutPackageUsageSync({
+  packageUsage,
+  onSync,
+}: {
+  packageUsage: PackageUsageResult | null;
+  onSync: (updater: (prev: PackageUsageResult | null) => PackageUsageResult | null) => void;
+}) {
+  useEffect(() => {
+    onSync((prev) => (isSamePackageUsage(prev, packageUsage) ? prev : packageUsage));
+  }, [packageUsage, onSync]);
+
+  return null;
+}
 
 // 유효성(클라 UI용) - 서버는 별도로 강제
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -487,16 +517,24 @@ export default function CheckoutPage() {
 
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
+  const [syncedCheckoutPackageUsage, setSyncedCheckoutPackageUsage] = useState<PackageUsageResult | null>(null);
   // 포인트 입력 UX용(0333 방지, 0 자동 제거)
   const [pointsInput, setPointsInput] = useState("0");
   const [isEditingPoints, setIsEditingPoints] = useState(false);
 
+  useEffect(() => {
+    if (!withStringService) {
+      setSyncedCheckoutPackageUsage(null);
+    }
+  }, [withStringService]);
+
   // 포인트 사용 정책(1차): 배송비 제외 금액까지만 사용 가능
   // - 총액(total)에서 배송비(shippingFee)를 제외한 금액까지만 차감 허용
   // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
-  // NOTE: 실제 적용되는 상한 계산은 renderCheckout 내부에서 "패키지 반영 후 serviceFee" 기준으로 재계산한다.
+  // - 서비스 ON이면 "패키지 반영 후 최종 serviceFee"를 기준으로 상한을 통일한다.
   const POINT_UNIT = 100; // 100원 단위
-  const maxPointsByPolicy = user ? Math.max(0, subtotal + (withStringService ? baseServiceFee : 0)) : 0;
+  const pointCapServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, syncedCheckoutPackageUsage ?? { usingPackage: false }) : 0;
+  const maxPointsByPolicy = user ? Math.max(0, subtotal + pointCapServiceFee) : 0;
 
   // debt 방식에서는 "사용 가능 포인트" 기준으로 제한해야 함
   const resolvedPointsAvailable = pointsAvailable ?? 0;
@@ -812,17 +850,9 @@ export default function CheckoutPage() {
   }
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
-    const checkoutPackageUsage =
-      withStringService && checkoutStringingAdapter
-        ? resolvePackageUsage({
-            hasPackage: !!checkoutStringingAdapter.packagePreview?.has,
-            packageRemaining: checkoutStringingAdapter.packageRemaining,
-            requiredPassCount: checkoutStringingAdapter.requiredPassCount,
-            packageOptOut: !!checkoutStringingAdapter.formData.packageOptOut,
-          })
-        : null;
-
-    const serviceFee = withStringService && checkoutPackageUsage ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage) : 0;
+    const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
+    const effectivePackageUsage = checkoutPackageUsage ?? syncedCheckoutPackageUsage;
+    const serviceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, effectivePackageUsage ?? { usingPackage: false }) : 0;
     const totalPrice = subtotal + shippingFee + serviceFee;
     const maxPointsByPolicy = user ? Math.max(0, totalPrice - shippingFee) : 0;
     const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
@@ -878,6 +908,7 @@ export default function CheckoutPage() {
 
     return (
     <div className="min-h-full bg-background">
+      <CheckoutPackageUsageSync packageUsage={checkoutPackageUsage} onSync={setSyncedCheckoutPackageUsage} />
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
         <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
