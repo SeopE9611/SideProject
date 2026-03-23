@@ -66,12 +66,52 @@ const INDEX_SPECS = [
   },
 ];
 
-function normalizeKeys(keys) {
-  return JSON.stringify(keys);
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+  }
+
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value).sort();
+    return `{${keys
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+      .join(",")}}`;
+  }
+
+  return JSON.stringify(value);
+}
+
+function normalizeBooleanOption(value) {
+  // listIndexes 결과는 false/undefined/null이 섞여 올 수 있어
+  // "옵션 비활성"을 동일 의미로 정규화한다.
+  return value === true;
+}
+
+function normalizePartialFilterExpression(value) {
+  // partialFilterExpression은 키 순서가 달라도 같은 조건일 수 있다.
+  // 안정 정렬 stringify로 비교해 순서 차이로 인한 오탐을 방지한다.
+  if (!value || typeof value !== "object") return null;
+  if (Object.keys(value).length === 0) return null;
+  return stableStringify(value);
 }
 
 function checkOption(indexDoc, optionName, expectedValue) {
   if (typeof expectedValue === "undefined") return true;
+
+  if (optionName === "unique" || optionName === "sparse") {
+    return (
+      normalizeBooleanOption(indexDoc?.[optionName]) ===
+      normalizeBooleanOption(expectedValue)
+    );
+  }
+
+  if (optionName === "partialFilterExpression") {
+    return (
+      normalizePartialFilterExpression(indexDoc?.[optionName]) ===
+      normalizePartialFilterExpression(expectedValue)
+    );
+  }
+
   return indexDoc?.[optionName] === expectedValue;
 }
 
@@ -97,15 +137,26 @@ try {
       continue;
     }
 
-    const keyMatched = normalizeKeys(indexDoc.key) === normalizeKeys(spec.keys);
+    // check와 ensure의 비교 기준은 반드시 동일해야 한다.
+    // 그래야 "생성/보정 도구는 불일치"인데 "검사 도구는 정상" 같은 운영 오판을 막을 수 있다.
+    const keyMatched = stableStringify(indexDoc.key) === stableStringify(spec.keys);
     const uniqueMatched = checkOption(indexDoc, "unique", spec.options.unique);
     const ttlMatched = checkOption(
       indexDoc,
       "expireAfterSeconds",
       spec.options.expireAfterSeconds,
     );
+    // sparse는 "인덱싱 대상 문서 집합" 자체를 바꾸므로 동일 키라도 다른 인덱스로 봐야 한다.
+    const sparseMatched = checkOption(indexDoc, "sparse", spec.options.sparse);
+    // partialFilterExpression은 인덱스가 적용되는 조건식을 바꾼다.
+    // 이 값이 다르면 실행계획/유니크 제약 적용 범위가 달라질 수 있다.
+    const partialMatched = checkOption(
+      indexDoc,
+      "partialFilterExpression",
+      spec.options.partialFilterExpression,
+    );
 
-    if (!keyMatched || !uniqueMatched || !ttlMatched) {
+    if (!keyMatched || !uniqueMatched || !ttlMatched || !sparseMatched || !partialMatched) {
       hasFailure = true;
       console.error(`❌ [MISMATCH] ${spec.collection}.${spec.name}`);
       console.error("   - actual keys:", JSON.stringify(indexDoc.key));
@@ -118,6 +169,16 @@ try {
       if (typeof spec.options.expireAfterSeconds !== "undefined") {
         console.error(
           `   - expireAfterSeconds(actual/expected): ${String(indexDoc.expireAfterSeconds)} / ${String(spec.options.expireAfterSeconds)}`,
+        );
+      }
+      if (typeof spec.options.sparse !== "undefined") {
+        console.error(
+          `   - sparse(actual/expected): ${String(indexDoc.sparse)} / ${String(spec.options.sparse)}`,
+        );
+      }
+      if (typeof spec.options.partialFilterExpression !== "undefined") {
+        console.error(
+          `   - partialFilterExpression(actual/expected): ${normalizePartialFilterExpression(indexDoc.partialFilterExpression)} / ${normalizePartialFilterExpression(spec.options.partialFilterExpression)}`,
         );
       }
       continue;
