@@ -475,10 +475,6 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const serviceFeeForPolicy = withStringService ? baseServiceFee : 0;
-  // 최종 결제 금액 = 상품 + 배송 + 서비스
-  const total = subtotal + shippingFee + serviceFeeForPolicy;
-
   // 포인트(적립금) 상태
   // - balance: 원장 기준 총 잔액(캐시)
   // - debt: 회수해야 하지만 이미 사용되어 "부족했던" 금액(채무)
@@ -498,8 +494,9 @@ export default function CheckoutPage() {
   // 포인트 사용 정책(1차): 배송비 제외 금액까지만 사용 가능
   // - 총액(total)에서 배송비(shippingFee)를 제외한 금액까지만 차감 허용
   // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
+  // NOTE: 실제 적용되는 상한 계산은 renderCheckout 내부에서 "패키지 반영 후 serviceFee" 기준으로 재계산한다.
   const POINT_UNIT = 100; // 100원 단위
-  const maxPointsByPolicy = user ? Math.max(0, total - shippingFee) : 0;
+  const maxPointsByPolicy = user ? Math.max(0, subtotal + (withStringService ? baseServiceFee : 0)) : 0;
 
   // debt 방식에서는 "사용 가능 포인트" 기준으로 제한해야 함
   const resolvedPointsAvailable = pointsAvailable ?? 0;
@@ -827,6 +824,11 @@ export default function CheckoutPage() {
 
     const serviceFee = withStringService && checkoutPackageUsage ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage) : 0;
     const totalPrice = subtotal + shippingFee + serviceFee;
+    const maxPointsByPolicy = user ? Math.max(0, totalPrice - shippingFee) : 0;
+    const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
+    const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+    const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+    const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
     const payableTotalPrice = totalPrice - appliedPoints;
 
     const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
