@@ -568,8 +568,15 @@ export default function ReviewWritePage() {
           // 초기 선택값이 후순위 정교화 결과에서 제외됐다면 안전하게 대체 선택
           setSelectedAppId((prev) => {
             if (!prev || refinedEligibleApps.some((x) => x._id === prev)) return prev;
+            // mine 정교화 이후에는 "실제로 아직 리뷰 가능한 신청서(refinedEligibleApps)"만 선택해야 안전합니다.
+            // URL의 applicationId(urlPreferred)를 무조건 우선하면, 이미 리뷰 완료되어 제외된 ID가 다시 선택될 수 있습니다.
+            const refinedUrlPreferred =
+              urlPreferred &&
+              refinedEligibleApps.some((x) => x._id === urlPreferred)
+                ? urlPreferred
+                : null;
             const fallbackId =
-              urlPreferred ??
+              refinedUrlPreferred ??
               (serviceSuggestedAppId &&
               refinedEligibleApps.some((x) => x._id === serviceSuggestedAppId)
                 ? serviceSuggestedAppId
