@@ -17,6 +17,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatAdminKRW, formatAdminNumber, formatIsoToKstShort } from "@/lib/admin/formatters";
 import { labelOrderStatus, labelPaymentStatus, labelStringingStatus } from "@/lib/admin/status-labels";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import type { DashboardMetrics } from "@/types/admin/dashboard";
 
@@ -1146,21 +1147,30 @@ export default function AdminDashboardClient() {
             <CardContent>
               <div className="space-y-3">
                 {data.recent.orders.map((o) => (
-                  <Link key={o.id} href={`/admin/orders/${o.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <p className="truncate text-sm font-medium">{o.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
-                      <div className="flex flex-wrap gap-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {labelPaymentStatus(o.paymentStatus)}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {labelOrderStatus(o.status)}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(o.totalPrice)}</div>
-                  </Link>
+                  (() => {
+                    const rawStatusLabel = labelOrderStatus(o.status);
+                    const displayStatusLabel = getOrderStatusLabelForDisplay(
+                      rawStatusLabel,
+                      { shippingMethod: o.shippingMethod },
+                    );
+                    return (
+                      <Link key={o.id} href={`/admin/orders/${o.id}`} className="group flex items-start gap-3 rounded-lg border border-border/40 bg-background/60 p-3 transition-all hover:border-border/80 hover:shadow-sm">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <p className="truncate text-sm font-medium">{o.name}</p>
+                          <p className="text-xs text-muted-foreground">{formatIsoToKstShort(o.createdAt)}</p>
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {labelPaymentStatus(o.paymentStatus)}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {displayStatusLabel}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-sm font-semibold">{formatAdminKRW(o.totalPrice)}</div>
+                      </Link>
+                    );
+                  })()
                 ))}
                 <Button size="sm" variant="outline" asChild className="mt-2 w-full bg-transparent">
                   <Link href="/admin/orders">전체 주문 보기</Link>

@@ -122,6 +122,7 @@ export type DashboardMetrics = {
       totalPrice: number;
       status: string;
       paymentStatus: string;
+      shippingMethod?: string | null;
     }>;
     applications: Array<{
       id: string;

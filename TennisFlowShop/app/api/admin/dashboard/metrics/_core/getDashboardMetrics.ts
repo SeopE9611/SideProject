@@ -245,6 +245,7 @@ type DashboardMetrics = {
       totalPrice: number;
       status: string;
       paymentStatus: string;
+      shippingMethod?: string | null;
     }>;
     applications: Array<{
       id: string;
@@ -649,6 +650,7 @@ export async function getDashboardMetrics(db: Db) {
           status: 1,
           paymentStatus: 1,
           shippingInfo: 1,
+          deliveryMethod: 1,
         },
       },
     )
@@ -2301,6 +2303,10 @@ export async function getDashboardMetrics(db: Db) {
         paymentStatus: normalizePaymentStatusLabel(
           d?.paymentStatus || "결제대기",
         ),
+        shippingMethod:
+          getString(asDoc(d.shippingInfo)?.shippingMethod) ||
+          getString(d?.deliveryMethod) ||
+          null,
       })),
       applications: asDocArray(recentApps).map((d) => ({
         id: String(d?._id),
