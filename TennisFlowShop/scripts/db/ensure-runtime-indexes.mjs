@@ -13,18 +13,72 @@ if (!uri) {
  * 인덱스 키/옵션이 동일한 인덱스가 이미 있으면 생성을 건너뛴다.
  * - 이름이 달라도 같은 키/핵심 옵션이면 이미 충족된 것으로 본다.
  */
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+  }
+
+  if (value && typeof value === "object") {
+    const obj = value;
+    const keys = Object.keys(obj).sort();
+    return `{${keys
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(obj[key])}`)
+      .join(",")}}`;
+  }
+
+  return JSON.stringify(value);
+}
+
+function normalizeBooleanOption(value) {
+  // Mongo listIndexes 결과에서는 옵션이 꺼져 있으면 필드 자체가 빠지는 경우가 많다.
+  // 그래서 undefined/null/false는 "동일한 비활성 상태"로 취급해 오판을 줄인다.
+  return value === true;
+}
+
+function normalizePartialFilterExpression(value) {
+  // partialFilterExpression은 객체 내부 키 순서가 달라도 의미가 같을 수 있다.
+  // 안정 정렬 기반 stringify로 비교해 "키 순서 차이" 오탐을 피한다.
+  if (!value || typeof value !== "object") return null;
+  if (Object.keys(value).length === 0) return null;
+  return stableStringify(value);
+}
+
 function hasMatchingIndex(indexes, spec) {
   const expectedKey = JSON.stringify(spec.keys);
   return indexes.some((idx) => {
+    // key만 같다고 동일 인덱스가 아니다.
+    // sparse / partialFilterExpression 같은 정책 옵션이 다르면 대상 문서 집합과 제약이 달라진다.
     const sameKey = JSON.stringify(idx.key) === expectedKey;
     if (!sameKey) return false;
 
-    if (spec.options?.unique === true && idx.unique !== true) return false;
+    if (
+      typeof spec.options?.unique !== "undefined" &&
+      normalizeBooleanOption(idx.unique) !==
+        normalizeBooleanOption(spec.options.unique)
+    ) {
+      return false;
+    }
     if (
       typeof spec.options?.expireAfterSeconds !== "undefined" &&
       idx.expireAfterSeconds !== spec.options.expireAfterSeconds
     ) {
       return false;
+    }
+    if (
+      typeof spec.options?.sparse !== "undefined" &&
+      normalizeBooleanOption(idx.sparse) !==
+        normalizeBooleanOption(spec.options.sparse)
+    ) {
+      return false;
+    }
+    if (typeof spec.options?.partialFilterExpression !== "undefined") {
+      const actualPartial = normalizePartialFilterExpression(
+        idx.partialFilterExpression,
+      );
+      const expectedPartial = normalizePartialFilterExpression(
+        spec.options.partialFilterExpression,
+      );
+      if (actualPartial !== expectedPartial) return false;
     }
 
     return true;
