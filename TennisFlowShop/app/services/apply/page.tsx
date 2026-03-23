@@ -844,41 +844,82 @@ export default function StringServiceApplyPage() {
     passId?: string;
     packageSize?: number;
   }>(null);
+  const passPreviewFetchStartedRef = useRef(false);
 
-  // 로그인 여부와 관계 없이 시도 (401이면 무시)
+  // 첫 화면 렌더 이후 idle 시점에 1회 조회 (401이면 무시)
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/passes/me", { credentials: "include" });
-        if (!res.ok) return; // 비로그인 등
-        const data = await res.json();
-        const items = (data?.items ?? []).filter(
-          (p: any) =>
-            p.status === "active" &&
-            p.remainingCount > 0 &&
-            new Date(p.expiresAt).getTime() >= Date.now(),
-        );
-        items.sort(
-          (a: any, b: any) =>
-            new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
-        );
-        if (items.length > 0) {
-          const p = items[0];
-          setPackagePreview({
-            has: true,
-            remaining: p.remainingCount,
-            expiresAt: p.expiresAt,
-            passId: p.id,
-            packageSize: p.packageSize,
-          });
-        } else {
-          setPackagePreview({ has: false });
+    if (passPreviewFetchStartedRef.current) return;
+    if (blockedByLoginGate) return;
+    if (!allowGuestCheckout && !authChecked) return;
+
+    let cancelled = false;
+    let timerId: number | null = null;
+    const win = window as Window & {
+      requestIdleCallback?: (
+        callback: IdleRequestCallback,
+        options?: IdleRequestOptions,
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    const runFetch = () => {
+      if (cancelled || passPreviewFetchStartedRef.current) return;
+      passPreviewFetchStartedRef.current = true;
+
+      (async () => {
+        try {
+          const res = await fetch("/api/passes/me", { credentials: "include" });
+          if (!res.ok) return; // 비로그인 등
+          const data = await res.json();
+          const items = (data?.items ?? []).filter(
+            (p: any) =>
+              p.status === "active" &&
+              p.remainingCount > 0 &&
+              new Date(p.expiresAt).getTime() >= Date.now(),
+          );
+          items.sort(
+            (a: any, b: any) =>
+              new Date(a.expiresAt).getTime() -
+              new Date(b.expiresAt).getTime(),
+          );
+          if (items.length > 0) {
+            const p = items[0];
+            setPackagePreview({
+              has: true,
+              remaining: p.remainingCount,
+              expiresAt: p.expiresAt,
+              passId: p.id,
+              packageSize: p.packageSize,
+            });
+          } else {
+            setPackagePreview({ has: false });
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
+      })();
+    };
+
+    if (typeof win.requestIdleCallback === "function") {
+      const idleId = win.requestIdleCallback(() => runFetch(), {
+        timeout: 1200,
+      });
+      return () => {
+        cancelled = true;
+        if (typeof win.cancelIdleCallback === "function") {
+          win.cancelIdleCallback(idleId);
+        }
+      };
+    }
+
+    timerId = window.setTimeout(() => runFetch(), 120);
+    return () => {
+      cancelled = true;
+      if (timerId !== null) {
+        window.clearTimeout(timerId);
       }
-    })();
-  }, []);
+    };
+  }, [allowGuestCheckout, authChecked, blockedByLoginGate]);
 
   // 가격 상태 추가 및 표시
   const [price, setPrice] = useState<number>(0);
