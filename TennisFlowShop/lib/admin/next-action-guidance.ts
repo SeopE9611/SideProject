@@ -3,6 +3,7 @@ import { isVisitPickupOrder } from "@/lib/order-shipping";
 export type OpsLikeItem = {
   kind: "order" | "stringing_application" | "rental";
   statusLabel?: string | null;
+  statusDisplayLabel?: string | null;
   paymentLabel?: string | null;
   flow?: number | null;
   related?: {
@@ -106,8 +107,18 @@ const isOrderClosed = (status?: string | null) => {
   );
 };
 
-const isVisitPickupItem = (item: OpsLikeItem) =>
-  isVisitPickupOrder(item.shippingMethod);
+const isVisitPickupItem = (item: OpsLikeItem) => {
+  if (isVisitPickupOrder(item.shippingMethod)) return true;
+
+  const display = String(item.statusDisplayLabel ?? "").toLowerCase();
+  // API에서 배송 상태를 방문 수령 문맥으로 치환해 내려온 경우(예: 수령 준비중/방문 수령 완료)
+  // shippingMethod가 누락돼도 운영센터 문맥을 방문 수령으로 유지한다.
+  return (
+    display.includes("방문 수령") ||
+    display.includes("수령 준비") ||
+    display.includes("방문수령")
+  );
+};
 
 function isCancelRequested(item: OpsLikeItem) {
   if (item.cancelRequested) return true;

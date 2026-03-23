@@ -50,6 +50,7 @@ export type AdminOperationItem = {
   };
   stage?: string;
   nextAction?: string;
+  shippingMethod?: string | null;
   hasShippingInfo?: boolean;
   hasOutboundTracking?: boolean;
   cancel?: {
