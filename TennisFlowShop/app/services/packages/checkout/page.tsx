@@ -7,6 +7,7 @@ import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { loadPackageSettings } from "@/app/features/packages/api/db";
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
@@ -42,10 +43,7 @@ export default async function Page({
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
-  const { payload, recoveredByRefresh } = resolveCheckoutAuthPayload(
-    accessToken,
-    refreshToken,
-  );
+  const { payload } = resolveCheckoutAuthPayload(accessToken, refreshToken);
 
   if (!payload?.sub) {
     const next =
@@ -54,35 +52,36 @@ export default async function Page({
     return <LoginGate next={next} />;
   }
 
-  if (recoveredByRefresh) {
-    // refresh token 서명 검증 통과만으로 보호 페이지를 열어주면 안 된다.
-    // 만료 직후 회복 UX는 유지하되, users/me · mypage/activity와 같은 기준으로
-    // DB 사용자 상태(존재/탈퇴/정지)를 확인해 정책 일관성을 맞춘다.
-    const subStr = String(payload.sub);
-    if (!ObjectId.isValid(subStr)) {
-      const next =
-        "/services/packages/checkout" +
-        (sp?.package ? `?package=${sp.package}` : "");
-      return <LoginGate next={next} />;
-    }
-    const db = await getDb();
-    const authUser = await db
-      .collection("users")
-      .findOne(
-        { _id: new ObjectId(subStr) },
-        { projection: { _id: 1, isDeleted: 1, isSuspended: 1 } },
-      );
-    if (!authUser || authUser.isDeleted || authUser.isSuspended) {
-      const next =
-        "/services/packages/checkout" +
-        (sp?.package ? `?package=${sp.package}` : "");
-      return <LoginGate next={next} />;
-    }
+  // checkout은 로그인 사용자 의존 데이터(이름/이메일/연락처)를 바로 보여주는 화면이다.
+  // mount 후 /api/users/me를 다시 부르면 첫 입력 가능 시점이 늦어져 체감이 느려진다.
+  // 따라서 서버에서 사용자 기본 정보를 선조회해 초기 props로 내려준다.
+  const subStr = String(payload.sub);
+  if (!ObjectId.isValid(subStr)) {
+    const next =
+      "/services/packages/checkout" + (sp?.package ? `?package=${sp.package}` : "");
+    return <LoginGate next={next} />;
+  }
+  const db = await getDb();
+  const authUser = await db.collection("users").findOne(
+    { _id: new ObjectId(subStr) },
+    {
+      projection: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        phone: 1,
+        isDeleted: 1,
+        isSuspended: 1,
+      },
+    },
+  );
+  if (!authUser || authUser.isDeleted || authUser.isSuspended) {
+    const next =
+      "/services/packages/checkout" + (sp?.package ? `?package=${sp.package}` : "");
+    return <LoginGate next={next} />;
   }
 
-  const blockingOrder = await findBlockingPackageOrderByUserId(
-    String(payload.sub),
-  );
+  const blockingOrder = await findBlockingPackageOrderByUserId(String(payload.sub));
   if (blockingOrder) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -115,15 +114,27 @@ export default async function Page({
     );
   }
 
-  // 로그인 통과 ->  클라 컴포넌트에 사용자 기본정보 전달
+  // checkout 첫 진입에서 /api/packages/settings 재요청을 없애기 위해,
+  // 목록 페이지와 동일한 loadPackageSettings 서버 선조회 결과를 전달한다.
+  // 이 값은 로그인 사용자와 무관한 공용 설정이라 서버에서 계산 가능하다.
+  const { packageConfigs } = await loadPackageSettings();
+  const initialPackageConfigs = packageConfigs
+    .filter((pkg) => pkg.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  // ownership 차단은 서버에서 blockingOrder로 이미 판정했다.
+  // checkout client가 mount 후 /api/packages/ownership를 다시 부를 필요가 없다.
   return (
     <PackageCheckoutClient
       initialUser={{
-        id: payload.sub,
-        email: (payload as any)?.email ?? "",
-        name: (payload as any)?.name ?? "",
+        id: String(authUser._id),
+        email: String(authUser.email ?? (payload as any)?.email ?? ""),
+        name: String(authUser.name ?? (payload as any)?.name ?? ""),
+        phone: String(authUser.phone ?? ""),
       }}
       initialQuery={sp}
+      initialPackageConfigs={initialPackageConfigs}
+      initialOwnershipBlockedMessage={null}
     />
   );
 }
