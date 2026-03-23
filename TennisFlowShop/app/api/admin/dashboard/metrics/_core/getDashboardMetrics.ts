@@ -584,7 +584,10 @@ export async function getDashboardMetrics(db: Db) {
         $project: {
           status: { $ifNull: ["$status", "미지정"] },
           shippingMethod: {
-            $ifNull: ["$shippingInfo.shippingMethod", "$deliveryMethod"],
+            $ifNull: [
+              "$shippingInfo.shippingMethod",
+              { $ifNull: ["$shippingInfo.deliveryMethod", "$deliveryMethod"] },
+            ],
           },
         },
       },
