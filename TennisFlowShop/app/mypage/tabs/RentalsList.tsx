@@ -336,7 +336,7 @@ export default function RentalsList() {
                     href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}
                     className="inline-flex items-center gap-1"
                   >
-                    상세보기
+                    상세 보기
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 </Button>

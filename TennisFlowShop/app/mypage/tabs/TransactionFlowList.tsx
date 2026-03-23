@@ -950,7 +950,7 @@ export default function TransactionFlowList() {
                           node: (
                             <Button key="order-confirm" size="sm" disabled={confirmingOrderId === orderId} onClick={() => handleConfirmPurchase(orderId)}>
                               <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                              {confirmingOrderId === orderId ? '처리 중...' : '주문 구매확정'}
+                              {confirmingOrderId === orderId ? '처리 중...' : '구매확정'}
                             </Button>
                           ),
                         });

@@ -526,7 +526,7 @@ export default function OrderLookupResultsPage() {
                               onClick={() => handleViewDetails(order.id)}
                             >
                               <Package className="w-4 h-4" />
-                              상세보기
+                              상세 보기
                               <ChevronRight className="ml-1 h-4 w-4" />
                             </Button>
 
