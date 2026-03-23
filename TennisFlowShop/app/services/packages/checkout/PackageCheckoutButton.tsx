@@ -1,13 +1,11 @@
 "use client";
 
 import type { PackageVariant } from "@/app/services/packages/_lib/packageVariant";
-import type { User } from "@/app/store/authStore";
 import { Button } from "@/components/ui/button";
-import { getMyInfo } from "@/lib/auth.client";
 import { showErrorToast } from "@/lib/toast";
 import { CreditCard, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 // 제출 직전 최종 가드(우회 방지)용 유효성
 // - PackageCheckoutClient에서 disabled로 1차 차단을 하지만,
@@ -83,6 +81,7 @@ export default function PackageCheckoutButton({
   selectedBank,
   serviceRequest,
   saveInfo,
+  isLoggedIn,
 }: {
   disabled: boolean;
   ownershipBlockedMessage: string | null;
@@ -94,32 +93,19 @@ export default function PackageCheckoutButton({
   selectedBank: string;
   serviceRequest: string;
   saveInfo: boolean;
+  // 로그인 상태는 checkout 서버/상위 클라이언트에서 이미 알고 있으므로
+  // 버튼은 이 값을 재사용해 mount 시 중복 사용자 조회를 제거한다.
+  isLoggedIn: boolean;
 }) {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
-
-  useEffect(() => {
-    getMyInfo({ quiet: true })
-      .then(({ user }) => setUser(user))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, []);
 
   const handleSubmit = async () => {
     // 0) 중복 클릭 방지
     if (submittingRef.current || isSubmitting) return;
 
-    // 1) 사용자 정보 확인 중에는 클릭 차단
-    //    (loading 중 클릭되면, 로그인 유저인데도 guestInfo로 처리될 수 있음)
-    if (loading) {
-      showErrorToast("사용자 정보를 확인 중입니다. 잠시만 기다려주세요.");
-      return;
-    }
-
-    // 2) disabled 우회 방지: devtools로 버튼 활성화/직접 호출해도 여기서 막힘
+    // 1) disabled 우회 방지: devtools로 버튼 활성화/직접 호출해도 여기서 막힘
     //    - disabled에는 약관 동의 + 필수값 검증(canSubmit)이 들어가 있음
     if (disabled) {
       showErrorToast(
@@ -128,7 +114,7 @@ export default function PackageCheckoutButton({
       return;
     }
 
-    // 3) 제출 직전 최종 검증(클라)
+    // 2) 제출 직전 최종 검증(클라)
     //    - Client에서 이미 막고 있지만, 최종 안전장치
     const nameTrim = name.trim();
     if (!nameTrim || nameTrim.length < 2) {
@@ -188,7 +174,10 @@ export default function PackageCheckoutButton({
           bank: selectedBank,
         },
         totalPrice: packageInfo.price,
-        guestInfo: !user
+        // checkout/page.tsx + PackageCheckoutClient.tsx에서 이미 로그인 사용자 정보를 선조회한다.
+        // 그래서 버튼 mount 시 getMyInfo()를 다시 부르는 것은 중복 fetch이며, 이 값으로 충분히 분기할 수 있다.
+        // 결과적으로 첫 진입 시 버튼 초기화가 단순해지고, 불필요한 확인 로딩 없이 바로 제출 가능 상태를 유지한다.
+        guestInfo: !isLoggedIn
           ? { name: nameTrim, phone: phoneDigits, email: emailTrim }
           : undefined,
       };
@@ -231,8 +220,10 @@ export default function PackageCheckoutButton({
         // 성공 시에는 다음 주문을 위해 제거
         clearIdemKey();
 
-        // 주문 성공 후에만 (선택적으로) 회원 정보 저장
-        if (user && saveInfo) {
+        // 상위에서 전달한 로그인 상태를 기준으로 기존 의미를 그대로 유지한다.
+        // 즉, 로그인 사용자 + 저장 동의인 경우에만 회원 정보 PATCH를 시도한다.
+        // (로그인 판단/버튼 가드의 동작 의미는 기존과 동일)
+        if (isLoggedIn && saveInfo) {
           try {
             await fetch("/api/users/me", {
               method: "PATCH",

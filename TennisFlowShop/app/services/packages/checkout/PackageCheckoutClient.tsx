@@ -1005,6 +1005,9 @@ export default function PackageCheckoutClient({
                       selectedBank={selectedBank}
                       serviceRequest={serviceRequest}
                       saveInfo={saveInfo}
+                      // 버튼 단에서 /api/users/me 재조회(getMyInfo)하지 않도록
+                      // 서버/상위에서 이미 확보한 로그인 상태를 그대로 전달한다.
+                      isLoggedIn={isLoggedIn}
                     />
                   )}
                   <Button variant="outline" className="w-full border-2" asChild>
