@@ -17,20 +17,39 @@ type SafeUser = {
   oauthProviders?: Array<"kakao" | "naver">;
 };
 
-export async function getCurrentUser(): Promise<SafeUser | null> {
+/**
+ * 상단 공통 영역(헤더/알림 뱃지)처럼 "로그인 사용자 식별자"만 필요한 경로를 위한 경량 헬퍼입니다.
+ *
+ * 핵심 의도:
+ * - 단순 userId 확인 단계에서 users.findOne()까지 수행하면, 호출 빈도가 높은 공통 UI에서
+ *   불필요한 DB 왕복이 누적됩니다.
+ * - unread-count 같은 숫자 집계 API는 user 문서 전체가 아니라 userId만 있으면 충분하므로,
+ *   이 헬퍼로 토큰 검증 + sub 추출까지만 수행합니다.
+ */
+export async function getCurrentUserId(): Promise<string | null> {
   const jar = await cookies();
   const at = jar.get("accessToken")?.value;
   if (!at) return null;
 
   try {
-    // 토큰 해석 (sub: user._id)
     const decoded = jwt.verify(at, ACCESS_TOKEN_SECRET) as JwtPayload;
     const sub = decoded?.sub as string | undefined;
-    if (!sub) return null; // 구 토큰 등에서 sub가 없으면 로그인 불가로 판단
+    return sub ?? null;
+  } catch {
+    return null;
+  }
+}
 
+export async function getCurrentUser(): Promise<SafeUser | null> {
+  // 상세 프로필(name/email/role/연동 배지)이 필요한 경로만 getCurrentUser를 사용합니다.
+  // userId만 필요하면 getCurrentUserId를 사용해 DB 조회를 생략하는 것이 성능상 유리합니다.
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+
+  try {
     const db = await getDb();
     const user = await db.collection("users").findOne(
-      { _id: new ObjectId(sub) },
+      { _id: new ObjectId(userId) },
       {
         // 민감 정보는 반드시 제외
         projection: { hashedPassword: 0 },
