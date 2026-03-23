@@ -20,7 +20,7 @@ import {
   getRentalStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
-import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
   getMypagePaymentStatusLabel,
   getMypageUserStatusLabel,
@@ -1151,6 +1151,14 @@ export default function ActivityFeed() {
                         canShowOrderDeliveryInfo(g.order.status) ? (
                           <OrderShippingInfoDialog
                             orderId={g.order.id}
+                            shippingMethod={g.order.shippingMethod}
+                            triggerLabel={
+                              isVisitPickupOrder({
+                                shippingMethod: g.order.shippingMethod,
+                              })
+                                ? "방문 수령 정보 확인"
+                                : "배송정보 확인"
+                            }
                             className="rounded-lg flex-1 min-w-[160px] bg-transparent"
                           />
                         ) : null}
@@ -1360,6 +1368,14 @@ export default function ActivityFeed() {
                                 canShowOrderDeliveryInfo(g.order.status) ? (
                                   <OrderShippingInfoDialog
                                     orderId={g.order.id}
+                                    shippingMethod={g.order.shippingMethod}
+                                    triggerLabel={
+                                      isVisitPickupOrder({
+                                        shippingMethod: g.order.shippingMethod,
+                                      })
+                                        ? "방문 수령 정보 확인"
+                                        : "배송정보 확인"
+                                    }
                                     className="rounded-lg bg-transparent"
                                   />
                                 ) : null}
