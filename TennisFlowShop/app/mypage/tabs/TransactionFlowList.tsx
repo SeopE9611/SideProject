@@ -13,7 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
+import {
+  getApplicationStatusBadgeSpec,
+  getOrderStatusBadgeSpec,
+  getRentalStatusBadgeSpec,
+  getWorkflowMetaBadgeSpec,
+} from '@/lib/badge-style';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
@@ -719,11 +724,18 @@ export default function TransactionFlowList() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  {todoPrimaryReason ? <Badge variant="default">해야 할 일: {todoPrimaryReason}</Badge> : null}
+                  {todoPrimaryReason ? (
+                    <Badge variant={getWorkflowMetaBadgeSpec('action_required').variant}>
+                      해야 할 일: {todoPrimaryReason}
+                    </Badge>
+                  ) : null}
                   {shouldShowFlowBadge ? <Badge variant="outline">{g.flowLabel}</Badge> : null}
                   {showLinkedStatusBadge ? <Badge variant="secondary">{getLinkedApplicationStatusSummary(linkedApps)}</Badge> : null}
                   {isCancelRequested ? (
-                    <Badge variant="danger" className="gap-1">
+                    <Badge
+                      variant={getWorkflowMetaBadgeSpec('cancel_requested').variant}
+                      className="gap-1"
+                    >
                       <AlertCircle className="h-3 w-3" />
                       취소 요청됨
                     </Badge>
