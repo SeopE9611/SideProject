@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getRentalStatusBadgeSpec } from '@/lib/badge-style';
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -667,6 +668,12 @@ export default function TransactionFlowList() {
           const status = g.kind === 'order' ? g.order?.status : g.kind === 'rental' ? g.rental?.status : g.application?.status;
           const normalizedStatus = getMypageNormalizedStatus(status);
           const userStatusLabel = getMypageUserStatusLabel(status);
+          const orderDisplayStatusLabel =
+            g.kind === 'order'
+              ? getOrderStatusLabelForDisplay(userStatusLabel, {
+                  shippingMethod: g.order?.shippingMethod,
+                })
+              : userStatusLabel;
           const statusBadgeSpec = getStatusBadgeSpec(g, userStatusLabel);
           const linkedCount = g.kind === 'order' ? (g.order?.linkedApplicationCount ?? 0) : g.kind === 'rental' ? (g.rental?.linkedApplicationCount ?? 0) : 0;
           const needsTrackingAction = Boolean(applicationActionTarget?.needsInboundTracking && !applicationActionTarget?.hasTracking);
@@ -678,7 +685,9 @@ export default function TransactionFlowList() {
           const isApplicationActionContext = Boolean(applicationActionTarget) && (isDirectApplicationCard || scope === 'todo');
           const displayTitle = prefersApplicationView ? getApplicationTitle(displayApplication) : getRepresentativeTitle(g);
           const displayStatus = prefersApplicationView ? displayApplication?.status : status;
-          const displayUserStatusLabel = getMypageUserStatusLabel(displayStatus);
+          const displayUserStatusLabel = prefersApplicationView
+            ? getMypageUserStatusLabel(displayStatus)
+            : orderDisplayStatusLabel;
           const displayStatusBadgeSpec = prefersApplicationView ? getStatusBadgeSpec({ ...g, kind: 'application' }, displayUserStatusLabel) : statusBadgeSpec;
           const displayDateLabel = displayKind === 'order' ? '주문일' : displayKind === 'rental' ? '대여일' : '신청일';
           const displayDateValue = displayKind === 'order' ? (g.order?.createdAt ?? g.sortAt) : displayKind === 'rental' ? (g.rental?.createdAt ?? g.sortAt) : (displayApplication?.createdAt ?? g.createdAt ?? g.sortAt);
@@ -735,7 +744,7 @@ export default function TransactionFlowList() {
                         <Package className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-xs uppercase tracking-wide text-muted-foreground">주문 상태</p>
-                          <p className="font-medium text-foreground">{getMypageUserStatusLabel(g.order?.status)}</p>
+                          <p className="font-medium text-foreground">{orderDisplayStatusLabel}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
@@ -883,10 +892,11 @@ export default function TransactionFlowList() {
 
                     if (g.kind === 'order' && orderId && !prefersApplicationView) {
                       if (canShowOrderShippingInfo(status)) {
+                        const shippingInfoLabel = isVisitPickupOrder({ shippingMethod: g.order?.shippingMethod }) ? '방문 수령 정보 확인' : '배송정보 확인';
                         actions.push({
                           key: 'order-shipping-info',
                           priority: 1,
-                          node: <OrderShippingInfoDialog orderId={orderId} triggerLabel="배송정보 확인" className="bg-transparent" />,
+                          node: <OrderShippingInfoDialog orderId={orderId} triggerLabel={shippingInfoLabel} className="bg-transparent" />,
                         });
                       }
 
