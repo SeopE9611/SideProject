@@ -127,6 +127,10 @@ export async function getDb() {
   const c = await clientPromise; // 재할당하지 않도록 변수명 변경
   const db = c.db(dbName);
 
+  // 핵심: 인덱스 보장을 "순차 await" 하지 않고, 같은 요청 안에서 병렬로 시작한다.
+  // - 기존 구조는 첫 요청/콜드스타트에서 ensure*Indexes를 하나씩 기다려서 지연이 누적됐다.
+  // - 아래처럼 Promise를 먼저 전부 만들어 두면, MongoDB가 가능한 범위에서 동시에 처리하여
+  //   요청 경로의 블로킹 시간을 줄일 수 있다(프로세스 생애당 1회 캐시 동작은 그대로 유지).
   if (!global._passesIndexesReady) {
     global._passesIndexesReady = ensurePassIndexes(db).catch((e) => {
       console.error("[passes] ensurePassIndexes failed", e);
@@ -134,7 +138,6 @@ export async function getDb() {
       global._passesIndexesReady = null;
     });
   }
-  await global._passesIndexesReady; // 실패했어도 다음 요청에서 재시도됨
 
   // auth(oauth_pending_signups, user_sessions) 인덱스 보장(1회)
   if (!global._authIndexesReady) {
@@ -143,7 +146,6 @@ export async function getDb() {
       global._authIndexesReady = null;
     });
   }
-  await global._authIndexesReady;
 
   // boards 인덱스 보장(1회)
   if (!global._boardsIndexesReady) {
@@ -152,7 +154,6 @@ export async function getDb() {
       global._boardsIndexesReady = null;
     });
   }
-  await global._boardsIndexesReady;
 
   // rentals 인덱스 보장(1회)
   if (!global._rentalsIndexesReady) {
@@ -161,7 +162,6 @@ export async function getDb() {
       global._rentalsIndexesReady = null;
     });
   }
-  await global._rentalsIndexesReady;
 
   // messages 인덱스 보장(1회)
   if (!global._messagesIndexesReady) {
@@ -170,7 +170,6 @@ export async function getDb() {
       global._messagesIndexesReady = null;
     });
   }
-  await global._messagesIndexesReady;
 
   // points 인덱스 보장(1회)
   if (!global._pointsIndexesReady) {
@@ -179,7 +178,6 @@ export async function getDb() {
       global._pointsIndexesReady = null;
     });
   }
-  await global._pointsIndexesReady;
 
   // used_rackets (Finder 범위검색 성능)
   if (!global._usedRacketsIndexesReady) {
@@ -190,7 +188,6 @@ export async function getDb() {
       },
     );
   }
-  await global._usedRacketsIndexesReady;
 
   // wishlists 인덱스 보장(1회)
   if (!global._wishlistIndexesReady) {
@@ -199,7 +196,6 @@ export async function getDb() {
       global._wishlistIndexesReady = null;
     });
   }
-  await global._wishlistIndexesReady;
 
   // admin_locks 인덱스 보장(1회)
   if (!global._adminLocksIndexesReady) {
@@ -208,7 +204,6 @@ export async function getDb() {
       global._adminLocksIndexesReady = null;
     });
   }
-  await global._adminLocksIndexesReady;
 
   // users 인덱스 보장(1회)
   if (!global._usersIndexesReady) {
@@ -217,7 +212,6 @@ export async function getDb() {
       global._usersIndexesReady = null; // 실패 시 다음 요청에서 재시도
     });
   }
-  await global._usersIndexesReady;
 
   if (!global._reviewsIndexesReady) {
     global._reviewsIndexesReady = ensureReviewIndexes(db).catch((e) => {
@@ -225,7 +219,20 @@ export async function getDb() {
       global._reviewsIndexesReady = null;
     });
   }
-  await global._reviewsIndexesReady;
+
+  await Promise.all([
+    global._passesIndexesReady,
+    global._authIndexesReady,
+    global._boardsIndexesReady,
+    global._rentalsIndexesReady,
+    global._messagesIndexesReady,
+    global._pointsIndexesReady,
+    global._usedRacketsIndexesReady,
+    global._wishlistIndexesReady,
+    global._adminLocksIndexesReady,
+    global._usersIndexesReady,
+    global._reviewsIndexesReady,
+  ]);
 
   return db;
 }
