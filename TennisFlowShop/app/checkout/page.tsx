@@ -49,6 +49,8 @@ type CheckoutTouchedFields = Partial<Record<CheckoutTouchedField, boolean>>;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
+const DAUM_POSTCODE_SCRIPT_URL = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+let daumPostcodeScriptPromise: Promise<void> | null = null;
 // 연락처는 010으로 시작하는 휴대폰 번호만 허용 (010 0000 0000)
 const formatKoreanPhone010 = (v: string) => {
   const d = onlyDigits(v).slice(0, 11);
@@ -407,22 +409,52 @@ export default function CheckoutPage() {
     setTouchedFields((prev) => (prev[field] ? prev : { ...prev, [field]: true }));
   };
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
+  const loadDaumPostcodeScript = () => {
+    if (typeof window === "undefined") return Promise.resolve();
+    if (window.daum?.Postcode) return Promise.resolve();
+    if (daumPostcodeScriptPromise) return daumPostcodeScriptPromise;
 
-  const handleFindPostcode = () => {
-    new window.daum.Postcode({
-      oncomplete: (data: any) => {
-        const fullAddress = data.address;
-        const zonecode = data.zonecode;
-        setPostalCode(zonecode);
-        setAddress(fullAddress);
-      },
-    }).open();
+    daumPostcodeScriptPromise = new Promise<void>((resolve, reject) => {
+      const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${DAUM_POSTCODE_SCRIPT_URL}"]`);
+      const script = existingScript ?? document.createElement("script");
+
+      const handleLoad = () => resolve();
+      const handleError = () => {
+        daumPostcodeScriptPromise = null;
+        reject(new Error("Failed to load Daum postcode script"));
+      };
+
+      script.addEventListener("load", handleLoad, { once: true });
+      script.addEventListener("error", handleError, { once: true });
+
+      if (!existingScript) {
+        script.src = DAUM_POSTCODE_SCRIPT_URL;
+        script.async = true;
+        document.body.appendChild(script);
+      } else if ((existingScript as any).readyState === "complete") {
+        resolve();
+      }
+    });
+
+    return daumPostcodeScriptPromise;
+  };
+
+  const handleFindPostcode = async () => {
+    try {
+      await loadDaumPostcodeScript();
+      if (!window.daum?.Postcode) return;
+
+      new window.daum.Postcode({
+        oncomplete: (data: any) => {
+          const fullAddress = data.address;
+          const zonecode = data.zonecode;
+          setPostalCode(zonecode);
+          setAddress(fullAddress);
+        },
+      }).open();
+    } catch {
+      // noop
+    }
   };
 
   const [saveAddress, setSaveAddress] = useState(false);
