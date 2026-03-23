@@ -292,37 +292,7 @@ export default function StringServiceApplyPage() {
   // 1) 신청서 id 상태
   const [applicationId, setApplicationId] = useState<string | null>(null);
 
-  // 2) by-order로 신청서 id 조회
-  useEffect(() => {
-    if (loading) return;
-    if (!orderId) return;
-    if (isOrderSlotBlocked) {
-      setApplicationId(null);
-      return;
-    }
-
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/applications/stringing/by-order/${orderId}`,
-          {
-            cache: "no-store",
-            credentials: "include",
-          },
-        );
-        if (!res.ok) return; // 404면 초안 생성 루트로 진행
-        const data = await res.json();
-        if (data?.found) {
-          // draft면 현 페이지에서 계속 작성하되 버튼 등에서 applicationId 사용
-          setApplicationId(data.applicationId);
-        }
-      } catch (e) {
-        console.error("[apply] fetch by-order id failed:", e);
-      }
-    })();
-  }, [loading, orderId, isOrderSlotBlocked]);
-
-  // 2-0) 주문 상세를 조회해 현재 신청 가능 상태(남은 슬롯/신청 이력)를 안내에 반영
+  // 2) 주문 상세를 조회해 현재 신청 가능 상태(남은 슬롯/신청 이력)를 안내에 반영
   useEffect(() => {
     if (!orderId) {
       setOrder(null);
@@ -486,6 +456,7 @@ export default function StringServiceApplyPage() {
     draftBootOrderIdRef.current = orderId;
 
     (async () => {
+      let shouldFallbackByOrderLookup = false;
       try {
         const draftUrl =
           orderId && orderId.trim()
@@ -505,15 +476,30 @@ export default function StringServiceApplyPage() {
           "status=",
           resp.status,
         );
-        // 응답 데이터(applicationId, reused 등)는 현재 화면 흐름에 직접 필요 없으므로
-        // 별도 상태 저장 없이 "초안 존재"만 보장. (멱등: 여러 번 호출돼도 중복 생성 없음)
+        if (!resp.ok) {
+          shouldFallbackByOrderLookup = true;
+        } else {
+          const data = await resp.json().catch(() => null);
+          const bootstrappedApplicationId =
+            typeof data?.applicationId === "string" &&
+            data.applicationId.trim()
+              ? data.applicationId.trim()
+              : null;
+
+          if (bootstrappedApplicationId) {
+            setApplicationId(bootstrappedApplicationId);
+          } else {
+            shouldFallbackByOrderLookup = true;
+          }
+        }
       } catch (err) {
         // 초안 생성 실패가 화면 진행을 막지는 않도록 '조용히' 로깅만
         console.error("[draft bootstrap] failed:", err);
+        shouldFallbackByOrderLookup = true;
       }
 
-      // 초안 생성이 끝난 뒤 applicationId가 없다면 by-order 재조회
-      if (!applicationId && orderId) {
+      // POST 실패/응답 비정상일 때만 최소 fallback으로 by-order 재조회
+      if (shouldFallbackByOrderLookup && orderId) {
         try {
           const r = await fetch(
             `/api/applications/stringing/by-order/${orderId}`,
@@ -529,7 +515,7 @@ export default function StringServiceApplyPage() {
         } catch {}
       }
     })();
-  }, [loading, orderId, isOrderSlotBlocked, applicationId]);
+  }, [loading, orderId, isOrderSlotBlocked]);
 
   // 스텝별 검증 (silent=true면 토스트 없이 true/false만 반환)
   const validateStep = (step: number, silent = false): boolean => {
