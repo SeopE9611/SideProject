@@ -24,6 +24,7 @@
     "test:e2e:admin-critical": "node scripts/run-admin-critical-smoke-with-server.mjs",
     "test:e2e:admin-community-metrics-smoke": "node scripts/smoke-admin-community-posts-metrics.mjs",
     "db:check-runtime-indexes": "node scripts/db/check-runtime-indexes.mjs",
+    "db:ensure-runtime-indexes": "node scripts/db/ensure-runtime-indexes.mjs",
     "check:no-new-any": "node scripts/check-no-new-any.mjs",
     "test:e2e:notice-conflict-retry": "cypress run --spec cypress/e2e/notice.edit-conflict-retry.cy.ts",
     "test:e2e:admin-critical:smoke": "BASE_URL=http://localhost:3000 node scripts/admin-critical-smoke.mjs",

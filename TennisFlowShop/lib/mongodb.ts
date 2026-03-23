@@ -129,8 +129,8 @@ export async function getDb() {
 
   // 핵심: 인덱스 보장을 "순차 await" 하지 않고, 같은 요청 안에서 병렬로 시작한다.
   // - 기존 구조는 첫 요청/콜드스타트에서 ensure*Indexes를 하나씩 기다려서 지연이 누적됐다.
-  // - 아래처럼 Promise를 먼저 전부 만들어 두면, MongoDB가 가능한 범위에서 동시에 처리하여
-  //   요청 경로의 블로킹 시간을 줄일 수 있다(프로세스 생애당 1회 캐시 동작은 그대로 유지).
+  // - Promise.all 병렬화는 "동시에 시작"만 개선하고, await Promise.all(...)이 남아 있으면
+  //   첫 요청이 "모든 인덱스 보장 완료"까지 기다린다는 점은 동일하다.
   if (!global._passesIndexesReady) {
     global._passesIndexesReady = ensurePassIndexes(db).catch((e) => {
       console.error("[passes] ensurePassIndexes failed", e);
@@ -220,7 +220,7 @@ export async function getDb() {
     });
   }
 
-  await Promise.all([
+  const runtimeIndexesReady = [
     global._passesIndexesReady,
     global._authIndexesReady,
     global._boardsIndexesReady,
@@ -232,7 +232,19 @@ export async function getDb() {
     global._adminLocksIndexesReady,
     global._usersIndexesReady,
     global._reviewsIndexesReady,
-  ]);
+  ];
+
+  // 운영 환경 최적화:
+  // - 인덱스 보장 책임을 요청 경로 밖(배포 전 ensure 스크립트 + 백그라운드 재확인)으로 더 밀어내기 위해
+  //   production에서는 getDb()가 인덱스 완료를 기다리지 않는다.
+  // - 대신 첫 요청에서 비차단으로 보장을 시작해, 혹시 선반영이 누락된 경우에도 자동 보정(fallback)을 유지한다.
+  // - fallback을 완전히 제거하면 운영 절차 누락 시 성능/정합성 리스크가 커지므로 최소 안전망은 남긴다.
+  if (process.env.NODE_ENV === "production") {
+    void Promise.all(runtimeIndexesReady);
+  } else {
+    // 개발/테스트에서는 기존처럼 기다려서 인덱스 문제를 초기에 빠르게 드러내는 보수 정책을 유지한다.
+    await Promise.all(runtimeIndexesReady);
+  }
 
   return db;
 }
