@@ -1,27 +1,11 @@
 import RacketDetailClient from "@/app/rackets/[id]/_components/RacketDetailClient";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { headers } from "next/headers";
+import {
+  getRacketActiveCountPayload,
+  getRacketDetailPayload,
+} from "@/lib/racket-detail.server";
 
 export const dynamic = "force-dynamic";
-
-async function absoluteUrl(path: string) {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") || h.get("host");
-  const proto = h.get("x-forwarded-proto") || "https";
-  return host ? `${proto}://${host}${path}` : path; // 드문 케이스 폴백
-}
-
-async function getDataByUrl(url: string) {
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) return null;
-  return res.json();
-}
-
-async function getStockByUrl(url: string) {
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) return { ok: false, quantity: 1, available: 0 };
-  return res.json();
-}
 
 export default async function RacketDetailPage({
   params,
@@ -30,19 +14,14 @@ export default async function RacketDetailPage({
 }) {
   const { id } = await params;
 
-  // 상세 페이지 성능 최적화 포인트:
-  // 1) 내부 API 호출은 유지하되(기존 응답 스키마/권한 처리 보존),
-  // 2) 기존 순차 fetch(라켓 조회 -> 재고 조회)를 병렬 fetch로 전환한다.
-  //    - 순차 구조는 두 번째 요청이 첫 번째 완료 후 시작되어 체감 대기 시간이 늘어난다.
-  //    - 두 API는 서로 의존성이 없으므로 Promise.all 병렬화가 가능하다.
-  const [dataUrl, stockUrl] = await Promise.all([
-    absoluteUrl(`/api/rackets/${id}`),
-    absoluteUrl(`/api/rentals/active-count/${id}`),
-  ]);
-
+  // 성능 최적화 핵심:
+  // - 기존에는 같은 서버 안의 /api/...를 다시 fetch 하면서 내부 네트워크 왕복 +
+  //   route handler 재실행 + JSON 직렬화/역직렬화가 추가로 발생했다.
+  // - page와 route가 동일한 DB 로직(helper)을 직접 재사용하면 같은 결과를 더 짧은 경로로 얻을 수 있다.
+  // - 두 데이터는 서로 독립적이라 Promise.all 병렬 조회를 유지해 상세 체감 대기 시간을 줄인다.
   const [doc, stock] = await Promise.all([
-    getDataByUrl(dataUrl),
-    getStockByUrl(stockUrl),
+    getRacketDetailPayload(id),
+    getRacketActiveCountPayload(id),
   ]);
 
   if (!doc) {
