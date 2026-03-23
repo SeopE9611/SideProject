@@ -234,11 +234,19 @@ export async function getDb() {
     global._reviewsIndexesReady,
   ];
 
-  // 운영 환경 최적화:
-  // - 인덱스 보장 책임을 요청 경로 밖(배포 전 ensure 스크립트 + 백그라운드 재확인)으로 더 밀어내기 위해
-  //   production에서는 getDb()가 인덱스 완료를 기다리지 않는다.
-  // - 대신 첫 요청에서 비차단으로 보장을 시작해, 혹시 선반영이 누락된 경우에도 자동 보정(fallback)을 유지한다.
-  // - fallback을 완전히 제거하면 운영 절차 누락 시 성능/정합성 리스크가 커지므로 최소 안전망은 남긴다.
+  // 운영 환경 최적화(Production non-blocking 정책):
+  // - production에서는 "요청 경로 지연"을 줄이기 위해 getDb()가 인덱스 완료를 await 하지 않는다.
+  // - 즉, 요청 처리와 인덱스 보장을 분리하고 인덱스 보장은 백그라운드로 시작만 한다.
+  //
+  // 왜 ensure-runtime-indexes가 더 중요해졌나?
+  // - production에서 요청이 인덱스 완료를 기다리지 않으므로, 배포 전에 필요한 인덱스를 미리 맞춰두어야
+  //   첫 트래픽부터 안정적인 실행계획(인덱스 기반)을 기대할 수 있다.
+  // - 따라서 scripts/db/ensure-runtime-indexes.mjs 의 범위는 아래 runtimeIndexesReady(=getDb 관리 범위)와
+  //   항상 동일해야 한다. 둘이 어긋나면 "정책은 non-blocking인데 선반영은 누락" 상태가 된다.
+  //
+  // check/ensure 스크립트 역할 구분:
+  // - check-runtime-indexes: 현재 인덱스 상태를 검증(읽기 전용, 생성하지 않음)
+  // - ensure-runtime-indexes: 배포 전 인덱스를 실제 생성/보정(쓰기 작업 수행)
   if (process.env.NODE_ENV === "production") {
     void Promise.all(runtimeIndexesReady);
   } else {
