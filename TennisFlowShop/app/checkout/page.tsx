@@ -44,6 +44,12 @@ type CheckoutField = "name" | "phone" | "email" | "postalCode" | "address" | "ad
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
 type CheckoutTouchedField = "name" | "phone" | "email" | "postalCode" | "addressDetail" | "depositor";
 type CheckoutTouchedFields = Partial<Record<CheckoutTouchedField, boolean>>;
+type CheckoutPrefillUser = User & {
+  phone?: string | null;
+  postalCode?: string | null;
+  address?: string | null;
+  addressDetail?: string | null;
+};
 
 // 유효성(클라 UI용) - 서버는 별도로 강제
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -763,10 +769,28 @@ export default function CheckoutPage() {
     let cancelled = false;
     getMyInfo({ quiet: true })
       .then(({ user }) => {
-        if (!cancelled) setUser(user);
+        if (cancelled) return;
+
+        setUser(user);
+
+        if (user) {
+          const prefillUser = user as CheckoutPrefillUser;
+          setName(prefillUser.name || "");
+          setPhone(formatKoreanPhone010(prefillUser.phone || ""));
+          setEmail(prefillUser.email || "");
+          setPostalCode(prefillUser.postalCode || "");
+          setAddress(prefillUser.address || "");
+          setAddressDetail(prefillUser.addressDetail || "");
+        }
+
+        // 로그인/비로그인 여부와 무관하게 초기 프리필 단계 완료를 표시
+        initFlagsRef.current.prefillDone = true;
       })
       .catch(() => {
         /* quiet: 401은 정상. 아무 것도 하지 않음 */
+        if (!cancelled) {
+          initFlagsRef.current.prefillDone = true;
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -775,30 +799,6 @@ export default function CheckoutPage() {
       cancelled = true;
     };
   }, []);
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUserInfo = async () => {
-      try {
-        const res = await fetch("/api/users/me", { credentials: "include" });
-        if (!res.ok) return;
-
-        const data = await res.json();
-
-        setName(data.name || "");
-        setPhone(formatKoreanPhone010(data.phone || ""));
-        setEmail(data.email || "");
-        setPostalCode(data.postalCode || "");
-        setAddress(data.address || "");
-        setAddressDetail(data.addressDetail || "");
-      } finally {
-        // 프로필 프리필이 성공/실패하더라도 "초기값 스냅샷" 단계로 넘어갈 수 있게 플래그를 올림
-        initFlagsRef.current.prefillDone = true;
-      }
-    };
-
-    fetchUserInfo();
-  }, [user]);
 
   // 로그인 유저일 때만 포인트 잔액을 조회
   useEffect(() => {
