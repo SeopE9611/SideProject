@@ -20,6 +20,7 @@ import {
   getRentalStatusBadgeSpec,
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
+import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import {
   getMypagePaymentStatusLabel,
   getMypageUserStatusLabel,
@@ -59,6 +60,7 @@ type ActivityOrderSummary = {
   status: string;
   userConfirmedAt?: string | null;
   paymentStatus: string;
+  shippingMethod?: string;
   totalPrice: number;
   firstItemName: string;
   itemsCount: number;
@@ -164,7 +166,12 @@ function statusBadgeSpec(g: ActivityGroup) {
 }
 
 function primaryStatusLabel(g: ActivityGroup) {
-  if (g.kind === "order") return getMypageUserStatusLabel(g.order?.status);
+  if (g.kind === "order") {
+    const rawStatusLabel = getMypageUserStatusLabel(g.order?.status);
+    return getOrderStatusLabelForDisplay(rawStatusLabel, {
+      shippingMethod: g.order?.shippingMethod,
+    });
+  }
   if (g.kind === "rental") return getMypageUserStatusLabel(g.rental?.status);
   return getMypageUserStatusLabel(g.application?.status);
 }
