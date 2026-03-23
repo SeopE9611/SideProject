@@ -26,9 +26,9 @@ import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/use
 import { calcShippingFee } from "@/lib/shipping-fee";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Building2, CheckCircle, CreditCard, Home, Mail, MapPin, MessageSquare, Package, Phone, Shield, Truck, UserIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -121,6 +121,16 @@ export default function CheckoutPage() {
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] = mode === "buynow" ? (pdpBundleItems.length > 0 ? pdpBundleItems : buyNowItem ? [buyNowItem] : []) : cartItems;
   const orderItemsKey = orderItems.map((it) => `${it.kind}:${it.id}:${it.quantity}`).join("|");
+
+  // 장착비(공임)를 붙일 아이템 kind 정의
+  // - products 컬렉션에서 mountingFee를 조회하므로, 여기 포함된 kind는 "products 기반"이어야 함
+  const SERVICE_FEE_KINDS = new Set<string>(["product", "string"]);
+
+  // kind가 없으면 일단 'product'로 간주 (기존 데이터 호환용)
+  const isServiceFeeTarget = (it: CartItem) => {
+    const kind = (it.kind as string | undefined) ?? "product";
+    return SERVICE_FEE_KINDS.has(kind);
+  };
 
   // 현재 URL 쿼리 스트링(로그인 gate next에도 사용됨)
   const queryString = sp.toString();
@@ -285,13 +295,6 @@ export default function CheckoutPage() {
   // const qty = typeof racketQty === 'number' ? racketQty : orderItems[0]?.quantity ?? 1;
   // serviceFee = pdpMountingFee * qty;
   // }
-
-  // 장착비(공임)를 붙일 아이템 kind 정의
-  // - products 컬렉션에서 mountingFee를 조회하므로, 여기 포함된 kind는 "products 기반"이어야 함
-  const SERVICE_FEE_KINDS = new Set(["product", "string"]);
-
-  // kind가 없으면 일단 'product'로 간주 (기존 데이터 호환용)
-  const isServiceFeeTarget = (it: CartItem) => SERVICE_FEE_KINDS.has((it.kind ?? "product") as any);
 
   // 장착 서비스 ON 시, mini API 로딩이 끝났는지(= mountingFee가 확정됐는지) 확인
   // - 이 플래그가 false인 동안에는 "구성 에러"를 띄우지 않고, 주문 버튼도 잠깐 막아 깜박임/오판/빠른 클릭 리스크를 제거한다.
@@ -1304,7 +1307,7 @@ export default function CheckoutPage() {
                       id="depositor-name"
                       value={depositor}
                       onChange={(e) => setDepositor(e.target.value)}
-                      onBlur={() => touchField('depositor')}
+                      onBlur={() => touchField("depositor")}
                       placeholder="입금자명을 입력하세요"
                       className={cn("border-2 focus:border-border transition-colors", showDepositorError && "border-destructive/30 focus:border-destructive/30")}
                     />
