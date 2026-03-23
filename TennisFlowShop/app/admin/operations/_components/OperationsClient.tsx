@@ -53,7 +53,6 @@ import AsyncState from "@/components/system/AsyncState";
 import {
   opsKindBadgeTone,
   opsKindLabel,
-  opsStatusBadgeTone,
   type OpsBadgeTone,
 } from "@/lib/admin-ops-taxonomy";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -64,7 +63,11 @@ import {
   badgeSizeSm,
   badgeToneClass,
   badgeToneVariant,
+  getApplicationStatusBadgeSpec,
+  getOrderStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
+  getRentalStatusBadgeSpec,
+  getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
 import { shortenId } from "@/lib/shorten";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
@@ -363,12 +366,22 @@ function cancelBadgeSpec(
   status?: "none" | "requested" | "approved" | "rejected",
 ) {
   if (status === "requested")
-    return { label: "취소요청", tone: "danger" as const };
+    return {
+      label: "취소요청",
+      spec: getWorkflowMetaBadgeSpec("cancel_requested"),
+    };
   if (status === "approved")
-    return { label: "취소승인", tone: "info" as const };
+    return { label: "취소승인", spec: getPaymentStatusBadgeSpec("환불") };
   if (status === "rejected")
-    return { label: "취소거절", tone: "neutral" as const };
+    return { label: "취소거절", spec: getPaymentStatusBadgeSpec("결제대기") };
   return null;
+}
+
+function opStatusBadgeSpec(item: OpItem) {
+  const status = item.statusLabel;
+  if (item.kind === "order") return getOrderStatusBadgeSpec(status);
+  if (item.kind === "rental") return getRentalStatusBadgeSpec(status);
+  return getApplicationStatusBadgeSpec(status);
 }
 
 function cancelQuickSignalSpec(
@@ -1683,22 +1696,22 @@ export default function OperationsClient() {
                                   </Badge>
                                   {!warn && g.reviewLevel === "action" && (
                                     <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        badgeToneClass("brand"),
-                                      )}
+                                      variant={
+                                        getWorkflowMetaBadgeSpec("action_required")
+                                          .variant
+                                      }
+                                      className={cn(badgeBase, badgeSizeSm)}
                                     >
                                       검수필요
                                     </Badge>
                                   )}
                                   {!warn && g.reviewLevel === "info" && (
                                     <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        badgeToneClass("info"),
-                                      )}
+                                      variant={
+                                        getWorkflowMetaBadgeSpec("application_linked")
+                                          .variant
+                                      }
+                                      className={cn(badgeBase, badgeSizeSm)}
                                     >
                                       참고/파생(조치없음)
                                     </Badge>
@@ -1785,12 +1798,7 @@ export default function OperationsClient() {
                             >
                               <div className="flex flex-col items-start gap-1">
                                 <Badge
-                                  variant={opsBadgeVariant(
-                                    opsStatusBadgeTone(
-                                      g.anchor.kind,
-                                      g.anchor.statusLabel,
-                                    ),
-                                  )}
+                                  variant={opStatusBadgeSpec(g.anchor).variant}
                                   className={cn(badgeBase, badgeSizeSm)}
                                 >
                                   {g.anchor.statusDisplayLabel ??
@@ -1821,11 +1829,8 @@ export default function OperationsClient() {
                                   );
                                   return cancelBadge ? (
                                     <Badge
-                                      className={cn(
-                                        badgeBase,
-                                        badgeSizeSm,
-                                        badgeToneClass(cancelBadge.tone),
-                                      )}
+                                      variant={cancelBadge.spec.variant}
+                                      className={cn(badgeBase, badgeSizeSm)}
                                     >
                                       {cancelBadge.label}
                                     </Badge>
@@ -2116,22 +2121,22 @@ export default function OperationsClient() {
                             </Badge>
                             {!warn && g.reviewLevel === "action" && (
                               <Badge
-                                className={cn(
-                                  badgeBase,
-                                  badgeSizeSm,
-                                  badgeToneClass("brand"),
-                                )}
+                                variant={
+                                  getWorkflowMetaBadgeSpec("action_required")
+                                    .variant
+                                }
+                                className={cn(badgeBase, badgeSizeSm)}
                               >
                                 검수필요
                               </Badge>
                             )}
                             {!warn && g.reviewLevel === "info" && (
                               <Badge
-                                className={cn(
-                                  badgeBase,
-                                  badgeSizeSm,
-                                  badgeToneClass("info"),
-                                )}
+                                variant={
+                                  getWorkflowMetaBadgeSpec("application_linked")
+                                    .variant
+                                }
+                                className={cn(badgeBase, badgeSizeSm)}
                               >
                                 참고/파생(조치없음)
                               </Badge>
@@ -2165,11 +2170,8 @@ export default function OperationsClient() {
                             );
                             return cancelBadge ? (
                               <Badge
-                                className={cn(
-                                  badgeBase,
-                                  badgeSizeSm,
-                                  badgeToneClass(cancelBadge.tone),
-                                )}
+                                variant={cancelBadge.spec.variant}
+                                className={cn(badgeBase, badgeSizeSm)}
                               >
                                 {cancelBadge.label}
                               </Badge>
