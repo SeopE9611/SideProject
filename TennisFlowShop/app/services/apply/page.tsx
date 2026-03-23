@@ -17,11 +17,7 @@ import { APPLY_STEPS } from "@/app/services/apply/_components/applySteps";
 import OrderPrefillBadge from "@/app/services/apply/_components/OrderPrefillBadge";
 import ProgressSteps from "@/app/services/apply/_components/ProgressSteps";
 import ApplyStepFooter from "@/app/services/apply/_components/steps/ApplyStepFooter";
-import Step1ApplicantInfo from "@/app/services/apply/_components/steps/Step1ApplicantInfo";
-import Step2MountingInfo from "@/app/services/apply/_components/steps/Step2MountingInfo";
-import Step3PaymentInfo from "@/app/services/apply/_components/steps/Step3PaymentInfo";
-import Step3PaymentInfoRentalReadonly from "@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly";
-import Step4FinalRequest from "@/app/services/apply/_components/steps/Step4FinalRequest";
+import dynamic from "next/dynamic";
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +37,28 @@ import { File, Grid2X2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MdSportsTennis } from "react-icons/md";
+
+const Step1ApplicantInfo = dynamic(
+  () => import("@/app/services/apply/_components/steps/Step1ApplicantInfo"),
+  { loading: () => null },
+);
+const Step2MountingInfo = dynamic(
+  () => import("@/app/services/apply/_components/steps/Step2MountingInfo"),
+  { loading: () => null },
+);
+const Step3PaymentInfo = dynamic(
+  () => import("@/app/services/apply/_components/steps/Step3PaymentInfo"),
+  { loading: () => null },
+);
+const Step3PaymentInfoRentalReadonly = dynamic(
+  () =>
+    import("@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly"),
+  { loading: () => null },
+);
+const Step4FinalRequest = dynamic(
+  () => import("@/app/services/apply/_components/steps/Step4FinalRequest"),
+  { loading: () => null },
+);
 
 interface PdpMiniProduct {
   name: string;
