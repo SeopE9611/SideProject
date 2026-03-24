@@ -125,7 +125,20 @@ const getLookupOrderStatusLabel = (status?: string, shippingLike?: any) => {
 
 const getLookupApplicationStatusLabel = (status?: string) => {
   const normalized = String(status ?? "").trim();
-  return getCommonApplicationStatusLabel(normalized) ?? normalized;
+  const commonLabel = getCommonApplicationStatusLabel(normalized);
+  if (commonLabel) return commonLabel;
+
+  const lower = normalized.toLowerCase();
+  const lookupFallbackMap: Record<string, string> = {
+    draft: "접수완료",
+    reviewing: "검토 중",
+    processing: "검토 중",
+    completed: "교체완료",
+    canceled: "취소",
+    cancelled: "취소",
+  };
+
+  return lookupFallbackMap[lower] ?? normalized;
 };
 
 export default function OrderDetailPage() {
