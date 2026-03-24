@@ -327,7 +327,7 @@ const ProductCard = React.memo(
                     className="w-full h-9 sm:h-10 text-xs sm:text-sm"
                   >
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
-                    상세보기
+                    상세 보기
                   </Button>
                 </Link>
 
@@ -434,7 +434,7 @@ const ProductCard = React.memo(
                 onClick={(e) => e.stopPropagation()}
               >
                 <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1" />
-                상세보기
+                상세 보기
               </Button>
 
               {/* 위시리스트 버튼

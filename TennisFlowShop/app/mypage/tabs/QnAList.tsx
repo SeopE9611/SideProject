@@ -222,7 +222,7 @@ export default function QnAList() {
                   href={`/board/qna/${qna.id}`}
                   className="inline-flex items-center gap-1"
                 >
-                  상세보기
+                  상세 보기
                   <ArrowRight className="h-3 w-3" />
                 </Link>
               </Button>

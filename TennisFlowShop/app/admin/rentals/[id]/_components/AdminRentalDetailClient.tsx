@@ -579,7 +579,7 @@ export default function AdminRentalDetailClient() {
                   {data.days}일
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  수령 방식: {pickupMethodLabel}
+                  수령 방법: {pickupMethodLabel}
                 </p>
               </div>
             </div>
