@@ -76,10 +76,10 @@ function CheckoutPackageUsageSync({
   onSync,
 }: {
   packageUsage: PackageUsageResult | null;
-  onSync: (updater: (prev: PackageUsageResult | null) => PackageUsageResult | null) => void;
+  onSync: (next: PackageUsageResult | null) => void;
 }) {
   useEffect(() => {
-    onSync((prev) => (isSamePackageUsage(prev, packageUsage) ? prev : packageUsage));
+    onSync(packageUsage);
   }, [packageUsage, onSync]);
 
   return null;
@@ -517,14 +517,14 @@ export default function CheckoutPage() {
 
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
-  const [syncedCheckoutPackageUsage, setSyncedCheckoutPackageUsage] = useState<PackageUsageResult | null>(null);
+  const [resolvedPackageUsage, setResolvedPackageUsage] = useState<PackageUsageResult | null>(null);
   // 포인트 입력 UX용(0333 방지, 0 자동 제거)
   const [pointsInput, setPointsInput] = useState("0");
   const [isEditingPoints, setIsEditingPoints] = useState(false);
 
   useEffect(() => {
     if (!withStringService) {
-      setSyncedCheckoutPackageUsage(null);
+      setResolvedPackageUsage(null);
     }
   }, [withStringService]);
 
@@ -533,8 +533,10 @@ export default function CheckoutPage() {
   // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
   // - 서비스 ON이면 "패키지 반영 후 최종 serviceFee"를 기준으로 상한을 통일한다.
   const POINT_UNIT = 100; // 100원 단위
-  const pointCapServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, syncedCheckoutPackageUsage ?? { usingPackage: false }) : 0;
-  const maxPointsByPolicy = user ? Math.max(0, subtotal + pointCapServiceFee) : 0;
+  const finalServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, resolvedPackageUsage ?? { usingPackage: false }) : 0;
+  const totalPrice = subtotal + shippingFee + finalServiceFee;
+  const pointCapBase = Math.max(0, totalPrice - shippingFee);
+  const maxPointsByPolicy = user ? pointCapBase : 0;
 
   // debt 방식에서는 "사용 가능 포인트" 기준으로 제한해야 함
   const resolvedPointsAvailable = pointsAvailable ?? 0;
@@ -851,14 +853,6 @@ export default function CheckoutPage() {
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
-    const effectivePackageUsage = checkoutPackageUsage ?? syncedCheckoutPackageUsage;
-    const serviceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, effectivePackageUsage ?? { usingPackage: false }) : 0;
-    const totalPrice = subtotal + shippingFee + serviceFee;
-    const maxPointsByPolicy = user ? Math.max(0, totalPrice - shippingFee) : 0;
-    const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
-    const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
-    const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
-    const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
     const payableTotalPrice = totalPrice - appliedPoints;
 
     const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
@@ -908,7 +902,12 @@ export default function CheckoutPage() {
 
     return (
     <div className="min-h-full bg-background">
-      <CheckoutPackageUsageSync packageUsage={checkoutPackageUsage} onSync={setSyncedCheckoutPackageUsage} />
+      <CheckoutPackageUsageSync
+        packageUsage={checkoutPackageUsage}
+        onSync={(next) => {
+          setResolvedPackageUsage((prev) => (isSamePackageUsage(prev, next) ? prev : next));
+        }}
+      />
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
         <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
@@ -1486,8 +1485,8 @@ export default function CheckoutPage() {
                           <div className="h-6 w-24 rounded-md bg-muted relative overflow-hidden">
                             <div className="absolute inset-0 animate-shimmer bg-foreground/10" />
                           </div>
-                        ) : serviceFee > 0 ? (
-                          <span className="font-semibold text-lg">{serviceFee.toLocaleString()}원</span>
+                        ) : finalServiceFee > 0 ? (
+                          <span className="font-semibold text-lg">{finalServiceFee.toLocaleString()}원</span>
                         ) : (
                           <span className="text-sm text-muted-foreground">해당 없음</span>
                         )}
@@ -1648,7 +1647,7 @@ export default function CheckoutPage() {
                     withStringService={withStringService}
                     servicePickupMethod={servicePickupMethod}
                     items={orderItems}
-                    serviceFee={serviceFee}
+                    serviceFee={finalServiceFee}
                     pointsToUse={appliedPoints}
                     stringingApplicationInput={stringingApplicationInput}
                   />
