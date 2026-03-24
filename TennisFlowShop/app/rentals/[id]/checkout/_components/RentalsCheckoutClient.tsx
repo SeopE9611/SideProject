@@ -363,19 +363,22 @@ export default function RentalsCheckoutClient({
   useEffect(() => {
     let cancelled = false;
     getMyInfo({ quiet: true })
-      .then(async ({ user }) => {
+      .then(({ user }) => {
         if (!user || cancelled) return;
-        setUserId(String((user as any)?._id ?? (user as any)?.id ?? ""));
-        const res = await fetch("/api/users/me", { credentials: "include" });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
-        setName(data.name || "");
-        setEmail(data.email || "");
-        setPhone(data.phone || "");
-        setPostal(data.postalCode || "");
-        setAddress(data.address || "");
-        setAddressDetail(data.addressDetail || "");
+        const me = user as typeof user & {
+          _id?: string;
+          phone?: string | null;
+          postalCode?: string | null;
+          address?: string | null;
+          addressDetail?: string | null;
+        };
+        setUserId(String(me._id ?? me.id ?? ""));
+        setName(me.name || "");
+        setEmail(me.email || "");
+        setPhone(me.phone || "");
+        setPostal(me.postalCode || "");
+        setAddress(me.address || "");
+        setAddressDetail(me.addressDetail || "");
       })
       .catch(() => {
         /* 게스트/401은 정상, 아무 것도 안 함 */
