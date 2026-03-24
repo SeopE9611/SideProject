@@ -40,6 +40,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 
+let daumPostcodeScriptPromise: Promise<void> | null = null;
+
 // 제출 직전 최종 유효성 가드
 const PASSWORD_POLICY_RE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/; // 8자 이상 + 영문/숫자 조합
 const POSTAL_RE = /^\d{5}$/;
@@ -755,29 +757,65 @@ export default function LoginPageClient() {
     window.location.href = url;
   };
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src =
-      "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
+  const handleFindPostcode = async () => {
+    try {
+      if (typeof window === "undefined") return;
 
-  const handleFindPostcode = () => {
-    new window.daum.Postcode({
-      oncomplete: (data: any) => {
-        const fullAddress = data.address;
-        const zonecode = data.zonecode;
-        setPostalCode(zonecode);
-        setAddress(fullAddress);
-        setRegisterFieldErrors((prev) => ({
-          ...prev,
-          postalCode: undefined,
-          address: undefined,
-        }));
-        setRegisterFormError("");
-      },
-    }).open();
+      if (!window.daum?.Postcode) {
+        if (!daumPostcodeScriptPromise) {
+          daumPostcodeScriptPromise = new Promise<void>((resolve, reject) => {
+            const existing = document.querySelector<HTMLScriptElement>(
+              'script[src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"]',
+            );
+
+            if (existing) {
+              existing.addEventListener("load", () => resolve(), {
+                once: true,
+              });
+              existing.addEventListener(
+                "error",
+                () => reject(new Error("Failed to load Daum postcode script")),
+                { once: true },
+              );
+              return;
+            }
+
+            const script = document.createElement("script");
+            script.src =
+              "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+            script.async = true;
+            script.onload = () => resolve();
+            script.onerror = () =>
+              reject(new Error("Failed to load Daum postcode script"));
+            document.body.appendChild(script);
+          }).catch((error) => {
+            daumPostcodeScriptPromise = null;
+            throw error;
+          });
+        }
+
+        await daumPostcodeScriptPromise;
+      }
+
+      if (!window.daum?.Postcode) return;
+
+      new window.daum.Postcode({
+        oncomplete: (data: any) => {
+          const fullAddress = data.address;
+          const zonecode = data.zonecode;
+          setPostalCode(zonecode);
+          setAddress(fullAddress);
+          setRegisterFieldErrors((prev) => ({
+            ...prev,
+            postalCode: undefined,
+            address: undefined,
+          }));
+          setRegisterFormError("");
+        },
+      }).open();
+    } catch {
+      return;
+    }
   };
 
   return (
