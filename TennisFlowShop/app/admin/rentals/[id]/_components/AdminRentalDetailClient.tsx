@@ -1176,7 +1176,7 @@ export default function AdminRentalDetailClient() {
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
-                {isVisitPickup ? "수령/배송 정보" : "운송장 정보"}
+                {isVisitPickup ? "방문 수령 정보" : "배송 정보"}
               </CardTitle>
               <div className="ml-auto">
                 {isVisitPickup ? (
@@ -1219,7 +1219,7 @@ export default function AdminRentalDetailClient() {
                   {isVisitPickup ? (
                     <div className="space-y-1 text-sm">
                       <div>
-                        수령 방식: <b>{pickupMethodLabel}</b>
+                        수령 방법: <b>{pickupMethodLabel}</b>
                       </div>
                       <div>
                         방문 수령 처리일:{" "}
@@ -1237,7 +1237,7 @@ export default function AdminRentalDetailClient() {
                         </b>
                       </div>
                       <div>
-                        운송장:
+                        운송장번호:
                         <a
                           className="underline underline-offset-2"
                           href={
@@ -1276,7 +1276,7 @@ export default function AdminRentalDetailClient() {
                         </b>
                       </div>
                       <div>
-                        운송장:
+                        운송장번호:
                         <a
                           className="underline underline-offset-2"
                           href={
