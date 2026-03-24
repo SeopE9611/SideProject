@@ -319,7 +319,7 @@ const RacketCard = React.memo(
                       >
                         <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
                         <span className="bp-sm:hidden">상세</span>
-                        <span className="hidden bp-sm:inline">상세보기</span>
+                        <span className="hidden bp-sm:inline">상세 보기</span>
                       </Link>
                     </Button>
                   </div>
@@ -361,7 +361,7 @@ const RacketCard = React.memo(
                   <Eye className="w-4 h-4 bp-sm:w-5 bp-sm:h-5 mr-1.5" />
 
                   <span className="bp-sm:hidden">상세</span>
-                  <span className="hidden bp-sm:inline">상세보기</span>
+                  <span className="hidden bp-sm:inline">상세 보기</span>
                 </Button>
               </Link>
             </div>
