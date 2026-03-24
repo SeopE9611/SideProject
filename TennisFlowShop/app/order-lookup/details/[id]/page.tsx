@@ -34,6 +34,10 @@ import {
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
+import {
+  getCommonApplicationStatusLabel,
+  getCommonOrderStatusLabel,
+} from "@/lib/status-labels/base";
 import Image from "next/image";
 import LoginGate from "@/components/system/LoginGate";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
@@ -110,6 +114,18 @@ const getStatusIcon = (status: string, isVisitPickup: boolean) => {
     default:
       return <Package className="w-5 h-5" />;
   }
+};
+
+const getLookupOrderStatusLabel = (status?: string, shippingLike?: any) => {
+  const normalized = String(status ?? "").trim();
+  const baseLabel = getCommonOrderStatusLabel(normalized) ?? normalized;
+  if (!baseLabel) return "배송준비중";
+  return getOrderStatusLabelForDisplay(baseLabel, shippingLike);
+};
+
+const getLookupApplicationStatusLabel = (status?: string) => {
+  const normalized = String(status ?? "").trim();
+  return getCommonApplicationStatusLabel(normalized) ?? normalized;
 };
 
 export default function OrderDetailPage() {
@@ -308,14 +324,18 @@ export default function OrderDetailPage() {
             </p>
             <div className="mt-4">
               <Badge
-                variant={badgeToneVariant(getOrderStatusTone(order.status))}
+                variant={badgeToneVariant(
+                  getOrderStatusTone(
+                    getLookupOrderStatusLabel(order.status, order.shippingInfo),
+                  ),
+                )}
                 className="gap-2 px-4 py-2 text-lg font-semibold"
               >
-                {getStatusIcon(order.status, isVisitPickup)}
-                {getOrderStatusLabelForDisplay(
-                  order.status,
-                  order.shippingInfo,
+                {getStatusIcon(
+                  getLookupOrderStatusLabel(order.status, order.shippingInfo),
+                  isVisitPickup,
                 )}
+                {getLookupOrderStatusLabel(order.status, order.shippingInfo)}
               </Badge>
             </div>
           </div>
@@ -400,7 +420,9 @@ export default function OrderDetailPage() {
                   <p className="text-muted-foreground">
                     신청 상태:{" "}
                     <span className="font-medium text-foreground">
-                      {latestStringingApplication.status}
+                      {getLookupApplicationStatusLabel(
+                        latestStringingApplication.status,
+                      )}
                     </span>
                   </p>
                   {latestStringingApplication.receptionLabel && (

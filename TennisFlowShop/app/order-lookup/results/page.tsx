@@ -45,6 +45,7 @@ import {
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
+import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
@@ -68,7 +69,7 @@ interface Order {
   recipient: string;
   contactNumber: string;
   totalAmount: number;
-  status: "배송준비중" | "배송중" | "배송완료" | "주문취소";
+  status: string;
   shippingInfo?: {
     deliveryMethod?: string;
     shippingMethod?: string;
@@ -93,6 +94,13 @@ const getStatusIcon = (status: string, isVisitPickup: boolean) => {
     default:
       return <Package className="w-4 h-4" />;
   }
+};
+
+const getLookupOrderStatusLabel = (status?: string, shippingLike?: any) => {
+  const normalized = String(status ?? "").trim();
+  const baseLabel = getCommonOrderStatusLabel(normalized) ?? normalized;
+  if (!baseLabel) return "배송준비중";
+  return getOrderStatusLabelForDisplay(baseLabel, shippingLike);
 };
 
 export default function OrderLookupResultsPage() {
@@ -451,15 +459,23 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3">
                               <Badge
                                 variant={badgeToneVariant(
-                                  getOrderStatusTone(order.status),
+                                  getOrderStatusTone(
+                                    getLookupOrderStatusLabel(
+                                      order.status,
+                                      order.shippingInfo,
+                                    ),
+                                  ),
                                 )}
                                 className="gap-1 px-3 py-1.5 text-sm font-medium"
                               >
                                 {getStatusIcon(
-                                  order.status,
+                                  getLookupOrderStatusLabel(
+                                    order.status,
+                                    order.shippingInfo,
+                                  ),
                                   isVisitPickupOrder(order.shippingInfo),
                                 )}
-                                {getOrderStatusLabelForDisplay(
+                                {getLookupOrderStatusLabel(
                                   order.status,
                                   order.shippingInfo,
                                 )}
