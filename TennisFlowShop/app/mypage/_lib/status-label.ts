@@ -5,6 +5,12 @@ import {
   getCommonRentalStatusLabel,
 } from "@/lib/status-labels/base";
 
+/**
+ * Status Labels Layer 2 (mypage wrapper/adaptor):
+ * - base 공용 매핑을 재사용하면서, 마이페이지 UI fallback/호환 라벨을 보강합니다.
+ * - 혼합 피드/복합 화면의 안정성을 위해 wrapper를 유지합니다.
+ * - 방문 수령 문구 치환은 여기서 하지 않고 호출부에서 order-shipping 후처리로 분리합니다.
+ */
 const MYPAGE_STATUS_LABEL_MAP: Record<string, string> = {
   // order/application 확장
   processing: "처리중",

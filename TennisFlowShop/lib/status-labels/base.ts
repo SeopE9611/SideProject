@@ -1,3 +1,10 @@
+/**
+ * Status Labels Layer 1 (base):
+ * - 공용 raw status -> 한글 기본 라벨 매핑만 담당합니다.
+ * - 화면/도메인별 fallback 정책(예: "상태 미정")은 wrapper에서 처리합니다.
+ * - 방문 수령 문구 치환(예: 배송중 -> 수령 준비중)은 이 레이어에서 처리하지 않습니다.
+ *   (후처리: lib/order-shipping.ts)
+ */
 const normalizeStatusInput = (raw?: string | null) => String(raw ?? "").trim();
 
 const getMappedLabel = (
