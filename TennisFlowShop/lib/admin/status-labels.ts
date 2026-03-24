@@ -4,6 +4,12 @@ import {
   getCommonPaymentStatusLabel,
 } from "@/lib/status-labels/base";
 
+/**
+ * Status Labels Layer 2 (admin wrapper/adaptor):
+ * - 관리자 화면의 별칭/호환 표현(예: 결제취소->취소, 환불완료->환불)을 담당합니다.
+ * - base 공용 매핑 위에서 관리 화면 친화 라벨을 보강합니다.
+ * - 방문 수령 문구 치환은 이 파일에서 처리하지 않습니다.
+ */
 const normalizeStatusInput = (raw?: string | null) => String(raw ?? "").trim();
 
 export function labelPaymentStatus(raw?: string) {
