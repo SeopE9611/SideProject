@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo } from "react";
 
 import useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 
@@ -27,15 +27,27 @@ type RentalCheckoutStringingRuntimeBridgeProps = {
   depositor: string;
   selectedBank: string;
   servicePickupMethod: ServicePickup;
-  children: (
-    adapter: ReturnType<typeof useRentalCheckoutStringingServiceAdapter>,
-  ) => ReactNode;
+  onDirtySignatureChange?: (signature: string) => void;
+  children: (payload: {
+    adapter: ReturnType<typeof useRentalCheckoutStringingServiceAdapter>;
+    dirtySignature: string;
+  }) => ReactNode;
 };
 
 export default function RentalCheckoutStringingRuntimeBridge({
   children,
+  onDirtySignatureChange,
   ...adapterParams
 }: RentalCheckoutStringingRuntimeBridgeProps) {
   const adapter = useRentalCheckoutStringingServiceAdapter(adapterParams);
-  return <>{children(adapter)}</>;
+  const dirtySignature = useMemo(
+    () => JSON.stringify(adapter.formData ?? null),
+    [adapter.formData],
+  );
+
+  useEffect(() => {
+    onDirtySignatureChange?.(dirtySignature);
+  }, [dirtySignature, onDirtySignatureChange]);
+
+  return <>{children({ adapter, dirtySignature })}</>;
 }
