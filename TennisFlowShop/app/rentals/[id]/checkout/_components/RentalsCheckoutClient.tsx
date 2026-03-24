@@ -3,7 +3,8 @@
 import { type StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import FinalRequestSection from "@/app/features/stringing-applications/components/apply-shared/FinalRequestSection";
 import MountingInfoSection from "@/app/features/stringing-applications/components/apply-shared/MountingInfoSection";
-import useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
+import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
+import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
@@ -130,6 +131,10 @@ const clearRentalIdemKey = () => {
     window.sessionStorage.removeItem(RENTAL_IDEM_STORE_KEY);
   } catch {}
 };
+
+type RentalCheckoutStringingAdapter = ReturnType<
+  typeof useRentalCheckoutStringingServiceAdapter
+>;
 
 type Initial = {
   racketId: string;
@@ -261,31 +266,6 @@ export default function RentalsCheckoutClient({
 
   const [prefillReady, setPrefillReady] = useState(false);
 
-  const rentalStringingAdapter = useRentalCheckoutStringingServiceAdapter({
-    withStringService: requestStringing,
-    rentalId: initial.racketId,
-    rentalRacketId: initial.racketId,
-    rentalDays: initial.period,
-    stringProduct: selectedString
-      ? {
-          id: selectedString.id,
-          name: selectedString.name,
-          image: selectedString.image,
-          mountingFee: selectedString.mountingFee,
-        }
-      : null,
-    name,
-    email,
-    phone,
-    postalCode,
-    address,
-    addressDetail,
-    deliveryRequest,
-    depositor,
-    selectedBank,
-    servicePickupMethod,
-  });
-
   const fingerprint = useMemo(
     () =>
       JSON.stringify({
@@ -309,10 +289,8 @@ export default function RentalsCheckoutClient({
         agreeTerms,
         agreePrivacy,
         agreeRefund,
-        // 교체 서비스 신청 입력도 이탈 방지 기준에 포함한다.
-        stringingFormData: requestStringing
-          ? rentalStringingAdapter.formData
-          : null,
+        // 브릿지 내부 런타임 훅 데이터는 requestStringing=true 구간에서만 사용한다.
+        stringingFormData: requestStringing ? "runtime-bridge" : null,
       }),
     [
       deliveryMethod,
@@ -336,7 +314,6 @@ export default function RentalsCheckoutClient({
       agreePrivacy,
       agreeRefund,
       requestStringing,
-      rentalStringingAdapter.formData,
     ],
   );
   const baselineRef = useRef<string | null>(null);
@@ -459,74 +436,6 @@ export default function RentalsCheckoutClient({
     }
   }, [maxPointsToUse]);
 
-  const stringingApplicationInput = useMemo<
-    StringingApplicationInput | undefined
-  >(() => {
-    if (!requestStringing) return undefined;
-
-    const form = rentalStringingAdapter.formData;
-    const isVisitCollection = form.collectionMethod === "visit";
-    const stringTypes = (form.stringTypes ?? []).filter(Boolean);
-    const lines = (rentalStringingAdapter.linesForSubmit ?? []).filter(
-      (line) => line?.stringProductId,
-    );
-
-    if (
-      !name.trim() ||
-      !phone.trim() ||
-      stringTypes.length === 0 ||
-      lines.length === 0
-    ) {
-      return undefined;
-    }
-
-    return {
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      shippingInfo: {
-        name: name.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        address: isVisitCollection ? "" : address.trim(),
-        addressDetail: isVisitCollection ? "" : addressDetail.trim(),
-        postalCode: isVisitCollection ? "" : postalCode.trim(),
-        depositor: depositor.trim(),
-        bank: selectedBank,
-        deliveryRequest: deliveryRequest.trim(),
-        collectionMethod: form.collectionMethod,
-      },
-      stringTypes,
-      customStringName: form.customStringType?.trim() || undefined,
-      preferredDate: form.preferredDate,
-      preferredTime: form.preferredTime,
-      requirements: form.requirements,
-      packageOptOut: true,
-      lines: lines.map((line) => ({
-        racketType: line.racketType,
-        stringProductId: line.stringProductId,
-        stringName: line.stringName,
-        tensionMain: line.tensionMain,
-        tensionCross: line.tensionCross,
-        note: line.note,
-        mountingFee: line.mountingFee,
-      })),
-    };
-  }, [
-    requestStringing,
-    rentalStringingAdapter.formData,
-    rentalStringingAdapter.linesForSubmit,
-    name,
-    phone,
-    email,
-    address,
-    addressDetail,
-    postalCode,
-    depositor,
-    selectedBank,
-    deliveryRequest,
-  ]);
-
   // 우편번호 검색기
   const openPostcode = () => {
     if (!window?.daum?.Postcode) {
@@ -545,7 +454,7 @@ export default function RentalsCheckoutClient({
     }).open();
   };
 
-  const onPay = async () => {
+  const onPay = async (rentalStringingAdapter?: RentalCheckoutStringingAdapter) => {
     // 중복 클릭/중복 요청 방지(버튼 disabled 우회 대비)
     if (loading) return;
     if (requestStringing && !selectedString?.id) {
@@ -557,6 +466,65 @@ export default function RentalsCheckoutClient({
       );
       return;
     }
+
+    if (requestStringing && !rentalStringingAdapter) {
+      showErrorToast("교체 서비스 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    const stringingApplicationInput: StringingApplicationInput | undefined =
+      requestStringing && rentalStringingAdapter
+        ? (() => {
+            const form = rentalStringingAdapter.formData;
+            const isVisitCollection = form.collectionMethod === "visit";
+            const stringTypes = (form.stringTypes ?? []).filter(Boolean);
+            const lines = (rentalStringingAdapter.linesForSubmit ?? []).filter(
+              (line) => line?.stringProductId,
+            );
+
+            if (
+              !name.trim() ||
+              !phone.trim() ||
+              stringTypes.length === 0 ||
+              lines.length === 0
+            ) {
+              return undefined;
+            }
+
+            return {
+              name: name.trim(),
+              phone: phone.trim(),
+              email: email.trim(),
+              shippingInfo: {
+                name: name.trim(),
+                phone: phone.trim(),
+                email: email.trim(),
+                address: isVisitCollection ? "" : address.trim(),
+                addressDetail: isVisitCollection ? "" : addressDetail.trim(),
+                postalCode: isVisitCollection ? "" : postalCode.trim(),
+                depositor: depositor.trim(),
+                bank: selectedBank,
+                deliveryRequest: deliveryRequest.trim(),
+                collectionMethod: form.collectionMethod,
+              },
+              stringTypes,
+              customStringName: form.customStringType?.trim() || undefined,
+              preferredDate: form.preferredDate,
+              preferredTime: form.preferredTime,
+              requirements: form.requirements,
+              packageOptOut: true,
+              lines: lines.map((line) => ({
+                racketType: line.racketType,
+                stringProductId: line.stringProductId,
+                stringName: line.stringName,
+                tensionMain: line.tensionMain,
+                tensionCross: line.tensionCross,
+                note: line.note,
+                mountingFee: line.mountingFee,
+              })),
+            };
+          })()
+        : undefined;
 
     try {
       // 제출 직전 최종 검증 + 정규화
@@ -751,7 +719,9 @@ export default function RentalsCheckoutClient({
     }
   };
 
-  return (
+  const renderCheckout = (
+    rentalStringingAdapter?: RentalCheckoutStringingAdapter,
+  ) => (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-card text-foreground border-b border-border">
@@ -939,7 +909,7 @@ export default function RentalsCheckoutClient({
                   </div>
                 </div>
 
-                {requestStringing && (
+                {requestStringing && rentalStringingAdapter && (
                   <div className="space-y-4">
                     <Card className="bg-card/60 border border-border shadow-none">
                       <div className="bg-card p-4 border-b border-border">
@@ -1618,7 +1588,7 @@ export default function RentalsCheckoutClient({
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4 p-4 md:p-6">
                   <Button
-                    onClick={onPay}
+                    onClick={() => onPay(rentalStringingAdapter)}
                     disabled={loading}
                     className={cn(
                       "w-full h-12 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300",
@@ -1634,5 +1604,40 @@ export default function RentalsCheckoutClient({
         </div>
       </SiteContainer>
     </div>
+  );
+
+  const stringProduct = selectedString
+    ? {
+        id: selectedString.id,
+        name: selectedString.name,
+        image: selectedString.image,
+        mountingFee: selectedString.mountingFee,
+      }
+    : null;
+
+  if (!requestStringing) {
+    return renderCheckout();
+  }
+
+  return (
+    <RentalCheckoutStringingRuntimeBridge
+      withStringService={requestStringing}
+      rentalId={initial.racketId}
+      rentalRacketId={initial.racketId}
+      rentalDays={initial.period}
+      stringProduct={stringProduct}
+      name={name}
+      email={email}
+      phone={phone}
+      postalCode={postalCode}
+      address={address}
+      addressDetail={addressDetail}
+      deliveryRequest={deliveryRequest}
+      depositor={depositor}
+      selectedBank={selectedBank}
+      servicePickupMethod={servicePickupMethod}
+    >
+      {(rentalStringingAdapter) => renderCheckout(rentalStringingAdapter)}
+    </RentalCheckoutStringingRuntimeBridge>
   );
 }
