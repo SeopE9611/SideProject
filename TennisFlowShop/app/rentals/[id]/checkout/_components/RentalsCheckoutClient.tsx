@@ -1,8 +1,6 @@
 "use client";
 
 import { type StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
-import FinalRequestSection from "@/app/features/stringing-applications/components/apply-shared/FinalRequestSection";
-import MountingInfoSection from "@/app/features/stringing-applications/components/apply-shared/MountingInfoSection";
 import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
@@ -54,6 +52,7 @@ import {
   Undo2,
   UserIcon,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -135,6 +134,22 @@ const clearRentalIdemKey = () => {
 type RentalCheckoutStringingAdapter = ReturnType<
   typeof useRentalCheckoutStringingServiceAdapter
 >;
+
+const MountingInfoSection = dynamic(
+  () =>
+    import(
+      "@/app/features/stringing-applications/components/apply-shared/MountingInfoSection"
+    ),
+  { loading: () => null },
+);
+
+const FinalRequestSection = dynamic(
+  () =>
+    import(
+      "@/app/features/stringing-applications/components/apply-shared/FinalRequestSection"
+    ),
+  { loading: () => null },
+);
 
 type Initial = {
   racketId: string;
