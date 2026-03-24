@@ -8,14 +8,16 @@ import {
   getOrderStatusBadgeSpec,
 } from "@/lib/badge-style";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
 
 const fetcher = (url: string) =>
   fetch(url, { credentials: "include" }).then((res) => res.json());
 
 // NOTE:
-// 현재 마이페이지 주문 화면은 `app/features/orders/components/OrderStatusBadge` 공용 컴포넌트를 사용 중입니다.
-// 이 파일은 레거시 호환 목적으로 유지하며, 추후 정리 대상임을 명시합니다.
+// 마이페이지 주문 상세에서 사용하는 상태 배지.
+// 상태 한글 매핑은 공용 기본 레이어(getCommonOrderStatusLabel)에서 처리하고,
+// 방문 수령 문구 치환은 getOrderStatusLabelForDisplay에서 유지합니다.
 
 type Props = {
   orderId: string;
@@ -39,13 +41,16 @@ export function OrderStatusBadge({
     },
   );
 
+  const normalized = String(data?.status ?? initialStatus ?? "").trim();
+  const baseLabel = getCommonOrderStatusLabel(normalized) ?? normalized;
+  const displayLabel = baseLabel
+    ? getOrderStatusLabelForDisplay(baseLabel, shippingMethod)
+    : "배송준비중";
+
   const spec = getOrderStatusBadgeSpec(data?.status);
   return (
     <Badge variant={spec.variant} className={cn(badgeBase, badgeSizeSm)}>
-      {getOrderStatusLabelForDisplay(
-        data?.status ?? initialStatus,
-        shippingMethod,
-      )}
+      {displayLabel}
     </Badge>
   );
 }
