@@ -265,6 +265,9 @@ export default function RentalsCheckoutClient({
   const [agreeRefund, setAgreeRefund] = useState(false);
 
   const [prefillReady, setPrefillReady] = useState(false);
+  const [stringingDirtySignature, setStringingDirtySignature] = useState<
+    string | null
+  >(null);
 
   const fingerprint = useMemo(
     () =>
@@ -290,7 +293,7 @@ export default function RentalsCheckoutClient({
         agreePrivacy,
         agreeRefund,
         // 브릿지 내부 런타임 훅 데이터는 requestStringing=true 구간에서만 사용한다.
-        stringingFormData: requestStringing ? "runtime-bridge" : null,
+        stringingFormData: requestStringing ? stringingDirtySignature : null,
       }),
     [
       deliveryMethod,
@@ -314,6 +317,7 @@ export default function RentalsCheckoutClient({
       agreePrivacy,
       agreeRefund,
       requestStringing,
+      stringingDirtySignature,
     ],
   );
   const baselineRef = useRef<string | null>(null);
@@ -1636,8 +1640,11 @@ export default function RentalsCheckoutClient({
       depositor={depositor}
       selectedBank={selectedBank}
       servicePickupMethod={servicePickupMethod}
+      onDirtySignatureChange={setStringingDirtySignature}
     >
-      {(rentalStringingAdapter) => renderCheckout(rentalStringingAdapter)}
+      {({ adapter: rentalStringingAdapter }) =>
+        renderCheckout(rentalStringingAdapter)
+      }
     </RentalCheckoutStringingRuntimeBridge>
   );
 }
