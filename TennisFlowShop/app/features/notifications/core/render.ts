@@ -108,7 +108,7 @@ function makeSms(
     `${ctx.name ?? ""}님`,
     `일정: ${ctx.when ?? "미정"}`,
     `신청번호: ${ctx.id}`,
-    `상세보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`,
+    `상세 보기: ${ctx.baseUrl}/mypage?tab=orders&flowType=application&flowId=${ctx.id}&from=orders`,
   ];
   return lines.filter(Boolean).join("\n");
 }

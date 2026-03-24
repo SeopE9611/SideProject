@@ -1055,7 +1055,7 @@ export default function AdminRentalsClient() {
                                     {
                                       label: pickup.label,
                                       variant: pickup.variant,
-                                      title: "수령 방식",
+                                      title: "수령 방법",
                                     },
                                     {
                                       label: settlement.label,
@@ -1164,7 +1164,7 @@ export default function AdminRentalsClient() {
                                   </span>
                                 </p>
                                 <p className="mt-1 text-[11px] text-muted-foreground">
-                                  수령 방식: {pickup.label}
+                                  수령 방법: {pickup.label}
                                 </p>
                                 <p className="mt-1 text-[11px] text-muted-foreground">
                                   {settlement.label}
