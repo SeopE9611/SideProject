@@ -65,22 +65,33 @@ const resolveCheckoutPackageUsage = (withStringService: boolean, checkoutStringi
   });
 };
 
-const isSamePackageUsage = (a: PackageUsageResult | null, b: PackageUsageResult | null) => {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  return a.canApplyPackage === b.canApplyPackage && a.packageInsufficient === b.packageInsufficient && a.usingPackage === b.usingPackage;
-};
-
-function CheckoutPackageUsageSync({
-  packageUsage,
-  onSync,
+function CheckoutPointsAutoAdjust({
+  user,
+  isEditingPoints,
+  useAllPoints,
+  maxPointsToUse,
+  pointsToUse,
+  onChangePointsToUse,
 }: {
-  packageUsage: PackageUsageResult | null;
-  onSync: (next: PackageUsageResult | null) => void;
+  user: User | null;
+  isEditingPoints: boolean;
+  useAllPoints: boolean;
+  maxPointsToUse: number;
+  pointsToUse: number;
+  onChangePointsToUse: (next: number) => void;
 }) {
+  const POINT_UNIT = 100;
+
   useEffect(() => {
-    onSync(packageUsage);
-  }, [packageUsage, onSync]);
+    if (isEditingPoints) return; // 입력 중엔 강제 보정하면 타이핑이 끊김
+    // 비회원이면 포인트 관련 상태는 아래 useEffect에서 0으로 초기화됨
+    if (!user) return;
+
+    const desired = useAllPoints ? maxPointsToUse : pointsToUse;
+    const normalized = Math.floor((Number(desired) || 0) / POINT_UNIT) * POINT_UNIT;
+    const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
+    if (clamped !== pointsToUse) onChangePointsToUse(clamped);
+  }, [user, useAllPoints, maxPointsToUse, pointsToUse, isEditingPoints, onChangePointsToUse]);
 
   return null;
 }
@@ -517,47 +528,11 @@ export default function CheckoutPage() {
 
   const [useAllPoints, setUseAllPoints] = useState(false);
   const [pointsToUse, setPointsToUse] = useState(0);
-  const [resolvedPackageUsage, setResolvedPackageUsage] = useState<PackageUsageResult | null>(null);
   // 포인트 입력 UX용(0333 방지, 0 자동 제거)
   const [pointsInput, setPointsInput] = useState("0");
   const [isEditingPoints, setIsEditingPoints] = useState(false);
 
-  useEffect(() => {
-    if (!withStringService) {
-      setResolvedPackageUsage(null);
-    }
-  }, [withStringService]);
-
-  // 포인트 사용 정책(1차): 배송비 제외 금액까지만 사용 가능
-  // - 총액(total)에서 배송비(shippingFee)를 제외한 금액까지만 차감 허용
-  // - 로그인 유저만 사용 가능(비회원은 0으로 고정)
-  // - 서비스 ON이면 "패키지 반영 후 최종 serviceFee"를 기준으로 상한을 통일한다.
   const POINT_UNIT = 100; // 100원 단위
-  const finalServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, resolvedPackageUsage ?? { usingPackage: false }) : 0;
-  const totalPrice = subtotal + shippingFee + finalServiceFee;
-  const pointCapBase = Math.max(0, totalPrice - shippingFee);
-  const maxPointsByPolicy = user ? pointCapBase : 0;
-
-  // debt 방식에서는 "사용 가능 포인트" 기준으로 제한해야 함
-  const resolvedPointsAvailable = pointsAvailable ?? 0;
-  const resolvedPointsDebt = pointsDebt ?? 0;
-  const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
-  const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
-
-  const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
-  const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
-
-  // 포인트 입력값 보정(유저 잔액/정책/전액사용 토글에 따라 자동 보정)
-  useEffect(() => {
-    if (isEditingPoints) return; // 입력 중엔 강제 보정하면 타이핑이 끊김
-    // 비회원이면 포인트 관련 상태는 아래 useEffect에서 0으로 초기화됨
-    if (!user) return;
-
-    const desired = useAllPoints ? maxPointsToUse : pointsToUse;
-    const normalized = Math.floor((Number(desired) || 0) / POINT_UNIT) * POINT_UNIT;
-    const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
-    if (clamped !== pointsToUse) setPointsToUse(clamped);
-  }, [user, useAllPoints, maxPointsToUse, pointsToUse, isEditingPoints]);
 
   // 숫자 상태(pointsToUse) 변경 시 입력 문자열도 동기화
   useEffect(() => {
@@ -853,6 +828,16 @@ export default function CheckoutPage() {
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
     const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
+    const finalServiceFee = withStringService ? applyPackageToServiceFee(baseServiceFee, checkoutPackageUsage ?? { usingPackage: false }) : 0;
+    const totalPrice = subtotal + shippingFee + finalServiceFee;
+    const pointCapBase = Math.max(0, totalPrice - shippingFee);
+    const maxPointsByPolicy = user ? pointCapBase : 0;
+    const resolvedPointsAvailable = pointsAvailable ?? 0;
+    const resolvedPointsDebt = pointsDebt ?? 0;
+    const maxPointsToUseRaw = Math.min(resolvedPointsAvailable, maxPointsByPolicy);
+    const maxPointsToUse = Math.floor(maxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
+    const normalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+    const appliedPoints = Math.min(normalizedPointsToUse, maxPointsToUse);
     const payableTotalPrice = totalPrice - appliedPoints;
 
     const stringingApplicationInput: StringingApplicationInput | undefined = (() => {
@@ -902,11 +887,13 @@ export default function CheckoutPage() {
 
     return (
     <div className="min-h-full bg-background">
-      <CheckoutPackageUsageSync
-        packageUsage={checkoutPackageUsage}
-        onSync={(next) => {
-          setResolvedPackageUsage((prev) => (isSamePackageUsage(prev, next) ? prev : next));
-        }}
+      <CheckoutPointsAutoAdjust
+        user={user}
+        isEditingPoints={isEditingPoints}
+        useAllPoints={useAllPoints}
+        maxPointsToUse={maxPointsToUse}
+        pointsToUse={pointsToUse}
+        onChangePointsToUse={setPointsToUse}
       />
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
