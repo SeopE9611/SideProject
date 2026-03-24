@@ -2,7 +2,7 @@
 
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
-import { OrderStatusBadge } from "@/app/features/orders/components/OrderStatusBadge";
+import { OrderStatusBadge } from "./OrderStatusBadge";
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
