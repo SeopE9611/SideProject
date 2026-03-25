@@ -149,23 +149,37 @@ export default function CartPageClient() {
         return;
       }
 
-      const pairs = await Promise.all(
-        productIds.map(async (id) => {
-          try {
-            const res = await fetch(`/api/products/${id}/mini`, {
-              cache: "no-store",
-            });
-            if (!res.ok) return [id, 0] as const;
-            const json = await res.json();
-            const mf = Number(json?.mountingFee ?? 0);
-            return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
-          } catch {
-            return [id, 0] as const;
-          }
-        }),
-      );
+      try {
+        const res = await fetch("/api/products/mini-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ ids: productIds }),
+        });
 
-      if (!cancelled) setMountingFeeByProductId(Object.fromEntries(pairs));
+        if (!res.ok) throw new Error("mini-batch request failed");
+
+        const json = await res.json();
+        const rows = Array.isArray(json?.items) ? json.items : [];
+        const mountingFeeMap = new Map<string, number>(
+          rows.map((entry: { id?: string; mountingFee?: number }) => [
+            String(entry?.id ?? ""),
+            Number(entry?.mountingFee ?? 0),
+          ]),
+        );
+        const pairs = productIds.map((id) => {
+          const mf = Number(mountingFeeMap.get(id) ?? 0);
+          return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
+        });
+
+        if (!cancelled) setMountingFeeByProductId(Object.fromEntries(pairs));
+      } catch {
+        if (!cancelled) {
+          setMountingFeeByProductId(
+            Object.fromEntries(productIds.map((id) => [id, 0] as const)),
+          );
+        }
+      }
     };
 
     load();
