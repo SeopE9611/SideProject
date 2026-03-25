@@ -1,6 +1,5 @@
 "use client";
 
-import RentDialog from "@/app/rackets/[id]/_components/RentDialog";
 import {
   CompareRacketItem,
   useRacketCompareStore,
@@ -50,6 +49,7 @@ import {
   Star,
   Truck,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -68,6 +68,10 @@ interface RacketDetailClientProps {
     available: number;
   };
 }
+
+const RentDialog = dynamic(() => import("./RentDialog"), {
+  loading: () => null,
+});
 
 export default function RacketDetailClient({
   racket,
