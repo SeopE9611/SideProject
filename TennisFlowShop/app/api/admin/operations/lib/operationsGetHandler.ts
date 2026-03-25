@@ -1007,18 +1007,28 @@ export async function handleAdminOperationsGet(req: Request) {
 
     const paymentDerived = deriveStringingPaymentLabel(a);
     const paymentSource = getString(a?.paymentSource) ?? "";
+    const hasExplicitPaymentStatus = Boolean(getString(a?.paymentStatus));
+    const hasPaymentSource = Boolean(paymentSource.trim());
     const serviceFeeBefore = Number(a?.serviceFeeBefore ?? 0);
     const cancel = normalizeCancelRequest(a);
     const reviewReasons: string[] = [];
     const reviewInfoReasons: string[] = [];
     const reviewActionReasons: string[] = [];
-    if (linkedOrderId && !getString(a?.paymentStatus))
+    if (linkedOrderId && !hasExplicitPaymentStatus)
       reviewInfoReasons.push(
         "주문 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.",
       );
-    if (linkedRentalId && !getString(a?.paymentStatus))
+    if (linkedRentalId && !hasExplicitPaymentStatus)
       reviewInfoReasons.push(
         "대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.",
+      );
+    if (linkedOrderId && !hasExplicitPaymentStatus && !hasPaymentSource)
+      reviewInfoReasons.push(
+        "주문 기반 신청서인데 paymentSource/paymentStatus가 비어 있어 결제대기로 해석되었습니다.",
+      );
+    if (linkedRentalId && !hasExplicitPaymentStatus && !hasPaymentSource)
+      reviewInfoReasons.push(
+        "대여 기반 신청서인데 paymentSource/paymentStatus가 비어 있어 결제대기로 해석되었습니다.",
       );
     if (a?.packageApplied === true)
       reviewInfoReasons.push("패키지 차감 기반 신청서입니다.");
