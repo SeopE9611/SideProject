@@ -1,18 +1,10 @@
 "use client";
 
-import ApplicationDetail from "@/app/mypage/applications/_components/ApplicationDetail";
-import OrderDetailClient from "@/app/mypage/orders/_components/OrderDetailClient";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
-import RentalsDetailClient from "@/app/mypage/rentals/_components/RentalsDetailClient";
-import MyPointsTab from "@/app/mypage/tabs/MyPointsTab";
-import TransactionFlowList from "@/app/mypage/tabs/TransactionFlowList";
-import PassList from "@/app/mypage/tabs/PassList";
-import QnAList from "@/app/mypage/tabs/QnAList";
-import ReviewList from "@/app/mypage/tabs/ReviewList";
-import Wishlist from "@/app/mypage/tabs/Wishlist";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   Card,
   CardContent,
@@ -34,9 +26,42 @@ import {
   Trophy,
   User,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import useSWR from "swr";
+
+const ApplicationDetail = dynamic(
+  () => import("@/app/mypage/applications/_components/ApplicationDetail"),
+  { loading: () => null },
+);
+const OrderDetailClient = dynamic(
+  () => import("@/app/mypage/orders/_components/OrderDetailClient"),
+  { loading: () => null },
+);
+const RentalsDetailClient = dynamic(
+  () => import("@/app/mypage/rentals/_components/RentalsDetailClient"),
+  { loading: () => null },
+);
+const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
+  loading: () => null,
+});
+const TransactionFlowList = dynamic(
+  () => import("@/app/mypage/tabs/TransactionFlowList"),
+  { loading: () => null },
+);
+const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
+  loading: () => null,
+});
+const QnAList = dynamic(() => import("@/app/mypage/tabs/QnAList"), {
+  loading: () => null,
+});
+const ReviewList = dynamic(() => import("@/app/mypage/tabs/ReviewList"), {
+  loading: () => null,
+});
+const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
+  loading: () => null,
+});
 
 type Props = {
   user: {
@@ -52,63 +77,16 @@ export default function MypageClient({ user }: Props) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const countFetcher = async (url: string) => {
-    const res = await fetch(url, { credentials: "include" });
-    if (!res.ok) {
-      throw new Error(`count fetch failed: ${res.status}`);
-    }
-    const data = (await res.json().catch(() => null)) as {
-      total?: unknown;
-    } | null;
-    if (typeof data?.total !== "number") {
-      throw new Error("count total is not a number");
-    }
-    return data.total;
-  };
-  const todoCountFetcher = async (url: string) => {
-    const res = await fetch(url, { credentials: "include" });
-    if (!res.ok) {
-      throw new Error(`todo count fetch failed: ${res.status}`);
-    }
-    const data = (await res.json().catch(() => null)) as {
-      counts?: { todo?: unknown };
-    } | null;
-    if (typeof data?.counts?.todo !== "number") {
-      throw new Error("todo count is not a number");
-    }
-    return data.counts.todo;
-  };
-
-  const { data: ordersCount, isLoading: isOrdersLoading, error: ordersCountError } = useSWR(
-    "/api/users/me/orders",
-    countFetcher,
-    { revalidateOnFocus: true },
-  );
-  const { data: applicationsCount, isLoading: isApplicationsLoading, error: applicationsCountError } = useSWR(
-    "/api/applications/me",
-    countFetcher,
-    { revalidateOnFocus: true },
-  );
-  const { data: activityFlowCount, isLoading: isActivityLoading, error: activityCountError } = useSWR(
-    "/api/mypage/activity?page=1&pageSize=1",
-    countFetcher,
-    { revalidateOnFocus: true },
-  );
-  const { data: todoCount, isLoading: isTodoLoading, error: todoCountError } = useSWR(
-    "/api/mypage/activity/counts",
-    todoCountFetcher,
-    { revalidateOnFocus: true },
-  );
-  const summaryLoading =
-    isOrdersLoading ||
-    isApplicationsLoading ||
-    isActivityLoading ||
-    isTodoLoading;
-  const hasSummaryError =
-    !!ordersCountError ||
-    !!applicationsCountError ||
-    !!activityCountError ||
-    !!todoCountError;
+  const { data: summary, isLoading: summaryLoading, error: summaryError } =
+    useSWR<{
+      ordersCount: number;
+      applicationsCount: number;
+      activityFlowCount: number;
+      todoCount: number;
+    }>("/api/mypage/summary", authenticatedSWRFetcher, {
+      revalidateOnFocus: true,
+    });
+  const hasSummaryError = !!summaryError;
 
   const resolveOrdersScope = (scope: string | null) => {
     if (
@@ -231,6 +209,7 @@ export default function MypageClient({ user }: Props) {
   const flowBackUrl = resolveFlowBackUrl(from, scope);
   const flowFromQuery = buildFlowFromQuery(from, scope);
   const ordersFlowFromQuery = buildFlowFromQuery("orders", scope);
+  const isOrdersTab = currentTab === "orders";
 
   // 페이지 톤 클래스 분류(히어로, 카드 헤더, 아이콘 배경)
   const pageTone = {
@@ -278,7 +257,7 @@ export default function MypageClient({ user }: Props) {
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
-                    (activityFlowCount ?? "-")
+                    (summary?.activityFlowCount ?? "-")
                   )}
                 </div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">
@@ -291,7 +270,7 @@ export default function MypageClient({ user }: Props) {
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
-                    (applicationsCount ?? "-")
+                    (summary?.applicationsCount ?? "-")
                   )}
                 </div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">
@@ -304,7 +283,7 @@ export default function MypageClient({ user }: Props) {
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
-                    (ordersCount ?? "-")
+                    (summary?.ordersCount ?? "-")
                   )}
                 </div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">
@@ -317,7 +296,7 @@ export default function MypageClient({ user }: Props) {
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
-                    (todoCount ?? "-")
+                    (summary?.todoCount ?? "-")
                   )}
                 </div>
                 <div className="text-xs bp-sm:text-sm text-muted-foreground">
@@ -479,7 +458,7 @@ export default function MypageClient({ user }: Props) {
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
                     <Suspense fallback={null}>
-                      {flowType === "order" && flowId ? (
+                      {isOrdersTab && flowType === "order" && flowId ? (
                         <OrderDetailClient
                           orderId={flowId}
                           backUrl={flowBackUrl}
@@ -487,14 +466,14 @@ export default function MypageClient({ user }: Props) {
                             `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`
                           }
                         />
-                      ) : flowType === "application" && flowId ? (
+                      ) : isOrdersTab && flowType === "application" && flowId ? (
                         <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
-                      ) : flowType === "rental" && flowId ? (
+                      ) : isOrdersTab && flowType === "rental" && flowId ? (
                         <RentalsDetailClient
                           id={flowId}
                           backUrl={flowBackUrl}
                         />
-                      ) : orderId ? (
+                      ) : isOrdersTab && orderId ? (
                         <OrderDetailClient
                           orderId={orderId}
                           backUrl={flowBackUrl}
@@ -502,18 +481,18 @@ export default function MypageClient({ user }: Props) {
                             `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`
                           }
                         />
-                      ) : selectedApplicationId ? (
+                      ) : isOrdersTab && selectedApplicationId ? (
                         <ApplicationDetail
                           id={selectedApplicationId}
                           backUrl={flowBackUrl}
                         />
-                      ) : selectedRentalId ? (
+                      ) : isOrdersTab && selectedRentalId ? (
                         <RentalsDetailClient
                           id={selectedRentalId}
                           backUrl={flowBackUrl}
                         />
                       ) : (
-                        <TransactionFlowList />
+                        isOrdersTab ? <TransactionFlowList /> : null
                       )}
                     </Suspense>
                   </CardContent>
@@ -540,7 +519,7 @@ export default function MypageClient({ user }: Props) {
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
                     <Suspense fallback={null}>
-                      <Wishlist />
+                      {currentTab === "wishlist" ? <Wishlist /> : null}
                     </Suspense>
                   </CardContent>
                 </Card>
@@ -566,7 +545,7 @@ export default function MypageClient({ user }: Props) {
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
                     <Suspense fallback={null}>
-                      <ReviewList />
+                      {currentTab === "reviews" ? <ReviewList /> : null}
                     </Suspense>
                   </CardContent>
                 </Card>
@@ -592,7 +571,7 @@ export default function MypageClient({ user }: Props) {
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
                     <Suspense fallback={null}>
-                      <QnAList />
+                      {currentTab === "qna" ? <QnAList /> : null}
                     </Suspense>
                   </CardContent>
                 </Card>
@@ -618,7 +597,7 @@ export default function MypageClient({ user }: Props) {
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
                     <Suspense fallback={null}>
-                      <PassList />
+                      {currentTab === "passes" ? <PassList /> : null}
                     </Suspense>
                   </CardContent>
                 </Card>
@@ -644,7 +623,7 @@ export default function MypageClient({ user }: Props) {
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
                     <Suspense fallback={null}>
-                      <MyPointsTab />
+                      {currentTab === "points" ? <MyPointsTab /> : null}
                     </Suspense>
                   </CardContent>
                 </Card>
