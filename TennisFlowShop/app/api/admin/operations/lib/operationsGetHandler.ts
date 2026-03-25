@@ -1022,11 +1022,21 @@ export async function handleAdminOperationsGet(req: Request) {
       reviewInfoReasons.push(
         "대여 기반 신청서이나 신청서 paymentStatus가 비어 있어 파생 결제상태를 사용했습니다.",
       );
-    if (linkedOrderId && !hasExplicitPaymentStatus && !hasPaymentSource)
+    if (
+      linkedOrderId &&
+      !hasExplicitPaymentStatus &&
+      !hasPaymentSource &&
+      paymentDerived.source === "pending"
+    )
       reviewInfoReasons.push(
         "주문 기반 신청서인데 paymentSource/paymentStatus가 비어 있어 결제대기로 해석되었습니다.",
       );
-    if (linkedRentalId && !hasExplicitPaymentStatus && !hasPaymentSource)
+    if (
+      linkedRentalId &&
+      !hasExplicitPaymentStatus &&
+      !hasPaymentSource &&
+      paymentDerived.source === "pending"
+    )
       reviewInfoReasons.push(
         "대여 기반 신청서인데 paymentSource/paymentStatus가 비어 있어 결제대기로 해석되었습니다.",
       );
