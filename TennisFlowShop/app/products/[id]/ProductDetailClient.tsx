@@ -236,7 +236,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [user, setUser] = useState<User | null>(null);
   const guestOrderMode = getGuestOrderModeClient();
   const allowGuestCheckout = guestOrderMode === "on";
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [hasResolvedReviewUser, setHasResolvedReviewUser] = useState(false);
   const fetcher = (url: string) =>
     fetch(url, { credentials: "include" }).then(async (r) =>
       r.status === 200 ? r.json() : null,
@@ -368,7 +369,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const reviewsCount = reviewsLen || 10;
 
   const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(
-    isAdmin
+    activeTab === "reviews" && isAdmin
       ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}`
       : null,
     fetcher,
@@ -383,6 +384,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (activeTab !== "reviews" || hasResolvedReviewUser) return;
+
+    setLoading(true);
     fetch("/api/users/me", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -398,13 +402,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
       })
       .finally(() => {
         setLoading(false);
+        setHasResolvedReviewUser(true);
         // console.log('로딩 완료');
       });
-  }, []);
+  }, [activeTab, hasResolvedReviewUser]);
 
   // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
   const { data: myReview, mutate: mutateMyReview } = useSWR(
-    user ? `/api/reviews/self?productId=${product._id}` : null,
+    activeTab === "reviews" && user
+      ? `/api/reviews/self?productId=${product._id}`
+      : null,
     fetcher,
     { revalidateOnFocus: false },
   );
