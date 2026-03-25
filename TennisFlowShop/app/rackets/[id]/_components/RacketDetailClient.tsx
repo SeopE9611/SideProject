@@ -113,8 +113,12 @@ export default function RacketDetailClient({
 
   // 로그인 여부 (내 비공개 리뷰는 /api/reviews/self로 원문을 받아 병합)
   const [user, setUser] = useState<any | null>(null);
+  const [hasRequestedReviewUser, setHasRequestedReviewUser] = useState(false);
+  const isReviewsTabActive = activeTab === "reviews";
 
   useEffect(() => {
+    if (!isReviewsTabActive || hasRequestedReviewUser) return;
+    setHasRequestedReviewUser(true);
     fetch("/api/users/me", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
@@ -122,7 +126,7 @@ export default function RacketDetailClient({
         else setUser(data);
       })
       .catch(() => setUser(null));
-  }, []);
+  }, [isReviewsTabActive, hasRequestedReviewUser]);
 
   const isAdmin =
     !!user &&
@@ -135,14 +139,14 @@ export default function RacketDetailClient({
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
   const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(
-    isAdmin
+    isReviewsTabActive && isAdmin
       ? `/api/reviews/admin?productId=${racketId}&limit=${reviewsCount}`
       : null,
     fetcher,
     { revalidateOnFocus: false },
   );
   const { data: myReview, mutate: mutateMyReview } = useSWR(
-    user ? `/api/reviews/self?productId=${racketId}` : null,
+    isReviewsTabActive && user ? `/api/reviews/self?productId=${racketId}` : null,
     fetcher,
     { revalidateOnFocus: false },
   );
