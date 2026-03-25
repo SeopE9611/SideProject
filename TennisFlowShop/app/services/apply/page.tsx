@@ -32,6 +32,7 @@ import {
   COURIER_PICKUP_FEE,
   CUSTOM_STRING_MOUNTING_FEE,
 } from "@/lib/stringing-pricing-policy";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import type { Order } from "@/lib/types/order";
 import { File, Grid2X2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -1360,13 +1361,17 @@ export default function StringServiceApplyPage() {
     isOrderSlotBlocked,
   ]);
 
-  const handleOpenPostcode = () => {
-    if (!window?.daum?.Postcode) {
+  const handleOpenPostcode = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
       showErrorToast(
         "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
       );
       return;
     }
+
+    if (!window?.daum?.Postcode) return;
     new window.daum.Postcode({
       oncomplete: (data: any) => {
         setFormData((prev) => ({

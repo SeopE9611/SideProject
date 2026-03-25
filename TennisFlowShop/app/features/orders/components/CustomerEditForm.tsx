@@ -4,8 +4,9 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast } from "@/lib/toast";
 
 interface CustomerFormValues {
   name: string;
@@ -47,17 +48,17 @@ export default function CustomerEditForm({
   // 입력값이 변경되면(=dirty) 뒤로가기/링크이동/탭닫기 시 경고
   useUnsavedChangesGuard(isDirty);
 
-  // 다음 주소 API
-  const [daumReady, setDaumReady] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).daum?.Postcode) {
-      setDaumReady(true);
-    }
-  }, []);
-
   // 우편번호 검색 팝업
-  const handleOpenPostcode = () => {
-    if (!daumReady) return;
+  const handleOpenPostcode = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
+      showErrorToast(
+        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
+      return;
+    }
+    if (!(window as any).daum?.Postcode) return;
     new (window as any).daum.Postcode({
       oncomplete: (data: any) => {
         // setValue는 기본값으론 dirty로 안 잡힐 수 있어서 shouldDirty: true를 명시
