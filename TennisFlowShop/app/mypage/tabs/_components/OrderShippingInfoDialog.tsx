@@ -90,18 +90,32 @@ export default function OrderShippingInfoDialog({
   className,
   triggerLabel,
   shippingMethod,
+  open,
+  onOpenChange,
+  hideTrigger,
 }: {
   orderId: string;
   className?: string;
   triggerLabel?: string;
   shippingMethod?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const dialogOpen = typeof open === 'boolean' ? open : internalOpen;
   const [cachedData, setCachedData] = useState<OrderDetail | null>(null);
-  const { data, isLoading, error, mutate } = useSWR<OrderDetail>(open ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
+  const { data, isLoading, error, mutate } = useSWR<OrderDetail>(dialogOpen ? `/api/orders/${orderId}` : null, authenticatedSWRFetcher, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
   });
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (typeof open !== 'boolean') {
+      setInternalOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
+  };
 
   /**
    * 모달을 닫는 순간 open=false가 되면서 SWR key가 null로 바뀌어
@@ -147,13 +161,15 @@ export default function OrderShippingInfoDialog({
   }, [displayData]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button type="button" size="sm" variant="outline" className={className}>
-          <TriggerIcon className="mr-2 h-4 w-4" />
-          {resolvedTriggerLabel}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          <Button type="button" size="sm" variant="outline" className={className}>
+            <TriggerIcon className="mr-2 h-4 w-4" />
+            {resolvedTriggerLabel}
+          </Button>
+        </DialogTrigger>
+      ) : null}
 
       <DialogContent className="max-w-lg">
         <DialogHeader>

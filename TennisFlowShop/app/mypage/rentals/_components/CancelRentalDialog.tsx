@@ -37,15 +37,21 @@ interface CancelRentalDialogProps {
   onSuccess?: () => void | Promise<void>;
   // 버튼을 노출하되 클릭만 막고 싶을 때 사용
   disabled?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 const CancelRentalDialog = ({
   rentalId,
   onSuccess,
   disabled = false,
+  open,
+  onOpenChange,
+  hideTrigger = false,
 }: CancelRentalDialogProps) => {
   // 모달 열림/닫힘 상태
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   // 선택된 기본 사유
   const [selectedReason, setSelectedReason] = useState<string | undefined>();
   // "기타" 선택 시 추가 입력 사유
@@ -57,6 +63,8 @@ const CancelRentalDialog = ({
   const [refundBank, setRefundBank] = useState<string>("");
   const [refundAccount, setRefundAccount] = useState("");
   const [refundHolder, setRefundHolder] = useState("");
+
+  const dialogOpen = typeof open === "boolean" ? open : internalOpen;
 
   /**
    * 다이얼로그 내부 입력값 초기화
@@ -74,7 +82,7 @@ const CancelRentalDialog = ({
 
   // 입력/선택이 있는 상태에서 페이지 이탈(뒤로가기/링크/탭닫기) 방지
   const isDirty =
-    open &&
+    dialogOpen &&
     (selectedReason !== undefined ||
       otherReason.trim().length > 0 ||
       refundBank !== "" ||
@@ -89,7 +97,10 @@ const CancelRentalDialog = ({
 
     // 열기
     if (next) {
-      setOpen(true);
+      if (typeof open !== "boolean") {
+        setInternalOpen(true);
+      }
+      onOpenChange?.(true);
       return;
     }
 
@@ -100,7 +111,10 @@ const CancelRentalDialog = ({
     }
 
     // 닫힐 때는 “버리기”가 확정이므로 상태를 정리
-    setOpen(false);
+    if (typeof open !== "boolean") {
+      setInternalOpen(false);
+    }
+    onOpenChange?.(false);
     resetForm();
   };
 
@@ -179,7 +193,10 @@ const CancelRentalDialog = ({
       // 성공 종료 시에도 입력값은 초기화(다음 오픈 시 이전 선택값 잔존 방지)
       resetForm();
       // 모달 닫기
-      setOpen(false);
+      if (typeof open !== "boolean") {
+        setInternalOpen(false);
+      }
+      onOpenChange?.(false);
       if (onSuccess) {
         await onSuccess();
       }
@@ -196,18 +213,20 @@ const CancelRentalDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="sm"
-          disabled={isSubmitting || disabled}
-          className={`gap-2 ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
-        >
-          <XCircle className="mr-2 h-4 w-4" />
-          대여 취소 요청
-        </Button>
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      {!hideTrigger ? (
+        <DialogTrigger asChild>
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={isSubmitting || disabled}
+            className={`gap-2 ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+          >
+            <XCircle className="mr-2 h-4 w-4" />
+            대여 취소 요청
+          </Button>
+        </DialogTrigger>
+      ) : null}
 
       <DialogContent>
         <DialogHeader>

@@ -2,11 +2,7 @@
 
 import { collectionMethodLabel, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
 import { getMypageNormalizedStatus, getMypagePaymentStatusLabel, getMypageUserStatusLabel } from '@/app/mypage/_lib/status-label';
-import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
-import CancelOrderDialog from '@/app/mypage/orders/_components/CancelOrderDialog';
-import CancelRentalDialog from '@/app/mypage/rentals/_components/CancelRentalDialog';
 import ActivityOrderReviewCTA from '@/app/mypage/tabs/_components/ActivityOrderReviewCTA';
-import OrderShippingInfoDialog from '@/app/mypage/tabs/_components/OrderShippingInfoDialog';
 import ServiceReviewCTA from '@/components/reviews/ServiceReviewCTA';
 import AsyncState from '@/components/system/AsyncState';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +18,9 @@ import {
 import { authenticatedSWRFetcher } from '@/lib/fetchers/authenticatedSWRFetcher';
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, CreditCard, Link2, ListChecks, Package, ShoppingBag, Sparkles, Store, Truck, Undo2, Wallet, Wrench, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useMemo, useState } from 'react';
 import { mutate as globalMutate } from 'swr';
@@ -105,6 +102,10 @@ type ActivityResponse = {
 
 const LIMIT = 5;
 const fetcher = (url: string) => authenticatedSWRFetcher<ActivityResponse>(url);
+const CancelOrderDialog = dynamic(() => import('@/app/mypage/orders/_components/CancelOrderDialog'), { loading: () => null });
+const CancelStringingDialog = dynamic(() => import('@/app/mypage/applications/_components/CancelStringingDialog'), { loading: () => null });
+const CancelRentalDialog = dynamic(() => import('@/app/mypage/rentals/_components/CancelRentalDialog'), { loading: () => null });
+const OrderShippingInfoDialog = dynamic(() => import('@/app/mypage/tabs/_components/OrderShippingInfoDialog'), { loading: () => null });
 
 type FlowScope = 'all' | 'todo' | 'order' | 'application' | 'rental';
 
@@ -340,6 +341,8 @@ export default function TransactionFlowList() {
   const [expandedSecondaryKey, setExpandedSecondaryKey] = useState<string | null>(null);
   const [cancelOrderDialogId, setCancelOrderDialogId] = useState<string | null>(null);
   const [cancelApplicationDialogId, setCancelApplicationDialogId] = useState<string | null>(null);
+  const [cancelRentalDialogId, setCancelRentalDialogId] = useState<string | null>(null);
+  const [shippingInfoDialogTarget, setShippingInfoDialogTarget] = useState<{ orderId: string; triggerLabel: string; shippingMethod?: string } | null>(null);
   const [isCancelApplicationSubmitting, setIsCancelApplicationSubmitting] = useState(false);
   const [withdrawingOrderCancelId, setWithdrawingOrderCancelId] = useState<string | null>(null);
 
@@ -904,11 +907,30 @@ export default function TransactionFlowList() {
 
                     if (g.kind === 'order' && orderId && !prefersApplicationView) {
                       if (canShowOrderShippingInfo(status)) {
-                        const shippingInfoLabel = isVisitPickupOrder({ shippingMethod: g.order?.shippingMethod }) ? '방문 수령 정보 확인' : '배송정보 확인';
+                        const isVisitPickup = isVisitPickupOrder({ shippingMethod: g.order?.shippingMethod });
+                        const shippingInfoLabel = isVisitPickup ? '방문 수령 정보 확인' : '배송정보 확인';
+                        const ShippingInfoIcon = isVisitPickup ? Store : Truck;
                         actions.push({
                           key: 'order-shipping-info',
                           priority: 1,
-                          node: <OrderShippingInfoDialog orderId={orderId} triggerLabel={shippingInfoLabel} className="bg-transparent" />,
+                          node: (
+                            <Button
+                              key="order-shipping-info"
+                              size="sm"
+                              variant="outline"
+                              className="bg-transparent"
+                              onClick={() =>
+                                setShippingInfoDialogTarget({
+                                  orderId,
+                                  triggerLabel: shippingInfoLabel,
+                                  shippingMethod: g.order?.shippingMethod,
+                                })
+                              }
+                            >
+                              <ShippingInfoIcon className="mr-2 h-4 w-4" />
+                              {shippingInfoLabel}
+                            </Button>
+                          ),
                         });
                       }
 
@@ -983,7 +1005,12 @@ export default function TransactionFlowList() {
                           key: 'rental-cancel-request',
                           priority: 1,
                           forceSecondary: true,
-                          node: <CancelRentalDialog key="rental-cancel-request" rentalId={rentalId} onSuccess={refreshRelatedQueries} />,
+                          node: (
+                            <Button key="rental-cancel-request" size="sm" variant="destructive" onClick={() => setCancelRentalDialogId(rentalId)}>
+                              <XCircle className="mr-1 h-3.5 w-3.5" />
+                              대여 취소 요청
+                            </Button>
+                          ),
                         });
                       }
 
@@ -1142,17 +1169,48 @@ export default function TransactionFlowList() {
         </div>
       ) : null}
 
-      <CancelOrderDialog
-        open={Boolean(cancelOrderDialogId)}
-        onOpenChange={(open) => !open && setCancelOrderDialogId(null)}
-        orderId={cancelOrderDialogId ?? ''}
-        onSuccess={async (orderId) => {
-          if (!orderId) return;
-          await patchOrderCancelStatus(orderId, 'requested');
-        }}
-      />
+      {/* 다이얼로그는 실제로 열릴 때만 마운트해 초기 번들 로드를 줄입니다. */}
+      {cancelOrderDialogId ? (
+        <CancelOrderDialog
+          open={Boolean(cancelOrderDialogId)}
+          onOpenChange={(open) => !open && setCancelOrderDialogId(null)}
+          orderId={cancelOrderDialogId}
+          onSuccess={async (orderId) => {
+            if (!orderId) return;
+            await patchOrderCancelStatus(orderId, 'requested');
+          }}
+        />
+      ) : null}
 
-      <CancelStringingDialog open={Boolean(cancelApplicationDialogId)} onOpenChange={(open) => !open && setCancelApplicationDialogId(null)} onConfirm={handleApplicationCancelRequest} isSubmitting={isCancelApplicationSubmitting} />
+      {cancelApplicationDialogId ? (
+        <CancelStringingDialog
+          open={Boolean(cancelApplicationDialogId)}
+          onOpenChange={(open) => !open && setCancelApplicationDialogId(null)}
+          onConfirm={handleApplicationCancelRequest}
+          isSubmitting={isCancelApplicationSubmitting}
+        />
+      ) : null}
+
+      {cancelRentalDialogId ? (
+        <CancelRentalDialog
+          rentalId={cancelRentalDialogId}
+          open={Boolean(cancelRentalDialogId)}
+          hideTrigger
+          onOpenChange={(open) => !open && setCancelRentalDialogId(null)}
+          onSuccess={refreshRelatedQueries}
+        />
+      ) : null}
+
+      {shippingInfoDialogTarget ? (
+        <OrderShippingInfoDialog
+          orderId={shippingInfoDialogTarget.orderId}
+          triggerLabel={shippingInfoDialogTarget.triggerLabel}
+          shippingMethod={shippingInfoDialogTarget.shippingMethod}
+          open={Boolean(shippingInfoDialogTarget)}
+          hideTrigger
+          onOpenChange={(open) => !open && setShippingInfoDialogTarget(null)}
+        />
+      ) : null}
     </div>
   );
 }
