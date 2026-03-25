@@ -5,28 +5,17 @@ import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
-import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
-import PhotosUploader from "@/components/reviews/PhotosUploader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import {
   badgeBaseOutlined,
   badgeSizeSm,
@@ -65,6 +54,7 @@ import {
   Zap,
 } from "lucide-react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -79,6 +69,14 @@ function getGuestOrderModeClient(): GuestOrderMode {
   const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
   return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
 }
+
+const ReviewPhotoViewerDialog = dynamic(
+  () => import("./ReviewPhotoViewerDialog"),
+  { loading: () => null },
+);
+const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
+  loading: () => null,
+});
 
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
@@ -1823,72 +1821,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </CardContent>
         </Card>
 
-        {/* 리뷰 사진 확대 보기 */}
-        <Dialog
-          open={viewerOpen}
-          onOpenChange={(v) => (v ? setViewerOpen(true) : closeViewer())}
-        >
-          <DialogContent className="sm:max-w-4xl p-0 bg-background/90 text-foreground border border-border">
-            {/* 접근성용 제목(시각적으로 숨김) */}
-            <DialogHeader className="sr-only">
-              <DialogTitle>리뷰 사진 확대 보기</DialogTitle>
-            </DialogHeader>
-            <div className="relative w-full aspect-video">
-              {viewerImages[viewerIndex] && (
-                <Image
-                  src={viewerImages[viewerIndex] || "/placeholder.svg"}
-                  alt={`리뷰 사진 확대 ${viewerIndex + 1}`}
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              )}
-
-              {/* 좌우 이동 */}
-              {viewerImages.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={prevViewer}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-card/20 hover:bg-card/30"
-                    aria-label="이전 사진"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={nextViewer}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-10 w-10 rounded-full bg-card/20 hover:bg-card/30"
-                    aria-label="다음 사진"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              )}
-            </div>
-            {/* 썸네일 네비게이션 */}
-            {viewerImages.length > 1 && (
-              <div className="p-3 flex flex-wrap gap-2 justify-center bg-background/80 backdrop-blur border border-border">
-                {viewerImages.map((thumb, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setViewerIndex(i)}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border ${i === viewerIndex ? "ring-2 ring-ring" : ""}`}
-                    aria-label={`썸네일 ${i + 1}`}
-                  >
-                    <Image
-                      src={thumb || "/placeholder.svg"}
-                      alt={`썸네일 ${i + 1}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {/* 리뷰 전용 모달 UI는 필요 시점에만 로드 */}
+        {viewerOpen && (
+          <ReviewPhotoViewerDialog
+            open={viewerOpen}
+            images={viewerImages}
+            index={viewerIndex}
+            onClose={closeViewer}
+            onPrev={prevViewer}
+            onNext={nextViewer}
+            onChangeIndex={setViewerIndex}
+          />
+        )}
 
         <div ref={relatedSectionRef} className="mt-8 sm:mt-12">
           <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
@@ -1964,126 +1908,18 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </CardContent>
           </Card>
 
-          {/* 리뷰 수정 다이얼로그 */}
-          <Dialog
-            open={editOpen}
-            onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}
-          >
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>리뷰 수정</DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label>평점</Label>
-
-                  <div
-                    role="radiogroup"
-                    aria-label="평점 선택"
-                    className="flex items-center gap-1"
-                    onKeyDown={(e) => {
-                      // 키보드 접근성(←/→로 증감)
-                      const curr =
-                        typeof editForm.rating === "number"
-                          ? editForm.rating
-                          : 0;
-                      if (e.key === "ArrowRight") {
-                        const next = Math.min(5, curr + 1 || 1);
-                        setEditForm((s) => ({ ...s, rating: next }));
-                        e.preventDefault();
-                      }
-                      if (e.key === "ArrowLeft") {
-                        const next = Math.max(1, (curr || 1) - 1);
-                        setEditForm((s) => ({ ...s, rating: next }));
-                        e.preventDefault();
-                      }
-                    }}
-                  >
-                    {[1, 2, 3, 4, 5].map((i) => {
-                      const current =
-                        typeof editForm.rating === "number"
-                          ? editForm.rating
-                          : 0;
-                      const filled = (hoverRating ?? current) >= i;
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          role="radio"
-                          aria-checked={current === i}
-                          aria-label={`${i}점`}
-                          className="p-1"
-                          onMouseEnter={() => setHoverRating(i)}
-                          onMouseLeave={() => setHoverRating(null)}
-                          onClick={() =>
-                            setEditForm((s) => ({ ...s, rating: i }))
-                          }
-                        >
-                          <Star
-                            className={`h-6 w-6 ${filled ? "text-warning fill-current stroke-current" : "stroke-muted-foreground"}`}
-                          />
-                        </button>
-                      );
-                    })}
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      {typeof editForm.rating === "number"
-                        ? editForm.rating
-                        : 0}
-                      /5
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="content">내용</Label>
-                  <Textarea
-                    id="content"
-                    rows={6}
-                    value={editForm.content}
-                    onChange={(e) =>
-                      setEditForm((s) => ({ ...s, content: e.target.value }))
-                    }
-                    placeholder="리뷰 내용을 입력하세요."
-                  />
-                  <div className="mt-3">
-                    <Label>사진 (선택, 최대 5장)</Label>
-                    <PhotosUploader
-                      value={editForm.photos}
-                      onChange={(arr) =>
-                        setEditForm((s) => ({ ...s, photos: arr }))
-                      }
-                      max={5}
-                      previewMode="queue"
-                    />
-                    <PhotosReorderGrid
-                      value={editForm.photos}
-                      onChange={(arr) =>
-                        setEditForm((s) => ({ ...s, photos: arr }))
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <DialogFooter className="gap-2">
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-md border text-sm"
-                  onClick={closeEdit}
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm"
-                  onClick={submitEdit}
-                >
-                  저장
-                </button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          {/* 리뷰 수정 다이얼로그도 열릴 때만 로드 */}
+          {editOpen && editing && (
+            <ReviewEditDialog
+              open={editOpen}
+              editForm={editForm}
+              hoverRating={hoverRating}
+              onClose={closeEdit}
+              onSubmit={submitEdit}
+              onChangeForm={setEditForm}
+              onChangeHoverRating={setHoverRating}
+            />
+          )}
         </div>
       </SiteContainer>
       {/* ===== 모바일 전용 하단 Sticky ===== */}
