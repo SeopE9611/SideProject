@@ -348,10 +348,16 @@ export async function submitStringingApplicationCore({
     0,
     Math.round(Number.isFinite(totalPriceRaw) ? totalPriceRaw : 0),
   );
+  const paymentSource = orderObjectId
+    ? `order:${String(orderObjectId)}`
+    : rentalObjectId
+      ? `rental:${String(rentalObjectId)}`
+      : undefined;
 
   const updateDoc = {
     orderId: orderObjectId,
     rentalId: rentalObjectId,
+    paymentSource,
     name,
     phone,
     email: email ?? "",

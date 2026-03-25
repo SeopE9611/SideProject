@@ -110,7 +110,7 @@ const PAGE_COPY = {
   dailyTodoTitle: "오늘 해야 할 일",
   dailyTodoLabels: {
     urgent: "긴급",
-    caution: "주의",
+    caution: "확인 필요",
     pending: "미처리",
   },
   actionsTitle: "이 페이지에서 가능한 액션",
@@ -412,6 +412,19 @@ function reviewLevelPriority(level: ReviewLevel) {
   return 0;
 }
 
+function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
+  if (!anchorPay || !childPay || anchorPay === "-" || childPay === "-")
+    return false;
+  if (anchorPay === childPay) return true;
+
+  const pair = new Set([anchorPay, childPay]);
+  if (pair.has("결제완료") && pair.has("주문결제포함")) return true;
+  if (pair.has("결제완료") && pair.has("대여결제포함")) return true;
+  if (pair.has("패키지차감") && pair.has("결제완료")) return true;
+
+  return false;
+}
+
 function computeReviewLevelGroup(g: {
   anchor: OpItem;
   items: OpItem[];
@@ -450,7 +463,13 @@ function computeReviewLevelGroup(g: {
     .filter(Boolean) as string[];
   const payMismatch =
     anchorPay !== "-" &&
-    childPays.some((pay) => pay && pay !== "-" && pay !== anchorPay);
+    childPays.some(
+      (pay) =>
+        pay &&
+        pay !== "-" &&
+        pay !== anchorPay &&
+        !isCompatiblePaymentContext(anchorPay, pay),
+    );
   if (hasMixed || payMismatch) return "action";
   return level;
 }
@@ -999,6 +1018,9 @@ export default function OperationsClient() {
               <CardDescription className="text-2xl font-bold text-foreground">
                 {todayTodoCount ? `${todayTodoCount.caution}건` : "-"}
               </CardDescription>
+              <p className="text-[11px] text-muted-foreground">
+                검수/결제대기/취소요청 포함
+              </p>
             </CardHeader>
           </Card>
           <Card className="border-primary/30 bg-primary/5 shadow-none">
