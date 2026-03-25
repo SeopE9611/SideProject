@@ -2,8 +2,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import HeroSlider from "@/components/HeroSlider";
-import HomeMarketPreview from "@/components/HomeMarketPreview";
-import HomeNoticePreview from "@/components/HomeNoticePreview";
 import HorizontalProducts, {
   type HItem,
 } from "@/components/HorizontalProducts";
@@ -31,8 +29,12 @@ import {
   Tags,
   Wrench,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+const HomeNoticePreview = dynamic(() => import("@/components/HomeNoticePreview"));
+const HomeMarketPreview = dynamic(() => import("@/components/HomeMarketPreview"));
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -190,6 +192,13 @@ export default function Home() {
   // 상태 → URL 반영
   //  첫 렌더링 여부
   const firstRender = useRef(true);
+  const communitySectionRef = useRef<HTMLElement | null>(null);
+  const stringsSectionRef = useRef<HTMLElement | null>(null);
+  const racketsSectionRef = useRef<HTMLElement | null>(null);
+  const [shouldLoadCommunity, setShouldLoadCommunity] = useState(false);
+  const [shouldLoadStrings, setShouldLoadStrings] = useState(false);
+  const [shouldLoadRackets, setShouldLoadRackets] = useState(false);
+  const stringsFetchedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -205,6 +214,49 @@ export default function Home() {
     url.searchParams.set("stringBrand", activeStringBrand);
     window.history.replaceState(null, "", url.toString());
   }, [activeBrand, activeStringBrand]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!("IntersectionObserver" in window)) {
+      setShouldLoadCommunity(true);
+      setShouldLoadStrings(true);
+      setShouldLoadRackets(true);
+      return;
+    }
+
+    // 홈 첫 화면에 없는 섹션만 viewport 근처(여유 margin)에서 로드를 시작
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          if (entry.target === communitySectionRef.current) {
+            setShouldLoadCommunity(true);
+            observer.unobserve(entry.target);
+          }
+          if (entry.target === stringsSectionRef.current) {
+            setShouldLoadStrings(true);
+            observer.unobserve(entry.target);
+          }
+          if (entry.target === racketsSectionRef.current) {
+            setShouldLoadRackets(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { root: null, rootMargin: "300px 0px", threshold: 0.01 },
+    );
+
+    const targets = [
+      communitySectionRef.current,
+      stringsSectionRef.current,
+      racketsSectionRef.current,
+    ].filter((v): v is HTMLElement => Boolean(v));
+    targets.forEach((target) => observer.observe(target));
+
+    return () => observer.disconnect();
+  }, []);
 
   // 전체 상품 + 로딩
   const [allProducts, setAllProducts] = useState<ApiProduct[]>([]);
@@ -283,8 +335,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!shouldLoadStrings || stringsFetchedRef.current) return;
+    stringsFetchedRef.current = true;
     void fetchHomeProducts();
-  }, [fetchHomeProducts]);
+  }, [fetchHomeProducts, shouldLoadStrings]);
 
   // 홈 노출 대상: 전체 스트링 상품 (등록 순으로)
   const homeStringProducts = useMemo(() => {
@@ -334,9 +388,10 @@ export default function Home() {
 
   // 탭 변경 시 해당 브랜드만 최초 1회 로드
   useEffect(() => {
+    if (!shouldLoadRackets) return;
     if (rackByBrand[activeBrand]) return; // 캐시 있으면 스킵
     void loadUsedRackets(activeBrand);
-  }, [activeBrand, rackByBrand, loadUsedRackets]);
+  }, [activeBrand, rackByBrand, loadUsedRackets, shouldLoadRackets]);
 
   // 중고라켓 데이터- HorizontalProducts가 요구하는 HItem으로 매핑
   const usedRacketsItems: HItem[] = useMemo(() => {
@@ -562,7 +617,10 @@ export default function Home() {
       </section>
 
       {/* 공지사항/중고거래 섹션 */}
-      <section className="py-8 bp-sm:py-10 bp-md:py-12">
+      <section
+        ref={communitySectionRef}
+        className="py-8 bp-sm:py-10 bp-md:py-12"
+      >
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
             <h2 className="text-xl bp-sm:text-2xl font-bold text-foreground">
@@ -573,8 +631,17 @@ export default function Home() {
             </p>
           </div>
           <div className="grid gap-5 bp-sm:gap-6 bp-lg:grid-cols-2">
-            <HomeNoticePreview />
-            <HomeMarketPreview />
+            {shouldLoadCommunity ? (
+              <>
+                <HomeNoticePreview />
+                <HomeMarketPreview />
+              </>
+            ) : (
+              <>
+                <div className="h-[280px] animate-pulse rounded-2xl border border-border bg-card" />
+                <div className="h-[280px] animate-pulse rounded-2xl border border-border bg-card" />
+              </>
+            )}
           </div>
         </SiteContainer>
       </section>
@@ -665,7 +732,10 @@ export default function Home() {
       </section>
 
       {/* 스트링 섹션 */}
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section
+        ref={stringsSectionRef}
+        className="py-10 bp-sm:py-12 bp-md:py-16"
+      >
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
             <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">
@@ -714,7 +784,6 @@ export default function Home() {
             }
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
-            loading={loading}
             error={productsError}
             onRetry={fetchHomeProducts}
             emptyTitle={
@@ -730,12 +799,16 @@ export default function Home() {
             errorTitle="스트링을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
+            loading={!shouldLoadStrings || loading}
           />
         </SiteContainer>
       </section>
 
       {/* 중고 라켓 섹션 */}
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section
+        ref={racketsSectionRef}
+        className="py-10 bp-sm:py-12 bp-md:py-16"
+      >
         <SiteContainer>
           <div className="mb-6 bp-sm:mb-8 text-center">
             <h2 className="text-2xl bp-sm:text-3xl font-bold text-foreground">
@@ -781,7 +854,7 @@ export default function Home() {
             }
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
-            loading={usedRacketsLoading}
+            loading={!shouldLoadRackets || usedRacketsLoading}
             error={usedRacketsError}
             onRetry={() => loadUsedRackets(activeBrand)}
             emptyTitle={
