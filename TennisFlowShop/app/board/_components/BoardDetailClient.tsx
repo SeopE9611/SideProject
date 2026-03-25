@@ -13,6 +13,7 @@ import {
   ThumbsUp,
   Trash2,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
@@ -20,7 +21,6 @@ import useSWR from "swr";
 import type { BoardTypeConfig } from "@/app/board/_components/board-config";
 import { getCategoryBadgeText } from "@/app/board/_components/board-config";
 import ErrorBox from "@/app/board/_components/ErrorBox";
-import MessageComposeDialog from "@/app/messages/_components/MessageComposeDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +64,11 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import type { CommunityComment, CommunityPost } from "@/lib/types/community";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+const MessageComposeDialog = dynamic(
+  () => import("@/app/messages/_components/MessageComposeDialog"),
+  { loading: () => null },
+);
 
 const LEVEL_LABEL: Record<string, string> = {
   "1.0": "1.0",
@@ -204,6 +209,8 @@ export default function BoardDetailClient({
     params.set("type", config.boardType);
     return params.toString();
   }, [searchParams, config.boardType]);
+  const navSectionRef = useRef<HTMLElement | null>(null);
+  const [shouldLoadNavList, setShouldLoadNavList] = useState(false);
 
   const { user } = useCurrentUser(); // 현재 로그인 사용자
   const [isDeleting, setIsDeleting] = useState(false); // 삭제 중 플래그
@@ -334,7 +341,7 @@ export default function BoardDetailClient({
     "글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
   );
   const { data: navListData } = useSWR<CommunityNavListResponse>(
-    item ? `/api/community/posts?${navListQuery}` : null,
+    item && shouldLoadNavList ? `/api/community/posts?${navListQuery}` : null,
     (url: string) => boardFetcher<CommunityNavListResponse>(url),
     {
       revalidateOnFocus: false,
@@ -342,6 +349,27 @@ export default function BoardDetailClient({
       dedupingInterval: 30_000,
     },
   );
+
+  useEffect(() => {
+    if (!item || shouldLoadNavList) return;
+    const target = navSectionRef.current;
+    if (!target) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setShouldLoadNavList(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadNavList(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [item, shouldLoadNavList]);
 
   const { prevPost, nextPost } = useMemo(() => {
     if (!item || !navListData?.items?.length)
@@ -1332,15 +1360,17 @@ export default function BoardDetailClient({
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <MessageComposeDialog
-        open={composeOpen}
-        onOpenChange={(v) => {
-          setComposeOpen(v);
-          if (!v) setComposeTo(null);
-        }}
-        toUserId={composeTo?.id ?? ""}
-        toName={composeTo?.name}
-      />
+      {composeOpen && composeTo ? (
+        <MessageComposeDialog
+          open={composeOpen}
+          onOpenChange={(v) => {
+            setComposeOpen(v);
+            if (!v) setComposeTo(null);
+          }}
+          toUserId={composeTo.id}
+          toName={composeTo.name}
+        />
+      ) : null}
       <div className="container mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -1964,6 +1994,7 @@ export default function BoardDetailClient({
               )}
 
               <section
+                ref={navSectionRef}
                 className="mt-8 space-y-3 border-t pt-4"
                 aria-label="글 이동"
               >
