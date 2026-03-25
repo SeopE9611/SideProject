@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { mutate as globalMutate } from "swr";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +12,6 @@ import { cn } from "@/lib/utils";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useMessageList } from "@/lib/hooks/useMessageList";
 import { useMessageDetail } from "@/lib/hooks/useMessageDetail";
-import MessageComposeDialog from "@/app/messages/_components/MessageComposeDialog";
-import AdminBroadcastDialog from "@/app/messages/_components/AdminBroadcastDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +43,14 @@ type SafeUser = {
 };
 
 const LIMIT = 20;
+const MessageComposeDialog = dynamic(
+  () => import("@/app/messages/_components/MessageComposeDialog"),
+  { loading: () => null },
+);
+const AdminBroadcastDialog = dynamic(
+  () => import("@/app/messages/_components/AdminBroadcastDialog"),
+  { loading: () => null },
+);
 
 function formatKST(iso: string) {
   try {
@@ -514,21 +521,25 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
         </CardContent>
       </Card>
 
-      <MessageComposeDialog
-        open={replyOpen}
-        onOpenChange={setReplyOpen}
-        toUserId={replyToUserId}
-        toName={replyToName}
-        defaultTitle={replyDefaultTitle}
-        defaultBody={replyDefaultBody}
-        onSent={async () => {
-          await globalMutate(
-            (k) => typeof k === "string" && k.startsWith("/api/messages/send"),
-          );
-        }}
-      />
+      {/* 답장 다이얼로그는 실제 열릴 때만 로드 */}
+      {replyOpen && replyToUserId && (
+        <MessageComposeDialog
+          open={replyOpen}
+          onOpenChange={setReplyOpen}
+          toUserId={replyToUserId}
+          toName={replyToName}
+          defaultTitle={replyDefaultTitle}
+          defaultBody={replyDefaultBody}
+          onSent={async () => {
+            await globalMutate(
+              (k) => typeof k === "string" && k.startsWith("/api/messages/send"),
+            );
+          }}
+        />
+      )}
 
-      {user.role === "admin" && (
+      {/* 관리자 전체 공지 다이얼로그도 필요 시점에만 로드 */}
+      {user.role === "admin" && broadcastOpen && (
         <AdminBroadcastDialog
           open={broadcastOpen}
           onOpenChange={setBroadcastOpen}
