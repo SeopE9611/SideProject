@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast } from "@/lib/toast";
 export interface CustomerFormValues {
   name: string;
   email: string;
@@ -42,16 +43,16 @@ export default function CustomerEditForm({
   // 저장 중에는 경고가 뜨지 않게 해서 UX/오동작 방지
   useUnsavedChangesGuard(isDirty && !isSubmitting);
 
-  // 다음 주소 API 준비 상태
-  const [daumReady, setDaumReady] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).daum?.Postcode) {
-      setDaumReady(true);
+  const handleOpenPostcode = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
+      showErrorToast(
+        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
+      return;
     }
-  }, []);
-
-  const handleOpenPostcode = () => {
-    if (!daumReady) return;
+    if (!(window as any).daum?.Postcode) return;
     new (window as any).daum.Postcode({
       oncomplete: (data: any) => {
         setValue("postalCode", data.zonecode, { shouldDirty: true });

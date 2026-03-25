@@ -68,10 +68,6 @@ export default async function RootLayout({
       className="scroll-smooth overflow-x-hidden"
     >
       <body className="bg-background text-foreground">
-        <Script
-          src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
-          strategy="beforeInteractive"
-        />
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
         <Script
           id="kakao-jssdk"

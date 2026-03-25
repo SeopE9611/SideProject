@@ -30,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import WithdrawalReasonSelect from "@/app/mypage/profile/_components/WithdrawalReasonSelect";
 import { useRouter } from "next/navigation";
 import { MdSportsTennis } from "react-icons/md";
@@ -191,7 +192,16 @@ export default function ProfileClient({ user }: Props) {
   }, []);
 
   // 우편 번호 검색
-  const handleAddressSearch = () => {
+  const handleAddressSearch = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
+      showErrorToast(
+        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
+      return;
+    }
+    if (!window?.daum?.Postcode) return;
     new window.daum.Postcode({
       oncomplete: (data: any) => {
         const fullAddress = data.address;

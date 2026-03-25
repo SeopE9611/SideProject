@@ -83,6 +83,7 @@ import { UserActivityTabsSection } from "@/app/admin/users/_components/UserActiv
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 
 // 변경이력 포맷터 유틸
 const AUDIT_LABELS: Record<string, string> = {
@@ -189,28 +190,18 @@ export default function UserDetailClient({ id }: { id: string }) {
     }) => { open: () => void };
   };
   type DaumWindow = typeof window & { daum?: DaumPostcodeApi };
-  const [daumReady, setDaumReady] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const w = window as DaumWindow;
-
-    if (w.daum?.Postcode) {
-      setDaumReady(true);
+  // 주소 팝업 핸들러
+  const handleOpenPostcode = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
+      showErrorToast(
+        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      );
       return;
     }
-    const script = document.createElement("script");
-    script.src =
-      "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
-    script.async = true;
-    script.onload = () => setDaumReady(true);
-    document.body.appendChild(script);
-  }, []);
-
-  // 주소 팝업 핸들러
-  const handleOpenPostcode = () => {
-    if (!daumReady) return;
     const w = window as DaumWindow;
+    if (!w.daum?.Postcode) return;
     new w.daum!.Postcode({
       oncomplete: (data: DaumPostcodeData) => {
         const postal = data.zonecode ?? "";
@@ -1049,7 +1040,6 @@ export default function UserDetailClient({ id }: { id: string }) {
                         variant="outline"
                         className="shrink-0 whitespace-nowrap"
                         onClick={handleOpenPostcode}
-                        disabled={!daumReady}
                       >
                         주소 검색
                       </Button>

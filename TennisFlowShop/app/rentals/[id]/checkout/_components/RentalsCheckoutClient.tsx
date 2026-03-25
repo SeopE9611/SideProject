@@ -36,6 +36,7 @@ import {
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast } from "@/lib/toast";
+import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { cn } from "@/lib/utils";
 import {
   Building2,
@@ -456,13 +457,17 @@ export default function RentalsCheckoutClient({
   }, [maxPointsToUse]);
 
   // 우편번호 검색기
-  const openPostcode = () => {
-    if (!window?.daum?.Postcode) {
+  const openPostcode = async () => {
+    try {
+      await loadDaumPostcode();
+    } catch {
       showErrorToast(
         "주소 검색기를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
       );
       return;
     }
+
+    if (!window?.daum?.Postcode) return;
     new window.daum.Postcode({
       oncomplete: (data: any) => {
         setPostal(String(data.zonecode || ""));
