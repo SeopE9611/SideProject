@@ -1095,6 +1095,7 @@ export default function ActivityFeed() {
                   const meta = compactPills(metaPills(g), 3);
                   const { detailHref } = linksOf(g);
                   const app = g.application;
+                  const order = g.kind === "order" ? g.order : undefined;
 
                   return (
                     <div
@@ -1165,19 +1166,18 @@ export default function ActivityFeed() {
                         </Button>
 
                         {/* 배송중/배송완료/구매확정 상태에서 배송 정보 모달 제공 */}
-                        {g.kind === "order" &&
-                        g.order &&
-                        g.order.id &&
-                        canShowOrderDeliveryInfo(g.order.status) ? (
+                        {order &&
+                        order.id &&
+                        canShowOrderDeliveryInfo(order.status) ? (
                           <Button
                             type="button"
                             size="sm"
                             variant="outline"
-                            onClick={() => openShippingInfoDialog(g.order)}
+                            onClick={() => openShippingInfoDialog(order)}
                             className="rounded-lg flex-1 min-w-[160px] bg-transparent"
                           >
                             {isVisitPickupOrder({
-                              shippingMethod: g.order.shippingMethod,
+                              shippingMethod: order.shippingMethod,
                             })
                               ? "방문 수령 정보 확인"
                               : "배송정보 확인"}
@@ -1233,6 +1233,7 @@ export default function ActivityFeed() {
                       const title = groupTitle(g);
                       const date = groupDate(g);
                       const meta = compactPills(metaPills(g), 3);
+                      const order = g.kind === "order" ? g.order : undefined;
                       const {
                         detailHref,
                         appDetailHref,
@@ -1383,19 +1384,18 @@ export default function ActivityFeed() {
                                   </Link>
                                 </Button>
                                 {/*배송 정보 모달: 배송중/배송완료/구매확정에서 노출 */}
-                                {g.kind === "order" &&
-                                g.order &&
-                                g.order.id &&
-                                canShowOrderDeliveryInfo(g.order.status) ? (
+                                {order &&
+                                order.id &&
+                                canShowOrderDeliveryInfo(order.status) ? (
                                   <Button
                                     type="button"
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => openShippingInfoDialog(g.order)}
+                                    onClick={() => openShippingInfoDialog(order)}
                                     className="rounded-lg bg-transparent"
                                   >
                                     {isVisitPickupOrder({
-                                      shippingMethod: g.order.shippingMethod,
+                                      shippingMethod: order.shippingMethod,
                                     })
                                       ? "방문 수령 정보 확인"
                                       : "배송정보 확인"}
