@@ -97,7 +97,7 @@ export default function CartPageClient() {
             .map((i) => i.name)
             .join(", ")} 외 ${removeCount - 2}개`;
 
-  // "장착비 대상 스트링" 판별을 위해 /api/products/[id]/mini 를 조회해 mountingFee를 캐시
+  // "장착비 대상 스트링" 판별을 위해 /api/products/mini-batch 결과의 mountingFee를 캐시
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<
     Record<string, number>
   >({});
@@ -124,26 +124,27 @@ export default function CartPageClient() {
   const shippingFee = calcShippingFee({ subtotal });
   const total = subtotal + shippingFee;
 
-  const cartItemsKey = useMemo(
+  const productIds = useMemo(
     () =>
-      cartItems
-        .map((it) => `${it.kind ?? "product"}:${it.id}:${it.quantity ?? 0}`)
-        .join("|"),
+      Array.from(
+        new Set(
+          cartItems
+            .filter((it) => (it.kind ?? "product") === "product")
+            .map((it) => String(it.id)),
+        ),
+      ),
     [cartItems],
+  );
+
+  const productIdsKey = useMemo(
+    () => [...productIds].sort().join("|"),
+    [productIds],
   );
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      const productIds = Array.from(
-        new Set(
-          cartItems
-            .filter((it) => (it.kind ?? "product") === "product")
-            .map((it) => String(it.id)),
-        ),
-      );
-
       if (productIds.length === 0) {
         if (!cancelled) setMountingFeeByProductId({});
         return;
@@ -186,7 +187,7 @@ export default function CartPageClient() {
     return () => {
       cancelled = true;
     };
-  }, [cartItemsKey]);
+  }, [productIdsKey]);
 
   // 교체/장착 서비스 신청(체크아웃 withService=1)에서는
   // 라켓(또는 중고라켓) 수량과 "장착 가능한 스트링" 수량이 반드시 일치해야함.
