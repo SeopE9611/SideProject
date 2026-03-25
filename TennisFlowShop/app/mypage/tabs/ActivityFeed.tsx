@@ -6,8 +6,8 @@ import { mutate as globalMutate } from "swr";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import ActivityOrderReviewCTA from "./_components/ActivityOrderReviewCTA";
-import OrderShippingInfoDialog from "./_components/OrderShippingInfoDialog";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,6 +120,10 @@ type ActivityResponse = {
 };
 
 const LIMIT = 5;
+const OrderShippingInfoDialog = dynamic(
+  () => import("./_components/OrderShippingInfoDialog"),
+  { loading: () => null },
+);
 
 const fetcher = (url: string) => authenticatedSWRFetcher<ActivityResponse>(url);
 
@@ -444,6 +448,11 @@ export default function ActivityFeed() {
     string | null
   >(null);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
+  const [shippingInfoDialogTarget, setShippingInfoDialogTarget] = useState<{
+    orderId: string;
+    triggerLabel: string;
+    shippingMethod?: string;
+  } | null>(null);
 
   const handleConfirmPurchase = async (orderId: string) => {
     setConfirmingOrderId(orderId);
@@ -675,6 +684,18 @@ export default function ActivityFeed() {
       : null;
 
     return { detailHref, appDetailHref, shippingHref, shippingLabel };
+  };
+
+  const openShippingInfoDialog = (order: ActivityOrderSummary) => {
+    setShippingInfoDialogTarget({
+      orderId: order.id,
+      triggerLabel: isVisitPickupOrder({
+        shippingMethod: order.shippingMethod,
+      })
+        ? "방문 수령 정보 확인"
+        : "배송정보 확인",
+      shippingMethod: order.shippingMethod,
+    });
   };
 
   return (
@@ -1148,18 +1169,19 @@ export default function ActivityFeed() {
                         g.order &&
                         g.order.id &&
                         canShowOrderDeliveryInfo(g.order.status) ? (
-                          <OrderShippingInfoDialog
-                            orderId={g.order.id}
-                            shippingMethod={g.order.shippingMethod}
-                            triggerLabel={
-                              isVisitPickupOrder({
-                                shippingMethod: g.order.shippingMethod,
-                              })
-                                ? "방문 수령 정보 확인"
-                                : "배송정보 확인"
-                            }
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openShippingInfoDialog(g.order)}
                             className="rounded-lg flex-1 min-w-[160px] bg-transparent"
-                          />
+                          >
+                            {isVisitPickupOrder({
+                              shippingMethod: g.order.shippingMethod,
+                            })
+                              ? "방문 수령 정보 확인"
+                              : "배송정보 확인"}
+                          </Button>
                         ) : null}
                       </div>
                     </div>
@@ -1365,18 +1387,19 @@ export default function ActivityFeed() {
                                 g.order &&
                                 g.order.id &&
                                 canShowOrderDeliveryInfo(g.order.status) ? (
-                                  <OrderShippingInfoDialog
-                                    orderId={g.order.id}
-                                    shippingMethod={g.order.shippingMethod}
-                                    triggerLabel={
-                                      isVisitPickupOrder({
-                                        shippingMethod: g.order.shippingMethod,
-                                      })
-                                        ? "방문 수령 정보 확인"
-                                        : "배송정보 확인"
-                                    }
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openShippingInfoDialog(g.order)}
                                     className="rounded-lg bg-transparent"
-                                  />
+                                  >
+                                    {isVisitPickupOrder({
+                                      shippingMethod: g.order.shippingMethod,
+                                    })
+                                      ? "방문 수령 정보 확인"
+                                      : "배송정보 확인"}
+                                  </Button>
                                 ) : null}
 
                                 {/* 리뷰 작성하기: 배송완료/구매확정에서 노출 */}
@@ -1580,6 +1603,18 @@ export default function ActivityFeed() {
           </p>
         </div>
       )}
+
+      {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들 로드를 줄입니다. */}
+      {shippingInfoDialogTarget ? (
+        <OrderShippingInfoDialog
+          orderId={shippingInfoDialogTarget.orderId}
+          triggerLabel={shippingInfoDialogTarget.triggerLabel}
+          shippingMethod={shippingInfoDialogTarget.shippingMethod}
+          open={Boolean(shippingInfoDialogTarget)}
+          hideTrigger
+          onOpenChange={(open) => !open && setShippingInfoDialogTarget(null)}
+        />
+      ) : null}
     </div>
   );
 }
