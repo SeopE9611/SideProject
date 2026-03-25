@@ -1,6 +1,5 @@
 "use client";
 
-import RegisterTabPanel from "@/app/login/_components/RegisterTabPanel";
 import SocialAuthButtons from "@/app/login/_components/SocialAuthButtons";
 import { useAuthStore } from "@/app/store/authStore";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,6 +29,11 @@ function getGuestOrderModeClient(): GuestOrderMode {
 }
 
 type LoginField = "email" | "password";
+
+const RegisterTabPanel = dynamic(
+  () => import("@/app/login/_components/RegisterTabPanel"),
+  { loading: () => null },
+);
 
 // fetch 응답이 JSON이 아닐 때(res.json() 파싱 실패 등)도 화면/UX가 깨지지 않도록 안전 파싱
 async function readJsonSafe(res: Response): Promise<any | null> {
