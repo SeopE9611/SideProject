@@ -1,6 +1,5 @@
 "use client";
 
-import CancelOrderDialog from "@/app/mypage/orders/_components/CancelOrderDialog";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +46,7 @@ import {
   User,
   Store,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { mutate as globalMutate } from "swr";
@@ -131,6 +131,11 @@ const formatDate = (dateString: string) => {
 };
 
 const LIMIT = 5;
+
+const LazyCancelOrderDialog = dynamic(
+  () => import("@/app/mypage/orders/_components/CancelOrderDialog"),
+  { loading: () => null },
+);
 
 const OrderListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
@@ -680,11 +685,13 @@ export default function OrderList() {
                     </Button>
                   ) : (
                     isCancelable && (
-                      <CancelOrderDialog orderId={order.id}>
-                        <Button variant="destructive" size="sm">
-                          주문 취소 요청
-                        </Button>
-                      </CancelOrderDialog>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setCancelDialogOrderId(order.id)}
+                      >
+                        주문 취소 요청
+                      </Button>
                     )
                   )}
                 </div>
@@ -853,13 +860,16 @@ export default function OrderList() {
           </Card>
         );
       })}
-      <CancelOrderDialog
-        orderId={cancelDialogOrderId ?? ""} // null이면 빈 값
-        open={!!cancelDialogOrderId} // 열림 여부
-        onOpenChange={(open) => {
-          if (!open) setCancelDialogOrderId(null); // 닫히면 초기화
-        }}
-      />
+      {/* 취소 요청 클릭 시점에만 다이얼로그 코드 로드/마운트 */}
+      {cancelDialogOrderId ? (
+        <LazyCancelOrderDialog
+          orderId={cancelDialogOrderId}
+          open
+          onOpenChange={(open) => {
+            if (!open) setCancelDialogOrderId(null); // 닫히면 초기화
+          }}
+        />
+      ) : null}
 
       {/* '더 보기' 버튼 */}
       <div className="flex justify-center pt-4">
