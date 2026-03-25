@@ -233,11 +233,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
+  type DetailTab = "description" | "specifications" | "reviews" | "qna";
+  const initialTab = (searchParams.get("tab") as DetailTab) ?? "description";
+  const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
   const [user, setUser] = useState<User | null>(null);
   const guestOrderMode = getGuestOrderModeClient();
   const allowGuestCheckout = guestOrderMode === "on";
   const [loading, setLoading] = useState(false);
   const [hasResolvedReviewUser, setHasResolvedReviewUser] = useState(false);
+  const [showSticky, setShowSticky] = useState(false);
   const fetcher = (url: string) =>
     fetch(url, { credentials: "include" }).then(async (r) =>
       r.status === 200 ? r.json() : null,
@@ -292,9 +297,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
     data: qnaData,
     error: qnaError,
     isLoading: qnaLoading,
-  } = useSWR(`/api/products/${product._id}/qna?page=1&limit=10`, fetcher, {
-    revalidateOnFocus: false,
-  });
+  } = useSWR(
+    activeTab === "qna"
+      ? `/api/products/${product._id}/qna?page=1&limit=10`
+      : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   const qnas = qnaData?.items ?? [];
   const qnaTotal = qnaData?.total ?? 0;
@@ -308,12 +319,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
   const canCheckoutWithService =
     typeof product?.mountingFee === "number" && product.mountingFee > 0;
-
-  // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
-  type DetailTab = "description" | "specifications" | "reviews" | "qna";
-  const initialTab = (searchParams.get("tab") as DetailTab) ?? "description";
-  const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
-  const [showSticky, setShowSticky] = useState(false);
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
