@@ -12,21 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import {
   gripSizeLabel,
   racketBrandLabel,
@@ -48,6 +40,11 @@ import {
   ShoppingCart,
   Star,
   Truck,
+  Eye,
+  EyeOff,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -56,10 +53,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 
-import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
-import PhotosUploader from "@/components/reviews/PhotosUploader";
-
-import { Eye, EyeOff, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 
 interface RacketDetailClientProps {
   racket: any;
@@ -70,6 +63,15 @@ interface RacketDetailClientProps {
 }
 
 const RentDialog = dynamic(() => import("./RentDialog"), {
+  loading: () => null,
+});
+
+const ReviewImageViewerDialog = dynamic(
+  () => import("./ReviewImageViewerDialog"),
+  { loading: () => null },
+);
+
+const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
@@ -235,7 +237,6 @@ export default function RacketDetailClient({
     setViewerIndex(index);
     setViewerOpen(true);
   };
-  const closeViewer = () => setViewerOpen(false);
   const nextViewer = () => setViewerIndex((i) => (i + 1) % viewerImages.length);
   const prevViewer = () =>
     setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
@@ -1198,139 +1199,31 @@ export default function RacketDetailClient({
         </Card>
       </SiteContainer>
 
-      {/* 리뷰 이미지 뷰어 */}
-      <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>리뷰 이미지</DialogTitle>
-          </DialogHeader>
+      {/* 모달성 리뷰 UI는 필요 시점에만 로드 */}
+      {viewerOpen ? (
+        <ReviewImageViewerDialog
+          open={viewerOpen}
+          onOpenChange={setViewerOpen}
+          images={viewerImages}
+          index={viewerIndex}
+          onPrev={prevViewer}
+          onNext={nextViewer}
+        />
+      ) : null}
 
-          {viewerImages.length > 0 ? (
-            <div className="space-y-3">
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted">
-                <Image
-                  src={viewerImages[viewerIndex]}
-                  alt={`리뷰 이미지 ${viewerIndex + 1}`}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-2">
-                <Button
-                  variant="outline"
-                  onClick={prevViewer}
-                  disabled={viewerImages.length <= 1}
-                >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
-                  이전
-                </Button>
-
-                <div className="text-sm text-muted-foreground">
-                  {viewerIndex + 1} / {viewerImages.length}
-                </div>
-
-                <Button
-                  variant="outline"
-                  onClick={nextViewer}
-                  disabled={viewerImages.length <= 1}
-                >
-                  다음
-                  <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
-      {/* 리뷰 수정 다이얼로그 */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>리뷰 수정</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-5">
-            {/* 별점 */}
-            <div className="space-y-2">
-              <Label>별점</Label>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, i) => {
-                  const score = i + 1;
-                  const active =
-                    (hoverRating ??
-                      (editForm.rating === "" ? 0 : Number(editForm.rating))) >=
-                    score;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      className="p-1"
-                      onMouseEnter={() => setHoverRating(score)}
-                      onMouseLeave={() => setHoverRating(null)}
-                      onClick={() =>
-                        setEditForm((p) => ({ ...p, rating: score }))
-                      }
-                      aria-label={`별점 ${score}점`}
-                    >
-                      <Star
-                        className={`h-5 w-5 ${active ? "text-primary fill-primary" : "text-muted-foreground/40"}`}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 내용 */}
-            <div className="space-y-2">
-              <Label>내용</Label>
-              <Textarea
-                value={editForm.content}
-                onChange={(e) =>
-                  setEditForm((p) => ({ ...p, content: e.target.value }))
-                }
-                rows={6}
-                placeholder="리뷰 내용을 입력하세요."
-              />
-            </div>
-
-            {/* 이미지 업로드 */}
-            <div className="space-y-2">
-              <Label>사진</Label>
-              <PhotosUploader
-                value={editForm.photos}
-                onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
-              />
-              <PhotosReorderGrid
-                value={editForm.photos}
-                onChange={(photos) => setEditForm((p) => ({ ...p, photos }))}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                onClick={closeEdit}
-                disabled={!!busyReviewId}
-              >
-                취소
-              </Button>
-              <Button onClick={submitEdit} disabled={!!busyReviewId}>
-                {busyReviewId ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    저장 중...
-                  </>
-                ) : (
-                  "저장"
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {editOpen && editing ? (
+        <ReviewEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          hoverRating={hoverRating}
+          setHoverRating={setHoverRating}
+          busy={!!busyReviewId}
+          onClose={closeEdit}
+          onSubmit={submitEdit}
+        />
+      ) : null}
 
       {/* 모바일 전용 하단 Sticky */}
       <div
