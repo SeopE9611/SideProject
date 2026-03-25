@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown, ChevronUp, Eye, ImageIcon, MessageSquare, PackageSearch, Paperclip, Plus, RotateCcw, Search, SlidersHorizontal, ThumbsUp, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
@@ -9,7 +10,6 @@ import type { BoardTypeConfig } from '@/app/board/_components/board-config';
 import { getCategoryBadgeText } from '@/app/board/_components/board-config';
 import ErrorBox from '@/app/board/_components/ErrorBox';
 import PinnedNoticeStrip from '@/app/board/_components/PinnedNoticeStrip';
-import MessageComposeDialog from '@/app/messages/_components/MessageComposeDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +37,10 @@ import {
 import { showErrorToast } from '@/lib/toast';
 import type { CommunityPost } from '@/lib/types/community';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+const MessageComposeDialog = dynamic(() => import('@/app/messages/_components/MessageComposeDialog'), {
+  loading: () => null,
+});
 
 // API 응답 타입
 type ListResponse = {
@@ -614,15 +618,17 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <MessageComposeDialog
-        open={composeOpen}
-        onOpenChange={(v) => {
-          setComposeOpen(v);
-          if (!v) setComposeTo(null);
-        }}
-        toUserId={composeTo?.id ?? ''}
-        toName={composeTo?.name}
-      />
+      {composeOpen && composeTo ? (
+        <MessageComposeDialog
+          open={composeOpen}
+          onOpenChange={(v) => {
+            setComposeOpen(v);
+            if (!v) setComposeTo(null);
+          }}
+          toUserId={composeTo.id}
+          toName={composeTo.name}
+        />
+      ) : null}
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
