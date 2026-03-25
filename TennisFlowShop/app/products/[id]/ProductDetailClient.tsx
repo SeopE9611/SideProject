@@ -67,7 +67,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 
@@ -247,17 +247,40 @@ export default function ProductDetailClient({ product }: { product: any }) {
     fetch(url, { credentials: "include" }).then(async (r) =>
       r.status === 200 ? r.json() : null,
     );
+  const relatedSectionRef = useRef<HTMLDivElement | null>(null);
+  const [shouldLoadRelated, setShouldLoadRelated] = useState(false);
+
+  useEffect(() => {
+    const el = relatedSectionRef.current;
+    if (!el || shouldLoadRelated) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setShouldLoadRelated(true);
+        io.disconnect();
+      },
+      {
+        rootMargin: "600px 0px",
+      },
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shouldLoadRelated]);
 
   // 1) 브랜드 기준 1차
   const { data: byBrand } = useSWR(
-    `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}`,
+    shouldLoadRelated
+      ? `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}`
+      : null,
     fetcher,
     { revalidateOnFocus: false },
   );
 
   // 2) 재질 기준 2차 (1차가 빈 경우에만)
   const { data: byMaterial } = useSWR(
-    !byBrand?.products?.length && product.material
+    shouldLoadRelated && !byBrand?.products?.length && product.material
       ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}`
       : null,
     fetcher,
@@ -266,7 +289,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   // 3) 전체 백업 3차 (1·2차 둘 다 빈 경우에만)
   const { data: anyPool } = useSWR(
-    !byBrand?.products?.length && !byMaterial?.products?.length
+    shouldLoadRelated && !byBrand?.products?.length && !byMaterial?.products?.length
       ? `/api/products?limit=16&exclude=${product._id}`
       : null,
     fetcher,
@@ -290,7 +313,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
   }, [pool, product]);
 
   // 로딩 상태(세 요청 모두 아직 없음)
-  const loadingRelated = !byBrand && !byMaterial && !anyPool;
+  const loadingRelated =
+    !shouldLoadRelated || (!byBrand && !byMaterial && !anyPool);
 
   // 상품별 QnA 목록
   const {
@@ -1866,7 +1890,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </DialogContent>
         </Dialog>
 
-        <div className="mt-8 sm:mt-12">
+        <div ref={relatedSectionRef} className="mt-8 sm:mt-12">
           <Card className="border-0 shadow-xl bg-card/90 backdrop-blur-sm dark:bg-muted/90">
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl font-bold bg-muted/30 text-foreground">
