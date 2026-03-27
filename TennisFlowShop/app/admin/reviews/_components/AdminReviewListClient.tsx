@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
+import dynamic from "next/dynamic";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import ReviewPhotoDialog from "@/app/reviews/_components/ReviewPhotoDialog";
 import { Switch } from "@/components/ui/switch";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -56,6 +56,10 @@ import Image from "next/image";
 
 type Row = AdminReviewListItemDto;
 type Page = AdminReviewsListResponseDto;
+const ReviewPhotoDialog = dynamic(
+  () => import("@/app/reviews/_components/ReviewPhotoDialog"),
+  { loading: () => null },
+);
 
 function mapApiToViewModel(page: Page | null): Page | null {
   if (!page) return null;
