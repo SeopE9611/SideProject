@@ -30,13 +30,13 @@ import {
   User,
   XCircle,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { MdSportsTennis } from "react-icons/md";
 import { useSWRConfig } from "swr";
 import useSWRInfinite from "swr/infinite";
-import CancelStringingDialog from "./CancelStringingDialog";
 
 export interface Application {
   id: string;
@@ -156,6 +156,9 @@ const formatVisitTimeRange = (
 const fetcher = (url: string) => authenticatedSWRFetcher<AppResponse>(url);
 
 const LIMIT = 5;
+const CancelStringingDialog = dynamic(() => import("./CancelStringingDialog"), {
+  loading: () => null,
+});
 
 // 신청 상태별 아이콘
 const getApplicationStatusIcon = (status: Application["status"]) => {
@@ -817,18 +820,20 @@ export default function ApplicationsClient() {
 
       {hasMore && isValidating ? <ApplicationsListSkeleton count={2} /> : null}
 
-      {/* 목록 전용 스트링 취소 요청 Dialog (선택된 신청서 기준) */}
-      <CancelStringingDialog
-        open={cancelDialogOpen}
-        onOpenChange={(open) => {
-          setCancelDialogOpen(open);
-          if (!open) {
-            setTargetId(null);
-          }
-        }}
-        onConfirm={handleConfirmCancel}
-        isSubmitting={isCancelSubmitting}
-      />
+      {/* 취소 요청 버튼 클릭 시에만 다이얼로그 코드를 로드 */}
+      {cancelDialogOpen && targetId ? (
+        <CancelStringingDialog
+          open={cancelDialogOpen}
+          onOpenChange={(open) => {
+            setCancelDialogOpen(open);
+            if (!open) {
+              setTargetId(null);
+            }
+          }}
+          onConfirm={handleConfirmCancel}
+          isSubmitting={isCancelSubmitting}
+        />
+      ) : null}
     </div>
   );
 }
