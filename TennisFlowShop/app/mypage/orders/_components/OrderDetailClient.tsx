@@ -51,12 +51,16 @@ import {
   Undo2,
   User,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR, { mutate } from "swr";
 import useSWRInfinite from "swr/infinite";
-import CancelOrderDialog from "./CancelOrderDialog"; // 기존 다이얼로그 그대로 사용
+
+const CancelOrderDialog = dynamic(() => import("./CancelOrderDialog"), {
+  loading: () => null,
+});
 
 // SWR Infinite용 getKey (처리 이력 페이지네이션)
 const LIMIT = 5;
@@ -204,6 +208,7 @@ export default function OrderDetailClient({
   // 취소 철회 로딩
   const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] =
     useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // 주문 상세를 SWR로 가져오기
   const {
@@ -560,11 +565,13 @@ export default function OrderDetailClient({
               </Button>
 
               {canShowCancelButton && (
-                <CancelOrderDialog orderId={orderDetail._id.toString()}>
-                  <Button variant="destructive" size="sm">
-                    주문 취소 요청
-                  </Button>
-                </CancelOrderDialog>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setCancelDialogOpen(true)}
+                >
+                  주문 취소 요청
+                </Button>
               )}
             </div>
           </div>
@@ -1267,6 +1274,18 @@ export default function OrderDetailClient({
           orderId={orderId}
           shippingMethod={shippingMethodValue}
         />
+
+        {/* 취소 다이얼로그는 실제 요청 시점에만 mount */}
+        {cancelDialogOpen && orderDetail?._id ? (
+          <CancelOrderDialog
+            orderId={String(orderDetail._id)}
+            open={cancelDialogOpen}
+            onOpenChange={setCancelDialogOpen}
+            onSuccess={async () => {
+              await mutateOrderDetail();
+            }}
+          />
+        ) : null}
       </SiteContainer>
     </main>
   );
