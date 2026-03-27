@@ -96,6 +96,7 @@ export type AdminOperationsKindFilter = AdminOperationKind | "all";
 export type AdminOperationsWarnFilter =
   | "all"
   | "warn"
+  | "caution"
   | "review"
   | "pending"
   | "clean";
