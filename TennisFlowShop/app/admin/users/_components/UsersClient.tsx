@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
@@ -67,7 +68,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
-import UserPointsDialog from "@/app/admin/users/_components/UserPointsDialog";
 import { FiltersSection } from "@/app/admin/users/_components/users-client/FiltersSection";
 import { TableSection } from "@/app/admin/users/_components/users-client/TableSection";
 import { BulkActionsSection } from "@/app/admin/users/_components/users-client/BulkActionsSection";
@@ -155,6 +155,11 @@ const asPreviewCandidates = (
             : undefined,
       }))
     : [];
+
+const UserPointsDialog = dynamic(
+  () => import("@/app/admin/users/_components/UserPointsDialog"),
+  { loading: () => null },
+);
 
 export default function UsersClient() {
   const router = useRouter();
