@@ -39,6 +39,18 @@ function buildPrefixRegex(value) {
   return new RegExp(`^${escapeRegex(value)}`, "i");
 }
 
+function buildCaseSensitivePrefixRegex(value) {
+  return new RegExp(`^${escapeRegex(value)}`);
+}
+
+function isLikelyEmailQuery(value) {
+  const q = String(value ?? "").trim().toLowerCase();
+  if (!q) return false;
+  if (q.includes(" ") || q.includes("\t") || q.includes("\n")) return false;
+  if (q.includes("@")) return /^[^\s@]+@[^\s@]*$/.test(q);
+  return false;
+}
+
 function buildIdCandidates(value) {
   const candidates = [value];
   if (ObjectId.isValid(value)) candidates.push(new ObjectId(value));
@@ -115,6 +127,10 @@ function printQuery(label, query) {
 async function run() {
   const qRegex = buildSearchRegex(q);
   const qPrefixRegex = buildPrefixRegex(q);
+  const isEmailSearch = isLikelyEmailQuery(q);
+  const qEmailPrefixRegex = isEmailSearch
+    ? buildCaseSensitivePrefixRegex(q)
+    : null;
   const idCandidates = buildIdCandidates(q);
 
   const client = new MongoClient(uri);
@@ -128,71 +144,129 @@ async function run() {
     console.log(`db=${dbName}`);
     console.log(`fetchLimit=${fetchLimit}`);
 
-    const matchedUsers = await db
-      .collection("users")
-      .find({ $or: [{ name: qRegex }, { email: qRegex }] })
-      .project({ _id: 1 })
-      .limit(fetchLimit)
-      .toArray();
+    const matchedUsers = isEmailSearch
+      ? await db
+          .collection("users")
+          .find({
+            $or: [
+              { email: q },
+              ...(qEmailPrefixRegex ? [{ email: qEmailPrefixRegex }] : []),
+              { email: qRegex },
+            ],
+          })
+          .project({ _id: 1 })
+          .limit(fetchLimit)
+          .toArray()
+      : await db
+          .collection("users")
+          .find({ $or: [{ name: qRegex }, { email: qRegex }] })
+          .project({ _id: 1 })
+          .limit(fetchLimit)
+          .toArray();
 
     const rentalUserIdCandidates = matchedUsers
       .map((user) => String(user?._id ?? ""))
       .filter(Boolean)
       .map((id) => (ObjectId.isValid(id) ? new ObjectId(id) : id));
 
-    const appQuery = {
-      status: { $ne: "draft" },
-      $or: [
-        { _id: { $in: idCandidates } },
-        { stringingApplicationId: { $in: idCandidates } },
-        { orderId: { $in: idCandidates } },
-        { rentalId: { $in: idCandidates } },
-        { stringingApplicationId: qPrefixRegex },
-        { orderId: qPrefixRegex },
-        { rentalId: qPrefixRegex },
-        { "customer.name": qRegex },
-        { "customer.email": qRegex },
-        { "userSnapshot.name": qRegex },
-        { "userSnapshot.email": qRegex },
-        { guestName: qRegex },
-        { guestEmail: qRegex },
-        { paymentSource: qPrefixRegex },
-      ],
-    };
+    const appQuery = isEmailSearch
+      ? {
+          status: { $ne: "draft" },
+          $or: [
+            { searchEmailLower: q },
+            { "customer.email": q },
+            { "userSnapshot.email": q },
+            { guestEmail: q },
+            ...(qEmailPrefixRegex
+              ? [
+                  { searchEmailLower: qEmailPrefixRegex },
+                  { "customer.email": qEmailPrefixRegex },
+                  { "userSnapshot.email": qEmailPrefixRegex },
+                  { guestEmail: qEmailPrefixRegex },
+                ]
+              : []),
+          ],
+        }
+      : {
+          status: { $ne: "draft" },
+          $or: [
+            { _id: { $in: idCandidates } },
+            { stringingApplicationId: { $in: idCandidates } },
+            { orderId: { $in: idCandidates } },
+            { rentalId: { $in: idCandidates } },
+            { stringingApplicationId: qPrefixRegex },
+            { orderId: qPrefixRegex },
+            { rentalId: qPrefixRegex },
+            { "customer.name": qRegex },
+            { "customer.email": qRegex },
+            { "userSnapshot.name": qRegex },
+            { "userSnapshot.email": qRegex },
+            { guestName: qRegex },
+            { guestEmail: qRegex },
+            { paymentSource: qPrefixRegex },
+          ],
+        };
 
-    const orderQuery = {
-      $or: [
-        { _id: { $in: idCandidates } },
-        { stringingApplicationId: { $in: idCandidates } },
-        { stringingApplicationId: qPrefixRegex },
-        { "customer.name": qRegex },
-        { "customer.email": qRegex },
-        { "userSnapshot.name": qRegex },
-        { "userSnapshot.email": qRegex },
-        { "guestInfo.name": qRegex },
-        { "guestInfo.email": qRegex },
-        { "items.title": qRegex },
-        { "items.productName": qRegex },
-        { "items.name": qRegex },
-      ],
-    };
+    const orderQuery = isEmailSearch
+      ? {
+          $or: [
+            { searchEmailLower: q },
+            { "customer.email": q },
+            { "userSnapshot.email": q },
+            { "guestInfo.email": q },
+            ...(qEmailPrefixRegex
+              ? [
+                  { searchEmailLower: qEmailPrefixRegex },
+                  { "customer.email": qEmailPrefixRegex },
+                  { "userSnapshot.email": qEmailPrefixRegex },
+                  { "guestInfo.email": qEmailPrefixRegex },
+                ]
+              : []),
+          ],
+        }
+      : {
+          $or: [
+            { _id: { $in: idCandidates } },
+            { stringingApplicationId: { $in: idCandidates } },
+            { stringingApplicationId: qPrefixRegex },
+            { "customer.name": qRegex },
+            { "customer.email": qRegex },
+            { "userSnapshot.name": qRegex },
+            { "userSnapshot.email": qRegex },
+            { "guestInfo.name": qRegex },
+            { "guestInfo.email": qRegex },
+            { "items.title": qRegex },
+            { "items.productName": qRegex },
+            { "items.name": qRegex },
+          ],
+        };
 
-    const rentalQuery = {
-      $or: [
-        { _id: { $in: idCandidates } },
-        { stringingApplicationId: { $in: idCandidates } },
-        { userId: { $in: idCandidates } },
-        { stringingApplicationId: qPrefixRegex },
-        { userId: qPrefixRegex },
-        ...(rentalUserIdCandidates.length > 0
-          ? [{ userId: { $in: rentalUserIdCandidates } }]
-          : []),
-        { "guest.name": qRegex },
-        { "guest.email": qRegex },
-        { brand: qRegex },
-        { model: qRegex },
-      ],
-    };
+    const rentalQuery = isEmailSearch
+      ? {
+          $or: [
+            ...(rentalUserIdCandidates.length > 0
+              ? [{ userId: { $in: rentalUserIdCandidates } }]
+              : []),
+            { "guest.email": q },
+            ...(qEmailPrefixRegex ? [{ "guest.email": qEmailPrefixRegex }] : []),
+          ],
+        }
+      : {
+          $or: [
+            { _id: { $in: idCandidates } },
+            { stringingApplicationId: { $in: idCandidates } },
+            { userId: { $in: idCandidates } },
+            { stringingApplicationId: qPrefixRegex },
+            { userId: qPrefixRegex },
+            ...(rentalUserIdCandidates.length > 0
+              ? [{ userId: { $in: rentalUserIdCandidates } }]
+              : []),
+            { "guest.name": qRegex },
+            { "guest.email": qRegex },
+            { brand: qRegex },
+            { model: qRegex },
+          ],
+        };
 
     const checks = [
       {

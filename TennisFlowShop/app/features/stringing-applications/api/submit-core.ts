@@ -17,6 +17,7 @@ import {
   calcStringingTotal,
 } from "@/lib/pricing";
 import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
+import { normalizeEmailForSearch } from "@/lib/search-email";
 
 export type StringingApplicationInput = {
   applicationId?: string;
@@ -361,6 +362,7 @@ export async function submitStringingApplicationCore({
     name,
     phone,
     email: email ?? "",
+    searchEmailLower: normalizeEmailForSearch(email),
     contactEmail: normalizeEmail(email),
     contactPhone: phone.replace(/\D/g, "") || null,
     shippingInfo: normalizedShippingInfo,

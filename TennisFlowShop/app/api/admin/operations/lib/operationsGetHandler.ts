@@ -34,6 +34,7 @@ import {
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
+import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -102,6 +103,10 @@ function buildSearchRegex(q: string) {
 
 function buildPrefixRegex(q: string) {
   return new RegExp(`^${escapeRegex(q)}`, "i");
+}
+
+function buildCaseSensitivePrefixRegex(q: string) {
+  return new RegExp(`^${escapeRegex(q)}`);
 }
 
 type NormalizedCancel = {
@@ -582,126 +587,238 @@ export async function handleAdminOperationsGet(req: Request) {
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
   const qRegex = q ? buildSearchRegex(q) : null;
   const qPrefixRegex = q ? buildPrefixRegex(q) : null;
+  const isEmailSearch = q ? isLikelyEmailQuery(q) : false;
+  const qEmailNormalized = q ? normalizeEmailForSearch(q) : null;
+  const qEmailPrefixRegex =
+    isEmailSearch && qEmailNormalized
+      ? buildCaseSensitivePrefixRegex(qEmailNormalized)
+      : null;
   const idCandidates = q ? buildIdCandidates(q) : [];
   const rentalUserIdCandidates: Array<string | ObjectId> = [];
 
   if (qRegex) {
-    const matchedUsers = await db
-      .collection("users")
-      .find({
-        $or: [{ name: qRegex }, { email: qRegex }],
-      })
-      .project({ _id: 1 })
-      .limit(fetchLimit)
-      .toArray();
-    for (const user of matchedUsers) {
-      const uid = getIdString(user?._id);
-      if (!uid) continue;
-      rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
+    if (isEmailSearch && qEmailNormalized) {
+      const userCollection = db.collection("users");
+      const matchedUsersExact = await userCollection
+        .find({ email: qEmailNormalized })
+        .project({ _id: 1 })
+        .limit(fetchLimit)
+        .toArray();
+      let matchedUsers = matchedUsersExact;
+      if (matchedUsers.length === 0 && qEmailPrefixRegex) {
+        matchedUsers = await userCollection
+          .find({ email: qEmailPrefixRegex })
+          .project({ _id: 1 })
+          .limit(fetchLimit)
+          .toArray();
+      }
+      if (matchedUsers.length === 0) {
+        matchedUsers = await userCollection
+          .find({ email: qRegex })
+          .project({ _id: 1 })
+          .limit(fetchLimit)
+          .toArray();
+      }
+      for (const user of matchedUsers) {
+        const uid = getIdString(user?._id);
+        if (!uid) continue;
+        rentalUserIdCandidates.push(
+          ObjectId.isValid(uid) ? new ObjectId(uid) : uid,
+        );
+      }
+    } else {
+      const matchedUsers = await db
+        .collection("users")
+        .find({
+          $or: [{ name: qRegex }, { email: qRegex }],
+        })
+        .project({ _id: 1 })
+        .limit(fetchLimit)
+        .toArray();
+      for (const user of matchedUsers) {
+        const uid = getIdString(user?._id);
+        if (!uid) continue;
+        rentalUserIdCandidates.push(
+          ObjectId.isValid(uid) ? new ObjectId(uid) : uid,
+        );
+      }
     }
   }
 
   const appQuery: Record<string, unknown> = { status: { $ne: "draft" } };
+  let appEmailFallbackQuery: Record<string, unknown> | null = null;
   if (qRegex) {
-    appQuery.$or = [
-      ...(idCandidates.length > 0
-        ? [
-            { _id: { $in: idCandidates } },
-            { stringingApplicationId: { $in: idCandidates } },
-            { orderId: { $in: idCandidates } },
-            { rentalId: { $in: idCandidates } },
-          ]
-        : []),
-      ...(qPrefixRegex
-        ? [
-            { stringingApplicationId: qPrefixRegex },
-            { orderId: qPrefixRegex },
-            { rentalId: qPrefixRegex },
-          ]
-        : []),
-      { "customer.name": qRegex },
-      { "customer.email": qRegex },
-      { "userSnapshot.name": qRegex },
-      { "userSnapshot.email": qRegex },
-      { guestName: qRegex },
-      { guestEmail: qRegex },
-      { paymentSource: qPrefixRegex ?? qRegex },
-    ];
+    if (isEmailSearch && qEmailNormalized) {
+      appQuery.$or = [
+        { searchEmailLower: qEmailNormalized },
+        { "customer.email": qEmailNormalized },
+        { "userSnapshot.email": qEmailNormalized },
+        { guestEmail: qEmailNormalized },
+        ...(qEmailPrefixRegex
+          ? [
+              { searchEmailLower: qEmailPrefixRegex },
+              { "customer.email": qEmailPrefixRegex },
+              { "userSnapshot.email": qEmailPrefixRegex },
+              { guestEmail: qEmailPrefixRegex },
+            ]
+          : []),
+      ];
+      appEmailFallbackQuery = {
+        status: { $ne: "draft" },
+        $or: [
+          { "customer.email": qRegex },
+          { "userSnapshot.email": qRegex },
+          { guestEmail: qRegex },
+        ],
+      };
+    } else {
+      appQuery.$or = [
+        ...(idCandidates.length > 0
+          ? [
+              { _id: { $in: idCandidates } },
+              { stringingApplicationId: { $in: idCandidates } },
+              { orderId: { $in: idCandidates } },
+              { rentalId: { $in: idCandidates } },
+            ]
+          : []),
+        ...(qPrefixRegex
+          ? [
+              { stringingApplicationId: qPrefixRegex },
+              { orderId: qPrefixRegex },
+              { rentalId: qPrefixRegex },
+            ]
+          : []),
+        { "customer.name": qRegex },
+        { "customer.email": qRegex },
+        { "userSnapshot.name": qRegex },
+        { "userSnapshot.email": qRegex },
+        { guestName: qRegex },
+        { guestEmail: qRegex },
+        { paymentSource: qPrefixRegex ?? qRegex },
+      ];
+    }
   }
 
   const orderQuery: Record<string, unknown> = {};
+  let orderEmailFallbackQuery: Record<string, unknown> | null = null;
   if (qRegex) {
-    orderQuery.$or = [
-      ...(idCandidates.length > 0
-        ? [
-            { _id: { $in: idCandidates } },
-            { stringingApplicationId: { $in: idCandidates } },
-          ]
-        : []),
-      ...(qPrefixRegex ? [{ stringingApplicationId: qPrefixRegex }] : []),
-      { "customer.name": qRegex },
-      { "customer.email": qRegex },
-      { "userSnapshot.name": qRegex },
-      { "userSnapshot.email": qRegex },
-      { "guestInfo.name": qRegex },
-      { "guestInfo.email": qRegex },
-      { "items.title": qRegex },
-      { "items.productName": qRegex },
-      { "items.name": qRegex },
-    ];
+    if (isEmailSearch && qEmailNormalized) {
+      orderQuery.$or = [
+        { searchEmailLower: qEmailNormalized },
+        { "customer.email": qEmailNormalized },
+        { "userSnapshot.email": qEmailNormalized },
+        { "guestInfo.email": qEmailNormalized },
+        ...(qEmailPrefixRegex
+          ? [
+              { searchEmailLower: qEmailPrefixRegex },
+              { "customer.email": qEmailPrefixRegex },
+              { "userSnapshot.email": qEmailPrefixRegex },
+              { "guestInfo.email": qEmailPrefixRegex },
+            ]
+          : []),
+      ];
+      orderEmailFallbackQuery = {
+        $or: [
+          { "customer.email": qRegex },
+          { "userSnapshot.email": qRegex },
+          { "guestInfo.email": qRegex },
+        ],
+      };
+    } else {
+      orderQuery.$or = [
+        ...(idCandidates.length > 0
+          ? [
+              { _id: { $in: idCandidates } },
+              { stringingApplicationId: { $in: idCandidates } },
+            ]
+          : []),
+        ...(qPrefixRegex ? [{ stringingApplicationId: qPrefixRegex }] : []),
+        { "customer.name": qRegex },
+        { "customer.email": qRegex },
+        { "userSnapshot.name": qRegex },
+        { "userSnapshot.email": qRegex },
+        { "guestInfo.name": qRegex },
+        { "guestInfo.email": qRegex },
+        { "items.title": qRegex },
+        { "items.productName": qRegex },
+        { "items.name": qRegex },
+      ];
+    }
   }
 
   const rentalQuery: Record<string, unknown> = {};
+  let rentalEmailFallbackQuery: Record<string, unknown> | null = null;
   if (qRegex) {
-    rentalQuery.$or = [
-      ...(idCandidates.length > 0
-        ? [
-            { _id: { $in: idCandidates } },
-            { stringingApplicationId: { $in: idCandidates } },
-            { userId: { $in: idCandidates } },
-          ]
-        : []),
-      ...(qPrefixRegex
-        ? [{ stringingApplicationId: qPrefixRegex }, { userId: qPrefixRegex }]
-        : []),
-      ...(rentalUserIdCandidates.length > 0
-        ? [{ userId: { $in: rentalUserIdCandidates } }]
-        : []),
-      { "guest.name": qRegex },
-      { "guest.email": qRegex },
-      { brand: qRegex },
-      { model: qRegex },
-    ];
+    if (isEmailSearch && qEmailNormalized) {
+      rentalQuery.$or = [
+        ...(rentalUserIdCandidates.length > 0
+          ? [{ userId: { $in: rentalUserIdCandidates } }]
+          : []),
+        { "guest.email": qEmailNormalized },
+        ...(qEmailPrefixRegex ? [{ "guest.email": qEmailPrefixRegex }] : []),
+      ];
+      rentalEmailFallbackQuery = { $or: [{ "guest.email": qRegex }] };
+    } else {
+      rentalQuery.$or = [
+        ...(idCandidates.length > 0
+          ? [
+              { _id: { $in: idCandidates } },
+              { stringingApplicationId: { $in: idCandidates } },
+              { userId: { $in: idCandidates } },
+            ]
+          : []),
+        ...(qPrefixRegex
+          ? [{ stringingApplicationId: qPrefixRegex }, { userId: qPrefixRegex }]
+          : []),
+        ...(rentalUserIdCandidates.length > 0
+          ? [{ userId: { $in: rentalUserIdCandidates } }]
+          : []),
+        { "guest.name": qRegex },
+        { "guest.email": qRegex },
+        { brand: qRegex },
+        { model: qRegex },
+      ];
+    }
   }
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
-  const rawApps = await db
+  const appProjection = {
+    _id: 1,
+    createdAt: 1,
+    status: 1,
+    paymentStatus: 1,
+    paymentInfo: 1,
+    packageApplied: 1,
+    paymentSource: 1,
+    servicePaid: 1,
+    serviceFeeBefore: 1,
+    stringingApplicationId: 1,
+    totalPrice: 1,
+    serviceAmount: 1,
+    orderId: 1,
+    rentalId: 1,
+    customer: 1,
+    userSnapshot: 1,
+    guestName: 1,
+    guestEmail: 1,
+    cancelRequest: 1,
+  };
+  let rawApps = await db
     .collection("stringing_applications")
     .find(appQuery)
-    .project({
-      _id: 1,
-      createdAt: 1,
-      status: 1,
-      paymentStatus: 1,
-      paymentInfo: 1,
-      packageApplied: 1,
-      paymentSource: 1,
-      servicePaid: 1,
-      serviceFeeBefore: 1,
-      stringingApplicationId: 1,
-      totalPrice: 1,
-      serviceAmount: 1,
-      orderId: 1,
-      rentalId: 1,
-      customer: 1,
-      userSnapshot: 1,
-      guestName: 1,
-      guestEmail: 1,
-      cancelRequest: 1,
-    })
+    .project(appProjection)
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
     .toArray();
+  if (isEmailSearch && rawApps.length === 0 && appEmailFallbackQuery) {
+    rawApps = await db
+      .collection("stringing_applications")
+      .find(appEmailFallbackQuery)
+      .project(appProjection)
+      .sort({ createdAt: -1 })
+      .limit(fetchLimit)
+      .toArray();
+  }
   const dbMatchedAppIds = new Set(rawApps.map((a) => String(a?._id)));
 
   const orderToApp = new Map<string, string>();
@@ -736,57 +853,77 @@ export async function handleAdminOperationsGet(req: Request) {
   }
 
   // 2) 주문 조회
-  const rawOrders = await db
+  const orderProjection = {
+    _id: 1,
+    createdAt: 1,
+    status: 1,
+    paymentStatus: 1,
+    paymentInfo: 1,
+    isStringServiceApplied: 1,
+    stringingApplicationId: 1,
+    totalPrice: 1,
+    customer: 1,
+    userSnapshot: 1,
+    guestInfo: 1,
+    items: 1,
+    shippingInfo: 1,
+    cancelRequest: 1,
+  };
+  let rawOrders = await db
     .collection("orders")
     .find(orderQuery)
-    .project({
-      _id: 1,
-      createdAt: 1,
-      status: 1,
-      paymentStatus: 1,
-      paymentInfo: 1,
-      isStringServiceApplied: 1,
-      stringingApplicationId: 1,
-      totalPrice: 1,
-      customer: 1,
-      userSnapshot: 1,
-      guestInfo: 1,
-      items: 1,
-      shippingInfo: 1,
-      cancelRequest: 1,
-    })
+    .project(orderProjection)
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
     .toArray();
+  if (isEmailSearch && rawOrders.length === 0 && orderEmailFallbackQuery) {
+    rawOrders = await db
+      .collection("orders")
+      .find(orderEmailFallbackQuery)
+      .project(orderProjection)
+      .sort({ createdAt: -1 })
+      .limit(fetchLimit)
+      .toArray();
+  }
   const dbMatchedOrderIds = new Set(rawOrders.map((o) => String(o?._id)));
 
   // 3) 대여 조회(+ userId 배치 매핑: 고객명/이메일 정확도 향상)
-  const rawRentals = await db
+  const rentalProjection = {
+    _id: 1,
+    createdAt: 1,
+    status: 1,
+    paymentStatus: 1,
+    paymentInfo: 1,
+    userId: 1,
+    guest: 1,
+    brand: 1,
+    model: 1,
+    days: 1,
+    period: 1,
+    amount: 1,
+    fee: 1,
+    deposit: 1,
+    stringing: 1,
+    stringingApplicationId: 1,
+    isStringServiceApplied: 1,
+    cancelRequest: 1,
+  };
+  let rawRentals = await db
     .collection("rental_orders")
     .find(rentalQuery)
-    .project({
-      _id: 1,
-      createdAt: 1,
-      status: 1,
-      paymentStatus: 1,
-      paymentInfo: 1,
-      userId: 1,
-      guest: 1,
-      brand: 1,
-      model: 1,
-      days: 1,
-      period: 1,
-      amount: 1,
-      fee: 1,
-      deposit: 1,
-      stringing: 1,
-      stringingApplicationId: 1,
-      isStringServiceApplied: 1,
-      cancelRequest: 1,
-    })
+    .project(rentalProjection)
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
     .toArray();
+  if (isEmailSearch && rawRentals.length === 0 && rentalEmailFallbackQuery) {
+    rawRentals = await db
+      .collection("rental_orders")
+      .find(rentalEmailFallbackQuery)
+      .project(rentalProjection)
+      .sort({ createdAt: -1 })
+      .limit(fetchLimit)
+      .toArray();
+  }
   const dbMatchedRentalIds = new Set(rawRentals.map((r) => String(r?._id)));
 
   /**

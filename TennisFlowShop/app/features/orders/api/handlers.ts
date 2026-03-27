@@ -20,6 +20,7 @@ import { getShippingBadge } from "@/lib/badge-style";
 import { z } from "zod";
 import { calcShippingFee } from "@/lib/shipping-fee";
 import { findOneActivePassForUser } from "@/lib/passes.service";
+import { normalizeEmailForSearch } from "@/lib/search-email";
 
 /**
  * 서버 최종 유효성 검사 스키마(주문 생성)
@@ -807,6 +808,16 @@ export async function createOrder(req: Request): Promise<Response> {
           order.userId = new ObjectId(userId);
           const snapshot = await findUserSnapshot(userId);
           if (snapshot) order.userSnapshot = snapshot;
+        }
+
+        const orderSearchEmailLower = normalizeEmailForSearch(
+          order?.customer?.email ??
+            order?.userSnapshot?.email ??
+            order?.guestInfo?.email ??
+            null,
+        );
+        if (orderSearchEmailLower) {
+          order.searchEmailLower = orderSearchEmailLower;
         }
 
         // insert

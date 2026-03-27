@@ -1,7 +1,7 @@
-# 관리자 운영통합센터 검색 인덱스 전략(4차)
+# 관리자 운영통합센터 검색 인덱스 전략(5차)
 
 ## 목적
-- 범위: `/admin/operations` 검색 고도화 4차.
+- 범위: `/admin/operations` 검색 고도화 5차.
 - 이번 단계 핵심:
   1) **실개발/스테이징 DB explain 수집 절차 고정**
   2) **email 계열 인덱스 적용/보류 최종 판단 기준 명문화**
@@ -20,7 +20,8 @@
 
 ### 2) email 검색 분기(운영 API 코드)
 - 파일: `app/api/admin/operations/lib/operationsGetHandler.ts`
-- 공통: `qRegex` 기반 contains(`/q/i`)가 기본.
+- 공통: `@` 포함 + 기본 패턴 검증 시 email 모드로 분기.
+- email 모드: `exact(searchEmailLower/email) -> prefix(^normalized) -> contains fallback` 순서.
 - 컬렉션별 email 필드
   - `orders`: `customer.email`, `userSnapshot.email`, `guestInfo.email`
   - `rental_orders`: `guest.email` + `users(name/email) -> users._id -> rental_orders.userId` 우회 경로
@@ -29,6 +30,9 @@
   - `_id`, `stringingApplicationId`, `orderId`, `rentalId`, `userId`
 
 ### 3) 런타임 ensure/check 기준 인덱스
+- 신규(5차):
+  - `orders.searchEmailLower`
+  - `stringing_applications.searchEmailLower`
 - 파일: `scripts/db/ensure-runtime-indexes.mjs`, `scripts/db/check-runtime-indexes.mjs`
 - 이미 보장됨
   - `orders.stringingApplicationId`
@@ -113,12 +117,12 @@ npm run db:explain-admin-operations-search -- 'sa-2026-00***' --fetch-limit=4000
   - 컬렉션별 email 경로가 분산되어 우선순위 불명확
   - 실DB explain 실측이 아직 누락
 
-## 4차 결론(현재 저장소 기준)
-- **결론: B안(보류 유지)**
+## 5차 결론(현재 저장소 기준)
+- **결론: 혼합(A+B)**
 - 근거:
-  1) 코드 쿼리 패턴이 여전히 contains 중심이며 email exact/prefix 전용 경로가 분리되어 있지 않음.
-  2) 런타임 인덱스는 linked-id 계열 중심으로 이미 반영되어 있고, email은 `users.email` 외 다중 경로 컬렉션에 분산됨.
-  3) 따라서 email 인덱스는 “실DB explain 수치 기반 선별” 없이 일괄 추가하면 오탐 가능성이 큼.
+  1) `orders`/`stringing_applications`는 `searchEmailLower` + 단일 인덱스로 exact/prefix 경로를 확보(A안).
+  2) `rental_orders`/`users`는 email 저장 경로·write path 분산 이슈로 이번 단계는 보수적으로 보류(B안).
+  3) contains는 제거하지 않고 email 모드의 마지막 fallback으로 유지.
 
 ## 이번 단계에서 하지 않은 것
 - full-text/Atlas Search 도입

@@ -10,6 +10,7 @@ import clientPromise, { getDb } from '@/lib/mongodb';
 import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { revertConsumption } from '@/lib/passes.service';
 import { calcStringingMountingFeeByProductId, calcStringingTotal } from '@/lib/pricing';
+import { normalizeEmailForSearch } from '@/lib/search-email';
 import { getStringingServicePrice } from '@/lib/stringing-prices';
 import { ServicePassConsumption } from '@/lib/types/pass';
 import { HistoryItem, HistoryRecord } from '@/lib/types/stringing-application-db';
@@ -458,6 +459,7 @@ export async function handlePatchStringingApplication(req: Request, id: string) 
         ...(addressDetail ? { addressDetail } : {}),
         ...(postalCode ? { postalCode } : {}),
       };
+      setFields.searchEmailLower = normalizeEmailForSearch(setFields.customer.email);
       pushHistory.push({
         status: '고객정보수정',
         date: new Date(),
@@ -2036,6 +2038,9 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
         email: (order as any)?.customer?.email ?? (order as any)?.userSnapshot?.email ?? (order as any)?.guestInfo?.email ?? '',
         phone: (order as any)?.customer?.phone ?? (order as any)?.shippingInfo?.phone ?? (order as any)?.guestInfo?.phone ?? '',
       },
+      searchEmailLower: normalizeEmailForSearch(
+        (order as any)?.customer?.email ?? (order as any)?.userSnapshot?.email ?? (order as any)?.guestInfo?.email ?? null,
+      ),
 
       stringDetails: { stringTypes: [], customStringName: '' },
 

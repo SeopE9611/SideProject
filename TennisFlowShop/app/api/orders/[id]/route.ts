@@ -18,6 +18,7 @@ import {
   isApplicationEligibleForLinkedStage,
 } from "@/lib/admin/linked-flow-stage";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { normalizeEmailForSearch } from "@/lib/search-email";
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -566,6 +567,7 @@ export async function PATCH(
           addressDetail: c.addressDetail,
           postalCode: c.postalCode,
         },
+        searchEmailLower: normalizeEmailForSearch(c.email),
       };
 
       const historyEntry = {
@@ -604,6 +606,7 @@ export async function PATCH(
               addressDetail: c.addressDetail || "",
               postalCode: c.postalCode,
             },
+            searchEmailLower: normalizeEmailForSearch(c.email),
           },
           $push: {
             history: syncHistoryEntry,
