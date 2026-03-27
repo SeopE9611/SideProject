@@ -286,6 +286,11 @@ const INDEX_SPECS = {
       keys: { stringingApplicationId: 1 },
       options: {},
     },
+    {
+      name: "ops_orders_searchEmailLower_idx",
+      keys: { searchEmailLower: 1 },
+      options: {},
+    },
   ],
   stringing_applications: [
     {
@@ -301,6 +306,11 @@ const INDEX_SPECS = {
     {
       name: "ops_apps_rentalId_idx",
       keys: { rentalId: 1 },
+      options: {},
+    },
+    {
+      name: "ops_apps_searchEmailLower_idx",
+      keys: { searchEmailLower: 1 },
       options: {},
     },
   ],
