@@ -1,7 +1,6 @@
 "use client";
 
 import { getDepositBanner } from "@/app/features/rentals/utils/ui";
-import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,8 +21,16 @@ import {
   Wrench,
   XCircle,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+const CancelRentalDialog = dynamic(
+  () => import("@/app/mypage/rentals/_components/CancelRentalDialog"),
+  {
+    loading: () => null,
+  },
+);
 
 type Rental = {
   id: string;
@@ -223,6 +230,7 @@ export default function RentalsDetailClient({
 
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   const [withdrawing, setWithdrawing] = useState(false);
 
@@ -458,11 +466,16 @@ export default function RentalsDetailClient({
             )}
 
             {/* 버튼은 항상 노출하되, 조건을 만족하지 않으면 비활성화 */}
-            <CancelRentalDialog
-              rentalId={data.id}
-              onSuccess={refreshRental}
+            <Button
+              variant="destructive"
+              size="sm"
               disabled={!canRequestCancel}
-            />
+              onClick={() => setCancelDialogOpen(true)}
+              className={`gap-2 ${!canRequestCancel ? "cursor-not-allowed opacity-60" : ""}`}
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              대여 취소 요청
+            </Button>
 
             <Button
               variant="outline"
@@ -936,6 +949,17 @@ export default function RentalsDetailClient({
           </div>
         </CardContent>
       </Card>
+
+      {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들을 경량화 */}
+      {cancelDialogOpen && data?.id ? (
+        <CancelRentalDialog
+          rentalId={data.id}
+          onSuccess={refreshRental}
+          open={cancelDialogOpen}
+          onOpenChange={setCancelDialogOpen}
+          hideTrigger
+        />
+      ) : null}
     </main>
   );
 }
