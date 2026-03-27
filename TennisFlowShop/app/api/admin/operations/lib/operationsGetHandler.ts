@@ -535,6 +535,32 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
   return { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort };
 }
 
+function isMatchedByDbCandidate(
+  item: OpItem,
+  matchedIds: {
+    order: Set<string>;
+    rental: Set<string>;
+    application: Set<string>;
+  },
+) {
+  if (item.kind === "order") return matchedIds.order.has(item.id);
+  if (item.kind === "rental") return matchedIds.rental.has(item.id);
+  return matchedIds.application.has(item.id);
+}
+
+function matchesResidualMemoryFallback(item: OpItem, q: string) {
+  /**
+   * 메모리 안전망은 DB $or 후보 추출에서 아직 올리기 어려운 일부 contains 케이스만 담당한다.
+   * - id 부분검색(ObjectId 부분 일치)
+   * - 표시용 파생 title 문자열(예: "외 N개", "(N일)")의 부분 일치
+   *
+   * 검색의 주 기준은 DB 후보 추출이며, 이 함수는 보조 안전망으로만 사용한다.
+   */
+  const idContains = item.id.toLowerCase().includes(q);
+  const titleContains = (item.title ?? "").toLowerCase().includes(q);
+  return idContains || titleContains;
+}
+
 export async function handleAdminOperationsGet(req: Request) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -822,6 +848,7 @@ export async function handleAdminOperationsGet(req: Request) {
         rawApps.push(a);
         existingAppIds.add(aid);
       }
+      dbMatchedAppIds.add(aid);
 
       // 2) 주문/대여 → 신청서 매핑 보강(단독/통합 판정 + 경고 계산 정확도 향상)
       if (a?.orderId) {
@@ -1532,17 +1559,16 @@ export async function handleAdminOperationsGet(req: Request) {
      *   (_id 외 stringingApplicationId/orderId/rentalId, customer/userSnapshot/guest email)를 우선 검토.
      * - 광범위 contains 검색(title 자유검색)은 이번 범위 밖이며, 필요 시 Atlas Search/full-text로 분리 검토.
      */
-    merged = merged.filter((item) => {
-      const matchedByDb =
-        (item.kind === "order" && dbMatchedOrderIds.has(item.id)) ||
-        (item.kind === "rental" && dbMatchedRentalIds.has(item.id)) ||
-        (item.kind === "stringing_application" && dbMatchedAppIds.has(item.id));
-      if (matchedByDb) return true;
-
-      const idContains = item.id.toLowerCase().includes(q);
-      const titleContains = (item.title ?? "").toLowerCase().includes(q);
-      return idContains || titleContains;
-    });
+    const dbMatchedIds = {
+      order: dbMatchedOrderIds,
+      rental: dbMatchedRentalIds,
+      application: dbMatchedAppIds,
+    };
+    merged = merged.filter(
+      (item) =>
+        isMatchedByDbCandidate(item, dbMatchedIds) ||
+        matchesResidualMemoryFallback(item, q),
+    );
   }
 
   // flow=1..7 (시나리오) 필터

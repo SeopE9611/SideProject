@@ -274,6 +274,35 @@ const INDEX_SPECS = {
       keys: { createdAt: -1 },
       options: {},
     },
+    {
+      name: "ops_rental_orders_stringingApplicationId_idx",
+      keys: { stringingApplicationId: 1 },
+      options: {},
+    },
+  ],
+  orders: [
+    {
+      name: "ops_orders_stringingApplicationId_idx",
+      keys: { stringingApplicationId: 1 },
+      options: {},
+    },
+  ],
+  stringing_applications: [
+    {
+      name: "ops_apps_stringingApplicationId_idx",
+      keys: { stringingApplicationId: 1 },
+      options: {},
+    },
+    {
+      name: "ops_apps_orderId_idx",
+      keys: { orderId: 1 },
+      options: {},
+    },
+    {
+      name: "ops_apps_rentalId_idx",
+      keys: { rentalId: 1 },
+      options: {},
+    },
   ],
   messages: [
     {
