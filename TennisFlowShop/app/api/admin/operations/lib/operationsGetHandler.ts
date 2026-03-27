@@ -100,6 +100,10 @@ function buildSearchRegex(q: string) {
   return new RegExp(escapeRegex(q), "i");
 }
 
+function buildPrefixRegex(q: string) {
+  return new RegExp(`^${escapeRegex(q)}`, "i");
+}
+
 type NormalizedCancel = {
   status: "none" | "requested" | "approved" | "rejected";
   requestedAt?: string | null;
@@ -551,7 +555,25 @@ export async function handleAdminOperationsGet(req: Request) {
     requestDto;
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
   const qRegex = q ? buildSearchRegex(q) : null;
+  const qPrefixRegex = q ? buildPrefixRegex(q) : null;
   const idCandidates = q ? buildIdCandidates(q) : [];
+  const rentalUserIdCandidates: Array<string | ObjectId> = [];
+
+  if (qRegex) {
+    const matchedUsers = await db
+      .collection("users")
+      .find({
+        $or: [{ name: qRegex }, { email: qRegex }],
+      })
+      .project({ _id: 1 })
+      .limit(fetchLimit)
+      .toArray();
+    for (const user of matchedUsers) {
+      const uid = getIdString(user?._id);
+      if (!uid) continue;
+      rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
+    }
+  }
 
   const appQuery: Record<string, unknown> = { status: { $ne: "draft" } };
   if (qRegex) {
@@ -564,12 +586,20 @@ export async function handleAdminOperationsGet(req: Request) {
             { rentalId: { $in: idCandidates } },
           ]
         : []),
+      ...(qPrefixRegex
+        ? [
+            { stringingApplicationId: qPrefixRegex },
+            { orderId: qPrefixRegex },
+            { rentalId: qPrefixRegex },
+          ]
+        : []),
       { "customer.name": qRegex },
       { "customer.email": qRegex },
       { "userSnapshot.name": qRegex },
       { "userSnapshot.email": qRegex },
       { guestName: qRegex },
       { guestEmail: qRegex },
+      { paymentSource: qPrefixRegex ?? qRegex },
     ];
   }
 
@@ -582,6 +612,7 @@ export async function handleAdminOperationsGet(req: Request) {
             { stringingApplicationId: { $in: idCandidates } },
           ]
         : []),
+      ...(qPrefixRegex ? [{ stringingApplicationId: qPrefixRegex }] : []),
       { "customer.name": qRegex },
       { "customer.email": qRegex },
       { "userSnapshot.name": qRegex },
@@ -603,6 +634,12 @@ export async function handleAdminOperationsGet(req: Request) {
             { stringingApplicationId: { $in: idCandidates } },
             { userId: { $in: idCandidates } },
           ]
+        : []),
+      ...(qPrefixRegex
+        ? [{ stringingApplicationId: qPrefixRegex }, { userId: qPrefixRegex }]
+        : []),
+      ...(rentalUserIdCandidates.length > 0
+        ? [{ userId: { $in: rentalUserIdCandidates } }]
         : []),
       { "guest.name": qRegex },
       { "guest.email": qRegex },
@@ -639,6 +676,7 @@ export async function handleAdminOperationsGet(req: Request) {
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
     .toArray();
+  const dbMatchedAppIds = new Set(rawApps.map((a) => String(a?._id)));
 
   const orderToApp = new Map<string, string>();
   const rentalToApp = new Map<string, string>();
@@ -694,6 +732,7 @@ export async function handleAdminOperationsGet(req: Request) {
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
     .toArray();
+  const dbMatchedOrderIds = new Set(rawOrders.map((o) => String(o?._id)));
 
   // 3) 대여 조회(+ userId 배치 매핑: 고객명/이메일 정확도 향상)
   const rawRentals = await db
@@ -722,6 +761,7 @@ export async function handleAdminOperationsGet(req: Request) {
     .sort({ createdAt: -1 })
     .limit(fetchLimit)
     .toArray();
+  const dbMatchedRentalIds = new Set(rawRentals.map((r) => String(r?._id)));
 
   /**
    * 3-1) MAX_FETCH_EACH 컷 보강
@@ -1482,12 +1522,26 @@ export async function handleAdminOperationsGet(req: Request) {
   if (kind !== "all") merged = merged.filter((x) => x.kind === kind);
 
   if (q) {
-    merged = merged.filter((x) => {
-      const idMatch = x.id.toLowerCase().includes(q);
-      const nameMatch = (x.customer?.name ?? "").toLowerCase().includes(q);
-      const emailMatch = (x.customer?.email ?? "").toLowerCase().includes(q);
-      const titleMatch = (x.title ?? "").toLowerCase().includes(q);
-      return idMatch || nameMatch || emailMatch || titleMatch;
+    /**
+     * 최종 메모리 필터는 "안전망"으로만 유지한다.
+     * - 1차 후보 추출은 DB $or 검색(primary ids set)에서 최대한 소화.
+     * - 여기서는 DB로 올리기 어려운 파생 문자열(예: ObjectId 부분검색, 파생 title)만 보정.
+     *
+     * TODO(admin-ops search/index)
+     * - 다음 단계에서는 order/rental/application의 식별자 exact/prefix 조회를 위한 인덱스
+     *   (_id 외 stringingApplicationId/orderId/rentalId, customer/userSnapshot/guest email)를 우선 검토.
+     * - 광범위 contains 검색(title 자유검색)은 이번 범위 밖이며, 필요 시 Atlas Search/full-text로 분리 검토.
+     */
+    merged = merged.filter((item) => {
+      const matchedByDb =
+        (item.kind === "order" && dbMatchedOrderIds.has(item.id)) ||
+        (item.kind === "rental" && dbMatchedRentalIds.has(item.id)) ||
+        (item.kind === "stringing_application" && dbMatchedAppIds.has(item.id));
+      if (matchedByDb) return true;
+
+      const idContains = item.id.toLowerCase().includes(q);
+      const titleContains = (item.title ?? "").toLowerCase().includes(q);
+      return idContains || titleContains;
     });
   }
 
