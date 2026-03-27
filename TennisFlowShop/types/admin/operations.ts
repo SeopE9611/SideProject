@@ -12,6 +12,18 @@ export type AdminOperationCancelStatus =
   | "approved"
   | "rejected";
 
+export type OperationSignalLevel = "warn" | "review" | "pending" | "info";
+
+export type OperationSignal = {
+  code: string;
+  level: OperationSignalLevel;
+  sourceKind: AdminOperationKind;
+  sourceId: string;
+  title: string;
+  description: string;
+  nextAction?: string;
+};
+
 export type AdminOperationItem = {
   id: string;
   kind: AdminOperationKind;
@@ -19,8 +31,6 @@ export type AdminOperationItem = {
   customer: { name: string; email: string };
   title: string;
   statusLabel: string;
-  // 현재는 order kind에서만 방문 수령 문맥 치환용으로 주입된다.
-  // (stringing/rental은 statusLabel 그대로 사용)
   statusDisplayLabel?: string;
   paymentLabel?: string;
   amount: number;
@@ -41,6 +51,8 @@ export type AdminOperationItem = {
   reviewLevel?: AdminOperationReviewLevel;
   reviewTitle?: string;
   reviewReasons?: string[];
+  signals?: OperationSignal[];
+  primarySignal?: OperationSignal | null;
   stringingSummary?: {
     requested: boolean;
     name?: string;
@@ -63,7 +75,26 @@ export type AdminOperationItem = {
   };
 };
 
+export type AdminOperationsGroup = {
+  groupKey: string;
+  anchorId: string;
+  anchorKind: AdminOperationKind;
+  createdAt: string | null;
+  items: AdminOperationItem[];
+  primarySignal: OperationSignal | null;
+  signals: OperationSignal[];
+  nextAction?: string | null;
+};
+
+export type AdminOperationsSummary = {
+  urgent: number;
+  caution: number;
+  pending: number;
+};
+
 export type AdminOperationsKindFilter = AdminOperationKind | "all";
+export type AdminOperationsWarnFilter = "all" | "warn" | "review" | "clean";
+export type AdminOperationsWarnSort = "default" | "warn_first" | "safe_first";
 
 export interface AdminOperationsListRequestDto {
   page: number;
@@ -73,9 +104,20 @@ export interface AdminOperationsListRequestDto {
   warn: boolean;
   flow: AdminOperationFlow | null;
   integrated: boolean | null;
+  warnFilter: AdminOperationsWarnFilter;
+  warnSort: AdminOperationsWarnSort;
 }
 
 export interface AdminOperationsListResponseDto {
+  summary: AdminOperationsSummary;
+  groups: AdminOperationsGroup[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalGroups: number;
+  };
+  /** @deprecated transitional shape */
   items: AdminOperationItem[];
+  /** @deprecated transitional shape */
   total: number;
 }

@@ -16,9 +16,15 @@ import type {
   AdminOperationItem as OpItem,
   AdminOperationKind as Kind,
   AdminOperationReviewLevel,
+  AdminOperationsGroup,
   SettlementAnchor,
   AdminOperationsListRequestDto,
   AdminOperationsListResponseDto,
+  AdminOperationsSummary,
+  AdminOperationsWarnFilter,
+  AdminOperationsWarnSort,
+  OperationSignal,
+  OperationSignalLevel,
 } from "@/types/admin/operations";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
@@ -33,6 +39,7 @@ import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
 const MAX_FETCH_EACH = 300; // 각 컬렉션에서 상위 N개만 가져온 뒤 merge/sort
+const SEARCH_FETCH_EACH = 2000; // 검색 시 누락 방지를 위해 조회 범위를 확대
 
 // warn=1 (경고만 보기) 서버 필터
 type OpGroup = {
@@ -317,6 +324,121 @@ function filterWarnGroups(list: OpItem[]): OpItem[] {
   return warnGroups.flatMap((g) => g.items);
 }
 
+function signalLevelPriority(level: OperationSignalLevel) {
+  if (level === "warn") return 4;
+  if (level === "review") return 3;
+  if (level === "pending") return 2;
+  return 1;
+}
+
+function buildItemSignals(item: OpItem): OperationSignal[] {
+  const out: OperationSignal[] = [];
+  for (const reason of item.warnReasons ?? []) {
+    out.push({
+      code: "WARN_INTEGRITY",
+      level: "warn",
+      sourceKind: item.kind,
+      sourceId: item.id,
+      title: "연결/무결성 오류",
+      description: reason,
+      nextAction: "연결 문서를 확인해 역방향 링크와 참조 ID를 정정하세요.",
+    });
+  }
+  for (const reason of item.reviewReasons ?? []) {
+    out.push({
+      code: item.reviewLevel === "action" ? "REVIEW_ACTION" : "REVIEW_INFO",
+      level: item.reviewLevel === "action" ? "review" : "info",
+      sourceKind: item.kind,
+      sourceId: item.id,
+      title: item.reviewTitle ?? "검토 필요 신호",
+      description: reason,
+      nextAction:
+        item.reviewLevel === "action"
+          ? "결제/상태 문맥을 확인하고 상세 문서에서 상태를 보정하세요."
+          : "참고용 신호입니다. 별도 조치가 필요 없는지 확인하세요.",
+    });
+  }
+  for (const reason of item.pendingReasons ?? []) {
+    out.push({
+      code: "PENDING_TASK",
+      level: "pending",
+      sourceKind: item.kind,
+      sourceId: item.id,
+      title: "미처리 업무",
+      description: reason,
+      nextAction: item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
+    });
+  }
+  if ((item.cancel?.status ?? "none") === "requested") {
+    out.push({
+      code:
+        item.cancel?.refundAccountReady === false
+          ? "CANCEL_REFUND_ACCOUNT_REQUIRED"
+          : "CANCEL_REQUEST_REVIEW",
+      level: "pending",
+      sourceKind: item.kind,
+      sourceId: item.id,
+      title:
+        item.cancel?.refundAccountReady === false
+          ? "취소 요청: 환불 계좌 확인 필요"
+          : "취소 요청: 처리 검토 필요",
+      description:
+        item.cancel?.refundAccountReady === false
+          ? "취소 요청은 접수되었으나 환불 계좌 정보가 부족합니다."
+          : "취소 요청이 접수되어 승인/거절 결정을 기다리고 있습니다.",
+      nextAction:
+        item.cancel?.refundAccountReady === false
+          ? "환불 계좌 정보를 확인한 뒤 취소 승인/거절을 진행하세요."
+          : "취소 승인/거절을 검토하고 처리 상태를 갱신하세요.",
+    });
+  }
+  return out;
+}
+
+function pickPrimarySignal(signals: OperationSignal[]): OperationSignal | null {
+  if (signals.length === 0) return null;
+  return [...signals].sort((a, b) => {
+    const lv = signalLevelPriority(b.level) - signalLevelPriority(a.level);
+    if (lv !== 0) return lv;
+    return a.code.localeCompare(b.code);
+  })[0]!;
+}
+
+function buildGroups(list: OpItem[]): AdminOperationsGroup[] {
+  const map = new Map<string, OpItem[]>();
+  const orderKeys: string[] = [];
+  for (const it of list) {
+    const key = groupKeyOf(it);
+    if (!map.has(key)) {
+      map.set(key, []);
+      orderKeys.push(key);
+    }
+    map.get(key)!.push(it);
+  }
+
+  return orderKeys.map((key) => {
+    const items = map.get(key)!;
+    items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
+    const anchor = pickAnchor(items);
+    const ts = Math.max(
+      ...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)),
+    );
+    const createdAt = ts ? new Date(ts).toISOString() : null;
+    const signals = items.flatMap((it) => it.signals ?? []);
+    const primarySignal = pickPrimarySignal(signals);
+    return {
+      groupKey: key,
+      anchorId: anchor.id,
+      anchorKind: anchor.kind,
+      createdAt,
+      items,
+      signals,
+      primarySignal,
+      nextAction: anchor.nextAction ?? null,
+    };
+  });
+}
+
 function parseIntegrated(v: string | null): boolean | null {
   // integrated=1 (통합만) / integrated=0 (단독만)
   if (v === "1") return true;
@@ -347,6 +469,16 @@ function parseKind(v: string | null): Kind | "all" {
   return "all";
 }
 
+function parseWarnFilter(v: string | null): AdminOperationsWarnFilter {
+  if (v === "warn" || v === "review" || v === "clean") return v;
+  return "all";
+}
+
+function parseWarnSort(v: string | null): AdminOperationsWarnSort {
+  if (v === "warn_first" || v === "safe_first") return v;
+  return "default";
+}
+
 function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
   const page = parseIntParam(url.searchParams.get("page"), {
     defaultValue: 1,
@@ -365,20 +497,13 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
   const warn = url.searchParams.get("warn") === "1";
   const flow = parseFlow(url.searchParams.get("flow"));
   const integrated = parseIntegrated(url.searchParams.get("integrated"));
-  return { page, pageSize, kind, q, warn, flow, integrated };
-}
-
-function toOperationsListResponseDto(
-  items: OpItem[],
-  total: number,
-): AdminOperationsListResponseDto {
-  return {
-    items: items.map((item) => ({
-      ...item,
-      createdAt: item.createdAt ?? null,
-    })),
-    total,
-  };
+  const warnFilterRaw = parseWarnFilter(url.searchParams.get("warnFilter"));
+  const warnFilter =
+    warn && (warnFilterRaw === "review" || warnFilterRaw === "clean")
+      ? "warn"
+      : warnFilterRaw;
+  const warnSort = parseWarnSort(url.searchParams.get("warnSort"));
+  return { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort };
 }
 
 export async function handleAdminOperationsGet(req: Request) {
@@ -397,7 +522,9 @@ export async function handleAdminOperationsGet(req: Request) {
 
   const url = new URL(req.url);
   const requestDto = parseOperationsListRequest(url);
-  const { page, pageSize, kind, q, warn, flow, integrated } = requestDto;
+  const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort } =
+    requestDto;
+  const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
@@ -425,7 +552,7 @@ export async function handleAdminOperationsGet(req: Request) {
       cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
-    .limit(MAX_FETCH_EACH)
+    .limit(fetchLimit)
     .toArray();
 
   const orderToApp = new Map<string, string>();
@@ -480,7 +607,7 @@ export async function handleAdminOperationsGet(req: Request) {
       cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
-    .limit(MAX_FETCH_EACH)
+    .limit(fetchLimit)
     .toArray();
 
   // 3) 대여 조회(+ userId 배치 매핑: 고객명/이메일 정확도 향상)
@@ -508,7 +635,7 @@ export async function handleAdminOperationsGet(req: Request) {
       cancelRequest: 1,
     })
     .sort({ createdAt: -1 })
-    .limit(MAX_FETCH_EACH)
+    .limit(fetchLimit)
     .toArray();
 
   /**
@@ -555,6 +682,7 @@ export async function handleAdminOperationsGet(req: Request) {
         userSnapshot: 1,
         guestName: 1,
         guestEmail: 1,
+        cancelRequest: 1,
       })
       .toArray();
 
@@ -1257,7 +1385,7 @@ export async function handleAdminOperationsGet(req: Request) {
     };
   });
 
-  // 5) 병합 → 최신순 정렬 → kind/q 필터 → 페이지 슬라이스
+  // 5) 병합 → 최신순 정렬 → kind/q 필터
   let merged: OpItem[] = [...orderItems, ...appItems, ...rentalItems].sort(
     (a, b) => {
       const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -1311,11 +1439,111 @@ export async function handleAdminOperationsGet(req: Request) {
   // warn=1이면 서버에서 "경고 그룹"만 남긴 뒤 페이지네이션
   if (warn) merged = filterWarnGroups(merged);
 
-  const { page: requestedPage, pageSize: requestedPageSize } = requestDto;
-  const total = merged.length;
-  const start = (requestedPage - 1) * requestedPageSize;
-  const items = merged.slice(start, start + requestedPageSize);
+  // structured signals 생성(기존 warn/pending/review 이유 배열은 호환 목적 유지)
+  merged = merged.map((item) => {
+    const signals = buildItemSignals(item);
+    return {
+      ...item,
+      signals,
+      primarySignal: pickPrimarySignal(signals),
+    };
+  });
 
-  const responseDto = toOperationsListResponseDto(items, total);
+  // 그룹 기준으로 재구성 (페이지 경계에서 그룹 분리 방지)
+  let groups = buildGroups(merged);
+
+  const isGroupWarn = (group: AdminOperationsGroup) =>
+    group.signals.some((signal) => signal.level === "warn");
+  const isGroupReview = (group: AdminOperationsGroup) =>
+    group.signals.some((signal) => signal.level === "review");
+  const isGroupPending = (group: AdminOperationsGroup) =>
+    group.signals.some((signal) => signal.level === "pending");
+  const hasPaymentRisk = (group: AdminOperationsGroup) =>
+    group.items.some((item) =>
+      ["결제취소", "결제실패", "확인필요"].includes(item.paymentLabel ?? ""),
+    );
+  const hasPaymentPending = (group: AdminOperationsGroup) =>
+    group.items.some((item) => (item.paymentLabel ?? "") === "결제대기");
+
+  const isCleanGroup = (group: AdminOperationsGroup) => {
+    const hasCancelRequested = group.items.some(
+      (item) => item.cancel?.status === "requested",
+    );
+    const hasNextAction = group.items.some(
+      (item) =>
+        Boolean(item.nextAction?.trim()) &&
+        !String(item.nextAction).includes("후속 조치 없음"),
+    );
+    return (
+      !isGroupWarn(group) &&
+      !isGroupReview(group) &&
+      !isGroupPending(group) &&
+      !hasCancelRequested &&
+      !hasPaymentRisk(group) &&
+      !hasPaymentPending(group) &&
+      !hasNextAction
+    );
+  };
+
+  if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
+  if (warnFilter === "review")
+    groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
+  if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
+
+  if (warnSort !== "default") {
+    groups = [...groups].sort((a, b) => {
+      const aWarn = isGroupWarn(a);
+      const bWarn = isGroupWarn(b);
+      if (aWarn === bWarn) {
+        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return tb - ta;
+      }
+      if (warnSort === "warn_first") return aWarn ? -1 : 1;
+      return aWarn ? 1 : -1;
+    });
+  }
+
+  const summary: AdminOperationsSummary = groups.reduce(
+    (acc, group) => {
+      const groupWarn = isGroupWarn(group);
+      const groupReview = isGroupReview(group);
+      const groupPending = isGroupPending(group);
+      const groupCancelRequested = group.items.some(
+        (item) => item.cancel?.status === "requested",
+      );
+      const groupNextAction = group.items.some(
+        (item) =>
+          Boolean(item.nextAction?.trim()) &&
+          !String(item.nextAction).includes("후속 조치 없음"),
+      );
+
+      if (groupWarn) acc.urgent += 1;
+      if (groupReview || groupCancelRequested || hasPaymentRisk(group))
+        acc.caution += 1;
+      if (groupPending || hasPaymentPending(group) || groupNextAction)
+        acc.pending += 1;
+      return acc;
+    },
+    { urgent: 0, caution: 0, pending: 0 },
+  );
+
+  const totalGroups = groups.length;
+  const start = (page - 1) * pageSize;
+  const pagedGroups = groups.slice(start, start + pageSize);
+  const items = pagedGroups.flatMap((group) => group.items);
+
+  const responseDto: AdminOperationsListResponseDto = {
+    summary,
+    groups: pagedGroups,
+    pagination: {
+      page,
+      pageSize,
+      totalGroups,
+    },
+    // transitional shape
+    items,
+    total: totalGroups,
+  };
   return NextResponse.json(responseDto);
 }

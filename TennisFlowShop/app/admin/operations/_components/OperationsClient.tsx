@@ -89,6 +89,10 @@ import {
   type OpItem,
   type ReviewLevel,
 } from "./table/operationsTableUtils";
+import type {
+  AdminOperationsGroup,
+  AdminOperationsSummary,
+} from "@/types/admin/operations";
 
 const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
@@ -639,6 +643,8 @@ export default function OperationsClient() {
     kind,
     flow,
     integrated,
+    warnFilter,
+    warnSort,
     page,
     pageSize: effectivePageSize,
     warn: onlyWarn ? "1" : undefined,
@@ -648,6 +654,9 @@ export default function OperationsClient() {
   const { data, isLoading, error, mutate } = useSWR<{
     items: OpItem[];
     total: number;
+    groups?: AdminOperationsGroup[];
+    summary?: AdminOperationsSummary;
+    pagination?: { page: number; pageSize: number; totalGroups: number };
   }>(
     key,
     authenticatedSWRFetcher,
@@ -659,16 +668,45 @@ export default function OperationsClient() {
   // 초기 로딩에서 0/빈배열 기본값이 먼저 보이지 않도록 undefined를 유지한다.
   const items = data?.items;
   const total = data?.total;
+  const totalGroups = data?.pagination?.totalGroups ?? total;
+  const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages =
-    typeof total === "number"
-      ? Math.max(1, Math.ceil(total / effectivePageSize))
+    typeof totalGroups === "number"
+      ? Math.max(1, Math.ceil(totalGroups / pageSize))
       : null;
 
   // 리스트를 "그룹(묶음)" 단위로 변환
-  const groups = useMemo(() => buildGroups(items ?? []), [items]);
+  const groups = useMemo(() => {
+    if (Array.isArray(data?.groups) && data.groups.length > 0) {
+      return data.groups.map((group) => {
+        const anchor =
+          group.items.find(
+            (item) =>
+              item.id === group.anchorId && item.kind === group.anchorKind,
+          ) ?? group.items[0]!;
+        const kinds = Array.from(new Set(group.items.map((x) => x.kind))).sort(
+          (a, b) => KIND_PRIORITY[a] - KIND_PRIORITY[b],
+        );
+        return {
+          key: group.groupKey,
+          anchor,
+          createdAt: group.createdAt,
+          items: group.items,
+          kinds,
+          primarySignal: group.primarySignal,
+          signals: group.signals ?? [],
+        };
+      });
+    }
+    return buildGroups(items ?? []).map((group) => ({
+      ...group,
+      primarySignal: null,
+      signals: [],
+    }));
+  }, [data?.groups, items]);
   const hasResolvedItems = !isLoading && !error && Array.isArray(items);
   const groupsToRender = useMemo(() => {
-    const withSignals = groups.map((group) => {
+    return groups.map((group) => {
       const reviewLevel = computeReviewLevelGroup(group);
       return {
         ...group,
@@ -677,32 +715,11 @@ export default function OperationsClient() {
         needsReview: reviewLevel === "action",
       };
     });
-
-    const filtered = withSignals.filter((group) => {
-      if (warnFilter === "all") return true;
-      if (warnFilter === "warn") return group.warn;
-      if (warnFilter === "review")
-        return !group.warn && group.reviewLevel === "action";
-      return !group.warn && !group.needsReview;
-    });
-
-    if (warnSort === "default") return filtered;
-
-    return [...filtered].sort((a, b) => {
-      if (a.warn === b.warn) {
-        if (a.reviewLevel === b.reviewLevel) return 0;
-        return reviewLevelPriority(a.reviewLevel) >
-          reviewLevelPriority(b.reviewLevel)
-          ? -1
-          : 1;
-      }
-      if (warnSort === "warn_first") return a.warn ? -1 : 1;
-      return a.warn ? 1 : -1;
-    });
-  }, [groups, warnFilter, warnSort]);
+  }, [groups]);
   const shouldShowEmptyState = hasResolvedItems && groupsToRender.length === 0;
 
   const todayTodoCount = useMemo(() => {
+    if (data?.summary) return data.summary;
     if (!data) return null;
     return groupsToRender.reduce(
       (acc, group) => {
@@ -994,11 +1011,17 @@ export default function OperationsClient() {
           {PAGE_COPY.description}
         </p>
         <p className="mt-1 text-[11px] text-muted-foreground">
-          상단 요약 수치는 현재 필터 결과 기준으로 계산됩니다.
+          상단 요약 수치는 서버에서 계산된 전체 필터 결과(그룹 기준)입니다.
         </p>
 
         <div className="mt-3 grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
-          <Card className="border-warning/30 bg-warning/5 shadow-none">
+          <Card
+            className="border-warning/30 bg-warning/5 shadow-none cursor-pointer"
+            onClick={() => {
+              setWarnFilter("warn");
+              setPage(1);
+            }}
+          >
             <CardHeader className="p-3">
               <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
                 <Siren className="h-4 w-4 text-warning" />
@@ -1009,7 +1032,13 @@ export default function OperationsClient() {
               </CardDescription>
             </CardHeader>
           </Card>
-          <Card className="border-info/40 bg-info/5 shadow-none">
+          <Card
+            className="border-info/40 bg-info/5 shadow-none cursor-pointer"
+            onClick={() => {
+              setWarnFilter("review");
+              setPage(1);
+            }}
+          >
             <CardHeader className="p-3">
               <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
                 <BellRing className="h-4 w-4 text-info" />
@@ -1023,7 +1052,13 @@ export default function OperationsClient() {
               </p>
             </CardHeader>
           </Card>
-          <Card className="border-primary/30 bg-primary/5 shadow-none">
+          <Card
+            className="border-primary/30 bg-primary/5 shadow-none cursor-pointer"
+            onClick={() => {
+              setWarnFilter("all");
+              setPage(1);
+            }}
+          >
             <CardHeader className="p-3">
               <CardTitle className="flex items-center gap-1.5 text-sm font-semibold">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
@@ -1383,8 +1418,8 @@ export default function OperationsClient() {
                 <p className="text-xs text-muted-foreground">
                   현재 결과{" "}
                   <span className="font-semibold text-foreground">
-                    {typeof total === "number"
-                      ? `${total.toLocaleString("ko-KR")}건`
+                    {typeof totalGroups === "number"
+                      ? `${totalGroups.toLocaleString("ko-KR")}건`
                       : "-"}
                   </span>
                 </p>
@@ -1415,8 +1450,8 @@ export default function OperationsClient() {
                     현재 결과
                   </p>
                   <p className="text-sm font-medium text-foreground">
-                    {typeof total === "number"
-                      ? `${total.toLocaleString("ko-KR")}건`
+                    {typeof totalGroups === "number"
+                      ? `${totalGroups.toLocaleString("ko-KR")}건`
                       : "-"}
                   </p>
                 </div>
@@ -1566,8 +1601,8 @@ export default function OperationsClient() {
             </div>
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">
-                {typeof total === "number"
-                  ? `총 ${total.toLocaleString("ko-KR")}건`
+                {typeof totalGroups === "number"
+                  ? `총 ${totalGroups.toLocaleString("ko-KR")}그룹`
                   : "목록을 불러오는 중…"}
               </p>
               <span className="text-xs text-muted-foreground">표시 밀도</span>
@@ -1752,6 +1787,24 @@ export default function OperationsClient() {
                                     정상 파생 · 조치 필요 없음
                                   </div>
                                 )}
+                                {g.primarySignal && (
+                                  <div className="w-full rounded-sm border border-warning/30 bg-warning/5 px-2 py-1 text-[11px]">
+                                    <p className="font-semibold text-foreground">
+                                      {g.primarySignal.title}
+                                      <span className="ml-1 font-mono text-[10px] text-muted-foreground">
+                                        {g.primarySignal.code}
+                                      </span>
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                      {g.primarySignal.description}
+                                    </p>
+                                    {g.primarySignal.nextAction && (
+                                      <p className="text-foreground">
+                                        즉시 조치: {g.primarySignal.nextAction}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
                                 <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">
                                   다음 할 일:{" "}
                                   {groupGuide.nextAction?.trim()
@@ -1767,6 +1820,7 @@ export default function OperationsClient() {
                                   {isGroup
                                     ? `${g.items.length}건 그룹`
                                     : "단일 건"}
+                                  {` · 신호 ${g.signals?.length ?? 0}건`}
                                 </div>
                               </div>
                             </TableCell>
@@ -1952,6 +2006,19 @@ export default function OperationsClient() {
                               )}
                             >
                               <div className="flex justify-end gap-1.5">
+                                {g.primarySignal?.nextAction && (
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="default"
+                                    className="h-8 px-2"
+                                    title={g.primarySignal.nextAction}
+                                  >
+                                    <Link href={g.anchor.href} className="text-xs">
+                                      즉시 처리
+                                    </Link>
+                                  </Button>
+                                )}
                                 <Button
                                   asChild
                                   size="sm"
@@ -2265,6 +2332,19 @@ export default function OperationsClient() {
                                   : "조치 필요 없음"}
                           </p>
                         </div>
+                        {g.primarySignal && (
+                          <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
+                            <p className="text-[11px] font-medium text-foreground">
+                              {g.primarySignal.title}
+                              <span className="ml-1 font-mono text-[10px] text-muted-foreground">
+                                {g.primarySignal.code}
+                              </span>
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {g.primarySignal.description}
+                            </p>
+                          </div>
+                        )}
                         {!warn &&
                           g.reviewLevel === "action" &&
                           reviewReasons.length > 0 && (
@@ -2292,6 +2372,24 @@ export default function OperationsClient() {
                             {amountMeaningText(g.anchor)}
                           </div>
                         ) : null}
+                        <div className="flex items-center gap-1.5 pt-1">
+                          <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
+                            <Link href={g.anchor.href}>상세</Link>
+                          </Button>
+                          {g.anchor.related && (
+                            <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
+                              <Link href={g.anchor.related.href}>연결 문서</Link>
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2 bg-transparent"
+                            onClick={() => copyToClipboard(g.anchor.id)}
+                          >
+                            ID 복사
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   );
@@ -2311,7 +2409,7 @@ export default function OperationsClient() {
             <div className="flex items-center justify-between border-t border-border px-4 pt-4 mt-4">
               <p className="text-xs text-muted-foreground">
                 {page} / {totalPages} 페이지 (총{" "}
-                {(total ?? 0).toLocaleString("ko-KR")}건)
+                {(totalGroups ?? 0).toLocaleString("ko-KR")}그룹)
               </p>
               <div className="flex items-center gap-1">
                 <Button
