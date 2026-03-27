@@ -1468,15 +1468,20 @@ export async function handleAdminOperationsGet(req: Request) {
     );
   const hasPaymentPending = (group: AdminOperationsGroup) =>
     group.items.some((item) => (item.paymentLabel ?? "") === "결제대기");
+  const hasRoutineNextAction = (group: AdminOperationsGroup) =>
+    group.items.some(
+      (item) =>
+        Boolean(item.nextAction?.trim()) &&
+        !String(item.nextAction).includes("후속 조치 없음"),
+    );
+  const isPendingQueueGroup = (group: AdminOperationsGroup) =>
+    !isGroupWarn(group) &&
+    !isGroupReview(group) &&
+    (isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group));
 
   const isCleanGroup = (group: AdminOperationsGroup) => {
     const hasCancelRequested = group.items.some(
       (item) => item.cancel?.status === "requested",
-    );
-    const hasNextAction = group.items.some(
-      (item) =>
-        Boolean(item.nextAction?.trim()) &&
-        !String(item.nextAction).includes("후속 조치 없음"),
     );
     return (
       !isGroupWarn(group) &&
@@ -1485,7 +1490,7 @@ export async function handleAdminOperationsGet(req: Request) {
       !hasCancelRequested &&
       !hasPaymentRisk(group) &&
       !hasPaymentPending(group) &&
-      !hasNextAction
+      !hasRoutineNextAction(group)
     );
   };
 
@@ -1493,18 +1498,7 @@ export async function handleAdminOperationsGet(req: Request) {
   if (warnFilter === "review")
     groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
   if (warnFilter === "pending")
-    groups = groups.filter(
-      (group) =>
-        !isGroupWarn(group) &&
-        !isGroupReview(group) &&
-        (isGroupPending(group) ||
-          hasPaymentPending(group) ||
-          group.items.some(
-            (item) =>
-              Boolean(item.nextAction?.trim()) &&
-              !String(item.nextAction).includes("후속 조치 없음"),
-          )),
-    );
+    groups = groups.filter((group) => isPendingQueueGroup(group));
   if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
 
   if (warnSort !== "default") {
@@ -1529,17 +1523,11 @@ export async function handleAdminOperationsGet(req: Request) {
       const groupCancelRequested = group.items.some(
         (item) => item.cancel?.status === "requested",
       );
-      const groupNextAction = group.items.some(
-        (item) =>
-          Boolean(item.nextAction?.trim()) &&
-          !String(item.nextAction).includes("후속 조치 없음"),
-      );
 
       if (groupWarn) acc.urgent += 1;
       if (groupReview || groupCancelRequested || hasPaymentRisk(group))
         acc.caution += 1;
-      if (groupPending || hasPaymentPending(group) || groupNextAction)
-        acc.pending += 1;
+      if (isPendingQueueGroup(group)) acc.pending += 1;
       return acc;
     },
     { urgent: 0, caution: 0, pending: 0 },

@@ -1123,6 +1123,7 @@ export default function OperationsClient() {
           <Card
             className="border-primary/30 bg-primary/5 shadow-none cursor-pointer"
             onClick={() => {
+              setOnlyWarn(false);
               setWarnFilter("pending");
               setPage(1);
             }}
