@@ -470,7 +470,8 @@ function parseKind(v: string | null): Kind | "all" {
 }
 
 function parseWarnFilter(v: string | null): AdminOperationsWarnFilter {
-  if (v === "warn" || v === "review" || v === "clean") return v;
+  if (v === "warn" || v === "review" || v === "pending" || v === "clean")
+    return v;
   return "all";
 }
 
@@ -499,7 +500,10 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
   const integrated = parseIntegrated(url.searchParams.get("integrated"));
   const warnFilterRaw = parseWarnFilter(url.searchParams.get("warnFilter"));
   const warnFilter =
-    warn && (warnFilterRaw === "review" || warnFilterRaw === "clean")
+    warn &&
+    (warnFilterRaw === "review" ||
+      warnFilterRaw === "pending" ||
+      warnFilterRaw === "clean")
       ? "warn"
       : warnFilterRaw;
   const warnSort = parseWarnSort(url.searchParams.get("warnSort"));
@@ -1488,6 +1492,19 @@ export async function handleAdminOperationsGet(req: Request) {
   if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
   if (warnFilter === "review")
     groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
+  if (warnFilter === "pending")
+    groups = groups.filter(
+      (group) =>
+        !isGroupWarn(group) &&
+        !isGroupReview(group) &&
+        (isGroupPending(group) ||
+          hasPaymentPending(group) ||
+          group.items.some(
+            (item) =>
+              Boolean(item.nextAction?.trim()) &&
+              !String(item.nextAction).includes("후속 조치 없음"),
+          )),
+    );
   if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
 
   if (warnSort !== "default") {
