@@ -33,7 +33,8 @@
     "check:token-palette-consistency": "node scripts/check-token-palette-consistency.mjs",
     "scan:color-classes": "node scripts/scan-color-classes.mjs",
     "check:color-policy": "npm run scan:brand-color-exceptions && npm run scan:color-classes",
-    "test:e2e:service-flow": "cypress run --spec cypress/e2e/service-flow.scenarios.cy.ts"
+    "test:e2e:service-flow": "cypress run --spec cypress/e2e/service-flow.scenarios.cy.ts",
+    "db:explain-admin-operations-search": "node scripts/db/explain-admin-operations-search.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
