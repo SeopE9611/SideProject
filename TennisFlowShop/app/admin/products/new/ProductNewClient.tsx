@@ -4,6 +4,7 @@ import type React from "react";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Save, ArrowLeft, Upload, Info, Package } from "lucide-react";
 
@@ -40,7 +41,6 @@ import { supabase } from "@/lib/supabase";
 import { Loader2 } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import ImageUploader from "@/components/admin/ImageUploader";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
@@ -53,6 +53,11 @@ import {
 } from "@/app/admin/products/_lib/productFormOptions";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function NewStringPage() {
   // 기본 정보

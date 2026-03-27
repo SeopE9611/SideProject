@@ -5,7 +5,6 @@ import {
   derivePaymentStatus,
   deriveShippingStatus,
 } from "@/app/features/rentals/utils/status";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import LinkedDocsCard, {
   LinkedDocItem,
@@ -53,6 +52,7 @@ import {
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
@@ -89,6 +89,11 @@ const fmt = (v?: string | Date | null) =>
   v ? new Date(v).toLocaleString() : "-";
 
 const fetcher = (url: string) => authenticatedSWRFetcher<any>(url);
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function AdminRentalDetailClient() {
   const params = useParams<{ id: string }>();

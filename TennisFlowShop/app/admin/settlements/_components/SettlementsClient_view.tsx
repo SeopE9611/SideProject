@@ -4,7 +4,6 @@
 
 import KpiCard from "@/app/admin/settlements/_components/KpiCard";
 import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -51,6 +50,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import {
@@ -81,6 +81,11 @@ const settlementStatusToneMap: Record<
   ok: "brand",
   stale: "danger",
 };
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function SettlementsClient() {
   const router = useRouter();

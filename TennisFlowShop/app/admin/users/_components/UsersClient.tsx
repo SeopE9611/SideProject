@@ -67,7 +67,6 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { FiltersSection } from "@/app/admin/users/_components/users-client/FiltersSection";
 import { TableSection } from "@/app/admin/users/_components/users-client/TableSection";
 import { BulkActionsSection } from "@/app/admin/users/_components/users-client/BulkActionsSection";
@@ -158,6 +157,11 @@ const asPreviewCandidates = (
 
 const UserPointsDialog = dynamic(
   () => import("@/app/admin/users/_components/UserPointsDialog"),
+  { loading: () => null },
+);
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
   { loading: () => null },
 );
 
