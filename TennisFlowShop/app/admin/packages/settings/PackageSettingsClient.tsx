@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   ArrowLeft,
   Save,
@@ -39,7 +40,6 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
@@ -49,6 +49,11 @@ type PackageSettingsResponse = {
   packageConfigs?: PackageConfig[];
   generalSettings?: Partial<GeneralSettings>;
 };
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function PackageSettingsClient() {
   // 서버에서 가져온 패키지 설정

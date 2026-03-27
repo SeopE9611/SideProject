@@ -54,6 +54,7 @@ import {
   Truck,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 // import CleanupCreatedButton from '@/app/admin/rentals/_components/CleanupCreatedButton';
@@ -62,7 +63,6 @@ import {
   deriveShippingStatus,
 } from "@/app/features/rentals/utils/status";
 import { AdminBadgeRow, BadgeItem } from "@/components/admin/AdminBadgeRow";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import {
   Select,
   SelectContent,
@@ -134,6 +134,11 @@ const rentalStatusLabels: Record<string, string> = {
   returned: "반납완료",
   canceled: "취소됨",
 };
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function AdminRentalsClient() {
   function getCancelQuickSignal(

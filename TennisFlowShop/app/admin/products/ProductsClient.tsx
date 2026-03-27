@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
@@ -23,7 +24,6 @@ import useSWR from "swr";
 import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,6 +137,11 @@ function useDebounce<T>(value: T, delay = 250): T {
   }, [value, delay]);
   return debounced;
 }
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function ProductsClient() {
   const [searchTerm, setSearchTerm] = useState("");

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -25,7 +26,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { getReviewTypeBadgeSpec } from "@/lib/badge-style";
-import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 
 // 리뷰 데이터 타입 정의
 interface Review {
@@ -76,6 +76,11 @@ const sampleReviews: Review[] = [
 interface Props {
   reviewId: string;
 }
+
+const AdminConfirmDialog = dynamic(
+  () => import("@/components/admin/AdminConfirmDialog"),
+  { loading: () => null },
+);
 
 export default function ReviewDetailClient({ reviewId }: Props) {
   const router = useRouter();
