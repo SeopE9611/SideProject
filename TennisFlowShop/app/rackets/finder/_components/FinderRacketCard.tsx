@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { racketBrandLabel, stringPatternLabel } from "@/lib/constants";
-import RentDialog from "@/app/rackets/[id]/_components/RentDialog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   useRacketCompareStore,
@@ -14,8 +14,17 @@ import {
 } from "@/app/store/racketCompareStore";
 import { useMemo } from "react";
 import { Scale, ShoppingCart, Info } from "lucide-react";
-import RacketSpecQuickViewDialog from "@/app/rackets/compare/_components/RacketSpecQuickViewDialog";
 import { badgeToneVariant } from "@/lib/badge-style";
+
+const RentDialog = dynamic(
+  () => import("@/app/rackets/[id]/_components/RentDialog"),
+  { loading: () => null },
+);
+
+const RacketSpecQuickViewDialog = dynamic(
+  () => import("@/app/rackets/compare/_components/RacketSpecQuickViewDialog"),
+  { loading: () => null },
+);
 
 type RacketSpec = {
   headSize?: number | null;
