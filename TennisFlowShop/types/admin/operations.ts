@@ -123,7 +123,7 @@ export interface AdminOperationsListResponseDto {
     totalGroups: number;
   };
   /** @deprecated transitional shape */
-  items: AdminOperationItem[];
+  items?: AdminOperationItem[];
   /** @deprecated transitional shape */
-  total: number;
+  total?: number;
 }
