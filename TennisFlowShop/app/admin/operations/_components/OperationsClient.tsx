@@ -91,6 +91,7 @@ import {
 } from "./table/operationsTableUtils";
 import type {
   AdminOperationsGroup,
+  AdminOperationsListResponseDto,
   AdminOperationsSummary,
 } from "@/types/admin/operations";
 
@@ -247,64 +248,6 @@ const KIND_PRIORITY: Record<Kind, number> = {
   rental: 1,
   stringing_application: 2,
 };
-
-function groupKeyOf(it: OpItem): string {
-  // 주문/대여는 자기 자신이 앵커
-  if (it.kind === "order") return `order:${it.id}`;
-  if (it.kind === "rental") return `rental:${it.id}`;
-
-  // 신청서는 연결된 "주문/대여"를 앵커로
-  const rel = it.related;
-  if (rel?.kind === "order") return `order:${rel.id}`;
-  if (rel?.kind === "rental") return `rental:${rel.id}`;
-  // 단독 신청서
-  return `app:${it.id}`;
-}
-
-function pickAnchor(groupItems: OpItem[]): OpItem {
-  // 대표(앵커)는 운영자가 "정산/관리 기준"으로 가장 자연스럽게 보는 문서 우선
-  // - 주문이 있으면 주문
-  // - 없으면 대여
-  // - 그래도 없으면 신청서(단독 신청)
-  return (
-    groupItems.find((x) => x.kind === "order") ??
-    groupItems.find((x) => x.kind === "rental") ??
-    groupItems[0]!
-  );
-}
-
-function buildGroups(list: OpItem[]): OpGroup[] {
-  // list는 API에서 최신순으로 내려오는 전제.
-  // → "처음 등장한 그룹" 순서를 유지하면 그룹 정렬이 자연스럽게 최신순이 됨.
-  const map = new Map<string, OpItem[]>();
-  const orderKeys: string[] = [];
-
-  for (const it of list) {
-    const key = groupKeyOf(it);
-    if (!map.has(key)) {
-      map.set(key, []);
-      orderKeys.push(key);
-    }
-    map.get(key)!.push(it);
-  }
-
-  return orderKeys.map((key) => {
-    const items = map.get(key)!;
-    items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
-
-    const anchor = pickAnchor(items);
-    const ts = Math.max(
-      ...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)),
-    );
-    const createdAt = ts ? new Date(ts).toISOString() : null;
-
-    const kinds = Array.from(new Set(items.map((x) => x.kind))).sort(
-      (a, b) => KIND_PRIORITY[a] - KIND_PRIORITY[b],
-    );
-
-    return { key, anchor, createdAt, items, kinds };
-  });
-}
 
 /**
  * 그룹 금액 표시 원칙(매출/정산 사고 방지)
@@ -719,13 +662,7 @@ export default function OperationsClient() {
   });
   const key = `/api/admin/operations?${queryString}`;
 
-  const { data, isLoading, error, mutate } = useSWR<{
-    items: OpItem[];
-    total: number;
-    groups?: AdminOperationsGroup[];
-    summary?: AdminOperationsSummary;
-    pagination?: { page: number; pageSize: number; totalGroups: number };
-  }>(
+  const { data, isLoading, error, mutate } = useSWR<AdminOperationsListResponseDto>(
     key,
     authenticatedSWRFetcher,
     {
@@ -733,20 +670,19 @@ export default function OperationsClient() {
       revalidateOnReconnect: false,
     },
   );
-  // 초기 로딩에서 0/빈배열 기본값이 먼저 보이지 않도록 undefined를 유지한다.
-  const items = data?.items;
-  const total = data?.total;
-  const totalGroups = data?.pagination?.totalGroups ?? total;
+  const totalGroups = data?.pagination?.totalGroups;
   const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages =
     typeof totalGroups === "number"
       ? Math.max(1, Math.ceil(totalGroups / pageSize))
       : null;
 
-  // 리스트를 "그룹(묶음)" 단위로 변환
+  // 서버 groups를 단일 source of truth로 사용한다.
   const groups = useMemo(() => {
-    if (Array.isArray(data?.groups) && data.groups.length > 0) {
-      return data.groups.map((group) => {
+    if (!Array.isArray(data?.groups)) return [];
+    return data.groups
+      .filter((group) => Array.isArray(group.items) && group.items.length > 0)
+      .map((group) => {
         const anchor =
           group.items.find(
             (item) =>
@@ -765,14 +701,8 @@ export default function OperationsClient() {
           signals: group.signals ?? [],
         };
       });
-    }
-    return buildGroups(items ?? []).map((group) => ({
-      ...group,
-      primarySignal: null,
-      signals: [],
-    }));
-  }, [data?.groups, items]);
-  const hasResolvedItems = !isLoading && !error && Array.isArray(items);
+  }, [data?.groups]);
+  const hasResolvedGroups = !isLoading && !error && Array.isArray(data?.groups);
   const groupsToRender = useMemo(() => {
     return groups.map((group) => {
       const reviewLevel = computeReviewLevelGroup(group);
@@ -784,70 +714,10 @@ export default function OperationsClient() {
       };
     });
   }, [groups]);
-  const shouldShowEmptyState = hasResolvedItems && groupsToRender.length === 0;
+  const shouldShowEmptyState = hasResolvedGroups && groupsToRender.length === 0;
 
-  const todayTodoCount = useMemo(() => {
-    if (data?.summary) return data.summary;
-    if (!data) return null;
-    return groupsToRender.reduce(
-      (acc, group) => {
-        const groupItems = [
-          group.anchor,
-          ...group.items.filter((it) => it.id !== group.anchor.id),
-        ];
-        const hasWarn = groupItems.some(
-          (it) => Array.isArray(it.warnReasons) && it.warnReasons.length > 0,
-        );
-        const hasPending = groupItems.some(
-          (it) =>
-            Array.isArray(it.pendingReasons) && it.pendingReasons.length > 0,
-        );
-        const hasPaymentRisk = groupItems.some(
-          (it) =>
-            it.paymentLabel === "결제취소" ||
-            it.paymentLabel === "결제실패" ||
-            it.paymentLabel === "확인필요",
-        );
-        const hasCancelRequested = groupItems.some(
-          (it) => it.cancel?.status === "requested",
-        );
-        const hasPaymentPending = groupItems.some(
-          (it) => it.paymentLabel === "결제대기",
-        );
-        const hasActionReview =
-          groupItems.some(
-            (it) =>
-              (it.reviewLevel ??
-                (it.needsReview
-                  ? "action"
-                  : (it.reviewReasons?.length ?? 0) > 0
-                    ? "info"
-                    : "none")) === "action",
-          ) || group.reviewLevel === "action";
-        const groupGuide = inferNextActionForOperationGroup(group.items);
-        const hasRoutineNextAction =
-          !hasWarn &&
-          !hasActionReview &&
-          !hasPaymentRisk &&
-          !hasCancelRequested &&
-          Boolean(groupGuide.nextAction?.trim()) &&
-          !groupGuide.nextAction.includes("후속 조치 없음");
-
-        if (hasWarn) acc.urgent += 1;
-        if (hasPaymentRisk || hasActionReview || hasCancelRequested)
-          acc.caution += 1;
-        if (
-          hasPending ||
-          hasPaymentPending ||
-          hasRoutineNextAction ||
-          hasCancelRequested
-        )
-          acc.pending += 1;
-        return acc;
-      },
-      { urgent: 0, caution: 0, pending: 0 },
-    );
-  }, [data, groupsToRender]);
+  const todayTodoCount: AdminOperationsSummary | null =
+    data?.summary ?? (data ? { urgent: 0, caution: 0, pending: 0 } : null);
 
   // 펼칠 수 있는 그룹(통합 묶음)만 추림
   const expandableGroupKeys = useMemo(

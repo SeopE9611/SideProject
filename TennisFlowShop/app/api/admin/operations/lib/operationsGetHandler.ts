@@ -39,7 +39,7 @@ import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 200;
 const MAX_FETCH_EACH = 300; // 각 컬렉션에서 상위 N개만 가져온 뒤 merge/sort
-const SEARCH_FETCH_EACH = 2000; // 검색 시 누락 방지를 위해 조회 범위를 확대
+const SEARCH_FETCH_EACH = 4000; // 검색 시 누락 방지를 위해 조회 범위를 확대
 
 // warn=1 (경고만 보기) 서버 필터
 type OpGroup = {
@@ -84,6 +84,20 @@ function getIdString(value: unknown): string | null {
   if (!obj) return null;
   if (typeof obj.toString === "function") return obj.toString();
   return null;
+}
+
+function escapeRegex(input: string) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildIdCandidates(q: string) {
+  const candidates: Array<string | ObjectId> = [q];
+  if (ObjectId.isValid(q)) candidates.push(new ObjectId(q));
+  return candidates;
+}
+
+function buildSearchRegex(q: string) {
+  return new RegExp(escapeRegex(q), "i");
 }
 
 type NormalizedCancel = {
@@ -536,11 +550,71 @@ export async function handleAdminOperationsGet(req: Request) {
   const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort } =
     requestDto;
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
+  const qRegex = q ? buildSearchRegex(q) : null;
+  const idCandidates = q ? buildIdCandidates(q) : [];
+
+  const appQuery: Record<string, unknown> = { status: { $ne: "draft" } };
+  if (qRegex) {
+    appQuery.$or = [
+      ...(idCandidates.length > 0
+        ? [
+            { _id: { $in: idCandidates } },
+            { stringingApplicationId: { $in: idCandidates } },
+            { orderId: { $in: idCandidates } },
+            { rentalId: { $in: idCandidates } },
+          ]
+        : []),
+      { "customer.name": qRegex },
+      { "customer.email": qRegex },
+      { "userSnapshot.name": qRegex },
+      { "userSnapshot.email": qRegex },
+      { guestName: qRegex },
+      { guestEmail: qRegex },
+    ];
+  }
+
+  const orderQuery: Record<string, unknown> = {};
+  if (qRegex) {
+    orderQuery.$or = [
+      ...(idCandidates.length > 0
+        ? [
+            { _id: { $in: idCandidates } },
+            { stringingApplicationId: { $in: idCandidates } },
+          ]
+        : []),
+      { "customer.name": qRegex },
+      { "customer.email": qRegex },
+      { "userSnapshot.name": qRegex },
+      { "userSnapshot.email": qRegex },
+      { "guestInfo.name": qRegex },
+      { "guestInfo.email": qRegex },
+      { "items.title": qRegex },
+      { "items.productName": qRegex },
+      { "items.name": qRegex },
+    ];
+  }
+
+  const rentalQuery: Record<string, unknown> = {};
+  if (qRegex) {
+    rentalQuery.$or = [
+      ...(idCandidates.length > 0
+        ? [
+            { _id: { $in: idCandidates } },
+            { stringingApplicationId: { $in: idCandidates } },
+            { userId: { $in: idCandidates } },
+          ]
+        : []),
+      { "guest.name": qRegex },
+      { "guest.email": qRegex },
+      { brand: qRegex },
+      { model: qRegex },
+    ];
+  }
 
   // 1) 신청서 먼저 조회해서 “연결 매핑(orderId/rentalId)”을 만든다.
   const rawApps = await db
     .collection("stringing_applications")
-    .find({ status: { $ne: "draft" } })
+    .find(appQuery)
     .project({
       _id: 1,
       createdAt: 1,
@@ -600,7 +674,7 @@ export async function handleAdminOperationsGet(req: Request) {
   // 2) 주문 조회
   const rawOrders = await db
     .collection("orders")
-    .find({})
+    .find(orderQuery)
     .project({
       _id: 1,
       createdAt: 1,
@@ -624,7 +698,7 @@ export async function handleAdminOperationsGet(req: Request) {
   // 3) 대여 조회(+ userId 배치 매핑: 고객명/이메일 정확도 향상)
   const rawRentals = await db
     .collection("rental_orders")
-    .find({})
+    .find(rentalQuery)
     .project({
       _id: 1,
       createdAt: 1,
