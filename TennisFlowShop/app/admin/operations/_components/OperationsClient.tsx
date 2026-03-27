@@ -622,7 +622,7 @@ export default function OperationsClient() {
   const [integrated, setIntegrated] = useState<"all" | "1" | "0">("all"); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
   const [warnFilter, setWarnFilter] = useState<
-    "all" | "warn" | "review" | "pending" | "clean"
+    "all" | "warn" | "caution" | "review" | "pending" | "clean"
   >("all");
   const [warnSort, setWarnSort] = useState<
     "default" | "warn_first" | "safe_first"
@@ -1103,7 +1103,8 @@ export default function OperationsClient() {
           <Card
             className="border-info/40 bg-info/5 shadow-none cursor-pointer"
             onClick={() => {
-              setWarnFilter("review");
+              setOnlyWarn(false);
+              setWarnFilter("caution");
               setPage(1);
             }}
           >
@@ -1116,7 +1117,7 @@ export default function OperationsClient() {
                 {todayTodoCount ? `${todayTodoCount.caution}건` : "-"}
               </CardDescription>
               <p className="text-[11px] text-muted-foreground">
-                검수/결제대기/취소요청 포함
+                검수/결제이상/취소요청 포함
               </p>
             </CardHeader>
           </Card>
@@ -1400,6 +1401,9 @@ export default function OperationsClient() {
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="warn">주의만</SelectItem>
+                  <SelectItem value="caution" disabled={onlyWarn}>
+                    검수필요 큐
+                  </SelectItem>
                   <SelectItem value="review" disabled={onlyWarn}>
                     검수필요만
                   </SelectItem>

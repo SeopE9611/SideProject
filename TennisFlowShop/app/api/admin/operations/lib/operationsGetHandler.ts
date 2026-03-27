@@ -470,7 +470,13 @@ function parseKind(v: string | null): Kind | "all" {
 }
 
 function parseWarnFilter(v: string | null): AdminOperationsWarnFilter {
-  if (v === "warn" || v === "review" || v === "pending" || v === "clean")
+  if (
+    v === "warn" ||
+    v === "caution" ||
+    v === "review" ||
+    v === "pending" ||
+    v === "clean"
+  )
     return v;
   return "all";
 }
@@ -501,7 +507,8 @@ function parseOperationsListRequest(url: URL): AdminOperationsListRequestDto {
   const warnFilterRaw = parseWarnFilter(url.searchParams.get("warnFilter"));
   const warnFilter =
     warn &&
-    (warnFilterRaw === "review" ||
+    (warnFilterRaw === "caution" ||
+      warnFilterRaw === "review" ||
       warnFilterRaw === "pending" ||
       warnFilterRaw === "clean")
       ? "warn"
@@ -1474,6 +1481,14 @@ export async function handleAdminOperationsGet(req: Request) {
         Boolean(item.nextAction?.trim()) &&
         !String(item.nextAction).includes("후속 조치 없음"),
     );
+  const isCautionQueueGroup = (group: AdminOperationsGroup) => {
+    const groupReview = isGroupReview(group);
+    const groupCancelRequested = group.items.some(
+      (item) => item.cancel?.status === "requested",
+    );
+    return groupReview || groupCancelRequested || hasPaymentRisk(group);
+  };
+
   const isPendingQueueGroup = (group: AdminOperationsGroup) =>
     !isGroupWarn(group) &&
     !isGroupReview(group) &&
@@ -1495,6 +1510,8 @@ export async function handleAdminOperationsGet(req: Request) {
   };
 
   if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
+  if (warnFilter === "caution")
+    groups = groups.filter((group) => isCautionQueueGroup(group));
   if (warnFilter === "review")
     groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
   if (warnFilter === "pending")
@@ -1517,16 +1534,8 @@ export async function handleAdminOperationsGet(req: Request) {
 
   const summary: AdminOperationsSummary = groups.reduce(
     (acc, group) => {
-      const groupWarn = isGroupWarn(group);
-      const groupReview = isGroupReview(group);
-      const groupPending = isGroupPending(group);
-      const groupCancelRequested = group.items.some(
-        (item) => item.cancel?.status === "requested",
-      );
-
-      if (groupWarn) acc.urgent += 1;
-      if (groupReview || groupCancelRequested || hasPaymentRisk(group))
-        acc.caution += 1;
+      if (isGroupWarn(group)) acc.urgent += 1;
+      if (isCautionQueueGroup(group)) acc.caution += 1;
       if (isPendingQueueGroup(group)) acc.pending += 1;
       return acc;
     },
