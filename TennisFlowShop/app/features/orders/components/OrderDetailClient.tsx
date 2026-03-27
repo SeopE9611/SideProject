@@ -1,6 +1,6 @@
 "use client";
 
-import AdminCancelOrderDialog from "@/app/features/orders/components/AdminCancelOrderDialog";
+import dynamic from "next/dynamic";
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import OrderStatusSelect from "@/app/features/orders/components/OrderStatusSelect";
@@ -74,6 +74,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
+
+const AdminCancelOrderDialog = dynamic(
+  () => import("@/app/features/orders/components/AdminCancelOrderDialog"),
+  { loading: () => null },
+);
 
 // useSWRInfinite용 getKey (처리 이력)
 const LIMIT = 5; // 페이지 당 이력 개수
