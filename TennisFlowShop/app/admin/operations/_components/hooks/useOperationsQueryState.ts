@@ -12,7 +12,7 @@ type Params = {
   flow: FlowValue;
   integrated: IntegratedValue;
   onlyWarn: boolean;
-  warnFilter: "all" | "warn" | "review" | "clean";
+  warnFilter: "all" | "warn" | "review" | "pending" | "clean";
   warnSort: "default" | "warn_first" | "safe_first";
   page: number;
 };
@@ -29,6 +29,7 @@ const VALID_WARN_FILTERS: Params["warnFilter"][] = [
   "all",
   "warn",
   "review",
+  "pending",
   "clean",
 ];
 const VALID_WARN_SORTS: Params["warnSort"][] = [
@@ -64,7 +65,7 @@ export function initOperationsStateFromQuery(
     setFlow: (v: FlowValue) => void;
     setIntegrated: (v: IntegratedValue) => void;
     setOnlyWarn: (v: boolean) => void;
-    setWarnFilter: (v: "all" | "warn" | "review" | "clean") => void;
+    setWarnFilter: (v: "all" | "warn" | "review" | "pending" | "clean") => void;
     setWarnSort: (v: "default" | "warn_first" | "safe_first") => void;
     setPage: (v: number) => void;
   },
@@ -90,7 +91,10 @@ export function initOperationsStateFromQuery(
     ? warnFilter
     : "all";
   const normalizedWarnFilter: Params["warnFilter"] =
-    nextOnlyWarn && (nextWarnFilter === "review" || nextWarnFilter === "clean")
+    nextOnlyWarn &&
+    (nextWarnFilter === "review" ||
+      nextWarnFilter === "pending" ||
+      nextWarnFilter === "clean")
       ? "warn"
       : nextWarnFilter;
   const nextWarnSort: Params["warnSort"] = VALID_WARN_SORTS.includes(warnSort)

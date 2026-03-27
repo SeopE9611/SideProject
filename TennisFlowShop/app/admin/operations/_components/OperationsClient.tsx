@@ -416,6 +416,74 @@ function reviewLevelPriority(level: ReviewLevel) {
   return 0;
 }
 
+type QuickActionTarget = {
+  href: string;
+  label: string;
+};
+
+function resolveQuickActionTarget(
+  group: {
+    anchor: OpItem;
+    primarySignal?: AdminOperationsGroup["primarySignal"] | null;
+    nextAction?: string | null;
+  },
+  groupGuide: { nextAction?: string | null },
+): QuickActionTarget | null {
+  const anchor = group.anchor;
+  const related = anchor.related;
+  const signal = group.primarySignal;
+  const nextActionText =
+    signal?.nextAction ?? group.nextAction ?? groupGuide.nextAction ?? "";
+  const signalCode = String(signal?.code ?? "").toUpperCase();
+
+  if (!nextActionText.trim()) return null;
+
+  if (
+    nextActionText.includes("환불 계좌") ||
+    nextActionText.includes("취소승인") ||
+    nextActionText.includes("취소거절")
+  ) {
+    return {
+      href: anchor.href,
+      label: nextActionText.includes("환불 계좌") ? "계좌 확인" : "취소 검토",
+    };
+  }
+
+  if (nextActionText.includes("신청서") || signalCode.includes("APP")) {
+    if (anchor.kind === "stringing_application") {
+      return { href: anchor.href, label: "신청서 확인" };
+    }
+    if (related?.kind === "stringing_application") {
+      return { href: related.href, label: "신청서 확인" };
+    }
+  }
+
+  if (
+    nextActionText.includes("배송") ||
+    nextActionText.includes("출고") ||
+    nextActionText.includes("운송장")
+  ) {
+    if (anchor.kind === "order") return { href: anchor.href, label: "배송 확인" };
+    if (related?.kind === "order") return { href: related.href, label: "배송 확인" };
+  }
+
+  if (
+    nextActionText.includes("대여") ||
+    nextActionText.includes("반납") ||
+    nextActionText.includes("수령")
+  ) {
+    if (anchor.kind === "rental") return { href: anchor.href, label: "대여 확인" };
+    if (related?.kind === "rental") return { href: related.href, label: "대여 확인" };
+  }
+
+  if (anchor.kind === "stringing_application" && related) {
+    if (related.kind === "order") return { href: related.href, label: "주문 확인" };
+    if (related.kind === "rental") return { href: related.href, label: "대여 확인" };
+  }
+
+  return { href: anchor.href, label: "즉시 처리" };
+}
+
 function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
   if (!anchorPay || !childPay || anchorPay === "-" || childPay === "-")
     return false;
@@ -554,7 +622,7 @@ export default function OperationsClient() {
   const [integrated, setIntegrated] = useState<"all" | "1" | "0">("all"); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
   const [warnFilter, setWarnFilter] = useState<
-    "all" | "warn" | "review" | "clean"
+    "all" | "warn" | "review" | "pending" | "clean"
   >("all");
   const [warnSort, setWarnSort] = useState<
     "default" | "warn_first" | "safe_first"
@@ -1055,7 +1123,7 @@ export default function OperationsClient() {
           <Card
             className="border-primary/30 bg-primary/5 shadow-none cursor-pointer"
             onClick={() => {
-              setWarnFilter("all");
+              setWarnFilter("pending");
               setPage(1);
             }}
           >
@@ -1333,6 +1401,9 @@ export default function OperationsClient() {
                   <SelectItem value="warn">주의만</SelectItem>
                   <SelectItem value="review" disabled={onlyWarn}>
                     검수필요만
+                  </SelectItem>
+                  <SelectItem value="pending" disabled={onlyWarn}>
+                    미처리만
                   </SelectItem>
                   <SelectItem value="clean" disabled={onlyWarn}>
                     완전정상만
@@ -1693,6 +1764,14 @@ export default function OperationsClient() {
                       const groupGuide = inferNextActionForOperationGroup(
                         g.items,
                       );
+                      const quickActionTarget = resolveQuickActionTarget(
+                        {
+                          anchor: g.anchor,
+                          primarySignal: g.primarySignal,
+                          nextAction: groupGuide.nextAction,
+                        },
+                        groupGuide,
+                      );
                       const groupCancelRequested = g.items.some(
                         (it) => it.cancel?.status === "requested",
                       );
@@ -2006,16 +2085,16 @@ export default function OperationsClient() {
                               )}
                             >
                               <div className="flex justify-end gap-1.5">
-                                {g.primarySignal?.nextAction && (
+                                {quickActionTarget && (
                                   <Button
                                     asChild
                                     size="sm"
                                     variant="default"
                                     className="h-8 px-2"
-                                    title={g.primarySignal.nextAction}
+                                    title={groupGuide.nextAction ?? quickActionTarget.label}
                                   >
-                                    <Link href={g.anchor.href} className="text-xs">
-                                      즉시 처리
+                                    <Link href={quickActionTarget.href} className="text-xs">
+                                      {quickActionTarget.label}
                                     </Link>
                                   </Button>
                                 )}
@@ -2186,6 +2265,14 @@ export default function OperationsClient() {
                   const warn = g.warn;
                   const reviewReasons = collectReviewReasons(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
+                  const quickActionTarget = resolveQuickActionTarget(
+                    {
+                      anchor: g.anchor,
+                      primarySignal: g.primarySignal,
+                      nextAction: groupGuide.nextAction,
+                    },
+                    groupGuide,
+                  );
                   const groupCancelRequested = g.items.some(
                     (it) => it.cancel?.status === "requested",
                   );
@@ -2332,6 +2419,11 @@ export default function OperationsClient() {
                                   : "조치 필요 없음"}
                           </p>
                         </div>
+                        {(g.signals?.length ?? 0) > 0 && (
+                          <p className="text-[11px] text-muted-foreground">
+                            신호 {g.signals.length}건
+                          </p>
+                        )}
                         {g.primarySignal && (
                           <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
                             <p className="text-[11px] font-medium text-foreground">
@@ -2343,6 +2435,11 @@ export default function OperationsClient() {
                             <p className="text-[11px] text-muted-foreground">
                               {g.primarySignal.description}
                             </p>
+                            {(g.signals?.length ?? 0) > 0 && (
+                              <p className="mt-1 text-[11px] text-muted-foreground">
+                                관련 신호 {g.signals.length}건
+                              </p>
+                            )}
                           </div>
                         )}
                         {!warn &&
@@ -2373,6 +2470,18 @@ export default function OperationsClient() {
                           </div>
                         ) : null}
                         <div className="flex items-center gap-1.5 pt-1">
+                          {quickActionTarget && (
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="default"
+                              className="h-8 px-2"
+                            >
+                              <Link href={quickActionTarget.href}>
+                                {quickActionTarget.label}
+                              </Link>
+                            </Button>
+                          )}
                           <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
                             <Link href={g.anchor.href}>상세</Link>
                           </Button>

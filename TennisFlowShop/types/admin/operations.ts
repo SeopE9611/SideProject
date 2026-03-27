@@ -93,7 +93,12 @@ export type AdminOperationsSummary = {
 };
 
 export type AdminOperationsKindFilter = AdminOperationKind | "all";
-export type AdminOperationsWarnFilter = "all" | "warn" | "review" | "clean";
+export type AdminOperationsWarnFilter =
+  | "all"
+  | "warn"
+  | "review"
+  | "pending"
+  | "clean";
 export type AdminOperationsWarnSort = "default" | "warn_first" | "safe_first";
 
 export interface AdminOperationsListRequestDto {
