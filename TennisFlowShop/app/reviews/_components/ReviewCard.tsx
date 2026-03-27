@@ -1,9 +1,6 @@
 "use client";
 
-import ReviewPhotoDialog from "@/app/reviews/_components/ReviewPhotoDialog";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
-import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
-import PhotosUploader from "@/components/reviews/PhotosUploader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,8 +33,21 @@ import {
   Trash2,
   Wrench,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef, useState } from "react";
+
+const ReviewPhotoDialog = dynamic(
+  () => import("@/app/reviews/_components/ReviewPhotoDialog"),
+  { loading: () => null },
+);
+const PhotosUploader = dynamic(() => import("@/components/reviews/PhotosUploader"), {
+  loading: () => null,
+});
+const PhotosReorderGrid = dynamic(
+  () => import("@/components/reviews/PhotosReorderGrid"),
+  { loading: () => null },
+);
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
