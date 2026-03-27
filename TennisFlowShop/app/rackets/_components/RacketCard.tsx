@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
@@ -11,8 +12,12 @@ import useSWR from "swr";
 import { racketBrandLabel } from "@/lib/constants";
 import StatusBadge from "@/components/badges/StatusBadge";
 import { useRouter } from "next/navigation";
-import RentDialog from "@/app/rackets/[id]/_components/RentDialog";
 import { badgeToneVariant } from "@/lib/badge-style";
+
+const RentDialog = dynamic(
+  () => import("@/app/rackets/[id]/_components/RentDialog"),
+  { loading: () => null },
+);
 
 const fetcher = (url: string) =>
   fetch(url, { credentials: "include" }).then((r) => r.json());
