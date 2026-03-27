@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
@@ -25,8 +26,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
-import PhotosUploader from "@/components/reviews/PhotosUploader";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
@@ -40,6 +39,16 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+
+const PhotosUploader = dynamic(
+  () => import("@/components/reviews/PhotosUploader"),
+  { loading: () => null },
+);
+
+const PhotosReorderGrid = dynamic(
+  () => import("@/components/reviews/PhotosReorderGrid"),
+  { loading: () => null },
+);
 
 /*  API 타입 */
 type ApiMineItem = {
