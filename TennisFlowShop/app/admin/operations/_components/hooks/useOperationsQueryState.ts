@@ -137,20 +137,17 @@ export function useSyncOperationsQuery(
     params;
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      const queryString = buildOperationsViewQueryString({
-        q,
-        kind,
-        flow,
-        integrated,
-        onlyWarn,
-        warnFilter,
-        warnSort,
-        page,
-      });
-      replaceQueryUrl(pathname, queryString, replace);
-    }, 200);
-    return () => clearTimeout(t);
+    const queryString = buildOperationsViewQueryString({
+      q,
+      kind,
+      flow,
+      integrated,
+      onlyWarn,
+      warnFilter,
+      warnSort,
+      page,
+    });
+    replaceQueryUrl(pathname, queryString, replace);
   }, [
     q,
     kind,
