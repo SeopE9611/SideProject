@@ -1,55 +1,9 @@
-import type { Flow, Kind } from "../filters/operationsFilters";
+import type {
+  AdminOperationItem as OpItem,
+  AdminOperationReviewLevel as ReviewLevel,
+} from "@/types/admin/operations";
 
-export type SettlementAnchor = "order" | "rental" | "application";
-export type ReviewLevel = "none" | "info" | "action";
-export type CancelStatus = "none" | "requested" | "approved" | "rejected";
-
-export type OpItem = {
-  id: string;
-  kind: Kind;
-  createdAt: string | null;
-  customer: { name: string; email: string };
-  title: string;
-  statusLabel: string;
-  statusDisplayLabel?: string;
-  paymentLabel?: string;
-  amount: number;
-  amountNote?: string;
-  amountReference?: number;
-  amountReferenceLabel?: string;
-  flow: Flow;
-  flowLabel: string;
-  settlementAnchor: SettlementAnchor;
-  settlementLabel: string;
-  href: string;
-  related?: { kind: Kind; id: string; href: string } | null;
-  isIntegrated: boolean;
-  warnReasons?: string[];
-  pendingReasons?: string[];
-  warn?: boolean;
-  needsReview?: boolean;
-  reviewLevel?: ReviewLevel;
-  reviewTitle?: string;
-  reviewReasons?: string[];
-  stringingSummary?: {
-    requested: boolean;
-    name?: string;
-    price?: number;
-    mountingFee?: number;
-    applicationStatus?: string;
-  };
-  stage?: string;
-  nextAction?: string;
-  hasOutboundTracking?: boolean;
-  cancel?: {
-    status: CancelStatus;
-    requestedAt?: string | null;
-    handledAt?: string | null;
-    reason?: string;
-    refundAccountReady?: boolean;
-    refundBankLabel?: string | null;
-  };
-};
+export type { OpItem, ReviewLevel };
 
 export function formatKST(iso?: string | null) {
   if (!iso) return "-";
