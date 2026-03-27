@@ -2,6 +2,7 @@
 
 import useSWRInfinite from "swr/infinite";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
@@ -18,10 +19,9 @@ import {
   XCircle,
   Undo2,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import CancelRentalDialog from "@/app/mypage/rentals/_components/CancelRentalDialog";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
 
@@ -32,6 +32,10 @@ type RentalsResponse = {
 const fetcher = (url: string) => authenticatedSWRFetcher<RentalsResponse>(url);
 
 const LIMIT = 5;
+const CancelRentalDialog = dynamic(
+  () => import("@/app/mypage/rentals/_components/CancelRentalDialog"),
+  { loading: () => null },
+);
 
 const getKey = (index: number, prev: any) => {
   if (prev && prev.items && prev.items.length < LIMIT) return null;
@@ -109,6 +113,10 @@ const RentalsListSkeleton = ({ count = 3 }: { count?: number }) => (
   </div>
 );
 export default function RentalsList() {
+  const [cancelRentalDialogId, setCancelRentalDialogId] = useState<
+    string | null
+  >(null);
+
   const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(
     getKey,
     fetcher,
@@ -384,12 +392,15 @@ export default function RentalsList() {
                   </Button>
                 ) : ["pending", "paid"].includes(r.status) &&
                   !r.hasOutboundShipping ? (
-                  <CancelRentalDialog
-                    rentalId={r.id}
-                    onSuccess={async () => {
-                      await mutate();
-                    }}
-                  />
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="gap-2"
+                    onClick={() => setCancelRentalDialogId(r.id)}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    대여 취소 요청
+                  </Button>
                 ) : null}
               </div>
             </CardContent>
@@ -415,6 +426,21 @@ export default function RentalsList() {
       </div>
 
       {hasMore && isValidating ? <RentalsListSkeleton count={2} /> : null}
+
+      {/* 취소 요청 클릭 시점에만 다이얼로그 코드를 로드/마운트 */}
+      {cancelRentalDialogId ? (
+        <CancelRentalDialog
+          rentalId={cancelRentalDialogId}
+          open={Boolean(cancelRentalDialogId)}
+          onOpenChange={(open) => {
+            if (!open) setCancelRentalDialogId(null);
+          }}
+          hideTrigger
+          onSuccess={async () => {
+            await mutate();
+          }}
+        />
+      ) : null}
     </div>
   );
 }
