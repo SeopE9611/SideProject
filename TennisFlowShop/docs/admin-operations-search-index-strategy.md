@@ -1,134 +1,131 @@
-# 관리자 운영통합센터 검색 인덱스 전략(3차)
+# 관리자 운영통합센터 검색 인덱스 전략(4차)
 
 ## 목적
-- 범위: `/admin/operations`의 현재 검색 신뢰성 고도화 3차.
+- 범위: `/admin/operations` 검색 고도화 4차.
 - 이번 단계 핵심:
-  1) **explain 기반 검증 경로 마련**
-  2) **email 계열 인덱스 우선순위 판단 근거화**
-- 비범위: 검색 엔진 리라이트(Elasticsearch/Atlas Search/full-text 전면 도입), 대규모 인덱스 마이그레이션.
+  1) **실개발/스테이징 DB explain 수집 절차 고정**
+  2) **email 계열 인덱스 적용/보류 최종 판단 기준 명문화**
+- 비범위: 검색엔진 리라이트(Atlas Search / full-text / 외부 검색엔진), 대규모 인덱스 일괄 생성.
 
-## 컬렉션별 검색 핵심 필드
+## 실제 확인한 코드 기준 현재 상태
 
-### 1) `orders`
-- 식별자/연결: `_id`, `stringingApplicationId`
-- 고객: `customer.name`, `customer.email`, `userSnapshot.name`, `userSnapshot.email`, `guestInfo.name`, `guestInfo.email`
-- 표시 문자열(주문 제목 원본): `items.title`, `items.productName`, `items.name`
+### 1) explain 스크립트 입력/출력
+- 파일: `scripts/db/explain-admin-operations-search.mjs`
+- 입력
+  - 필수: `MONGODB_URI`
+  - 선택: `MONGODB_DB` (기본 `tennis_academy`)
+  - CLI: `<query>` + `--fetch-limit=...` (기본 200, 최대 5000)
+- 출력 핵심
+  - `collection`(섹션 라벨), `winningStages`, `indexUsed`, `keyPattern`, `keysExamined`, `docsExamined`, `nReturned`
 
-### 2) `rental_orders`
-- 식별자/연결: `_id`, `stringingApplicationId`, `userId`
-- 고객: `guest.name`, `guest.email`
-- 표시 문자열: `brand`, `model`
-- 보강 경로: 회원 검색 시 `users.name/email -> users._id -> rental_orders.userId` 조인형 후보 추출
+### 2) email 검색 분기(운영 API 코드)
+- 파일: `app/api/admin/operations/lib/operationsGetHandler.ts`
+- 공통: `qRegex` 기반 contains(`/q/i`)가 기본.
+- 컬렉션별 email 필드
+  - `orders`: `customer.email`, `userSnapshot.email`, `guestInfo.email`
+  - `rental_orders`: `guest.email` + `users(name/email) -> users._id -> rental_orders.userId` 우회 경로
+  - `stringing_applications`: `customer.email`, `userSnapshot.email`, `guestEmail`
+- 식별자 계열은 exact/prefix 병행
+  - `_id`, `stringingApplicationId`, `orderId`, `rentalId`, `userId`
 
-### 3) `stringing_applications`
-- 식별자/연결: `_id`, `stringingApplicationId`, `orderId`, `rentalId`
-- 고객: `customer.name`, `customer.email`, `userSnapshot.name`, `userSnapshot.email`, `guestName`, `guestEmail`
-- 결제 연결 텍스트: `paymentSource` (`order:*`, `rental:*`)
+### 3) 런타임 ensure/check 기준 인덱스
+- 파일: `scripts/db/ensure-runtime-indexes.mjs`, `scripts/db/check-runtime-indexes.mjs`
+- 이미 보장됨
+  - `orders.stringingApplicationId`
+  - `rental_orders.stringingApplicationId`
+  - `stringing_applications.stringingApplicationId/orderId/rentalId`
+  - `users.email` unique
+- 아직 보장 안 됨(현재 코드상)
+  - `orders.customer.email`, `orders.userSnapshot.email`, `orders.guestInfo.email`
+  - `rental_orders.guest.email`
+  - `stringing_applications.customer.email`, `stringing_applications.userSnapshot.email`, `stringing_applications.guestEmail`
 
-## 인덱스 후보(우선순위)
+## 대표 검색어 세트(PII 마스킹 규칙 포함)
 
-### A. exact / prefix 중심(우선)
-- `orders.stringingApplicationId` (정확/접두 검색)
-- `rental_orders.stringingApplicationId` (정확/접두 검색)
-- `stringing_applications.stringingApplicationId` (정확/접두 검색)
-- `stringing_applications.orderId`, `stringing_applications.rentalId` (연결 ID 검색)
-- `rental_orders.userId` (users 검색 결과 조인 가속)
+> 실제 email 원문은 문서/PR에 기록하지 않고 `u***@d***.com` 형태로 마스킹한다.
 
-### B. 이메일 중심(운영 검색 체감 개선 후보)
-- `orders.customer.email`, `orders.userSnapshot.email`, `orders.guestInfo.email`
-- `rental_orders.guest.email`
-- `stringing_applications.customer.email`, `stringing_applications.userSnapshot.email`, `stringing_applications.guestEmail`
-- `users.email`
+1) email exact(2~3개)
+- `u***@d***.com`
+- `m***@g***.com`
+- `k***@n***.co.kr`
 
-## 3차 적용/판단 결과
+2) email prefix(1~2개)
+- `u***@`
+- `m***`
 
-| 구분 | 상태 | 근거 |
-| --- | --- | --- |
-| linked id / stringingApplicationId 계열 인덱스 | 적용 완료(유지) | 이미 런타임 ensure/check 범위에 포함되어 있으며 exact/prefix 경로와 정합 |
-| explain 실행 경로 | 적용 완료(신규) | `scripts/db/explain-admin-operations-search.mjs`로 users prelookup + 3개 컬렉션 후보 쿼리 `executionStats` 확인 가능 |
-| email 계열 신규 인덱스 | **보류** | 현재 email 검색 주 경로가 `contains`(대소문자 무시 regex) 중심이라 단순 인덱스 추가만으로 효율 보장 어려움. 운영 데이터 explain 결과 기반 우선순위 선별이 선행되어야 안전 |
+3) linked id / stringingApplicationId(1~2개)
+- `sa-2026-00***`
+- `67c8***************` (ObjectId prefix)
 
-## email 검색 경로 분해(코드 기준)
+4) rental userId 연계 확인(1개 이상)
+- `67b1***************` (user ObjectId 또는 해당 회원 email 마스킹값)
 
-1) `orders`
-- 직접 email 검색: `customer.email`, `userSnapshot.email`, `guestInfo.email`에 `qRegex`(contains, `/q/i`) 적용
-- exact/prefix 전용 email 쿼리 없음
 
-2) `rental_orders`
-- 직접 email 검색: `guest.email`에 `qRegex`(contains)
-- 추가 경로: `users`에서 `name/email`을 `qRegex`로 선조회한 뒤 `_id`를 `rental_orders.userId` 조건으로 확장
+## 현재 작업 환경 실행 상태(2026-03-27 UTC)
+- 본 작업 컨테이너에는 `MONGODB_URI` / `MONGODB_DB`가 주입되어 있지 않아, 스크립트 단독 실행 시 즉시 종료됨.
+- 확인 명령:
+  - `npm run db:explain-admin-operations-search -- sample@example.com`
+  - 출력: `[explain-admin-operations-search] MONGODB_URI 환경 변수가 필요합니다.`
+- 따라서 실개발/스테이징 DB 수치 수집은 **동일 스크립트를 비밀값 주입 환경에서 바로 재실행**하도록 절차를 문서화했다.
 
-3) `stringing_applications`
-- 직접 email 검색: `customer.email`, `userSnapshot.email`, `guestEmail`에 `qRegex`(contains)
-- exact/prefix 전용 email 쿼리 없음
+## 실제 DB explain 실행 절차
 
-4) `users`
-- 선조회 전용: `name/email`에 `qRegex`(contains)
-- 현재 프로젝트 런타임 인덱스에서 `users.email` unique 인덱스는 이미 보장됨
-
-정리:
-- 현재 email 검색의 기본 형태는 **contains**이며, 일부 식별자 필드에만 exact/prefix가 결합됨.
-- 따라서 email 인덱스는 "필드가 있으니 일괄 추가"가 아니라 explain 결과 기반으로 선별해야 함.
-
-## explain 기반 검증 절차(신규)
-
-### 1) 실행
+### 개발 DB
 ```bash
-npm run db:explain-admin-operations-search -- <query>
-# 옵션: --fetch-limit=200 (기본 200, 최대 5000)
+export MONGODB_URI='***'
+export MONGODB_DB='tennis_academy_dev' # 환경에 맞게 조정
+npm run db:explain-admin-operations-search -- 'u***@d***.com' --fetch-limit=4000
 ```
 
-예시:
+### 스테이징 DB
 ```bash
-npm run db:explain-admin-operations-search -- kim@example.com
-npm run db:explain-admin-operations-search -- 67c8f2f2b7...
-npm run db:explain-admin-operations-search -- sa-2026-0001
+export MONGODB_URI='***'
+export MONGODB_DB='tennis_academy_stg' # 환경에 맞게 조정
+npm run db:explain-admin-operations-search -- 'sa-2026-00***' --fetch-limit=4000
 ```
 
-### 2) 스크립트가 확인하는 쿼리 범위
-- `users` 선조회(`name/email` contains)
-- `orders` 후보 쿼리
-- `rental_orders` 후보 쿼리(+ users 선조회 결과의 `userId` 경유)
-- `stringing_applications` 후보 쿼리
+## 결과 정리 템플릿(반드시 수치 포함)
 
-### 3) 출력에서 봐야 할 핵심
-- `winningStages`: 실행계획 stage 흐름
-- `indexUsed`: IXSCAN 유무(YES/NO)
-- `keysExamined / docsExamined / nReturned`: 선택도/효율 확인
+| 검색어 유형 | 컬렉션 | winningStages | indexUsed | keyPattern | keysExamined | docsExamined | nReturned | 해석 |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |
+| email exact | users |  |  |  |  |  |  |  |
+| email exact | orders |  |  |  |  |  |  |  |
+| email prefix | orders |  |  |  |  |  |  |  |
+| linked id | stringing_applications |  |  |  |  |  |  |  |
+| rental userId path | rental_orders |  |  |  |  |  |  |  |
 
-판독 가이드:
-- `indexUsed=NO` + `docsExamined` 큼: COLLSCAN 가능성 높음
-- `indexUsed=YES`여도 `docsExamined >> nReturned`: 인덱스는 탔지만 선택도 낮을 수 있음
+판단시 최소 확인:
+- `docsExamined / nReturned`
+- `keysExamined / nReturned`
+- `indexUsed=YES`여도 선택도 악화(`docsExamined >> nReturned`) 여부
 
-### 4) 검색어별 점검 권장
-- email 검색어: `kim@example.com`
-  - users 선조회 및 orders/rentals/apps의 email contains 경로가 실제로 어떤 stage를 타는지 확인
-- linked id / stringingApplicationId 검색어: `sa-...`, `app-...`, ObjectId
-  - 이미 적용된 식별자 인덱스가 실제 winning plan에서 선택되는지 확인
-- order/rental 연결 id 검색어: 주문/대여 `_id` 또는 연결 id
-  - `stringing_applications.orderId/rentalId` 인덱스 경로 확인
+## email 인덱스 적용/보류 최종 판단 가이드
 
-## email 인덱스 우선순위 판단(이번 결론)
+### A안(적용)
+- 특정 email 필드에서 아래가 반복 확인될 때만 최소 적용:
+  - `nReturned` 대비 `docsExamined`가 매우 크고,
+  - 검색 패턴이 contains가 아니라 exact/prefix 비율이 높으며,
+  - 기존 쓰기부담 대비 효과가 명확할 때.
 
-### 결론: 이번 PR에서는 신규 email 인덱스 **보류(B안)**
+### B안(보류)
+- 아래 중 하나라도 강하면 보류:
+  - contains 중심이라 B-Tree 단일 인덱스 효과 불확실
+  - 컬렉션별 email 경로가 분산되어 우선순위 불명확
+  - 실DB explain 실측이 아직 누락
 
-보류 이유(구체):
-1) 현재 코드의 email 검색이 exact/prefix보다 contains 비중이 높아, 단순 B-Tree 인덱스 추가 시 체감 개선이 제한될 수 있음.
-2) 컬렉션별 email 필드가 다중 경로(`customer.email`, `userSnapshot.email`, `guest*`)로 분산되어 있어 일괄 생성은 쓰기 비용 대비 효율이 불명확함.
-3) `users.email`은 이미 unique 인덱스로 보장되므로, 우선순위는 users 외 컬렉션의 실제 병목 필드 식별에 맞추는 것이 안전함.
-4) 운영 데이터 기준 explain(실측) 없이 추가하면 "인덱스는 늘었지만 핵심 병목은 그대로"인 상태가 될 위험이 있음.
+## 4차 결론(현재 저장소 기준)
+- **결론: B안(보류 유지)**
+- 근거:
+  1) 코드 쿼리 패턴이 여전히 contains 중심이며 email exact/prefix 전용 경로가 분리되어 있지 않음.
+  2) 런타임 인덱스는 linked-id 계열 중심으로 이미 반영되어 있고, email은 `users.email` 외 다중 경로 컬렉션에 분산됨.
+  3) 따라서 email 인덱스는 “실DB explain 수치 기반 선별” 없이 일괄 추가하면 오탐 가능성이 큼.
 
-### 다음 우선 검토 후보(운영 explain 수집 후)
-1) `orders.customer.email` (실검색 빈도/선택도 높을 때)
-2) `rental_orders.guest.email`
-3) `stringing_applications.customer.email`
+## 이번 단계에서 하지 않은 것
+- full-text/Atlas Search 도입
+- 대량 email 인덱스 일괄 생성
+- 운영 API 로직 구조 변경(KPI, groups, summary, pagination)
 
-※ 단, 위 후보도 "contains 위주"라면 효과가 제한될 수 있으므로, 먼저 실제 검색어 분포(exact/prefix 비율)를 확인한 뒤 결정.
-
-## 현재 한계(문자열/contains 검색)
-- `contains` 성격의 폭넓은 문자열 검색(예: 자유 title 검색)은 인덱스로 완전 해결이 어렵고 컬렉션별 필드 편차가 큼.
-- 이번 단계에서는 DB 후보 추출을 exact/prefix + email/name 중심으로 유지하고, 일부 파생 표시 문자열은 메모리 안전망으로 유지.
-
-## 왜 full-text / 별도 검색 인프라를 이번에 도입하지 않았는가
-- 이번 PR 목표는 운영 안정성 중심의 "검색 고도화 3차(explain 검증 경로 + email 인덱스 우선순위 판단)"이며, 기존 KPI/그룹/페이지네이션 구조를 유지해야 함.
-- full-text/Atlas Search 도입은 스키마·랭킹·운영비용·모니터링까지 포함한 별도 프로젝트 성격이므로 현재 범위를 초과함.
+## 다음 우선순위
+1) 개발/스테이징 DB에서 위 대표 검색어 세트 explain 수치 수집(마스킹 포함).
+2) 병목이 명확한 1~2개 email 필드만 후보 축소.
+3) 최소 인덱스 적용 후 동일 검색어 재-explain으로 개선폭 비교.
