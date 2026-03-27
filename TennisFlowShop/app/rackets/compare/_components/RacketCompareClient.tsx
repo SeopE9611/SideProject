@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import {
   X,
@@ -31,8 +32,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import RacketSpecQuickViewDialog from "@/app/rackets/compare/_components/RacketSpecQuickViewDialog";
 import { useRouter } from "next/navigation";
+
+const RacketSpecQuickViewDialog = dynamic(
+  () => import("@/app/rackets/compare/_components/RacketSpecQuickViewDialog"),
+  { loading: () => null },
+);
 
 function fmtNum(n?: number | null, suffix = "") {
   if (n === null || n === undefined || !Number.isFinite(n)) return "-";

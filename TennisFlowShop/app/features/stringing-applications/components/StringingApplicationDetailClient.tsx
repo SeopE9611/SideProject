@@ -11,7 +11,6 @@ import StringingApplicationDetailSkeleton from '@/app/features/stringing-applica
 import StringingApplicationHistory from '@/app/features/stringing-applications/components/StringingApplicationHistory';
 import { normalizeCollection } from '@/app/features/stringing-applications/lib/collection';
 import { getStringingAddressReadLabels, orderShippingMethodLabel } from '@/app/features/stringing-applications/lib/fulfillment-labels';
-import CancelStringingDialog from '@/app/mypage/applications/_components/CancelStringingDialog';
 import { useStringingStore } from '@/app/store/stringingStore';
 import AdminCancelRequestCard from '@/components/admin/AdminCancelRequestCard';
 import LinkedDocsCard, { LinkedDocItem } from '@/components/admin/LinkedDocsCard';
@@ -34,10 +33,16 @@ import { normalizeOrderShippingMethod } from '@/lib/order-shipping';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Calendar, CheckCircle2, Clock, CreditCard, Edit3, Mail, MapPin, Pencil, Phone, Settings, ShoppingCart, Target, Ticket, Truck, User, XCircle } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import useSWR from 'swr';
+
+const CancelStringingDialog = dynamic(
+  () => import('@/app/mypage/applications/_components/CancelStringingDialog'),
+  { loading: () => null },
+);
 
 interface Props {
   id: string;
