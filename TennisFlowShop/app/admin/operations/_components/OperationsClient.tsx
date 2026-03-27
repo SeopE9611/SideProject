@@ -558,6 +558,7 @@ export default function OperationsClient() {
   );
 
   const [q, setQ] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const [kind, setKind] = useState<"all" | Kind>("all");
   const [flow, setFlow] = useState<
     "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
@@ -598,6 +599,7 @@ export default function OperationsClient() {
 
   // 1) 최초 1회: URL → 상태 주입(새로고침 대응)
   useEffect(() => {
+    const queryFromUrl = sp.get("q") ?? "";
     initOperationsStateFromQuery(sp, {
       setQ,
       setKind,
@@ -608,7 +610,17 @@ export default function OperationsClient() {
       setWarnSort,
       setPage,
     });
+    setInputValue((prev) => (queryFromUrl === q ? prev : queryFromUrl));
   }, [sp]);
+
+  useEffect(() => {
+    if (inputValue === q) return;
+    const timer = window.setTimeout(() => {
+      setQ(inputValue);
+      setPage(1);
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [inputValue, q]);
 
   useEffect(() => {
     if (!onlyWarn) return;
@@ -637,9 +649,10 @@ export default function OperationsClient() {
     setOpenGroups({});
   }, [q, kind, flow, integrated, page, onlyWarn, warnFilter, warnSort]);
 
-  // 2) 상태 → URL 동기화(디바운스)
+  // 2) 상태 → URL 동기화
   /**
    * useSyncOperationsQuery는 필터 상태가 변하면 URL에 반영(쿼리스트링 sync)하는 역할.
+   * 검색어(q)는 inputValue -> q 단계에서 먼저 400ms 디바운스가 적용된다.
    * 여기서 replace를 scroll:false 버전으로 넘겨서, 필터 변경 시 화면이 위로 튀지 않게 함.
    */
   useSyncOperationsQuery(
@@ -668,6 +681,7 @@ export default function OperationsClient() {
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
+      keepPreviousData: true,
     },
   );
   const totalGroups = data?.pagination?.totalGroups;
@@ -715,6 +729,7 @@ export default function OperationsClient() {
     });
   }, [groups]);
   const shouldShowEmptyState = hasResolvedGroups && groupsToRender.length === 0;
+  const shouldShowGlobalError = Boolean(error) && !Array.isArray(data?.groups);
 
   const todayTodoCount: AdminOperationsSummary | null =
     data?.summary ?? (data ? { urgent: 0, caution: 0, pending: 0 } : null);
@@ -772,7 +787,10 @@ export default function OperationsClient() {
       warn: boolean;
     }>,
   ) {
-    if (next.q !== undefined) setQ(next.q);
+    if (next.q !== undefined) {
+      setQ(next.q);
+      setInputValue(next.q);
+    }
     if (next.kind !== undefined) setKind(next.kind);
     if (next.flow !== undefined) setFlow(next.flow);
     if (next.integrated !== undefined) setIntegrated(next.integrated);
@@ -804,6 +822,7 @@ export default function OperationsClient() {
 
   function reset() {
     setQ("");
+    setInputValue("");
     setKind("all");
     setFlow("all");
     setIntegrated("all");
@@ -928,7 +947,7 @@ export default function OperationsClient() {
 
   return (
     <div className="container py-4 lg:py-5">
-      {error && (
+      {shouldShowGlobalError && (
         <AsyncState
           kind="error"
           tone="admin"
@@ -1099,6 +1118,12 @@ export default function OperationsClient() {
               <CardDescription className="text-xs mt-1">
                 ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.
               </CardDescription>
+              {error && !shouldShowGlobalError && (
+                <p className="mt-1 text-[11px] text-warning">
+                  검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시 후
+                  다시 시도해 주세요.
+                </p>
+              )}
               {activeFilterCount > 0 && (
                 <Badge
                   className={cn(
@@ -1129,10 +1154,9 @@ export default function OperationsClient() {
                 <Input
                   type="search"
                   className="pl-8 text-xs h-9 w-full"
-                  value={q}
+                  value={inputValue}
                   onChange={(e) => {
-                    setQ(e.target.value);
-                    setPage(1);
+                    setInputValue(e.target.value);
                   }}
                   placeholder="ID, 고객명, 이메일, 요약(상품명/모델명) 검색..."
                 />
