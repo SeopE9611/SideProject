@@ -189,6 +189,40 @@ function toOperatorSentence(text?: string | null) {
     .trim();
 }
 
+function truncateText(text: string, max = 38) {
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
+}
+
+function summarizeReasonText(text?: string | null) {
+  const normalized = toOperatorSentence(text).replace(/\s+/g, " ").trim();
+  if (!normalized) return "연결 문서 확인 필요";
+
+  if (
+    normalized.includes("결제") ||
+    normalized.includes("paymentStatus") ||
+    normalized.includes("결제 상태")
+  ) {
+    return "결제 정보 확인 필요";
+  }
+  if (normalized.includes("주문 정보") || normalized.includes("파생")) {
+    return "주문 정보 기준으로 표시 중";
+  }
+  if (
+    normalized.includes("연결") ||
+    normalized.includes("문서") ||
+    normalized.includes("누락")
+  ) {
+    return "연결 문서 확인 필요";
+  }
+
+  const oneLine = normalized
+    .split(/[.!?]\s+/)[0]
+    ?.split(" · ")[0]
+    ?.trim();
+  return truncateText(oneLine || normalized, 34);
+}
+
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
 
 const PRESET_CONFIG: Record<
@@ -1856,7 +1890,7 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="space-y-2">
+                              <div className="space-y-1.5">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {isGroup && (
                                     <Button
@@ -1876,37 +1910,31 @@ export default function OperationsClient() {
                                       )}
                                     </Button>
                                   )}
-                                  <span className="font-medium text-sm">
+                                  <span className="text-sm font-semibold text-foreground">
+                                    {g.anchor.customer?.name || "-"}
+                                  </span>
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {opsKindLabel(g.anchor.kind)} ·{" "}
                                     {shortenId(g.anchor.id)}
                                   </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatKST(g.createdAt ?? g.anchor.createdAt)}
-                                  </span>
                                 </div>
-                                <div className="text-sm font-medium text-foreground">
-                                  {g.anchor.customer?.name || "-"}
-                                </div>
-                                <p className="text-[15px] font-semibold leading-snug text-foreground">
+                                <p className="text-[15px] font-semibold leading-snug text-foreground line-clamp-1">
                                   {toOperatorSentence(g.primarySignal?.title) ||
                                     toOperatorSentence(g.anchor.reviewTitle) ||
                                     `${opsKindLabel(g.anchor.kind)} 처리 상태 확인 필요`}
                                 </p>
-                                <div className="rounded-md border border-border/70 bg-muted/[0.28] px-2.5 py-1.5">
-                                  <p className="text-[11px] font-semibold text-muted-foreground">
-                                    확인 이유
-                                  </p>
-                                  <p className="mt-0.5 text-xs text-muted-foreground">
-                                    {toOperatorSentence(g.primarySignal?.description) ||
-                                      toOperatorSentence(reviewReasons[0]) ||
-                                      "상태와 연결 문서를 함께 확인해야 하는 항목입니다."}
-                                  </p>
-                                </div>
-                                <div className="rounded-md border border-primary/20 bg-primary/[0.07] px-2.5 py-1.5">
+                                <p className="text-xs text-muted-foreground line-clamp-1">
+                                  이유:{" "}
+                                  {summarizeReasonText(
+                                    g.primarySignal?.description ?? reviewReasons[0],
+                                  )}
+                                </p>
+                                <div className="rounded-md border border-primary/20 bg-primary/[0.07] px-2 py-1">
                                   <p className="flex items-center gap-1 text-[11px] font-semibold text-primary">
                                     <BellRing className="h-3 w-3" />
                                     지금 해야 할 일
                                   </p>
-                                  <p className="mt-0.5 text-xs text-foreground">
+                                  <p className="mt-0.5 text-xs text-foreground line-clamp-1">
                                     {groupGuide.nextAction?.trim()
                                       ? toOperatorSentence(groupGuide.nextAction)
                                       : groupCancelRequested
@@ -2056,62 +2084,66 @@ export default function OperationsClient() {
                                 stickyActionCellClass,
                               )}
                             >
-                              <div className="flex flex-wrap justify-end gap-2">
-                                {quickActionTarget && (
+                              <div className="flex flex-col items-end gap-1.5">
+                                <div className="flex flex-wrap justify-end gap-1.5">
+                                  {quickActionTarget && (
+                                    <Button
+                                      asChild
+                                      size="sm"
+                                      variant="default"
+                                      className="h-8 px-2.5 font-semibold shadow-sm"
+                                      title={groupGuide.nextAction ?? quickActionTarget.label}
+                                    >
+                                      <Link href={quickActionTarget.href} className="text-xs">
+                                        {quickActionTarget.label}
+                                      </Link>
+                                    </Button>
+                                  )}
                                   <Button
                                     asChild
                                     size="sm"
-                                    variant="default"
-                                    className="h-8 px-2.5 font-semibold shadow-sm"
-                                    title={groupGuide.nextAction ?? quickActionTarget.label}
+                                    variant="secondary"
+                                    className="h-8 px-2"
+                                    title={ROW_ACTION_LABELS.detail}
                                   >
-                                    <Link href={quickActionTarget.href} className="text-xs">
-                                      {quickActionTarget.label}
+                                    <Link
+                                      href={g.anchor.href}
+                                      className="flex items-center gap-1"
+                                      aria-label={ROW_ACTION_LABELS.detail}
+                                    >
+                                      <Eye className="h-3.5 w-3.5" />
+                                      <span className="text-xs">상세</span>
                                     </Link>
                                   </Button>
-                                )}
-                                <Button
-                                  asChild
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-8 px-2.5 bg-transparent"
-                                  title={ROW_ACTION_LABELS.detail}
-                                >
-                                  <Link
-                                    href={g.anchor.href}
-                                    className="flex items-center gap-1"
-                                    aria-label={ROW_ACTION_LABELS.detail}
+                                </div>
+                                <div className="flex flex-wrap justify-end gap-1">
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-1.5 text-[11px] text-muted-foreground"
+                                    title={ROW_ACTION_LABELS.settlement}
                                   >
-                                    <Eye className="h-3.5 w-3.5" />
-                                    <span className="text-xs">상세 보기</span>
-                                  </Link>
-                                </Button>
-                                <Button
-                                  asChild
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-8 px-2.5 bg-transparent"
-                                  title={ROW_ACTION_LABELS.settlement}
-                                >
-                                  <Link
-                                    href={settleHref}
-                                    className="flex items-center gap-1"
-                                    aria-label={ROW_ACTION_LABELS.settlement}
+                                    <Link
+                                      href={settleHref}
+                                      className="flex items-center gap-1"
+                                      aria-label={ROW_ACTION_LABELS.settlement}
+                                    >
+                                      <BarChartBig className="h-3.5 w-3.5" />
+                                      정산
+                                    </Link>
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 w-7 p-0 text-muted-foreground"
+                                    onClick={() => copyToClipboard(g.anchor.id)}
+                                    title={ROW_ACTION_LABELS.copyId}
+                                    aria-label={ROW_ACTION_LABELS.copyId}
                                   >
-                                    <BarChartBig className="h-3.5 w-3.5" />
-                                    <span className="text-xs">정산 확인</span>
-                                  </Link>
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                    className="h-8 w-8 p-0 bg-transparent"
-                                  onClick={() => copyToClipboard(g.anchor.id)}
-                                  title={ROW_ACTION_LABELS.copyId}
-                                  aria-label={ROW_ACTION_LABELS.copyId}
-                                >
-                                  <Copy className="h-3.5 w-3.5" />
-                                </Button>
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2128,13 +2160,16 @@ export default function OperationsClient() {
                                 <div className="mb-2 flex items-center gap-2">
                                   <ChevronDown className="h-3.5 w-3.5 text-primary" />
                                   <p className="text-xs font-semibold text-foreground">
-                                    상세 섹션
+                                    상세 섹션 · 이유/연결 정보
                                   </p>
                                 </div>
                                 <div className="grid gap-3 bp-xl:grid-cols-2 2xl:grid-cols-4">
                                   <div className="rounded-md border border-border bg-background/70 p-3">
                                     <p className="mb-1 text-xs font-semibold text-foreground">
                                       연결 문서
+                                    </p>
+                                    <p className="mb-2 text-[11px] text-muted-foreground">
+                                      기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                                     </p>
                                     {renderLinkedDocs(linkedDocsForAnchor)}
                                   </div>
@@ -2316,19 +2351,24 @@ export default function OperationsClient() {
                             {opsKindLabel(g.anchor.kind)}
                           </Badge>
                         </div>
-                        <div className="text-sm font-medium">
-                          {g.anchor.customer?.name || "-"}
+                        <div className="flex items-center gap-1.5 text-sm">
+                          <span className="font-semibold text-foreground">
+                            {g.anchor.customer?.name || "-"}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
+                          </span>
                         </div>
-                        <p className="text-sm font-semibold text-foreground">
+                        <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {toOperatorSentence(g.primarySignal?.title) ||
                             toOperatorSentence(g.anchor.reviewTitle) ||
                             `${opsKindLabel(g.anchor.kind)} 확인 필요`}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground line-clamp-1">
                           이유:{" "}
-                          {toOperatorSentence(g.primarySignal?.description) ||
-                            toOperatorSentence(reviewReasons[0]) ||
-                            "상태와 연결 정보를 함께 확인해 주세요."}
+                          {summarizeReasonText(
+                            g.primarySignal?.description ?? reviewReasons[0],
+                          )}
                         </p>
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Badge
@@ -2338,11 +2378,6 @@ export default function OperationsClient() {
                             {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
                           </Badge>
                         </div>
-                        {g.anchor.paymentLabel ? (
-                          <div className="text-xs text-muted-foreground">
-                            결제: {g.anchor.paymentLabel}
-                          </div>
-                        ) : null}
                         <div className="flex flex-wrap items-center gap-1">
                           {(() => {
                             const cancelBadge = cancelBadgeSpec(
@@ -2397,21 +2432,8 @@ export default function OperationsClient() {
                             </TooltipProvider>
                           )}
                         </div>
-                        {g.anchor.flow === 7 && (
-                          <div className="text-xs text-muted-foreground">
-                            스트링 요약:{" "}
-                            {stringSummaryText(
-                              g.items.find((it) => it.kind === "rental"),
-                            ) ?? "정보 없음"}
-                          </div>
-                        )}
                         <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
-                          <p className="text-[11px] font-medium text-primary">
-                            현재 업무 단계
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {toOperatorSentence(groupGuide.stage)}
-                          </p>
+                          <p className="text-[11px] font-medium text-primary">지금 해야 할 일</p>
                           <p className="mt-1 flex items-start gap-1 text-[11px] text-foreground">
                             <BellRing className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                             <span>
@@ -2425,48 +2447,6 @@ export default function OperationsClient() {
                             </span>
                           </p>
                         </div>
-                        {(g.signals?.length ?? 0) > 0 && (
-                          <p className="text-[11px] text-muted-foreground">
-                            신호 {g.signals.length}건
-                          </p>
-                        )}
-                        {g.primarySignal && (
-                          <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
-                            <p className="text-[11px] font-medium text-foreground">
-                              {toOperatorSentence(g.primarySignal.title)}
-                              <span className="ml-1 text-[10px] text-muted-foreground">
-                                {g.primarySignal.code}
-                              </span>
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                              {toOperatorSentence(g.primarySignal.description)}
-                            </p>
-                            {(g.signals?.length ?? 0) > 0 && (
-                              <p className="mt-1 text-[11px] text-muted-foreground">
-                                관련 신호 {g.signals.length}건
-                              </p>
-                            )}
-                          </div>
-                        )}
-                        {!warn &&
-                          g.reviewLevel === "action" &&
-                          reviewReasons.length > 0 && (
-                            <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
-                              <p className="text-[11px] font-medium text-primary">
-                                확인이 필요한 이유
-                              </p>
-                              <ul className="mt-1 space-y-0.5">
-                                {reviewReasons.map((reason) => (
-                                  <li
-                                    key={`m-review:${g.key}:${reason}`}
-                                    className="text-[11px] text-muted-foreground list-disc list-inside"
-                                  >
-                                    {toOperatorSentence(reason)}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
                         {isGroup && (
                           <Button
                             type="button"
@@ -2475,13 +2455,15 @@ export default function OperationsClient() {
                             className="h-7 px-2 text-xs"
                             onClick={() => toggleGroup(g.key)}
                           >
-                            {isOpen ? "상세 접기" : "상세 펼쳐서 보기"}
+                            {isOpen ? "상세 접기" : "이유/연결 정보 보기"}
                           </Button>
                         )}
                         {isGroup && isOpen && (
                           <div className="rounded-md border border-primary/20 bg-muted/35 p-2.5 space-y-2">
-                            <p className="text-[11px] font-semibold text-foreground">
-                              상세 섹션 · 연결 문서와 상태 참고
+                            <p className="text-[11px] font-semibold text-foreground">상세 섹션 · 이유/연결 정보</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)} · 단계:{" "}
+                              {toOperatorSentence(groupGuide.stage)}
                             </p>
                             {renderLinkedDocs(
                               g.items
@@ -2495,6 +2477,56 @@ export default function OperationsClient() {
                                   id: item.id,
                                   href: item.href,
                                 })),
+                            )}
+                            {g.primarySignal && (
+                              <div className="rounded-md border border-warning/30 bg-warning/5 px-2 py-1.5">
+                                <p className="text-[11px] font-medium text-foreground">
+                                  {toOperatorSentence(g.primarySignal.title)}
+                                  <span className="ml-1 text-[10px] text-muted-foreground">
+                                    {g.primarySignal.code}
+                                  </span>
+                                </p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {toOperatorSentence(g.primarySignal.description)}
+                                </p>
+                                {(g.signals?.length ?? 0) > 0 && (
+                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                    관련 신호 {g.signals.length}건
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                            {!warn &&
+                              g.reviewLevel === "action" &&
+                              reviewReasons.length > 0 && (
+                                <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
+                                  <p className="text-[11px] font-medium text-primary">
+                                    확인이 필요한 이유
+                                  </p>
+                                  <ul className="mt-1 space-y-0.5">
+                                    {reviewReasons.map((reason) => (
+                                      <li
+                                        key={`m-review:${g.key}:${reason}`}
+                                        className="text-[11px] text-muted-foreground list-disc list-inside"
+                                      >
+                                        {toOperatorSentence(reason)}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            {g.anchor.paymentLabel ? (
+                              <p className="text-xs text-muted-foreground">
+                                결제: {g.anchor.paymentLabel}
+                              </p>
+                            ) : null}
+                            {g.anchor.flow === 7 && (
+                              <p className="text-xs text-muted-foreground">
+                                스트링 요약:{" "}
+                                {stringSummaryText(
+                                  g.items.find((it) => it.kind === "rental"),
+                                ) ?? "정보 없음"}
+                              </p>
                             )}
                           </div>
                         )}
@@ -2511,33 +2543,44 @@ export default function OperationsClient() {
                             {amountMeaningText(g.anchor)}
                           </div>
                         ) : null}
-                        <div className="flex flex-wrap items-center gap-2 pt-1">
-                          {quickActionTarget && (
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="default"
-                              className="h-8 px-2.5 font-semibold shadow-sm"
-                            >
-                              <Link href={quickActionTarget.href}>
-                                {quickActionTarget.label}
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {quickActionTarget && (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="default"
+                                className="h-8 px-2.5 font-semibold shadow-sm"
+                              >
+                                <Link href={quickActionTarget.href}>
+                                  {quickActionTarget.label}
+                                </Link>
+                              </Button>
+                            )}
+                            <Button asChild size="sm" variant="secondary" className="h-8 px-2">
+                              <Link href={g.anchor.href} className="inline-flex items-center gap-1">
+                                <Eye className="h-3.5 w-3.5" />
+                                상세
                               </Link>
                             </Button>
-                          )}
-                          <Button asChild size="sm" variant="outline" className="h-8 px-2.5 bg-transparent">
-                            <Link href={g.anchor.href}>상세 보기</Link>
-                          </Button>
-                          <Button asChild size="sm" variant="outline" className="h-8 px-2.5 bg-transparent">
-                            <Link href={settleHref}>정산 확인</Link>
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 px-2.5 bg-transparent"
-                            onClick={() => copyToClipboard(g.anchor.id)}
-                          >
-                            ID 복사
-                          </Button>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1">
+                            <Button asChild size="sm" variant="ghost" className="h-7 px-1.5 text-[11px] text-muted-foreground">
+                              <Link href={settleHref} className="inline-flex items-center gap-1">
+                                <BarChartBig className="h-3.5 w-3.5" />
+                                정산
+                              </Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 w-7 p-0 text-muted-foreground"
+                              onClick={() => copyToClipboard(g.anchor.id)}
+                              aria-label={ROW_ACTION_LABELS.copyId}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
