@@ -1364,7 +1364,7 @@ export default function OperationsClient() {
                 </div>
                 <div>
                   <p className="mb-1 text-[11px] font-semibold text-primary">
-                    다음 액션
+                    다음 처리
                   </p>
                   <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
                 </div>
@@ -1561,7 +1561,7 @@ export default function OperationsClient() {
                         처리 상태
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[42%]")}>
-                        지금 해야 할 일 · 대상
+                        다음 처리 · 대상
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[18%] text-right")}>
                         금액
@@ -1591,6 +1591,23 @@ export default function OperationsClient() {
                       const groupGuide = inferNextActionForOperationGroup(
                         g.items,
                       );
+                      const reasonSummary = summarizeReasonText(
+                        g.primarySignal?.description ?? reviewReasons[0],
+                      );
+                      const reasonBullets = reviewReasons
+                        .map((reason) => toOperatorSentence(reason))
+                        .filter(Boolean)
+                        .slice(0, 3);
+                      const hasReasonCard =
+                        reasonSummary !== "연결 문서 확인 필요" ||
+                        reasonBullets.length > 0 ||
+                        Boolean(g.primarySignal?.title);
+                      const customerName =
+                        g.anchor.customer?.name?.trim() || "";
+                      const customerEmail =
+                        g.anchor.customer?.email?.trim() || "";
+                      const customerPrimary = customerName || customerEmail || "-";
+                      const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
                       const quickActionTarget = resolveQuickActionTarget(
                         {
                           anchor: g.anchor,
@@ -1694,7 +1711,7 @@ export default function OperationsClient() {
                                 </Badge>
                                 <div className="w-full rounded-md border border-primary/25 bg-primary/[0.07] px-2.5 py-1.5 text-[11px]">
                                   <p className="font-semibold text-primary">
-                                    지금 해야 할 일
+                                    다음 처리
                                   </p>
                                   <p className="mt-0.5 line-clamp-2 text-foreground">
                                     {groupGuide.nextAction?.trim()
@@ -1738,28 +1755,60 @@ export default function OperationsClient() {
                                       )}
                                     </Button>
                                   )}
-                                  <span className="text-sm font-semibold text-foreground">
-                                    {g.anchor.customer?.name || "-"}
-                                  </span>
-                                  <span className="text-[11px] text-muted-foreground">
-                                    {opsKindLabel(g.anchor.kind)} ·{" "}
-                                    {shortenId(g.anchor.id)}
-                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-foreground leading-tight">
+                                      {customerPrimary}
+                                    </p>
+                                    {customerName && customerEmail && (
+                                      <p className="text-[11px] text-muted-foreground leading-tight">
+                                        {customerEmail}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="ml-auto flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                    <span>{docLabel}</span>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                      onClick={() => copyToClipboard(g.anchor.id)}
+                                      title={ROW_ACTION_LABELS.copyId}
+                                      aria-label={ROW_ACTION_LABELS.copyId}
+                                    >
+                                      <Copy className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
                                 </div>
                                 <p className="text-[15px] font-semibold leading-snug text-foreground line-clamp-1">
                                   {toOperatorSentence(g.primarySignal?.title) ||
                                     toOperatorSentence(g.anchor.reviewTitle) ||
                                     `${opsKindLabel(g.anchor.kind)} 처리 상태 확인 필요`}
                                 </p>
-                                <p className="text-xs text-muted-foreground line-clamp-1">
-                                  이유:{" "}
-                                  {summarizeReasonText(
-                                    g.primarySignal?.description ?? reviewReasons[0],
-                                  )}
-                                </p>
+                                {hasReasonCard && (
+                                  <div className="rounded-md border border-primary/20 bg-primary/[0.06] px-2.5 py-2">
+                                    <p className="text-xs font-semibold text-foreground">
+                                      확인 이유
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                                      {reasonSummary}
+                                    </p>
+                                    {reasonBullets.length > 0 && (
+                                      <ul className="mt-1.5 space-y-0.5">
+                                        {reasonBullets.map((reason) => (
+                                          <li
+                                            key={`reason:${g.key}:${reason}`}
+                                            className="list-inside list-disc text-[11px] text-muted-foreground"
+                                          >
+                                            {reason}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </div>
+                                )}
                                 {g.primarySignal?.title && (
                                   <p className="text-[11px] text-muted-foreground line-clamp-1">
-                                    신호: {toOperatorSentence(g.primarySignal.title)}
+                                    참고 신호: {toOperatorSentence(g.primarySignal.title)}
                                   </p>
                                 )}
                               </div>
@@ -1918,34 +1967,6 @@ export default function OperationsClient() {
                                     </Link>
                                   </Button>
                                 </div>
-                                <div className="flex flex-wrap justify-end gap-1 opacity-80">
-                                  <Button
-                                    asChild
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
-                                    title={ROW_ACTION_LABELS.settlement}
-                                  >
-                                    <Link
-                                      href={settleHref}
-                                      className="flex items-center gap-1"
-                                      aria-label={ROW_ACTION_LABELS.settlement}
-                                    >
-                                      <BarChartBig className="h-3.5 w-3.5" />
-                                      정산
-                                    </Link>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-                                    onClick={() => copyToClipboard(g.anchor.id)}
-                                    title={ROW_ACTION_LABELS.copyId}
-                                    aria-label={ROW_ACTION_LABELS.copyId}
-                                  >
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -2014,42 +2035,35 @@ export default function OperationsClient() {
                                   </div>
                                   <div className="rounded-md border border-primary/20 bg-primary/[0.06] p-3">
                                     <p className="mb-1 text-xs font-semibold text-foreground">
-                                      단계 / 다음 처리
+                                      단계
                                     </p>
                                     <p className="text-xs text-muted-foreground">
                                       {toOperatorSentence(groupGuide.stage)}
                                     </p>
-                                    <p className="text-xs text-foreground">
-                                      {groupGuide.nextAction?.trim()
-                                        ? toOperatorSentence(groupGuide.nextAction)
-                                        : g.reviewLevel === "info"
-                                          ? "조치 필요 없음(정상 파생)"
-                                          : "조치 필요 없음"}
-                                    </p>
+                                    <div className="mt-2">
+                                      <Button
+                                        asChild
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                                        title={ROW_ACTION_LABELS.settlement}
+                                      >
+                                        <Link
+                                          href={settleHref}
+                                          className="flex items-center gap-1"
+                                          aria-label={ROW_ACTION_LABELS.settlement}
+                                        >
+                                          <BarChartBig className="h-3.5 w-3.5" />
+                                          정산
+                                        </Link>
+                                      </Button>
+                                    </div>
                                   </div>
                                   {g.reviewLevel === "info" && (
                                     <p className="rounded-md border border-info/25 bg-info/10 p-3 text-xs text-info">
                                       참고 정보입니다. 조치 필요 없음.
                                     </p>
                                   )}
-                                  {g.reviewLevel === "action" &&
-                                    reviewReasons.length > 0 && (
-                                      <div className="rounded-md border border-border bg-background/70 p-3">
-                                        <p className="mb-1 text-xs font-semibold text-foreground">
-                                          확인이 필요한 이유
-                                        </p>
-                                        <ul className="space-y-1">
-                                          {reviewReasons.map((reason) => (
-                                            <li
-                                              key={`review:${g.key}:${reason}`}
-                                              className="text-xs text-muted-foreground list-disc list-inside"
-                                            >
-                                              {toOperatorSentence(reason)}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -2082,6 +2096,20 @@ export default function OperationsClient() {
                   const isOpen = !!openGroups[g.key];
                   const reviewReasons = collectReviewReasons(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
+                  const reasonSummary = summarizeReasonText(
+                    g.primarySignal?.description ?? reviewReasons[0],
+                  );
+                  const reasonBullets = reviewReasons
+                    .map((reason) => toOperatorSentence(reason))
+                    .filter(Boolean)
+                    .slice(0, 3);
+                  const hasReasonCard =
+                    reasonSummary !== "연결 문서 확인 필요" ||
+                    reasonBullets.length > 0 ||
+                    Boolean(g.primarySignal?.title);
+                  const customerName = g.anchor.customer?.name?.trim() || "";
+                  const customerEmail = g.anchor.customer?.email?.trim() || "";
+                  const customerPrimary = customerName || customerEmail || "-";
                   const quickActionTarget = resolveQuickActionTarget(
                     {
                       anchor: g.anchor,
@@ -2128,15 +2156,33 @@ export default function OperationsClient() {
                               </Badge>
                             )}
                           </div>
-                          <span className="text-[11px] text-muted-foreground">
-                            {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
-                          </span>
+                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <span>
+                              {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 text-muted-foreground"
+                              onClick={() => copyToClipboard(g.anchor.id)}
+                              aria-label={ROW_ACTION_LABELS.copyId}
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </div>
 
                         <div className="flex items-baseline justify-between gap-2">
-                          <span className="text-sm font-semibold text-foreground">
-                            {g.anchor.customer?.name || "-"}
-                          </span>
+                          <div>
+                            <span className="text-sm font-semibold text-foreground">
+                              {customerPrimary}
+                            </span>
+                            {customerName && customerEmail && (
+                              <p className="text-[11px] leading-tight text-muted-foreground">
+                                {customerEmail}
+                              </p>
+                            )}
+                          </div>
                           <span className="text-base font-extrabold tracking-tight text-foreground">
                             {won(g.anchor.amount)}
                           </span>
@@ -2147,16 +2193,35 @@ export default function OperationsClient() {
                             toOperatorSentence(g.anchor.reviewTitle) ||
                             `${opsKindLabel(g.anchor.kind)} 확인 필요`}
                         </p>
-                        <p className="text-xs text-muted-foreground line-clamp-1">
-                          이유:{" "}
-                          {summarizeReasonText(
-                            g.primarySignal?.description ?? reviewReasons[0],
-                          )}
-                        </p>
+                        {hasReasonCard && (
+                          <div className="rounded-md border border-primary/20 bg-primary/[0.06] px-2.5 py-2">
+                            <p className="text-xs font-semibold text-foreground">
+                              확인 이유
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                              {reasonSummary}
+                            </p>
+                            {reasonBullets.length > 0 && (
+                              <ul className="mt-1.5 space-y-0.5">
+                                {reasonBullets.map((reason) => (
+                                  <li
+                                    key={`m-reason:${g.key}:${reason}`}
+                                    className="list-inside list-disc text-[11px] text-muted-foreground"
+                                  >
+                                    {reason}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        )}
 
                         <p className="flex items-start gap-1 text-[11px] text-foreground">
                           <BellRing className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
                           <span className="line-clamp-2">
+                            <span className="mr-1 font-semibold text-primary">
+                              다음 처리
+                            </span>
                             {groupGuide.nextAction?.trim()
                               ? toOperatorSentence(groupGuide.nextAction)
                               : groupCancelRequested
@@ -2291,25 +2356,6 @@ export default function OperationsClient() {
                                 </p>
                               </div>
                             )}
-                            {!warn &&
-                              g.reviewLevel === "action" &&
-                              reviewReasons.length > 0 && (
-                                <div className="rounded-md border border-primary/20 bg-primary/5 px-2 py-1.5">
-                                  <p className="text-[11px] font-medium text-primary">
-                                    확인 이유
-                                  </p>
-                                  <ul className="mt-1 space-y-0.5">
-                                    {reviewReasons.map((reason) => (
-                                      <li
-                                        key={`m-review:${g.key}:${reason}`}
-                                        className="list-inside list-disc text-[11px] text-muted-foreground"
-                                      >
-                                        {toOperatorSentence(reason)}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
                             {renderLinkedDocs(
                               g.items
                                 .filter(
@@ -2345,15 +2391,6 @@ export default function OperationsClient() {
                                   <BarChartBig className="h-3.5 w-3.5" />
                                   정산
                                 </Link>
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 w-7 p-0 text-muted-foreground"
-                                onClick={() => copyToClipboard(g.anchor.id)}
-                                aria-label={ROW_ACTION_LABELS.copyId}
-                              >
-                                <Copy className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </div>
