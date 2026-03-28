@@ -157,6 +157,27 @@ const OPERATOR_TERM_MAP: Array<[RegExp, string]> = [
   [/\bpending\b/gi, "미처리"],
 ];
 
+const FLOW_LABEL_BY_ID: Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string> = {
+  1: "스트링 단품 구매",
+  2: "스트링 구매 + 교체서비스 신청(통합)",
+  3: "교체서비스 단일 신청",
+  4: "라켓 단품 구매",
+  5: "라켓 구매 + 스트링 선택 + 교체서비스 신청(통합)",
+  6: "라켓 단품 대여",
+  7: "라켓 대여 + 스트링 선택 + 교체서비스 신청(통합)",
+};
+
+const FLOW_SCENARIOS: Array<{ flow: 1 | 2 | 3 | 4 | 5 | 6 | 7; label: string }> =
+  [
+    { flow: 1, label: FLOW_LABEL_BY_ID[1] },
+    { flow: 2, label: FLOW_LABEL_BY_ID[2] },
+    { flow: 3, label: FLOW_LABEL_BY_ID[3] },
+    { flow: 4, label: FLOW_LABEL_BY_ID[4] },
+    { flow: 5, label: FLOW_LABEL_BY_ID[5] },
+    { flow: 6, label: FLOW_LABEL_BY_ID[6] },
+    { flow: 7, label: FLOW_LABEL_BY_ID[7] },
+  ];
+
 function toOperatorSentence(text?: string | null) {
   if (!text) return "";
   let next = text;
@@ -207,6 +228,34 @@ function summarizeReasonText(text?: string | null) {
     ?.split(" · ")[0]
     ?.trim();
   return truncateText(oneLine || normalized, 34);
+}
+
+function flowLabelText(item: OpItem) {
+  return item.flowLabel?.trim() || FLOW_LABEL_BY_ID[item.flow] || "미분류";
+}
+
+function groupNextActionText(group: {
+  guide: { nextAction?: string | null };
+  cancelRequested: boolean;
+  reviewLevel?: ReviewLevel;
+}) {
+  if (group.guide.nextAction?.trim()) {
+    return toOperatorSentence(group.guide.nextAction);
+  }
+  if (group.cancelRequested) return "취소 요청 처리 필요";
+  if (group.reviewLevel === "info") return "조치 필요 없음(정상 파생)";
+  return "조치 필요 없음";
+}
+
+function statusHeadlineOf(item: OpItem) {
+  const status = item.statusDisplayLabel?.trim() || item.statusLabel?.trim();
+  if (!status) return `${opsKindLabel(item.kind)} 상태 건`;
+  if (item.kind === "order") return `${status} 주문`;
+  if (item.kind === "rental") return `${status} 대여 건`;
+  if (status.includes("검토") || status.includes("접수")) {
+    return "연결 신청서 검토 대기";
+  }
+  return `${status} 신청서`;
 }
 
 type PresetKey = "paymentMismatch" | "integratedReview" | "singleApplication";
@@ -1440,30 +1489,14 @@ export default function OperationsClient() {
                   </p>
                   <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
                     <span className="font-medium">시나리오</span>
-                    <Badge
-                      data-cy="admin-operations-flow-badge-1"
-                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(1))}
-                    >
-                      스트링 구매
-                    </Badge>
-                    <Badge
-                      data-cy="admin-operations-flow-badge-4"
-                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(4))}
-                    >
-                      라켓 구매
-                    </Badge>
-                    <Badge
-                      data-cy="admin-operations-flow-badge-6"
-                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(6))}
-                    >
-                      대여
-                    </Badge>
-                    <Badge
-                      data-cy="admin-operations-flow-badge-3"
-                      className={cn(badgeBase, badgeSizeSm, flowBadgeClass(3))}
-                    >
-                      교체 신청(단독)
-                    </Badge>
+                    {FLOW_SCENARIOS.map(({ flow, label }) => (
+                      <Badge
+                        key={`legend-flow:${flow}`}
+                        className={cn(badgeBase, badgeSizeSm, flowBadgeClass(flow))}
+                      >
+                        {label}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}
@@ -1561,7 +1594,7 @@ export default function OperationsClient() {
                         처리 상태
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[42%]")}>
-                        다음 처리 · 대상
+                        대상 · 시나리오 · 처리
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[18%] text-right")}>
                         금액
@@ -1602,12 +1635,22 @@ export default function OperationsClient() {
                         reasonSummary !== "연결 문서 확인 필요" ||
                         reasonBullets.length > 0 ||
                         Boolean(g.primarySignal?.title);
+                      const groupCancelRequested = g.items.some(
+                        (it) => it.cancel?.status === "requested",
+                      );
+                      const nextActionText = groupNextActionText({
+                        guide: groupGuide,
+                        cancelRequested: groupCancelRequested,
+                        reviewLevel: g.reviewLevel,
+                      });
                       const customerName =
                         g.anchor.customer?.name?.trim() || "";
                       const customerEmail =
                         g.anchor.customer?.email?.trim() || "";
                       const customerPrimary = customerName || customerEmail || "-";
                       const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
+                      const scenarioLabel = flowLabelText(g.anchor);
+                      const headline = statusHeadlineOf(g.anchor);
                       const quickActionTarget = resolveQuickActionTarget(
                         {
                           anchor: g.anchor,
@@ -1615,9 +1658,6 @@ export default function OperationsClient() {
                           nextAction: groupGuide.nextAction,
                         },
                         groupGuide,
-                      );
-                      const groupCancelRequested = g.items.some(
-                        (it) => it.cancel?.status === "requested",
                       );
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(
                         g.anchor.cancel,
@@ -1709,20 +1749,6 @@ export default function OperationsClient() {
                                 >
                                   {opsKindLabel(g.anchor.kind)}
                                 </Badge>
-                                <div className="w-full rounded-md border border-primary/25 bg-primary/[0.07] px-2.5 py-1.5 text-[11px]">
-                                  <p className="font-semibold text-primary">
-                                    다음 처리
-                                  </p>
-                                  <p className="mt-0.5 line-clamp-2 text-foreground">
-                                    {groupGuide.nextAction?.trim()
-                                      ? toOperatorSentence(groupGuide.nextAction)
-                                      : groupCancelRequested
-                                        ? "취소 요청 처리 필요"
-                                        : g.reviewLevel === "info"
-                                          ? "조치 필요 없음(정상 파생)"
-                                          : "조치 필요 없음"}
-                                  </p>
-                                </div>
                                 <div className="text-[11px] text-muted-foreground">
                                   단계: {toOperatorSentence(groupGuide.stage)} ·{" "}
                                   {isGroup
@@ -1745,7 +1771,7 @@ export default function OperationsClient() {
                                       className="h-6 w-6 p-0"
                                       onClick={() => toggleGroup(g.key)}
                                       title={
-                                        isOpen ? "상세 접기" : "상세 펼치기"
+                                        isOpen ? "운영 참고 접기" : "운영 참고 펼치기"
                                       }
                                     >
                                       {isOpen ? (
@@ -1756,6 +1782,9 @@ export default function OperationsClient() {
                                     </Button>
                                   )}
                                   <div className="min-w-0">
+                                    <p className="text-[11px] text-muted-foreground leading-tight">
+                                      {scenarioLabel}
+                                    </p>
                                     <p className="text-sm font-semibold text-foreground leading-tight">
                                       {customerPrimary}
                                     </p>
@@ -1780,16 +1809,20 @@ export default function OperationsClient() {
                                   </div>
                                 </div>
                                 <p className="text-[15px] font-semibold leading-snug text-foreground line-clamp-1">
-                                  {toOperatorSentence(g.primarySignal?.title) ||
-                                    toOperatorSentence(g.anchor.reviewTitle) ||
-                                    `${opsKindLabel(g.anchor.kind)} 처리 상태 확인 필요`}
+                                  {headline}
+                                </p>
+                                <p className="text-xs text-foreground">
+                                  <span className="font-semibold text-primary">
+                                    다음 처리:
+                                  </span>{" "}
+                                  {nextActionText}
                                 </p>
                                 {hasReasonCard && (
-                                  <div className="rounded-md border border-primary/20 bg-primary/[0.06] px-2.5 py-2">
-                                    <p className="text-xs font-semibold text-foreground">
+                                  <div className="px-0.5 py-1">
+                                    <p className="text-[11px] font-semibold text-muted-foreground">
                                       확인 이유
                                     </p>
-                                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
                                       {reasonSummary}
                                     </p>
                                     {reasonBullets.length > 0 && (
@@ -1822,15 +1855,11 @@ export default function OperationsClient() {
                               )}
                             >
                               <div className="flex flex-col items-end gap-1.5">
-                                <Badge
-                                  variant={opStatusBadgeSpec(g.anchor).variant}
-                                  className={cn(badgeBase, badgeSizeSm)}
-                                >
-                                  {g.anchor.statusDisplayLabel ??
-                                    g.anchor.statusLabel}
-                                </Badge>
+                                <span className="text-lg font-extrabold whitespace-nowrap tracking-tight">
+                                  {won(g.anchor.amount)}
+                                </span>
                                 <span className="text-[11px] text-muted-foreground line-clamp-1">
-                                  결제: {g.anchor.paymentLabel || "정보 없음"}
+                                  결제 상태: {g.anchor.paymentLabel || "정보 없음"}
                                 </span>
                                 {(() => {
                                   const cancelBadge = cancelBadgeSpec(
@@ -1886,44 +1915,11 @@ export default function OperationsClient() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 )}
-                                {isGroup ? (
-                                  <div className="w-full space-y-1.5">
-                                  {pickOnePerKind(g.items).map((it) => {
-                                    const meaning = amountMeaningText(it);
-                                    return (
-                                      <div
-                                        key={`${it.kind}:${it.id}`}
-                                        className="flex items-start justify-between gap-3"
-                                      >
-                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                          {opsKindLabel(it.kind)}
-                                        </span>
-                                        <div className="text-right">
-                                          <div className="text-base font-extrabold whitespace-nowrap tracking-tight">
-                                            {won(it.amount)}
-                                          </div>
-                                          {meaning ? (
-                                            <div className="text-[11px] font-normal text-muted-foreground whitespace-nowrap">
-                                              {meaning}
-                                            </div>
-                                          ) : null}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                  </div>
-                                ) : (
-                                  <div className="w-full">
-                                  <div className="text-lg font-extrabold whitespace-nowrap tracking-tight">
-                                    {won(g.anchor.amount)}
-                                  </div>
-                                  {amountMeaningText(g.anchor) ? (
-                                    <div className="text-[11px] font-normal text-muted-foreground whitespace-nowrap">
-                                      {amountMeaningText(g.anchor)}
-                                    </div>
-                                  ) : null}
-                                  </div>
-                                )}
+                                {amountMeaningText(g.anchor) ? (
+                                  <span className="text-[11px] text-muted-foreground line-clamp-2 text-right">
+                                    {amountMeaningText(g.anchor)}
+                                  </span>
+                                ) : null}
                               </div>
                             </TableCell>
 
@@ -1966,6 +1962,22 @@ export default function OperationsClient() {
                                       <span className="text-xs">상세</span>
                                     </Link>
                                   </Button>
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 px-2 text-xs"
+                                    title={ROW_ACTION_LABELS.settlement}
+                                  >
+                                    <Link
+                                      href={settleHref}
+                                      className="flex items-center gap-1"
+                                      aria-label={ROW_ACTION_LABELS.settlement}
+                                    >
+                                      <BarChartBig className="h-3.5 w-3.5" />
+                                      <span className="text-xs">정산</span>
+                                    </Link>
+                                  </Button>
                                 </div>
                               </div>
                             </TableCell>
@@ -1983,7 +1995,7 @@ export default function OperationsClient() {
                                 <div className="mb-2 flex items-center gap-2">
                                   <ChevronDown className="h-3.5 w-3.5 text-primary" />
                                   <p className="text-xs font-semibold text-foreground">
-                                    상세 정보
+                                    운영 참고 정보
                                   </p>
                                 </div>
                                 <div className="grid gap-3 bp-xl:grid-cols-2 2xl:grid-cols-4">
@@ -2040,24 +2052,6 @@ export default function OperationsClient() {
                                     <p className="text-xs text-muted-foreground">
                                       {toOperatorSentence(groupGuide.stage)}
                                     </p>
-                                    <div className="mt-2">
-                                      <Button
-                                        asChild
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-7 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
-                                        title={ROW_ACTION_LABELS.settlement}
-                                      >
-                                        <Link
-                                          href={settleHref}
-                                          className="flex items-center gap-1"
-                                          aria-label={ROW_ACTION_LABELS.settlement}
-                                        >
-                                          <BarChartBig className="h-3.5 w-3.5" />
-                                          정산
-                                        </Link>
-                                      </Button>
-                                    </div>
                                   </div>
                                   {g.reviewLevel === "info" && (
                                     <p className="rounded-md border border-info/25 bg-info/10 p-3 text-xs text-info">
@@ -2110,6 +2104,8 @@ export default function OperationsClient() {
                   const customerName = g.anchor.customer?.name?.trim() || "";
                   const customerEmail = g.anchor.customer?.email?.trim() || "";
                   const customerPrimary = customerName || customerEmail || "-";
+                  const scenarioLabel = flowLabelText(g.anchor);
+                  const headline = statusHeadlineOf(g.anchor);
                   const quickActionTarget = resolveQuickActionTarget(
                     {
                       anchor: g.anchor,
@@ -2121,6 +2117,11 @@ export default function OperationsClient() {
                   const groupCancelRequested = g.items.some(
                     (it) => it.cancel?.status === "requested",
                   );
+                  const nextActionText = groupNextActionText({
+                    guide: groupGuide,
+                    cancelRequested: groupCancelRequested,
+                    reviewLevel: g.reviewLevel,
+                  });
                   const settleYyyymm = yyyymmKST(g.createdAt ?? g.anchor.createdAt);
                   const settleHref = settleYyyymm
                     ? `/admin/settlements?yyyymm=${settleYyyymm}`
@@ -2174,6 +2175,9 @@ export default function OperationsClient() {
 
                         <div className="flex items-baseline justify-between gap-2">
                           <div>
+                            <p className="text-[11px] leading-tight text-muted-foreground">
+                              {scenarioLabel}
+                            </p>
                             <span className="text-sm font-semibold text-foreground">
                               {customerPrimary}
                             </span>
@@ -2189,16 +2193,20 @@ export default function OperationsClient() {
                         </div>
 
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
-                          {toOperatorSentence(g.primarySignal?.title) ||
-                            toOperatorSentence(g.anchor.reviewTitle) ||
-                            `${opsKindLabel(g.anchor.kind)} 확인 필요`}
+                          {headline}
+                        </p>
+                        <p className="text-xs text-foreground">
+                          <span className="mr-1 font-semibold text-primary">
+                            다음 처리
+                          </span>
+                          {nextActionText}
                         </p>
                         {hasReasonCard && (
-                          <div className="rounded-md border border-primary/20 bg-primary/[0.06] px-2.5 py-2">
-                            <p className="text-xs font-semibold text-foreground">
+                          <div className="px-0.5 py-1">
+                            <p className="text-[11px] font-semibold text-muted-foreground">
                               확인 이유
                             </p>
-                            <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
                               {reasonSummary}
                             </p>
                             {reasonBullets.length > 0 && (
@@ -2215,22 +2223,6 @@ export default function OperationsClient() {
                             )}
                           </div>
                         )}
-
-                        <p className="flex items-start gap-1 text-[11px] text-foreground">
-                          <BellRing className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
-                          <span className="line-clamp-2">
-                            <span className="mr-1 font-semibold text-primary">
-                              다음 처리
-                            </span>
-                            {groupGuide.nextAction?.trim()
-                              ? toOperatorSentence(groupGuide.nextAction)
-                              : groupCancelRequested
-                                ? "취소 요청 처리 필요"
-                                : g.reviewLevel === "info"
-                                  ? "조치 필요 없음(정상 파생)"
-                                  : "조치 필요 없음"}
-                          </span>
-                        </p>
 
                         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                           {quickActionTarget && (
@@ -2260,13 +2252,27 @@ export default function OperationsClient() {
                             </Link>
                           </Button>
                           <Button
+                            asChild
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2"
+                          >
+                            <Link
+                              href={settleHref}
+                              className="inline-flex items-center gap-1"
+                            >
+                              <BarChartBig className="h-3.5 w-3.5" />
+                              정산
+                            </Link>
+                          </Button>
+                          <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             className="ml-auto h-7 px-2 text-[11px] text-muted-foreground"
                             onClick={() => toggleGroup(g.key)}
                           >
-                            {isOpen ? "상세 접기" : "상세 정보"}
+                            {isOpen ? "접기" : "운영 참고"}
                           </Button>
                         </div>
 
@@ -2377,22 +2383,6 @@ export default function OperationsClient() {
                                 ) ?? "정보 없음"}
                               </p>
                             )}
-                            <div className="flex flex-wrap items-center gap-1 opacity-85">
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-1.5 text-[11px] text-muted-foreground"
-                              >
-                                <Link
-                                  href={settleHref}
-                                  className="inline-flex items-center gap-1"
-                                >
-                                  <BarChartBig className="h-3.5 w-3.5" />
-                                  정산
-                                </Link>
-                              </Button>
-                            </div>
                           </div>
                         )}
                       </CardContent>
