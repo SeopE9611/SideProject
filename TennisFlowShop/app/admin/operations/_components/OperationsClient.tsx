@@ -1600,7 +1600,7 @@ export default function OperationsClient() {
             <div className="flex items-center gap-2">
               <p className="text-xs text-muted-foreground">
                 {typeof totalGroups === "number"
-                  ? `총 ${totalGroups.toLocaleString("ko-KR")}그룹`
+                  ? `총 ${totalGroups.toLocaleString("ko-KR")}건 표시됨`
                   : "목록을 불러오는 중…"}
               </p>
               <span className="text-xs text-muted-foreground">표시 밀도</span>
@@ -1662,13 +1662,18 @@ export default function OperationsClient() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border">
-                      <TableHead className={thClasses}>우선순위</TableHead>
-                      <TableHead className={thClasses}>대상 · 요약</TableHead>
-                      <TableHead className={thClasses}>이유 · 다음 액션</TableHead>
-                      <TableHead className={thClasses}>금액</TableHead>
+                      <TableHead className={cn(thClasses, "w-[24%]")}>
+                        상태 · 종류
+                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[42%]")}>
+                        대상 · 핵심 요약
+                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%] text-right")}>
+                        금액
+                      </TableHead>
                       {/* <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead> */}
                       <TableHead
-                        className={cn(thClasses, stickyActionHeadClass)}
+                        className={cn(thClasses, stickyActionHeadClass, "w-[16%]")}
                       >
                         액션
                       </TableHead>
@@ -1723,7 +1728,7 @@ export default function OperationsClient() {
                         : "/admin/settlements";
 
                       const rowDensityClass =
-                        displayDensity === "compact" ? "py-1.5" : "py-2.5";
+                        displayDensity === "compact" ? "py-2" : "py-3";
                       const rowBaseToneClass =
                         idx % 2 === 0 ? "bg-background" : "bg-muted/[0.18]";
                       const warnEmphasisClass = warn
@@ -1744,7 +1749,7 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="flex flex-wrap items-center gap-1">
+                              <div className="flex flex-wrap items-center gap-1.5">
                                 <div className="flex items-center gap-1">
                                   <Badge
                                     className={cn(
@@ -1780,6 +1785,18 @@ export default function OperationsClient() {
                                     </Badge>
                                   )}
                                 </div>
+                                <Badge
+                                  variant={opsBadgeVariant(
+                                    opsKindBadgeTone(g.anchor.kind),
+                                  )}
+                                  className={cn(
+                                    badgeBase,
+                                    badgeSizeSm,
+                                    "min-w-[3.75rem] justify-center whitespace-nowrap",
+                                  )}
+                                >
+                                  {opsKindLabel(g.anchor.kind)}
+                                </Badge>
                                 {!warn &&
                                   g.reviewLevel === "action" &&
                                   reviewReasons.length > 0 && (
@@ -1812,15 +1829,19 @@ export default function OperationsClient() {
                                     )}
                                   </div>
                                 )}
-                                <div className="w-full rounded-sm border border-primary/20 bg-primary/5 px-2 py-1 text-[11px]">
-                                  다음 액션:{" "}
-                                  {groupGuide.nextAction?.trim()
-                                    ? toOperatorSentence(groupGuide.nextAction)
-                                    : groupCancelRequested
-                                      ? "취소 요청 처리 필요"
-                                      : g.reviewLevel === "info"
-                                        ? "조치 필요 없음(정상 파생)"
-                                        : "조치 필요 없음"}
+                                <div className="w-full rounded-md border border-primary/25 bg-primary/[0.07] px-2.5 py-1.5 text-[11px]">
+                                  <p className="font-semibold text-primary">
+                                    다음 액션
+                                  </p>
+                                  <p className="mt-0.5 text-foreground">
+                                    {groupGuide.nextAction?.trim()
+                                      ? toOperatorSentence(groupGuide.nextAction)
+                                      : groupCancelRequested
+                                        ? "취소 요청 처리 필요"
+                                        : g.reviewLevel === "info"
+                                          ? "조치 필요 없음(정상 파생)"
+                                          : "조치 필요 없음"}
+                                  </p>
                                 </div>
                                 <div className="text-[11px] text-muted-foreground">
                                   {toOperatorSentence(groupGuide.stage)} ·{" "}
@@ -1835,7 +1856,7 @@ export default function OperationsClient() {
                             <TableCell
                               className={cn(tdClasses, rowDensityClass)}
                             >
-                              <div className="space-y-1.5">
+                              <div className="space-y-2">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {isGroup && (
                                     <Button
@@ -1855,42 +1876,57 @@ export default function OperationsClient() {
                                       )}
                                     </Button>
                                   )}
-                                  <Badge
-                                    variant={opsBadgeVariant(
-                                      opsKindBadgeTone(g.anchor.kind),
-                                    )}
-                                    className={cn(badgeBase, badgeSizeSm)}
-                                  >
-                                    {opsKindLabel(g.anchor.kind)}
-                                  </Badge>
                                   <span className="font-medium text-sm">
                                     {shortenId(g.anchor.id)}
                                   </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatKST(g.createdAt ?? g.anchor.createdAt)}
+                                  </span>
                                 </div>
-                                <p className="text-sm font-medium text-foreground">
+                                <div className="text-sm font-medium text-foreground">
+                                  {g.anchor.customer?.name || "-"}
+                                </div>
+                                <p className="text-[15px] font-semibold leading-snug text-foreground">
                                   {toOperatorSentence(g.primarySignal?.title) ||
                                     toOperatorSentence(g.anchor.reviewTitle) ||
                                     `${opsKindLabel(g.anchor.kind)} 처리 상태 확인 필요`}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
-                                  이유:{" "}
-                                  {toOperatorSentence(g.primarySignal?.description) ||
-                                    toOperatorSentence(reviewReasons[0]) ||
-                                    "상태와 연결 문서를 함께 확인해야 하는 항목입니다."}
-                                </p>
-                                <div className="text-sm">
-                                  {g.anchor.customer?.name || "-"}
+                                <div className="rounded-md border border-border/70 bg-muted/[0.28] px-2.5 py-1.5">
+                                  <p className="text-[11px] font-semibold text-muted-foreground">
+                                    확인 이유
+                                  </p>
+                                  <p className="mt-0.5 text-xs text-muted-foreground">
+                                    {toOperatorSentence(g.primarySignal?.description) ||
+                                      toOperatorSentence(reviewReasons[0]) ||
+                                      "상태와 연결 문서를 함께 확인해야 하는 항목입니다."}
+                                  </p>
                                 </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {formatKST(g.createdAt ?? g.anchor.createdAt)}
+                                <div className="rounded-md border border-primary/20 bg-primary/[0.07] px-2.5 py-1.5">
+                                  <p className="flex items-center gap-1 text-[11px] font-semibold text-primary">
+                                    <BellRing className="h-3 w-3" />
+                                    지금 해야 할 일
+                                  </p>
+                                  <p className="mt-0.5 text-xs text-foreground">
+                                    {groupGuide.nextAction?.trim()
+                                      ? toOperatorSentence(groupGuide.nextAction)
+                                      : groupCancelRequested
+                                        ? "취소 요청 처리 필요"
+                                        : g.reviewLevel === "info"
+                                          ? "조치 필요 없음(정상 파생)"
+                                          : "조치 필요 없음"}
+                                  </p>
                                 </div>
                               </div>
                             </TableCell>
 
                             <TableCell
-                              className={cn(tdClasses, rowDensityClass)}
+                              className={cn(
+                                tdClasses,
+                                rowDensityClass,
+                                "font-semibold text-right",
+                              )}
                             >
-                              <div className="flex flex-col items-start gap-1.5">
+                              <div className="flex flex-col items-end gap-1.5">
                                 <Badge
                                   variant={opStatusBadgeSpec(g.anchor).variant}
                                   className={cn(badgeBase, badgeSizeSm)}
@@ -1971,18 +2007,8 @@ export default function OperationsClient() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 )}
-                              </div>
-                            </TableCell>
-
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "font-semibold text-sm",
-                              )}
-                            >
-                              {isGroup ? (
-                                <div className="space-y-1.5">
+                                {isGroup ? (
+                                  <div className="w-full space-y-1.5">
                                   {pickOnePerKind(g.items).map((it) => {
                                     const meaning = amountMeaningText(it);
                                     return (
@@ -1990,13 +2016,15 @@ export default function OperationsClient() {
                                         key={`${it.kind}:${it.id}`}
                                         className="flex items-start justify-between gap-3"
                                       >
-                                        <span className="text-xs text-muted-foreground">
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
                                           {opsKindLabel(it.kind)}
                                         </span>
                                         <div className="text-right">
-                                          <div>{won(it.amount)}</div>
+                                          <div className="text-base font-extrabold whitespace-nowrap tracking-tight">
+                                            {won(it.amount)}
+                                          </div>
                                           {meaning ? (
-                                            <div className="text-[11px] font-normal text-muted-foreground">
+                                            <div className="text-[11px] font-normal text-muted-foreground whitespace-nowrap">
                                               {meaning}
                                             </div>
                                           ) : null}
@@ -2004,17 +2032,20 @@ export default function OperationsClient() {
                                       </div>
                                     );
                                   })}
-                                </div>
-                              ) : (
-                                <div>
-                                  <div>{won(g.anchor.amount)}</div>
+                                  </div>
+                                ) : (
+                                  <div className="w-full">
+                                  <div className="text-lg font-extrabold whitespace-nowrap tracking-tight">
+                                    {won(g.anchor.amount)}
+                                  </div>
                                   {amountMeaningText(g.anchor) ? (
-                                    <div className="text-[11px] font-normal text-muted-foreground">
+                                    <div className="text-[11px] font-normal text-muted-foreground whitespace-nowrap">
                                       {amountMeaningText(g.anchor)}
                                     </div>
                                   ) : null}
-                                </div>
-                              )}
+                                  </div>
+                                )}
+                              </div>
                             </TableCell>
 
                             <TableCell
@@ -2025,13 +2056,13 @@ export default function OperationsClient() {
                                 stickyActionCellClass,
                               )}
                             >
-                              <div className="flex justify-end gap-1.5">
+                              <div className="flex flex-wrap justify-end gap-2">
                                 {quickActionTarget && (
                                   <Button
                                     asChild
                                     size="sm"
                                     variant="default"
-                                    className="h-8 px-2"
+                                    className="h-8 px-2.5 font-semibold shadow-sm"
                                     title={groupGuide.nextAction ?? quickActionTarget.label}
                                   >
                                     <Link href={quickActionTarget.href} className="text-xs">
@@ -2043,7 +2074,7 @@ export default function OperationsClient() {
                                   asChild
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 px-2 bg-transparent"
+                                  className="h-8 px-2.5 bg-transparent"
                                   title={ROW_ACTION_LABELS.detail}
                                 >
                                   <Link
@@ -2059,7 +2090,7 @@ export default function OperationsClient() {
                                   asChild
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 px-2 bg-transparent"
+                                  className="h-8 px-2.5 bg-transparent"
                                   title={ROW_ACTION_LABELS.settlement}
                                 >
                                   <Link
@@ -2074,7 +2105,7 @@ export default function OperationsClient() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 w-8 p-0 bg-transparent"
+                                    className="h-8 w-8 p-0 bg-transparent"
                                   onClick={() => copyToClipboard(g.anchor.id)}
                                   title={ROW_ACTION_LABELS.copyId}
                                   aria-label={ROW_ACTION_LABELS.copyId}
@@ -2086,24 +2117,30 @@ export default function OperationsClient() {
                           </TableRow>
 
                           {isGroup && isOpen && (
-                            <TableRow className="bg-muted/20">
+                            <TableRow className="bg-muted/35">
                               <TableCell
-                                colSpan={5}
+                                colSpan={4}
                                 className={cn(
                                   tdClasses,
-                                  "border-l-2 border-l-primary/40",
+                                  "border-l-2 border-l-primary/40 border-t border-primary/20 py-4",
                                 )}
                               >
-                                <div className="grid gap-4 bp-xl:grid-cols-3">
-                                  <div>
-                                    <p className="mb-1 text-xs font-medium text-foreground">
+                                <div className="mb-2 flex items-center gap-2">
+                                  <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                                  <p className="text-xs font-semibold text-foreground">
+                                    상세 섹션
+                                  </p>
+                                </div>
+                                <div className="grid gap-3 bp-xl:grid-cols-2 2xl:grid-cols-4">
+                                  <div className="rounded-md border border-border bg-background/70 p-3">
+                                    <p className="mb-1 text-xs font-semibold text-foreground">
                                       연결 문서
                                     </p>
                                     {renderLinkedDocs(linkedDocsForAnchor)}
                                   </div>
                                   {g.anchor.flow === 7 && (
-                                    <div>
-                                      <p className="mb-1 text-xs font-medium text-foreground">
+                                    <div className="rounded-md border border-border bg-background/70 p-3">
+                                      <p className="mb-1 text-xs font-semibold text-foreground">
                                         스트링 요약
                                       </p>
                                       <p className="text-xs text-muted-foreground">
@@ -2115,8 +2152,8 @@ export default function OperationsClient() {
                                       </p>
                                     </div>
                                   )}
-                                  <div>
-                                    <p className="mb-1 text-xs font-medium text-foreground">
+                                  <div className="rounded-md border border-border bg-background/70 p-3">
+                                    <p className="mb-1 text-xs font-semibold text-foreground">
                                       확인이 필요한 이유
                                     </p>
                                     {childStatusSummary.length > 0 ? (
@@ -2138,8 +2175,8 @@ export default function OperationsClient() {
                                       </span>
                                     )}
                                   </div>
-                                  <div>
-                                    <p className="mb-1 text-xs font-medium text-foreground">
+                                  <div className="rounded-md border border-primary/20 bg-primary/[0.06] p-3">
+                                    <p className="mb-1 text-xs font-semibold text-foreground">
                                       현재 단계 / 다음 액션
                                     </p>
                                     <p className="text-xs text-muted-foreground">
@@ -2154,14 +2191,14 @@ export default function OperationsClient() {
                                     </p>
                                   </div>
                                   {g.reviewLevel === "info" && (
-                                    <p className="text-xs text-info">
+                                    <p className="rounded-md border border-info/25 bg-info/10 p-3 text-xs text-info">
                                       참고 정보입니다. 조치 필요 없음.
                                     </p>
                                   )}
                                   {g.reviewLevel === "action" &&
                                     reviewReasons.length > 0 && (
-                                      <div>
-                                        <p className="mb-1 text-xs font-medium text-foreground">
+                                      <div className="rounded-md border border-border bg-background/70 p-3">
+                                        <p className="mb-1 text-xs font-semibold text-foreground">
                                           확인이 필요한 이유
                                         </p>
                                         <ul className="space-y-1">
@@ -2186,7 +2223,7 @@ export default function OperationsClient() {
 
                     {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={5} className="py-16 text-center">
+                        <TableCell colSpan={4} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className="text-sm text-muted-foreground">
@@ -2228,10 +2265,10 @@ export default function OperationsClient() {
                     g.anchor.cancel,
                   );
                   return (
-                    <Card key={`m:${g.key}`} className="border-border">
+                    <Card key={`m:${g.key}`} className="border-border shadow-sm">
                       <CardContent className="p-3 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-1">
                             <Badge
                               className={cn(
                                 badgeBase,
@@ -2270,7 +2307,11 @@ export default function OperationsClient() {
                             variant={opsBadgeVariant(
                               opsKindBadgeTone(g.anchor.kind),
                             )}
-                            className={cn(badgeBase, badgeSizeSm)}
+                            className={cn(
+                              badgeBase,
+                              badgeSizeSm,
+                              "min-w-[3.75rem] justify-center whitespace-nowrap shrink-0",
+                            )}
                           >
                             {opsKindLabel(g.anchor.kind)}
                           </Badge>
@@ -2289,9 +2330,13 @@ export default function OperationsClient() {
                             toOperatorSentence(reviewReasons[0]) ||
                             "상태와 연결 정보를 함께 확인해 주세요."}
                         </p>
-                        <div className="text-xs text-muted-foreground">
-                          상태:{" "}
-                          {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge
+                            variant={opStatusBadgeSpec(g.anchor).variant}
+                            className={cn(badgeBase, badgeSizeSm)}
+                          >
+                            {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel}
+                          </Badge>
                         </div>
                         {g.anchor.paymentLabel ? (
                           <div className="text-xs text-muted-foreground">
@@ -2367,15 +2412,17 @@ export default function OperationsClient() {
                           <p className="text-[11px] text-muted-foreground">
                             {toOperatorSentence(groupGuide.stage)}
                           </p>
-                          <p className="mt-1 text-[11px] text-foreground">
-                            다음 액션:{" "}
-                            {groupGuide.nextAction?.trim()
-                              ? toOperatorSentence(groupGuide.nextAction)
-                              : groupCancelRequested
-                                ? "취소 요청 처리 필요"
-                                : g.reviewLevel === "info"
-                                  ? "조치 필요 없음(정상 파생)"
-                                  : "조치 필요 없음"}
+                          <p className="mt-1 flex items-start gap-1 text-[11px] text-foreground">
+                            <BellRing className="mt-0.5 h-3 w-3 shrink-0 text-primary" />
+                            <span>
+                              {groupGuide.nextAction?.trim()
+                                ? toOperatorSentence(groupGuide.nextAction)
+                                : groupCancelRequested
+                                  ? "취소 요청 처리 필요"
+                                  : g.reviewLevel === "info"
+                                    ? "조치 필요 없음(정상 파생)"
+                                    : "조치 필요 없음"}
+                            </span>
                           </p>
                         </div>
                         {(g.signals?.length ?? 0) > 0 && (
@@ -2432,9 +2479,9 @@ export default function OperationsClient() {
                           </Button>
                         )}
                         {isGroup && isOpen && (
-                          <div className="rounded-md border border-border bg-muted/20 p-2 space-y-2">
-                            <p className="text-[11px] font-medium text-foreground">
-                              연결 문서와 상태 참고
+                          <div className="rounded-md border border-primary/20 bg-muted/35 p-2.5 space-y-2">
+                            <p className="text-[11px] font-semibold text-foreground">
+                              상세 섹션 · 연결 문서와 상태 참고
                             </p>
                             {renderLinkedDocs(
                               g.items
@@ -2451,37 +2498,42 @@ export default function OperationsClient() {
                             )}
                           </div>
                         )}
-                        <div className="text-sm font-semibold">
-                          금액: {won(g.anchor.amount)}
+                        <div className="rounded-md border border-border/70 bg-background px-2.5 py-2">
+                          <p className="text-[11px] font-medium text-muted-foreground">
+                            금액
+                          </p>
+                          <div className="text-lg font-extrabold tracking-tight whitespace-nowrap">
+                            {won(g.anchor.amount)}
+                          </div>
                         </div>
                         {amountMeaningText(g.anchor) ? (
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
                             {amountMeaningText(g.anchor)}
                           </div>
                         ) : null}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
                           {quickActionTarget && (
                             <Button
                               asChild
                               size="sm"
                               variant="default"
-                              className="h-8 px-2"
+                              className="h-8 px-2.5 font-semibold shadow-sm"
                             >
                               <Link href={quickActionTarget.href}>
                                 {quickActionTarget.label}
                               </Link>
                             </Button>
                           )}
-                          <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
+                          <Button asChild size="sm" variant="outline" className="h-8 px-2.5 bg-transparent">
                             <Link href={g.anchor.href}>상세 보기</Link>
                           </Button>
-                          <Button asChild size="sm" variant="outline" className="h-8 px-2 bg-transparent">
+                          <Button asChild size="sm" variant="outline" className="h-8 px-2.5 bg-transparent">
                             <Link href={settleHref}>정산 확인</Link>
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-2 bg-transparent"
+                            className="h-8 px-2.5 bg-transparent"
                             onClick={() => copyToClipboard(g.anchor.id)}
                           >
                             ID 복사
