@@ -111,14 +111,14 @@ function amountMeaningText(item: OpItem) {
 const PAGE_COPY = {
   title: "운영 통합 센터",
   description:
-    "꼭 확인할 업무를 먼저 보여주고, 각 항목의 이유와 다음 할 일을 한 번에 확인하는 화면입니다.",
+    "오늘 처리할 항목을 빠르게 고르고, 바로 액션할 수 있도록 정리한 화면입니다.",
   dailyTodoTitle: "오늘 해야 할 일",
   dailyTodoLabels: {
     urgent: "긴급",
     caution: "확인 필요",
     pending: "미처리",
   },
-  actionsTitle: "이 페이지에서 가능한 액션",
+  actionsTitle: "도움말",
   actions: [
     {
       title: "주의(오류) 우선 처리",
@@ -126,7 +126,7 @@ const PAGE_COPY = {
         "데이터 연결/무결성 오류 신호를 먼저 점검해 운영 리스크를 줄입니다.",
     },
     {
-      title: "검수필요 확인",
+      title: "확인 필요 항목 점검",
       description:
         "오류는 아니지만 운영 확인이 필요한 건의 검수 사유를 빠르게 확인합니다.",
     },
@@ -139,20 +139,6 @@ const PAGE_COPY = {
       description: "지난달 기준 정산 화면으로 빠르게 이동해 마감합니다.",
     },
   ],
-  onboarding: {
-    title: "처음 방문하셨나요? 운영 통합 센터 3단계",
-    description:
-      "먼저 꼭 확인해야 할 항목을 위에서 확인하고, 필요한 필터를 고른 뒤 이유와 다음 할 일을 순서대로 점검하세요.",
-    steps: [
-      "1) 오늘 해야 할 일 확인",
-      "2) 업무 목적형 프리셋 선택",
-      "3) 주의 → 검수필요 → 미처리 순 점검",
-    ],
-    dismissLabel: "다시 보지 않기",
-    collapsedSummary:
-      "온보딩이 숨겨져 있습니다. 필요 시 다시 열어 주요 사용 흐름을 확인하세요.",
-    reopenLabel: "온보딩 다시 보기",
-  },
 };
 
 const ROW_ACTION_LABELS = {
@@ -258,7 +244,7 @@ const PRESET_CONFIG: Record<
     isActive: ({ onlyWarn }) => onlyWarn,
   },
   integratedReview: {
-    label: "통합건 검수",
+    label: "연결 주문 확인",
     helperText: "주문/대여와 신청서가 연결된 통합 건만 모아 확인합니다.",
     priorityReason:
       "연결 구조가 복잡해 문서 누락/상태 불일치가 가장 자주 발생합니다.",
@@ -288,8 +274,6 @@ const PRESET_CONFIG: Record<
       !onlyWarn,
   },
 };
-
-const ONBOARDING_DISMISS_KEY = "admin-operations-onboarding-dismissed-v1";
 
 // 운영함 상단에서 "정산 관리"로 바로 이동할 때 사용할 기본 YYYYMM(지난달, KST 기준)
 // 그룹 createdAt(ISO) → KST 기준 yyyymm(예: 202601)
@@ -636,15 +620,10 @@ export default function OperationsClient() {
   const [showAdvancedLegend, setShowAdvancedLegend] = useState(false);
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showOnboardingSummary, setShowOnboardingSummary] = useState(false);
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">(
     "default",
-  );
-  const [activePresetGuide, setActivePresetGuide] = useState<PresetKey | null>(
-    null,
   );
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
   const defaultPageSize = 50;
@@ -690,13 +669,6 @@ export default function OperationsClient() {
     setWarnFilter("warn");
     setPage(1);
   }, [onlyWarn, warnFilter]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const dismissed = window.localStorage.getItem(ONBOARDING_DISMISS_KEY);
-    setShowOnboarding(dismissed !== "1");
-    setShowOnboardingSummary(dismissed === "1");
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -860,22 +832,6 @@ export default function OperationsClient() {
     setPage(1);
   }
 
-  function dismissOnboarding() {
-    setShowOnboarding(false);
-    setShowOnboardingSummary(true);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(ONBOARDING_DISMISS_KEY, "1");
-    }
-  }
-
-  function reopenOnboarding() {
-    setShowOnboarding(true);
-    setShowOnboardingSummary(false);
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(ONBOARDING_DISMISS_KEY);
-    }
-  }
-
   async function copyShareViewLink() {
     await copyToClipboard(shareViewFullHref);
     setShareLinkCopied(true);
@@ -901,7 +857,6 @@ export default function OperationsClient() {
   }
 
   function clearPresetMode() {
-    setActivePresetGuide(null);
     applyPreset({ integrated: "all", flow: "all", kind: "all", warn: false });
     setWarnFilter("all");
     setWarnSort("default");
@@ -951,6 +906,13 @@ export default function OperationsClient() {
     if (warnSort !== "default") count += 1;
     return count;
   }, [flow, integrated, kind, onlyWarn, q, warnFilter, warnSort]);
+
+  const activeKpi = useMemo(() => {
+    if (warnFilter === "warn") return "urgent";
+    if (warnFilter === "caution") return "caution";
+    if (warnFilter === "pending") return "pending";
+    return null;
+  }, [warnFilter]);
 
   function toggleGroup(key: string) {
     setOpenGroups((prev) => ({
@@ -1022,22 +984,51 @@ export default function OperationsClient() {
         />
       )}
       {/* 페이지 헤더 */}
-      <div className="mx-auto mb-4 max-w-[1440px]">
+      <div className="mx-auto mb-4 max-w-[1440px] space-y-3">
         <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
           {PAGE_COPY.title}
         </h1>
-        <p className="mt-1 text-xs text-muted-foreground lg:text-sm">
+        <p className="text-xs text-muted-foreground lg:text-sm">
           {PAGE_COPY.description}
         </p>
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          상단 요약 수치는 서버에서 계산된 전체 필터 결과(그룹 기준)입니다.
-        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={() => setShowActionsGuide((prev) => !prev)}
+          >
+            {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
+          </Button>
+          <p className="text-[11px] text-muted-foreground">
+            상단 수치는 현재 필터 기준 전체 그룹 요약입니다.
+          </p>
+        </div>
 
-        <div className="mt-3 grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
+        {showActionsGuide && (
+          <div className="grid gap-2 rounded-xl border border-border bg-muted/30 p-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+            {PAGE_COPY.actions.map((action) => (
+              <div key={action.title} className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">{action.title}</p>
+                <p className="text-xs text-muted-foreground">{action.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="text-sm font-medium text-foreground">
+          {PAGE_COPY.dailyTodoTitle}
+        </p>
+        <div className="grid gap-2 grid-cols-1 bp-sm:grid-cols-3">
           <Card
-            className="border-warning/30 bg-warning/5 shadow-none cursor-pointer"
+            className={cn(
+              "cursor-pointer border-warning/30 bg-warning/5 shadow-none transition",
+              activeKpi === "urgent" && "ring-2 ring-warning/60",
+            )}
             onClick={() => {
               setWarnFilter("warn");
+              setOnlyWarn(false);
               setPage(1);
             }}
           >
@@ -1052,7 +1043,10 @@ export default function OperationsClient() {
             </CardHeader>
           </Card>
           <Card
-            className="border-info/40 bg-info/5 shadow-none cursor-pointer"
+            className={cn(
+              "cursor-pointer border-info/40 bg-info/5 shadow-none transition",
+              activeKpi === "caution" && "ring-2 ring-info/60",
+            )}
             onClick={() => {
               setOnlyWarn(false);
               setWarnFilter("caution");
@@ -1067,13 +1061,14 @@ export default function OperationsClient() {
               <CardDescription className="text-2xl font-bold text-foreground">
                 {todayTodoCount ? `${todayTodoCount.caution}건` : "-"}
               </CardDescription>
-              <p className="text-[11px] text-muted-foreground">
-                검수/결제이상/취소요청 포함
-              </p>
+              <p className="text-[11px] text-muted-foreground">확인이 필요한 항목</p>
             </CardHeader>
           </Card>
           <Card
-            className="border-primary/30 bg-primary/5 shadow-none cursor-pointer"
+            className={cn(
+              "cursor-pointer border-primary/30 bg-primary/5 shadow-none transition",
+              activeKpi === "pending" && "ring-2 ring-primary/60",
+            )}
             onClick={() => {
               setOnlyWarn(false);
               setWarnFilter("pending");
@@ -1091,70 +1086,41 @@ export default function OperationsClient() {
             </CardHeader>
           </Card>
         </div>
-
-        {showOnboarding && (
-          <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {PAGE_COPY.onboarding.title}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {PAGE_COPY.onboarding.description}
-                </p>
-                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-                  {PAGE_COPY.onboarding.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ul>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="bg-transparent"
-                onClick={dismissOnboarding}
-              >
-                {PAGE_COPY.onboarding.dismissLabel}
-              </Button>
-            </div>
+        <div className="rounded-xl border border-border bg-card p-3">
+          <p className="text-sm font-semibold text-foreground">업무 모드 전환</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button
+              variant={presetActive.paymentMismatch ? "default" : "outline"}
+              size="sm"
+              aria-pressed={presetActive.paymentMismatch}
+              onClick={() => applyPreset(PRESET_CONFIG.paymentMismatch.params)}
+              className={!presetActive.paymentMismatch ? "bg-transparent" : ""}
+            >
+              {PRESET_CONFIG.paymentMismatch.label}
+            </Button>
+            <Button
+              variant={presetActive.integratedReview ? "default" : "outline"}
+              size="sm"
+              aria-pressed={presetActive.integratedReview}
+              onClick={() => applyPreset(PRESET_CONFIG.integratedReview.params)}
+              className={!presetActive.integratedReview ? "bg-transparent" : ""}
+            >
+              {PRESET_CONFIG.integratedReview.label}
+            </Button>
+            <Button
+              variant={presetActive.singleApplication ? "default" : "outline"}
+              size="sm"
+              aria-pressed={presetActive.singleApplication}
+              onClick={() => applyPreset(PRESET_CONFIG.singleApplication.params)}
+              className={!presetActive.singleApplication ? "bg-transparent" : ""}
+            >
+              {PRESET_CONFIG.singleApplication.label}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={clearPresetMode}>
+              전체 보기
+            </Button>
           </div>
-        )}
-      </div>
-
-      <div className="mx-auto mb-3 max-w-[1440px]">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-sm font-medium text-foreground">
-            {PAGE_COPY.actionsTitle}
-          </p>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-xs"
-            onClick={() => setShowActionsGuide((prev) => !prev)}
-          >
-            {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
-          </Button>
         </div>
-
-        {showActionsGuide && (
-          <div className="grid max-w-7xl gap-3 grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
-            {PAGE_COPY.actions.map((action) => (
-              <Card
-                key={action.title}
-                className="rounded-xl border-border bg-card shadow-sm"
-              >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{action.title}</CardTitle>
-                  <CardDescription className="text-xs">
-                    {action.description}
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* 필터 및 검색 카드 */}
@@ -1178,7 +1144,7 @@ export default function OperationsClient() {
             <div>
               <CardTitle>필터 및 검색</CardTitle>
               <CardDescription className="text-xs mt-1">
-                ID, 고객, 이메일로 검색하거나 다양한 조건으로 필터링하세요.
+                검색과 핵심 필터로 바로 업무를 좁혀보세요.
               </CardDescription>
               {error && !shouldShowGlobalError && (
                 <p className="mt-1 text-[11px] text-warning">
@@ -1254,15 +1220,6 @@ export default function OperationsClient() {
               >
                 <Link2 className="mr-1.5 h-4 w-4" />
                 {shareLinkCopied ? "링크 복사됨" : "현재 뷰 링크 복사"}
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={reset}
-                className="h-9 bg-transparent"
-              >
-                필터 초기화
               </Button>
 
               <Button
@@ -1352,22 +1309,22 @@ export default function OperationsClient() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="위험 신호 필터" />
+                  <SelectValue placeholder="문제 유형 필터" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="warn">주의만</SelectItem>
                   <SelectItem value="caution" disabled={onlyWarn}>
-                    검수필요 큐
+                    확인 필요 항목
                   </SelectItem>
                   <SelectItem value="review" disabled={onlyWarn}>
-                    검수필요만
+                    확인 필요만
                   </SelectItem>
                   <SelectItem value="pending" disabled={onlyWarn}>
                     미처리만
                   </SelectItem>
                   <SelectItem value="clean" disabled={onlyWarn}>
-                    완전정상만
+                    정상 항목만
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -1377,106 +1334,18 @@ export default function OperationsClient() {
                 onValueChange={(v: any) => setWarnSort(v)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="위험 신호 정렬" />
+                  <SelectValue placeholder="우선순위 정렬" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">위험 신호 정렬(기본)</SelectItem>
+                  <SelectItem value="default">우선순위 정렬(기본)</SelectItem>
                   <SelectItem value="warn_first">주의 우선</SelectItem>
-                  <SelectItem value="safe_first">완전정상 우선</SelectItem>
+                  <SelectItem value="safe_first">정상 항목 우선</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 프리셋 버튼(원클릭) */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Button
-                variant={presetActive.paymentMismatch ? "default" : "outline"}
-                size="sm"
-                aria-pressed={presetActive.paymentMismatch}
-                onClick={() => {
-                  applyPreset(PRESET_CONFIG.paymentMismatch.params);
-                  setActivePresetGuide("paymentMismatch");
-                }}
-                className={
-                  !presetActive.paymentMismatch ? "bg-transparent" : ""
-                }
-              >
-                {PRESET_CONFIG.paymentMismatch.label}
-              </Button>
-
-              <Button
-                variant={presetActive.integratedReview ? "default" : "outline"}
-                size="sm"
-                aria-pressed={presetActive.integratedReview}
-                onClick={() => {
-                  applyPreset(PRESET_CONFIG.integratedReview.params);
-                  setActivePresetGuide("integratedReview");
-                }}
-                className={
-                  !presetActive.integratedReview ? "bg-transparent" : ""
-                }
-              >
-                {PRESET_CONFIG.integratedReview.label}
-              </Button>
-
-              <Button
-                variant={presetActive.singleApplication ? "default" : "outline"}
-                size="sm"
-                aria-pressed={presetActive.singleApplication}
-                onClick={() => {
-                  applyPreset(PRESET_CONFIG.singleApplication.params);
-                  setActivePresetGuide("singleApplication");
-                }}
-                className={
-                  !presetActive.singleApplication ? "bg-transparent" : ""
-                }
-              >
-                {PRESET_CONFIG.singleApplication.label}
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={clearPresetMode}
-              >
-                전체 보기
-              </Button>
-            </div>
-
-            {activePresetGuide && (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <p className="text-xs text-muted-foreground">
-                  현재 결과{" "}
-                  <span className="font-semibold text-foreground">
-                    {typeof totalGroups === "number"
-                      ? `${totalGroups.toLocaleString("ko-KR")}건`
-                      : "-"}
-                  </span>
-                </p>
-                <p className="mt-1 text-sm font-medium text-foreground">
-                  {PRESET_CONFIG[activePresetGuide].label}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {PRESET_CONFIG[activePresetGuide].helperText}
-                </p>
-                <div className="mt-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs"
-                    onClick={() => setActivePresetGuide(null)}
-                  >
-                    가이드 닫기
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {activePresetKey && (
-              <div className="mt-2 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
+              <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
                 <div>
                   <p className="mb-1 text-[11px] font-semibold text-primary">
                     현재 결과
@@ -1491,7 +1360,7 @@ export default function OperationsClient() {
                   <p className="mb-1 text-[11px] font-semibold text-primary">
                     우선 처리 이유
                   </p>
-                  <p>{PRESET_CONFIG[activePresetKey].priorityReason}</p>
+                  <p>{PRESET_CONFIG[activePresetKey].helperText}</p>
                 </div>
                 <div>
                   <p className="mb-1 text-[11px] font-semibold text-primary">
@@ -1501,24 +1370,11 @@ export default function OperationsClient() {
                 </div>
               </div>
             )}
-
-            <div className="mt-2.5 flex flex-wrap items-center gap-2 border-t border-border pt-2.5">
-              <Badge
-                className={cn(badgeBase, badgeSizeSm, badgeToneClass("info"))}
-              >
-                저장된 뷰 링크
-              </Badge>
-              <p className="text-xs text-muted-foreground">
-                현재 필터 상태가 URL 쿼리에 반영됩니다. 링크를 복사해 팀에
-                공유하세요.
-              </p>
-              <code className="rounded bg-muted px-2 py-1 text-[11px] text-muted-foreground">
-                {shareViewHref}
-              </code>
-            </div>
-
             {/* 범례(운영자 인지 부하 감소) */}
-            <div className="mt-1 space-y-2 border-t border-border pt-2.5">
+            <div className="space-y-2 border-t border-border pt-2.5">
+              <p className="text-[11px] text-muted-foreground">
+                현재 뷰 링크는 버튼으로 복사해 공유할 수 있습니다.
+              </p>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">범례</span>
                 <Badge
@@ -1553,11 +1409,10 @@ export default function OperationsClient() {
                     badgeToneClass("brand"),
                   )}
                 >
-                  검수필요(운영 확인)
+                  확인 필요(운영 확인)
                 </Badge>
                 <span>
-                  결제 라벨 `패키지차감/주문결제포함/대여결제포함/확인필요`는
-                  정책 파생 결과입니다.
+                  결제 상태는 주문 기준 결제 상태로 함께 표시될 수 있습니다.
                 </span>
               </div>
 
@@ -1637,8 +1492,10 @@ export default function OperationsClient() {
                   ? `총 ${totalGroups.toLocaleString("ko-KR")}건 표시됨`
                   : "목록을 불러오는 중…"}
               </p>
-              <span className="text-xs text-muted-foreground">표시 밀도</span>
-              <div className="inline-flex items-center rounded-md border border-border p-0.5">
+              <span className="hidden bp-lg:inline text-xs text-muted-foreground">
+                표시 밀도(데스크톱)
+              </span>
+              <div className="hidden bp-lg:inline-flex items-center rounded-md border border-border p-0.5">
                 <Button
                   type="button"
                   size="sm"
@@ -1697,10 +1554,10 @@ export default function OperationsClient() {
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border">
                       <TableHead className={cn(thClasses, "w-[24%]")}>
-                        상태 · 종류
+                        처리 상태
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[42%]")}>
-                        대상 · 핵심 요약
+                        지금 해야 할 일 · 대상
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[18%] text-right")}>
                         금액
@@ -1804,7 +1661,7 @@ export default function OperationsClient() {
                                       }
                                       className={cn(badgeBase, badgeSizeSm)}
                                     >
-                                      검수필요
+                                      확인 필요
                                     </Badge>
                                   )}
                                   {!warn && g.reviewLevel === "info" && (
@@ -1815,7 +1672,7 @@ export default function OperationsClient() {
                                       }
                                       className={cn(badgeBase, badgeSizeSm)}
                                     >
-                                      참고/파생(조치없음)
+                                      참고 정보(조치 없음)
                                     </Badge>
                                   )}
                                 </div>
@@ -2160,7 +2017,7 @@ export default function OperationsClient() {
                                 <div className="mb-2 flex items-center gap-2">
                                   <ChevronDown className="h-3.5 w-3.5 text-primary" />
                                   <p className="text-xs font-semibold text-foreground">
-                                    상세 섹션 · 이유/연결 정보
+                                    추가 정보 · 이유/연결 문서
                                   </p>
                                 </div>
                                 <div className="grid gap-3 bp-xl:grid-cols-2 2xl:grid-cols-4">
@@ -2323,7 +2180,7 @@ export default function OperationsClient() {
                                 }
                                 className={cn(badgeBase, badgeSizeSm)}
                               >
-                                검수필요
+                                확인 필요
                               </Badge>
                             )}
                             {!warn && g.reviewLevel === "info" && (
@@ -2334,7 +2191,7 @@ export default function OperationsClient() {
                                 }
                                 className={cn(badgeBase, badgeSizeSm)}
                               >
-                                참고/파생(조치없음)
+                                참고 정보(조치 없음)
                               </Badge>
                             )}
                           </div>
@@ -2460,7 +2317,7 @@ export default function OperationsClient() {
                         )}
                         {isGroup && isOpen && (
                           <div className="rounded-md border border-primary/20 bg-muted/35 p-2.5 space-y-2">
-                            <p className="text-[11px] font-semibold text-foreground">상세 섹션 · 이유/연결 정보</p>
+                            <p className="text-[11px] font-semibold text-foreground">추가 정보 · 이유/연결 문서</p>
                             <p className="text-[11px] text-muted-foreground">
                               기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)} · 단계:{" "}
                               {toOperatorSentence(groupGuide.stage)}
